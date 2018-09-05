@@ -204,7 +204,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
-<translation id="2512222046227390255">Autouzupełniaj formularze</translation>
 <translation id="2513403576141822879">Więcej ustawień związanych z prywatnością, bezpieczeństwem i zbieraniem danych znajdziesz w sekcji <ph name="BEGIN_LINK" />Synchronizacja i usługi Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Adresy URL odwiedzanych stron będą wysyłane do Google</translation>
 <translation id="2526148617758225454">Oszczędzanie danych jest włączone. Możesz nim zarządzać w ustawieniach.</translation>
@@ -249,8 +248,8 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2891154217021530873">Zatrzymaj wczytywanie strony</translation>
 <translation id="2900528713135656174">Utwórz wydarzenie</translation>
 <translation id="2902702728133930130">Podczas uruchamiania Chrome wystąpił nieoczekiwany błąd.</translation>
-<translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Pytaj, zanim zezwolisz stronom na odtwarzanie treści chronionej</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Pomóż nam ulepszyć działanie i zwiększyć bezpieczeństwo Chrome, wysyłając informacje o systemie i użytkowaniu do Google</translation>
@@ -577,7 +576,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="557283862590186398">Chrome potrzebuje uprawnień dostępu do mikrofonu na tej stronie.</translation>
 <translation id="55737423895878184">Lokalizacja i powiadomienia są włączone</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Karty</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5620299005957670886">Zezwalaj witrynom na dostęp do czujników (zalecane)</translation>
@@ -672,6 +670,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6303969859164067831">Wyloguj się i wyłącz synchronizację</translation>
 <translation id="6320088164292336938">Wibracje</translation>
 <translation id="6324034347079777476">Synchronizacja systemu Android jest wyłączona</translation>
 <translation id="6333140779060797560">Udostępnij przez: <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7542481630195938534">Nie można uzyskać sugestii</translation>
 <translation id="7562080006725997899">Czyszczenie danych przeglądania</translation>
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
+<translation id="757524316907819857">Blokuj odtwarzanie treści chronionej na stronach</translation>
 <translation id="7589445247086920869">Blokuj dostęp obecnej wyszukiwarce</translation>
 <translation id="7593557518625677601">Otwórz ustawienia Androida i ponownie włącz jego synchronizację, by uruchomić Synchronizację Chrome</translation>
 <translation id="7596558890252710462">System operacyjny</translation>

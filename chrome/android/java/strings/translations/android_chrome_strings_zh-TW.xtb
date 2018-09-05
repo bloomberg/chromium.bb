@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
-<translation id="2512222046227390255">自動填入表單</translation>
 <translation id="2513403576141822879">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2526148617758225454">Data Saver 已開啟，您可以在 [設定] 中管理這項擴充功能。</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">停止載入網頁</translation>
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
-<translation id="2903493209154104877">地址</translation>
 <translation id="290376772003165898">不是<ph name="LANGUAGE" />網頁嗎？</translation>
+<translation id="2910701580606108292">允許網站播放受保護的內容前，必須先詢問你</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 儲存資料量</translation>
 <translation id="2943166482989655199">傳送系統資訊和使用情形資料給 Google，協助改善 Chrome 及其安全性</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">Chrome 需要相關權限，才能讓這個網站使用你的麥克風。</translation>
 <translation id="55737423895878184">允許分享位置資訊和顯示通知</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
-<translation id="5585019845078534178">卡片</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5620299005957670886">允許網站存取你的感應器 (建議)</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="629730747756840877">帳戶</translation>
+<translation id="6303969859164067831">登出並關閉同步處理功能</translation>
 <translation id="6320088164292336938">震動</translation>
 <translation id="6324034347079777476">Android 系統同步處理功能已停用</translation>
 <translation id="6333140779060797560">透過 <ph name="APPLICATION" /> 分享</translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">無法取得建議</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
+<translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="7589445247086920869">對目前的搜尋引擎封鎖</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>

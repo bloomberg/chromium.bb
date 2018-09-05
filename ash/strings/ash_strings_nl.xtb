@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Zwak signaal</translation>
 <translation id="1293264513303784526">USB-C-apparaat (poort aan linkerkant)</translation>
+<translation id="1294929383540927798">Instellingen voor meldingen voor het vergrendelingsscherm wijzigen</translation>
 <translation id="1302880136325416935">Bluetooth-instellingen weergeven. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351937230027495976">Menu samenvouwen</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
 <translation id="1621499497873603021">Resterende tijd totdat de batterij leeg is: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1658406695958299976">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: Als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd wanneer je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Menu uitvouwen</translation>
 <translation id="3087734570205094154">Onderaan</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Plank altijd weergeven</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
 <translation id="315116470104423982">Mobiele data</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
+<translation id="3897533311200664389">Een zoekopdracht met tekst starten</translation>
 <translation id="3899995891769452915">Spraakinvoer</translation>
 <translation id="3900355044994618856">Je sessie loopt over <ph name="SESSION_TIME_REMAINING" /> af</translation>
 <translation id="3901991538546252627">Verbinding maken met <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Beheerd door <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Update van Adobe Flash Player beschikbaar</translation>
 <translation id="9056839673611986238">Apparaat wordt teruggezet naar oudere versie</translation>
+<translation id="9070640332319875144">Instellingen voor Assistent</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wifi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>

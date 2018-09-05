@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
-<translation id="2512222046227390255">फ़ॉर्म अपने आप भरने दें</translation>
 <translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
 <translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
 <translation id="2526148617758225454">डेटा सर्वर चालू है. उसे सेटिंग में प्रबंधित करें.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">पेज को लोड करना रोकें</translation>
 <translation id="2900528713135656174">इवेंट बनाएं</translation>
 <translation id="2902702728133930130">अनपेक्षित गड़बड़ी के साथ स्टार्टअप के दौरान Chrome विफल रहा.</translation>
-<translation id="2903493209154104877">पते</translation>
 <translation id="290376772003165898">क्या पेज <ph name="LANGUAGE" /> भाषा में नहीं है?</translation>
+<translation id="2910701580606108292">साइटों को सुरक्षित सामग्री चलाने की अनुमति देने से पहले पूछें</translation>
 <translation id="2913331724188855103">साइटों को कुकी डेटा सहेजने और पढ़ने दें (अनुशंसित)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> मेमोरी</translation>
 <translation id="2943166482989655199">Google को सिस्टम और इस्तेमाल का डेटा भेजकर Chrome और उसकी सुरक्षा को बेहतर बनाएं</translation>
@@ -328,7 +327,7 @@
 <translation id="360207483134687714">Chrome में VR अनुभव को बेहतर बनाने में सहायता करें</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3620176948598597475">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ, डेटा बचाने के साधन का इतिहास हमेशा के लिए मिट जाता है.</translation>
-<translation id="3630011985153972676">सेटिंग में जाकर जब ’वाई-फ़ाई’ पर हों तब Chrome को अपने लिए लेख डाउनलोड करने की अनुमति दें.</translation>
+<translation id="3630011985153972676">सेटिंग में जाकर जब वाई-फ़ाई पर हों तब Chrome को अपने लिए लेख डाउनलोड करने की अनुमति दें.</translation>
 <translation id="3632295766818638029">पासवर्ड दिखाएं</translation>
 <translation id="363596933471559332">संग्रहित क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप साइन इन करें. सुविधा के बंद होने पर, किसी वेबसाइट में साइन इन करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">Chrome को इस साइट के लिए आपका माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="55737423895878184">स्थान और सूचनाओं की अनुमति है</translation>
 <translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE" /> खोजें</translation>
-<translation id="5585019845078534178">कार्ड</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
 <translation id="5596627076506792578">अधिक विकल्प</translation>
 <translation id="5620299005957670886">साइटों को अपने डिवाइस के सेंसर एक्सेस करने दें (सुझाया गया)</translation>
@@ -588,7 +586,7 @@
 <translation id="5655963694829536461">अपने डाउनलोड खोजें</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> में इवेंट बनाएं</translation>
-<translation id="5668404140385795438">किसी वेबसाइट का ज़ूम इन करने का अनुरोध ओवरराइड करें</translation>
+<translation id="5668404140385795438">ज़ूम इन करने से रोकने के लिए वेबसाइट के अनुरोध को बदलें</translation>
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" /> पर वीडियो नहीं चलाया जा सकता.</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">पेज को प्रिंट करने में समस्या थी. कृपया फिर से प्रयास करें.</translation>
 <translation id="6295158916970320988">सभी साइटें</translation>
 <translation id="629730747756840877">खाता</translation>
+<translation id="6303969859164067831">साइन आउट करें और सिंक बंद करें</translation>
 <translation id="6320088164292336938">कंपन</translation>
 <translation id="6324034347079777476">Android सिस्टम समन्वयन अक्षम है</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> के द्वारा शेयर करें</translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">सुझाव नहीं मिल पा रहे हैं</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
+<translation id="757524316907819857">साइटों को सुरक्षित सामग्री चलाने से रोकें</translation>
 <translation id="7589445247086920869">वर्तमान खोज इंजन के लिए अवरुद्ध करें</translation>
 <translation id="7593557518625677601">Android सेटिंग खोलें व Chrome सिंक शुरू करने हेतु Android सिस्टम समन्वयन फिर से सक्षम करें</translation>
 <translation id="7596558890252710462">ऑपरेटिंग सिस्टम</translation>

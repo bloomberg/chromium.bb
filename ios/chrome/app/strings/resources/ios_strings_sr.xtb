@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Ставка је ажурирана</translation>
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1049743911850919806">Без архивирања</translation>
+<translation id="1063454504051558093">Користи другу лозинку...</translation>
 <translation id="1076421457278169141">Скенирали сте кôд</translation>
 <translation id="1084365883616172403">Facebook пост је довршен.</translation>
 <translation id="1104948393051856124">Прихвати и настави</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Шаљи подат. о кориш.</translation>
 <translation id="1886928167269928266">Одувек</translation>
 <translation id="1911619930368729126">Отпреми у Google диск</translation>
+<translation id="191179954310195971">Друге Google услуге</translation>
 <translation id="1941314575388338491">Додирните двапут да бисте копирали.</translation>
 <translation id="1952728750904661634">Пријавите се помоћу налога којим се управља</translation>
 <translation id="1974060860693918893">Напредне опције</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Листа за читање је доступна офлајн. Да бисте додали страницу на листу за читање, додирните <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Унап. учитај веб-странице</translation>
 <translation id="3691593122358196899">Обележивач је додат у <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Користи другу лозинку</translation>
 <translation id="3771033907050503522">Картице Без архивирања</translation>
 <translation id="3779810277399252432">Нема интернет везе.</translation>
 <translation id="3783017676699494206">Сачувај слику</translation>
@@ -315,6 +318,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6344783595350022745">Обриши текст</translation>
 <translation id="6346549652287021269">Желите ли да започнете ново преузимање?</translation>
 <translation id="6362362396625799311">Нема картица без архивирања</translation>
+<translation id="6363526231572697780">Нема корисничког имена</translation>
 <translation id="6374469231428023295">Пробај поново</translation>
 <translation id="6380866119319257197">Ако заборавите приступну фразу или желите да промените ово подешавање, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Име и презиме на картици</translation>

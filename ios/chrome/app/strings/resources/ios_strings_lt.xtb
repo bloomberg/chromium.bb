@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elementas atnaujintas</translation>
 <translation id="1047726139967079566">Įtraukti šį puslapį į žymes...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1063454504051558093">Naudoti kitą slaptažodį...</translation>
 <translation id="1076421457278169141">Kodas nuskaitytas</translation>
 <translation id="1084365883616172403">„Facebook“ įrašas paskelbtas.</translation>
 <translation id="1104948393051856124">Sutikti ir tęsti</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Siųsti naud. duom.</translation>
 <translation id="1886928167269928266">Laiko pradžia</translation>
 <translation id="1911619930368729126">Įkelti į „Google“ diską</translation>
+<translation id="191179954310195971">Kitos „Google“ paslaugos</translation>
 <translation id="1941314575388338491">Dukart palieskite, kad nukopijuotumėte.</translation>
 <translation id="1952728750904661634">Prisijunkite naudodami valdomą paskyrą</translation>
 <translation id="1974060860693918893">Išplėstiniai</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Skaitymo sąrašas pasiekiamas neprisijungus. Kad pridėtumėte puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
+<translation id="3765471630796399471">Naudokite kitą slaptažodį</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
 <translation id="3779810277399252432">Nėra interneto ryšio.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
@@ -315,6 +318,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6346549652287021269">Pradėti naują atsisiuntimą?</translation>
 <translation id="6362362396625799311">Nėra inkognito skirtukų</translation>
+<translation id="6363526231572697780">Nėra naudotojo vardo</translation>
 <translation id="6374469231428023295">Bandyti dar kartą</translation>
 <translation id="6380866119319257197">Jei pamiršote slaptafr. arba norite pakeisti šį nust., <ph name="BEGIN_LINK" />iš naujo nust. sinchr.<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Vardas kortel.</translation>

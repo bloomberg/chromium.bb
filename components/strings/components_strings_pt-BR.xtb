@@ -82,6 +82,7 @@
 <translation id="14171126816530869">A identidade de <ph name="ORGANIZATION" /> em <ph name="LOCALITY" /> foi confirmada por <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="143412116769631998">Lembrar formas de pagamento</translation>
 <translation id="1484290072879560759">Escolher endereço de entrega</translation>
 <translation id="1506687042165942984">Mostrar uma cópia salva (ou seja, reconhecidamente desatualizada) desta página.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Você verá esse erro se estiver usando um portal Wi-Fi em que precise fazer login para poder se conectar.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Erro temporário do servidor</translation>
 <translation id="3154506275960390542">Essa página inclui um formulário que pode não ser enviado de forma segura. Os dados que você envia podem ser vistos por outras pessoas enquanto elas navegam ou ser modificados por um invasor para alterar o que o servidor recebe.</translation>
 <translation id="3157931365184549694">Restaurar</translation>
+<translation id="316082708977904280">Lembrar endereços e outras informações</translation>
 <translation id="3162559335345991374">O Wi-Fi que você está usando pode exigir a visita a uma página de login.</translation>
 <translation id="3167968892399408617">Quando você está no modo invisível, as páginas que você visita não aparecem no seu histórico de navegação e de pesquisa, nem armazenam arquivos "cookies". Mas os downloads e os favoritos continuam funcionando normalmente.﻿</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Validação bem-sucedida</translation>
 <translation id="3655670868607891010">Caso veja esta página com frequência, tente <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisão</translation>
+<translation id="3665775945622610063">Lembrar Formas de Pagamento</translation>
 <translation id="3678029195006412963">Não foi possível assinar a solicitação</translation>
 <translation id="3678529606614285348">Abrir página em uma nova janela anônima (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Relatório de erros registrado em <ph name="CRASH_TIME" />, enviado em <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Quer salvar este cartão na sua Conta do Google e neste dispositivo?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Validade: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Conteúdo nocivo bloqueado.</translation>
 <translation id="382518646247711829">Se você usa um servidor proxy...</translation>
 <translation id="3828924085048779000">Uma senha vazia não é permitida.</translation>
 <translation id="385051799172605136">Voltar</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Ações</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4974590756084640048">Reativar avisos</translation>
+<translation id="4988217478422488391">Agiliza os pagamentos on-line</translation>
 <translation id="4989809363548539747">Este plug-in não é compatível</translation>
 <translation id="5002932099480077015">Se ativado, o Chrome armazenará uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="5018422839182700155">Não é possível abrir essa página</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Refazer editar</translation>
 <translation id="5481076368049295676">Este conteúdo pode tentar instalar softwares perigosos no seu dispositivo que roubam ou excluem suas informações. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Adicionar endereço válido</translation>
+<translation id="5490432419156082418">Endereços e Mais</translation>
 <translation id="5492298309214877701">Esse site na intranet da empresa, organização ou escola tem o mesmo URL de um website externo.
     <ph name="LINE_BREAK" />
     Tente entrar em contato com o administrador do sistema.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em uso}one{# em uso}other{# em uso}}</translation>
 <translation id="5922853866070715753">Quase pronto</translation>
 <translation id="5939518447894949180">Redefinir</translation>
+<translation id="5951495562196540101">Não é possível fazer a inscrição com a conta pessoal (pacote de licença disponível).</translation>
 <translation id="5967592137238574583">Edite as Informações de Contato</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
@@ -910,6 +917,7 @@ Mais detalhes:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saber mais<ph name="END_LINK" /> sobre esse problema.</translation>
 <translation id="7453467225369441013">Desconecta você da maioria dos sites, mas não da sua Conta do Google.</translation>
 <translation id="7455133967321480974">Usar padrão global (Bloquear)</translation>
+<translation id="7457461136432785307">Lembrar Endereços e Outras Informações</translation>
 <translation id="7460163899615895653">Suas guias recentes de outros dispositivos são exibidas aqui</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
@@ -1061,6 +1069,7 @@ Mais detalhes:
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8437238597147034694">&amp;Desfazer mover</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}one{# cartão de crédito}other{# cartões de crédito}}</translation>
+<translation id="8473863474539038330">Endereços e mais</translation>
 <translation id="8483780878231876732">Para usar os cards da sua Conta do Google, faça login no Google Chrome</translation>
 <translation id="8488350697529856933">Aplicável a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou muito para responder.</translation>
@@ -1121,6 +1130,7 @@ Mais detalhes:
 <translation id="8952525071319348207">Informe a data de validade e o CVC do <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois da confirmação, os detalhes do cartão da sua conta do Google Payments serão compartilhados com esse site.</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>
+<translation id="8975012916872825179">Inclui informações como números de telefone, endereços de e-mail e endereços de entrega</translation>
 <translation id="8978053250194585037">Recentemente, o recurso "Navegação segura" do Google <ph name="BEGIN_LINK" />detectou phishing<ph name="END_LINK" /> em <ph name="SITE" />. Os sites de phishing fingem ser outros sites para enganar você.</translation>
 <translation id="8983003182662520383">Formas de pagamento e endereços que usam o Google Pay</translation>
 <translation id="8987927404178983737">Mês</translation>
@@ -1170,6 +1180,7 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="951104842009476243">Cartões de débito e pré-pagos aceitos</translation>
+<translation id="962484866189421427">Este conteúdo pode tentar instalar apps enganosos que fingem ser outra coisa ou coletam dados que podem ser usados para rastrear você. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Versão oficial</translation>
 <translation id="973773823069644502">Adicionar endereço de entrega</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nenhum}=1{1 item}one{# item}other{# itens}}</translation>

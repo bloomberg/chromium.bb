@@ -44,7 +44,7 @@
 
 如要進一步瞭解安全內容，請參閱 https://www.w3.org/TR/secure-contexts/。
       </translation>
-<translation id="1117535567637097036">處理 Android 調用請求時，系統不會使用透過這項政策設定的通訊協定處理常式。</translation>
+<translation id="1117535567637097036">處理 Android 意圖時，系統不會使用透過這項政策設定的通訊協定處理常式。</translation>
 <translation id="1118093128235245168">允許網站要求使用者授權存取已連線的 USB 裝置</translation>
 <translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
 
@@ -338,6 +338,7 @@
 <translation id="199764499252435679">允許更新 <ph name="PRODUCT_NAME" /> 的元件</translation>
 <translation id="2006530844219044261">電源管理</translation>
 <translation id="201557587962247231">裝置狀態報告上傳頻率</translation>
+<translation id="2017301949684549118">以無訊息方式安裝的網路應用程式網址。</translation>
 <translation id="2018836497795982119">指定向裝置管理服務查詢使用者政策資訊的時間 (以毫秒為單位)。
 
       設定這項政策會覆寫預設值 (3 小時)。這項政策的有效值範圍是 1800000 (30 分鐘) 到 86400000 (1 天)。超出範圍的值一律會自動調整為上限值或下限值。如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新，所以更新延遲時間會設為 24 小時。
@@ -640,6 +641,11 @@
           您可以使用以下格式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
 
           啟用「DefaultSearchProviderEnabled」政策時必須設定這個選項，系統也只會在這種情況下遵循這項政策。</translation>
+<translation id="2659019163577049044">如果你啟用這項設定，使用者就可以自行設定裝置，讓簡訊在手機和 Chromebook 上保持同步。請注意，如果你允許這項政策，使用者必須完成設定流程來明確選擇啟用這項功能。設定流程完成後，使用者就可以在自己的 Chromebook 上收發簡訊。
+
+      如果你停用這項設定，使用者將無法設置簡訊同步功能。
+
+      如未設定這項政策，在預設情況下，受管理的使用者無法使用這項功能，未受管理的使用者則可使用這項功能。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
@@ -1050,6 +1056,7 @@
       每個清單項目都含有目錄，其中的「extension-id」欄位必須包含擴充功能 ID，且「update-url」欄位必須包含更新網址。</translation>
 <translation id="3874773863217952418">啟用輕觸搜尋</translation>
 <translation id="3877517141460819966">整合式雙重驗證模式</translation>
+<translation id="3879208481373875102">設定強制安裝的網路應用程式清單</translation>
 <translation id="388237772682176890">自 M53 起我們已淘汰這項政策，至 M54 則移除了這項政策 (因為我們已不再支援 SPDY/3.1)。
 
       停用 <ph name="PRODUCT_NAME" /> 的 SPDY 通訊協定。
@@ -1283,6 +1290,10 @@
           如需可用設定和本政策結構的完整說明，請造訪 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">使用者政策回送處理模式</translation>
+<translation id="4554841826517980623">這項政策可控管是否要允許 <ph name="PRODUCT_NAME" />的網路檔案共用功能使用 <ph name="NETBIOS_PROTOCOL" /> 搜尋網路上的共用項目。
+      將這項政策設為 True 時，共用項目搜尋功能會使用 <ph name="NETBIOS_PROTOCOL" /> 通訊協定在網路上搜尋共用項目。
+      將這項政策設為 False 時，共用項目搜尋功能不會使用 <ph name="NETBIOS_PROTOCOL" /> 通訊協定搜尋共用項目。
+      如未設定這項政策，在預設情況下，系統會為受企業管理的使用者停用這項政策，並為未受管理的使用者啟用這項政策。</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
 <translation id="4557134566541205630">預設搜尋引擎新分頁網址</translation>
 <translation id="4567137030726189378">允許使用開發人員工具</translation>
@@ -1677,6 +1688,7 @@
 
           如果你未設定這項政策，則系統會在初次顯示登入畫面時停用互動朗讀。使用者隨時都可以啟用或停用互動朗讀，而互動朗讀在登入畫面的狀態則視使用者的選擇而定 (均為永久性)。</translation>
 <translation id="5868414965372171132">使用者層級網路設定</translation>
+<translation id="5879014913445067283">控制網路檔案共用功能是否透過 <ph name="NETBIOS_NAME" /> 搜尋檔案</translation>
 <translation id="5883015257301027298">預設 Cookie 設定</translation>
 <translation id="5887414688706570295">設定遠端存取主機所要使用的 TalkGadget 前置詞，並且防止使用者變更這項設定。
 
@@ -2117,6 +2129,17 @@
 <translation id="7049373494483449255">啟用「<ph name="PRODUCT_NAME" />」將文件提交至「<ph name="CLOUD_PRINT_NAME" />」列印。注意：這只會影響可支援「<ph name="PRODUCT_NAME" />」的「<ph name="CLOUD_PRINT_NAME" />」，但無法禁止使用者提交至網站上的列印工作。如果啟用或尚未設定這項設定，使用者可以從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。如果停用這項設定，使用者則無法從「<ph name="PRODUCT_NAME" />」列印對話方塊中使用「<ph name="CLOUD_PRINT_NAME" />」進行列印。</translation>
 <translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
+<translation id="706568410943497889">
+      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 就能從 Google 服務 (例如 Google Meet) 收集 WebRTC 事件記錄，並將這些記錄上傳至 Google。
+
+      如果將這項政策設為 False 或不予設定，<ph name="PRODUCT_NAME" /> 就可能不會收集或上傳這類記錄。
+
+      這些記錄包含有助於偵錯 Chrome 語音或視訊通話問題的診斷資訊，例如收發 RTP 封包的時間和大小、網路壅塞情形回報、關於語音及視訊畫格的時間和品質等中繼資料，但不包含通話的語音和視訊內容。
+
+      Chrome 這項資料收集作業只能由 Google 的網路服務觸發，例如 Google Hangouts 或 Google Meet。
+
+      Google 可能會依照工作階段 ID 將這些記錄和 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
+      </translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
 <translation id="7074513465313721551">設定安全瀏覽功能將信任的網域清單。也就是說：
@@ -2248,6 +2271,9 @@
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="7340034977315324840">回報裝置活動時間</translation>
 <translation id="7343497214039883642">裝置專用企業印表機設定檔</translation>
+<translation id="7349338075015720646">指定以無訊息方式安裝 (使用者無需操作) 的網站清單 (使用者無法解除安裝或停用這些網站)。
+
+      這項政策的每個清單項目都是一個物件，由「url」和「launch_container」組成。「url」應為要安裝的網路應用程式的網址，「launch_container」則應為「window」(視窗) 或「tab」(分頁)，是用於指定網路應用程式安裝後要採用的開啟方式。如果省略「launch_container」，且 Chrome 判斷該網路應用程式為漸進式網路應用程式，將會在視窗中開啟；若 Chrome 判斷不是漸進式網路應用程式，則會在分頁中開啟。</translation>
 <translation id="7367028210010532881">當使用者瀏覽遭檢舉為有惡意風險的網站時，「安全瀏覽」服務會顯示警告網頁。如果啟用這項設定，就能防止使用者略過警告網頁並繼續前往惡意網站。
 
       如果停用這項設定或未進行設定，則使用者可以選擇在系統顯示警告之後，繼續前往遭檢舉的網站。
@@ -2690,6 +2716,7 @@
 
       指定「版本」時，可以提供確切的版本號碼 (例如「61.0.3163.120」)，也可以提供版本的前置字串 (例如「61.0」)。  </translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME" /> 的 HTML 轉譯器</translation>
+<translation id="8544465954173828789">允許將簡訊從手機同步至 Chromebook。</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
 <translation id="8586528890725660268">指定哪些印表機是禁止使用的。
@@ -2734,6 +2761,11 @@
       如果未設定這項政策，密碼保護服務就只會保護 Google 密碼，但使用者可以變更這項設定。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
+<translation id="8682611302223077049">可設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
+
+      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，當系統偵測到升級時，會在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間過完後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他瀏覽器通知也會按照同樣的時間安排發生變更。
+
+      如果不設定，<ph name="PRODUCT_OS_NAME" />裝置的預設通知時間為 345600000 毫秒 (四天)，<ph name="PRODUCT_NAME" /> 的預設通知時間則為 604800000 毫秒 (一週)。</translation>
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
@@ -2770,6 +2802,7 @@
 
           比例因數必須為 100% 以上的值。如果該值會使簡報模式中的調暗延遲時間比一般調暗延遲時間更短，就無法予以採用。</translation>
 <translation id="8798099450830957504">預設</translation>
+<translation id="8801680448782904838">透過通知建議或要求使用者重新啟動瀏覽器或裝置</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
@@ -2912,6 +2945,11 @@
       如果將這項政策設為 True，<ph name="PRODUCT_OS_NAME" /> 會在使用者關閉裝置時觸發重新啟動程序。此外，<ph name="PRODUCT_OS_NAME" /> 會將使用者介面中的所有關機按鈕改成重新啟動按鈕。如果使用者使用電源按鈕關閉裝置，即使您已啟用這項政策，裝置仍然不會自動重新啟動。</translation>
 <translation id="9152473318295429890">允許根據目前網頁內容建議相關的網頁</translation>
 <translation id="9158929520101169054">允許在瀏覽器中使用多帳戶登入功能</translation>
+<translation id="9159126470527871268">通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />才能套用未安裝的更新。
+
+      這項政策可啟用通知，藉此建議或要求使用者重新啟動瀏覽器或裝置。如果不予設定，<ph name="PRODUCT_NAME" /> 會以細微的選單變更讓使用者知道瀏覽器需要重新啟動，<ph name="PRODUCT_OS_NAME" />則會在系統匣中顯示這類通知。如果設為「Recommended」(建議)，瀏覽器會定期顯示警告，建議使用者重新啟動。如果使用者不想立即重新啟動，可以自行關閉這項警告。如果設為「Required」(必要)，瀏覽器會定期顯示警告，告知使用者瀏覽器將於通知期過後強制重新啟動。<ph name="PRODUCT_NAME" /> 的通知期預設為七天，<ph name="PRODUCT_OS_NAME" />的通知期則預設為四天，可透過 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策設定加以設定。
+
+      使用者的工作階段會在重新啟動後恢復。</translation>
 <translation id="9165792353046089850">讓你設定是否允許網站存取已連線的 USB 裝置。你可以禁止所有網站存取 USB 裝置，也可以要求網站一律需要經過使用者同意才能存取這類裝置。
 
           你可以使用「WebUsbAskForUrls」和「WebUsbBlockedForUrls」政策，針對特定網址模式覆寫這項政策。

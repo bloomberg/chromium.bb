@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
-<translation id="2512222046227390255">Автоматично заповняти форми</translation>
 <translation id="2513403576141822879">Інші налаштування конфіденційності, безпеки та збору даних доступні в розділі <ph name="BEGIN_LINK" />Синхронізація та сервіси Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Надсилає в Google URL-адреси відвіданих сторінок</translation>
 <translation id="2526148617758225454">Заощадження трафіку ввімкнено. Ви можете керувати ним у налаштуваннях.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">Припинити завантаження сторінки</translation>
 <translation id="2900528713135656174">Створити подію</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
-<translation id="2903493209154104877">Адреси</translation>
 <translation id="290376772003165898">Ця сторінка відображається не такою мовою: <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Запитувати, перш ніж дозволити сайтам відтворювати захищений вміст</translation>
 <translation id="2913331724188855103">Дозволити сайтам зберігати та розпізнавати дані файлів cookie (рекомендується)</translation>
 <translation id="2932150158123903946">Дані додатка Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Покращуйте Chrome і функції безпеки, надсилаючи в Google дані про систему та використання</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">Chrome потрібні дозволи, щоб використовувати мікрофон на цьому сайті.</translation>
 <translation id="55737423895878184">Геодані та сповіщення дозволено</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Картки</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5596627076506792578">Інші опції</translation>
 <translation id="5620299005957670886">Надати сайтам доступ до датчиків (рекомендовано)</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="6295158916970320988">Усі сайти</translation>
 <translation id="629730747756840877">Обліковий запис</translation>
+<translation id="6303969859164067831">Вийти й вимкнути синхронізацію</translation>
 <translation id="6320088164292336938">Вібросигнал</translation>
 <translation id="6324034347079777476">Синхронізацію системи Android вимкнено</translation>
 <translation id="6333140779060797560">Надіслати через <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">Не вдається отримати пропозиції</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
+<translation id="757524316907819857">Заборонити сайтам відтворювати захищений вміст</translation>
 <translation id="7589445247086920869">Заблокувати для поточної пошукової системи</translation>
 <translation id="7593557518625677601">Щоб почати синхронізацію Chrome, відкрийте параметри Android і знову ввімкніть синхронізацію системи</translation>
 <translation id="7596558890252710462">Операційна система</translation>

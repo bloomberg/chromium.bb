@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Identita spoločnosti <ph name="ORGANIZATION" /> so sídlom <ph name="LOCALITY" /> bola overená spoločnosťou <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
+<translation id="143412116769631998">Zapamätať spôsoby platby</translation>
 <translation id="1484290072879560759">Zvoliť dodaciu adresu</translation>
 <translation id="1506687042165942984">Zobrazí sa uložená (t. j. neaktuálna) kópia tejto stránky.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Táto chyba sa zobrazí, keď používate portál Wi-Fi, ktorý podmieňuje prístup k internetu prihlásením.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Dočasná chyba servera</translation>
 <translation id="3154506275960390542">Táto stránka obsahuje formulár, ktorý zrejme nebude možné bezpečne odoslať. Odoslané dáta si môžu pri prenose zobraziť iní používatelia a prípadný útočník ich môže zmeniť. Server preto môže prijať niečo iné, než ste odoslali.</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
+<translation id="316082708977904280">Zapamätať adresy a ďalšie informácie</translation>
 <translation id="3162559335345991374">Sieť Wi‑Fi, ktorú používate, môže vyžadovať, aby ste navštívili jej prihlasovaciu stránku</translation>
 <translation id="3167968892399408617">Keď zavriete všetky karty inkognito, po stránkach, ktoré ste na nich zobrazili, nezostane v histórii prehliadania, úložisku súborov cookie a histórii vyhľadávania ani stopa. Všetky stiahnuté súbory a vytvorené záložky zostanú zachované.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -393,6 +395,7 @@
 <translation id="3650584904733503804">Overenie bolo úspešné</translation>
 <translation id="3655670868607891010">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto stránky <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Verzia</translation>
+<translation id="3665775945622610063">Zapamätať spôsoby platby</translation>
 <translation id="3678029195006412963">Požiadavku sa nepodarilo podpísať</translation>
 <translation id="3678529606614285348">Otvorte stránku v novom okne inkognito (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Správa o zlyhaní zaznamenaná v čase <ph name="CRASH_TIME" /> bola nahraná o <ph name="UPLOAD_TIME" /></translation>
@@ -415,6 +418,7 @@
 <translation id="3778403066972421603">Chcete uložiť túto kartu do svojho účtu Google a tohto zariadenia?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Platnosť vyprší <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Škodlivý obsah bol zablokovaný.</translation>
 <translation id="382518646247711829">Ak používate server proxy...</translation>
 <translation id="3828924085048779000">Prístupová fráza nemôže byť prázdna.</translation>
 <translation id="385051799172605136">Naspäť</translation>
@@ -571,6 +575,7 @@
 <translation id="495170559598752135">Akcie</translation>
 <translation id="4958444002117714549">Rozbaliť zoznam</translation>
 <translation id="4974590756084640048">Opätovne aktivovať upozornenia</translation>
+<translation id="4988217478422488391">Urýchľuje online platby</translation>
 <translation id="4989809363548539747">Tento doplnok nie je podporovaný</translation>
 <translation id="5002932099480077015">Ak túto možnosť povolíte, Chrome bude uchovávať kópiu vašej karty na tomto zariadení na účely rýchlejšieho dopĺňania formulárov.</translation>
 <translation id="5018422839182700155">Táto stránka sa nedá otvoriť</translation>
@@ -650,6 +655,7 @@
 <translation id="5470861586879999274">&amp;Znova upraviť</translation>
 <translation id="5481076368049295676">Tento obsah sa môže pokúsiť nainštalovať v zariadení nebezpečný softvér, ktorý ukradne alebo odstráni vaše informácie. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Pridanie platnej adresy</translation>
+<translation id="5490432419156082418">Adresy a ďalšie údaje</translation>
 <translation id="5492298309214877701">Tento web v intranete danej spoločnosti, organizácie či školy má rovnakú webovú adresu ako externý web.
     <ph name="LINE_BREAK" />
     Skúste kontaktovať správcu systému.</translation>
@@ -713,6 +719,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používa sa 1}few{Používajú sa #}many{Používa sa #}other{Používa sa #}}</translation>
 <translation id="5922853866070715753">Takmer dokončené</translation>
 <translation id="5939518447894949180">Resetovať</translation>
+<translation id="5951495562196540101">Nemôžete sa zaregistrovať spotrebiteľským účtom (k dispozícii je licencia v balíčku).</translation>
 <translation id="5967592137238574583">Úprava kontaktných informácií</translation>
 <translation id="5967867314010545767">Odstrániť z histórie</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
@@ -905,6 +912,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Ďalšie informácie o tomto probléme<ph name="END_LINK" /></translation>
 <translation id="7453467225369441013">Odhlási vás z väčšiny webov, ale nie z účtu Google.</translation>
 <translation id="7455133967321480974">Použiť predvolené všeobecné nastavenie (Blokovať)</translation>
+<translation id="7457461136432785307">Zapamätať adresy a ďalšie informácie</translation>
 <translation id="7460163899615895653">Vaše nedávne karty z iných zariadení sa zobrazia na tomto mieste</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="7481312909269577407">Dopredu</translation>
@@ -1056,6 +1064,7 @@
 <translation id="8433057134996913067">Táto možnosť vás odhlási z väčšiny webov.</translation>
 <translation id="8437238597147034694">&amp;Vrátiť späť presunutie</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditná karta}few{# kreditné karty}many{# kreditnej karty}other{# kreditných kariet}}</translation>
+<translation id="8473863474539038330">Adresy a ďalšie údaje</translation>
 <translation id="8483780878231876732">Ak chcete používať karty z účtu Google, prihláste sa do Chromu</translation>
 <translation id="8488350697529856933">Platí pre</translation>
 <translation id="8498891568109133222">Web <ph name="HOST_NAME" /> príliš dlho neodpovedal.</translation>
@@ -1116,6 +1125,7 @@
 <translation id="8952525071319348207">Ak chcete aktualizovať podrobnosti o karte <ph name="CREDIT_CARD" />, zadajte dátum vypršania platnosti a kód CVC. Po potvrdení sa budú podrobnosti z účtu Google Payments zdieľať s týmto webom.</translation>
 <translation id="8957210676456822347">Autorizácia portálu na prihlásenie do siete</translation>
 <translation id="8971063699422889582">Platnosť certifikátu servera vypršala.</translation>
+<translation id="8975012916872825179">Zahŕňa informácie, ako sú napríklad telefónne čísla, e‑maily a dodacie adresy</translation>
 <translation id="8978053250194585037">Funkcia Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistila phishing<ph name="END_LINK" /> na webe <ph name="SITE" />. Phishingové stránky sa vydávajú za iné weby, aby vás oklamali.</translation>
 <translation id="8983003182662520383">Spôsoby platby a adresy pomocou Google Pay</translation>
 <translation id="8987927404178983737">Mesiac</translation>
@@ -1164,6 +1174,7 @@
 <translation id="935608979562296692">VYMAZAŤ FORMULÁR</translation>
 <translation id="939736085109172342">Nový priečinok</translation>
 <translation id="951104842009476243">Akceptované debetné a predplatené karty</translation>
+<translation id="962484866189421427">Tento obsah sa môže pokúsiť nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďovať údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">oficiálna zostava</translation>
 <translation id="973773823069644502">Pridať adresu doručenia</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Žiadne}=1{1 položka}few{# položky}many{# položky}other{# položiek}}</translation>

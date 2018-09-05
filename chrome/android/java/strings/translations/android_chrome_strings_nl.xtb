@@ -204,7 +204,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="2498359688066513246">Help en feedback</translation>
 <translation id="2501278716633472235">Terug</translation>
-<translation id="2512222046227390255">Formulieren automatisch invullen</translation>
 <translation id="2513403576141822879">Bekijk <ph name="BEGIN_LINK" />Synchronisatie en Google-services<ph name="END_LINK" /> voor meer instellingen die verband houden met privacy, beveiliging en gegevensverzameling.</translation>
 <translation id="2523184218357549926">Hiermee worden de URL's van pagina's die je bezoekt, verzonden naar Google</translation>
 <translation id="2526148617758225454">Databesparing is ingeschakeld. Beheer dit via Instellingen.</translation>
@@ -249,8 +248,8 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2891154217021530873">Stoppen met het laden van de pagina</translation>
 <translation id="2900528713135656174">Afspraak maken</translation>
 <translation id="2902702728133930130">Kan Chrome niet starten door een onverwachte fout.</translation>
-<translation id="2903493209154104877">Adressen</translation>
 <translation id="290376772003165898">Pagina is niet in het <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Vragen voordat sites beveiligde content mogen afspelen</translation>
 <translation id="2913331724188855103">Sites toestaan cookiegegevens op te slaan en te lezen (aanbevolen)</translation>
 <translation id="2932150158123903946">Opslag van Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Verbeter Chrome en de beveiliging ervan door systeem- en gebruiksgegevens naar Google te verzenden</translation>
@@ -577,7 +576,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="557283862590186398">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
 <translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
-<translation id="5585019845078534178">Kaarten</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
 <translation id="5596627076506792578">Meer opties</translation>
 <translation id="5620299005957670886">Sites toegang geven tot je sensoren (aanbevolen)</translation>
@@ -672,6 +670,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
 <translation id="6320088164292336938">Trillen</translation>
 <translation id="6324034347079777476">Systeemsynchronisatie van Android uitgeschakeld</translation>
 <translation id="6333140779060797560">Delen via <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7542481630195938534">Kan suggesties niet ophalen</translation>
 <translation id="7562080006725997899">Browsegegevens wissen</translation>
 <translation id="756809126120519699">Chrome-gegevens gewist</translation>
+<translation id="757524316907819857">Blokkeren dat sites beveiligde content kunnen afspelen</translation>
 <translation id="7589445247086920869">Blokkeren voor huidige zoekmachine</translation>
 <translation id="7593557518625677601">Open Android-instellingen en schakel Android-systeemsynchronisatie weer in om Chrome-synchronisatie te starten</translation>
 <translation id="7596558890252710462">Besturingssysteem</translation>

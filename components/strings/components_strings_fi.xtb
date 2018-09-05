@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Organisaation <ph name="ORGANIZATION" /> identiteetin sijainnissa <ph name="LOCALITY" /> on vahvistanut <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1430915738399379752">Tulosta</translation>
+<translation id="143412116769631998">Muista maksutavat</translation>
 <translation id="1484290072879560759">Valitse toimitusosoite</translation>
 <translation id="1506687042165942984">Näytä tallennettu (eli vanhentuneeksi tiedetty) kopio tästä sivusta.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Näet tämän virheen, jos käyttämäsi Wi-Fi-portaali edellyttää kirjautumista ennen verkon käyttöä.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Tilapäinen palvelinvirhe</translation>
 <translation id="3154506275960390542">Tällä sivulla on taulukko, jota ei ehkä voi lähettää turvallisesti. Muut voivat nähdä lähettämäsi tiedot siirron aikana tai hyökkääjä voi muuttaa niitä, ennen kuin ne saapuvat palvelimelle.</translation>
 <translation id="3157931365184549694">Palauta</translation>
+<translation id="316082708977904280">Muista osoitteet ja muita tietoja</translation>
 <translation id="3162559335345991374">Käyttämäsi Wi-Fi saattaa edellyttää kirjautumista.</translation>
 <translation id="3167968892399408617">Incognito-välilehdillä avattujen sivujen tietoja ei säilytetä selaimen historiassa, evästeissä tai hakuhistoriassa, kun kaikki incognito-välilehdet suljetaan. Ladatut tiedostot ja luodut kirjanmerkit säilytetään.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -398,6 +400,7 @@
 <translation id="3650584904733503804">Todennus onnistui</translation>
 <translation id="3655670868607891010">Jos näet tämän usein, kokeile näitä <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Päivitetty versio</translation>
+<translation id="3665775945622610063">Muista maksutavat</translation>
 <translation id="3678029195006412963">Pyynnön allekirjoittaminen epäonnistui.</translation>
 <translation id="3678529606614285348">Avaa sivu uudessa incognito-ikkunassa (Ctrl + Vaihto + N).</translation>
 <translation id="3679803492151881375">Kaatumisraportti tallennettu <ph name="CRASH_TIME" />, lähetetty <ph name="UPLOAD_TIME" /></translation>
@@ -420,6 +423,7 @@
 <translation id="3778403066972421603">Haluatko tallentaa tämän kortin Google-tilille ja tälle laitteelle?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vanhenee <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Haitallinen sisältö estetty</translation>
 <translation id="382518646247711829">Jos käytät välityspalvelinta…</translation>
 <translation id="3828924085048779000">Tunnuslause ei voi olla tyhjä.</translation>
 <translation id="385051799172605136">Edellinen</translation>
@@ -576,6 +580,7 @@
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4958444002117714549">Laajenna luettelo</translation>
 <translation id="4974590756084640048">Ota varoitukset uudelleen käyttöön</translation>
+<translation id="4988217478422488391">Maksa verkko-ostoksia nopeammin</translation>
 <translation id="4989809363548539747">Tätä laajennusta ei tueta.</translation>
 <translation id="5002932099480077015">Kun tämä vaihtoehto on käytössä, Chrome nopeuttaa lomakkeiden täyttämistä tallentamalla kortin tiedot tälle laittelle.</translation>
 <translation id="5018422839182700155">Sivun avaaminen epäonnistui</translation>
@@ -655,6 +660,7 @@
 <translation id="5470861586879999274">&amp;Toista muokkaus</translation>
 <translation id="5481076368049295676">Tämä sisältö saattaa yrittää asentaa vaarallisia ohjelmistoja laitteellesi tai varastaa tai poistaa tietojasi. <ph name="BEGIN_LINK" />Näytä silti<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Lisää kelvollinen osoite</translation>
+<translation id="5490432419156082418">Osoitteet ja muita tietoja</translation>
 <translation id="5492298309214877701">Tällä yrityksen, organisaation tai oppilaitoksen intranetissä olevalla sivustolla on sama URL-osoite kuin ulkoisella verkkosivustolla.
     <ph name="LINE_BREAK" />
     Ota yhteyttä järjestelmänvalvojaasi.</translation>
@@ -718,6 +724,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 käytössä}other{# käytössä}}</translation>
 <translation id="5922853866070715753">Lähes valmis</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
+<translation id="5951495562196540101">Liittyminen kuluttajatilillä ei onnistu (pakettilisenssi saatavilla).</translation>
 <translation id="5967592137238574583">Muokkaa yhteystietoja</translation>
 <translation id="5967867314010545767">Poista historiasta</translation>
 <translation id="5975083100439434680">Loitonna</translation>
@@ -911,6 +918,7 @@ Lisätietoja:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />tiedonhakua<ph name="END_LINK" /> ongelmaan liittyen</translation>
 <translation id="7453467225369441013">Tämä kirjaa sinut ulos useimmilta sivustoilta. Sinua ei kirjata ulos Google-tililtäsi.</translation>
 <translation id="7455133967321480974">Käytä yleistä oletusasetusta (estä)</translation>
+<translation id="7457461136432785307">Muista osoitteet ja muita tietoja</translation>
 <translation id="7460163899615895653">Muiden laitteidesi viimeisimmät välilehdet näkyvät täällä.</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7481312909269577407">Seuraava</translation>
@@ -1062,6 +1070,7 @@ Lisätietoja:
 <translation id="8433057134996913067">Sinut kirjataan ulos useimmilta verkkosivustoilta.</translation>
 <translation id="8437238597147034694">K&amp;umoa siirto</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 luottokortti}other{# luottokorttia}}</translation>
+<translation id="8473863474539038330">Osoitteet ja muita tietoja</translation>
 <translation id="8483780878231876732">Jos haluat käyttää Google-tilillesi tallennettuja kortteja, kirjaudu Chromeen</translation>
 <translation id="8488350697529856933">Käyttöalue</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ei vastannut riittävän nopeasti.</translation>
@@ -1122,6 +1131,7 @@ Lisätietoja:
 <translation id="8952525071319348207">Päivitä kortin <ph name="CREDIT_CARD" /> tiedot antamalla sen vanhentumispäivä ja CVC. Vahvistamisen jälkeen Google-maksutilisi korttitiedot jaetaan tämän sivuston kanssa.</translation>
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
 <translation id="8971063699422889582">Palvelimen varmenne on vanhentunut.</translation>
+<translation id="8975012916872825179">Tallenna puhelinnumerot, sähköpostiosoitteet, toimitusosoitteet ja muita tietoja</translation>
 <translation id="8978053250194585037">Googlen selaussuoja havaitsi äskettäin <ph name="BEGIN_LINK" />tietojenkalasteluyrityksen<ph name="END_LINK" /> sivustolla <ph name="SITE" />. Tietojenkalastelusivustot yrittävät huijata käyttäjiä tekeytymällä toisiksi sivustoiksi.</translation>
 <translation id="8983003182662520383">Maksutavat ja osoitteet Google Paysta</translation>
 <translation id="8987927404178983737">Kuukausi</translation>
@@ -1170,6 +1180,7 @@ Lisätietoja:
 <translation id="935608979562296692">TYHJENNÄ LOMAKE</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
 <translation id="951104842009476243">Hyväksytyt maksu- ja prepaid-kortit</translation>
+<translation id="962484866189421427">Tämä sisältö voi yrittää asentaa petollisia sovelluksia, jotka esiintyvät jonakin muuna tai keräävät tietoja, joilla sinua voidaan seurata. <ph name="BEGIN_LINK" />Näytä silti<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Virallinen koontiversio</translation>
 <translation id="973773823069644502">Lisää jakeluosoite</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ei mitään}=1{1 kohde}other{# kohdetta}}</translation>

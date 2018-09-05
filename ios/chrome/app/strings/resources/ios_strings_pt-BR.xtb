@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Item atualizado</translation>
 <translation id="1047726139967079566">Adicionar esta página aos favoritos...</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
+<translation id="1063454504051558093">Usar outra senha...</translation>
 <translation id="1076421457278169141">Código lido</translation>
 <translation id="1084365883616172403">A postagem no Facebook foi concluída.</translation>
 <translation id="1104948393051856124">Aceitar e continuar</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1886928167269928266">Desde o começo</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
+<translation id="191179954310195971">Outros serviços do Google</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
 <translation id="1952728750904661634">Fazer login com uma conta gerenciada</translation>
 <translation id="1974060860693918893">Avançado</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Sua lista de leitura está disponível off-line. Para adicionar uma página à lista, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pré-carregar páginas da web</translation>
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Usar outra senha</translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
 <translation id="3779810277399252432">Sem conexão com a Internet.</translation>
 <translation id="3783017676699494206">Salvar imagem</translation>
@@ -315,6 +318,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6346549652287021269">Iniciar novo download?</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
+<translation id="6363526231572697780">Sem nome de usuário</translation>
 <translation id="6374469231428023295">Repetir</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou quiser alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>

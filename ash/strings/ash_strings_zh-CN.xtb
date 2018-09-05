@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
 <translation id="1290331692326790741">信号较弱</translation>
 <translation id="1293264513303784526">USB-C 设备（左侧端口）</translation>
+<translation id="1294929383540927798">更改锁定屏幕通知设置</translation>
 <translation id="1302880136325416935">显示蓝牙设置。<ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收起菜单</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">切换蓝牙设置。<ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">移除此用户</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
+<translation id="1654477262762802994">启动语音查询</translation>
 <translation id="1658406695958299976">抱歉，系统仍然无法验证您的密码。注意：如果您最近更改了密码，新密码将在您退出后生效。目前请在此处输入旧密码。</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">展开菜单</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（蓝牙）</translation>
+<translation id="3124698051292518391">一律显示任务栏</translation>
 <translation id="3126069444801937830">重新启动以进行更新</translation>
 <translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="315116470104423982">移动数据</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">后退</translation>
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
+<translation id="3897533311200664389">启动文字查询</translation>
 <translation id="3899995891769452915">语音输入</translation>
 <translation id="3900355044994618856">您的会话将在 <ph name="SESSION_TIME_REMAINING" />后结束</translation>
 <translation id="3901991538546252627">正在连接：<ph name="NAME" /></translation>
@@ -461,6 +465,7 @@
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
+<translation id="9070640332319875144">Google 助理设置</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>

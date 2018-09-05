@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elem frissítve</translation>
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
+<translation id="1063454504051558093">Másik jelszó használata…</translation>
 <translation id="1076421457278169141">Kód beolvasva</translation>
 <translation id="1084365883616172403">A Facebook-bejegyzés kész.</translation>
 <translation id="1104948393051856124">Elfogadás és folytatás</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Használati adatok küldése</translation>
 <translation id="1886928167269928266">Mindenkori</translation>
 <translation id="1911619930368729126">Feltöltés Google Drive-ba</translation>
+<translation id="191179954310195971">Egyéb Google-szolgáltatások</translation>
 <translation id="1941314575388338491">A másoláshoz koppintson duplán.</translation>
 <translation id="1952728750904661634">Bejelentkezés felügyelt fiókkal</translation>
 <translation id="1974060860693918893">Speciális</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Olvasási listája hozzáférhető offline módban. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Másik jelszó használata</translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3779810277399252432">Nincs internetkapcsolat.</translation>
 <translation id="3783017676699494206">Kép mentése</translation>
@@ -315,6 +318,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6346549652287021269">Elindítja az új letöltést?</translation>
 <translation id="6362362396625799311">Nincsenek inkognitólapok</translation>
+<translation id="6363526231572697780">Nincs felhasználónév</translation>
 <translation id="6374469231428023295">Próbálja újra</translation>
 <translation id="6380866119319257197">Ha elfelejti az összetett jelszót, vagy módosítani szeretné ezt a beállítást, <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">A kártyán szereplő név</translation>

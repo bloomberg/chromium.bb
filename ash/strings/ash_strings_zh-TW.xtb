@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">訊號微弱</translation>
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
+<translation id="1294929383540927798">變更螢幕鎖定通知設定</translation>
 <translation id="1302880136325416935">顯示藍牙設定。<ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收合選單</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">切換藍牙設定。<ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">移除這位使用者</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">啟動語音查詢</translation>
 <translation id="1658406695958299976">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">展開選單</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (藍牙)</translation>
+<translation id="3124698051292518391">一律顯示檔案櫃</translation>
 <translation id="3126069444801937830">重新啟動即可更新</translation>
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">返回</translation>
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
+<translation id="3897533311200664389">啟動文字查詢</translation>
 <translation id="3899995891769452915">語音輸入</translation>
 <translation id="3900355044994618856">你的工作階段將於 <ph name="SESSION_TIME_REMAINING" />後結束</translation>
 <translation id="3901991538546252627">正在連線至：<ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">裝置將復原</translation>
+<translation id="9070640332319875144">個人助理設定</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麥克風正在使用中。</translation>

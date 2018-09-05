@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">આઇટમ અપડેટ કરી</translation>
 <translation id="1047726139967079566">આ પૃષ્ઠને બુકમાર્ક કરો...</translation>
 <translation id="1049743911850919806">છૂપી</translation>
+<translation id="1063454504051558093">અન્ય પાસવર્ડનો ઉપયોગ કરો...</translation>
 <translation id="1076421457278169141">કોડ સ્કેન કર્યો</translation>
 <translation id="1084365883616172403">Facebook પોસ્ટ પૂર્ણ કરી છે.</translation>
 <translation id="1104948393051856124">સ્વીકારો અને ચાલુ રાખો</translation>
@@ -13,7 +14,7 @@
 <translation id="1157102636231978136">તમારા બ્રાઉઝિંગ ડેટા અને પ્રવૃત્તિને તમારા Google એકાઉન્ટ સાથે સિંક કરેલા છે</translation>
 <translation id="1165039591588034296">ભૂલ</translation>
 <translation id="1172898394251786223">આગલું ફીલ્ડ</translation>
-<translation id="1176932207622159128">છબી સાચવી શકતું નથી</translation>
+<translation id="1176932207622159128">ફોટા સાચવી શકતું નથી</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="1201530049782216880">નવું છુપું ટૅબ</translation>
 <translation id="1209206284964581585">હમણાં માટે છુપાવો</translation>
@@ -52,7 +53,7 @@
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> પસંદ કર્યાં</translation>
 <translation id="1740468249224277719">ઇન્સ્ટૉલ કરવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="17513872634828108">ટેબ્સ ખોલો</translation>
-<translation id="1752547299766512813">પાસવર્ડ્સ સાચવો</translation>
+<translation id="1752547299766512813">પાસવર્ડ સાચવો</translation>
 <translation id="1753905327828125965">સૌથી વધુ જોવાયેલ</translation>
 <translation id="1809939268435598390">ફોલ્ડર કાઢી નાખો</translation>
 <translation id="1813414402673211292">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
@@ -61,6 +62,7 @@
 <translation id="1876721852596493031">ઉપયોગ ડેટા મોકલો</translation>
 <translation id="1886928167269928266">શરૂઆતથી</translation>
 <translation id="1911619930368729126">Google ડ્રાઇવ પર અપલોડ કરો</translation>
+<translation id="191179954310195971">અન્ય Google સેવાઓ</translation>
 <translation id="1941314575388338491">કૉપિ કરવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="1952728750904661634">સંચાલિત એકાઉન્ટ સાથે સાઇન ઇન કરો</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
@@ -152,7 +154,7 @@
 <translation id="3474649192738347024">ફોર્મ્સ ભર્યા.</translation>
 <translation id="3478058380795961209">સમય સમાપ્તિ મહિનો</translation>
 <translation id="3482959374254649722">તમારા ટેબ્સને સમન્વયિત કરી રહ્યું છે...</translation>
-<translation id="3493531032208478708">સૂચવેલ સામગ્રી વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
+<translation id="3493531032208478708">સૂચવેલ કન્ટેન્ટ વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">બ્રાઉઝિંગ ડેટા સાફ કરવાની પુષ્ટિ કરો</translation>
 <translation id="3519193562722059437">વેબ બ્રાઉઝ કરવા ટેબ ખોલો.</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
@@ -166,9 +168,10 @@
 <translation id="3628119975092896051">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે. તમારી વાંચન સૂચિમાં પૃષ્ઠ ઉમેરવા માટે, <ph name="SHARE_OPENING_ICON" /> ટૅપ કરો.</translation>
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
+<translation id="3765471630796399471">અન્ય પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="3771033907050503522">છૂપા ટેબ્સ</translation>
 <translation id="3779810277399252432">કોઈ ઇન્ટરનેટ કનેક્શન નથી.</translation>
-<translation id="3783017676699494206">છબી સાચવો</translation>
+<translation id="3783017676699494206">ફોટા સાચવો</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3897092660631435901">મેનૂ</translation>
@@ -314,6 +317,7 @@
 <translation id="6344783595350022745">ટેક્સ્ટ સાફ કરો</translation>
 <translation id="6346549652287021269">નવું ડાઉનલોડ શરૂ કરીએ?</translation>
 <translation id="6362362396625799311">કોઈ છુપા ટૅબ્સ નથી</translation>
+<translation id="6363526231572697780">કોઈ વપરાશકર્તાનું નામ નથી</translation>
 <translation id="6374469231428023295">ફરી પ્રયાસ કરો</translation>
 <translation id="6380866119319257197">જો તમે તમારો પાસફ્રેઝ ભૂલી જાઓ અથવા આ સેટિંગ બદલવા માંગતા હોવ, તો <ph name="BEGIN_LINK" />સમન્વયનને ફરીથી સેટ કરો<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">કાર્ડ પરનું નામ</translation>
@@ -349,7 +353,7 @@
 <translation id="6973630695168034713">ફોલ્ડર્સ</translation>
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
 <translation id="7004499039102548441">તાજેતરના ટૅબ્સ</translation>
-<translation id="7006788746334555276">સામગ્રી સેટિંગ્સ</translation>
+<translation id="7006788746334555276">કન્ટેન્ટ સેટિંગ</translation>
 <translation id="7017968314960951695">વૈયક્તિકરણ માટે તમે મુલાકાત લીધેલી સાઇટના કન્ટેન્ટનો અને તમારા બ્રાઉઝરની પ્રવૃત્તિ અને ક્રિયાપ્રતિક્રિયાઓનો ઉપયોગ કરે છે</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="7031882061095297553">આના પર સમન્વયિત કરો</translation>

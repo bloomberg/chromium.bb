@@ -204,7 +204,6 @@ Međutim, niste nevidljivi. Privatni način neće sakriti vaše pregledavanje od
 <translation id="2496180316473517155">Povijest pregledavanja</translation>
 <translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="2501278716633472235">Natrag</translation>
-<translation id="2512222046227390255">Automatski popunite obrasce</translation>
 <translation id="2513403576141822879">Više postavki koje se odnose na privatnost, sigurnost i prikupljanje podataka dostupno je u odjeljku <ph name="BEGIN_LINK" />Sinkronizacija i prilagodba<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Šalje Googleu URL-ove stranica koje posjećujete</translation>
 <translation id="2526148617758225454">Štednja podatkovnog prometa je uključena. Upravljajte njome u Postavkama.</translation>
@@ -249,8 +248,8 @@ Međutim, niste nevidljivi. Privatni način neće sakriti vaše pregledavanje od
 <translation id="2891154217021530873">Zaustavljanje učitavanja stranice</translation>
 <translation id="2900528713135656174">Stvori događaj</translation>
 <translation id="2902702728133930130">Chrome se nije pokrenuo zbog neočekivane pogreške.</translation>
-<translation id="2903493209154104877">Adrese</translation>
 <translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Web-lokacije moraju tražiti dopuštenje za reprodukciju zaštićenog sadržaja</translation>
 <translation id="2913331724188855103">Dopuštanje web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
 <translation id="2932150158123903946">Pohrana aplikacije Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Poboljšajte Chrome i njegovu sigurnost slanjem podataka o sustavu i upotrebi Googleu</translation>
@@ -577,7 +576,6 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="557283862590186398">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju.</translation>
 <translation id="55737423895878184">Lokacija i obavijesti su dopuštene</translation>
 <translation id="5578795271662203820">Potraži sliku na usluzi <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Kartice</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
 <translation id="5596627076506792578">Više opcija</translation>
 <translation id="5620299005957670886">Dopuštanje pristupa senzorima za web-lokacije (preporučeno)</translation>
@@ -672,6 +670,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6277522088822131679">Pojavio se problem prilikom ispisivanja stranice. Pokušajte ponovo.</translation>
 <translation id="6295158916970320988">Sve web-lokacije</translation>
 <translation id="629730747756840877">Račun</translation>
+<translation id="6303969859164067831">Odjava i isključivanje sinkronizacije</translation>
 <translation id="6320088164292336938">Omogući vibraciju</translation>
 <translation id="6324034347079777476">Sinkronizacija sustava Android onemogućena</translation>
 <translation id="6333140779060797560">Dijeljenje putem aplikacije <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7542481630195938534">Prijedlozi se ne mogu dohvatiti</translation>
 <translation id="7562080006725997899">Brisanje podataka o pregledavanju</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>
+<translation id="757524316907819857">Web-lokacijama nije dopušteno reproduciranje zaštićenog sadržaja</translation>
 <translation id="7589445247086920869">Blokiraj za trenutačnu tražilicu</translation>
 <translation id="7593557518625677601">U postavkama omogućite sink. sustava Android da se pokrene Chrome sinkronizacija</translation>
 <translation id="7596558890252710462">Operativni sustav</translation>

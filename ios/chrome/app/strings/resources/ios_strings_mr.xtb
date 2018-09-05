@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">आयटम अपडेट केला</translation>
 <translation id="1047726139967079566">हे पृष्ठ बुकमार्क करा...</translation>
 <translation id="1049743911850919806">गुप्त</translation>
+<translation id="1063454504051558093">दुसरा पासवर्ड वापरा...</translation>
 <translation id="1076421457278169141">कोड स्कॅन केला</translation>
 <translation id="1084365883616172403">Facebook पोस्ट पूर्ण केले.</translation>
 <translation id="1104948393051856124">स्वीकारा आणि सुरू ठेवा</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">वापरलेला डेटा पाठवा</translation>
 <translation id="1886928167269928266">सुरूवातीपासून</translation>
 <translation id="1911619930368729126">Google ड्राइव्हवर अपलोड करा</translation>
+<translation id="191179954310195971">इतर Google सेवा</translation>
 <translation id="1941314575388338491">कॉपी करण्‍यासाठी दोनदा टॅप करा.</translation>
 <translation id="1952728750904661634">व्यवस्थापित केलेल्या खात्यासह साइन इन करा</translation>
 <translation id="1974060860693918893">प्रगत</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">तुमची वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
+<translation id="3765471630796399471">दुसरा पासवर्ड वापरा</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
@@ -316,6 +319,7 @@
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6346549652287021269">नवीन डाउनलोड सुरू करायचा?</translation>
 <translation id="6362362396625799311">कोणतेही गुप्त टॅब नाहीत</translation>
+<translation id="6363526231572697780">वापरकर्तानाव नाही</translation>
 <translation id="6374469231428023295">पुन्हा प्रयत्न करा</translation>
 <translation id="6380866119319257197">आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">कार्डवरील नाव</translation>

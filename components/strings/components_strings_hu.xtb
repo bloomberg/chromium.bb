@@ -82,6 +82,7 @@
 <translation id="14171126816530869"><ph name="ORGANIZATION" /> identitását <ph name="LOCALITY" /> régióban <ph name="ISSUER" /> ellenőrizte.</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
+<translation id="143412116769631998">Fizetési módok megjegyzése</translation>
 <translation id="1484290072879560759">Szállítási cím kiválasztása</translation>
 <translation id="1506687042165942984">Az oldal mentett (pl. köztudottan régi) változatának megjelenítése.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ez a hiba akkor fordul elő, ha olyan Wi-Fi-portált használ, amely bejelentkezést igényel, mielőtt kapcsolódna az internethez.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Átmeneti szerverhiba</translation>
 <translation id="3154506275960390542">Az oldal olyan űrlapot tartalmaz, amely esetében előfordulhat, hogy küldése nem biztonságosan történik. Az elküldött adatokat továbbítás közben mások is megtekinthetik, illetve támadók módosíthatják, hogy a szerver mást kapjon helyettük.</translation>
 <translation id="3157931365184549694">Visszaállítás</translation>
+<translation id="316082708977904280">Címek és más adatok megjegyzése</translation>
 <translation id="3162559335345991374">Az Ön által használt Wi-Fi-hálózat megkövetelheti bejelentkezési oldalának felkeresését.</translation>
 <translation id="3167968892399408617">Az inkognitólapon megtekintett oldalak az összes inkognitólap bezárását követően nem szerepelnek majd böngészési előzményei között, a cookie-k gyűjtőhelyén, illetve a keresési előzményekben. A letöltött fájlok és a könyvjelzők azonban megmaradnak.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -395,6 +397,7 @@
 <translation id="3650584904733503804">Sikeres érvényesítés</translation>
 <translation id="3655670868607891010">Ha gyakran látja ezt, próbálja ki a következőt: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ellenőrzés</translation>
+<translation id="3665775945622610063">Fizetési módok megjegyzése</translation>
 <translation id="3678029195006412963">A kérést nem lehetett aláírni</translation>
 <translation id="3678529606614285348">Oldal megnyitása új inkognitóablakban (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">A hibajelentés elkészítésének ideje: <ph name="CRASH_TIME" />; a feltöltés ideje: <ph name="UPLOAD_TIME" /></translation>
@@ -417,6 +420,7 @@
 <translation id="3778403066972421603">Szeretné menteni a kártyát Google-fiókjába és az eszközre?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Lejárat dátuma: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Kártékony tartalom letiltva.</translation>
 <translation id="382518646247711829">Ha proxyszervert használ...</translation>
 <translation id="3828924085048779000">Az üres összetett jelszó nem engedélyezett.</translation>
 <translation id="385051799172605136">Vissza</translation>
@@ -573,6 +577,7 @@
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
 <translation id="4974590756084640048">Figyelmeztetések újbóli engedélyezése</translation>
+<translation id="4988217478422488391">Meggyorsítja az internetes vásárlást</translation>
 <translation id="4989809363548539747">Ez a beépülő modul nem támogatott</translation>
 <translation id="5002932099480077015">Ha engedélyezi, a Chrome megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
 <translation id="5018422839182700155">Nem lehet megnyitni az oldalt</translation>
@@ -652,6 +657,7 @@
 <translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
 <translation id="5481076368049295676">Lehet, hogy ez a tartalom megpróbál olyan veszélyes szoftvert telepíteni az eszközre, amely ellophatja vagy törölheti az Ön adatait. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Érvényes címet adjon meg</translation>
+<translation id="5490432419156082418">Címek és egyebek</translation>
 <translation id="5492298309214877701">Ennek a vállalati, szervezeti vagy iskolai intraneten található webhelynek az URL-címe megegyezik egy külső webhely URL-címével.
     <ph name="LINE_BREAK" />
     Javasoljuk, hogy forduljon a rendszergazdához.</translation>
@@ -715,6 +721,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 van használatban}other{# van használatban}}</translation>
 <translation id="5922853866070715753">Majdnem kész</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
+<translation id="5951495562196540101">Fogyasztói fiókkal nem lehet regisztrálni (a csomaghoz tartozik licenc is).</translation>
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
@@ -908,6 +915,7 @@ További részletek:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />További információk megtekintése<ph name="END_LINK" /> a problémával kapcsolatban.</translation>
 <translation id="7453467225369441013">A rendszer a legtöbb webhelyről kijelentkezteti Önt, de Google-fiókjából nem.</translation>
 <translation id="7455133967321480974">Globális alapértelmezés használata (Tiltás)</translation>
+<translation id="7457461136432785307">Címek és más adatok megjegyzése</translation>
 <translation id="7460163899615895653">A többi eszközön legutoljára megtekintett lapok láthatók itt</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7481312909269577407">Előre</translation>
@@ -1059,6 +1067,7 @@ További részletek:
 <translation id="8433057134996913067">Ezzel kijelentkezik a legtöbb webhelyről.</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 hitelkártya}other{# hitelkártya}}</translation>
+<translation id="8473863474539038330">Címek és egyebek</translation>
 <translation id="8483780878231876732">Jelentkezzen be a Chrome-ba, hogy használhassa a kártyákat Google-fiókjából.</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8498891568109133222">A(z) <ph name="HOST_NAME" /> túl hosszú ideje nem válaszol.</translation>
@@ -1119,6 +1128,7 @@ További részletek:
 <translation id="8952525071319348207">A(z) <ph name="CREDIT_CARD" /> kártyához tartozó CVC-kód lejárati dátumának megadásával frissítheti a kártyaadatokat. A megerősítést követően a böngésző megosztja az Ön Google Payments-fiókjából származó kártyaadatokat ezzel a webbhellyel.</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
+<translation id="8975012916872825179">Olyan adatokat tartalmaz, mint a telefonszámok, az e-mail-címek és a szállítási címek</translation>
 <translation id="8978053250194585037">A Google Biztonságos Böngészés funkciója nemrégiben <ph name="BEGIN_LINK" />adathalászatot észlelt<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />. Az adathalász webhelyek más webhelynek adják ki magukat, hogy félrevezessék Önt.</translation>
 <translation id="8983003182662520383">A Google Pay szolgáltatásban használt fizetési módok és címek</translation>
 <translation id="8987927404178983737">hónap</translation>
@@ -1167,6 +1177,7 @@ További részletek:
 <translation id="935608979562296692">ŰRLAP TÖRLÉSE</translation>
 <translation id="939736085109172342">Új mappa</translation>
 <translation id="951104842009476243">Elfogadott bank- és feltöltőkártyák</translation>
+<translation id="962484866189421427">Ez a tartalom megtévesztő alkalmazásokat telepíthet, amelyek más alkalmazásnak tettethetik magukat, illetve az Ön nyomon követésére alkalmas adatokat gyűjthetnek. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Hivatalos verzió</translation>
 <translation id="973773823069644502">Kézbesítési cím hozzáadása</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nincs}=1{1 elem}other{# elem}}</translation>

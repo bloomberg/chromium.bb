@@ -323,6 +323,7 @@
 <translation id="199764499252435679">允许更新 <ph name="PRODUCT_NAME" /> 中的组件</translation>
 <translation id="2006530844219044261">电源管理</translation>
 <translation id="201557587962247231">设备状态报告的上传频率</translation>
+<translation id="2017301949684549118">要静默安装的网络应用的网址。</translation>
 <translation id="2018836497795982119">指定向设备管理服务查询用户政策信息的周期（以毫秒为单位）。
 
       设置此政策将会覆盖默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。低于 1800000 的值将被调整为 1800000，高于 86400000 的值将被调整为 86400000。如果平台支持政策通知，刷新延迟时间将被设为 24 小时，这是因为只要政策发生变化，政策通知应该会自动强制进行刷新。
@@ -610,6 +611,11 @@
           您可以按以下格式指定 Google 的搜索网址：<ph name="GOOGLE_SEARCH_URL" />。
 
           “DefaultSearchProviderEnabled”政策处于启用状态时，必须设置此选项，并且只有在这种情况下此选项才能发挥作用。</translation>
+<translation id="2659019163577049044">如果此设置处于启用状态，用户将能够设置他们的设备，以便在手机和 Chromebook 之间同步短信。请注意：此政策处于启用状态时，如果用户想要使用短信同步功能，必须完成一个设置流程，以便明确选择启用这项功能。设置流程完成后，用户将能够在 Chromebook 上收发短信。
+
+      如果此设置处于停用状态，用户将不能设置短信同步功能。
+
+      如果此政策未设置，默认情况下，受管理用户将不能使用短信同步功能，不受管理的用户则可以。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
@@ -1012,6 +1018,7 @@
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
 <translation id="3874773863217952418">启用“点按搜索”</translation>
 <translation id="3877517141460819966">集成的双重身份验证模式</translation>
+<translation id="3879208481373875102">配置强制安装的网络应用的列表</translation>
 <translation id="388237772682176890">我们在 M53 中弃用了此政策，并在 M54 中移除了此政策（因为 SPDY/3.1 已不再受支持）。
 
       禁止在 <ph name="PRODUCT_NAME" /> 中使用 SPDY 协议。
@@ -1244,6 +1251,10 @@
           若想全面了解此政策的可能设置和结构，请访问 https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">用户政策环回处理模式</translation>
+<translation id="4554841826517980623">此政策用于控制适用于 <ph name="PRODUCT_NAME" />的网络文件共享功能是否应使用“<ph name="NETBIOS_PROTOCOL" />”来搜索网络上的共享文件。
+      如果此政策设为 true，共享文件发现功能将使用“<ph name="NETBIOS_PROTOCOL" />”协议搜索网络上的共享文件。
+      如果此政策设为 false，共享文件发现功能将不使用“<ph name="NETBIOS_PROTOCOL" />”协议来搜索共享文件。
+      如果此政策未设置，默认情况下，系统会对受企业管理的用户停用此政策，并对不受管理的用户启用此政策。</translation>
 <translation id="4555850956567117258">为该用户启用远程认证</translation>
 <translation id="4557134566541205630">默认搜索服务提供商新标签页网址</translation>
 <translation id="4567137030726189378">允许使用开发者工具</translation>
@@ -1634,6 +1645,7 @@
 
           如果未设置此政策，则登录屏幕初次显示时会停用语音反馈。用户可以随时启用或停用语音反馈，并且其在登录屏幕上的启用或停用状态对各用户均有效。</translation>
 <translation id="5868414965372171132">用户级网络配置</translation>
+<translation id="5879014913445067283">控制网络文件共享功能是否通过“<ph name="NETBIOS_NAME" />”来搜索共享文件</translation>
 <translation id="5883015257301027298">默认 Cookie 设置</translation>
 <translation id="5887414688706570295">配置供远程访问主机使用的 TalkGadget 前缀，并禁止用户更改此设置。
 
@@ -2064,6 +2076,17 @@
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME" />将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME" />中的 <ph name="CLOUD_PRINT_NAME" />支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。</translation>
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
+<translation id="706568410943497889">
+      如果此政策设为 true，<ph name="PRODUCT_NAME" /> 便可以从 Google 服务（例如 Google Meet）收集 WebRTC 事件日志，并将这些日志上传到 Google。
+
+      如果此政策设为 false 或未设置，<ph name="PRODUCT_NAME" /> 将不能收集或上传此类日志。
+
+      这些日志中包含一些诊断信息，例如 RTP 数据包的收发时间和大小、网络拥堵情况反馈，以及与语音和视频帧的时间和质量相关的元数据。在调试 Chrome 中的语音或视频通话问题时，这些信息非常有用。这些日志不包含通话的语音或视频内容。
+
+      这项由 Chrome 进行的数据收集操作只能由 Google 的网络服务（例如 Google 环聊或 Google Meet）触发。
+
+      Google 可能会通过会话 ID 将这些日志与 Google 服务自身收集的其他日志相关联，以便更轻松地进行调试。
+      </translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7072208053150563108">设备密码更改率</translation>
 <translation id="7074513465313721551">配置安全浏览功能将会信任的一系列网域。这意味着：
@@ -2195,6 +2218,9 @@
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="7343497214039883642">设备的企业打印机配置文件</translation>
+<translation id="7349338075015720646">以列表形式指定在无需用户干预的情况下静默安装的网站，用户无法卸载或停用这些网站。
+
+      此政策的每个列表项都是一个包含以下两个成员的对象：“url”和“launch_container”。“url”应该是要安装的网络应用的网址，“launch_container”应该是“窗口”或“标签页”（用于指示网络应用在安装后的打开方式）。如果省略“launch_container”，当应用被 Chrome 视为渐进式网页应用时，将在窗口中启动，否则将在标签页中打开。</translation>
 <translation id="7367028210010532881">当用户访问被标记为可能存在恶意内容的网站时，安全浏览功能会显示警告页面。如果此设置处于启用状态，用户在看到警告页面后将无法再继续访问相应的恶意网站。
 
       如果此设置处于停用状态或未配置，用户在看到警告后可以继续访问被标记为可能存在恶意内容的网站。
@@ -2631,6 +2657,7 @@
 
       这里的“版本”既可以是确切的版本（例如“61.0.3163.120”），也可以是版本前缀（例如“61.0”）。  </translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
+<translation id="8544465954173828789">允许将短信从手机同步到 Chromebook。</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
 <translation id="8586528890725660268">指定用户无法使用的打印机。
@@ -2675,6 +2702,11 @@
       如果未设置此政策，那么密码保护服务仅会保护 Google 密码，但用户将能够更改此设置。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="867410340948518937">U2F（通用第二重因素）</translation>
+<translation id="8682611302223077049">可让您设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，则用户将会收到通知。
+
+      在该时间段内，如果需要更新，系统将反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，当系统检测到待应用的升级时，会在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
+
+      如果此政策未设置，对于 <ph name="PRODUCT_OS_NAME" />设备，系统会使用 345600000 毫秒（4 天）的默认通知时间段，对于 <ph name="PRODUCT_NAME" />，则会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
@@ -2711,6 +2743,7 @@
 
           调整因子不得小于 100%。所设置的值不得使演示模式下的屏幕变暗延迟时间短于常规屏幕变暗延迟时间。</translation>
 <translation id="8798099450830957504">默认</translation>
+<translation id="8801680448782904838">系统建议或要求重新启动浏览器或重启设备时，通知用户</translation>
 <translation id="8818173863808665831">报告设备的地理位置。
 
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>
@@ -2848,6 +2881,11 @@
       如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />会在用户关闭设备时触发重新启动操作。<ph name="PRODUCT_OS_NAME" />会将界面中的所有关机按钮替换为重新启动按钮。如果用户通过电源按钮关闭设备，设备将不会自动重新启动，即使启用了此政策也是如此。</translation>
 <translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
 <translation id="9158929520101169054">允许在同一浏览器中登录多个帐号</translation>
+<translation id="9159126470527871268">必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />以应用待应用的更新时，通知用户。
+
+      此政策设置用于启用通知功能，以便在系统建议或要求重新启动浏览器或重启设备时，通知用户。如果此政策未设置，当需要重新启动时，<ph name="PRODUCT_NAME" /> 会通过菜单的细微变化来提示用户，而 <ph name="PRODUCT_OS_NAME" />则会通过系统任务栏中的通知来提示用户。如果此政策设为“推荐”，当建议重新启动浏览器时，系统将会显示周期性警告。用户可以关闭该警告来推迟重新启动。如果此政策设为“必需”，系统将会显示周期性警告，以便让用户知道系统将于通知时间段过后立即强制重新启动浏览器。对于 <ph name="PRODUCT_NAME" />，通知时间段会默认设为 7 天，对于 <ph name="PRODUCT_OS_NAME" />，则会默认设为 4 天，不过可以通过 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策设置进行配置。
+
+      浏览器重新启动/设备重启后，将会恢复用户会话。</translation>
 <translation id="9165792353046089850">让您能够设置是否允许网站访问所连接的 USB 设备。您可以完全禁止所有网站访问此类设备，也可以要求所有网站必须征得用户同意才能访问此类设备。
 
           您可以使用“WebUsbAskForUrls”和“WebUsbBlockedForUrls”政策为特定网址格式替换此政策。

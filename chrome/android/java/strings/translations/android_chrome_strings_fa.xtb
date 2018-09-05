@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
 <translation id="2501278716633472235">بازگشت</translation>
-<translation id="2512222046227390255">تکمیل خودکار فرم‌ها</translation>
 <translation id="2513403576141822879">‏برای تنظیمات بیشتر مرتبط با حریم خصوصی، امنیت و جمع‌آوری داده‌ها، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید</translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
 <translation id="2526148617758225454">«صرفه‌جویی داده» روشن است. آن را در «تنظیمات» مدیریت کنید.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">توقف بارگیری صفحه</translation>
 <translation id="2900528713135656174">ایجاد رویداد</translation>
 <translation id="2902702728133930130">‏Chrome در هنگام شروع به کار با خطایی غیرمنتظره متوقف شد.</translation>
-<translation id="2903493209154104877">آدرس‌ها</translation>
 <translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
+<translation id="2910701580606108292">قبل از اجازه دادن به سایت‌ها برای پخش محتوای محافظت‌شده سؤال شود</translation>
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
 <translation id="2932150158123903946">‏فضای ذخیره‌سازی Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">‏بهبود Chrome و امنیت آن با ارسال داده‌های سیستم و آمار استفاده به Google</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">‏Chrome برای این سایت به مجوز دسترسی به میکروفون نیاز دارد.</translation>
 <translation id="55737423895878184">مکان و اعلان‌ها مجاز هستند</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
-<translation id="5585019845078534178">کارت‌ها</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5620299005957670886">اجازه به سایت‌ها برای دسترسی به حسگرها (توصیه‌شده)</translation>
@@ -671,6 +669,7 @@
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="629730747756840877">حساب</translation>
+<translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
 <translation id="6320088164292336938">لرزش</translation>
 <translation id="6324034347079777476">‏همگام‌سازی سیستم Android غیرفعال شد</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
@@ -833,6 +832,7 @@
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
+<translation id="757524316907819857">مسدود کردن سایت‌ها برای پخش محتوای محافظت‌شده</translation>
 <translation id="7589445247086920869">مسدود کردن موتور جستجوی کنونی</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
 <translation id="7596558890252710462">سیستم عامل</translation>

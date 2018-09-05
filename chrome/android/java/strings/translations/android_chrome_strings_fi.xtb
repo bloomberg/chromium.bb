@@ -204,7 +204,6 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="2496180316473517155">Selaushistoria</translation>
 <translation id="2498359688066513246">Ohjeet ja palaute</translation>
 <translation id="2501278716633472235">Takaisin</translation>
-<translation id="2512222046227390255">Täytä lomakkeet automaattisesti</translation>
 <translation id="2513403576141822879">Näet lisää yksityisyyteen, tietoturvaan ja datankeruuseen liittyviä asetuksia <ph name="BEGIN_LINK" />Synkronointi ja Google-palvelut<ph name="END_LINK" /> ‑kohdassa.</translation>
 <translation id="2523184218357549926">Lähettää avaamiesi sivujen URL-osoitteet Googlelle</translation>
 <translation id="2526148617758225454">Data Saver on käytössä. Hallinnoi sitä asetuksissa.</translation>
@@ -249,8 +248,8 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="2891154217021530873">Pysäytä sivun lataus</translation>
 <translation id="2900528713135656174">Luo tapahtuma</translation>
 <translation id="2902702728133930130">Chromen käynnistys epäonnistui odottamattoman virheen takia.</translation>
-<translation id="2903493209154104877">Osoitteet</translation>
 <translation id="290376772003165898">Eikö sivu ole kirjoitettu kielellä <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Kysy, saavatko sivustot toistaa suojattua sisältöä</translation>
 <translation id="2913331724188855103">Salli sivustojen tallentaa ja lukea evästetietoja (suositus).</translation>
 <translation id="2932150158123903946">Tallennustila: Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Paranna Chromea ja sen turvallisuutta lähettämällä järjestelmä- ja käyttödataa Googlelle</translation>
@@ -577,7 +576,6 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="557283862590186398">Chrome tarvitsee oikeuden käyttää mikrofoniasi tällä sivustolla.</translation>
 <translation id="55737423895878184">Sijainti ja ilmoitukset sallitaan</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Kortit</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
 <translation id="5620299005957670886">Anna sivustojen käyttää tunnistimiasi (suositus)</translation>
@@ -672,6 +670,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="629730747756840877">Tili</translation>
+<translation id="6303969859164067831">Kirjaudu ulos ja poista synkronointi käytöstä</translation>
 <translation id="6320088164292336938">Värinä</translation>
 <translation id="6324034347079777476">Android-järjestelmän synkronointi poistettu käytöstä</translation>
 <translation id="6333140779060797560">Jaa sovelluksella <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7542481630195938534">Ehdotusten haku epäonnistui</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
+<translation id="757524316907819857">Estä sivustoja toistamasta suojattua sisältöä</translation>
 <translation id="7589445247086920869">Estä nykyiselle hakukoneelle</translation>
 <translation id="7593557518625677601">Avaa Android-asetukset ja ota järjestelmän synkronointi uudelleen käyttöön.</translation>
 <translation id="7596558890252710462">Käyttöjärjestelmä</translation>

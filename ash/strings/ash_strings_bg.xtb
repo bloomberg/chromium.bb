@@ -23,6 +23,7 @@
 <translation id="1279938420744323401">„<ph name="DISPLAY_NAME" />“ (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">слаб сигнал</translation>
 <translation id="1293264513303784526">USB-C устройство (левият порт)</translation>
+<translation id="1294929383540927798">Промяна на настройките за известия на заключения екран</translation>
 <translation id="1302880136325416935">Показване на настройките за Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1351937230027495976">Свиване на менюто</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Превключване на Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Премахване на този потребител</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Стартиране на гласова заявка</translation>
 <translation id="1658406695958299976">За съжаление, паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще влезе в сила, след като излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 адрес: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Разгъване на менюто</translation>
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Лавицата да се показва винаги</translation>
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
 <translation id="3147142846278915599">Стартов панел (приложенията се синхронизират...)</translation>
 <translation id="315116470104423982">Мобилни данни</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
+<translation id="3897533311200664389">Стартиране на текстова заявка</translation>
 <translation id="3899995891769452915">Гласово въвеждане</translation>
 <translation id="3900355044994618856">Сесията ви ще приключи след <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Установява се връзка със: <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
 <translation id="9056839673611986238">Устройството ще бъде върнато към по-ранна версия</translation>
+<translation id="9070640332319875144">Настройки на Асистент</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>

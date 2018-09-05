@@ -204,7 +204,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="2498359688066513246">Trợ giúp và phản hồi</translation>
 <translation id="2501278716633472235">Quay lại</translation>
-<translation id="2512222046227390255">Tự động điền biểu mẫu</translation>
 <translation id="2513403576141822879">Bạn có thể xem thêm tùy chọn cài đặt liên quan đến quyền riêng tư, bảo mật và hoạt động thu thập dữ liệu trong phần <ph name="BEGIN_LINK" />Đồng bộ hóa và dịch vụ của Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Gửi cho Google URL của các trang bạn truy cập</translation>
 <translation id="2526148617758225454">Trình tiết kiệm dữ liệu đang bật. Quản lý tiện ích này trong Cài đặt.</translation>
@@ -249,8 +248,8 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2891154217021530873">Ngừng tải trang</translation>
 <translation id="2900528713135656174">Tạo sự kiện</translation>
 <translation id="2902702728133930130">Chrome khởi động không thành công với lỗi không mong muốn.</translation>
-<translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="290376772003165898">Trang này không được viết bằng <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Hỏi trước khi cho phép trang web phát nội dung được bảo vệ</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
 <translation id="2932150158123903946">Bộ nhớ Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Cải thiện Chrome và tăng cường bảo mật bằng cách gửi dữ liệu sử dụng và dữ liệu về hệ thống cho Google</translation>
@@ -577,7 +576,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="557283862590186398">Chrome cần có quyền truy cập micrô của bạn cho trang web này.</translation>
 <translation id="55737423895878184">Cho phép vị trí và thông báo</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Thẻ</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
 <translation id="5620299005957670886">Cho phép các trang web sử dụng cảm biến của thiết bị (nên dùng)</translation>
@@ -672,6 +670,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="629730747756840877">Tài khoản</translation>
+<translation id="6303969859164067831">Đăng xuất và tắt đồng bộ hóa</translation>
 <translation id="6320088164292336938">Rung</translation>
 <translation id="6324034347079777476">Đồng bộ hóa hệ thống Android đã bị tắt</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7542481630195938534">Không thể nhận đề xuất</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
+<translation id="757524316907819857">Chặn không cho trang web phát nội dung được bảo vệ</translation>
 <translation id="7589445247086920869">Chặn đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7593557518625677601">Mở c.đặt Android &amp; bật lại đ.bộ hóa hệ thống Android để b.đầu đồng bộ hóa Chrome</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>

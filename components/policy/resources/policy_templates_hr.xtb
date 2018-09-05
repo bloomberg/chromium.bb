@@ -341,6 +341,7 @@
 <translation id="199764499252435679">Omogući ažuriranja komponenti u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Upravljanje napajanjem</translation>
 <translation id="201557587962247231">Učestalost učitavanja izvješća o statusu uređaja</translation>
+<translation id="2017301949684549118">URL-ovi za web aplikacije moraju biti instalirani u pozadini.</translation>
 <translation id="2018836497795982119">Određuje vrijeme u milisekundama tijekom kojeg se od usluge upravljanja uređajima traže podaci o korisničkim pravilima.
 
       Postavljanje ovog pravila nadjačava zadanu vrijednost od 3 sata. Valjane vrijednosti za ovo pravilo u rasponu su od 1800000 (30 minuta) do 86400000 (1 dan). Sve vrijednosti koje nisu u ovom rasponu prebacit će se u odgovarajuće granice. Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila.
@@ -643,6 +644,11 @@
           Googleov URL pretraživanja može se navesti kao: <ph name="GOOGLE_SEARCH_URL" />.
 
           Ta se opcija mora postaviti kada je omogućeno pravilo "DefaultSearchProviderEnabled" i poštovat će se samo u tom slučaju.</translation>
+<translation id="2659019163577049044">Ako je ova postavka omogućena, korisnicima će biti dopušteno postaviti svoje uređaje da sinkroniziraju SMS poruke na telefonima i Chromebookovima. Ako se dopusti ovo pravilo, korisnici moraju eksplicitno uključiti ovu značajku izvršavanjem uputa za postavljanje. Nakon izvršenja uputa za postavljanje korisnici će moći slati i primati SMS poruke na svojim Chromebookovima.
+
+      Ako je postavka onemogućena, korisnicima neće biti dopušteno postaviti sinkronizaciju SMS-a.
+
+      Ako se pravilo ne postavi, zadana postavka nije dopuštena korisnicima kojima se upravlja, a dopuštena je neupravljanim korisnicima.</translation>
 <translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
@@ -1052,6 +1058,7 @@
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
 <translation id="3874773863217952418">Omogući značajku Dodirnite za pretraživanje</translation>
 <translation id="3877517141460819966">Integrirani način dvostruke autentifikacije</translation>
+<translation id="3879208481373875102">Konfiguriranje popisa prisilno instaliranih web-aplikacija</translation>
 <translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
 
       Onemogućuje upotrebu protokola SPDY za uslugu <ph name="PRODUCT_NAME" />.
@@ -1285,6 +1292,10 @@
           Cijeli opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Način obrade povratne petlje korisničkog pravila</translation>
+<translation id="4554841826517980623">To pravilo određuje treba li značajka mrežnog dijeljenja datoteka za <ph name="PRODUCT_NAME" /> upotrebljavati protokol <ph name="NETBIOS_PROTOCOL" /> za otkrivanje dijeljenja na mreži.
+      Ako se to pravilo postavi na True, otkriće dijeljenja upotrebljavat će protokol <ph name="NETBIOS_PROTOCOL" /> za otkrivanje dijeljenja na mreži.
+      Ako se to pravilo postavi na False, otkriće dijeljenja neće upotrebljavati protokol <ph name="NETBIOS_PROTOCOL" /> za otkrivanje dijeljenja.
+      Ako pravilo nije postavljeno, zadano će biti onemogućeno za korisnike kojima upravlja tvrtka, a omogućeno za neupravljane korisnike.</translation>
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
 <translation id="4557134566541205630">URL web-stranice nove kartice zadanog davatelja usluge pretraživanja</translation>
 <translation id="4567137030726189378">Dopusti upotrebu Alata za razvojne programere</translation>
@@ -1685,6 +1696,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
           Ako se to pravilo ne postavi, izgovaranje povratnih informacija onemogućeno je pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti izgovaranje povratnih informacija u bilo kojem trenutku, a status te značajke na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
 <translation id="5868414965372171132">Mrežna konfiguracija na razini korisnika</translation>
+<translation id="5879014913445067283">Upravlja otkrićem mrežnog dijeljenja datoteka putem <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Zadana postavka kolačića</translation>
 <translation id="5887414688706570295">Konfigurira prefiks za TalkGadget koji će upotrebljavati hostovi daljinskog pristupa i sprječava korisnike da ga mijenjaju.
 
@@ -2118,6 +2130,17 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7049373494483449255">Omogućuje proizvodu <ph name="PRODUCT_NAME" /> slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /> za ispis. NAPOMENA: To se odnosi samo na podršku usluge <ph name="CLOUD_PRINT_NAME" /> u proizvodu <ph name="PRODUCT_NAME" />. To ne sprječava korisnike da poslove ispisa šalju na web-lokacije. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME" /> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME" />. Ako je ova postavka onemogućena, korisnici ne mogu ispisivati putem usluge <ph name="CLOUD_PRINT_NAME" /> iz dijaloškog okvira za ispis u proizvodu <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Ako je omogućeno, ovo pravilo prisilno uvozi knjižne oznake iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, nijedna knjižna oznaka neće biti uvezena. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti oznake ili do uvoza može doći automatski.</translation>
 <translation id="7063895219334505671">Dopusti skočne prozore na ovim web-lokacijama</translation>
+<translation id="706568410943497889">
+      Ako je pravilo postavljeno na True, proizvod <ph name="PRODUCT_NAME" /> ima dopuštenje prikupljati zapisnike događaja WebRTC s Googleovih usluga (npr. Google Meet) i prenijeti te zapisnike na Google.
+
+      Ako se pravilo postavi na False ili se ne postavi, <ph name="PRODUCT_NAME" /> ne smije prikupljati niti prenositi takve zapisnike.
+
+      Ti zapisnici sadrže dijagnostičke podatke kao što su vrijeme i veličina poslanih i primljenih RTP paketa, povratne informacije o zagušenju na mreži i medapodatke o vremenu i kvaliteti zvučnih i videozapisa. Ti podaci pomažu pri otklanjanju pogrešaka kod audio i videopoziva na Chromeu, kao što su poteškoće s procjenom propusnosti itd. Zapisnici ne sadrže audio ili videosadržaje poziva.
+
+      Ta kolekcija podataka može se pokrenuti samo pomoću Googleovih web-usluga, kao što su Hangouts ili Google Meet.
+
+      Ti zapisnici mogu se putem ID-ja sesije povezati s drugim zapisnicima koje je prikupila sama Googleova usluga; to je namijenjeno lakšem otklanjanju pogrešaka.
+      </translation>
 <translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
 <translation id="7072208053150563108">Stopa promjene zaporke računala</translation>
 <translation id="7074513465313721551">Konfigurirajte popis domena koje će Sigurno pregledavanje smatrati pouzdanima. To znači sljedeće:
@@ -2249,6 +2272,9 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
 <translation id="7343497214039883642">Datoteka za konfiguraciju pisača tvrtke za uređaje</translation>
+<translation id="7349338075015720646">Određuje popis web-lokacija koje su instalirane u pozadini, bez interakcije korisnika te se ne mogu deinstalirati niti ih korisnik može onemogućiti.
+
+      Svaka je stavka na popisu objekt s dva člana: "url" i "launch_container". "url" bi trebao biti URL web-aplikacije koju je potrebno instalirati, a "launch_container" bi trebao biti ili "prozor" ili "kartica" kako bi se naznačilo kako će se web-aplikacija otvarati nakon instalacije. Ako se "launch_container" izostavi, aplikacija će se pokrenuti u prozoru ako je Chrome bude smatrao progresivnom web-aplikacijom. U suprotnom, pokrenut će se u kartici.</translation>
 <translation id="7367028210010532881">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućivanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
 
       Ako se ta postavka onemogući ili ako se ne konfigurira, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.
@@ -2699,6 +2725,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Pojam "verzija" može se odnositi na točnu verziju, na primjer "61.0.3163.120" ili prefiks verzije, na primjer "61.0".  </translation>
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Dopusti sinkronizaciju SMS poruka s telefona na Chromebook.</translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8586528890725660268">Određuje pisače koje korisnik ne može upotrebljavati.
@@ -2743,6 +2770,11 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Ako se pravilo ne postavi, usluga zaštite zaporke štitit će samo zaporke za Google, no korisnik će moći promijeniti tu postavku.</translation>
 <translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
 <translation id="867410340948518937">U2F (univerzalna dvostruka autentifikacija)</translation>
+<translation id="8682611302223077049">Omogućuje postavljanje razdoblja u milisekundama tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> ili da je potrebno ponovo pokrenuti <ph name="PRODUCT_OS_NAME" /> radi primjene ažuriranja na čekanju. 
+      Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju. Za <ph name="PRODUCT_OS_NAME" /> uređaje obavijest o ponovnom pokretanju prikazuje se na traci sustava kada se otkrije nadogradnja. Za preglednike <ph name="PRODUCT_NAME" /> izbornik aplikacije mijenja se kada istekne trećina razdoblja obavijesti kako bi se naznačilo da je potrebno ponovno pokretanje. Boja te obavijesti mijenja se kada isteknu dvije trećine razdoblja i još jednom kada istekne cijelo razdoblje. Dodatne obavijesti omogućene pravilom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 
+za preglednike imaju isti raspored.
+
+      Ako se ne postavi, za <ph name="PRODUCT_OS_NAME" /> uređaje upotrebljava se zadano razdoblje od 345.600.000 milisekundi (četiri dana), a za <ph name="PRODUCT_NAME" /> zadano razdoblje od 604.800.000 milisekundi (jedan tjedan).</translation>
 <translation id="8685024486845674965">Upozorenje o zaštiti zaporkom aktivira se ponovnom upotrebom zaporke</translation>
 <translation id="8693243869659262736">Upotreba ugrađenog DNS klijenta</translation>
 <translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
@@ -2779,6 +2811,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
           Faktor skaliranja mora biti 100% ili više. Vrijednosti koje bi učinile odgodu zatamnjivanja zaslona u načinu prezentacije kraćom od uobičajene odgode zatamnjivanja zaslona nisu dopuštene.</translation>
 <translation id="8798099450830957504">Zadano</translation>
+<translation id="8801680448782904838">Obavijesti korisnika o obaveznom ili preporučenom ponovnom pokretanju preglednika ili uređaja</translation>
 <translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
 
       Ako se to pravilo ne postavi ili ako se postavi na lažno, lokacija se neće prijavljivati.</translation>
@@ -2925,6 +2958,11 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Ako se pravilo postavi na "točno", <ph name="PRODUCT_OS_NAME" /> ponovo će pokrenuti uređaj kada ga korisnik isključi. <ph name="PRODUCT_OS_NAME" /> zamjenjuje sve gumbe za isključivanje na korisničkom sučelju gumbima za ponovno pokretanje. Ako korisnik isključi uređaj tipkom za uključivanje/isključivanje, uređaj se neće automatski ponovo pokrenuti, čak ni ako je to pravilo omogućeno.</translation>
 <translation id="9152473318295429890">Omogući kontekstualne prijedloge povezanih web-stranica</translation>
 <translation id="9158929520101169054">Omogući višestruku prijavu u pregledniku</translation>
+<translation id="9159126470527871268">Obavještava korisnike da se <ph name="PRODUCT_NAME" /> mora ponovo pokrenuti ili se <ph name="PRODUCT_OS_NAME" /> mora ponovo pokrenuti radi primjene ažuriranja na čekanju.
+
+      Ova postavka pravila omogućuje obavijesti koje informiraju korisnika o preporučenom ili obaveznom ponovnom pokretanju preglednika. Ako nije postavljeno, <ph name="PRODUCT_NAME" /> korisniku naznačuje potrebu za ponovnim pokretanjem putem sitnih promjena na izborniku dok <ph name="PRODUCT_OS_NAME" /> naznačuje isto putem obavijesti u traci sustava. Ako se postavi na "Preporučeno", korisniku će se prikazivati ponavljajuće upozorenje da je preporučeno ponovno pokretanje. Korisnik može odbaciti upozorenje i tako odgoditi ponovno pokretanje. Ako se postavi na "Obavezno", korisniku će se prikazati ponavljajuće upozorenje da će se preglednik prisilno ponovo pokrenuti nakon isteka naznačenog vremena u obavijesti. To razdoblje prema zadanim postavkama iznosi sedam dana za <ph name="PRODUCT_NAME" /> i četiri dana za <ph name="PRODUCT_OS_NAME" />, a može se konfigurirati putem postavke pravila <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Korisnička će se sesija vratiti nakon ponovnog pokretanja.</translation>
 <translation id="9165792353046089850">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup povezanim USB uređajima. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti povezanom USB uređaju.
 
           To se pravilo može nadjačati za određene uzorke URL-ova pomoću pravila "WebUsbAskForUrls" i "WebUsbBlockedForUrls".

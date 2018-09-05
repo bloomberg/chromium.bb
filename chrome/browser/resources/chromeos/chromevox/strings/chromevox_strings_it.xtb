@@ -16,7 +16,7 @@
 <translation id="1065552602950927991">Dati non validi</translation>
 <translation id="1080471004309605942">Fine del testo corsivo</translation>
 <translation id="1082209053475788238">Nessuna intestazione livello 6 precedente.</translation>
-<translation id="1087788677726983142">Nascondi i filtri della sequenza di eventi</translation>
+<translation id="1087788677726983142">Nascondi i filtri del flusso di eventi</translation>
 <translation id="1088219014394087294">Nessuna intestazione.</translation>
 <translation id="1106741348836243114">Attiva o disattiva feedback audio (icone audio).</translation>
 <translation id="1108651818222110612">sottotitolo</translation>
@@ -79,7 +79,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1618597272655350600">Fornisce una descrizione completa della posizione corrente</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{simbolo di maggiore}other{# simboli di maggiore}}</translation>
 <translation id="1653266918374749391">Intestazione livello 3 precedente</translation>
-<translation id="1657616855184033958">Mostra i filtri della sequenza di eventi</translation>
+<translation id="1657616855184033958">Mostra i filtri del flusso di eventi</translation>
 <translation id="1659072772017912254">Non selezionato</translation>
 <translation id="1669290819662866522">settimana</translation>
 <translation id="1674262202423278359">Navigazione in ChromeVox</translation>
@@ -138,6 +138,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2267945578749931355">Carattere successivo</translation>
 <translation id="2281234842553884450">Dispositivo di scorrimento precedente</translation>
 <translation id="2294136146931447363">Inizio del testo corsivo</translation>
+<translation id="2311237334957139798">Vai al gesto di granularità precedente</translation>
 <translation id="2318372665160196757">Principale</translation>
 <translation id="2329324941084714723">Riquadro a schede</translation>
 <translation id="2344193891939537199">Controllo data/ora</translation>
@@ -413,7 +414,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4255943572433203166">Utilizza le opzioni sotto per personalizzare ChromeVox. Le modifiche hanno effetto immediato.</translation>
 <translation id="4271220233568730077">Espressione matematica successiva</translation>
 <translation id="4271521365602459209">Nessun altro risultato.</translation>
-<translation id="4275397969489577657">Abilita la registrazione della sequenza di eventi</translation>
+<translation id="4275397969489577657">Abilita la registrazione del flusso di eventi</translation>
 <translation id="4287520460805643128">Nessun articolo successivo.</translation>
 <translation id="4289540628985791613">Panoramica</translation>
 <translation id="4300318234632215983">Pronuncia l'URL di un link</translation>
@@ -519,6 +520,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5106547198195128110">Grandi cambiamenti in questa nuova uscita, ecco tutte le novità:</translation>
 <translation id="5110983769041734144">Nessun campo modulo precedente.</translation>
 <translation id="5111640677200759579">Intestazione di colonna</translation>
+<translation id="5115892389597951922">Log di ChromeVox</translation>
 <translation id="5136967254288895616">Nessun link precedente.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="5158275234811857234">Copertina</translation>
@@ -686,6 +688,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6540201937398578274">In ChromeVox il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox inizia premendo il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
 <translation id="6550720799683018100">Modifica la voce mappa di chiavi corrente scegliendo una delle opzioni riportate di seguito.</translation>
 <translation id="6561818612645211875">Vai all'inizio della riga corrente</translation>
+<translation id="6583174818554398774">Vai al gesto di granularità successivo</translation>
 <translation id="6587021927234520429">Nessuna intestazione livello 4 successiva.</translation>
 <translation id="6601344353291556895">Attiva descrizioni dettagliate.</translation>
 <translation id="6615602925644411249">Trova nella pagina.</translation>

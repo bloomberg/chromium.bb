@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Die Identität von <ph name="ORGANIZATION" /> bei <ph name="LOCALITY" /> wurde von <ph name="ISSUER" /> verifiziert.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Drucken</translation>
+<translation id="143412116769631998">Zahlungsmethoden merken</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
 <translation id="1506687042165942984">Zeigt eine gespeicherte (veraltete) Kopie dieser Seite an</translation>
 <translation id="1507202001669085618">&lt;p&gt;Diese Fehlermeldung wird angezeigt, wenn Sie ein WLAN-Portal verwenden, bei dem eine Anmeldung erforderlich ist, bevor Sie online gehen können.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
 <translation id="3154506275960390542">Auf dieser Seite befindet sich ein Formular, das Daten möglicherweise unsicher überträgt. Gesendete Daten können während der Übertragung von anderen gelesen oder von Angreifern geändert werden, sodass der Server modifizierte Daten erhält.</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
+<translation id="316082708977904280">Adressen und andere Informationen merken</translation>
 <translation id="3162559335345991374">Unter Umständen müssen Sie die Anmeldeseite des verwendeten WLAN-Netzwerken aufrufen.</translation>
 <translation id="3167968892399408617">Seiten, die Sie sich auf Inkognito-Tabs ansehen, werden nach dem Schließen aller Inkognito-Tabs nicht in Ihrem Browserverlauf, Cookiespeicher oder Suchverlauf gespeichert. Ihre Lesezeichen und heruntergeladenen Dateien bleiben erhalten.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -396,6 +398,7 @@
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
 <translation id="3655670868607891010">Sollte Ihnen diese Meldung häufiger angezeigt werden, sehen Sie sich unsere <ph name="HELP_LINK" /> an.</translation>
 <translation id="3658742229777143148">Überarbeitung</translation>
+<translation id="3665775945622610063">Zahlungsmethoden merken</translation>
 <translation id="3678029195006412963">Anfrage konnte nicht signiert werden</translation>
 <translation id="3678529606614285348">Seite in einem neuen Inkognitofenster öffnen (Strg + Umschalttaste + N)</translation>
 <translation id="3679803492151881375">Absturz am <ph name="CRASH_TIME" /> erfasst und am <ph name="UPLOAD_TIME" /> hochgeladen</translation>
@@ -418,6 +421,7 @@
 <translation id="3778403066972421603">Möchten Sie diese Karte in Ihrem Google-Konto und auf diesem Gerät speichern?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ablaufdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Schädliche Inhalte blockiert.</translation>
 <translation id="382518646247711829">Falls Sie einen Proxyserver verwenden...</translation>
 <translation id="3828924085048779000">Eine leere Passphrase ist nicht zulässig.</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -574,6 +578,7 @@
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4958444002117714549">Liste einblenden</translation>
 <translation id="4974590756084640048">Warnmeldungen wieder aktivieren</translation>
+<translation id="4988217478422488391">Beschleunigt die Onlinezahlung</translation>
 <translation id="4989809363548539747">Dieses Plug-in wird nicht unterstützt</translation>
 <translation id="5002932099480077015">Wenn diese Funktion aktiviert ist, speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, um ein Ausfüllen von Formularen zu beschleunigen.</translation>
 <translation id="5018422839182700155">Diese Seite kann nicht geöffnet werden</translation>
@@ -653,6 +658,7 @@
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
 <translation id="5481076368049295676">Diese Inhalte versuchen möglicherweise, gefährliche Software auf Ihrem Gerät zu installieren, durch die Ihre Informationen gestohlen oder gelöscht werden. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Gültige Adresse hinzufügen</translation>
+<translation id="5490432419156082418">AutoFill-Einstellungen</translation>
 <translation id="5492298309214877701">Diese Website im Intranet des Unternehmens, der Organisation oder der Schule hat die gleiche URL wie eine externe Website.
     <ph name="LINE_BREAK" />
     Wenden Sie sich an Ihren Systemadministrator.</translation>
@@ -716,6 +722,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 wird verwendet}other{# werden verwendet}}</translation>
 <translation id="5922853866070715753">Fast fertig</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
+<translation id="5951495562196540101">Registrierung mit Kundenkonto nicht möglich (Paketlizenz verfügbar).</translation>
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
@@ -909,6 +916,7 @@ Weitere Details:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7453467225369441013">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="7455133967321480974">Globalen Standard verwenden (Blockieren)</translation>
+<translation id="7457461136432785307">Adressen und andere Informationen merken</translation>
 <translation id="7460163899615895653">Ihre zuletzt geöffneten Tabs von anderen Geräten erscheinen hier</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
@@ -924,7 +932,7 @@ Weitere Details:
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="7543525346216957623">Frag deine Eltern</translation>
 <translation id="7548892272833184391">Verbindungsfehler beheben</translation>
-<translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie zuvor eingegeben haben. Sie können diese Daten erneut senden, dabei werden jedoch sämtliche Aktionen wiederholt, die zuvor durch diese Seite ausgeführt wurden.</translation>
+<translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie vorher eingegeben haben. Sie können diese Daten noch einmal senden, dabei werden jedoch sämtliche Aktionen wiederholt, die vorher durch diese Seite ausgeführt wurden.</translation>
 <translation id="7552846755917812628">Probieren Sie folgende Tipps aus:</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
 <translation id="7564049878696755256">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
@@ -1024,7 +1032,7 @@ Weitere Details:
 <translation id="8225771182978767009">Die Person, die diesen Computer eingerichtet hat, hat diese Website gesperrt.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Seite in einem neuen Inkognito-Tab öffnen</translation>
-<translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
+<translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird eventuell eine schon ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="8241712895048303527">Auf dieser Website blockieren</translation>
 <translation id="8242426110754782860">Fortfahren</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
@@ -1060,6 +1068,7 @@ Weitere Details:
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
+<translation id="8473863474539038330">AutoFill-Einstellungen</translation>
 <translation id="8483780878231876732">Melden Sie sich in Chrome an, um in Ihrem Google-Konto gespeicherte Kreditkarten zu verwenden</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
@@ -1120,6 +1129,7 @@ Weitere Details:
 <translation id="8952525071319348207">Geben Sie das Ablaufdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails Ihres Google Payments-Kontos an diese Website weitergegeben.</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
+<translation id="8975012916872825179">Enthält Informationen wie Telefonnummern, E-Mail-Adressen und Lieferadressen</translation>
 <translation id="8978053250194585037">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Phishingaktivitäten<ph name="END_LINK" /> auf <ph name="SITE" /> festgestellt. Phishingwebsites geben sich als andere Websites aus, um Sie zu täuschen.</translation>
 <translation id="8983003182662520383">Bei Google Pay gespeicherte Zahlungsmethoden und Adressen</translation>
 <translation id="8987927404178983737">Monat</translation>
@@ -1155,7 +1165,7 @@ Weitere Details:
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="9154194610265714752">Aktualisiert</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
-<translation id="9168814207360376865">Ermöglicht Websites zu überprüfen, ob Sie eine Zahlungsmethode gespeichert haben</translation>
+<translation id="9168814207360376865">Websites die Abfrage gespeicherter Zahlungsmethoden erlauben</translation>
 <translation id="9169664750068251925">Auf dieser Website immer blockieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="9171296965991013597">App schließen?</translation>
@@ -1169,6 +1179,7 @@ Weitere Details:
 <translation id="935608979562296692">Formular leeren</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
 <translation id="951104842009476243">Akzeptierte Debit- und Prepaidkarten</translation>
+<translation id="962484866189421427">Dieser Inhalt könnte betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten erfassen, um Sie auszuspionieren. <ph name="BEGIN_LINK" />Trotzdem zeigen<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="973773823069644502">Lieferadresse hinzufügen</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Keine}=1{1 Eintrag}other{# Einträge}}</translation>

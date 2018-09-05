@@ -204,7 +204,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="2498359688066513246">Guida e feedback</translation>
 <translation id="2501278716633472235">Indietro</translation>
-<translation id="2512222046227390255">Compilare moduli automaticamente</translation>
 <translation id="2513403576141822879">Per altre impostazioni relative a privacy, sicurezza e raccolta dei dati, consulta la sezione <ph name="BEGIN_LINK" />Sincronizzazione e servizi Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Invia a Google gli URL delle pagine che visiti</translation>
 <translation id="2526148617758225454">La funzione Risparmio dati è attiva. Gestiscila nelle Impostazioni.</translation>
@@ -249,8 +248,8 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="2891154217021530873">Interrompe il caricamento della pagina</translation>
 <translation id="2900528713135656174">Crea evento</translation>
 <translation id="2902702728133930130">Impossibile avviare Chrome a causa di un errore imprevisto.</translation>
-<translation id="2903493209154104877">Indirizzi</translation>
 <translation id="290376772003165898">La pagina non è in <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Chiedi prima di consentire ai siti di riprodurre contenuti protetti</translation>
 <translation id="2913331724188855103">Consenti ai siti di salvare e leggere i dati dei cookie (opzione consigliata)</translation>
 <translation id="2932150158123903946">Spazio di archiviazione di Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Migliora Chrome e la sua sicurezza inviando dati di sistema e utilizzo a Google</translation>
@@ -577,7 +576,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
 <translation id="55737423895878184">La geolocalizzazione e le notifiche sono consentite</translation>
 <translation id="5578795271662203820">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Carte</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5620299005957670886">Consenti ai siti di accedere ai sensori (opzione consigliata)</translation>
@@ -672,6 +670,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6303969859164067831">Esci e disattiva la sincronizzazione</translation>
 <translation id="6320088164292336938">Vibrazione</translation>
 <translation id="6324034347079777476">Sincronizzazione del sistema Android non attiva</translation>
 <translation id="6333140779060797560">Condividi tramite <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7542481630195938534">Impossibile ricevere suggerimenti</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
+<translation id="757524316907819857">Impedisci ai siti di riprodurre contenuti protetti</translation>
 <translation id="7589445247086920869">Blocca motore di ricerca corrente</translation>
 <translation id="7593557518625677601">Apri le impostazioni di Android e abilita nuovamente la sincronizzazione del sistema Android per poter avviare la Sicronizzazione Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>

@@ -82,6 +82,7 @@
 <translation id="14171126816530869"><ph name="ORGANIZATION" /> identiškumą <ph name="LOCALITY" /> patikrino <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
+<translation id="143412116769631998">Prisiminti mokėjimo metodus</translation>
 <translation id="1484290072879560759">Pasirinkti pristatymo adresą</translation>
 <translation id="1506687042165942984">Rodyti išsaugotą šio puslapio kopiją (kuri yra pasenusi).</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ši klaida rodoma, jei naudojate „Wi-Fi“ portalą, prie kurio reikia prisijungti, kad galėtumėte naudotis internetu.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Laikina serverio klaida</translation>
 <translation id="3154506275960390542">Šiame puslapyje yra forma, kurios negalima saugiai pateikti. Siunčiamus duomenis gali peržiūrėti kiti asmenys juos perduodant arba juos gali modifikuoti atakuojanti programa, siekianti pakeisti serverio gaunamą informaciją.</translation>
 <translation id="3157931365184549694">Atkurti</translation>
+<translation id="316082708977904280">Prisiminti adresus ir kitą informaciją</translation>
 <translation id="3162559335345991374">Naudojant šį „Wi-Fi“ tinklą gali būti prašoma apsilankyti prisijungimo puslapyje.</translation>
 <translation id="3167968892399408617">Puslapiai, kuriuos peržiūrite inkognito skirtukų lapuose, nebus rodomi naršyklės istorijoje, slapukų saugykloje ar paieškos istorijoje, kai uždarysite visus inkognito skirtukų lapus. Visi atsisiųsti failai ar sukurtos žymės išliks.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -398,6 +400,7 @@
 <translation id="3650584904733503804">Tikrinimas sėkmingas</translation>
 <translation id="3655670868607891010">Jei tai rodoma dažnai, išbandykite <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Peržiūrėtas ir pataisytas leidimas</translation>
+<translation id="3665775945622610063">Prisiminti mokėjimo metodus</translation>
 <translation id="3678029195006412963">Nepavyko pasirašyti užklausos</translation>
 <translation id="3678529606614285348">Atidarykite puslapį naujame inkognito lange („Ctrl“ – „Shift“ – N)</translation>
 <translation id="3679803492151881375">Strigčių ataskaita užfiksuota <ph name="CRASH_TIME" />, įkelta <ph name="UPLOAD_TIME" /></translation>
@@ -420,6 +423,7 @@
 <translation id="3778403066972421603">Ar norite išsaugoti šią kortelę „Google“ paskyroje ir šiame įrenginyje?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Galiojimo laikas baigiasi <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Žalingas turinys užblokuotas.</translation>
 <translation id="382518646247711829">Jei naudojate tarpinį serverį…</translation>
 <translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
 <translation id="385051799172605136">Grįžti</translation>
@@ -576,6 +580,7 @@
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
 <translation id="4974590756084640048">Iš naujo įgalinti įspėjimus</translation>
+<translation id="4988217478422488391">Padeda greičiau sumokėti internete</translation>
 <translation id="4989809363548539747">Šis papildinys nepalaikomas</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
 <translation id="5018422839182700155">Negalima atidaryti šio puslapio</translation>
@@ -655,6 +660,7 @@
 <translation id="5470861586879999274">&amp;Redaguoti dar kartą</translation>
 <translation id="5481076368049295676">Šiuo turiniu gali būti bandoma priversti jus įrenginyje įdiegti pavojingą programinę įrangą, kuri vagia arba ištrina jūsų informaciją. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tinkamo adreso pridėjimas</translation>
+<translation id="5490432419156082418">Adresai ir dar daugiau</translation>
 <translation id="5492298309214877701">Šios svetainės URL įmonės, organizacijos ar mokyklos intranete toks pat kaip išorinės svetainės URL.
     <ph name="LINE_BREAK" />
     Pabandykite susisiekti su sistemos administratoriumi.</translation>
@@ -718,6 +724,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Naudojamas 1 slapukas}one{Naudojamas # slapukas}few{Naudojami # slapukai}many{Naudojama # slapuko}other{Naudojama # slapukų}}</translation>
 <translation id="5922853866070715753">Beveik atlikta</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
+<translation id="5951495562196540101">Nepavyko prisiregistruoti su kliento paskyra (galima įsigyti licencijos paketą).</translation>
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -911,6 +918,7 @@ Papildoma išsami informacija:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7453467225369441013">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="7455133967321480974">Naudoti visuotinį numatytąjį nustatymą (blokuoti)</translation>
+<translation id="7457461136432785307">Prisiminti adresus ir kitą informaciją</translation>
 <translation id="7460163899615895653">Naujausi kitų įrenginių skirtukai rodomi čia</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
@@ -1062,6 +1070,7 @@ Papildoma išsami informacija:
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredito kortelė}one{# kredito kortelė}few{# kredito kortelės}many{# kredito kortelės}other{# kredito kortelių}}</translation>
+<translation id="8473863474539038330">Adresai ir dar daugiau</translation>
 <translation id="8483780878231876732">Jei norite naudoti korteles iš „Google“ paskyros, prisijunkite prie „Chrome“</translation>
 <translation id="8488350697529856933">Taikoma</translation>
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>
@@ -1122,6 +1131,7 @@ Papildoma išsami informacija:
 <translation id="8952525071319348207">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC). Kai patvirtinsite, „Google“ mokamojoje paskyroje nurodyta išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
+<translation id="8975012916872825179">Įtraukiama tokia informacija kaip telefono numeriai, el. pašto adresai ir pristatymo adresai</translation>
 <translation id="8978053250194585037">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko, kad svetainėje <ph name="SITE" /> sukčiaujama<ph name="END_LINK" />. Sukčiavimo svetainės apsimeta kitomis svetainėmis, kad jus apgautų.</translation>
 <translation id="8983003182662520383">„Google Pay“ naudojami mokėjimo metodai ir adresai</translation>
 <translation id="8987927404178983737">Mėnuo</translation>
@@ -1170,6 +1180,7 @@ Papildoma išsami informacija:
 <translation id="935608979562296692">CLEAR FORM</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="951104842009476243">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
+<translation id="962484866189421427">Šis turinys gali bandyti įdiegti klaidinančių programų, kurios apsimeta kitomis programomis, arba rinkti duomenis, naudojamus jums stebėti. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
 <translation id="973773823069644502">Pridėti pristatymo adresą</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nėra}=1{1 elementas}one{# elementas}few{# elementai}many{# elemento}other{# elementų}}</translation>

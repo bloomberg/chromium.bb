@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">ታሪክ አሰሳ</translation>
 <translation id="2498359688066513246">እገዛ እና ግብረመልስ</translation>
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
-<translation id="2512222046227390255">የራስ-ሙላ ቅጾች</translation>
 <translation id="2513403576141822879">ከግላዊነት፣ ደህንነት እና የውሂብ ስብስብ ጋር ለሚዛመዱ ተጨማሪ ቅንብሮች <ph name="BEGIN_LINK" />ስምረት እና የGoogle አገልግሎቶች<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">የሚጎበኙዋቸውን ገጾች ዩአርኤሎች ወደ Google ይልካል</translation>
 <translation id="2526148617758225454">የውሂብ አስቀማጭ በርቷል። በቅንብሮች ውስጥ ያስተዳድሩት።</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">ገጹን መጫን አቁም</translation>
 <translation id="2900528713135656174">ክስተት ፍጠር</translation>
 <translation id="2902702728133930130">Chrome ባልተጠበቀ ስህተት ምክንያት ሊጀምር አልቻለም።</translation>
-<translation id="2903493209154104877">አድራሻዎች</translation>
 <translation id="290376772003165898">ገጽ በ<ph name="LANGUAGE" /> አይደለም?</translation>
+<translation id="2910701580606108292">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘትን እንዲያጫውቱ ከመፍቀድ በፊት ጠይቅ</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
 <translation id="2932150158123903946">የGoogle <ph name="APP_NAME" /> ማከማቻ</translation>
 <translation id="2943166482989655199">የሥርዓት እና አጠቃቀም ውሂብ ወደ Google በመላክ Chrome እና ደህንነቱን ያሻሽሉ</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">Chrome ለዚህ ጣቢያ የእርስዎን ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="55737423895878184">አካባቢ እና ማሳወቂያዎች ይፈቀዳሉ</translation>
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE" /> ላይ ይፈልጉት</translation>
-<translation id="5585019845078534178">ካርዶች</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
 <translation id="5620299005957670886">ጣቢያዎች የእርስዎን ዳሳሾች እንዲደርሱበት ይፍቀዱ (የሚመከር)</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="629730747756840877">መለያ</translation>
+<translation id="6303969859164067831">ዘግተው ይውጡ እና ስምረትን ያጥፉ</translation>
 <translation id="6320088164292336938">ንዘር</translation>
 <translation id="6324034347079777476">የAndroid ሥርዓት ስምረት ተሰናክሏል</translation>
 <translation id="6333140779060797560">በ<ph name="APPLICATION" /> በኩል ያጋሩ</translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">የአስተያየት ጥቆማዎችን ማግኘት አልተቻለም</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
+<translation id="757524316907819857">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘት እንዳያጫውቱ ያግዱ</translation>
 <translation id="7589445247086920869">አሁን ላለው የፍለጋ ፕሮግራም አግድ</translation>
 <translation id="7593557518625677601">የChrome ስምረትን ለመጀመር የAndroid ቅንብሮችን ይክፈቱና የAndroid ስርዓት ስምረትን ዳግም ያንቁ</translation>
 <translation id="7596558890252710462">ስርዓተ ክወና</translation>

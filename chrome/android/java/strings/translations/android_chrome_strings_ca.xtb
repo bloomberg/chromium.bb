@@ -204,7 +204,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="2498359688066513246">Ajuda i suggeriments </translation>
 <translation id="2501278716633472235">Torna</translation>
-<translation id="2512222046227390255">Emplena formularis automàticament</translation>
 <translation id="2513403576141822879">Per trobar més opcions relacionades amb la privadesa, la seguretat i la recollida de dades, consulta <ph name="BEGIN_LINK" />Sincronització i serveis de Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envia a Google els URL de les pàgines que visites</translation>
 <translation id="2526148617758225454">L'Economitzador de dades està activat. Gestioneu-lo a Configuració.</translation>
@@ -249,8 +248,8 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="2891154217021530873">Atura la càrrega de la pàgina</translation>
 <translation id="2900528713135656174">Crea un esdeveniment</translation>
 <translation id="2902702728133930130">S'ha produït un error inesperat amb Chrome durant l'arrencada.</translation>
-<translation id="2903493209154104877">Adreces</translation>
 <translation id="290376772003165898">La pàgina no està en <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Pregunta abans de permetre que els llocs web reprodueixin contingut protegit</translation>
 <translation id="2913331724188855103">Permet que els llocs web desin i llegeixin les dades de les galetes (recomanat)</translation>
 <translation id="2932150158123903946">Emmagatzematge de Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Envia a Google dades d'ús i del sistema per millorar Chrome i la seva seguretat</translation>
@@ -577,7 +576,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="557283862590186398">Per visitar aquest lloc web, Chrome necessita permís per accedir al teu micròfon.</translation>
 <translation id="55737423895878184">Es permeten la ubicació i les notificacions</translation>
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Targetes</translation>
 <translation id="5595485650161345191">Edita l'adreça</translation>
 <translation id="5596627076506792578">Més opcions</translation>
 <translation id="5620299005957670886">Permet que els llocs web accedeixin als sensors (opció recomanada)</translation>
@@ -672,6 +670,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
 <translation id="6295158916970320988">Tots els llocs</translation>
 <translation id="629730747756840877">Compte</translation>
+<translation id="6303969859164067831">Tanca la sessió i desactiva la sincronització</translation>
 <translation id="6320088164292336938">Vibració</translation>
 <translation id="6324034347079777476">La sincronització del sistema Android està desactivada</translation>
 <translation id="6333140779060797560">Comparteix mitjançant <ph name="APPLICATION" />.</translation>
@@ -834,6 +833,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7542481630195938534">No es poden obtenir suggeriments</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
 <translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>
+<translation id="757524316907819857">Impedeix que llocs web reprodueixin contingut protegit</translation>
 <translation id="7589445247086920869">Bloqueja per al motor de cerca actual</translation>
 <translation id="7593557518625677601">Obre la configuració d'Android i torna a activar la sincronització del sistema Android per començar la sincronització de Chrome</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>

@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Stavka je ažurirana</translation>
 <translation id="1047726139967079566">Označi ovu stranicu...</translation>
 <translation id="1049743911850919806">Anonimno</translation>
+<translation id="1063454504051558093">Upotrijebi drugu zaporku...</translation>
 <translation id="1076421457278169141">Kod skeniran</translation>
 <translation id="1084365883616172403">Dovršen je post za Facebook.</translation>
 <translation id="1104948393051856124">Prihvati i nastavi</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1886928167269928266">Od početka</translation>
 <translation id="1911619930368729126">Prenesi na Google disk</translation>
+<translation id="191179954310195971">Ostale Googleove usluge</translation>
 <translation id="1941314575388338491">Dodirnite dvaput da biste kopirali.</translation>
 <translation id="1952728750904661634">Prijavite se upravljanim računom</translation>
 <translation id="1974060860693918893">Napredno</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Vaš popis za čitanje dostupan je offline. Da biste dodali stranicu na popis za čitanje, dodirnite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Upotreba druge zaporke</translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
 <translation id="3779810277399252432">Nema internetske veze.</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
@@ -315,6 +318,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="6344783595350022745">Izbriši tekst</translation>
 <translation id="6346549652287021269">Pokrenuti novo preuzimanje?</translation>
 <translation id="6362362396625799311">Nema anonimnih kartica</translation>
+<translation id="6363526231572697780">Nema korisničkog imena</translation>
 <translation id="6374469231428023295">Pokušaj ponovo</translation>
 <translation id="6380866119319257197">Ako zaboravite šifru ili želite promijeniti tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Ime na kartici</translation>

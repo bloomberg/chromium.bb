@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Élément mis à jour</translation>
 <translation id="1047726139967079566">Ajouter cette page aux favoris</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
+<translation id="1063454504051558093">Utiliser un autre mot de passe…</translation>
 <translation id="1076421457278169141">Code scanné</translation>
 <translation id="1084365883616172403">Post Facebook publié.</translation>
 <translation id="1104948393051856124">Accepter et continuer</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Envoyer les données d'utilisation</translation>
 <translation id="1886928167269928266">Depuis le début</translation>
 <translation id="1911619930368729126">Importer dans Google Drive</translation>
+<translation id="191179954310195971">Autres services Google</translation>
 <translation id="1941314575388338491">Appuyez deux fois pour copier.</translation>
 <translation id="1952728750904661634">Se connecter avec un compte géré</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
@@ -126,7 +128,7 @@
 <translation id="2969979262385602596">Échec de la connexion. Veuillez réessayer plus tard.</translation>
 <translation id="2989805286512600854">Ouvrir dans un nouvel onglet</translation>
 <translation id="3024255823539804759">Dernières 24 heures</translation>
-<translation id="3037605927509011580">Aie aie aie</translation>
+<translation id="3037605927509011580">Aïe aïe aïe</translation>
 <translation id="3112556859945124369">Marquer…</translation>
 <translation id="3151924044251363314">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Votre liste de lecture est disponible hors connexion. Pour ajouter une page à cette liste, appuyez sur <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
+<translation id="3765471630796399471">Utiliser un autre mot de passe</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
 <translation id="3779810277399252432">Aucune connexion Internet.</translation>
 <translation id="3783017676699494206">Enregistrer l'image</translation>
@@ -315,6 +318,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6344783595350022745">Effacer le texte</translation>
 <translation id="6346549652287021269">Lancer un nouveau téléchargement ?</translation>
 <translation id="6362362396625799311">Aucun onglet de navigation privée</translation>
+<translation id="6363526231572697780">Aucun nom d'utilisateur</translation>
 <translation id="6374469231428023295">Réessayer</translation>
 <translation id="6380866119319257197">Si vous oubliez votre phrase secrète, ou pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6389470377220713856">Nom sur la carte</translation>

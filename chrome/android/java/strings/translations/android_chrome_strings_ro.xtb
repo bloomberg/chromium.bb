@@ -204,7 +204,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2496180316473517155">Istoricul de navigare</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
 <translation id="2501278716633472235">Înapoi</translation>
-<translation id="2512222046227390255">Completează automat formularele</translation>
 <translation id="2513403576141822879">Pentru mai multe setări privind confidențialitatea, securitatea și colectarea datelor, consultă <ph name="BEGIN_LINK" />Sincronizare și servicii Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Trimite la Google adresele URL ale paginilor pe care le accesezi</translation>
 <translation id="2526148617758225454">Economizorul de date este activat. Gestionează-l din setări.</translation>
@@ -249,8 +248,8 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2891154217021530873">Oprește încărcarea paginii</translation>
 <translation id="2900528713135656174">Creează un eveniment</translation>
 <translation id="2902702728133930130">Chrome nu a pornit. A apărut o eroare neașteptată.</translation>
-<translation id="2903493209154104877">Adrese</translation>
 <translation id="290376772003165898">Pagina nu este în <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Întreabă înainte de a permite site-urilor să redea conținut protejat</translation>
 <translation id="2913331724188855103">Permite site-urilor să salveze și să citească datele asociate cookie-urilor (recomandat)</translation>
 <translation id="2932150158123903946">Stocarea Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Poți îmbunătăți browserul Chrome și securitatea acestuia dacă trimiți la Google date despre sistem și utilizare</translation>
@@ -577,7 +576,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="557283862590186398">Chrome are nevoie de permisiune ca să acceseze microfonul pentru acest site.</translation>
 <translation id="55737423895878184">Locația și notificările sunt permise</translation>
 <translation id="5578795271662203820">Caută imaginea cu <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Carduri</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
 <translation id="5596627076506792578">Mai multe opțiuni</translation>
 <translation id="5620299005957670886">Permite accesul site-urilor la senzori (recomandat)</translation>
@@ -672,6 +670,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="6295158916970320988">Toate site-urile</translation>
 <translation id="629730747756840877">Cont</translation>
+<translation id="6303969859164067831">Deconectează-te și dezactivează sincronizarea</translation>
 <translation id="6320088164292336938">Vibrații</translation>
 <translation id="6324034347079777476">Sincronizarea de sistem Android este dezactivată</translation>
 <translation id="6333140779060797560">Trimiteți prin <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7542481630195938534">Nu se pot obține sugestii</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
+<translation id="757524316907819857">Împiedică site-urile să redea conținutul protejat</translation>
 <translation id="7589445247086920869">Blochează pentru motorul de căutare actual</translation>
 <translation id="7593557518625677601">Deschide setările Android și reactivează sincronizarea sistemului Android pentru a porni sincronizarea Chrome</translation>
 <translation id="7596558890252710462">Sistem de operare</translation>

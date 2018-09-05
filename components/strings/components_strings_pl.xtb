@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Tożsamość organizacji <ph name="ORGANIZATION" /> (<ph name="LOCALITY" />) została zweryfikowana przed wystawcę <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1430915738399379752">Drukuj</translation>
+<translation id="143412116769631998">Zapamiętuj formy płatności</translation>
 <translation id="1484290072879560759">Wybierz adres wysyłki</translation>
 <translation id="1506687042165942984">Pokaż zapisaną (tzn. nieaktualną) kopię tej strony.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ten komunikat pojawia się, jeśli do połączenia z internetem wymagane jest zalogowanie się w portalu Wi-Fi.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Tymczasowy błąd serwera</translation>
 <translation id="3154506275960390542">Strona zawiera formularz, którego nie można przesłać bezpiecznie. Podczas przesyłania dane mogą zobaczyć inni użytkownicy, a hakerzy mogą je zmodyfikować, by na serwer dotarły zmienione dane.</translation>
 <translation id="3157931365184549694">Przywróć</translation>
+<translation id="316082708977904280">Zapamiętuj adresy i inne informacje</translation>
 <translation id="3162559335345991374">Sieć Wi-Fi, której używasz, może wymagać otwarcia strony logowania.</translation>
 <translation id="3167968892399408617">Po zamknięciu wszystkich kart incognito wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądarki, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i utworzone zakładki zostaną jednak zachowane.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Weryfikacja powiodła się</translation>
 <translation id="3655670868607891010">Jeśli często widzisz ten komunikat, przeczytaj <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Wersja</translation>
+<translation id="3665775945622610063">Zapamiętuj formy płatności</translation>
 <translation id="3678029195006412963">Nie udało się podpisać żądania</translation>
 <translation id="3678529606614285348">Otwórz stronę w nowym oknie incognito (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Raport o awarii zarejestrowano: <ph name="CRASH_TIME" />, przesłano: <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Czy chcesz zapisać tę kartę na swoim koncie Google i na tym urządzeniu?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Wygasa: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Zablokowano szkodliwe treści.</translation>
 <translation id="382518646247711829">Jeśli używasz serwera proxy...</translation>
 <translation id="3828924085048779000">Puste hasło jest niedozwolone.</translation>
 <translation id="385051799172605136">Wstecz</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4958444002117714549">Rozwiń listę</translation>
 <translation id="4974590756084640048">Ponownie włącz ostrzeżenia</translation>
+<translation id="4988217478422488391">Przyspiesza płatności online</translation>
 <translation id="4989809363548539747">Ta wtyczka nie jest obsługiwana</translation>
 <translation id="5002932099480077015">Jeśli włączysz tę opcję, Chrome zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Ponów edycję</translation>
 <translation id="5481076368049295676">Te treści mogą próbować instalować na Twoim urządzeniu niebezpieczne oprogramowanie, które wykrada lub usuwa dane. <ph name="BEGIN_LINK" />Wyświetl mimo to<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Dodaj poprawny adres</translation>
+<translation id="5490432419156082418">Adresy i ustawienia</translation>
 <translation id="5492298309214877701">Ta witryna w intranecie firmy, organizacji czy szkoły ma ten sam URL co zewnętrzna strona internetowa.
     <ph name="LINE_BREAK" />
     Skontaktuj się z administratorem systemu.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
 <translation id="5922853866070715753">Prawie gotowe</translation>
 <translation id="5939518447894949180">Resetuj</translation>
+<translation id="5951495562196540101">Nie można zarejestrować się przy użyciu konta klienta (dostępna jest licencja w pakiecie).</translation>
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
 <translation id="5967867314010545767">Usuń z historii</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
@@ -910,6 +917,7 @@ Dodatkowe informacje:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> o tym problemie.</translation>
 <translation id="7453467225369441013">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="7455133967321480974">Użyj globalnej wartości domyślnej (Blokuj)</translation>
+<translation id="7457461136432785307">Zapamiętuj adresy i inne informacje</translation>
 <translation id="7460163899615895653">W tym miejscu pojawią się Twoje ostatnie karty z innych urządzeń</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7481312909269577407">Dalej</translation>
@@ -1061,6 +1069,7 @@ Dodatkowe informacje:
 <translation id="8433057134996913067">Zostaniesz wylogowany z większości stron internetowych.</translation>
 <translation id="8437238597147034694">&amp;Cofnij przeniesienie</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 karta kredytowa}few{# karty kredytowe}many{# kart kredytowych}other{# karty kredytowej}}</translation>
+<translation id="8473863474539038330">Adresy i ustawienia</translation>
 <translation id="8483780878231876732">Aby użyć kart z konta Google, zaloguj się w Chrome</translation>
 <translation id="8488350697529856933">Dotyczy</translation>
 <translation id="8498891568109133222">Serwer <ph name="HOST_NAME" /> potrzebował zbyt wiele czasu na odpowiedź.</translation>
@@ -1120,6 +1129,7 @@ Dodatkowe informacje:
 <translation id="8952525071319348207">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu dane karty z konta Google Payments zostaną udostępnione tej stronie.</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
+<translation id="8975012916872825179">Obejmuje numery telefonów, adresy e-mail i adresy dostawy</translation>
 <translation id="8978053250194585037">Bezpieczne przeglądanie Google <ph name="BEGIN_LINK" />wykryło ostatnio próbę wyłudzenia informacji<ph name="END_LINK" /> na stronie <ph name="SITE" />. Strony wyłudzające informacje udają inne strony, by Cię oszukać.</translation>
 <translation id="8983003182662520383">Formy płatności i adresy z Google Pay</translation>
 <translation id="8987927404178983737">Miesiąc</translation>
@@ -1168,6 +1178,7 @@ Dodatkowe informacje:
 <translation id="935608979562296692">WYCZYŚĆ FORMULARZ</translation>
 <translation id="939736085109172342">Nowy folder</translation>
 <translation id="951104842009476243">Akceptowane karty debetowe i przedpłacone</translation>
+<translation id="962484866189421427">Te treści mogą próbować zainstalować wprowadzające w błąd aplikacje, które udają, że są przeznaczone do czegoś innego niż w rzeczywistości, lub zbierają dane, na podstawie których można Cię śledzić. <ph name="BEGIN_LINK" />Pokaż mimo to<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficjalna wersja</translation>
 <translation id="973773823069644502">Dodaj adres dostawy</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Brak}=1{1 element}few{# elementy}many{# elementów}other{# elementu}}</translation>

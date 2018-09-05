@@ -138,6 +138,7 @@
 <translation id="2267945578749931355">อักขระถัดไป</translation>
 <translation id="2281234842553884450">แถบเลื่อนก่อนหน้า</translation>
 <translation id="2294136146931447363">เริ่มส่วนที่เป็นตัวเอียง</translation>
+<translation id="2311237334957139798">เลื่อนไปที่รายละเอียดก่อนหน้า</translation>
 <translation id="2318372665160196757">หลัก</translation>
 <translation id="2329324941084714723">แผงแท็บ</translation>
 <translation id="2344193891939537199">การควบคุมวันที่และเวลา</translation>
@@ -519,6 +520,7 @@
 <translation id="5106547198195128110">เรามีการเปลี่ยนแปลงที่น่าตื่นเต้นบางอย่างในเวอร์ชันใหม่ สิ่งที่อัปเดตมีดังต่อไปนี้</translation>
 <translation id="5110983769041734144">ไม่มีช่องฟอร์มก่อนหน้า</translation>
 <translation id="5111640677200759579">ส่วนหัวของคอลัมน์</translation>
+<translation id="5115892389597951922">บันทึก ChromeVox</translation>
 <translation id="5136967254288895616">ไม่มีลิงก์ก่อนหน้า</translation>
 <translation id="513774504516943387">ลิงก์</translation>
 <translation id="5158275234811857234">หน้าปก</translation>
@@ -686,6 +688,7 @@
 <translation id="6540201937398578274">ใน ChromeVox แป้นค้นหาคือคีย์ตัวปรับแต่ง แป้นพิมพ์ลัดของ ChromeVox ส่วนใหญ่จะเริ่มต้นด้วยแป้นนี้ และใช้ปุ่มลูกศรสำหรับการนำทาง</translation>
 <translation id="6550720799683018100">เปลี่ยนรูปแบบแป้นปัจจุบันด้วยการเลือกจากรายการตัวเลือกด้านล่างนี้</translation>
 <translation id="6561818612645211875">ไปที่ด้านบนของแถวปัจจุบัน</translation>
+<translation id="6583174818554398774">เลื่อนไปที่รายละเอียดถัดไป</translation>
 <translation id="6587021927234520429">ไม่มีส่วนหัวระดับ 4 ถัดไป</translation>
 <translation id="6601344353291556895">เปิดใช้งานคำอธิบายขนาดยาว</translation>
 <translation id="6615602925644411249">ค้นหาในหน้าเว็บ</translation>

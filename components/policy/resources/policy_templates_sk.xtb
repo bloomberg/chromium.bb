@@ -334,6 +334,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="199764499252435679">Povoliť aktualizácie komponentov v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Správa možností napájania</translation>
 <translation id="201557587962247231">Frekvencia nahrávania hlásení stavu zariadenia</translation>
+<translation id="2017301949684549118">Adresy weboých aplikácií využijú tichú inštaláciu.</translation>
 <translation id="2018836497795982119">Určuje interval (v ms), v ktorom budú službe správy zariadenia odosielané žiadosti o informácie o pravidlách pre používateľov.
 
       Nastavením tohto pravidla bude prepísaná predvolená hodnota 3 hodiny. Platné hodnoty pre toto pravidlo sa pohybujú v rozmedzí od 1800000 (30 minút) do 86400000 (1 deň). Hodnoty mimo daného rozsahu budú upravené na príslušnú medznú hodnotu. Ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín, pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel.
@@ -641,6 +642,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Webovú adresu vyhľadávania Google je možné špecifikovať ako: <ph name="GOOGLE_SEARCH_URL" />.
 
           Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo DefaultSearchProviderEnabled, a bude uplatnená len v takom prípade.</translation>
+<translation id="2659019163577049044">Ak toto nastavenie povolíte, používatelia budú môcť nastaviť svoje zariadenia tak, aby synchronizovali správy SMS medzi telefónmi a Chromebookmi. Upozorňujeme, že ak je toto pravidlo povolené, používatelia sa musia špeciálne zaregistrovať na používanie tejto funkcie dokončením procesu nastavenia. Po jeho dokončení budú môcť vo svojich Chromebookoch odosielať a prijímať správy SMS.
+
+      Ak toto nastavenie zakážete, používatelia nebudú môcť nastaviť synchronizovanie správ SMS.
+
+      Ak ho nenastavíte, predvolene bude táto funkcia zakázaná pre spravovaných používateľov a povolená pre nespravovaných používateľov.</translation>
 <translation id="2660846099862559570">Nikdy nepoužívať server proxy</translation>
 <translation id="267596348720209223">Určuje kódovanie znakov podporovaných poskytovateľom vyhľadávania. Kódovania sú kódové stránky, napríklad UTF-8, GB2312 alebo ISO-8859-1. Budú vyskúšané v uvedenom poradí.
 
@@ -1064,6 +1070,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Každý záznam v zozname obsahuje adresár, ktorý musí zahŕňať ID rozšírenia v poli „extension-id“ a jeho webovú adresu pre aktualizácie v poli „update-url“.</translation>
 <translation id="3874773863217952418">Povoliť vyhľadávanie klepnutím</translation>
 <translation id="3877517141460819966">Režim integrovaného druhého faktora overenia totožnosti</translation>
+<translation id="3879208481373875102">Konfigurovať zoznam webových aplikácií nainštalovaných pravidlom</translation>
 <translation id="388237772682176890">Podpora tohto pravidla bola ukončená vo verzii M53. Toto pravidlo bolo odstránené vo verzii M54, pretože bola ukončená podpora protokolu SPDY/3.1.
 
       Umožňuje zakázať protokol SPDY v prehliadači <ph name="PRODUCT_NAME" />.
@@ -1307,6 +1314,10 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Úplný popis možných nastavení a štruktúry tohto pravidla nájdete na adrese https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Režim spracovania slučky pravidiel pre používateľov</translation>
+<translation id="4554841826517980623">Toto pravidlo riadi, či by mala funkcia zdieľania súborov v sieti pre <ph name="PRODUCT_NAME" /> použiť <ph name="NETBIOS_PROTOCOL" /> na objavenie zdieľaných položiek v sieti.
+      Keď toto pravidlo nastavíte na hodnotu true, objavovanie zdieľaných položiek bude zisťovať zdieľané položky v sieti pomocou protokolu <ph name="NETBIOS_PROTOCOL" />.
+      Keď ho nastavíte na hodnotu false, objavovanie zdieľaných položiek nebude na zisťovanie zdieľaných položiek používať protokol <ph name="NETBIOS_PROTOCOL" />.
+      Ak toto pravidlo nenastavíte, predvolene bude zakázané pre používateľov spravovaných podnikom a povolené pre nespravovaných používateľov.</translation>
 <translation id="4555850956567117258">Povoliť pre používateľa vzdialené overenie</translation>
 <translation id="4557134566541205630">Predvolená webová adresa stránky novej karty poskytovateľa vyhľadávania</translation>
 <translation id="4567137030726189378">Povoliť používanie nástrojov pre vývojárov</translation>
@@ -1729,6 +1740,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo ponecháte nenastavené, bude hlasová odozva pri prvom zobrazení prihlasovacej obrazovky zakázaná. Používatelia budú môcť hlasovú odozvu kedykoľvek povoliť alebo zakázať a jej stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
 <translation id="5868414965372171132">Konfigurácia siete na úrovni používateľa</translation>
+<translation id="5879014913445067283">Riadi objavovanie zdieľaných súborov v sieti pomocou <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Predvolené nastavenie súborov cookie</translation>
 <translation id="5887414688706570295">Konfiguruje predponu TalkGadget, ktorú budú používať hostitelia vzdialeného prístupu, a bráni používateľom, aby ju zmenili.
 
@@ -2190,6 +2202,17 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce domovskú stránku importovať alebo či má import prebehnúť automaticky.</translation>
 <translation id="7063895219334505671">Povoliť na týchto weboch kontextové okná</translation>
+<translation id="706568410943497889">
+      Ak toto pravidlo nastavíte na hodnotu true, <ph name="PRODUCT_NAME" /> môže zhromažďovať denníky udalostí WebRTC zo služieb Googlu (napríklad Google Meet) a nahrávať ich do Googlu.
+
+      Ak ho nastavíte na hodnotu false alebo ho ponecháte nenastavené, <ph name="PRODUCT_NAME" /> nemôže zhromažďovať tieto denníky ani ich nahrávať.
+
+      Tieto denníky obsahujú diagnostické informácie, ktoré sú užitočné pri ladení problémov s audiohovormi alebo videohovormi v Chrome, ako sú napríklad čas a veľkosť odoslaných a prijatých balíkov RTP, spätnú väzbu týkajúcu sa preťaženia siete a metadáta o čase a kvalite zvuku a snímok videa. Nezahŕňajú zvukový obsah ani videoobsah hovoru.
+
+      Zhromažďovanie týchto dát sa dá spustiť iba pomocou webových služieb Googlu, ako je napríklad Google Hangouts alebo Google Meet.
+
+      Google môže tieto denníky na základe identifikátora relácie priradiť k iným denníkom zhromaždeným príslušnou službou Google. Ide o zamýšľané správanie, ktoré má uľahčiť ladenie.
+      </translation>
 <translation id="706669471845501145">Povoliť webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="7072208053150563108">Frekvencia zmeny hesla zariadenia</translation>
 <translation id="7074513465313721551">Konfiguruje zoznam domén, ktorým bude Bezpečné prehliadanie dôverovať. Znamená to:
@@ -2323,6 +2346,9 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7336878834592315572">Uchovať súbory cookie počas trvania relácie</translation>
 <translation id="7340034977315324840">Hlásiť časy aktivity zariadenia</translation>
 <translation id="7343497214039883642">Konfiguračný súbor podnikovej tlačiarne pre zariadenia</translation>
+<translation id="7349338075015720646">Určuje zoznam webov inštalovaných na pozadí, bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
+
+      Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z dvoch častí: „url“ a „launch_container“. „url“ by mala byť adresa webovej aplikácie, ktorá sa má nainštalovať, a „launch_container“ by malo byť „window“ (okno) alebo „tab“ (karta) (teda podoba, v akej sa webová aplikácia po inštalácii otvorí). Ak časť „launch_container“ vynecháte, aplikácia sa spustí v okne, keď ju Chrome bude považovať za progresívnu webovú aplikáciu. Inak sa zobrazí ako karta.</translation>
 <translation id="7367028210010532881">Keď používateľ prejde na weby, ktoré sú nahlásené ako potenciálne škodlivé, služba Bezpečné prehliadanie zobrazí stránku s upozornením. Povolenie tohto nastavenia zabráni používateľom pokračovať zo stránky s upozornením na škodlivý web.
 
       Ak je toto nastavenie zakázané alebo ak nie je nakonfigurované, používatelia môžu pokračovať na nahlásený web aj po zobrazení upozornenia.
@@ -2782,6 +2808,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
       V tomto prípade znamená výraz „verzia“ buď presnú verziu, ako napríklad 61.0.3163.120, alebo predponu verzie, napríklad 61.0.  </translation>
 <translation id="8544375438507658205">Predvolený vykresľovací modul HTML pre doplnok <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Povoliť synchronizáciu správ SMS z telefónu do Chromebooku</translation>
 <translation id="8549772397068118889">Upozorniť na návštevu stránky, ktorá je mimo balíkov obsahu</translation>
 <translation id="8566842294717252664">Skryť internetový obchod zo stránky na novej karte a zo spúšťača aplikácií</translation>
 <translation id="8586528890725660268">Umožňuje určiť tlačiarne, ktoré používateľ nemá k dispozícii.
@@ -2826,6 +2853,11 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo nenastavíte, služba ochrany heslom bude chrániť iba heslá Google. Používateľ však bude môcť toto nastavenie zmeniť.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
+<translation id="8682611302223077049">Umožňuje nastaviť časové obdobie v milisekundách, po uplynutí ktorého budú používatelia upozornení, že <ph name="PRODUCT_NAME" /> sa musí znova spustiť alebo že zariadenie <ph name="PRODUCT_OS_NAME" /> musí byť reštartované, aby sa použila čakajúca aktualizácia.
+
+      V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach <ph name="PRODUCT_OS_NAME" /> sa po zistení inovácie objaví na paneli úloh systému upozornenie na reštartovanie. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie, ktorá označuje potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie, ktorá označuje potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom.
+
+      Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače. <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
@@ -2870,6 +2902,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Škálovací faktor musí mať hodnotu aspoň 100 %. Hodnoty, ktoré by oneskorenie stmavenia obrazovky v režime prezentácie skrátili na dobu kratšiu ako je bežné oneskorenie stmavenia obrazovky, nie sú povolené.</translation>
 <translation id="8798099450830957504">Predvolené</translation>
+<translation id="8801680448782904838">Upozorňovať používateľa, že sa odporúča alebo vyžaduje opätovné reštartovanie prehliadača</translation>
 <translation id="8818173863808665831">Nahlási geografickú polohu zariadenia.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, poloha sa nahlasovať nebude.</translation>
@@ -3021,6 +3054,11 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak toto pravidlo nastavíte na možnosť True, systém <ph name="PRODUCT_OS_NAME" /> spustí reštart, keď používateľ vypne zariadenie. <ph name="PRODUCT_OS_NAME" /> nahradí v používateľskom rozhraní všetky výskyty tlačidiel na vypnutie tlačidlami na reštartovanie. Ak teda používateľ vypne zariadenie pomocou vypínača, automaticky sa nereštartuje, a to ani vtedy, keď je toto pravidlo povolené.</translation>
 <translation id="9152473318295429890">Povoliť kontextové návrhy súvisiacich webových stránok</translation>
 <translation id="9158929520101169054">Povoliť viacnásobné prihlásenie v rámci prehliadača</translation>
+<translation id="9159126470527871268">Umožňuje používateľov upozorniť, že <ph name="PRODUCT_NAME" /> musia znova spustiť alebo <ph name="PRODUCT_OS_NAME" /> reštartovať, aby sa použila čakajúca aktualizácia.
+
+      Toto nastavenie pravidla aktivuje upozornenia, ktoré informujú používateľa o tom, že sa odporúča alebo vyžaduje opätovné spustenie prehliadača alebo reštartovanie zariadenia. Ak ho nenastavíte, <ph name="PRODUCT_NAME" /> upozorní používateľa prostredníctvom nenápadných zmien v ponuke, že sa vyžaduje opätovné spustenie, pričom <ph name="PRODUCT_OS_NAME" /> to oznámi upozornením v oblasti oznámení.Ak je nastavené na možnosť Recommended (Odporúčané), používateľovi sa bude zobrazovať opakované upozornenie na to, že sa odporúča opätovné spustenie. Používateľ môže toto upozornenie zrušiť a opätovné spustenie tak odmietnuť. Ak je nastavené na možnosť Required (Vyžadované), používateľovi sa zobrazí opakované upozornenie, že po vypršaní obdobia upozornenia sa vynúti opätovné spustenie prehliadača. Predvolené obdobie je sedem dní pre <ph name="PRODUCT_NAME" /> a štyri dni pre <ph name="PRODUCT_OS_NAME" />. Je možné ho nakonfigurovať prostredníctvom nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Relácia používateľa sa po opätovnom spustení alebo reštartovaní obnoví.</translation>
 <translation id="9165792353046089850">Umožňuje nastaviť, či môžu weby získať prístup k pripojeným zariadeniam USB. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k pripojeným zariadeniam USB.
 
           Toto pravidlo môžte prepísať v prípade konkrétnych vzorov webových adries pomocou pravidiel WebUsbAskForUrls a WebUsbBlockedForUrls.

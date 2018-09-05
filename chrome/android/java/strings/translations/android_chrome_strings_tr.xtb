@@ -204,7 +204,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="2496180316473517155">Tarama geçmişi</translation>
 <translation id="2498359688066513246">Yardım ve geri bildirim</translation>
 <translation id="2501278716633472235">Geri dön</translation>
-<translation id="2512222046227390255">Formları otomatik doldurma</translation>
 <translation id="2513403576141822879">Gizlilik, güvenlik ve veri toplamayla ilgili daha fazla ayar için <ph name="BEGIN_LINK" />Senkronizasyon ve Google hizmetleri<ph name="END_LINK" /> konusuna bakın</translation>
 <translation id="2523184218357549926">Ziyaret ettiğiniz sayfaların URL'lerini Google'a gönderir</translation>
 <translation id="2526148617758225454">Veri Tasarrufu açık. Bu özelliği Ayarlar'dan yönetin.</translation>
@@ -249,8 +248,8 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="2891154217021530873">Sayfa yüklemeyi durdur</translation>
 <translation id="2900528713135656174">Etkinlik oluştur</translation>
 <translation id="2902702728133930130">Chrome başlatılırken beklenmeyen bir hata yüzünden başarısız oldu.</translation>
-<translation id="2903493209154104877">Adresler</translation>
 <translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
+<translation id="2910701580606108292">Sitelerin korumalı içeriği oynatmasına izin verilmeden önce size sorulur</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> depolama alanı</translation>
 <translation id="2943166482989655199">Google'a sistem ve kullanım verilerini göndererek Chrome ürününü ve güvenliğini iyileştirin</translation>
@@ -577,7 +576,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="557283862590186398">Chrome'un bu sitede mikrofonunuza erişmesi için izin gerekiyor.</translation>
 <translation id="55737423895878184">Konum ve bildirimlere izin veriliyor</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE" /> üzerinde ara</translation>
-<translation id="5585019845078534178">Kartlar</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5620299005957670886">Sitelerin sensörlerinize erişmesine izin verin (önerilen)</translation>
@@ -672,6 +670,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6277522088822131679">Sayfa yazdırılırken bir sorun oluştu. Lütfen tekrar deneyin.</translation>
 <translation id="6295158916970320988">Tüm siteler</translation>
 <translation id="629730747756840877">Hesap</translation>
+<translation id="6303969859164067831">Oturumu ve senkronizasyonu kapat</translation>
 <translation id="6320088164292336938">Titreşim</translation>
 <translation id="6324034347079777476">Android sistem senkronizasyonu devre dışı</translation>
 <translation id="6333140779060797560">Paylaşım yöntemi: <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7542481630195938534">Öneriler alınamıyor</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
+<translation id="757524316907819857">Sitelerin korumalı içeriği oynatmasını engellenir</translation>
 <translation id="7589445247086920869">Geçerli arama motoru için engelleyin</translation>
 <translation id="7593557518625677601">Chrome Senkronizasyonu'nu başlatmak için Android ayarlarını açın ve Android sistem senkronizasyonunu yeniden etkinleştirin</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>

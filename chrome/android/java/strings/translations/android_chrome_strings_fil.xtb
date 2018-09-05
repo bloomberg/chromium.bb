@@ -204,7 +204,6 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="2496180316473517155">History ng Pagba-browse</translation>
 <translation id="2498359688066513246">Tulong at feedback</translation>
 <translation id="2501278716633472235">Bumalik</translation>
-<translation id="2512222046227390255">I-autofill ang mga form</translation>
 <translation id="2513403576141822879">Para sa higit pang setting na nauugnay sa privacy, seguridad, at pangongolekta ng data, tingnan ang <ph name="BEGIN_LINK" />Pag-sync at mga serbisyo ng Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Ipinapadala sa Google ang mga URL ng mga page na binibisita mo</translation>
 <translation id="2526148617758225454">Naka-on ang Data Saver. Pamahalaan ito sa Mga Setting.</translation>
@@ -249,8 +248,8 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="2891154217021530873">Ihinto ang pag-load ng page</translation>
 <translation id="2900528713135656174">Gumawa ng event</translation>
 <translation id="2902702728133930130">Nagkaroon ng hindi inaasahang error ang Chrome habang nagsasagawa ng pag-start up.</translation>
-<translation id="2903493209154104877">Mga Address</translation>
 <translation id="290376772003165898">Hindi nakasalin ang page sa <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Magtanong bago payagan ang mga site na mag-play ng pinoprotektahang content</translation>
 <translation id="2913331724188855103">Payagan ang mga site na mag-save at magbasa ng data ng cookie (inirerekomenda)</translation>
 <translation id="2932150158123903946">Storage ng <ph name="APP_NAME" /> sa Google</translation>
 <translation id="2943166482989655199">Pahusayin ang Chrome at ang seguridad nito sa pamamagitan ng pagpapadala ng data ng system at paggamit sa Google</translation>
@@ -577,7 +576,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="557283862590186398">Kailangan ng Chrome ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
 <translation id="55737423895878184">Pinapayagan ang lokasyon at mga notification</translation>
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
-<translation id="5585019845078534178">Mga Card</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5596627076506792578">Higit pang opsyon</translation>
 <translation id="5620299005957670886">Payagan ang mga site na i-access ang iyong mga sensor (inirerekomenda)</translation>
@@ -672,6 +670,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6303969859164067831">Mag-sign out at i-off ang pag-sync</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
 <translation id="6324034347079777476">Naka-disable ang pag-sync ng Android system</translation>
 <translation id="6333140779060797560">Ibahagi sa pamamagitan ng <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7542481630195938534">Hindi makakuha ng mga suhestyon</translation>
 <translation id="7562080006725997899">Kini-clear ang data mula sa pagba-browse</translation>
 <translation id="756809126120519699">Na-clear ang data ng Chrome</translation>
+<translation id="757524316907819857">I-block ang mga site sa pag-play ng pinoprotektahang content</translation>
 <translation id="7589445247086920869">I-block para sa kasalukuyang search engine</translation>
 <translation id="7593557518625677601">Buksan ang mga setting ng Android at muling i-enable ang Android system sync upang simulan ang Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>

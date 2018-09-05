@@ -204,7 +204,6 @@ Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvi
 <translation id="2496180316473517155">Historia ya kuvinjari</translation>
 <translation id="2498359688066513246">Usaidizi na maoni</translation>
 <translation id="2501278716633472235">Rudi nyuma</translation>
-<translation id="2512222046227390255">Jaza fomu kiotomatiki</translation>
 <translation id="2513403576141822879">Ili upate mipangilio zaidi inayohusiana na faragha, usalama na ukusanyaji wa data, angalia <ph name="BEGIN_LINK" />Usawazishaji na huduma za Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Hutuma URL za kurasa unazotembelea kwa Google</translation>
 <translation id="2526148617758225454">Kiokoa Data kinawaka. Kidhibiti katika Mipangilio.</translation>
@@ -249,8 +248,8 @@ Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvi
 <translation id="2891154217021530873">Simamisha upakiaji wa ukurasa</translation>
 <translation id="2900528713135656174">Ongeza tukio jipya</translation>
 <translation id="2902702728133930130">Chrome haikufaulu wakati wa kuanza kutokana na hitilafu isiyotarajiwa.</translation>
-<translation id="2903493209154104877">Anwani</translation>
 <translation id="290376772003165898">Je, ukurasa huu haupo katika <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Iulize kabla ya kuruhusu tovuti kucheza maudhui yanayolindwa</translation>
 <translation id="2913331724188855103">Ruhusu tovuti zihifadhi na kusoma data ya vidakuzi (imependekezwa)</translation>
 <translation id="2932150158123903946">Hifadhi ya Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Boresha Chrome na usalama wake kwa kuitumia Google data ya mfumo na utumiaji</translation>
@@ -577,7 +576,6 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="557283862590186398">Chrome inahitaji ruhusa ya kufikia maikrofoni yako kwa ajili ya tovuti hii.</translation>
 <translation id="55737423895878184">Vipengele vya mahali na arifa vinaruhusiwa</translation>
 <translation id="5578795271662203820">Tafuta picha hii kwenye <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Kadi</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
 <translation id="5596627076506792578">Chaguo zaidi</translation>
 <translation id="5620299005957670886">Ruhusu tovuti zifikie vitambuzi vyako (inapendekezwa)</translation>
@@ -672,6 +670,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6277522088822131679">Kulikuwa na tatizo katika kuchapisha ukurasa. Tafadhali jaribu tena.</translation>
 <translation id="6295158916970320988">Tovuti zote</translation>
 <translation id="629730747756840877">Akaunti</translation>
+<translation id="6303969859164067831">Ondoka kwenye akaunti na uzime usawazishaji</translation>
 <translation id="6320088164292336938">Tetema</translation>
 <translation id="6324034347079777476">Kipengele cha usawazishaji wa mfumo wa Android kimezimwa</translation>
 <translation id="6333140779060797560">Shiriki kupitia <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7542481630195938534">Imeshindwa kupata mapendekezo</translation>
 <translation id="7562080006725997899">Inafuta data ya kuvinjari</translation>
 <translation id="756809126120519699">Data ya Chrome imefutwa</translation>
+<translation id="757524316907819857">Zuia tovuti zisicheze maudhui yanayolindwa</translation>
 <translation id="7589445247086920869">Zuia kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="7593557518625677601">Fungua mipangilio ya Android na uwashe upya usawazishaji wa mfumo wa Android ili uanze usawazishaji wa Chrome</translation>
 <translation id="7596558890252710462">Mfumo wa uendeshaji</translation>

@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">అంశం నవీకరించబడింది</translation>
 <translation id="1047726139967079566">ఈ పేజీని బుక్‌మార్క్ చెయ్యి...</translation>
 <translation id="1049743911850919806">అజ్ఞాత</translation>
+<translation id="1063454504051558093">వేరే పాస్‌వర్డ్ ఉపయోగించండి...</translation>
 <translation id="1076421457278169141">కోడ్ స్కాన్ చేయబడింది</translation>
 <translation id="1084365883616172403">Facebook పోస్ట్ పూర్తయింది.</translation>
 <translation id="1104948393051856124">అంగీకరించు &amp; కొనసాగు</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1886928167269928266">ప్రారంభ సమయం</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
+<translation id="191179954310195971">ఇతర Google సేవలు</translation>
 <translation id="1941314575388338491">కాపీ చేయడానికి రెండుసార్లు నొక్కండి.</translation>
 <translation id="1952728750904661634">నిర్వహిత ఖాతాతో సైన్ ఇన్ చేయండి</translation>
 <translation id="1974060860693918893">ఆధునిక</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">మీ పఠన జాబితా ఆఫ్‌లైన్‌లో అందుబాటులో ఉంది. మీ పఠన జాబితాకు పేజీని జోడించడానికి, <ph name="SHARE_OPENING_ICON" />ని నొక్కండి.</translation>
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
+<translation id="3765471630796399471">వేరే పాస్‌వర్డ్ ఉపయోగించండి</translation>
 <translation id="3771033907050503522">అజ్ఞాత ట్యాబ్‌లు</translation>
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">వచనాన్ని క్లియర్ చేయి</translation>
 <translation id="6346549652287021269">కొత్త డౌన్‌లోడ్‌ని ప్రారంభించాలా?</translation>
 <translation id="6362362396625799311">అజ్ఞాత ట్యాబ్‌లు ఏవీ తెరిచి లేవు</translation>
+<translation id="6363526231572697780">వినియోగదారు పేరు లేదు</translation>
 <translation id="6374469231428023295">మళ్లీ ప్రయత్నించు</translation>
 <translation id="6380866119319257197">మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">కార్డ్‌పై ఉన్న పేరు</translation>

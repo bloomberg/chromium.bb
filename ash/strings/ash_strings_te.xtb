@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">సిగ్నల్ బలహీనంగా ఉంది</translation>
 <translation id="1293264513303784526">USB-C పరికరం (ఎడమ పోర్ట్)</translation>
+<translation id="1294929383540927798">లాక్-స్క్రీన్ నోటిఫికేషన్ సెట్టింగ్‌లను మార్చండి</translation>
 <translation id="1302880136325416935">బ్లూటూత్ సెట్టింగ్‌లను చూపుతుంది. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="1351937230027495976">మెనూను కుదించు</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">బ్లూటూత్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">ఈ వినియోగదారుని తీసివేయండి</translation>
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">వాయిస్ ప్రశ్నను ప్రారంభించు</translation>
 <translation id="1658406695958299976">క్షమించండి, మీ పాస్‌వర్డ్ ఇప్పటికీ ధృవీకరించబడలేదు. గమనిక: మీరు మీ పాస్‌వర్డ్‌ను ఇటీవల మార్చి ఉంటే, మీరు సైన్ అవుట్ చేసిన తర్వాత మీ కొత్త పాస్‌వర్డ్ వర్తించబడుతుంది, దయచేసి పాత పాస్‌వర్డ్‌ను ఇక్కడ ఉపయోగించండి.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1698760176351776263">IPv6 చిరునామా: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">మెనూని విస్తరించు</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
+<translation id="3124698051292518391">ఎల్లప్పుడూ అరను చూపు</translation>
 <translation id="3126069444801937830">నవీకరించడానికి పునఃప్రారంభించండి</translation>
 <translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
@@ -178,6 +181,7 @@
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3891340733213178823">సైన్ అవుట్ చేయడానికి Ctrl+Shift+Qని రెండుసార్లు నొక్కండి.</translation>
 <translation id="3893630138897523026">ChromeVox (చదవబడే అభిప్రాయం)</translation>
+<translation id="3897533311200664389">వచన ప్రశ్నను ప్రారంభించు</translation>
 <translation id="3899995891769452915">వాయిస్ ఇన్‌పుట్</translation>
 <translation id="3900355044994618856"><ph name="SESSION_TIME_REMAINING" /> తర్వాత మీ సెషన్ ముగుస్తుంది</translation>
 <translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
@@ -339,7 +343,7 @@
 <translation id="6910714959251846841">ఈ అప్‌డేట్ కోసం మీ పరికరాన్ని పవర్‌వాష్ చేయాలి. తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి.</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="6972754398087986839">ప్రారంభించండి</translation>
-<translation id="6981982820502123353">ప్రాప్యత</translation>
+<translation id="6981982820502123353">యాక్సెస్ సామర్థ్యం</translation>
 <translation id="698231206551913481">ఈ వినియోగదారును తీసివేసిన తర్వాత ఈ వినియోగదారుతో అనుబంధించిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి.</translation>
 <translation id="7015766095477679451">తిరిగి <ph name="COME_BACK_TIME" />కి రండి.</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
@@ -461,6 +465,7 @@
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="9029474291399787231">Adobe Flash Player అప్‌డేట్ అందుబాటులో ఉంది</translation>
 <translation id="9056839673611986238">పరికరం ఉపసంహరించబడుతుంది</translation>
+<translation id="9070640332319875144">అసిస్టెంట్ సెట్టింగ్‌లు</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>

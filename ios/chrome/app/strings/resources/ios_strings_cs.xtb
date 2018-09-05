@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Položka byla aktualizována</translation>
 <translation id="1047726139967079566">Přidat stránku do záložek...</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
+<translation id="1063454504051558093">Použit jiné heslo...</translation>
 <translation id="1076421457278169141">Kód byl naskenován</translation>
 <translation id="1084365883616172403">Příspěvek na Facebook byl odeslán.</translation>
 <translation id="1104948393051856124">Přijmout a pokračovat</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Odesílat data o využití</translation>
 <translation id="1886928167269928266">Od počátku věků</translation>
 <translation id="1911619930368729126">Nahrát na Disk Google</translation>
+<translation id="191179954310195971">Další služby Google</translation>
 <translation id="1941314575388338491">Zkopírujete dvojitým klepnutím.</translation>
 <translation id="1952728750904661634">Přihlášení pomocí spravovaného účtu</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Seznam obsahu k přečtení je k dispozici offline. Chcete-li na něj přidat stránku, klepněte na <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Použijte jiné heslo</translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
 <translation id="3779810277399252432">Nejste připojeni k internetu</translation>
 <translation id="3783017676699494206">Uložit obrázek</translation>
@@ -315,6 +318,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6344783595350022745">Smazat text</translation>
 <translation id="6346549652287021269">Zahájit nové stahování?</translation>
 <translation id="6362362396625799311">Žádné anonymní karty</translation>
+<translation id="6363526231572697780">Žádné uživatelské jméno</translation>
 <translation id="6374469231428023295">Zkusit znovu</translation>
 <translation id="6380866119319257197">Pokud heslovou frázi zapomenete nebo toto nastavení budete chtít změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="6389470377220713856">Jméno na kartě</translation>

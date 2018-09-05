@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
-<translation id="2512222046227390255">自动填充表单</translation>
 <translation id="2513403576141822879">若想了解更多与隐私、安全和数据收集相关的设置，请参阅<ph name="BEGIN_LINK" />同步功能和 Google 服务<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2526148617758225454">流量节省程序已启用。您可以在“设置”中对其进行管理。</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">停止加载网页</translation>
 <translation id="2900528713135656174">创建活动</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
-<translation id="2903493209154104877">地址</translation>
 <translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
+<translation id="2910701580606108292">在允许网站播放受保护内容前先询问</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 存储数据</translation>
 <translation id="2943166482989655199">将系统信息和使用情况数据发送给 Google，帮助改进 Chrome 并提高其安全性</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="55737423895878184">允许使用位置信息以及显示通知</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
-<translation id="5585019845078534178">卡片</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5620299005957670886">允许网站使用您的传感器（推荐）</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="629730747756840877">帐号</translation>
+<translation id="6303969859164067831">退出帐号并关闭同步功能</translation>
 <translation id="6320088164292336938">振动</translation>
 <translation id="6324034347079777476">Android 系统同步功能已停用</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION" />分享</translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">无法获取建议</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
+<translation id="757524316907819857">禁止网站播放受保护内容</translation>
 <translation id="7589445247086920869">不适用于当前的搜索引擎</translation>
 <translation id="7593557518625677601">打开 Android 设置，重新启用 Android 系统同步功能以开始 Chrome 同步</translation>
 <translation id="7596558890252710462">操作系统</translation>

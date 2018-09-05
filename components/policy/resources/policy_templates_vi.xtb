@@ -353,6 +353,7 @@
 <translation id="199764499252435679">Cho phép cập nhật thành phần trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Quản lý nguồn</translation>
 <translation id="201557587962247231">Tần suất tải lên báo cáo trạng thái thiết bị</translation>
+<translation id="2017301949684549118">URL dùng để cài đặt tự động Ứng dụng web.</translation>
 <translation id="2018836497795982119">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách người dùng.
 
       Đặt chính sách này sẽ ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được giới hạn ở mức tương ứng. Nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ vì thông báo chính sách được kỳ vọng sẽ buộc làm mới tự động bất cứ khi nào chính sách thay đổi.
@@ -671,6 +672,11 @@
           Có thể chỉ định URL tìm kiếm của Google dưới dạng: <ph name="GOOGLE_SEARCH_URL" />.
 
           Phải đặt tùy chọn này khi chính sách 'DefaultSearchProviderEnabled' được bật và sẽ chỉ được áp dụng nếu chính sách này được bật.</translation>
+<translation id="2659019163577049044">Nếu bật mục cài đặt này, người dùng sẽ được phép thiết lập thiết bị của mình để đồng bộ hóa tin nhắn SMS giữa điện thoại và Chromebook. Hãy lưu ý rằng nếu cho phép chính sách này, người dùng phải chắc chắn bật tính năng này bằng cách hoàn tất quy trình thiết lập. Sau khi thiết lập xong, người dùng có thể gửi và nhận tin nhắn SMS trên Chromebook.
+
+      Nếu tắt mục cài đặt này, người dùng sẽ không được phép thiết lập tính năng đồng bộ hóa SMS.
+
+      Nếu không đặt chính sách này, chế độ mặc định sẽ là không được phép đối với người dùng được quản lý và được phép đối với người dùng không được quản lý.</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
 
@@ -1095,6 +1101,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mỗi mục nhập trong danh sách chứa một từ điển. Từ điển này phải bao gồm ID tiện ích trong trường 'extension-id' và URL cập nhật trong trường 'update-url'.</translation>
 <translation id="3874773863217952418">Bật tính năng Nhấn để tìm kiếm</translation>
 <translation id="3877517141460819966">Chế độ xác thực hai yếu tố tích hợp</translation>
+<translation id="3879208481373875102">Định cấu hình danh sách Ứng dụng web bắt buộc cài đặt</translation>
 <translation id="388237772682176890">Chính sách này không được dùng trong M53 nữa và bị xóa trong M54, vì hỗ trợ của SPDY/3.1 đã bị xóa.
 
       Không cho phép sử dụng giao thức SPDY trong <ph name="PRODUCT_NAME" />.
@@ -1337,6 +1344,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Để biết mô tả đầy đủ về các cài đặt có thể thực hiện được và cấu trúc của chính sách này, vui lòng truy cập vào https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Chế độ xử lý vòng lặp trở lại của chính sách người dùng</translation>
+<translation id="4554841826517980623">Chính sách này kiểm soát việc tính năng Chia sẻ tệp trong mạng dành cho <ph name="PRODUCT_NAME" /> có phải dùng <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng hay không.
+      Nếu đặt chính sách này thành True, tính năng phát hiện chia sẻ sẽ dùng giao thức <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng.
+      Nếu đặt chính sách này thành False, tính năng phát hiện chia sẻ sẽ không dùng giao thức <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng.
+      Nếu không đặt chính sách này, chế độ mặc định sẽ là tắt đối với người dùng do doanh nghiệp quản lý và bật đối với người dùng không được quản lý.</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
 <translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4567137030726189378">Cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
@@ -1761,6 +1772,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không đặt chính sách này, phản hồi bằng giọng nói bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt phản hồi bằng giọng nói bất cứ lúc nào và trạng thái của tính năng này trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
+<translation id="5879014913445067283">Kiểm soát tính năng phát hiện Chia sẻ tệp trong mạng thông qua <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Cài đặt cookie mặc định</translation>
 <translation id="5887414688706570295">Định cấu hình tiền tố TalkGadget sẽ được máy chủ truy cập từ xa sử dụng và ngăn người dùng thay đổi tiền tố này.
 
@@ -2221,6 +2233,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="7063895219334505671">Cho phép cửa sổ bật lên trên các trang web này</translation>
+<translation id="706568410943497889">
+      Nếu đặt chính sách này thành true, thì <ph name="PRODUCT_NAME" /> được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google (ví dụ như Google Meet) và tải các nhật ký đó lên Google.
+
+      Nếu đặt chính sách này thành false hoặc không đặt, thì <ph name="PRODUCT_NAME" /> có thể sẽ không thu thập cũng như tải các nhật ký đó lên.
+
+      Các nhật ký này chứa thông tin chẩn đoán hữu ích khi gỡ lỗi sự cố về cuộc gọi âm thanh hoặc video trên Chrome, chẳng hạn như thời gian và kích thước gói RTP gửi đi và nhận được, phản hồi về tình trạng nghẽn mạng cũng như siêu dữ liệu về thời gian và chất lượng của khung video và âm thanh. Các nhật ký này không chứa nội dung âm thanh hoặc video của cuộc gọi.
+
+      Chỉ các dịch vụ web của Google, chẳng hạn như Google Hangouts hoặc Google Meet, mới có thể kích hoạt chức năng thu thập dữ liệu này trên Chrome.
+
+      Thông qua ID phiên, Google có thể liên kết các nhật ký này với các nhật ký khác do dịch vụ của Google tự thu thập, nhằm giúp quá trình gỡ lỗi trở nên dễ dàng hơn.
+      </translation>
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7072208053150563108">Tần suất thay đổi mật khẩu máy</translation>
 <translation id="7074513465313721551">Định cấu hình danh sách các miền mà tính năng Duyệt web an toàn sẽ tin tưởng. Điều này có nghĩa là:
@@ -2352,6 +2375,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
 <translation id="7343497214039883642">Tệp cấu hình máy dành cho in doanh nghiệp cho các thiết bị</translation>
+<translation id="7349338075015720646">Xác định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt cũng như tắt.
+
+      Mỗi mục danh sách của chính sách này là một đối tượng chứa hai thành phần: "url" và "launch_container". "url" phải là URL của ứng dụng web cần cài đặt và "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt. Khi thiếu phần "launch_container", ứng dụng sẽ chạy trong cửa sổ nếu Chrome cho rằng đây là Ứng dụng web tiến bộ, nếu không thì ứng dụng sẽ chạy trong tab.</translation>
 <translation id="7367028210010532881">Dịch vụ Duyệt web an toàn hiển thị trang cảnh báo khi người dùng chuyển đến các trang web được gắn cờ là có thể độc hại. Việc bật mục cài đặt này sẽ ngăn người dùng vẫn tiếp tục truy cập vào trang web độc hại từ trang cảnh báo.
 
       Nếu bạn đã tắt hoặc chưa định cấu hình mục cài đặt này, thì người dùng sẽ có thể chọn tiếp tục truy cập vào trang web bị gắn cờ sau khi cảnh báo hiển thị.
@@ -2807,6 +2833,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Ở đây, "Phiên bản" có thể là phiên bản chính xác như '61.0.3163.120' hoặc tiền tố của phiên bản như '61.0'  </translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Cho phép đồng bộ hóa Tin nhắn SMS từ điện thoại sang Chromebook.</translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8586528890725660268">Chỉ định các máy in mà người dùng không thể sử dụng.
@@ -2851,6 +2878,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt chính sách này, thì dịch vụ bảo vệ mật khẩu sẽ chỉ bảo vệ mật khẩu của Google nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
+<translation id="8682611302223077049">Cho phép đặt khoảng thời gian tính bằng mili giây mà người dùng nhận được thông báo phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị chạy <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
+
+      Trong khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật. Đối với các thiết bị chạy <ph name="PRODUCT_OS_NAME" />, thông báo khởi động lại sẽ xuất hiện trong khay hệ thống khi phát hiện có bản nâng cấp. Đối với các trình duyệt <ph name="PRODUCT_NAME" />, menu ứng dụng sẽ thay đổi để cho thấy cần chạy lại sau khi hết một phần ba thời gian thông báo. Thông báo này sẽ đổi màu khi hết hai phần ba thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Các thông báo bổ sung được bật theo chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> cũng tuân theo lịch biểu này.
+
+      Nếu người dùng không đặt chính sách thì khoảng thời gian mặc định là 345600000 mili giây (bốn ngày) đối với thiết bị chạy <ph name="PRODUCT_OS_NAME" /> và 604800000 mili giây (một tuần) đối với <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8704831857353097849">Danh sách plugin bị tắt</translation>
@@ -2895,6 +2927,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Hệ số tỷ lệ phải từ 100% trở lên. Không cho phép các giá trị làm cho độ trễ mờ màn hình trong chế độ bản trình bày ngắn hơn độ trễ mờ màn hình thông thường.</translation>
 <translation id="8798099450830957504">Mặc định</translation>
+<translation id="8801680448782904838">Thông báo cho người dùng biết họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị</translation>
 <translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
@@ -3058,6 +3091,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ kích hoạt khởi động lại khi người dùng tắt thiết bị. <ph name="PRODUCT_OS_NAME" /> sẽ thay thế tất cả số lần xuất hiện nút tắt trong Giao diện người dùng bằng nút khởi động lại. Nếu người dùng tắt thiết bị bằng nút nguồn thì thiết bị đó sẽ không tự động khởi động lại ngay cả khi đã bật chính sách.</translation>
 <translation id="9152473318295429890">Bật nội dung đề xuất theo ngữ cảnh của các trang web liên quan</translation>
 <translation id="9158929520101169054">Cho phép đăng nhập nhiều tài khoản trong trình duyệt</translation>
+<translation id="9159126470527871268">Thông báo cho người dùng biết phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
+
+      Tùy chọn cài đặt chính sách này sẽ bật thông báo nhắc nhở người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị. Nếu người dùng không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại thông qua các thay đổi nhỏ đối với menu của sản phẩm, trong khi <ph name="PRODUCT_OS_NAME" /> cho biết điều đó thông qua thông báo trong khay hệ thống. Nếu người dùng đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ cần chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu người dùng đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ bắt buộc phải chạy lại trình duyệt sau khi hết khoảng thời gian thông báo. Khoảng thời gian này mặc định là 7 ngày đối với <ph name="PRODUCT_NAME" /> và 4 ngày đối với <ph name="PRODUCT_OS_NAME" /> và có thể định cấu hình thông qua cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Phiên của người dùng sẽ được khôi phục sau khi chạy lại/khởi động.</translation>
 <translation id="9165792353046089850">Cho phép bạn đặt liệu có cho phép trang web truy cập vào các thiết bị USB đã kết nối hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi khi trang web muốn truy cập vào các thiết bị USB đã kết nối.
 
           Có thể ghi đè chính sách này cho các mẫu URL cụ thể bằng chính sách 'WebUsbAskForUrls' và 'WebUsbBlockedForUrls'.

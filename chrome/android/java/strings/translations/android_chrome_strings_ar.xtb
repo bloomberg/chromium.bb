@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">سجل التصفح</translation>
 <translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2501278716633472235">الرجوع للخلف</translation>
-<translation id="2512222046227390255">املأ النماذج تلقائيًا</translation>
 <translation id="2513403576141822879">‏لعرض مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطِّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2526148617758225454">تم تشغيل توفير البيانات. يمكنك إدارته في الإعدادات.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">إيقاف تحميل الصفحة</translation>
 <translation id="2900528713135656174">إنشاء حدث</translation>
 <translation id="2902702728133930130">‏تعذّر Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
-<translation id="2903493209154104877">العناوين</translation>
 <translation id="290376772003165898">أليست الصفحة باللغة <ph name="LANGUAGE" />؟</translation>
+<translation id="2910701580606108292">السؤال قبل السماح لمواقع الويب بتشغيل المحتوى المحمي</translation>
 <translation id="2913331724188855103">السماح للمواقع بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2932150158123903946">‏سعة تخزين <ph name="APP_NAME" /> Google</translation>
 <translation id="2943166482989655199">‏تحسين Chrome وإعدادات الأمان فيه عن طريق إرسال بيانات النظام والاستخدام إلى Google</translation>
@@ -578,7 +577,6 @@
 <translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
 <translation id="55737423895878184">مسموح بتحديد الموقع الجغرافي والإشعارات</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
-<translation id="5585019845078534178">بطاقات</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5620299005957670886">السماح للمواقع بالوصول إلى أجهزة الاستشعار (مُوصى به)</translation>
@@ -673,6 +671,7 @@
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. يُرجى إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="629730747756840877">الحساب</translation>
+<translation id="6303969859164067831">تسجيل الخروج وإيقاف المزامنة</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
 <translation id="6324034347079777476">‏تمّ إيقاف مزامنة نظام Android</translation>
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION" /></translation>
@@ -835,6 +834,7 @@
 <translation id="7542481630195938534">يتعذر الحصول على الاقتراحات</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
+<translation id="757524316907819857">منع مواقع الويب من تشغيل المحتوى المحمي</translation>
 <translation id="7589445247086920869">حظر محرك البحث الحالي</translation>
 <translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تفعيل مزامنة نظام Android لبدء مزامنة Chrome</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>

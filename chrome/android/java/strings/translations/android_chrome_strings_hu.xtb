@@ -204,7 +204,6 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="2496180316473517155">Böngészés előzményei</translation>
 <translation id="2498359688066513246">Súgó és visszajelzés</translation>
 <translation id="2501278716633472235">Visszalépés</translation>
-<translation id="2512222046227390255">Űrlapok automatikus kitöltése</translation>
 <translation id="2513403576141822879">A <ph name="BEGIN_LINK" />Szinkronizálás és Google<ph name="END_LINK" /> részben további beállításokat talál az adatvédelemre, biztonságra és adatgyűjtésre vonatkozóan</translation>
 <translation id="2523184218357549926">A felkeresett oldalak URL-címének elküldése a Google-nak</translation>
 <translation id="2526148617758225454">Az Adatforgalom-csökkentő be van kapcsolva, és a Beállítások menüben kezelheti.</translation>
@@ -249,8 +248,8 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="2891154217021530873">Oldal betöltésének leállítása</translation>
 <translation id="2900528713135656174">Esemény létrehozása</translation>
 <translation id="2902702728133930130">A Chrome indítása sikertelen volt egy váratlan hiba miatt.</translation>
-<translation id="2903493209154104877">Címek</translation>
 <translation id="290376772003165898">Az oldal nem <ph name="LANGUAGE" /> nyelvű?</translation>
+<translation id="2910701580606108292">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára védett tartalmak lejátszását</translation>
 <translation id="2913331724188855103">Cookie-adatok mentésének és olvasásának engedélyezése a webhelyeken (ajánlott)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-tárhely</translation>
 <translation id="2943166482989655199">Ha elküldi a rendszer- és használati adatokat a Google-nak, hozzájárulhat a Chrome fejlesztéséhez és a szolgáltatás biztonságának javításához</translation>
@@ -577,7 +576,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="557283862590186398">A Chrome számára engedély szükséges, hogy hozzáférjen a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="55737423895878184">Helyadatok és értesítések engedélyezve</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE" /> keresővel</translation>
-<translation id="5585019845078534178">Kártyák</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
 <translation id="5596627076506792578">További lehetőségek</translation>
 <translation id="5620299005957670886">Az érzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
@@ -672,6 +670,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="629730747756840877">Fiók</translation>
+<translation id="6303969859164067831">Kijelentkezés, és a szinkronizálás kikapcsolása</translation>
 <translation id="6320088164292336938">Rezgés</translation>
 <translation id="6324034347079777476">Az Android rendszer szinkronizálása letiltva</translation>
 <translation id="6333140779060797560">Megosztás a következőn keresztül: <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7542481630195938534">Nem sikerült lekérni a javaslatokat</translation>
 <translation id="7562080006725997899">Böngészési adatok törlése</translation>
 <translation id="756809126120519699">Chrome-adatok törölve</translation>
+<translation id="757524316907819857">Védett tartalom lejátszásának letiltása a webhelyeken</translation>
 <translation id="7589445247086920869">Tiltja a jelenlegi keresőmotor számára</translation>
 <translation id="7593557518625677601">Aktiválja újra az Android rendszer szinkronizálását a Chrome-szinkronizáláshoz</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>

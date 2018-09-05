@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Zaktualizowano element</translation>
 <translation id="1047726139967079566">Dodaj stronę do zakładek...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Użyj innego hasła…</translation>
 <translation id="1076421457278169141">Kod został zeskanowany</translation>
 <translation id="1084365883616172403">Wpis na Facebooku dodany.</translation>
 <translation id="1104948393051856124">Zaakceptuj i kontynuuj</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1886928167269928266">Od początku</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
+<translation id="191179954310195971">Inne usługi Google</translation>
 <translation id="1941314575388338491">Kliknij dwukrotnie, by skopiować.</translation>
 <translation id="1952728750904661634">Zaloguj się na konto zarządzane</translation>
 <translation id="1974060860693918893">Zaawansowane</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Twoja lista Do przeczytania jest dostępna offline. Aby dodać do niej stronę, kliknij <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3691593122358196899">Utworzono zakładkę w folderze <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Użyj innego hasła</translation>
 <translation id="3771033907050503522">Karty incognito</translation>
 <translation id="3779810277399252432">Brak połączenia z internetem.</translation>
 <translation id="3783017676699494206">Zapisz obraz</translation>
@@ -315,6 +318,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="6344783595350022745">Wyczyść tekst</translation>
 <translation id="6346549652287021269">Rozpocząć nowe pobieranie?</translation>
 <translation id="6362362396625799311">Brak kart incognito</translation>
+<translation id="6363526231572697780">Brak nazwy użytkownika</translation>
 <translation id="6374469231428023295">Spróbuj jeszcze raz</translation>
 <translation id="6380866119319257197">Jeśli nie pamiętasz hasła lub chcesz zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Imię i nazwisko na karcie</translation>

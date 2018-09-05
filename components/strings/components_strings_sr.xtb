@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Идентитет организације <ph name="ORGANIZATION" /> на локалитету <ph name="LOCALITY" /> је верификовао издавач <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1430915738399379752">Штампај</translation>
+<translation id="143412116769631998">Запамти начине плаћања</translation>
 <translation id="1484290072879560759">Одаберите адресу за испоруку</translation>
 <translation id="1506687042165942984">Прикажите сачувану копију ове странице (тј. копију за коју се зна да је застарела).</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ова грешка се приказује ако користите Wi-Fi портал на коме морате да се пријавите да бисте се повезали на интернет.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Привремена грешка на серверу</translation>
 <translation id="3154506275960390542">Ова страница садржи образац чије слање може да буде небезбедно. Податке које пошаљете могу да виде и други док су у пролазу и нападач може да их измени да би променио садржај који сервер прима.</translation>
 <translation id="3157931365184549694">Поново отвори</translation>
+<translation id="316082708977904280">Запамти адресе и друге податке</translation>
 <translation id="3162559335345991374">Wi-Fi мрежа коју користите ће можда захтевати да посетите страницу за пријављивање.</translation>
 <translation id="3167968892399408617">Странице које прегледате на картицама без архивирања се неће задржавати у историји прегледача, складишту колачића или историји претраге када затворите све картице без архивирања. Сачуваћемо све преузете датотеке или направљене обележиваче.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Потврда ваљаности је успела</translation>
 <translation id="3655670868607891010">Ако вам се ово често приказује, можда вам помогну следећи <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Ревизија</translation>
+<translation id="3665775945622610063">Запамти начине плаћања</translation>
 <translation id="3678029195006412963">Потписивање захтева није успело</translation>
 <translation id="3678529606614285348">Отворите страницу у ноцом прозору без архивирања (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Извештај о отказивању је снимљен <ph name="CRASH_TIME" />, а отпремљен <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Да ли желите да сачувате ову картицу на Google налогу и на овом уређају?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Истиче <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Блокиран је штетан садржај.</translation>
 <translation id="382518646247711829">Ако користите прокси сервер...</translation>
 <translation id="3828924085048779000">Није дозвољено да поље за приступну фразу буде празно.</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Радње</translation>
 <translation id="4958444002117714549">Прошири листу</translation>
 <translation id="4974590756084640048">Поново омогући упозорења</translation>
+<translation id="4988217478422488391">Омогућава брже плаћање онлајн</translation>
 <translation id="4989809363548539747">Ова додатна компонента није подржана</translation>
 <translation id="5002932099480077015">Ако је ова опција омогућена, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="5018422839182700155">Не можемо да отворимо ову страницу</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Понови измену</translation>
 <translation id="5481076368049295676">Овај садржај ће покушати да инсталира опасан софтвер на уређај који ће украсти или обрисати ваше податке. <ph name="BEGIN_LINK" />Ипак прикажи<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Додајте важећу адресу</translation>
+<translation id="5490432419156082418">Адресе и друго</translation>
 <translation id="5492298309214877701">Овај сајт на интранету компаније, организације или школе има исти URL као и један спољни веб-сајт.
     <ph name="LINE_BREAK" />
     Покушајте да се обратите администратору система.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Користи се 1}one{Користи се #}few{Користе се #}other{Користи се #}}</translation>
 <translation id="5922853866070715753">Скоро је готово</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
+<translation id="5951495562196540101">Регистрација корисничког налога није успела (доступна је лиценца пакета).</translation>
 <translation id="5967592137238574583">Измените контакт информације</translation>
 <translation id="5967867314010545767">Уклони из историје</translation>
 <translation id="5975083100439434680">Умањивање</translation>
@@ -909,6 +916,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />да сазнате више<ph name="END_LINK" /> о овом проблему.</translation>
 <translation id="7453467225369441013">Одјавиће вас са већине сајтова. Неће вас одјавити са Google налога.</translation>
 <translation id="7455133967321480974">Користи глобалну подразумевану вредност (Блокирај)</translation>
+<translation id="7457461136432785307">Запамти адресе и друге податке</translation>
 <translation id="7460163899615895653">Недавне картице са других уређаја се приказују овде</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7481312909269577407">Проследи</translation>
@@ -1060,6 +1068,7 @@
 <translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картица}one{# кредитна картица}few{# кредитне картице}other{# кредитних картица}}</translation>
+<translation id="8473863474539038330">Адресе и друго</translation>
 <translation id="8483780878231876732">Да бисте користили картице са Google налога, пријавите се у Chrome</translation>
 <translation id="8488350697529856933">Односе се на</translation>
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>
@@ -1120,6 +1129,7 @@
 <translation id="8952525071319348207">Унесите рок трајања и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици. Када будете потврдили, подаци о картици са налога за Google плаћања ће бити послати овом сајту.</translation>
 <translation id="8957210676456822347">Овлашћење на улазном порталу</translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
+<translation id="8975012916872825179">Обухвата информације попут бројева телефона, имејл адреса и адреса за испоруку</translation>
 <translation id="8978053250194585037">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило „пецање“<ph name="END_LINK" /> на <ph name="SITE" />. Сајтови са „пецањем“ се представљају као неки други веб-сајтови да би вас преварили.</translation>
 <translation id="8983003182662520383">Начини плаћања и адресе из Google Pay-а</translation>
 <translation id="8987927404178983737">Месец</translation>
@@ -1168,6 +1178,7 @@
 <translation id="935608979562296692">ОБРИШИ ОБРАЗАЦ</translation>
 <translation id="939736085109172342">Нови директоријум</translation>
 <translation id="951104842009476243">Дебитне и припејд картице које се прихватају</translation>
+<translation id="962484866189421427">Овај садржај можда покушава да инсталира обмањујуће апликације које се претварају да су нешто друго или да прикупљају податке који могу да се користе за праћење. <ph name="BEGIN_LINK" />Прикажи<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Званична верзија</translation>
 <translation id="973773823069644502">Додај адресу за доставу</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{None}=1{1 ставка}one{# ставка}few{# ставке}other{# ставки}}</translation>

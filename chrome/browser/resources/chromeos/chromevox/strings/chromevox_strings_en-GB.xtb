@@ -139,6 +139,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2267945578749931355">Next Character</translation>
 <translation id="2281234842553884450">Previous slider</translation>
 <translation id="2294136146931447363">Italic start</translation>
+<translation id="2311237334957139798">Move to previous at granularity</translation>
 <translation id="2318372665160196757">Main</translation>
 <translation id="2329324941084714723">Tab panel</translation>
 <translation id="2344193891939537199">Date time control</translation>
@@ -520,6 +521,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5106547198195128110">We have some exciting changes in this new release; here's what's new:</translation>
 <translation id="5110983769041734144">No previous form field.</translation>
 <translation id="5111640677200759579">Column header</translation>
+<translation id="5115892389597951922">ChromeVox Log</translation>
 <translation id="5136967254288895616">No previous link.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="5158275234811857234">Cover</translation>
@@ -687,6 +689,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6540201937398578274">In ChromeVox, the Search key is the modifier key. Most ChromeVox shortcuts start with the Search key. You’ll also use the arrow keys for navigation.</translation>
 <translation id="6550720799683018100">Change the current keymap by selecting an option from the list below.</translation>
 <translation id="6561818612645211875">Go to beginning of the current row</translation>
+<translation id="6583174818554398774">Move to next at granularity</translation>
 <translation id="6587021927234520429">No next level 4 heading.</translation>
 <translation id="6601344353291556895">Enable verbose descriptions.</translation>
 <translation id="6615602925644411249">Find in page.</translation>

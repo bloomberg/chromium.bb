@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elemento actualizado</translation>
 <translation id="1047726139967079566">Añadir esta página a marcadores...</translation>
 <translation id="1049743911850919806">Incógnito</translation>
+<translation id="1063454504051558093">Usar otra contraseña...</translation>
 <translation id="1076421457278169141">Código escaneado</translation>
 <translation id="1084365883616172403">Publicado en Facebook</translation>
 <translation id="1104948393051856124">Aceptar y continuar</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">Desde siempre</translation>
 <translation id="1911619930368729126">Subir a Google Drive</translation>
+<translation id="191179954310195971">Otros servicios de Google</translation>
 <translation id="1941314575388338491">Toca dos veces para copiar.</translation>
 <translation id="1952728750904661634">Inicia sesión con una cuenta gestionada</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Tu lista de lectura está disponible sin conexión. Para añadir una página a la lista, toca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precargar páginas web</translation>
 <translation id="3691593122358196899">Marcador añadido a <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Usar otra contraseña</translation>
 <translation id="3771033907050503522">Pestañas incógnito</translation>
 <translation id="3779810277399252432">No hay conexión a Internet.</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
@@ -315,6 +318,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6346549652287021269">¿Quieres iniciar una nueva descarga?</translation>
 <translation id="6362362396625799311">No hay pestañas de incógnito</translation>
+<translation id="6363526231572697780">Ningún nombre de usuario</translation>
 <translation id="6374469231428023295">Volver a intentarlo</translation>
 <translation id="6380866119319257197">Si has olvidado tu frase de contraseña o quieres cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nombre de la tarjeta</translation>

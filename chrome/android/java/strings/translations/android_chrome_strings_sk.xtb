@@ -204,7 +204,6 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2496180316473517155">História prehliadania</translation>
 <translation id="2498359688066513246">Pomocník a spätná väzba</translation>
 <translation id="2501278716633472235">Prejsť späť</translation>
-<translation id="2512222046227390255">Automaticky vypĺňať formuláre</translation>
 <translation id="2513403576141822879">Ďalšie nastavenia týkajúce sa ochrany súkromia, zabezpečenia a zhromažďovania dát nájdete v časti <ph name="BEGIN_LINK" />Synchronizácia a služby Googlu<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Odosiela Googlu webové adresy navštívených stránok</translation>
 <translation id="2526148617758225454">Šetrič dát je zapnutý. Spravujte ho v Nastaveniach.</translation>
@@ -249,8 +248,8 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2891154217021530873">Zastaviť načítavanie stránky</translation>
 <translation id="2900528713135656174">Vytvorte udalosť</translation>
 <translation id="2902702728133930130">Prehliadač Chrome sa nepodarilo spustiť, pretože sa vyskytla neočakávaná chyba</translation>
-<translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Stránka nie je v jazyku <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Opýtať sa pred udelením povolenia umožňujúceho webom prehrať chránený obsah</translation>
 <translation id="2913331724188855103">Povoliť stránkam ukladať a čítať údaje súborov cookie (odporučané)</translation>
 <translation id="2932150158123903946">Úložisko Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Zlepšite Chrome a jeho zabezpečenie odosielaním systémových dát a údajov o využívaní do Googlu</translation>
@@ -577,7 +576,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="557283862590186398">Chrome potrebuje povolenie pre tento web na prístup k vášmu mikrofónu.</translation>
 <translation id="55737423895878184">Poloha a upozornenia sú povolené</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Karty</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5596627076506792578">Ďalšie možnosti</translation>
 <translation id="5620299005957670886">Povoliť webom prístup k senzorom (odporúčané)</translation>
@@ -672,6 +670,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>
 <translation id="6295158916970320988">Všetky stránky</translation>
 <translation id="629730747756840877">Účet</translation>
+<translation id="6303969859164067831">Odhlásiť sa a vypnúť synchronizáciu</translation>
 <translation id="6320088164292336938">Vibrovanie</translation>
 <translation id="6324034347079777476">Synchronizácia systému Android je zakázaná</translation>
 <translation id="6333140779060797560">Zdieľať prostredníctvom aplikácie <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7542481630195938534">Návrhy sa nedajú získať</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
+<translation id="757524316907819857">Blokuje prehrávanie chráneného obsahu na weboch</translation>
 <translation id="7589445247086920869">Blokovať pre aktuálny vyhľadávač</translation>
 <translation id="7593557518625677601">V nastaveniach Androidu spustite synchronizáciu Chromu opätovným povolením synchronizácie Androidu</translation>
 <translation id="7596558890252710462">Operačný systém</translation>

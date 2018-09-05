@@ -344,6 +344,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="199764499252435679">Komponentenupdates in <ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="2006530844219044261">Energieverwaltung</translation>
 <translation id="201557587962247231">Häufigkeit von Uploads mit Berichten zum Gerätestatus</translation>
+<translation id="2017301949684549118">Ohne Nutzereingriff zu installierende URLs für Web-Apps.</translation>
 <translation id="2018836497795982119">Gibt den Zeitraum in Millisekunden an, in dem Nutzerrichtlinieninformationen vom Geräteverwaltungsdienst abgefragt werden.
 
       Durch das Festlegen dieser Richtlinie wird der Standardwert von 3 Stunden außer Kraft gesetzt. Gültige Werte für diese Richtlinie liegen im Bereich zwischen 1.800.000 (30 Minuten) und 86.400.000 (1 Tag). Alle Werte, die nicht in diesem Bereich liegen, werden auf den jeweiligen Grenzwert gesetzt. Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen.
@@ -647,6 +648,11 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Die URL für die Google-Suche kann wie folgt angegeben werden: <ph name="GOOGLE_SEARCH_URL" />.
 
           Diese Option muss festgelegt werden, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist, und wird auch nur dann beachtet.</translation>
+<translation id="2659019163577049044">Wenn diese Einstellung aktiviert ist, können Nutzer ihre Geräte so einrichten, dass SMS zwischen ihrem Smartphone und Chromebook synchronisiert werden. Wird diese Richtlinie festgelegt, müssen sich Nutzer ausdrücklich für diese Funktion anmelden, indem sie einen Einrichtungsvorgang ausführen. Danach können Nutzer SMS auf ihren Chromebooks senden und empfangen.
+
+      Wenn diese Einstellung deaktiviert ist, dürfen Nutzer die SMS-Synchronisierung nicht einrichten.
+
+      Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von verwalteten Nutzern nicht verwendet und von nicht verwalteten Nutzern verwendet werden kann.</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
@@ -1052,6 +1058,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
 <translation id="3874773863217952418">"Zum Suchen tippen" aktivieren</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
+<translation id="3879208481373875102">Liste der Web-Apps konfigurieren, deren Installation erzwungen wurde</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
       Sie verhindert die Verwendung des SPDY-Protokolls in <ph name="PRODUCT_NAME" />.
@@ -1287,6 +1294,10 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
           Eine vollständige Beschreibung möglicher Einstellungen und des Aufbaus dieser Richtlinie finden Sie unter https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Loopback-Verarbeitungsmodus der Nutzerrichtlinien</translation>
+<translation id="4554841826517980623">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> das <ph name="NETBIOS_PROTOCOL" /> nutzen sollte, um Inhaltsfreigaben im Netzwerk zu erkennen.
+      Wenn diese Richtlinie auf "true" eingestellt ist, verwendet die Freigabeerkennung das Protokoll <ph name="NETBIOS_PROTOCOL" />, um Freigaben im Netzwerk zu erkennen.
+      Wenn diese Richtlinie auf "false" eingestellt ist, verwendet die Freigabeerkennung nicht das Protokoll <ph name="NETBIOS_PROTOCOL" />, um Freigaben zu erkennen.
+      Wenn die Richtlinie nicht eingerichtet ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion für vom Unternehmen verwaltete Nutzer deaktiviert und für nicht verwaltete Nutzer aktiviert ist.</translation>
 <translation id="4555850956567117258">Remote-Bescheinigung (Remote Attestation) für den Nutzer aktivieren</translation>
 <translation id="4557134566541205630">Standardsuchanbieter-URL für die "Neuer Tab"-Seite</translation>
 <translation id="4567137030726189378">Nutzung der Entwicklertools zulassen</translation>
@@ -1682,6 +1693,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
           Falls diese Richtlinie nicht konfiguriert wird, ist das gesprochene Feedback deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können das gesprochene Feedback jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="5868414965372171132">Netzwerkkonfiguration auf Nutzerebene</translation>
+<translation id="5879014913445067283">Steuerung der Erkennung von Netzwerkfreigaben über <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Standardeinstellungen für Cookies</translation>
 <translation id="5887414688706570295">Konfiguriert das TalkGadget-Präfix, das von Remotezugriff-Hosts verwendet wird, und verhindert, dass dieses von Nutzern geändert werden kann.
 
@@ -2125,6 +2137,17 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7049373494483449255">Ermöglicht es <ph name="PRODUCT_NAME" />, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME" /> zu senden. Hinweis: Dies wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME" />-Unterstützung in <ph name="PRODUCT_NAME" /> aus. Die Richtlinie verhindert nicht, dass Nutzer Druckaufträge auf Websites geben. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> drucken. Sollte die Einstellung deaktiviert sein, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialog über <ph name="CLOUD_PRINT_NAME" /> nicht drucken.</translation>
 <translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
+<translation id="706568410943497889">
+      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten, wie z. B. Hangouts Meet, speichern und die Protokolle bei Google hochladen.
+
+      Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, darf <ph name="PRODUCT_NAME" /> solche Protokolle nicht speichern oder hochladen.
+
+      Diese Protokolle enthalten Diagnoseinformationen, die bei der Fehlerbehebung bei Audio- oder Videoanrufen in Chrome hilfreich sein können. Dazu zählen die Uhrzeit und die Größe gesendeter und empfangener RTP-Pakete, Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
+
+      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Hangouts Meet.
+
+      Google kann diese Protokolle anhand einer Sitzungs-ID mit anderen Protokollen verknüpfen, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
+      </translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7072208053150563108">Änderungsrate des Computerpassworts</translation>
 <translation id="7074513465313721551">Konfigurieren Sie die Liste der Domains, die von Safe Browsing als vertrauenswürdig eingestuft werden. Dies bedeutet:
@@ -2256,6 +2279,9 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
+<translation id="7349338075015720646">Hierdurch wird eine Liste von Websites festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die nicht wieder vom Nutzer deinstalliert werden können.
+
+      Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "url" und "launch_container". Bei "url" handelt es sich um die URL der Web-App, die installiert werden soll. Der "Launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird. Wird "launch_container" nicht festgelegt, wird die App in einem Fenster geöffnet, wenn sie von Chrome als progressive Web-App erachtet wird. Andernfalls wird sie in einem Tab geöffnet.</translation>
 <translation id="7367028210010532881">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
 
       Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der gekennzeichneten Website gehen, nachdem sie den Warnhinweis gesehen haben.
@@ -2697,6 +2723,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
       Mit "Version" ist entweder eine exakte Versionsangabe wie "61.0.3163.120" oder ein Versionspräfix wie "61.0" gemeint.  </translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Zulassen, dass SMS zwischen Smartphone mit Chromebook synchronisiert werden.</translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
 <translation id="8586528890725660268">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
@@ -2741,6 +2768,11 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Ist diese Richtlinie nicht konfiguriert, schützt der Passwortschutzdienst nur Google-Passwörter, aber der Nutzer kann diese Einstellung ändern.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Mit dieser Einstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer benachrichtigt wird, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss oder ein <ph name="PRODUCT_OS_NAME" />-Gerät neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
+
+      In diesem Zeitraum wird der Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint in der Taskleiste eine Neustartbenachrichtigung, wenn ein Upgrade gefunden wird. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums vorüber ist, um anzuzeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Sie ändert sich noch einmal, wenn der gesamte Benachrichtigungszeitraum verstrichen ist. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
+
+      Wenn nichts festgelegt ist, wird für <ph name="PRODUCT_OS_NAME" />-Geräte der Standardzeitraum von 345.600.000 Millisekunden (vier Tagen) und für <ph name="PRODUCT_NAME" /> ein Zeitraum von 604.800.000 Millisekunden (einer Woche) verwendet.</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8704831857353097849">Liste der deaktivierten Plug-ins</translation>
@@ -2777,6 +2809,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 
           Der Skalierungsfaktor muss mindestens 100 % betragen. Werte, bei denen die Spanne für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als regulär, sind nicht zulässig.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
+<translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf "False" festgelegt wird, wird der Standort nicht gemeldet.</translation>
@@ -2934,6 +2967,11 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Ist diese Richtlinie auf "true" gesetzt, löst <ph name="PRODUCT_OS_NAME" /> einen Neustart aus, wenn der Nutzer das Gerät herunterfährt. <ph name="PRODUCT_OS_NAME" /> ersetzt alle Schaltflächen zum Herunterfahren auf der Benutzeroberfläche durch Schaltflächen zum Neustarten. Wenn der Nutzer das Gerät über die Ein-/Aus-Taste herunterfährt, wird es nicht automatisch neu gestartet, auch wenn die Richtlinie aktiviert ist.</translation>
 <translation id="9152473318295429890">Kontextbezogene Vorschläge ähnlicher Webseiten aktivieren</translation>
 <translation id="9158929520101169054">Mehrfachanmeldung im Browser zulassen</translation>
+<translation id="9159126470527871268">Nutzer benachrichtigen, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss oder ein <ph name="PRODUCT_OS_NAME" />-Gerät neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
+
+      Mit dieser Richtlinieneinstellung kann der Nutzer durch Benachrichtigungen informiert werden, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist. Wenn die Richtlinie nicht festgelegt ist, wird dem Nutzer in <ph name="PRODUCT_NAME" /> durch kleinere Menüänderungen angezeigt, dass ein Neustart erforderlich ist. In <ph name="PRODUCT_OS_NAME" /> wird dies über eine Benachrichtigung in der Taskleiste angezeigt. Wenn die Richtlinie auf "Recommended" (Empfohlen) festgelegt ist, wird dem Nutzer in einer wiederkehrenden Warnung angezeigt, dass ein Neustart empfohlen wird. Der Nutzer kann diese Warnung schließen, um den Neustart zu verschieben. Wenn die Richtlinie auf "Required" (Erforderlich) festgelegt ist, wird dem Nutzer in einer wiederkehrenden Warnung angezeigt, dass nach Ablauf des Benachrichtigungszeitraums ein Neustart des Browsers erzwungen wird. Dieser Zeitraum beträgt standardmäßig sieben Tage für <ph name="PRODUCT_NAME" /> und vier Tage für <ph name="PRODUCT_OS_NAME" /> und kann über die <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-Richtlinieneinstellung konfiguriert werden.
+
+      Nach dem Neustart wird die Sitzung des Nutzers wiederhergestellt.</translation>
 <translation id="9165792353046089850">Mit dieser Richtlinie können Sie festlegen, ob Websites Zugriff auf angeschlossene USB-Geräte erhalten. Der Zugriff kann vollständig blockiert werden oder der Nutzer wird jedes Mal gefragt, wenn eine Website auf angeschlossene USB-Geräte zugreifen möchte.
 
           Diese Richtlinie kann für spezifische URL-Muster mithilfe der Richtlinien "WebUsbAskForUrls" und "WebUsbBlockedForUrls" überschrieben werden.

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="111910763555783249">સૂચના સેટિંગ્સ</translation>
+<translation id="111910763555783249">સૂચના સેટિંગ</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 દિવસ પહેલા}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 મિનિટ પહેલાં}one{# મિનિટ પહેલાં}other{# મિનિટ પહેલાં}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 મિ}one{# મિ}other{# મિ}}</translation>
@@ -65,6 +65,7 @@
 <translation id="3660179305079774227">ઉપર એરો</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3842239759367498783">તમારા મોબાઇલ ઉપકરણ <ph name="TITLE" />માંથી વાંચવાનું ચાલુ રાખો</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3889424535448813030">જમણો એરો</translation>
 <translation id="3892641579809465218">આંતરિક પ્રદર્શન</translation>
@@ -85,6 +86,7 @@
 <translation id="4971687151119236543">મીડિયા પહેલાંનું ટ્રૅક</translation>
 <translation id="5046499563572181734">અહીં ટૅપ કરો</translation>
 <translation id="5076340679995252485">પેસ્ટ કરો</translation>
+<translation id="5137751499640340777">Google આસિસ્ટંટ શરૂ કરો</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">પ્રકટીકરણ ત્રિકોણ</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>

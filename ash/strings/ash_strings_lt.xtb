@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Silpnas signalas</translation>
 <translation id="1293264513303784526">USB-C įrenginys (prievadas kairėje)</translation>
+<translation id="1294929383540927798">Pakeisti užrakinimo ekrano pranešimų nustatymus</translation>
 <translation id="1302880136325416935">Rodyti „Bluetooth“ nustatymus. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="1351937230027495976">Sutraukti meniu</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Perjungti „Bluetooth“. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Pašalinti šį naudotoją</translation>
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Pradėti užklausą balsu</translation>
 <translation id="1658406695958299976">Deja, jūsų slaptažodžio patvirtinti vis tiek nepavyko. Pastaba: jei neseniai pakeitėte slaptažodį, naujas slaptažodis bus taikomas, kai atsijungsite. Čia naudokite senąjį slaptažodį.</translation>
 <translation id="1677472565718498478">Liko <ph name="TIME" /></translation>
 <translation id="1698760176351776263">„IPv6“ adresas: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Išskleisti meniu</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
+<translation id="3124698051292518391">Visada rodyti lentyną</translation>
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="315116470104423982">Duomenys mobiliesiems</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Grįžti</translation>
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="3893630138897523026">„ChromeVox“ (ekrano skaitymas balsu)</translation>
+<translation id="3897533311200664389">Pradėti tekstinę užklausą</translation>
 <translation id="3899995891769452915">Įvestis balsu</translation>
 <translation id="3900355044994618856">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Jungiamasi prie „<ph name="NAME" />“</translation>
@@ -461,6 +465,7 @@
 <translation id="8995603266996330174">Valdoma „<ph name="DOMAIN" />“</translation>
 <translation id="9029474291399787231">Pasiekiamas „Adobe Flash Player“ naujinys</translation>
 <translation id="9056839673611986238">Įrenginys bus atkurtas</translation>
+<translation id="9070640332319875144">Padėjėjo nustatymai</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">„Wi-Fi“: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>

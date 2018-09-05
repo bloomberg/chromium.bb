@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
 <translation id="2498359688066513246">Palīdzība un atsauksmes</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
-<translation id="2512222046227390255">Veidlapu automātiskā aizpilde</translation>
 <translation id="2513403576141822879">Papildu iestatījumus, kas attiecas uz konfidencialitāti, drošību un datu apkopošanu, skatiet lapā <ph name="BEGIN_LINK" />Sinhronizēšana un Google pakalpojumi<ph name="END_LINK" />.</translation>
 <translation id="2523184218357549926">Nosūta Google serveriem apmeklēto lapu vietrāžus URL</translation>
 <translation id="2526148617758225454">Datu lietojuma samazinātājs ir ieslēgts. Varat to pārvaldīt iestatījumos.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">Pārtraukt lapas ielādi</translation>
 <translation id="2900528713135656174">Izveidot pasākumu</translation>
 <translation id="2902702728133930130">Pārlūka Chrome palaišanas laikā radās neparedzēta kļūda.</translation>
-<translation id="2903493209154104877">Adreses</translation>
 <translation id="290376772003165898">Vai lapa nav šajā valodā: <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Jautāt, pirms atļaut vietnēm atskaņot aizsargātu saturu</translation>
 <translation id="2913331724188855103">Atļaut vietnēm saglabāt un lasīt sīkfailu datus (ieteicams)</translation>
 <translation id="2932150158123903946">Lietotnes Google <ph name="APP_NAME" /> krātuve</translation>
 <translation id="2943166482989655199">Uzlabojiet pārlūku Chrome un tā drošību, nosūtot sistēmas un lietojuma datus Google serveriem</translation>
@@ -577,7 +576,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="557283862590186398">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
 <translation id="55737423895878184">Atrašanās vietas noteikšana un paziņojumi ir atļauti.</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Kartes</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
 <translation id="5596627076506792578">Citas opcijas</translation>
 <translation id="5620299005957670886">Ļaut vietnēm piekļūt jūsu ierīces sensoriem (ieteicams)</translation>
@@ -672,6 +670,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="629730747756840877">Konts</translation>
+<translation id="6303969859164067831">Izrakstīties un izslēgt sinhronizēšanu</translation>
 <translation id="6320088164292336938">Vibrācija</translation>
 <translation id="6324034347079777476">Android sistēmas sinhronizācija atspējota</translation>
 <translation id="6333140779060797560">Kopīgot, izmantojot <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7542481630195938534">Nevar iegūt ieteikumus.</translation>
 <translation id="7562080006725997899">Notiek pārlūkošanas datu notīrīšana</translation>
 <translation id="756809126120519699">Chrome dati tika notīrīti</translation>
+<translation id="757524316907819857">Neļaut vietnēm atskaņot aizsargātu saturu</translation>
 <translation id="7589445247086920869">Aizliegšana pašreizējai meklētājprogrammai</translation>
 <translation id="7593557518625677601">Lai sāktu Chrome sinhronizēšanu, atveriet Android iestatījumus un atkārtoti iespējojiet Android sistēmas sinhronizēšanu</translation>
 <translation id="7596558890252710462">Operētājsistēma</translation>

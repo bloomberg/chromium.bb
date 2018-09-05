@@ -359,6 +359,7 @@
 <translation id="199764499252435679">Enable component updates in <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Power management</translation>
 <translation id="201557587962247231">Frequency of device status report uploads</translation>
+<translation id="2017301949684549118">URLs for web apps to be silently installed.</translation>
 <translation id="2018836497795982119">Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1,800,000 (30 minutes) to 86,400,000 (1 day). Any values not in this range will be clamped to the respective boundary. If the platform supports policy notifications, the refresh delay will be set to 24 hours because it is expected that policy notifications will force a refresh automatically whenever policy changes.
@@ -673,6 +674,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL" />.
 
           This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
+<translation id="2659019163577049044">If this setting is enabled, users will be allowed to set up their devices to sync SMS messages between their phones and Chromebooks. Note that if this policy is allowed, users must explicitly opt into this feature by completing a setup flow. Once the setup flow is complete, users will be able to send and receive SMS messages on their Chromebooks.
+
+      If this setting is disabled, users will not be allowed to set up SMS syncing.
+
+      If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
@@ -1103,6 +1109,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
 <translation id="3874773863217952418">Enable Tap to Search</translation>
 <translation id="3877517141460819966">Integrated second factor authentication mode</translation>
+<translation id="3879208481373875102">Configure list of force-installed web apps</translation>
 <translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
       Disables use of the SPDY protocol in <ph name="PRODUCT_NAME" />.
@@ -1346,6 +1353,10 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">User policy loopback processing mode</translation>
+<translation id="4554841826517980623">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> should use the <ph name="NETBIOS_PROTOCOL" /> to discover shares on the network.
+      When this policy is set to True, share discovery will use the <ph name="NETBIOS_PROTOCOL" /> protocol to discover shares on the network.
+      When this policy is set to False, share discovery will not use the <ph name="NETBIOS_PROTOCOL" /> protocol to discover shares.
+      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
 <translation id="4567137030726189378">Allow usage of the Developer Tools</translation>
@@ -1771,6 +1782,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset, spoken feedback is disabled when the login screen is first shown. Users can enable or disable spoken feedback at any time and its status on the login screen is persisted between users.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
+<translation id="5879014913445067283">Controls Network File Share discovery via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
 <translation id="5887414688706570295">Configures the TalkGadget prefix that will be used by remote access hosts and prevents users from changing it.
 
@@ -2228,6 +2240,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
+<translation id="706568410943497889">
+      If the policy is set to true, <ph name="PRODUCT_NAME" /> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet) and upload those logs to Google.
+
+      If the policy is set to false, or is unset, <ph name="PRODUCT_NAME" /> may not collect or upload such logs.
+
+      These logs contain diagnostic information helpful when debugging issues with audio or video calls in Chrome, such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs do not contain audio or video contents from the call.
+
+      This data collection by Chrome can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
+
+      Google may associate these logs, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
+      </translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
 <translation id="7072208053150563108">Machine password change rate</translation>
 <translation id="7074513465313721551">Configure the list of domains which Safe Browsing will trust. This means:
@@ -2361,6 +2384,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
+<translation id="7349338075015720646">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled or disabled by the user.
+
+      Each list item of the policy is an object with two members: 'url' and 'launch_container'. 'url' should be the URL of the web app to install and 'launch_container' should be either 'window' or 'tab' to indicate how the web app will be opened once installed. If 'launch_container' is omitted, the app will launch in a window if Chrome considers it a progressive web app, and in a tab otherwise.</translation>
 <translation id="7367028210010532881">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
@@ -2823,6 +2849,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       Here 'Version' can be either an exact version such as '61.0.3163.120' or a version prefix, such as '61.0'  </translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Allow SMS messages to be synced from phone to Chromebook.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8586528890725660268">Specifies the printers which a user cannot use.
@@ -2867,6 +2894,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is left unset, password protection service will only protect Google passwords, but the user will be able to change this setting.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
+
+      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray when an upgrade is detected. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy follow this same schedule.
+
+      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
@@ -2911,6 +2943,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8801680448782904838">Notify a user that a browser relaunch or device restart is recommended or required</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.
 
       If the policy is not set or set to false, the location will not be reported.</translation>
@@ -3076,6 +3109,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9152473318295429890">Enable contextual suggestions of related web pages</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
+<translation id="9159126470527871268">Notify users that <ph name="PRODUCT_NAME" /> must be relaunched or <ph name="PRODUCT_OS_NAME" /> must be restarted to apply a pending update.
+
+      This policy setting enables notifications to inform the user that a browser relaunch or device restart is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu, while <ph name="PRODUCT_OS_NAME" /> indicates such via a notification in the system tray. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. The default period is seven days for <ph name="PRODUCT_NAME" /> and four days for <ph name="PRODUCT_OS_NAME" />, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
+
+      The user's session is restored following the relaunch/restart.</translation>
 <translation id="9165792353046089850">Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
 
           This policy can be overridden for specific URL patterns using the 'WebUsbAskForUrls' and 'WebUsbBlockedForUrls' policies.

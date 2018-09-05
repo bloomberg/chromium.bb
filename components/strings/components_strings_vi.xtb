@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Nhận dạng <ph name="ORGANIZATION" /> tại <ph name="LOCALITY" /> đã được xác minh bởi <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1430915738399379752">In</translation>
+<translation id="143412116769631998">Nhớ phương thức thanh toán</translation>
 <translation id="1484290072879560759">Chọn địa chỉ giao hàng</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
 <translation id="3154506275960390542">Trang này bao gồm biểu mẫu có thể được gửi không an toàn. Dữ liệu bạn gửi có thể bị người khác xem trong khi chuyển tuyến hoặc có thể bị kẻ tấn công sửa đổi nhằm thay đổi thông tin mà máy chủ nhận được.</translation>
 <translation id="3157931365184549694">Khôi phục</translation>
+<translation id="316082708977904280">Nhớ địa chỉ và thông tin khác</translation>
 <translation id="3162559335345991374">Wi-Fi mà bạn đang sử dụng có thể yêu cầu bạn phải truy cập trang đăng nhập của mạng đó.</translation>
 <translation id="3167968892399408617">Các trang bạn xem trong tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả các tab ẩn danh của mình. Mọi tệp bạn tải xuống hoặc dấu trang mà bạn tạo sẽ được giữ nguyên.</translation>
 <translation id="3169472444629675720">Khám phá</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Xác thực thành công</translation>
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK" /> sau.</translation>
 <translation id="3658742229777143148">Bản sửa đổi</translation>
+<translation id="3665775945622610063">Nhớ phương thức thanh toán</translation>
 <translation id="3678029195006412963">Không thể ký yêu cầu</translation>
 <translation id="3678529606614285348">Mở trang trong cửa sổ Ẩn danh mới (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" />, được tải lên vào <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Bạn có muốn lưu thẻ này vào Tài khoản Google của bạn và trên thiết bị này không?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ngày hết hạn <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Đã chặn nội dung độc hại.</translation>
 <translation id="382518646247711829">Nếu bạn sử dụng máy chủ proxy...</translation>
 <translation id="3828924085048779000">Không cho phép cụm mật khẩu trống.</translation>
 <translation id="385051799172605136">Quay lại</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
 <translation id="4974590756084640048">Bật lại cảnh báo</translation>
+<translation id="4988217478422488391">Giúp bạn thanh toán trực tuyến nhanh hơn</translation>
 <translation id="4989809363548539747">Plugin này không được hỗ trợ</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
 <translation id="5481076368049295676">Nội dung này có thể tìm cách cài đặt phần mềm nguy hiểm trên thiết bị của bạn để lấy cắp hoặc xóa thông tin. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Thêm địa chỉ hợp lệ</translation>
+<translation id="5490432419156082418">Địa chỉ và các tùy chọn khác</translation>
 <translation id="5492298309214877701">Trang web trên mạng nội bộ của công ty, tổ chức hoặc trường học này có URL tương tự như trang web bên ngoài.
     <ph name="LINE_BREAK" />
     Hãy thử liên hệ với quản trị viên hệ thống của bạn.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
+<translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (giấy phép theo gói có sẵn).</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
@@ -910,6 +917,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7455133967321480974">Sử dụng cài đặt mặc định chung (Chặn)</translation>
+<translation id="7457461136432785307">Nhớ địa chỉ và thông tin khác</translation>
 <translation id="7460163899615895653">Các tab gần đây của bạn từ các thiết bị khác xuất hiện ở đây</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
@@ -1061,6 +1069,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 thẻ tín dụng}other{# thẻ tín dụng}}</translation>
+<translation id="8473863474539038330">Địa chỉ và các tùy chọn khác</translation>
 <translation id="8483780878231876732">Để sử dụng thẻ từ Tài khoản Google, hãy đăng nhập vào Chrome</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
@@ -1121,6 +1130,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8952525071319348207">Hãy nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google sẽ được chia sẻ với trang web này.</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
+<translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
 <translation id="8983003182662520383">Địa chỉ và phương thức thanh toán sử dụng Google Pay</translation>
 <translation id="8987927404178983737">Tháng</translation>
@@ -1169,6 +1179,7 @@ Thông tin chi tiết bổ sung:
 <translation id="935608979562296692">XÓA BIỂU MẪU</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
+<translation id="962484866189421427">Nội dung này có thể tìm cách cài đặt ứng dụng lừa đảo giả mạo nội dung khác hoặc thu thập dữ liệu có thể được dùng để theo dõi bạn. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Phiên bản Chính thức</translation>
 <translation id="973773823069644502">Thêm địa chỉ giao hàng</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Không có}=1{1 mục}other{# mục}}</translation>

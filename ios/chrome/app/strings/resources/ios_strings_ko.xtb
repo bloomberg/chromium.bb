@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">북마크가 업데이트되었습니다.</translation>
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1049743911850919806">시크릿</translation>
+<translation id="1063454504051558093">다른 비밀번호를 사용하세요...</translation>
 <translation id="1076421457278169141">코드 스캔됨</translation>
 <translation id="1084365883616172403">Facebook 게시가 완료되었습니다.</translation>
 <translation id="1104948393051856124">동의 및 계속</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">사용 데이터 보내기</translation>
 <translation id="1886928167269928266">전체</translation>
 <translation id="1911619930368729126">Google 드라이브로 업로드</translation>
+<translation id="191179954310195971">다른 Google 서비스</translation>
 <translation id="1941314575388338491">복사하려면 두 번 탭하세요.</translation>
 <translation id="1952728750904661634">관리 계정으로 로그인</translation>
 <translation id="1974060860693918893">고급</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">읽기 목록을 오프라인에서 사용할 수 있습니다. 읽기 목록에 페이지를 추가하려면 <ph name="SHARE_OPENING_ICON" />을(를) 탭하세요.</translation>
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
+<translation id="3765471630796399471">다른 비밀번호 사용</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3779810277399252432">인터넷에 연결되어 있지 않습니다.</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">텍스트 삭제</translation>
 <translation id="6346549652287021269">다운로드를 새로 시작하시겠습니까?</translation>
 <translation id="6362362396625799311">시크릿 탭 없음</translation>
+<translation id="6363526231572697780">사용자 이름 없음</translation>
 <translation id="6374469231428023295">다시 시도</translation>
 <translation id="6380866119319257197">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6389470377220713856">카드 명의</translation>

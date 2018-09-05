@@ -82,6 +82,7 @@
 <translation id="14171126816530869">L'identité de <ph name="ORGANIZATION" /> situé à <ph name="LOCALITY" /> a été vérifiée par <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1430915738399379752">Imprimer</translation>
+<translation id="143412116769631998">Mémoriser les modes de paiement</translation>
 <translation id="1484290072879560759">Sélectionner l'adresse de livraison</translation>
 <translation id="1506687042165942984">Afficher une copie enregistrée (non actualisée) de cette page</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ce message s'affiche si vous utilisez un portail Wi-Fi auquel vous devez vous connecter pour accéder à Internet.&lt;/p&gt;
@@ -302,7 +303,7 @@
 <translation id="3010559122411665027">Entrée de la liste "<ph name="ENTRY_INDEX" />" : <ph name="ERROR" /></translation>
 <translation id="301521992641321250">Bloquée automatiquement</translation>
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
-<translation id="3037605927509011580">Aie aie aie</translation>
+<translation id="3037605927509011580">Aïe aïe aïe</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
 <translation id="3064966200440839136">En payant via une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Aucun}=1{1 mot de passe}one{# mot de passe}other{# mots de passe}}</translation>
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
 <translation id="3154506275960390542">Cette page inclut un formulaire dont la transmission n'est peut-être pas sécurisée. Les données envoyées pourront être vues par d'autres personnes pendant leur transfert ou modifiées par un pirate informatique afin de changer le message reçu par le serveur.</translation>
 <translation id="3157931365184549694">Restaurer</translation>
+<translation id="316082708977904280">Mémoriser les adresses et d'autres informations</translation>
 <translation id="3162559335345991374">Pour utiliser ce réseau Wi-Fi, il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
 <translation id="3167968892399408617">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Révision</translation>
+<translation id="3665775945622610063">Mémoriser les modes de paiement</translation>
 <translation id="3678029195006412963">Impossible de signer la demande</translation>
 <translation id="3678529606614285348">Ouvrir la page dans une nouvelle fenêtre de navigation privée (Ctrl+Maj+N)</translation>
 <translation id="3679803492151881375">Rapport d'erreur enregistré le <ph name="CRASH_TIME" /> et importé le <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Voulez-vous enregistrer cette carte dans votre compte Google et sur cet appareil ?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expire en <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Contenu malveillant bloqué.</translation>
 <translation id="382518646247711829">Si vous utilisez un serveur proxy…</translation>
 <translation id="3828924085048779000">La phrase secrète est obligatoire.</translation>
 <translation id="385051799172605136">Retour</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
 <translation id="4974590756084640048">Réactiver les avertissements</translation>
+<translation id="4988217478422488391">Payez vos achats en ligne plus rapidement</translation>
 <translation id="4989809363548539747">Ce plug-in n'est pas compatible.</translation>
 <translation id="5002932099480077015">Si cette option est activée, Chrome enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="5018422839182700155">Impossible d'ouvrir cette page</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Rétablir la modification</translation>
 <translation id="5481076368049295676">Ce contenu peut essayer d'installer un logiciel dangereux sur votre appareil pour dérober ou supprimer vos informations. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Ajouter une adresse valide</translation>
+<translation id="5490432419156082418">Adresses et autres</translation>
 <translation id="5492298309214877701">Ce site situé sur l'intranet de l'entreprise, de l'organisation ou de l'établissement scolaire possède la même URL qu'un site Web externe.
     <ph name="LINE_BREAK" />
     Essayez de contacter votre administrateur système.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}}</translation>
 <translation id="5922853866070715753">Vous avez presque terminé !</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
+<translation id="5951495562196540101">Impossible d'enregistrer votre appareil avec un compte personnel (licence empaquetée disponible).</translation>
 <translation id="5967592137238574583">Modifier les coordonnées</translation>
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
@@ -910,6 +917,7 @@ Informations supplémentaires :
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
 <translation id="7455133967321480974">Utiliser le paramètre global par défaut ("Bloquer")</translation>
+<translation id="7457461136432785307">Mémoriser les adresses et d'autres informations</translation>
 <translation id="7460163899615895653">Les onglets que vous avez utilisés récemment sur d'autres appareils s'affichent ici</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7481312909269577407">Avancer</translation>
@@ -1061,6 +1069,7 @@ Informations supplémentaires :
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 carte de paiement}one{# carte de paiement}other{# cartes de paiement}}</translation>
+<translation id="8473863474539038330">Adresses et autres</translation>
 <translation id="8483780878231876732">Pour utiliser les cartes de votre compte Google, connectez-vous à Chrome.</translation>
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>
@@ -1120,6 +1129,7 @@ Informations supplémentaires :
 <translation id="8952525071319348207">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
+<translation id="8975012916872825179">Y compris les numéros de téléphone, les adresses e-mail et les adresses de livraison</translation>
 <translation id="8978053250194585037">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter une tentative d'hameçonnage<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site d'hameçonnage se présente comme un site légitime dans le but de vous tromper.</translation>
 <translation id="8983003182662520383">Modes de paiement et adresses utilisés dans Google Pay</translation>
 <translation id="8987927404178983737">Mois</translation>
@@ -1168,6 +1178,7 @@ Informations supplémentaires :
 <translation id="935608979562296692">EFFACER LE FORMULAIRE</translation>
 <translation id="939736085109172342">Nouveau dossier</translation>
 <translation id="951104842009476243">Cartes de débit et cartes prépayées acceptées</translation>
+<translation id="962484866189421427">Ce contenu peut essayer d'installer des applications trompeuses se faisant passer pour d'autres, ou de collecter des données afin de vous surveiller. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build officiel</translation>
 <translation id="973773823069644502">Ajouter une adresse d'expédition</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Aucun}=1{1 élément}one{# élément}other{# éléments}}</translation>

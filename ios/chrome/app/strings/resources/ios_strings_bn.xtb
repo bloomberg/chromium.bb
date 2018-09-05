@@ -50,7 +50,7 @@
 <translation id="1687475363370981210">সমস্ত পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="1690731385917361335">কোনো আইটেম নেই</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি নির্বাচিত</translation>
-<translation id="1740468249224277719">ইনস্টল করতে দুবার আলতো চাপুন।</translation>
+<translation id="1740468249224277719">ইনস্টল করতে দুবার ট্যাপ করুন।</translation>
 <translation id="17513872634828108">খোলা ট্যাব</translation>
 <translation id="1752547299766512813">পাসওয়ার্ডগুলি সেভ করুন</translation>
 <translation id="1753905327828125965">সর্বাধিক দেখা</translation>
@@ -186,7 +186,7 @@
 <translation id="4084682180776658562">বুকমার্ক</translation>
 <translation id="411254640334432676">ডাউনলোড ব্যর্থ হয়েছে।</translation>
 <translation id="4112644173421521737">সার্চ করুন</translation>
-<translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, দয়া করে সিস্টেম অ্যাপ্লিকেশানে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
+<translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, অনুগ্রহ করে সিস্টেম অ্যাপে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
 <translation id="4124987746317609294">সময় সীমা</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
 <translation id="418156467088430727">নতুন ট্যাবে অফলাইন সংস্করণ দেখুন</translation>
@@ -262,7 +262,7 @@
 <translation id="5556459405103347317">আবার লোড করুন</translation>
 <translation id="5619279135193775234">মেল</translation>
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
-<translation id="5659593005791499971">ইমেল</translation>
+<translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">সংস্করণ <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">দুঃখিত, আপনার অ্যাকাউন্টে প্রবেশ করার সময় একটি সমস্যা হয়েছে৷</translation>

@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Element actualizat</translation>
 <translation id="1047726139967079566">Marcați această pagină...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Folosește altă parolă...</translation>
 <translation id="1076421457278169141">Codul a fost scanat</translation>
 <translation id="1084365883616172403">Postare pe Facebook finalizată.</translation>
 <translation id="1104948393051856124">Acceptă și continuă</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Trim. date utilizare</translation>
 <translation id="1886928167269928266">De la început</translation>
 <translation id="1911619930368729126">Încarcă în Google Drive</translation>
+<translation id="191179954310195971">Alte servicii Google</translation>
 <translation id="1941314575388338491">Atinge de două ori pentru a copia.</translation>
 <translation id="1952728750904661634">Conectează-te cu un cont gestionat</translation>
 <translation id="1974060860693918893">Avansate</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Folosește altă parolă</translation>
 <translation id="3771033907050503522">File incognito</translation>
 <translation id="3779810277399252432">Nicio conexiune la internet.</translation>
 <translation id="3783017676699494206">Salvează imaginea</translation>
@@ -315,6 +318,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="6344783595350022745">Ștergeți textul</translation>
 <translation id="6346549652287021269">Începi o nouă descărcare?</translation>
 <translation id="6362362396625799311">Nu există file incognito</translation>
+<translation id="6363526231572697780">Niciun nume de utilizator</translation>
 <translation id="6374469231428023295">Încearcă din nou</translation>
 <translation id="6380866119319257197">Dacă uiți expresia de acces sau dorești să modifici această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nume de pe card</translation>

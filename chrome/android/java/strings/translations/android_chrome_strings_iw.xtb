@@ -204,7 +204,6 @@
 <translation id="2496180316473517155">היסטוריית גלישה</translation>
 <translation id="2498359688066513246">עזרה ומשוב</translation>
 <translation id="2501278716633472235">חזור</translation>
-<translation id="2512222046227390255">מילוי אוטומטי של טפסים</translation>
 <translation id="2513403576141822879">‏אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים בדף <ph name="BEGIN_LINK" />סנכרון ושירותי Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2526148617758225454">‏חוסך הנתונים (Data Saver) פועל. תוכל לנהל אותו ב'הגדרות'.</translation>
@@ -249,8 +248,8 @@
 <translation id="2891154217021530873">הפסק את טעינת הדף</translation>
 <translation id="2900528713135656174">צור אירוע</translation>
 <translation id="2902702728133930130">‏שגיאה בלתי צפויה גרמה לכשל של Chrome בעת ההפעלה.</translation>
-<translation id="2903493209154104877">כתובות</translation>
 <translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">הצגת שאלה לפני מתן הרשאה לאתרים להפעיל תוכן מוגן</translation>
 <translation id="2913331724188855103">‏התר לאתרים לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
 <translation id="2932150158123903946">‏נפח אחסון של <ph name="APP_NAME" />‏ Google</translation>
 <translation id="2943166482989655199">‏שליחה של פרטי המערכת ונתוני שימוש אל Google תשפר את Chrome ואת האבטחה שלו</translation>
@@ -577,7 +576,6 @@
 <translation id="557283862590186398">‏Chrome זקוק להרשאת גישה אל המיקרופון בשביל האתר הזה.</translation>
 <translation id="55737423895878184">יש הרשאה לגישה אל המיקום ולהצגת הודעות</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">כרטיסיות</translation>
 <translation id="5595485650161345191">ערוך כתובת</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5620299005957670886">התרת גישה של אתרים אל החיישנים שלך (מומלץ)</translation>
@@ -672,6 +670,7 @@
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="629730747756840877">חשבון</translation>
+<translation id="6303969859164067831">יציאה וכיבוי הסנכרון</translation>
 <translation id="6320088164292336938">רטט</translation>
 <translation id="6324034347079777476">‏סנכרון מערכת Android מושבת</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@
 <translation id="7542481630195938534">לא ניתן לקבל הצעות</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
+<translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
 <translation id="7589445247086920869">חסום למנוע החיפוש הנוכחי</translation>
 <translation id="7593557518625677601">‏פתח את הגדרות Android והפעל מחדש את הסנכרון של מערכת Android כדי להתחיל בסנכרון של Chrome</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>

@@ -82,6 +82,7 @@
 <translation id="14171126816530869">Utambulisho wa <ph name="ORGANIZATION" /> iliyo <ph name="LOCALITY" /> umethibitishwa na <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="1430915738399379752">Chapisha</translation>
+<translation id="143412116769631998">Hifadhi njia za kulipa</translation>
 <translation id="1484290072879560759">Chagua Anwani ya Mahali Bidhaa Zitakapopelekwa</translation>
 <translation id="1506687042165942984">Onyesha nakala iliyohifadhiwa (yaani inayojulikana kwisha muda) ya ukurasa huu.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Utaona hitilafu hii kama unatumia mtandao wa Wi-Fi ambapo unatakiwa kuingia katika akaunti kabla ya kwenda mtandaoni.&lt;/p&gt;
@@ -315,6 +316,7 @@
 <translation id="3150653042067488994">Hitilfau ya muda ya seva</translation>
 <translation id="3154506275960390542">Ukurasa huu una fomu ambayo haiwezi kuwasilishwa kwa njia salama. Data unayotuma inaweza kusomwa na watu wengine inapotumwa au inaweza kurekebishwa na mvamizi ili kubadilisha data ambayo seva inapokea.</translation>
 <translation id="3157931365184549694">Rejesha</translation>
+<translation id="316082708977904280">Hifadhi anwani na maelezo mengine</translation>
 <translation id="3162559335345991374">Wi-Fi unayotumia inaweza kukuhitaji kutembelea ukurasa wake wa kuingia katika akaunti.</translation>
 <translation id="3167968892399408617">Kurasa unazoziangalia katika vichupo fiche hazitaendelea kuwepo katika historia ya kivinjari, hifadhi ya vidakuzi, au historia yako ya utafutaji ukishafunga vichupo vyako vyote fiche. Faili zozote unazopakua au alamisho unazounda hazitafutwa.</translation>
 <translation id="3169472444629675720">Gundua</translation>
@@ -397,6 +399,7 @@
 <translation id="3650584904733503804">Uhalalishaji umefanikiwa</translation>
 <translation id="3655670868607891010">Ikiwa unaliona tatizo hili mara kwa mara, jaribu <ph name="HELP_LINK" /> haya.</translation>
 <translation id="3658742229777143148">Marekebisho</translation>
+<translation id="3665775945622610063">Hifadhi Njia za Kulipa</translation>
 <translation id="3678029195006412963">Ombi halikutiwa sahihi</translation>
 <translation id="3678529606614285348">Fungua ukurasa kwenye dirisha fiche jipya (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Ripoti ya kuacha kufanya kazi ilitolewa <ph name="CRASH_TIME" /> na kupakiwa <ph name="UPLOAD_TIME" /></translation>
@@ -419,6 +422,7 @@
 <translation id="3778403066972421603">Je, ungependa kuhifadhi kadi hii kwenye Akaunti yako ya Google na kwenye kifaa hiki?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Muda wa matumizi utakwisha <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Imezuia maudhui hatari.</translation>
 <translation id="382518646247711829">Ukitumia seva mbadala...</translation>
 <translation id="3828924085048779000">Kaulisiri tupu hairuhusiwi.</translation>
 <translation id="385051799172605136">Nyuma</translation>
@@ -575,6 +579,7 @@
 <translation id="495170559598752135">Vitendo</translation>
 <translation id="4958444002117714549">Panua orodha</translation>
 <translation id="4974590756084640048">Onyesha maonyo tena</translation>
+<translation id="4988217478422488391">Huharakisha mchakato wa kulipia bidhaa mtandoani</translation>
 <translation id="4989809363548539747">Programu-jalizi hii haitumiki</translation>
 <translation id="5002932099480077015">Ikiwashwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
 <translation id="5018422839182700155">Ukurasa huu haufunguki</translation>
@@ -654,6 +659,7 @@
 <translation id="5470861586879999274">Rudia kuhariri</translation>
 <translation id="5481076368049295676">Huenda maudhui haya yakajaribu kusakinisha programu hatari inayoiba au kufuta maelezo yaliyo kwenye kifaa chako. <ph name="BEGIN_LINK" />Onyesha tu<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Ongeza anwani sahihi ya barua pepe</translation>
+<translation id="5490432419156082418">Anwani na Zaidi</translation>
 <translation id="5492298309214877701">Tovuti hii kwenye intraneti ya kampuni, shirika au shule ina URL sawa na tovuti ya nje.
     <ph name="LINE_BREAK" />
     Jaribu kuwasiliana na msimamizi wa mfumo wako.</translation>
@@ -717,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 kinatumika}other{ # vinatumika}}</translation>
 <translation id="5922853866070715753">Unakaribia kumaliza</translation>
 <translation id="5939518447894949180">Weka upya</translation>
+<translation id="5951495562196540101">Huwezi kujiandikisha ukitumia akaunti ya mteja (leseni ya bidhaa iliyofungashwa inapatikana).</translation>
 <translation id="5967592137238574583">Badilisha Maelezo ya Mawasiliano</translation>
 <translation id="5967867314010545767">Ondoa kwenye historia</translation>
 <translation id="5975083100439434680">Fifiza</translation>
@@ -908,6 +915,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /> kuhusu hitilafu hii.</translation>
 <translation id="7453467225369441013">Hukuondoa kwenye akaunti za tovuti nyingi. Hutaondolewa kwenye Akaunti ya Google.</translation>
 <translation id="7455133967321480974">Tumia chaguomsingi la duniani (Zuia)</translation>
+<translation id="7457461136432785307">Hifadhi Anwani na Maelezo Mengine</translation>
 <translation id="7460163899615895653">Vichupo vyako vya hivi majuzi kutoka kwenye vifaa vingine vitaonekana hapa</translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7481312909269577407">Mbele</translation>
@@ -1057,6 +1065,7 @@
 <translation id="8433057134996913067">Kufanya hivyo kutakuondoa kwenye tovuti nyingi.</translation>
 <translation id="8437238597147034694">Tendua hatua</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{Kadi 1 ya mikopo}other{Kadi # za mikopo}}</translation>
+<translation id="8473863474539038330">Anwani na zaidi</translation>
 <translation id="8483780878231876732">Ili utumie kadi kutoka kwenye Akaunti yako ya Google, ingia katika Chrome</translation>
 <translation id="8488350697529856933">Inatumika kwenye</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> imechukua muda mrefu kupakia.</translation>
@@ -1117,6 +1126,7 @@
 <translation id="8952525071319348207">Ili usasishe maelezo ya kadi yako, weka tarehe ya mwisho wa matumizi na CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka akaunti yako ya malipo ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
+<translation id="8975012916872825179">Hujumuisha maelezo kama nambari za simu, anwani za barua pepe na anwani za mahali bidhaa zitakapopelekwa</translation>
 <translation id="8978053250194585037">Mfumo wa Kuvinjari Salama kwenye Google umegundua <ph name="BEGIN_LINK" />jaribio la kuiba data ya binafsi<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi majuzi. Tovuti zanazoiba data ya binafsi huiga tovuti nyingine ili kukuhadaa.</translation>
 <translation id="8983003182662520383">Njia za Kulipa na Anwani Zinazotumia Google Pay</translation>
 <translation id="8987927404178983737">Mwezi</translation>
@@ -1165,6 +1175,7 @@
 <translation id="935608979562296692">FUTA FOMU</translation>
 <translation id="939736085109172342">Folda mpya</translation>
 <translation id="951104842009476243">Kadi za Malipo na za Kulipia Awali Zinazokubaliwa</translation>
+<translation id="962484866189421427">Huenda maudhui haya yakajaribu kusakinisha programu za udanganyifu zinazojifanya kuwa kitu kingine au kukusanya data inayoweza kutumika kukufuatilia. <ph name="BEGIN_LINK" />Onyesha tu<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Muundo Rasmi</translation>
 <translation id="973773823069644502">Chagua Mahali Bidhaa Itakapopelekwa</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Hamna}=1{Kipengee 1}other{Vipengee #}}</translation>

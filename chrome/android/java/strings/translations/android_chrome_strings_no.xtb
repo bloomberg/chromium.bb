@@ -204,7 +204,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2496180316473517155">Nettlesingslogg</translation>
 <translation id="2498359688066513246">Hjelp og tilbakemelding</translation>
 <translation id="2501278716633472235">Gå tilbake</translation>
-<translation id="2512222046227390255">Fyll ut skjemaer automatisk</translation>
 <translation id="2513403576141822879">Se <ph name="BEGIN_LINK" />Synkronisering og Google tjenester<ph name="END_LINK" /> for flere innstillinger knyttet til personvern, sikkerhet og datainnsamling.</translation>
 <translation id="2523184218357549926">Sender Google nettadressene til sider du besøker</translation>
 <translation id="2526148617758225454">Datasparing er på. Du kan administrere denne funksjonen i Innstillinger.</translation>
@@ -249,8 +248,8 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2891154217021530873">Stopp innlastingen av siden</translation>
 <translation id="2900528713135656174">Opprett hendelse</translation>
 <translation id="2902702728133930130">Kunne ikke starte Chrome på grunn av en uventet feil.</translation>
-<translation id="2903493209154104877">Adresser</translation>
 <translation id="290376772003165898">Er ikke siden på <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Spør før nettsteder kan spille av beskyttet innhold</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagring</translation>
 <translation id="2943166482989655199">Gjør Chrome bedre og sikrere ved å sende systemdata og bruksdata til Google</translation>
@@ -577,7 +576,6 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="557283862590186398">Chrome trenger tilgang til mikrofonen din for dette nettstedet.</translation>
 <translation id="55737423895878184">Posisjon og varsler er tillatt</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5585019845078534178">Kort</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5620299005957670886">Gi nettsteder tilgang til sensorene dine (anbefalt)</translation>
@@ -672,6 +670,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6303969859164067831">Logg av og slå av synkronisering</translation>
 <translation id="6320088164292336938">Vibrering</translation>
 <translation id="6324034347079777476">Synkronisering for Android-systemet er slått av</translation>
 <translation id="6333140779060797560">Del via <ph name="APPLICATION" /></translation>
@@ -834,6 +833,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
+<translation id="757524316907819857">Blokkér nettsteder fra å spille av beskyttet innhold</translation>
 <translation id="7589445247086920869">Blokkert for den aktive søkemotoren</translation>
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
 <translation id="7596558890252710462">Operativsystem</translation>

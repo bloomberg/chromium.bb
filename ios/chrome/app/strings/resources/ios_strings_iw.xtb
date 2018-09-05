@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">הפריט עודכן</translation>
 <translation id="1047726139967079566">הוסף דף זה לסימניות...</translation>
 <translation id="1049743911850919806">גלישה פרטית</translation>
+<translation id="1063454504051558093">שימוש בסיסמה אחרת...</translation>
 <translation id="1076421457278169141">הקוד נסרק</translation>
 <translation id="1084365883616172403">‏הפרסום ב-‏Facebook בוצע.</translation>
 <translation id="1104948393051856124">קבל והמשך</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1886928167269928266">משחר ההיסטוריה</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
+<translation id="191179954310195971">‏שירותי Google אחרים</translation>
 <translation id="1941314575388338491">הקש פעמיים כדי להעתיק.</translation>
 <translation id="1952728750904661634">כניסה עם חשבון מנוהל</translation>
 <translation id="1974060860693918893">מתקדם</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">אפשר לגשת לרשימת הקריאה במצב לא מקוון. כדי להוסיף דף לרשימת הקריאה, הקש על <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">טעינה מראש של דפי אינטרנט</translation>
 <translation id="3691593122358196899">התווסף לסימניות ב-<ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">שימוש בסיסמה אחרת</translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">טקסט נקי</translation>
 <translation id="6346549652287021269">להתחיל הורדה חדשה?</translation>
 <translation id="6362362396625799311">אין כרטיסיות של גלישה בסתר</translation>
+<translation id="6363526231572697780">אין שם משתמש</translation>
 <translation id="6374469231428023295">נסה שוב</translation>
 <translation id="6380866119319257197">אם תשכח את ביטוי הסיסמה או תרצה לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">שם על הכרטיס</translation>

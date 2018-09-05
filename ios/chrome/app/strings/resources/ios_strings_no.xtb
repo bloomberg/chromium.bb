@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elementet er oppdatert</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1063454504051558093">Bruk et annet passord</translation>
 <translation id="1076421457278169141">Koden er skannet</translation>
 <translation id="1084365883616172403">Facebook-innlegget er fullført.</translation>
 <translation id="1104948393051856124">Godta og fortsett</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Send bruksdata</translation>
 <translation id="1886928167269928266">Tidenes morgen</translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
+<translation id="191179954310195971">Andre Google-tjenester</translation>
 <translation id="1941314575388338491">Dobbelttrykk for å kopiere.</translation>
 <translation id="1952728750904661634">Logg på med administrert konto</translation>
 <translation id="1974060860693918893">Avansert</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Bruk et annet passord</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3779810277399252432">Ingen Internett-tilkobling.</translation>
 <translation id="3783017676699494206">Lagre bildet</translation>
@@ -315,6 +318,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6344783595350022745">Klar tekst</translation>
 <translation id="6346549652287021269">Vil du starte en ny nedlasting?</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
+<translation id="6363526231572697780">Ingen brukernavn</translation>
 <translation id="6374469231428023295">Prøv på nytt</translation>
 <translation id="6380866119319257197">Hvis du glemmer passordfrasen din eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Navn som er oppført på kortet</translation>
