@@ -5,6 +5,27 @@
 import("//build/config/chrome_build.gni")
 
 if (is_win && is_chrome_branded) {
+  static_library("set_as_default_feature") {
+    sources = [
+      "set_as_default/set_as_default_handler.cc",
+      "set_as_default/set_as_default_handler.h",
+    ]
+
+    public_deps = [
+      "//base",
+      "//net",
+      "//url",
+    ]
+
+    deps = [
+      "//components/resources",
+      "//components/strings",
+      "//components/variations",
+      "//content/public/browser",
+      "//ui/base",
+    ]
+  }
+
   source_set("constants") {
     sources = [
       "constants.cc",
