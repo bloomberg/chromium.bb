@@ -124,7 +124,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         pfq_compat_id = self.COMPAT_IDS.get(key)
         if pfq_compat_id:
           err = self.GetCompatIdDiff(compat_id, pfq_compat_id)
-          msg = '%s%s uses mismatched Chrome prebuilts from %s -- %s'
+          msg = '%s%s uses mismatched Chrome prebuilts from %s\n\t%s'
           self.Complain(msg % (msg_prefix, config.name, key.board, err),
                         fatal=False)
           pfqs.add(key)
@@ -188,11 +188,14 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
 
-    for compat_id, pfqs in pfq_configs.by_compat_id.items():
+    for compat_id, pfqs in sorted(pfq_configs.by_compat_id.items(),
+                                  key=lambda x: str(x[1])):
       if len(pfqs) > 1:
-        msg = 'The following Chrome PFQs produce identical prebuilts: %s -- %s'
-        self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
-                      fatal=False)
+        self.Complain(
+            'The following Chrome PFQs produce identical prebuilts:\n'
+            '\t%s\n\t%s'
+            % ('\n\t'.join(sorted(str(x) for x in pfqs)), compat_id),
+            fatal=False)
 
     # Sort the names to ensure consistent errors.
     for _name, config in sorted(self._GuessActiveConfigs().items()):
