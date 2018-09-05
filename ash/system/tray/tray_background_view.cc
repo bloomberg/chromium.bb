@@ -73,13 +73,14 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
       chromeos::switches::ShouldUseShelfNewUi() ? 0 : ash::kHitRegionPadding;
   const int secondary_padding =
       chromeos::switches::ShouldUseShelfNewUi() ? -ash::kHitRegionPadding : 0;
+  const int separator_width = ash::TrayConstants::separator_width();
 
   if (is_shelf_horizontal) {
     insets.Set(secondary_padding, primary_padding, secondary_padding,
-               primary_padding + ash::kSeparatorWidth);
+               primary_padding + separator_width);
   } else {
     insets.Set(primary_padding, secondary_padding,
-               primary_padding + ash::kSeparatorWidth, secondary_padding);
+               primary_padding + separator_width, secondary_padding);
   }
   MirrorInsetsIfNecessary(&insets);
   return insets;
@@ -379,16 +380,17 @@ void TrayBackgroundView::PaintButtonContents(gfx::Canvas* canvas) {
   const gfx::Rect local_bounds = GetLocalBounds();
   const SkColor color = SkColorSetA(SK_ColorWHITE, 0x4D);
   const int shelf_size = ShelfConstants::shelf_size();
+  const int separator_width = ash::TrayConstants::separator_width();
 
   if (shelf_->IsHorizontalAlignment()) {
     const gfx::PointF point(
-        base::i18n::IsRTL() ? 0 : (local_bounds.width() - kSeparatorWidth),
+        base::i18n::IsRTL() ? 0 : (local_bounds.width() - separator_width),
         (shelf_size - kTrayItemSize) / 2);
     const gfx::Vector2dF vector(0, kTrayItemSize);
     canvas->Draw1pxLine(point, point + vector, color);
   } else {
     const gfx::PointF point((shelf_size - kTrayItemSize) / 2,
-                            local_bounds.height() - kSeparatorWidth);
+                            local_bounds.height() - separator_width);
     const gfx::Vector2dF vector(kTrayItemSize, 0);
     canvas->Draw1pxLine(point, point + vector, color);
   }
