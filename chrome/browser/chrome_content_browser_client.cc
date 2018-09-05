@@ -118,6 +118,7 @@
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tracing/chrome_browser_main_extra_parts_tracing.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
@@ -1134,6 +1135,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsResourceCoordinator);
 
   main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiling);
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsTracing);
 
   chrome::AddMetricsExtraParts(main_parts);
 
