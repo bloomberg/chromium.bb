@@ -161,6 +161,10 @@ class ChromeDriver(object):
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
       chrome_switches.append('disable-gpu')
 
+    if chrome_switches is None:
+      chrome_switches = []
+    chrome_switches.append('force-color-profile=srgb')
+
     if chrome_switches:
       assert type(chrome_switches) is list
       options['args'] = chrome_switches
@@ -490,6 +494,9 @@ class ChromeDriver(object):
 
   def FullScreenWindow(self):
     return self.ExecuteCommand(Command.FULLSCREEN_WINDOW)
+
+  def TakeScreenshot(self):
+    return self.ExecuteCommand(Command.SCREENSHOT)
 
   def Quit(self):
     """Quits the browser and ends the session."""

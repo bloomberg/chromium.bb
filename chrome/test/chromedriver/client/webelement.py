@@ -66,3 +66,6 @@ class WebElement(object):
 
   def IsDisplayed(self):
     return self._Execute(Command.IS_ELEMENT_DISPLAYED)
+
+  def TakeElementScreenshot(self):
+    return self._Execute(Command.ELEMENT_SCREENSHOT)
