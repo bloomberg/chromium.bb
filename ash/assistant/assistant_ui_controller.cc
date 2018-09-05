@@ -251,8 +251,11 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     return;
   }
 
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible) {
+    // If Assistant window is already visible, we just try to retake focus.
+    container_view_->GetWidget()->Activate();
     return;
+  }
 
   if (!container_view_) {
     container_view_ = new AssistantContainerView(assistant_controller_);
