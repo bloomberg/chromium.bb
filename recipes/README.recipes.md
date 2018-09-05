@@ -31,6 +31,7 @@
   * [git:examples/full](#recipes-git_examples_full)
   * [git_cl:examples/full](#recipes-git_cl_examples_full)
   * [gitiles:examples/full](#recipes-gitiles_examples_full)
+  * [gitiles:tests/parse_repo_url](#recipes-gitiles_tests_parse_repo_url)
   * [gsutil:examples/full](#recipes-gsutil_examples_full)
   * [infra_paths:examples/full](#recipes-infra_paths_examples_full)
   * [osx_sdk:examples/full](#recipes-osx_sdk_examples_full)
@@ -534,11 +535,11 @@ DEPRECATED. Consider using gerrit.get_change_description instead.
 
 [DEPS](/recipes/recipe_modules/gitiles/__init__.py#5): [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step], [recipe\_engine/url][recipe_engine/recipe_modules/url]
 
-#### **class [Gitiles](/recipes/recipe_modules/gitiles/api.py#10)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+#### **class [Gitiles](/recipes/recipe_modules/gitiles/api.py#11)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
 Module for polling a git repository using the Gitiles web interface.
 
-&mdash; **def [commit\_log](/recipes/recipe_modules/gitiles/api.py#113)(self, url, commit, step_name=None, attempts=None):**
+&mdash; **def [commit\_log](/recipes/recipe_modules/gitiles/api.py#114)(self, url, commit, step_name=None, attempts=None):**
 
 Returns: (dict) the Gitiles commit log structure for a given commit.
 
@@ -548,7 +549,7 @@ Args:
   step_name (str): If not None, override the step name.
   attempts (int): Number of times to try the request before failing.
 
-&mdash; **def [download\_archive](/recipes/recipe_modules/gitiles/api.py#155)(self, repository_url, destination, revision='refs/heads/master'):**
+&mdash; **def [download\_archive](/recipes/recipe_modules/gitiles/api.py#156)(self, repository_url, destination, revision='refs/heads/master'):**
 
 Downloads an archive of the repo and extracts it to `destination`.
 
@@ -564,7 +565,7 @@ Args:
   revision (str): The ref or revision in the repo to download. Defaults to
     'refs/heads/master'.
 
-&mdash; **def [download\_file](/recipes/recipe_modules/gitiles/api.py#129)(self, repository_url, file_path, branch='master', step_name=None, attempts=None, \*\*kwargs):**
+&mdash; **def [download\_file](/recipes/recipe_modules/gitiles/api.py#130)(self, repository_url, file_path, branch='master', step_name=None, attempts=None, \*\*kwargs):**
 
 Downloads raw file content from a Gitiles repository.
 
@@ -578,7 +579,7 @@ Args:
 Returns:
   Raw file content.
 
-&mdash; **def [log](/recipes/recipe_modules/gitiles/api.py#67)(self, url, ref, limit=0, cursor=None, step_name=None, attempts=None, \*\*kwargs):**
+&mdash; **def [log](/recipes/recipe_modules/gitiles/api.py#68)(self, url, ref, limit=0, cursor=None, step_name=None, attempts=None, \*\*kwargs):**
 
 Returns the most recent commits under the given ref with properties.
 
@@ -601,7 +602,13 @@ Returns:
   Cursor can be used for subsequent calls to log for paging. If None,
   signals that there are no more commits to fetch.
 
-&mdash; **def [refs](/recipes/recipe_modules/gitiles/api.py#55)(self, url, step_name='refs', attempts=None):**
+&mdash; **def [parse\_repo\_url](/recipes/recipe_modules/gitiles/api.py#205)(self, repo_url):**
+
+Returns (host, project) pair.
+
+Returns (None, None) if repo_url is not recognized.
+
+&mdash; **def [refs](/recipes/recipe_modules/gitiles/api.py#56)(self, url, step_name='refs', attempts=None):**
 
 Returns a list of refs in the remote repository.
 ### *recipe_modules* / [gsutil](/recipes/recipe_modules/gsutil)
@@ -904,6 +911,11 @@ Raises:
 [DEPS](/recipes/recipe_modules/gitiles/examples/full.py#5): [gitiles](#recipe_modules-gitiles), [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gitiles/examples/full.py#14)(api):**
+### *recipes* / [gitiles:tests/parse\_repo\_url](/recipes/recipe_modules/gitiles/tests/parse_repo_url.py)
+
+[DEPS](/recipes/recipe_modules/gitiles/tests/parse_repo_url.py#5): [gitiles](#recipe_modules-gitiles), [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+
+&mdash; **def [RunSteps](/recipes/recipe_modules/gitiles/tests/parse_repo_url.py#12)(api):**
 ### *recipes* / [gsutil:examples/full](/recipes/recipe_modules/gsutil/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/gsutil/examples/full.py#5): [gsutil](#recipe_modules-gsutil), [recipe\_engine/path][recipe_engine/recipe_modules/path]
@@ -937,18 +949,18 @@ Move things around in a loop!
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/windows_sdk/examples/full.py#13)(api):**
 
-[recipe_engine/recipe_modules/buildbucket]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-buildbucket
-[recipe_engine/recipe_modules/cipd]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-cipd
-[recipe_engine/recipe_modules/context]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-context
-[recipe_engine/recipe_modules/file]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-file
-[recipe_engine/recipe_modules/json]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-json
-[recipe_engine/recipe_modules/path]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-path
-[recipe_engine/recipe_modules/platform]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-platform
-[recipe_engine/recipe_modules/properties]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-properties
-[recipe_engine/recipe_modules/python]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-python
-[recipe_engine/recipe_modules/raw_io]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-raw_io
-[recipe_engine/recipe_modules/runtime]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-runtime
-[recipe_engine/recipe_modules/source_manifest]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-source_manifest
-[recipe_engine/recipe_modules/step]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-step
-[recipe_engine/recipe_modules/url]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/README.recipes.md#recipe_modules-url
-[recipe_engine/wkt/RecipeApi]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/809e57935211b3fcb802f74a7844d4f36eff6b87/recipe_engine/recipe_api.py#1006
+[recipe_engine/recipe_modules/buildbucket]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-buildbucket
+[recipe_engine/recipe_modules/cipd]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-cipd
+[recipe_engine/recipe_modules/context]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-context
+[recipe_engine/recipe_modules/file]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-file
+[recipe_engine/recipe_modules/json]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-json
+[recipe_engine/recipe_modules/path]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-path
+[recipe_engine/recipe_modules/platform]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-platform
+[recipe_engine/recipe_modules/properties]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-properties
+[recipe_engine/recipe_modules/python]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-python
+[recipe_engine/recipe_modules/raw_io]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-raw_io
+[recipe_engine/recipe_modules/runtime]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-runtime
+[recipe_engine/recipe_modules/source_manifest]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-source_manifest
+[recipe_engine/recipe_modules/step]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-step
+[recipe_engine/recipe_modules/url]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/README.recipes.md#recipe_modules-url
+[recipe_engine/wkt/RecipeApi]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/3810d923a1db3efaa75734efef8708fa5e0d6a1d/recipe_engine/recipe_api.py#1012
