@@ -19,7 +19,7 @@
 #include "ipc/ipc_mojo_param_traits.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 class MessagePortChannel;

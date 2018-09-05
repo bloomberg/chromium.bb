@@ -19,7 +19,7 @@
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/mojom/message_port/message_port.mojom.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 // #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
