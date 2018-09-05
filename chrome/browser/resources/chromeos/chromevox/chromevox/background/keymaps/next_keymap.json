@@ -613,6 +613,15 @@
       }
     },
     {
+      "command": "dumpTree",
+      "sequence": {
+	"cvoxModifier": true,
+	"keys": {
+	  "keyCode": [68, 84]
+	}
+      }
+    },
+    {
       "command": "help",
       "sequence": {
         "cvoxModifier": true,
