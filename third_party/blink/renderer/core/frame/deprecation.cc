@@ -562,23 +562,23 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                                     "5701042356355072")};
 
     case WebFeature::kMediaElementSourceOnOfflineContext:
-      return {"MediaElementAudioSourceNode", kM70,
+      return {"MediaElementAudioSourceNode", kM71,
               WillBeRemoved("Creating a MediaElementAudioSourceNode on an "
                             "OfflineAudioContext",
-                            kM70, "5258622686724096")};
+                            kM71, "5258622686724096")};
 
     case WebFeature::kMediaStreamDestinationOnOfflineContext:
-      return {"MediaStreamAudioDestinationNode", kM70,
+      return {"MediaStreamAudioDestinationNode", kM71,
               WillBeRemoved("Creating a MediaStreamAudioDestinationNode on an "
                             "OfflineAudioContext",
-                            kM70, "5258622686724096")};
+                            kM71, "5258622686724096")};
 
     case WebFeature::kMediaStreamSourceOnOfflineContext:
       return {
-          "MediaStreamAudioSourceNode", kM70,
+          "MediaStreamAudioSourceNode", kM71,
           WillBeRemoved(
               "Creating a MediaStreamAudioSourceNode on an OfflineAudioContext",
-              kM70, "5258622686724096")};
+              kM71, "5258622686724096")};
 
     case WebFeature::kRTCDataChannelInitMaxRetransmitTime:
       return {"RTCDataChannelInitMaxRetransmitTime", kM70,
