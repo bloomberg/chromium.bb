@@ -1,6 +1,7 @@
 {
   "name": "web_browser",
   "display_name": "Web",
+  "options": { "can_connect_to_other_services_as_any_user": true },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -13,8 +14,7 @@
         "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",
-          "service_manager:service_manager",
-          "service_manager:user_id"
+          "service_manager:service_manager"
         ]
       }
     }

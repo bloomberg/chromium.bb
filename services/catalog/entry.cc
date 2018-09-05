@@ -184,10 +184,10 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
                    << instance_sharing;
     }
 
-    if (const base::Value* allow_other_user_ids_value =
-            options->FindKey("allow_other_user_ids"))
-      options_struct.allow_other_user_ids =
-          allow_other_user_ids_value->GetBool();
+    if (const base::Value* can_connect_to_other_services_as_any_user_value =
+            options->FindKey("can_connect_to_other_services_as_any_user"))
+      options_struct.can_connect_to_other_services_as_any_user =
+          can_connect_to_other_services_as_any_user_value->GetBool();
 
     if (const base::Value* allow_other_instance_names_value =
             options->FindKey("allow_other_instance_names"))

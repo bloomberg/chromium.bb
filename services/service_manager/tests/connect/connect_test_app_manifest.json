@@ -1,6 +1,7 @@
 {
   "name": "connect_test_app",
   "display_name": "Connect Test App",
+  "options": { "can_connect_to_other_services_as_any_user": true },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -18,8 +19,7 @@
         "connect_test_class_app": [
           "connect_unittests:class",
           "connect_unittests:connect_test_service"
-        ],
-        "service_manager": [ "service_manager:user_id" ]
+        ]
       }
     }
   }

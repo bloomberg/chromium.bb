@@ -47,7 +47,6 @@ namespace service_manager {
 
 namespace {
 
-const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
@@ -614,7 +613,7 @@ class ServiceManager::Instance
         options_.instance_sharing ==
             catalog::ServiceOptions::InstanceSharingType::
                 SHARED_INSTANCE_ACROSS_USERS ||
-        HasCapability(connection_spec, kCapability_UserID);
+        options_.can_connect_to_other_services_as_any_user;
 
     if (!skip_user_check && target.user_id() != identity_.user_id() &&
         target.user_id() != mojom::kRootUserID) {
