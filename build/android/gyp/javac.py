@@ -85,6 +85,9 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'OverrideThrowableToString',
   # Nice to have better type safety.
   'CollectionToArraySafeParameter',
+  # Makes logcat debugging more difficult, and does not provide obvious
+  # benefits in the Chromium codebase.
+  'ObjectToString',
 ]
 
 ERRORPRONE_WARNINGS_TO_ERROR = [
