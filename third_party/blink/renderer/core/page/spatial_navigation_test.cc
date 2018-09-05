@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
@@ -81,4 +82,22 @@ TEST_F(SpatialNavigationTest,
   EXPECT_TRUE(IsScrollableAreaOrDocument(enclosing_container));
 }
 
+TEST_F(SpatialNavigationTest, ZooomPutsElementOffScreen) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<button id='a'>hello</button><br>"
+      "<button id='b' style='margin-top: 70%'>bello</button>");
+
+  Element* a = GetDocument().getElementById("a");
+  Element* b = GetDocument().getElementById("b");
+  EXPECT_FALSE(IsRectOffscreen(a));
+  EXPECT_FALSE(IsRectOffscreen(b));
+
+  // Now, test IsRectOffscreen with a pinched viewport.
+  VisualViewport& visual_viewport = GetFrame().GetPage()->GetVisualViewport();
+  visual_viewport.SetScale(2);
+  // #b is no longer visible.
+  EXPECT_FALSE(IsRectOffscreen(a));
+  EXPECT_TRUE(IsRectOffscreen(b));
+}
 }  // namespace blink
