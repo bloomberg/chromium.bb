@@ -161,13 +161,6 @@ UrlPattern::UrlPattern(const flat::UrlRule& rule)
       anchor_right_(ConvertAnchorType(rule.anchor_right())),
       match_case_(!!(rule.options() & flat::OptionFlag_IS_MATCH_CASE)) {}
 
-UrlPattern::UrlPattern(const proto::UrlRule& rule)
-    : type_(rule.url_pattern_type()),
-      url_pattern_(rule.url_pattern()),
-      anchor_left_(rule.anchor_left()),
-      anchor_right_(rule.anchor_right()),
-      match_case_(rule.match_case()) {}
-
 UrlPattern::~UrlPattern() = default;
 
 bool UrlPattern::MatchesUrl(const GURL& url) const {
