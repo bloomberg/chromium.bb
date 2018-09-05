@@ -6,8 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
@@ -158,9 +160,36 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
 
 // Tests that when a user initiated form activity is registered the script to
 // extract forms is executed.
-TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity) {
+TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
   [[mock_js_injection_receiver_ expect]
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
+      completionHandler:[OCMArg any]];
+  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
+                                            fieldName:@"address"
+                                      fieldIdentifier:@"address"
+                                            fieldType:@"text"
+                                                 type:@"focus"
+                                           typedValue:@""
+                                          isMainFrame:YES
+                                       hasUserGesture:YES
+                                             webState:&test_web_state_
+                                    completionHandler:nil];
+  test_web_state_.WasShown();
+
+  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
+}
+
+// Tests that when a user initiated form activity is registered the script to
+// extract forms is executed.
+TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  [[mock_js_injection_receiver_ expect]
+      executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
                                             fieldName:@"address"
