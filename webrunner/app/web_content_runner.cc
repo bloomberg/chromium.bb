@@ -16,9 +16,12 @@
 
 namespace webrunner {
 
-WebContentRunner::WebContentRunner(chromium::web::ContextPtr context)
-    : context_(std::move(context)) {
+WebContentRunner::WebContentRunner(chromium::web::ContextPtr context,
+                                   base::OnceClosure on_idle_closure)
+    : context_(std::move(context)),
+      on_idle_closure_(std::move(on_idle_closure)) {
   DCHECK(context_);
+  DCHECK(on_idle_closure_);
 }
 
 WebContentRunner::~WebContentRunner() = default;
@@ -36,6 +39,11 @@ void WebContentRunner::StartComponent(
 
 void WebContentRunner::DestroyComponent(ComponentControllerImpl* component) {
   controllers_.erase(controllers_.find(component));
+
+  // Quit the RunLoop if there are no more connected clients.
+  if (controllers_.empty() && on_idle_closure_) {
+    std::move(on_idle_closure_).Run();
+  }
 }
 
 }  // namespace webrunner

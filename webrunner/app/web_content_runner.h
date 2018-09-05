@@ -24,7 +24,10 @@ class WebContentRunner : public fuchsia::sys::Runner {
  public:
   // |content|: Context (e.g. persisted profile storage) under which all web
   //   content launched through this Runner instance will be run.
-  explicit WebContentRunner(chromium::web::ContextPtr context);
+  // |on_idle_closure|: A callback which is invoked when the WebContentRunner
+  //   has entered an idle state and may be safely torn down.
+  WebContentRunner(chromium::web::ContextPtr context,
+                   base::OnceClosure on_idle_closure);
   ~WebContentRunner() override;
 
   chromium::web::Context* context() { return context_.get(); }
@@ -43,6 +46,7 @@ class WebContentRunner : public fuchsia::sys::Runner {
   chromium::web::ContextPtr context_;
   std::set<std::unique_ptr<ComponentControllerImpl>, base::UniquePtrComparator>
       controllers_;
+  base::OnceClosure on_idle_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentRunner);
 };
