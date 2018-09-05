@@ -195,8 +195,7 @@ class CacheCounterTest : public PlatformTest {
           next_step_ = STEP_CALLBACK;
 
           std::string data = "entry data";
-          scoped_refptr<net::StringIOBuffer> buffer =
-              new net::StringIOBuffer(data);
+          auto buffer = base::MakeRefCounted<net::StringIOBuffer>(data);
 
           rv = entry_->WriteData(
               0, 0, buffer.get(), data.size(),

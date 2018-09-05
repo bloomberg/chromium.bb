@@ -193,14 +193,13 @@ class FakeSSLClientSocketTest : public testing::Test {
       if (fake_ssl_client_socket.IsConnected()) {
         int read_len = arraysize(kReadTestData);
         int read_buf_len = 2 * read_len;
-        scoped_refptr<net::IOBuffer> read_buf(
-            new net::IOBuffer(read_buf_len));
+        auto read_buf = base::MakeRefCounted<net::IOBuffer>(read_buf_len);
         int read_status = fake_ssl_client_socket.Read(
             read_buf.get(), read_buf_len, test_completion_callback.callback());
         ExpectStatus(mode, read_len, read_status, &test_completion_callback);
 
-        scoped_refptr<net::IOBuffer> write_buf(
-            new net::StringIOBuffer(kWriteTestData));
+        auto write_buf =
+            base::MakeRefCounted<net::StringIOBuffer>(kWriteTestData);
         int write_status = fake_ssl_client_socket.Write(
             write_buf.get(), arraysize(kWriteTestData),
             test_completion_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);

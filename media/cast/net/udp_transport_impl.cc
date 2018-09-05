@@ -177,7 +177,7 @@ void UdpTransportImpl::ReceiveNextPacket(int length_or_status) {
   while (true) {
     if (length_or_status == net::ERR_IO_PENDING) {
       next_packet_.reset(new Packet(media::cast::kMaxIpPacketSize));
-      recv_buf_ = new net::WrappedIOBuffer(
+      recv_buf_ = base::MakeRefCounted<net::WrappedIOBuffer>(
           reinterpret_cast<char*>(&next_packet_->front()));
       length_or_status = udp_socket_->RecvFrom(
           recv_buf_.get(), media::cast::kMaxIpPacketSize, &recv_addr_,
@@ -250,8 +250,8 @@ bool UdpTransportImpl::SendPacket(PacketRef packet,
     }
   }
 
-  scoped_refptr<net::IOBuffer> buf =
-      new net::WrappedIOBuffer(reinterpret_cast<char*>(&packet->data.front()));
+  auto buf = base::MakeRefCounted<net::WrappedIOBuffer>(
+      reinterpret_cast<char*>(&packet->data.front()));
 
   int result;
   base::RepeatingCallback<void(int)> callback = base::BindRepeating(

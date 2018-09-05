@@ -231,8 +231,7 @@ void UDPSocket::OnReceived(int32_t result,
     return;
   }
 
-  scoped_refptr<net::IOBuffer> io_buffer =
-      new net::IOBuffer(data.value().size());
+  auto io_buffer = base::MakeRefCounted<net::IOBuffer>(data.value().size());
   memcpy(io_buffer->data(), data.value().data(), data.value().size());
 
   if (!read_callback_.is_null()) {

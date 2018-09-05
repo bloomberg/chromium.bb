@@ -53,8 +53,8 @@ void Socket::WriteData() {
   WriteRequest& request = write_queue_.front();
 
   DCHECK(request.byte_count >= request.bytes_written);
-  io_buffer_write_ = new net::WrappedIOBuffer(request.io_buffer->data() +
-                                              request.bytes_written);
+  io_buffer_write_ = base::MakeRefCounted<net::WrappedIOBuffer>(
+      request.io_buffer->data() + request.bytes_written);
   int result = WriteImpl(
       io_buffer_write_.get(), request.byte_count - request.bytes_written,
       base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));

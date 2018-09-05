@@ -500,7 +500,7 @@ void MockDisplaySourceConnectionDelegate::ReceiveMediaPacket() {
   DCHECK(socket_.get());
   const int kBufferSize = 512;
 
-  recvfrom_buffer_ = new net::IOBuffer(kBufferSize);
+  recvfrom_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
   int net_result = socket_->RecvFrom(
       recvfrom_buffer_.get(), kBufferSize, &end_point_,

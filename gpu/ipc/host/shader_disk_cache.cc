@@ -260,7 +260,7 @@ int ShaderDiskCacheEntry::WriteCallback(int rv) {
   }
 
   op_type_ = WRITE_DATA;
-  scoped_refptr<net::StringIOBuffer> io_buf = new net::StringIOBuffer(shader_);
+  auto io_buf = base::MakeRefCounted<net::StringIOBuffer>(shader_);
   return entry_->WriteData(1, 0, io_buf.get(), shader_.length(),
                            base::Bind(&ShaderDiskCacheEntry::OnOpComplete,
                                       weak_ptr_factory_.GetWeakPtr()),
@@ -354,7 +354,7 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
     return rv;
 
   op_type_ = READ_COMPLETE;
-  buf_ = new net::IOBufferWithSize(entry_->GetDataSize(1));
+  buf_ = base::MakeRefCounted<net::IOBufferWithSize>(entry_->GetDataSize(1));
   return entry_->ReadData(1, 0, buf_.get(), buf_->size(),
                           base::Bind(&ShaderDiskReadHelper::OnOpComplete,
                                      weak_ptr_factory_.GetWeakPtr()));
