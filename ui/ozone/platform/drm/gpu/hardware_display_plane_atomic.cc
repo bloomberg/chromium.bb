@@ -42,6 +42,19 @@ uint32_t OverlayTransformToDrmRotationPropertyValue(
   return 0;
 }
 
+// Rotations are dependent on modifiers. Tiled formats can be rotated,
+// linear formats cannot. Atomic tests currently ignore modifiers, so there
+// isn't a way of determining if the rotation is supported.
+// TODO(https://crbug/880464): Remove this.
+bool IsRotationTransformSupported(gfx::OverlayTransform transform) {
+  if ((transform == gfx::OVERLAY_TRANSFORM_ROTATE_90) ||
+      (transform == gfx::OVERLAY_TRANSFORM_ROTATE_270)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t id)
@@ -73,6 +86,9 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     const gfx::OverlayTransform transform,
     int in_fence_fd) {
   if (transform != gfx::OVERLAY_TRANSFORM_NONE && !properties_.rotation.id)
+    return false;
+
+  if (!IsRotationTransformSupported(transform))
     return false;
 
   properties_.crtc_id.value = crtc_id;
