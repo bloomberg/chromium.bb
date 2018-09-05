@@ -2058,35 +2058,22 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
-#if defined(OS_LINUX)
-// Flaky timeouts and failures: https://crbug.com/833380
-#define MAYBE_HitTestLayerSquashing DISABLED_HitTestLayerSquashing
-#else
-#define MAYBE_HitTestLayerSquashing HitTestLayerSquashing
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_HitTestLayerSquashing) {
+                       HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_HitTestLayerSquashing) {
+                       HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
-#if defined(OS_LINUX)
-// Flaky timeouts and failures: https://crbug.com/833380
-#define MAYBE_HitTestWatermark DISABLED_HitTestWatermark
-#else
-#define MAYBE_HitTestWatermark HitTestWatermark
-#endif
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_HitTestWatermark) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       MAYBE_HitTestWatermark) {
+                       HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
