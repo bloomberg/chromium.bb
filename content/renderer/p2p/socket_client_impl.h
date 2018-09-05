@@ -87,7 +87,10 @@ class P2PSocketClientImpl : public P2PSocketClient,
   void SocketCreated(const net::IPEndPoint& local_address,
                      const net::IPEndPoint& remote_address) override;
   void SendComplete(const network::P2PSendPacketMetrics& send_metrics) override;
-  void IncomingTcpConnection(const net::IPEndPoint& socket_address) override;
+  void IncomingTcpConnection(
+      const net::IPEndPoint& socket_address,
+      network::mojom::P2PSocketPtr socket,
+      network::mojom::P2PSocketClientRequest client_request) override;
   void DataReceived(const net::IPEndPoint& socket_address,
                     const std::vector<int8_t>& data,
                     base::TimeTicks timestamp) override;

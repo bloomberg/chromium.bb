@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -25,26 +24,22 @@ class StreamSocket;
 }  // namespace net
 
 namespace network {
-class P2PSocketTcpBase;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpServer : public P2PSocket {
  public:
-  P2PSocketTcpServer(P2PSocketManager* socket_manager,
+  P2PSocketTcpServer(Delegate* delegate,
                      mojom::P2PSocketClientPtr client,
                      mojom::P2PSocketRequest socket,
                      P2PSocketType client_type);
   ~P2PSocketTcpServer() override;
 
   // P2PSocket overrides.
-  bool Init(const net::IPEndPoint& local_address,
+  void Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
             const P2PHostAndIPEndPoint& remote_address) override;
 
   // mojom::P2PSocket implementation:
-  void AcceptIncomingTcpConnection(const net::IPEndPoint& remote_address,
-                                   mojom::P2PSocketClientPtr client,
-                                   mojom::P2PSocketRequest request) override;
   void Send(const std::vector<int8_t>& data,
             const P2PPacketInfo& packet_info,
             const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -53,13 +48,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpServer : public P2PSocket {
 
  private:
   friend class P2PSocketTcpServerTest;
-
-  std::unique_ptr<P2PSocketTcpBase> AcceptIncomingTcpConnectionInternal(
-      const net::IPEndPoint& remote_address,
-      mojom::P2PSocketClientPtr client,
-      mojom::P2PSocketRequest request);
-
-  void OnError();
 
   void DoAccept();
   void HandleAcceptResult(int result);
@@ -72,8 +60,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpServer : public P2PSocket {
   net::IPEndPoint local_address_;
 
   std::unique_ptr<net::StreamSocket> accept_socket_;
-  std::map<net::IPEndPoint, std::unique_ptr<net::StreamSocket>>
-      accepted_sockets_;
 
   const net::CompletionRepeatingCallback accept_callback_;
 
