@@ -268,5 +268,10 @@ Response BrowserHandler::GetBrowserCommandLine(
   }
 }
 
+Response BrowserHandler::Crash() {
+  CHECK(false);
+  return Response::OK();
+}
+
 }  // namespace protocol
 }  // namespace content
