@@ -166,7 +166,7 @@ Refer to README.md for content description and update process.
  <item id="omnibox_zerosuggest" hash_code="7687691" type="0" content_hash_code="119419625" os_list="linux,windows" file_path="components/omnibox/browser/contextual_suggestions_service.cc"/>
  <item id="omnibox_zerosuggest_experimental" hash_code="3813491" type="0" content_hash_code="22929259" os_list="linux,windows" file_path="components/omnibox/browser/contextual_suggestions_service.cc"/>
  <item id="one_google_bar_service" hash_code="78917933" type="0" content_hash_code="46527252" os_list="linux,windows" file_path="chrome/browser/search/one_google_bar/one_google_bar_loader_impl.cc"/>
- <item id="open_search" hash_code="107267424" type="0" content_hash_code="25715812" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
+ <item id="open_search" hash_code="107267424" type="0" content_hash_code="83025542" os_list="linux,windows" file_path="components/search_engines/template_url_fetcher.cc"/>
  <item id="origin_policy_loader" hash_code="6483617" type="0" content_hash_code="20680909" os_list="linux,windows" file_path="content/browser/frame_host/origin_policy_throttle.cc"/>
  <item id="p2p_invalidator" hash_code="84201371" type="0" content_hash_code="117416248" os_list="linux,windows" file_path="components/invalidation/impl/p2p_invalidator.cc"/>
  <item id="parallel_download_job" hash_code="135118587" type="0" content_hash_code="105330419" os_list="linux,windows" file_path="components/download/internal/common/parallel_download_job.cc"/>

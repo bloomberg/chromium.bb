@@ -34,7 +34,8 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         destination: WEBSITE
       }
       policy {
-        cookies_allowed: NO
+        cookies_allowed: YES
+        cookies_store: "user"
         setting: "This feature cannot be disabled in settings."
         policy_exception_justification:
           "Not implemented, considered not useful as this feature does not "
@@ -110,9 +111,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   resource_request->request_initiator = initiator;
   resource_request->render_frame_id = render_frame_id;
   resource_request->resource_type = resource_type;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
   simple_url_loader_->SetAllowHttpErrorResults(true);
