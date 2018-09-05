@@ -67,7 +67,8 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/aom_dsp/x86/lpf_common_sse2.h"
             "${AOM_ROOT}/aom_dsp/x86/mem_sse2.h"
             "${AOM_ROOT}/aom_dsp/x86/transpose_sse2.h"
-            "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h")
+            "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h"
+            "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.h")
 
 list(APPEND AOM_DSP_COMMON_ASM_SSSE3
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
@@ -201,7 +202,8 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/sse_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c"
-              "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c")
+              "${AOM_ROOT}/aom_dsp/x86/obmc_variance_avx2.c"
+              "${AOM_ROOT}/aom_dsp/x86/sum_squares_avx2.c")
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
               "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm")

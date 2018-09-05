@@ -580,7 +580,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     # Sum of Squares
     #
     add_proto qw/uint64_t aom_sum_squares_2d_i16/, "const int16_t *src, int stride, int width, int height";
-    specialize qw/aom_sum_squares_2d_i16 sse2/;
+    specialize qw/aom_sum_squares_2d_i16 sse2 avx2/;
 
     add_proto qw/uint64_t aom_sum_squares_i16/, "const int16_t *src, uint32_t N";
     specialize qw/aom_sum_squares_i16 sse2/;
