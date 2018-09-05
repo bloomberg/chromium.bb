@@ -62,7 +62,7 @@ class ThrottlingControllerTestHelper {
         completion_callback_(base::BindRepeating(&TestCallback::Run,
                                                  base::Unretained(&callback_))),
         mock_transaction_(kSimpleGET_Transaction),
-        buffer_(new net::IOBuffer(64)),
+        buffer_(base::MakeRefCounted<net::IOBuffer>(64)),
         net_log_(std::make_unique<net::NetLog>()),
         net_log_with_source_(
             net::NetLogWithSource::Make(net_log_.get(),

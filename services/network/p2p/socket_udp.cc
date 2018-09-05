@@ -77,7 +77,7 @@ P2PSocketUdp::PendingPacket::PendingPacket(
     uint64_t id,
     const net::NetworkTrafficAnnotationTag traffic_annotation)
     : to(to),
-      data(new net::IOBuffer(content.size())),
+      data(base::MakeRefCounted<net::IOBuffer>(content.size())),
       size(content.size()),
       packet_options(options),
       id(id),
@@ -185,7 +185,7 @@ bool P2PSocketUdp::Init(const net::IPEndPoint& local_address,
   // NOTE: Remote address will be same as what renderer provided.
   client_->SocketCreated(address, remote_address.ip_address);
 
-  recv_buffer_ = new net::IOBuffer(kUdpReadBufferSize);
+  recv_buffer_ = base::MakeRefCounted<net::IOBuffer>(kUdpReadBufferSize);
   DoRead();
 
   return true;
