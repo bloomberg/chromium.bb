@@ -5012,6 +5012,7 @@ if (!is_android) {
         "../browser/chromeos/login/mixin_based_browser_test.cc",
         "../browser/chromeos/login/mixin_based_browser_test.h",
         "../browser/chromeos/login/oobe_browsertest.cc",
+        "../browser/chromeos/login/oobe_interactive_ui_test.cc",
         "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h",
         "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric_cpu.cpp",
         "../browser/chromeos/login/screenshot_testing/SkImageDiffer.cpp",
