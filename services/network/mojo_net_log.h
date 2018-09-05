@@ -30,6 +30,7 @@ class MojoNetLog : public net::NetLog {
   ~MojoNetLog() override;
 
   // Finalizes the logfile created by any call to ObserveFileWithConstants().
+  // It is safe to call this multiple times.
   void ShutDown();
 
   // If specified by the command line, stream network events (NetLog) to a
