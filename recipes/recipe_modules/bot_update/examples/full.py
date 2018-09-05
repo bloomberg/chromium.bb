@@ -37,6 +37,7 @@ def RunSteps(api):
                                                  'HEAD')
   api.gclient.c.repo_path_map['https://webrtc.googlesource.com/src'] = (
       'src/third_party/webrtc', 'HEAD')
+  api.gclient.c.patch_projects['webrtc'] = ('src/third_party/webrtc', 'HEAD')
 
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
@@ -147,64 +148,94 @@ def GenTests(api):
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
-      patch_project='v8',
+      patch_project='v8/v8',
       revisions={'src/v8': 'abc'}
   )
   yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
-      patch_project='v8',
+      patch_project='v8/v8',
   )
   yield api.test('tryjob_gerrit_angle') + api.properties.tryserver(
-      gerrit_project='angle/angle',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='angle/angle',
+      patch_issue=91827,
+      patch_set=1,
   )
   yield api.test('no_apply_patch_on_gclient') + api.properties.tryserver(
-      gerrit_project='angle/angle',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='angle/angle',
+      patch_issue=91827,
+      patch_set=1,
   ) + api.bot_update.properties(
       apply_patch_on_gclient=False,
   )
   yield api.test('tryjob_gerrit_v8') + api.properties.tryserver(
-      gerrit_project='v8/v8',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='v8/v8',
+      patch_issue=91827,
+      patch_set=1,
   )
   yield api.test('tryjob_gerrit_v8_feature_branch') + api.properties.tryserver(
-      gerrit_project='v8/v8',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='v8/v8',
+      patch_issue=91827,
+      patch_set=1,
   ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
+      'gerrit get change info for '
+      'https://chromium-review.googlesource.com/c/91827/1',
+      api.gerrit.get_one_change_response_data(
+          branch='experimental/feature',
+          project='v8/v8',
+          o_params=['DOWNLOAD_COMMANDS'],
+      ),
   )
   yield api.test('tryjob_gerrit_feature_branch') + api.properties.tryserver(
       buildername='feature_rel',
-      gerrit_project='chromium/src',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='chromium/src',
+      patch_issue=91827,
+      patch_set=1,
   ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
+      'gerrit get change info for '
+      'https://chromium-review.googlesource.com/c/91827/1',
+      api.gerrit.get_one_change_response_data(
+          branch='experimental/feature',
+          o_params=['DOWNLOAD_COMMANDS'],
+      ),
   )
   yield api.test('tryjob_gerrit_branch_heads') + api.properties.tryserver(
-      gerrit_project='chromium/src',
-      patch_issue=338811,
-      patch_set=3,
+      patch_project='chromium/src',
+      patch_issue=91827,
+      patch_set=1,
   ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='refs/branch-heads/67'),
+      'gerrit get change info for '
+      'https://chromium-review.googlesource.com/c/91827/1',
+      api.gerrit.get_one_change_response_data(
+          branch='refs/branch-heads/67',
+          o_params=['DOWNLOAD_COMMANDS'],
+      ),
   )
   yield api.test('tryjob_gerrit_webrtc') + api.properties.tryserver(
-      gerrit_project='src',
+      patch_project='src',
       git_url='https://webrtc.googlesource.com/src',
-      patch_issue=338811,
-      patch_set=3,
+      patch_issue=91827,
+      patch_set=1,
+  ) + api.step_data(
+     'gerrit get change info for '
+     'https://webrtc-review.googlesource.com/c/91827/1',
+      api.gerrit.get_one_change_response_data(
+          project='src',
+          host='https://webrtc.googlesource.com/src',
+          o_params=['DOWNLOAD_COMMANDS'],
+      ),
   )
   yield api.test('multiple_patch_refs') + api.properties(
       patch=True,
       patch_refs=[
-          'https://chromium.googlesource.com/chromium/src@refs/changes/12/34/5',
-          'https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6',
+          {'host': 'https://chromium-review.googlesource.com',
+           'number': 1234,
+           'patchset': 5},
+          'https://webrtc.googlesource.com/src@refs/changes/78/5678/6',
       ],
+  ) + api.step_data(
+      'gerrit get change info for '
+      'https://chromium-review.googlesource.com/c/1234/5',
+      api.gerrit.get_one_change_response_data(
+          patchset=5,
+          o_params=['DOWNLOAD_COMMANDS'],
+      ),
   )

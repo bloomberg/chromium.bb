@@ -5,6 +5,7 @@
 """Recipe module to ensure a checkout is consistent on a bot."""
 
 import re
+import urllib
 
 from recipe_engine import recipe_api
 
@@ -17,7 +18,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._apply_patch_on_gclient = properties.get(
         'apply_patch_on_gclient', True)
-    self._issue = patch_issue
+    self._change = patch_issue
     self._patchset = patch_set
     self._repository = repository or patch_repository_url
     self._gerrit_ref = patch_ref
@@ -26,6 +27,23 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._parent_got_revision = parent_got_revision
     self._deps_revision_overrides = deps_revision_overrides
     self._fail_patch = fail_patch
+
+    # A map of change => target branch for change in Gerrit.
+    # We need the target-branch that the change was uploaded against. We use
+    # it to find a merge base between the change-ref and the target-branch, so
+    # we can find what commits constitute the change:
+    #
+    # Graphically, it looks like this:
+    #
+    # ... -> merge-base -> [possibly already landed commits] -> target-branch
+    #             |
+    #             -------> [possibly not yet landed dependent CLs] -> change-ref
+    self._target_branch_for_change = {}
+
+    # A map of change => path where the change should be applied to. Needed to
+    # tell gclient to sync the path to the target-branch for the patch instead
+    # of 'master'.
+    self._change_for_path = {}
 
     self._last_returned_properties = {}
     super(BotUpdateApi, self).__init__(*args, **kwargs)
@@ -118,15 +136,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--output_json', self.m.json.output()],
     ]
 
-    # How to find the patch, if any
     if patch:
-      if self._repository and self._gerrit_ref:
-        flags.append(
-            ['--patch_ref', '%s@%s' % (self._repository, self._gerrit_ref)])
-      if patch_refs:
-        flags.extend(
-            ['--patch_ref', patch_ref]
-            for patch_ref in patch_refs)
+      flags += self._get_info_for_changes(cfg, patch_refs or [])
 
     # Compute requested revisions.
     revisions = {}
@@ -159,9 +170,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
       fixed_revision = self.m.gclient.resolve_revision(revision)
       if fixed_revision:
         fixed_revisions[name] = fixed_revision
-        if fixed_revision.upper() == 'HEAD':
+        if fixed_revision.upper() == 'HEAD' and name in self._change_for_path:
           # Sync to correct destination branch if HEAD was specified.
-          fixed_revision = self._destination_branch(cfg, name)
+          branch = self._target_branch_for_change[self._change_for_path[name]]
+          fixed_revision = branch if branch != 'master' else 'HEAD'
         # If we're syncing to a ref, we want to make sure it exists before
         # trying to check it out.
         if (fixed_revision.startswith('refs/') and
@@ -289,44 +301,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     return step_result
 
-  def _destination_branch(self, cfg, path):
-    """Returns the destination branch of a CL for the matching project
-    if available or HEAD otherwise.
-
-    This is a noop if there's no Gerrit CL associated with the run.
-    Otherwise this queries Gerrit for the correct destination branch, which
-    might differ from master.
-
-    Args:
-      cfg: The used gclient config.
-      path: The DEPS path of the project this prefix is for. E.g. 'src' or
-          'src/v8'. The query will only be made for the project that matches
-          the CL's project.
-    Returns:
-        A destination branch as understood by bot_update.py if available
-        and if different from master, returns 'HEAD' otherwise.
-    """
-    # Bail out if this is not a gerrit issue.
-    if (not self.m.tryserver.is_gerrit_issue or
-        not self._gerrit or not self._issue):
-      return 'HEAD'
-
-    # Ignore other project paths than the one belonging to the CL.
-    if path != cfg.patch_projects.get(
-        self.m.properties.get('patch_project'),
-        (cfg.solutions[0].name, None))[0]:
-      return 'HEAD'
-
-    # Query Gerrit to check if a CL's destination branch differs from master.
-    destination_branch = self.m.gerrit.get_change_destination_branch(
-        host=self._gerrit,
-        change=self._issue,
-        name='get_patch_destination_branch',
-    )
-
-    # Only use prefix if different from bot_update.py's default.
-    return destination_branch if destination_branch != 'master' else 'HEAD'
-
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective
     got_X_revision values.
@@ -406,3 +380,95 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._resolve_fixed_revisions(bot_update_json)
 
     self.ensure_checkout(patch=False, update_presentation=False)
+
+  def _get_info_for_changes(self, cfg, changes):
+    """Get the project, target branch and ref for the given changes.
+
+    Also populates the _target_branch_for_change and _change_for_path mappings.
+
+    Args:
+      cfg: The gclient configuration to use.
+      changes: A list of dicts dict with 'host', 'number', 'patchset' and
+          optionally 'project' to process.
+          e.g. [{'host': 'https://chromium-review.googlesource.com',
+                 'number': 12345,
+                 'patchset': 3,
+                 'project': 'v8/v8'}]
+          TODO(ehmaldonado): Remove once all callers use dicts instead of
+          strings.
+          We temporarily support passing a '<url>@<change-ref>' change ref, but
+          we don't get any branch information, so the changes are assumed to
+          have been uploaded against the master branch.
+
+    Returns:
+      A list of flags to pass to bot_update.py specifying the patch_refs to pass
+      in the format '--patch-ref <gitiles-host>@<target-branch>:<change-ref>'.
+    """
+    changes = list(changes)
+    if self._gerrit and self._patchset:
+      changes.append({
+          'host': self._gerrit,
+          'number': self._change,
+          'patchset': self._patchset,
+          'project': self.m.properties.get('patch_project'),
+      })
+
+    change_ref_flags = []
+    self._target_branch_for_change = {}
+    self._change_for_path = {}
+    for change in changes:
+      # TODO(ehmaldonado): Remove once all callers use dicts instead of
+      # strings.
+      # Temporarily support passing the patch_refs directly.
+      if isinstance(change, str):
+        change_ref_flags.append(['--patch_ref', change])
+        continue
+
+      # If project is known, specify it so that Gerrit queries are faster.
+      change_id = change['number']
+      if change.get('project'):
+        change_id = '{}~{}'.format(
+            urllib.quote(change['project'], safe=''),
+            change['number'])
+
+      step_test_data = self.m.gerrit.test_api.get_one_change_response_data(
+          change=change['number'],
+          patchset=change['patchset'],
+          project=change.get('project'),
+          o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'])
+
+      change_info = self.m.gerrit.get_changes(
+          host=change['host'],
+          query_params=[('change', change_id)],
+          o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
+          limit=1,
+          name=('get change info for '
+                '{host}/c/{number}/{patchset}'.format(**change)),
+          step_test_data=lambda: step_test_data)[0]
+
+      # Get the path for the change project. Default to the first solution if
+      # not found.
+      patch_path = cfg.patch_projects.get(
+          change_info['project'], [cfg.solutions[0].name])[0]
+
+      change_key = (change['host'], change['number'])
+
+      # Make sure no two CLs refer to the same path.
+      assert patch_path not in self._change_for_path, (
+          'Issues {} and {} refer to the same path: {}'.format(
+              self._change_for_path[patch_path], change_key, patch_path))
+
+      self._target_branch_for_change[change_key] = change_info['branch']
+      self._change_for_path[patch_path] = change_key
+
+      patchset_info = self.m.gerrit.extract_patchset_info(
+          change_info, change['patchset'])['fetch']['http']
+      change_ref_flags.append([
+          '--patch_ref',
+          '{}@{}:{}'.format(
+              patchset_info['url'],
+              change_info['branch'],
+              patchset_info['ref'])
+      ])
+
+    return change_ref_flags
