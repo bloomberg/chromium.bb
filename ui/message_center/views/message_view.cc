@@ -289,6 +289,9 @@ void MessageView::OnSlideOut() {
 }
 
 SlideOutController::SlideMode MessageView::CalculateSlideMode() const {
+  if (disable_slide_)
+    return SlideOutController::SlideMode::NO_SLIDE;
+
   switch (GetMode()) {
     case Mode::SETTING:
       return SlideOutController::SlideMode::NO_SLIDE;
@@ -320,6 +323,11 @@ float MessageView::GetSlideAmount() const {
 
 void MessageView::SetSettingMode(bool setting_mode) {
   setting_mode_ = setting_mode;
+  slide_out_controller_.set_slide_mode(CalculateSlideMode());
+}
+
+void MessageView::DisableSlideForcibly(bool disable) {
+  disable_slide_ = disable;
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
 }
 
