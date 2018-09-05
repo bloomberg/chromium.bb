@@ -77,8 +77,8 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType direction)
   }
 
   focusable_node = node;
-  is_offscreen = HasOffscreenRect(visible_node);
-  is_offscreen_after_scrolling = HasOffscreenRect(visible_node, direction);
+  is_offscreen = IsRectOffscreen(visible_node);
+  is_offscreen_after_scrolling = IsRectOffscreen(visible_node, direction);
 }
 
 bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
@@ -141,47 +141,44 @@ static bool IsRectInDirection(WebFocusType direction,
   }
 }
 
-// Checks if |node| is offscreen the visible area (viewport) of its container
-// document. In case it is, one can scroll in direction or take any different
-// desired action later on.
-bool HasOffscreenRect(const Node* node, WebFocusType direction) {
-  // Get the LocalFrameView in which |node| is (which means the current viewport
-  // if |node| is not in an inner document), so we can check if its content rect
-  // is visible before we actually move the focus to it.
+// Answers true if |node| is completely outside its frames's (visual) viewport.
+// A visible node is a node that intersects the visual viewport. |direction|,
+// if given, extends the visual viewport's rect (before doing the
+// intersection-check) to also include content revealed by one scroll step in
+// that |direction|.
+
+// This logic is used by spatnav to rule out offscreen focus candidates and an
+// offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
+// it as the search origin; the search will start at an edge of the visual
+// viewport instead.
+bool IsRectOffscreen(const Node* node, WebFocusType direction) {
   LocalFrameView* frame_view = node->GetDocument().View();
   if (!frame_view)
     return true;
 
   DCHECK(!frame_view->NeedsLayout());
 
-  LayoutRect container_viewport_rect(
-      frame_view->LayoutViewport()->VisibleContentRect());
-  // We want to select a node if it is currently off screen, but will be
-  // exposed after we scroll. Adjust the viewport to post-scrolling position.
-  // If the container has overflow:hidden, we cannot scroll, so we do not pass
-  // direction and we do not adjust for scrolling.
+  LayoutRect visual_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
   int pixels_per_line_step =
       ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
   switch (direction) {
     case kWebFocusTypeLeft:
-      container_viewport_rect.SetX(container_viewport_rect.X() -
-                                   pixels_per_line_step);
-      container_viewport_rect.SetWidth(container_viewport_rect.Width() +
-                                       pixels_per_line_step);
+      visual_viewport.SetX(visual_viewport.X() - pixels_per_line_step);
+      visual_viewport.SetWidth(visual_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeRight:
-      container_viewport_rect.SetWidth(container_viewport_rect.Width() +
-                                       pixels_per_line_step);
+      visual_viewport.SetWidth(visual_viewport.Width() + pixels_per_line_step);
       break;
     case kWebFocusTypeUp:
-      container_viewport_rect.SetY(container_viewport_rect.Y() -
-                                   pixels_per_line_step);
-      container_viewport_rect.SetHeight(container_viewport_rect.Height() +
-                                        pixels_per_line_step);
+      visual_viewport.SetY(visual_viewport.Y() - pixels_per_line_step);
+      visual_viewport.SetHeight(visual_viewport.Height() +
+                                pixels_per_line_step);
       break;
     case kWebFocusTypeDown:
-      container_viewport_rect.SetHeight(container_viewport_rect.Height() +
-                                        pixels_per_line_step);
+      visual_viewport.SetHeight(visual_viewport.Height() +
+                                pixels_per_line_step);
       break;
     default:
       break;
@@ -195,7 +192,8 @@ bool HasOffscreenRect(const Node* node, WebFocusType direction) {
   if (rect.IsEmpty())
     return true;
 
-  return !container_viewport_rect.Intersects(rect);
+  // A visible node is a node that intersects the visual viewport.
+  return !visual_viewport.Intersects(rect);
 }
 
 bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
@@ -224,8 +222,8 @@ bool ScrollInDirection(LocalFrame* frame, WebFocusType direction) {
         return false;
     }
 
-    frame->View()->LayoutViewport()->ScrollBy(ScrollOffset(dx, dy),
-                                              kUserScroll);
+    frame->View()->GetScrollableArea()->ScrollBy(ScrollOffset(dx, dy),
+                                                 kUserScroll);
     return true;
   }
   return false;
@@ -391,7 +389,7 @@ bool CanScrollInDirection(const LocalFrame* frame, WebFocusType direction) {
   if ((direction == kWebFocusTypeUp || direction == kWebFocusTypeDown) &&
       kScrollbarAlwaysOff == vertical_mode)
     return false;
-  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
+  ScrollableArea* scrollable_area = frame->View()->GetScrollableArea();
   LayoutSize size(scrollable_area->ContentsSize());
   LayoutSize offset(scrollable_area->ScrollOffsetInt());
   LayoutRect rect(scrollable_area->VisibleContentRect(kIncludeScrollbars));
@@ -710,15 +708,16 @@ LayoutRect FindSearchStartPoint(const LocalFrame* frame,
                                 WebFocusType direction) {
   LayoutRect starting_rect = VirtualRectForDirection(
       direction,
-      frame->View()->ConvertToRootFrame(frame->View()->DocumentToFrame(
-          LayoutRect(frame->View()->LayoutViewport()->VisibleContentRect()))));
+      frame->View()->ConvertToRootFrame(
+          frame->View()->DocumentToFrame(LayoutRect(
+              frame->View()->GetScrollableArea()->VisibleContentRect()))));
 
   const Element* focused_element = frame->GetDocument()->FocusedElement();
   if (focused_element) {
     auto* area_element = ToHTMLAreaElementOrNull(focused_element);
     if (area_element)
       focused_element = area_element->ImageElement();
-    if (!HasOffscreenRect(focused_element)) {
+    if (!IsRectOffscreen(focused_element)) {
       starting_rect = area_element ? VirtualRectForAreaElementAndDirection(
                                          *area_element, direction)
                                    : NodeRectInRootFrame(focused_element, true);
