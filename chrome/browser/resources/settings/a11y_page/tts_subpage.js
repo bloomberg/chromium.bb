@@ -360,4 +360,13 @@ Polymer({
     chrome.metricsPrivate.recordSparseHashable(
         'TextToSpeech.Settings.DefaultVoicePicked', newDefault);
   },
+
+  /**
+   * @param {{model:Object}} event
+   * @private
+   */
+  onEngineSettingsTap_: function(event) {
+    chrome.send('wakeTtsEngine');
+    window.open(event.model.extension.optionsPage);
+  },
 });

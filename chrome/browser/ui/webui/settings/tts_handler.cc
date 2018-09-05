@@ -18,12 +18,16 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace settings {
+TtsHandler::TtsHandler() : weak_factory_(this) {}
+
+TtsHandler::~TtsHandler() {}
 
 void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
   OnVoicesChanged();
@@ -31,8 +35,8 @@ void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
 
 void TtsHandler::HandleGetTtsExtensions(const base::ListValue* args) {
   // Ensure the built in tts engine is loaded to be able to respond to messages.
-  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(
-      Profile::FromWebUI(web_ui()));
+  WakeTtsEngine(nullptr);
+
   base::ListValue responses;
   Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionRegistry* registry =
@@ -141,6 +145,9 @@ void TtsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "previewTtsVoice", base::BindRepeating(&TtsHandler::HandlePreviewTtsVoice,
                                              base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "wakeTtsEngine",
+      base::BindRepeating(&TtsHandler::WakeTtsEngine, base::Unretained(this)));
 }
 
 void TtsHandler::OnJavascriptAllowed() {
@@ -161,6 +168,19 @@ int TtsHandler::GetVoiceLangMatchScore(const VoiceData* voice,
                  l10n_util::GetLanguage(app_locale)
              ? 1
              : 0;
+}
+
+void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(profile);
+  extensions::ProcessManager::Get(profile)->WakeEventPage(
+      extension_misc::kSpeechSynthesisExtensionId,
+      base::BindOnce(&TtsHandler::OnTtsEngineAwake,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void TtsHandler::OnTtsEngineAwake(bool success) {
+  OnVoicesChanged();
 }
 
 }  // namespace settings
