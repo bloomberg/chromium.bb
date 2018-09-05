@@ -38,6 +38,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -51,6 +52,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -97,6 +99,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_ENCRYPTION = "encryption";
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
+    private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
     private static final String PREF_NONPERSONALIZED_SERVICES = "nonpersonalized_services";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
@@ -151,6 +154,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private Preference mSyncErrorCard;
+    private @Nullable Preference mContextualSuggestions;
 
     private SigninExpandablePreferenceGroup mNonpersonalizedServices;
     private ChromeBaseCheckBoxPreference mSearchSuggestions;
@@ -160,7 +164,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeBaseCheckBoxPreference mSafeBrowsingReporting;
     private ChromeBaseCheckBoxPreference mUsageAndCrashReporting;
     private ChromeBaseCheckBoxPreference mUrlKeyedAnonymizedData;
-    private Preference mContextualSearch;
+    private @Nullable Preference mContextualSearch;
 
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
@@ -214,6 +218,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
         mSyncErrorCard.setOnPreferenceClickListener(
                 toOnClickListener(this::onSyncErrorCardClicked));
+
+        mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
+        if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
+                || !EnabledStateMonitor.shouldShowSettings()) {
+            removePreference(mSyncGroup, mContextualSuggestions);
+            mContextualSuggestions = null;
+        }
 
         mSyncAllTypes = new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks,
                 mSyncPaymentsIntegration, mSyncHistory, mSyncPasswords, mSyncRecentTabs,
@@ -845,6 +856,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(mUseSyncAndAllServices);
             mSyncGroup.setExpanded(false);
             mSyncGroup.setEnabled(false);
+        }
+
+        if (mContextualSuggestions != null) {
+            mContextualSuggestions.setSummary(
+                    EnabledStateMonitor.getEnabledState() ? R.string.text_on : R.string.text_off);
         }
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());

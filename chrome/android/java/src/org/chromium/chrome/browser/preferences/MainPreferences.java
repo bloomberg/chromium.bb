@@ -189,7 +189,8 @@ public class MainPreferences extends PreferenceFragment
             removePreferenceIfPresent(PREF_HOMEPAGE);
         }
 
-        if (FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)
+                && FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
                 && EnabledStateMonitor.shouldShowSettings()) {
             Preference contextualSuggesitons = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
             setOnOffSummary(contextualSuggesitons, EnabledStateMonitor.getEnabledState());
