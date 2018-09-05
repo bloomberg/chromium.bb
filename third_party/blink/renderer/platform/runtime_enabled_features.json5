@@ -1375,7 +1375,7 @@
     },
     {
       name: "WorkerNosniffBlock",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WorkerNosniffWarn",
