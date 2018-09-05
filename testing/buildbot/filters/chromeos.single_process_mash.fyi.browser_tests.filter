@@ -23,9 +23,16 @@
 # Automation manager tests.
 -AutomationManagerAuraBrowserTest.WebAppearsOnce
 
+# Flaky tests. crbug.com/880584
+-AutoplayMetricsBrowserTest.RecordAutoplayAttemptUkm
+
 # Blub Arc tests.
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/0
 -Blub/UnaffiliatedArcAllowedTest.ProfileTest/1
+
+# PictureinPicture does not work with mash because VideoSurfaceLayer is
+# disabled. https://crbug.com/827327
+-BrowserActionApiTest.TestPictureInPictureOnBrowserActionIconClick
 
 # Browser command controller tests.
 -BrowserCommandControllerBrowserTest.LockedFullscreen
@@ -132,6 +139,9 @@
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.PolicyGrantsAccessToCorporateKey/1
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.PolicyGrantsAccessToCorporateKey/2
 
+# Flaky tests. crbug.com/880584
+-MSE_ClearKey/EncryptedMediaTest.Playback_Multiple_VideoAudio_WebM/0
+
 # Ash frame view tests.
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/material
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/material_refresh
@@ -173,6 +183,10 @@
 -PictureInPictureWindowControllerBrowserTest.ResizeEventFired
 -PictureInPictureWindowControllerBrowserTest.TabIconUpdated
 -PictureInPictureWindowControllerBrowserTest.UpdateVideoSrcKeepsPictureInPictureWindowOpened
+
+# Picture-in-Picture does not work with mash because VideoSurfaceLayer is
+# disabled. https://crbug.com/827327
+-PlatformAppBrowserTest.PictureInPicture
 
 # Display rotation tests.
 -PolicyDisplayRotationDefault/DisplayRotationDefaultTest.ConnectSecondDisplay/0
@@ -275,6 +289,10 @@
 -Unmanaged/UnmanagedPlatformKeysTest.Permissions/1
 -Unmanaged/UnmanagedPlatformKeysTest.Permissions/2
 -Unmanaged/UnmanagedPlatformKeysTest.Permissions/3
+
+# Flaky tests. crbug.com/880584
+-UnifiedAutoplaySettingBrowserTest.Allow
+-UnifiedAutoplaySettingBrowserTest.Block
 
 # Virtual keyboard tests.
 -VirtualKeyboardAppWindowTest.DisableOverscrollForImeWindow
