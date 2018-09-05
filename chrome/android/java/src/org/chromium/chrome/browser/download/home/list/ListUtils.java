@@ -18,6 +18,7 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
@@ -41,7 +42,7 @@ public class ListUtils {
     }
 
     /** Converts a given list of {@link ListItem}s to a list of {@link OfflineItem}s. */
-    public static List<OfflineItem> toOfflineItems(List<ListItem> items) {
+    public static List<OfflineItem> toOfflineItems(Collection<ListItem> items) {
         List<OfflineItem> offlineItems = new ArrayList<>();
         for (ListItem item : items) {
             if (item instanceof ListItem.OfflineItemListItem) {

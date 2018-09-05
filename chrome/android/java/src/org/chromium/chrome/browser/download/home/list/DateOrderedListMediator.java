@@ -10,16 +10,20 @@ import android.support.v4.util.Pair;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.filter.OffTheRecordOfflineItemFilter;
+import org.chromium.chrome.browser.download.home.filter.OfflineItemFilter;
+import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.filter.SearchOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
 import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
+import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
@@ -61,6 +65,7 @@ class DateOrderedListMediator {
     private final DateOrderedListMutator mListMutator;
     private final ThumbnailProvider mThumbnailProvider;
     private final MediatorSelectionObserver mSelectionObserver;
+    private final SelectionDelegate<ListItem> mSelectionDelegate;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final DeleteUndoOfflineItemFilter mDeleteUndoFilter;
@@ -97,15 +102,19 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param offTheRecord     Whether or not to include off the record items.
-     * @param provider         The {@link OfflineContentProvider} to visually represent.
-     * @param deleteController A class to manage whether or not items can be deleted.
-     * @param shareController  A class responsible for sharing downloaded item {@link Intent}s.
-     * @param model            The {@link ListItemModel} to push {@code provider} into.
+     * @param offTheRecord            Whether or not to include off the record items.
+     * @param provider                The {@link OfflineContentProvider} to visually represent.
+     * @param deleteController        A class to manage whether or not items can be deleted.
+     * @param shareController         A class responsible for sharing downloaded item {@link
+     *                                Intent}s.
+     * @param selectionDelegate       A class responsible for handling list item selection.
+     * @param dateOrderedListObserver An observer of the list and recycler view.
+     * @param model                   The {@link ListItemModel} to push {@code provider} into.
      */
     public DateOrderedListMediator(boolean offTheRecord, OfflineContentProvider provider,
             ShareController shareController, DeleteController deleteController,
-            SelectionDelegate<ListItem> selectionDelegate, ListItemModel model) {
+            SelectionDelegate<ListItem> selectionDelegate,
+            DateOrderedListObserver dateOrderedListObserver, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -120,6 +129,7 @@ class DateOrderedListMediator {
         mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
+        mSelectionDelegate = selectionDelegate;
 
         mSource = new OfflineItemSource(mProvider);
         mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
@@ -128,6 +138,7 @@ class DateOrderedListMediator {
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
 
+        mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
                 ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
@@ -173,14 +184,31 @@ class DateOrderedListMediator {
         }
     }
 
-    /** Called to delete a list of items specified by {@code items}. */
-    public void onDeletionRequested(List<ListItem> items) {
-        onDeleteItems(ListUtils.toOfflineItems(items));
+    /** Called to delete the list of currently selected items. */
+    public void deleteSelectedItems() {
+        RecordHistogram.recordCount100Histogram("Android.DownloadManager.Menu.Delete.SelectedCount",
+                mSelectionDelegate.getSelectedItems().size());
+
+        onDeleteItems(ListUtils.toOfflineItems(mSelectionDelegate.getSelectedItems()));
+        mSelectionDelegate.clearSelection();
     }
 
-    /** Called to share a list of items specified by {@code items}. */
-    public void onShareRequested(List<ListItem> items) {
-        onShareItems(ListUtils.toOfflineItems(items));
+    /** Called to share the list of currently selected items. */
+    public void shareSelectedItems() {
+        RecordHistogram.recordCount100Histogram("Android.DownloadManager.Menu.Share.SelectedCount",
+                mSelectionDelegate.getSelectedItems().size());
+
+        onShareItems(ListUtils.toOfflineItems(mSelectionDelegate.getSelectedItems()));
+        mSelectionDelegate.clearSelection();
+    }
+
+    /** Called to handle a back press event. */
+    public boolean handleBackPressed() {
+        if (mSelectionDelegate.isSelectionEnabled()) {
+            mSelectionDelegate.clearSelection();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -269,6 +297,51 @@ class DateOrderedListMediator {
             mHandler.post(() -> {
                 mModel.getProperties().setValue(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
             });
+        }
+    }
+
+    /**
+     * A helper class to observe the list content and notify the given observer when the list state
+     * changes between empty and non-empty.
+     */
+    private static class EmptyStateObserver implements OfflineItemFilterObserver {
+        private boolean mIsEmpty;
+        private final DateOrderedListObserver mDateOrderedListObserver;
+        private final OfflineItemFilter mOfflineItemFilter;
+
+        public EmptyStateObserver(OfflineItemFilter offlineItemFilter,
+                DateOrderedListObserver dateOrderedListObserver) {
+            mOfflineItemFilter = offlineItemFilter;
+            mDateOrderedListObserver = dateOrderedListObserver;
+            calculateEmptyState();
+        }
+
+        @Override
+        public void onItemsAvailable() {
+            calculateEmptyState();
+        }
+
+        @Override
+        public void onItemsAdded(Collection<OfflineItem> items) {
+            calculateEmptyState();
+        }
+
+        @Override
+        public void onItemsRemoved(Collection<OfflineItem> items) {
+            calculateEmptyState();
+        }
+
+        @Override
+        public void onItemUpdated(OfflineItem oldItem, OfflineItem item) {
+            calculateEmptyState();
+        }
+
+        private void calculateEmptyState() {
+            boolean isEmpty = mOfflineItemFilter.getItems().isEmpty();
+            if (mIsEmpty == isEmpty) return;
+
+            mIsEmpty = isEmpty;
+            mDateOrderedListObserver.onEmptyStateChanged(mIsEmpty);
         }
     }
 }

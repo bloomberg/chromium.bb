@@ -44,7 +44,7 @@ public class DownloadHomeToolbar extends SelectableListToolbar<ListItem> {
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
 
-        mTitleBar.setVisibility((mIsSelectionEnabled || mIsSearching) ? GONE : VISIBLE);
+        mTitleBar.setVisibility((mIsSelectionEnabled || isSearching()) ? GONE : VISIBLE);
         if (mIsSelectionEnabled) {
             int numSelected = mSelectionDelegate.getSelectedItems().size();
 

@@ -83,7 +83,7 @@ public class SelectableListLayout<E>
             // long as the adapter data changes, we show the recycler view, and hide loading view.
             mLoadingView.hideLoadingUI();
 
-            mToolbar.onDataChanged(mAdapter.getItemCount());
+            mToolbar.setSearchEnabled(mAdapter.getItemCount() != 0);
         }
 
         @Override
