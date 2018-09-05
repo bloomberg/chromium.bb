@@ -170,7 +170,6 @@
 -PluginPowerSaverBrowserTest.*
 -PolicyTest.*
 -PolicyToolUITest.*
--PredictorBrowserTest.*
 -PrefsFunctionalTest.*
 -PrefsTabHelperBrowserTest.*
 -PrerenderBrowserTest.*

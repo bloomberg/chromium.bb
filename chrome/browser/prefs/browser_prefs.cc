@@ -34,7 +34,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_channels_provider_android.h"
@@ -349,6 +348,11 @@ const char kResetHasSeenWin10PromoPage[] =
     "browser.reset_has_seen_win10_promo_page";
 #endif
 
+// Deprecated 8/2018.
+const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
+const char kDnsPrefetchingHostReferralList[] =
+    "dns_prefetching.host_referral_list";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -362,6 +366,9 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
   registry->RegisterListPref(kDismissedRecentOfflineTabSuggestions);
 #endif
+
+  registry->RegisterListPref(kDnsPrefetchingStartupList);
+  registry->RegisterListPref(kDnsPrefetchingHostReferralList);
 }
 
 }  // namespace
@@ -513,7 +520,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeSSLHostStateDelegate::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
-  chrome_browser_net::Predictor::RegisterProfilePrefs(registry);
   chrome_browser_net::RegisterPredictionOptionsProfilePrefs(registry);
   chrome_prefs::RegisterProfilePrefs(registry);
   dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
@@ -793,4 +799,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 8/2018.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(profile_prefs);
 #endif  // defined(OS_ANDROID)
+
+  // Added 8/2018
+  profile_prefs->ClearPref(kDnsPrefetchingStartupList);
+  profile_prefs->ClearPref(kDnsPrefetchingHostReferralList);
 }

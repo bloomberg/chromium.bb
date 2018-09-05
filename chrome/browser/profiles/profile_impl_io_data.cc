@@ -31,7 +31,6 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
@@ -133,12 +132,6 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
 
 ProfileImplIOData::Handle::~Handle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (io_data_->predictor_ != NULL) {
-    // io_data_->predictor_ might be NULL if Init() was never called
-    // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
-    io_data_->predictor_->ShutdownOnUIThread();
-  }
-
   // io_data_->data_reduction_proxy_io_data() might be NULL if Init() was
   // never called.
   if (io_data_->data_reduction_proxy_io_data())
@@ -152,14 +145,12 @@ void ProfileImplIOData::Handle::Init(
     int media_cache_max_size,
     const base::FilePath& extensions_cookie_path,
     const base::FilePath& profile_path,
-    chrome_browser_net::Predictor* predictor,
     storage::SpecialStoragePolicy* special_storage_policy,
     std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker,
     std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!io_data_->lazy_params_);
-  DCHECK(predictor);
 
   LazyParams* lazy_params = new LazyParams();
 
@@ -182,8 +173,6 @@ void ProfileImplIOData::Handle::Init(
   // on demand when creating storage isolated URLRequestContextGetters.
   io_data_->profile_path_ = profile_path;
   io_data_->app_media_cache_max_size_ = media_cache_max_size;
-
-  io_data_->predictor_.reset(predictor);
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
   if (io_data_->lazy_params_->domain_reliability_monitor)
@@ -258,10 +247,6 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
           std::move(store),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           db_task_runner);
-
-  io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(), io_thread,
-                                             main_request_context_getter_.get(),
-                                             io_data_, profile_);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
@@ -592,8 +577,4 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
       app_context, partition_descriptor, "isolated_media");
   DCHECK(media_request_context);
   return media_request_context;
-}
-
-chrome_browser_net::Predictor* ProfileImplIOData::GetPredictor() {
-  return predictor_.get();
 }

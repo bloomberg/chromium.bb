@@ -183,10 +183,6 @@ void FakeProfile::ChangeAppLocale(
 void FakeProfile::OnLogin() {}
 void FakeProfile::InitChromeOSPreferences() {}
 
-chrome_browser_net::Predictor* FakeProfile::GetNetworkPredictor() {
-  return nullptr;
-}
-
 GURL FakeProfile::GetHomePage() {
   return GURL();
 }

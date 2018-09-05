@@ -139,7 +139,6 @@ class ProfileImpl : public Profile {
   base::Time GetStartTime() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
-  chrome_browser_net::Predictor* GetNetworkPredictor() override;
   GURL GetHomePage() override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
@@ -287,8 +286,6 @@ class ProfileImpl : public Profile {
   // components/keyed_service/content/browser_context_keyed_service_factory.*
 
   Profile::Delegate* delegate_;
-
-  chrome_browser_net::Predictor* predictor_;
 
   ReportingPermissionsCheckerFactory reporting_permissions_checker_factory_;
 

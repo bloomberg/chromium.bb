@@ -916,10 +916,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
 }
 
-chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
-  return NULL;
-}
-
 GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }

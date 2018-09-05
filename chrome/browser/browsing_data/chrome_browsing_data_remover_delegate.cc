@@ -42,7 +42,6 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
@@ -211,14 +210,6 @@ void ClearPnaclCacheOnIOThread(base::Time begin,
       begin, end, callback);
 }
 #endif
-
-void ClearNetworkPredictorOnIOThread(chrome_browser_net::Predictor* predictor) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(predictor);
-
-  predictor->DiscardInitialNavigationHistory();
-  predictor->DiscardAllResults();
-}
 
 #if defined(OS_ANDROID)
 void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
@@ -456,16 +447,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ->GetNetworkContext()
         ->ClearHostCache(filter_builder.BuildNetworkServiceFilter(),
                          CreatePendingTaskCompletionClosureForMojo());
-
-    if (profile_->GetNetworkPredictor()) {
-      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&ClearNetworkPredictorOnIOThread,
-                         profile_->GetNetworkPredictor()),
-          CreatePendingTaskCompletionClosure());
-      profile_->GetNetworkPredictor()->ClearPrefsOnUIThread();
-    }
 
     // As part of history deletion we also delete the auto-generated keywords.
     TemplateURLService* keywords_model =

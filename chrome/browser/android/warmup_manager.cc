@@ -4,7 +4,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,8 +40,6 @@ static void JNI_WarmupManager_PreconnectUrlAndSubresources(
     if (loading_predictor) {
       loading_predictor->PrepareForPageLoad(url,
                                             predictors::HintOrigin::EXTERNAL);
-    } else if (profile->GetNetworkPredictor()) {
-      profile->GetNetworkPredictor()->PreconnectUrlAndSubresources(url, GURL());
     }
   }
 }

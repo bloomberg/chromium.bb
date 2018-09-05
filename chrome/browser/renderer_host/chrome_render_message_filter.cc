@@ -17,7 +17,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
@@ -54,8 +53,6 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
                            arraysize(kRenderFilteredMessageClasses)),
       render_process_id_(render_process_id),
-      profile_(profile),
-      predictor_(profile_->GetNetworkPredictor()),
       preconnect_manager_initialized_(false),
       cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {
   auto* loading_predictor =
@@ -112,8 +109,6 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&predictors::PreconnectManager::StartPreresolveHosts,
                        preconnect_manager_, request.hostname_list));
-  } else if (predictor_) {
-    predictor_->DnsPrefetchList(request.hostname_list);
   }
 }
 
@@ -136,10 +131,6 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&predictors::PreconnectManager::StartPreconnectUrl,
                        preconnect_manager_, url, allow_credentials));
-  } else if (predictor_) {
-    predictor_->PreconnectUrl(url, GURL(),
-                              chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
-                              allow_credentials, count);
   }
 }
 
