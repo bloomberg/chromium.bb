@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -42,7 +42,6 @@ import java.util.Collection;
  * The Toolbar object for Tablet screens.
  */
 @SuppressLint("Instantiatable")
-
 public class ToolbarTablet
         extends ToolbarLayout implements OnClickListener, View.OnLongClickListener {
     // The number of toolbar buttons that can be hidden at small widths (reload, back, forward).
@@ -378,11 +377,9 @@ public class ToolbarTablet
         super.onTabOrModelChanged();
         boolean incognito = isIncognito();
         if (mUseLightColorAssets == null || mUseLightColorAssets != incognito) {
-            int colorResource =
-                    incognito ? R.color.incognito_primary_color : R.color.default_primary_color;
-            setBackgroundResource(colorResource);
-            getProgressBar().setThemeColor(
-                    ApiCompatibilityUtils.getColor(getResources(), colorResource), isIncognito());
+            int color = ColorUtils.getDefaultThemeColor(getResources(), true, isIncognito());
+            setBackgroundColor(color);
+            getProgressBar().setThemeColor(color, isIncognito());
 
             getMenuButton().setTint(incognito ? mLightModeTint : mDarkModeTint);
             mHomeButton.setTint(incognito ? mLightModeTint : mDarkModeTint);

@@ -1070,7 +1070,10 @@ public class LocationBarLayout extends FrameLayout
                 mNavigationButton.setImageDrawable(page);
                 break;
             case NavigationButtonType.MAGNIFIER:
-                mNavigationButton.setImageResource(R.drawable.ic_omnibox_magnifier);
+                Drawable search = TintedDrawable.constructTintedDrawable(getContext(),
+                        R.drawable.omnibox_search,
+                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
+                mNavigationButton.setImageDrawable(search);
                 break;
             case NavigationButtonType.EMPTY:
                 mNavigationButton.setImageDrawable(null);
