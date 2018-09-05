@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   // StoragePartition so that we can record and extract the detailed error
   // status for testing via that.
   console_observer.Wait();
-  EXPECT_TRUE(base::StartsWith(console_observer.message(), "OCSP check failed.",
+  EXPECT_TRUE(base::StartsWith(console_observer.message(), "OCSP check failed:",
                                base::CompareCase::SENSITIVE));
 }
 

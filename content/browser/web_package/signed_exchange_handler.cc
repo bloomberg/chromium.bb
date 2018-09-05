@@ -103,6 +103,43 @@ void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
       certificate, url, ocsp_result, sct_list, std::move(wrapped_callback));
 }
 
+std::string OCSPErrorToString(const net::OCSPVerifyResult& ocsp_result) {
+  switch (ocsp_result.response_status) {
+    case net::OCSPVerifyResult::PROVIDED:
+      break;
+    case net::OCSPVerifyResult::NOT_CHECKED:
+      // This happens only in tests.
+      return "OCSP verification was not performed.";
+    case net::OCSPVerifyResult::MISSING:
+      return "No OCSP Response was stapled.";
+    case net::OCSPVerifyResult::ERROR_RESPONSE:
+      return "OCSP response did not have a SUCCESSFUL status.";
+    case net::OCSPVerifyResult::BAD_PRODUCED_AT:
+      return "OCSP Response was produced at outside the certificate "
+             "validity period.";
+    case net::OCSPVerifyResult::NO_MATCHING_RESPONSE:
+      return "OCSP Response did not match the certificate.";
+    case net::OCSPVerifyResult::INVALID_DATE:
+      return "OCSP Response was expired or not yet valid.";
+    case net::OCSPVerifyResult::PARSE_RESPONSE_ERROR:
+      return "OCSPResponse structure could not be parsed.";
+    case net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR:
+      return "OCSP ResponseData structure could not be parsed.";
+  }
+
+  switch (ocsp_result.revocation_status) {
+    case net::OCSPRevocationStatus::GOOD:
+      NOTREACHED();
+      break;
+    case net::OCSPRevocationStatus::REVOKED:
+      return "OCSP response indicates that the certificate is revoked.";
+    case net::OCSPRevocationStatus::UNKNOWN:
+      return "OCSP responder doesn't know about the certificate.";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 // static
@@ -480,10 +517,8 @@ void SignedExchangeHandler::OnVerifyCert(
   if (!CheckOCSPStatus(cv_result.ocsp_result)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
-        base::StringPrintf(
-            "OCSP check failed. response status: %d, revocation status: %d",
-            cv_result.ocsp_result.response_status,
-            cv_result.ocsp_result.revocation_status),
+        base::StringPrintf("OCSP check failed: %s",
+                           OCSPErrorToString(cv_result.ocsp_result).c_str()),
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
