@@ -214,6 +214,13 @@
         },
       },
       # chromium.win
+      'Win7 Tests (1)': {
+        # This is for slow test execution that often becomes a critical path of
+        # swarming jobs. crbug.com/868114
+        'swarming': {
+          'shards': 15,
+        },
+      },
       'Win7 Tests (dbg)(1)': {
         'swarming': {
           'shards': 20,
