@@ -33,6 +33,18 @@ function getSVGElement(id) {
 }
 
 /**
+ * @return {?Element} The currently focused element (including elements that are
+ *     behind a shadow root), or null if nothing is focused.
+ */
+function getDeepActiveElement() {
+  var a = document.activeElement;
+  while (a && a.shadowRoot && a.shadowRoot.activeElement) {
+    a = a.shadowRoot.activeElement;
+  }
+  return a;
+}
+
+/**
  * Add an accessible message to the page that will be announced to
  * users who have spoken feedback on, but will be invisible to all
  * other users. It's removed right away so it doesn't clutter the DOM.

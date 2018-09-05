@@ -19,6 +19,5 @@ SettingsUIBrowserTest.All
 
 # TODO(dpapad): The following tests are failing with optimize_webui=true. Fix
 # them and move them to the list above.
--CrElementsActionMenuTest.All
 -CrElementsInputTest.All
 -MaterialBookmarksFocusTest.All
