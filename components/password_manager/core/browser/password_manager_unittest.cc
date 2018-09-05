@@ -2627,4 +2627,26 @@ TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
 }
 
+TEST_F(PasswordManagerTest, SubmittedGaiaFormWithoutVisiblePasswordField) {
+  // Tests that a submitted GAIA sign-in form which does not contain a visible
+  // password field is skipped.
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleGAIAForm());
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  form.username_value = ASCIIToUTF16("username");
+  form.password_value = ASCIIToUTF16("password");
+  form.form_data.fields[1].is_focusable = false;
+
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
+}
+
 }  // namespace password_manager

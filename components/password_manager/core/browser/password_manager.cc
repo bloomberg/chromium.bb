@@ -250,6 +250,16 @@ bool ShouldPromptUserToSavePassword(
   return manager.IsNewLogin();
 }
 
+// Checks that |form| has visible password fields. It should be used only for
+// GAIA forms.
+bool IsThereVisiblePasswordField(const FormData& form) {
+  for (const autofill::FormFieldData& field : form.fields) {
+    if (field.form_control_type == "password" && field.is_focusable)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -513,6 +523,16 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
+  }
+
+  if (gaia::IsGaiaSignonRealm(GURL(password_form.signon_realm)) &&
+      !IsThereVisiblePasswordField(password_form.form_data)) {
+    // Gaia form without visible password fields is found.
+    // It might happen only when Password Manager autofilled a username
+    // (visible) and a password (invisible) fields. Then the user typed a new
+    // username. A page removed the form. As result a form is inconsistent - the
+    // username from one account, the password from another. Skip such form.
+    return;
   }
 
   if (is_new_form_parsing_for_saving_enabled_)
