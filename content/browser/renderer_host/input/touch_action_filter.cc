@@ -66,6 +66,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
+        // https://crbug.com/869375, temporary fix to prevent crash.
+        SetTouchAction(cc::kTouchActionAuto);
       }
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
@@ -92,6 +94,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "scrollupdate-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
+        // https://crbug.com/869375, temporary fix to prevent crash.
+        SetTouchAction(cc::kTouchActionAuto);
       }
       if (IsYAxisActionDisallowed(scrolling_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_y = 0;
@@ -146,6 +150,8 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
+        // https://crbug.com/869375, temporary fix to prevent crash.
+        SetTouchAction(cc::kTouchActionAuto);
       }
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
                                          cc::kTouchActionDoubleTapZoom) != 0;
@@ -255,6 +261,9 @@ void TouchActionFilter::ReportAndResetTouchAction() {
 }
 
 void TouchActionFilter::ReportTouchAction() {
+  // https://crbug.com/869375, temporary fix to prevent crash.
+  if (!scrolling_touch_action_.has_value())
+    SetTouchAction(cc::kTouchActionAuto);
   // Report the effective touch action computed by blink such as
   // kTouchActionNone, kTouchActionPanX, etc.
   // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
