@@ -82,6 +82,8 @@ bool PaintOpReader::ReadAndValidateOpHeader(const volatile void* input,
                                             size_t input_size,
                                             uint8_t* type,
                                             uint32_t* skip) {
+  if (input_size < 4)
+    return false;
   uint32_t first_word = reinterpret_cast<const volatile uint32_t*>(input)[0];
   *type = static_cast<uint8_t>(first_word & 0xFF);
   *skip = first_word >> 8;
