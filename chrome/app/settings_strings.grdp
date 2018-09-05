@@ -2317,7 +2317,7 @@
     <message name="IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE" desc="Name of the settings sub-page which allows enabling and disabling input methods.">
       Manage input methods
     </message>
-    <message name="IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU" desc="The label for he toggle button controlling showing the IME menu in the shelf.">
+    <message name="IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU" desc="The label for the toggle button controlling showing the IME menu in the shelf.">
       Show input options in the shelf
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_KEYBOARD_APPS" desc="Title for the list of keyboard apps installed via Play Store by the user.">
