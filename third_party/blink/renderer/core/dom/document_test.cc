@@ -874,6 +874,7 @@ TEST_F(DocumentTest,
       <div id='nonSticky'></div>
     </div>
   )HTML");
+  GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_EQ(DocumentLifecycle::kStyleClean,
             GetDocument().Lifecycle().GetState());
 
