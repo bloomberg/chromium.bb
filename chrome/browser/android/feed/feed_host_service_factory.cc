@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -103,8 +104,15 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
   offline_pages::PrefetchService* prefetch_service =
       offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+  // Using base::Unretained is safe because the FeedSchedulerHost ensures the
+  // |scheduler_host| will outlive the |offline_host|, and calls to
+  // |the scheduler_host| are never posted to a message loop.
   auto offline_host = std::make_unique<FeedOfflineHost>(
-      offline_page_model, prefetch_service, scheduler_host.get());
+      offline_page_model, prefetch_service,
+      base::BindRepeating(&FeedSchedulerHost::OnSuggestionConsumed,
+                          base::Unretained(scheduler_host.get())),
+      base::BindRepeating(&FeedSchedulerHost::OnSuggestionsShown,
+                          base::Unretained(scheduler_host.get())));
 
   return new FeedHostService(
       std::move(image_manager), std::move(networking_host),

@@ -23,8 +23,6 @@ class PrefetchService;
 
 namespace feed {
 
-class FeedSchedulerHost;
-
 // Responsible for wiring up connections for Feed operations pertaining to
 // articles that can be loaded from Offline Pages component. Most significantly
 // this class connects Prefetch and the Feed, and tracks offlined articles the
@@ -35,7 +33,8 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
  public:
   FeedOfflineHost(offline_pages::OfflinePageModel* offline_page_model,
                   offline_pages::PrefetchService* prefetch_service,
-                  FeedSchedulerHost* feed_scheduler_host);
+                  base::RepeatingClosure on_suggestion_consumed,
+                  base::RepeatingClosure on_suggestions_shown);
   ~FeedOfflineHost() override;
 
   // Synchronously returns the offline id of the given page. The host will only
@@ -85,7 +84,9 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // them. This is guaranteed by the FeedHostServiceFactory.
   offline_pages::OfflinePageModel* offline_page_model_;
   offline_pages::PrefetchService* prefetch_service_;
-  FeedSchedulerHost* feed_scheduler_host_;
+
+  base::RepeatingClosure on_suggestion_consumed_;
+  base::RepeatingClosure on_suggestions_shown_;
 
   base::WeakPtrFactory<FeedOfflineHost> weak_ptr_factory_;
 

@@ -4,19 +4,24 @@
 
 #include "components/feed/content/feed_offline_host.h"
 
+#include "url/gurl.h"
+
 namespace feed {
 
 FeedOfflineHost::FeedOfflineHost(
     offline_pages::OfflinePageModel* offline_page_model,
     offline_pages::PrefetchService* prefetch_service,
-    FeedSchedulerHost* feed_scheduler_host)
+    base::RepeatingClosure on_suggestion_consumed,
+    base::RepeatingClosure on_suggestions_shown)
     : offline_page_model_(offline_page_model),
       prefetch_service_(prefetch_service),
-      feed_scheduler_host_(feed_scheduler_host),
+      on_suggestion_consumed_(on_suggestion_consumed),
+      on_suggestions_shown_(on_suggestions_shown),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(prefetch_service_);
-  DCHECK(feed_scheduler_host_);
+  DCHECK(!on_suggestion_consumed_.is_null());
+  DCHECK(!on_suggestions_shown_.is_null());
 }
 
 FeedOfflineHost::~FeedOfflineHost() = default;
@@ -50,11 +55,11 @@ void FeedOfflineHost::GetCurrentArticleSuggestions(
 }
 
 void FeedOfflineHost::ReportArticleListViewed() {
-  // TODO(skym): Call FeedSchedulerHost::OnSuggestionsShown().
+  on_suggestion_consumed_.Run();
 }
 
 void FeedOfflineHost::ReportArticleViewed(GURL article_url) {
-  // TODO(skym): Call FeedSchedulerHost::OnSuggestionConsumed().
+  on_suggestions_shown_.Run();
 }
 
 void FeedOfflineHost::OfflinePageModelLoaded(

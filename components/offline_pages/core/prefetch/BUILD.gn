@@ -132,6 +132,8 @@ static_library("test_support") {
     "prefetch_task_test_base.h",
     "store/prefetch_store_test_util.cc",
     "store/prefetch_store_test_util.h",
+    "stub_prefetch_service.cc",
+    "stub_prefetch_service.h",
     "test_download_client.cc",
     "test_download_client.h",
     "test_download_service.cc",
