@@ -12,12 +12,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,14 +49,30 @@ bool CheckLinearValues(const std::string& name, int maximum) {
   return CheckValues(name, 1, maximum, maximum + 1);
 }
 
-// The interval between external metrics collections.
-constexpr base::TimeDelta kExternalMetricsCollectionInterval =
-    base::TimeDelta::FromSeconds(30);
+// The file from which externally-reported metrics are read.
 constexpr char kEventsFilePath[] = "/var/lib/metrics/uma-events";
+
+// Default interval between externally-reported metrics being collected.
+constexpr base::TimeDelta kDefaultCollectionInterval =
+    base::TimeDelta::FromSeconds(30);
 
 }  // namespace
 
-ExternalMetrics::ExternalMetrics() : uma_events_file_(kEventsFilePath) {
+ExternalMetrics::ExternalMetrics()
+    : uma_events_file_(kEventsFilePath),
+      collection_interval_(kDefaultCollectionInterval) {
+  const std::string flag_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kExternalMetricsCollectionInterval);
+  if (!flag_value.empty()) {
+    int seconds = -1;
+    if (base::StringToInt(flag_value, &seconds) && seconds > 0) {
+      collection_interval_ = base::TimeDelta::FromSeconds(seconds);
+    } else {
+      LOG(WARNING) << "Ignoring bad value \"" << flag_value << "\" in --"
+                   << switches::kExternalMetricsCollectionInterval;
+    }
+  }
 }
 
 ExternalMetrics::~ExternalMetrics() {}
@@ -161,7 +180,7 @@ void ExternalMetrics::ScheduleCollector() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&chromeos::ExternalMetrics::CollectEventsAndReschedule,
                      this),
-      kExternalMetricsCollectionInterval);
+      collection_interval_);
 }
 
 }  // namespace chromeos

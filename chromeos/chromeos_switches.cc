@@ -408,6 +408,11 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// Interval in seconds between Chrome reading external metrics from
+// /var/lib/metrics/uma-events.
+const char kExternalMetricsCollectionInterval[] =
+    "external-metrics-collection-interval";
+
 // An absolute path to the chroot hosting the DriveFS to use. This is only used
 // when running on Linux, i.e. when IsRunningOnChromeOS() returns false.
 const char kFakeDriveFsLauncherChrootPath[] =
