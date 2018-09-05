@@ -12,7 +12,10 @@
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/callback.h"
 #include "base/unguessable_token.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 
@@ -47,6 +50,13 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
   SchedulePaint();
 }
 
+void AssistantWebView::OnViewBoundsChanged(views::View* view) {
+  DCHECK_EQ(content_view_, view);
+
+  // The mask layer should always match the bounds of the content view.
+  content_view_mask_->layer()->SetBounds(content_view_->GetLocalBounds());
+}
+
 void AssistantWebView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -56,6 +66,13 @@ void AssistantWebView::InitLayout() {
   caption_bar_->set_delegate(this);
   caption_bar_->SetButtonVisible(CaptionButtonId::kMinimize, false);
   AddChildView(caption_bar_);
+
+  // Content mask.
+  // This is used to enforce corner radius on the contents' layer.
+  content_view_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                  kCornerRadiusDip));
+  content_view_mask_->layer()->SetFillsBoundsOpaquely(false);
 }
 
 bool AssistantWebView::OnCaptionButtonPressed(CaptionButtonId id) {
@@ -121,6 +138,14 @@ void AssistantWebView::OnWebContentsReady(
   if (app_list::AnswerCardContentsRegistry::Get()) {
     content_view_ = app_list::AnswerCardContentsRegistry::Get()->GetView(
         embed_token.value());
+    content_view_->AddObserver(this);
+
+    // Apply our layer mask which enforces corner radius.
+    app_list::AnswerCardContentsRegistry::Get()
+        ->GetNativeView(embed_token.value())
+        ->layer()
+        ->SetMaskLayer(content_view_mask_->layer());
+
     AddChildView(content_view_);
   }
 
