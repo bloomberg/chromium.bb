@@ -3120,7 +3120,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  if (browser_cmd.HasSwitch(switches::kDisableGpuCompositing)) {
+    renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
+  }
+#elif !defined(OS_CHROMEOS)
 #if !BUILDFLAG(ENABLE_MUS)
   // If gpu compositing is not being used, tell the renderer at startup. This
   // is inherently racey, as it may change while the renderer is being launched,
@@ -3131,11 +3135,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // no need to check this state and forward it.
   if (ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
-#else
+#else   // BUILDFLAG(ENABLE_MUS)
 // TODO(tonikitoo): Check if renderer should use software compositing
 // through some mechanism that isn't ImageTransportFactory with mus.
-#endif
-#endif
+#endif  // !BUILDFLAG(ENABLE_MUS)
+#endif  // defined(OS_ANDROID)
 
   // Add kWaitForDebugger to let renderer process wait for a debugger.
   if (browser_cmd.HasSwitch(switches::kWaitForDebuggerChildren)) {
