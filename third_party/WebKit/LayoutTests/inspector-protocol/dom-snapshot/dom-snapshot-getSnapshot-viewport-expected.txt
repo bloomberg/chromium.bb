@@ -16,7 +16,9 @@ Emulating device: 600x600x1
       "documentURL": "<string>",
       "baseURL": "<string>",
       "documentEncoding": "windows-1252",
-      "frameId": "<string>"
+      "frameId": "<string>",
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
     },
     {
       "nodeType": 10,

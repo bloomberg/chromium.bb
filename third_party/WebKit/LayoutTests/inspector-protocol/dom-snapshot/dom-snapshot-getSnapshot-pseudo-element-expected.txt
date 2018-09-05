@@ -13,7 +13,9 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
       "documentURL": "<string>",
       "baseURL": "<string>",
       "documentEncoding": "windows-1252",
-      "frameId": "<string>"
+      "frameId": "<string>",
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
     },
     {
       "nodeType": 1,

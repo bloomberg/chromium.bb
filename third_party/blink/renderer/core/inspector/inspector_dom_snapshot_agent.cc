@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "v8/include/v8-inspector.h"
@@ -48,8 +49,8 @@ using protocol::Response;
 
 namespace {
 
-std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
-    const FloatRect& rect) {
+std::unique_ptr<protocol::DOM::Rect> BuildRectForLayoutRect(
+    const LayoutRect& rect) {
   return protocol::DOM::Rect::create()
       .setX(rect.X())
       .setY(rect.Y())
@@ -58,8 +59,8 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
       .build();
 }
 
-std::unique_ptr<protocol::Array<double>> BuildRectForFloatRect2(
-    const FloatRect& rect) {
+std::unique_ptr<protocol::Array<double>> BuildRectForLayoutRect2(
+    const LayoutRect& rect) {
   std::unique_ptr<protocol::Array<double>> result =
       protocol::Array<double>::create();
   result->addItem(rect.X());
@@ -67,6 +68,29 @@ std::unique_ptr<protocol::Array<double>> BuildRectForFloatRect2(
   result->addItem(rect.Width());
   result->addItem(rect.Height());
   return result;
+}
+
+// Returns |layout_object|'s bounding box in document coordinates.
+LayoutRect RectInDocument(const LayoutObject* layout_object) {
+  LayoutRect rect_in_absolute(layout_object->AbsoluteBoundingBoxFloatRect());
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  // Don't do frame to document coordinate transformation for layout view,
+  // whose bounding box is not affected by scroll offset.
+  if (local_frame_view && !layout_object->IsLayoutView())
+    return local_frame_view->FrameToDocument(rect_in_absolute);
+  return rect_in_absolute;
+}
+
+LayoutRect TextFragmentRectInDocument(const LayoutObject* layout_object,
+                                      const InlineTextBox* text_box) {
+  FloatRect local_coords_text_box_rect(text_box->FrameRect());
+  LayoutRect absolute_coords_text_box_rect(
+      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
+          .BoundingBox());
+  LocalFrameView* local_frame_view = layout_object->GetFrameView();
+  return local_frame_view
+             ? local_frame_view->FrameToDocument(absolute_coords_text_box_rect)
+             : absolute_coords_text_box_rect;
 }
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
@@ -442,6 +466,11 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     if (document->EncodingName())
       value->setDocumentEncoding(document->EncodingName().Utf8().data());
     value->setFrameId(IdentifiersFactory::FrameId(document->GetFrame()));
+    if (document->View() && document->View()->LayoutViewport()) {
+      auto offset = document->View()->LayoutViewport()->GetScrollOffset();
+      value->setScrollOffsetX(offset.Width());
+      value->setScrollOffsetY(offset.Height());
+    }
   } else if (node->IsDocumentTypeNode()) {
     DocumentType* doc_type = ToDocumentType(node);
     value->setPublicId(doc_type->publicId());
@@ -550,6 +579,13 @@ void InspectorDOMSnapshotAgent::VisitDocument2(Document* document) {
                   .setLength(protocol::Array<int>::create())
                   .build())
           .build();
+
+  if (document->View() && document->View()->LayoutViewport()) {
+    auto offset = document->View()->LayoutViewport()->GetScrollOffset();
+    document_->setScrollOffsetX(offset.Width());
+    document_->setScrollOffsetY(offset.Height());
+  }
+
   VisitNode2(document, -1);
   documents_->addItem(std::move(document_));
 }
@@ -804,11 +840,11 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (!layout_object)
     return -1;
 
-  auto layout_tree_node = protocol::DOMSnapshot::LayoutTreeNode::create()
-                              .setDomNodeIndex(node_index)
-                              .setBoundingBox(BuildRectForFloatRect(FloatRect(
-                                  layout_object->AbsoluteBoundingBoxRect())))
-                              .build();
+  auto layout_tree_node =
+      protocol::DOMSnapshot::LayoutTreeNode::create()
+          .setDomNodeIndex(node_index)
+          .setBoundingBox(BuildRectForLayoutRect(RectInDocument(layout_object)))
+          .build();
 
   int style_index = GetStyleIndexForNode(node);
   if (style_index != -1)
@@ -830,21 +866,17 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
-    Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
-    if (!text_boxes.IsEmpty()) {
+    if (layout_text->HasTextBoxes()) {
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
               protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
-      for (const LayoutText::TextBoxInfo& text_box : text_boxes) {
-        FloatRect absolute_coords_text_box_rect =
-            layout_object->LocalToAbsoluteQuad(FloatRect(text_box.local_rect))
-                .BoundingBox();
+      for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
         inline_text_nodes->addItem(
             protocol::DOMSnapshot::InlineTextBox::create()
-                .setStartCharacterIndex(text_box.dom_start_offset)
-                .setNumCharacters(text_box.dom_length)
-                .setBoundingBox(
-                    BuildRectForFloatRect(absolute_coords_text_box_rect))
+                .setStartCharacterIndex(text_box->Start())
+                .setNumCharacters(text_box->Len())
+                .setBoundingBox(BuildRectForLayoutRect(
+                    TextFragmentRectInDocument(layout_object, text_box)))
                 .build());
       }
       layout_tree_node->setInlineTextNodes(std::move(inline_text_nodes));
@@ -867,8 +899,8 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   int layout_index = layout_tree_snapshot->getNodeIndex()->length();
   layout_tree_snapshot->getNodeIndex()->addItem(node_index);
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
-  layout_tree_snapshot->getBounds()->addItem(BuildRectForFloatRect2(
-      FloatRect(layout_object->AbsoluteBoundingBoxRect())));
+  layout_tree_snapshot->getBounds()->addItem(
+      BuildRectForLayoutRect2(RectInDocument(layout_object)));
 
   if (layout_object->Style() && layout_object->Style()->IsStacked())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
@@ -885,13 +917,9 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     return layout_index;
 
   for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
-    FloatRect local_coords_text_box_rect(text_box->FrameRect());
-    FloatRect absolute_coords_text_box_rect =
-        layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-            .BoundingBox();
     text_box_snapshot->getLayoutIndex()->addItem(layout_index);
-    text_box_snapshot->getBounds()->addItem(
-        BuildRectForFloatRect2(absolute_coords_text_box_rect));
+    text_box_snapshot->getBounds()->addItem(BuildRectForLayoutRect2(
+        TextFragmentRectInDocument(layout_object, text_box)));
     text_box_snapshot->getStart()->addItem(text_box->Start());
     text_box_snapshot->getLength()->addItem(text_box->Len());
   }
