@@ -233,6 +233,7 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
+#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
@@ -546,9 +547,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Voice search bar at the bottom of the view overlayed on |contentArea|
   // when displaying voice search results.
   UIView<VoiceSearchBar>* _voiceSearchBar;
-
-  // The image fetcher used to save images and perform image-based searches.
-  std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
 
   // Cached pointer to the bookmarks model.
   bookmarks::BookmarkModel* _bookmarkModel;  // weak
@@ -2133,8 +2131,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   for (NSUInteger index = 0; index < count; ++index)
     [self installDelegatesForTab:[_model tabAtIndex:index]];
 
-  _imageFetcher = std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
-      _browserState->GetSharedURLLoaderFactory());
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
   self.imageCopier = [[ImageCopier alloc] initWithBaseViewController:self];
 
@@ -3689,7 +3685,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
-      DCHECK(imageUrl.is_valid());
       [weakSelf.imageSaver saveImageAtURL:imageUrl
                                  referrer:referrer
                                  webState:weakSelf.currentWebState];
@@ -3701,7 +3696,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
       action = ^{
         Record(ACTION_COPY_IMAGE, isImage, isLink);
-        DCHECK(imageUrl.is_valid());
         [weakSelf.imageCopier copyImageAtURL:imageUrl
                                     referrer:referrer
                                     webState:weakSelf.currentWebState];
@@ -3746,7 +3740,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                       defaultURL->short_name());
       action = ^{
         Record(ACTION_SEARCH_BY_IMAGE, isImage, isLink);
-        [weakSelf searchByImageAtURL:imageUrl referrer:referrer];
+        ImageFetchTabHelper* image_fetcher =
+            ImageFetchTabHelper::FromWebState(self.currentWebState);
+        DCHECK(image_fetcher);
+        image_fetcher->GetImageData(imageUrl, referrer, ^(NSData* data) {
+          [weakSelf searchByImageData:data atURL:imageUrl];
+        });
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
     }
@@ -3796,25 +3795,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (webState) {
     webState->ExecuteJavaScript(base::SysNSStringToUTF16(javascript));
   }
-}
-
-// Performs a search with the image at the given url. The referrer is used to
-// download the image.
-- (void)searchByImageAtURL:(const GURL&)url
-                  referrer:(const web::Referrer)referrer {
-  DCHECK(url.is_valid());
-  __weak BrowserViewController* weakSelf = self;
-  const GURL image_source_url = url;
-  image_fetcher::ImageDataFetcherBlock callback =
-      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        DCHECK(data);
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [weakSelf searchByImageData:data atURL:image_source_url];
-        });
-      };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
 }
 
 // Performs a search using |data| and |imageURL| as inputs.
