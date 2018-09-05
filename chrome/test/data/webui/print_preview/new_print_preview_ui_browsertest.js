@@ -158,6 +158,14 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'ColorManaged', function() {
   this.runMochaTest(settings_sections_tests.TestNames.ColorManaged);
 });
 
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
+    function() {
+      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+      this.runMochaTest(
+          settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
+    });
+
 PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -197,14 +205,6 @@ TEST_F('PrintPreviewPolicyTest', 'EnableHeaderFooterByPolicy', function() {
 TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPolicy);
 });
-
-TEST_F(
-    'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
-    function() {
-      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
-      this.runMochaTest(
-          settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
-    });
 
 PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
