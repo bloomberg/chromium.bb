@@ -59,6 +59,8 @@ class ScenicSession : public fuchsia::ui::scenic::SessionListener {
   ResourceId CreateImage(ResourceId memory_id,
                          ResourceId memory_offset,
                          fuchsia::images::ImageInfo info);
+  ResourceId CreateImagePipe(
+      fidl::InterfaceRequest<fuchsia::images::ImagePipe> request);
   ResourceId ImportResource(fuchsia::ui::gfx::ImportSpec spec,
                             zx::eventpair import_token);
   ResourceId CreateEntityNode();

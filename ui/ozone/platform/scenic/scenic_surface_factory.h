@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -33,6 +34,10 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
+      override;
+#endif
 
  private:
   ScenicWindowManager* const window_manager_;

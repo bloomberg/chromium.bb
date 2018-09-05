@@ -43,8 +43,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   ScenicSession::ResourceId node_id() const { return node_id_; }
   float device_pixel_ratio() const { return device_pixel_ratio_; }
 
-  // Overrides texture of the window. This is used by ScenicWindowCanvas.
-  // TODO(spang): Deprecate software rendering on fuchsia.
+  // Sets texture of the window to a scenic resource.
   void SetTexture(ScenicSession::ResourceId texture);
 
   // PlatformWindow implementation.

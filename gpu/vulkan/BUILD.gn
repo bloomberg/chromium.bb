@@ -61,6 +61,11 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
+
+    data_deps = []
+    if (is_fuchsia) {
+      data_deps += [ "//third_party/fuchsia-sdk:vulkan_layers" ]
+    }
   }
 
   # TODO(cblume): These tests should run on each platform -- crbug.com/858614

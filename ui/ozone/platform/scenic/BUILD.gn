@@ -4,6 +4,10 @@
 
 assert(is_fuchsia)
 
+import("//gpu/vulkan/features.gni")
+
+visibility = [ "//ui/ozone/*" ]
+
 source_set("scenic") {
   sources = [
     "client_native_pixmap_factory_scenic.cc",
@@ -44,4 +48,13 @@ source_set("scenic") {
     "//ui/ozone/common",
     "//ui/platform_window",
   ]
+
+  if (enable_vulkan) {
+    sources += [
+      "vulkan_implementation_scenic.cc",
+      "vulkan_implementation_scenic.h",
+      "vulkan_magma.h",
+    ]
+    defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
+  }
 }
