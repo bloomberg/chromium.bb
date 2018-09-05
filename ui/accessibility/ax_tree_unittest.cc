@@ -323,25 +323,6 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
       update.ToString());
 }
 
-TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
-  AXNodeData root;
-  root.id = 1;
-
-  AXTreeUpdate initial_state;
-  initial_state.root_id = 1;
-  initial_state.nodes.push_back(root);
-  AXTree tree(initial_state);
-
-  // This should fail because we're asking it to delete
-  // a subtree rooted at id=2, which doesn't exist.
-  AXTreeUpdate update;
-  update.node_id_to_clear = 2;
-  update.nodes.resize(1);
-  update.nodes[0].id = 1;
-  EXPECT_FALSE(tree.Unserialize(update));
-  ASSERT_EQ("Bad node_id_to_clear: 2", tree.error());
-}
-
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

@@ -162,6 +162,10 @@ class AXTreeSerializer {
   // Visit all of the descendants of |node| once.
   void WalkAllDescendants(AXSourceNode node);
 
+  // Delete the entire client subtree but don't set the did_reset_ flag
+  // like when Reset() is called.
+  void InternalReset();
+
   // The tree source.
   AXTreeSource<AXSourceNode, AXNodeData, AXTreeData>* tree_;
 
@@ -177,6 +181,11 @@ class AXTreeSerializer {
   // The maximum number of nodes to serialize in a given call to
   // SerializeChanges, or 0 if there's no maximum.
   size_t max_node_count_ = 0;
+
+  // Keeps track of if Reset() was called. If so, we need to always
+  // explicitly set node_id_to_clear to ensure that the next serialized
+  // tree is treated as a completely new tree and not a partial update.
+  bool did_reset_ = false;
 };
 
 // In order to keep track of what nodes the client knows about, we keep a
@@ -203,6 +212,12 @@ AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::~AXTreeSerializer() {
 
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
 void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::Reset() {
+  InternalReset();
+  did_reset_ = true;
+}
+
+template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
+void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::InternalReset() {
   client_tree_data_ = AXTreeData();
 
   // Normally we use DeleteClientSubtree to remove nodes from the tree,
@@ -371,7 +386,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::SerializeChanges(
         // If there's no LCA, just tell the client to destroy the whole
         // tree and then we'll serialize everything from the new root.
         out_update->node_id_to_clear = client_root_->id;
-        Reset();
+        InternalReset();
       } else if (need_delete) {
         // Otherwise, if we need to reserialize a subtree, first we need
         // to delete those nodes in our client tree so that
@@ -394,7 +409,19 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::SerializeChanges(
   //     DumpAccessibilityTreeTest.AccessibilityAriaOwns.
   WalkAllDescendants(lca);
 
-  return SerializeChangedNodes(lca, out_update);
+  if (!SerializeChangedNodes(lca, out_update))
+    return false;
+
+  // If we had a reset, ensure that the old tree is cleared before the client
+  // unserializes this update. If we didn't do this, there's a chance that
+  // treating this update as an incremental update could result in some
+  // reparenting.
+  if (did_reset_) {
+    out_update->node_id_to_clear = tree_->GetId(lca);
+    did_reset_ = false;
+  }
+
+  return true;
 }
 
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
@@ -444,7 +471,8 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
   int id = tree_->GetId(node);
   ClientTreeNode* client_node = ClientTreeNodeById(id);
   if (!client_node) {
-    Reset();
+    if (client_root_)
+      Reset();
     client_root_ = new ClientTreeNode();
     client_node = client_root_;
     client_node->id = id;
