@@ -26,10 +26,10 @@ class ScreenListenerImpl final : public ScreenListener {
     virtual void StopListener() = 0;
     virtual void SuspendListener() = 0;
     virtual void ResumeListener() = 0;
-    virtual void SearchNow(ScreenListenerState from) = 0;
+    virtual void SearchNow(State from) = 0;
 
    protected:
-    void SetState(ScreenListenerState state) { listener_->SetState(state); }
+    void SetState(State state) { listener_->SetState(state); }
 
     ScreenListenerImpl* listener_ = nullptr;
   };
@@ -37,7 +37,7 @@ class ScreenListenerImpl final : public ScreenListener {
   // |observer| is optional.  If it is provided, it will receive appropriate
   // notifications about this ScreenListener.  |delegate| is required and is
   // used to implement state transitions.
-  ScreenListenerImpl(ScreenListenerObserver* observer, Delegate* delegate);
+  ScreenListenerImpl(Observer* observer, Delegate* delegate);
   ~ScreenListenerImpl() override;
 
   // Called by |delegate_| when there are updates to the available screens.
@@ -47,7 +47,7 @@ class ScreenListenerImpl final : public ScreenListener {
   void OnAllScreensRemoved();
 
   // Called by |delegate_| when an internal error occurs.
-  void OnError(ScreenListenerErrorInfo error);
+  void OnError(ScreenListenerError error);
 
   // ScreenListener overrides.
   bool Start() override;
@@ -62,11 +62,11 @@ class ScreenListenerImpl final : public ScreenListener {
  private:
   // Called by |delegate_| to transition the state machine (except kStarting and
   // kStopping which are done automatically).
-  void SetState(ScreenListenerState state);
+  void SetState(State state);
 
-  // Notifies |observer_| if the transition from |from| to |state_| is one that
-  // is watched by the observer interface.
-  void MaybeNotifyObserver(ScreenListenerState from);
+  // Notifies |observer_| if the transition to |state_| is one that is watched
+  // by the observer interface.
+  void MaybeNotifyObserver();
 
   Delegate* const delegate_;
   ScreenList screen_list_;

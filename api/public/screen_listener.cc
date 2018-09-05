@@ -6,22 +6,20 @@
 
 namespace openscreen {
 
-ScreenListenerErrorInfo::ScreenListenerErrorInfo() = default;
-ScreenListenerErrorInfo::ScreenListenerErrorInfo(ScreenListenerError error,
-                                                 const std::string& message)
+ScreenListenerError::ScreenListenerError() = default;
+ScreenListenerError::ScreenListenerError(Code error, const std::string& message)
     : error(error), message(message) {}
-ScreenListenerErrorInfo::ScreenListenerErrorInfo(
-    const ScreenListenerErrorInfo& other) = default;
-ScreenListenerErrorInfo::~ScreenListenerErrorInfo() = default;
+ScreenListenerError::ScreenListenerError(const ScreenListenerError& other) =
+    default;
+ScreenListenerError::~ScreenListenerError() = default;
 
-ScreenListenerErrorInfo& ScreenListenerErrorInfo::operator=(
-    const ScreenListenerErrorInfo& other) = default;
+ScreenListenerError& ScreenListenerError::operator=(
+    const ScreenListenerError& other) = default;
 
-ScreenListenerMetrics::ScreenListenerMetrics() = default;
-ScreenListenerMetrics::~ScreenListenerMetrics() = default;
+ScreenListener::Metrics::Metrics() = default;
+ScreenListener::Metrics::~Metrics() = default;
 
-ScreenListener::ScreenListener(ScreenListenerObserver* observer)
-    : observer_(observer) {}
+ScreenListener::ScreenListener(Observer* observer) : observer_(observer) {}
 ScreenListener::~ScreenListener() = default;
 
 }  // namespace openscreen

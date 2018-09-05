@@ -15,7 +15,9 @@ using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Expectation;
 
-class MockObserver final : public ScreenListenerObserver {
+using State = ScreenListener::State;
+
+class MockObserver final : public ScreenListener::Observer {
  public:
   ~MockObserver() = default;
 
@@ -29,9 +31,9 @@ class MockObserver final : public ScreenListenerObserver {
   MOCK_METHOD1(OnScreenRemoved, void(const ScreenInfo& info));
   MOCK_METHOD0(OnAllScreensRemoved, void());
 
-  MOCK_METHOD1(OnError, void(ScreenListenerErrorInfo));
+  MOCK_METHOD1(OnError, void(ScreenListenerError));
 
-  MOCK_METHOD1(OnMetrics, void(ScreenListenerMetrics));
+  MOCK_METHOD1(OnMetrics, void(ScreenListener::Metrics));
 };
 
 class MockMdnsDelegate final : public ScreenListenerImpl::Delegate {
@@ -46,7 +48,7 @@ class MockMdnsDelegate final : public ScreenListenerImpl::Delegate {
   MOCK_METHOD0(StopListener, void());
   MOCK_METHOD0(SuspendListener, void());
   MOCK_METHOD0(ResumeListener, void());
-  MOCK_METHOD1(SearchNow, void(ScreenListenerState));
+  MOCK_METHOD1(SearchNow, void(State));
 };
 
 class ScreenListenerImplTest : public ::testing::Test {
@@ -62,37 +64,37 @@ class ScreenListenerImplTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(ScreenListenerImplTest, NormalStartStop) {
-  ASSERT_EQ(ScreenListenerState::kStopped, screen_listener_->state());
+  ASSERT_EQ(State::kStopped, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, StartListener());
   EXPECT_TRUE(screen_listener_->Start());
   EXPECT_FALSE(screen_listener_->Start());
-  EXPECT_EQ(ScreenListenerState::kStarting, screen_listener_->state());
+  EXPECT_EQ(State::kStarting, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
-  EXPECT_EQ(ScreenListenerState::kRunning, screen_listener_->state());
+  mock_delegate_.SetState(State::kRunning);
+  EXPECT_EQ(State::kRunning, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, StopListener());
   EXPECT_TRUE(screen_listener_->Stop());
   EXPECT_FALSE(screen_listener_->Stop());
-  EXPECT_EQ(ScreenListenerState::kStopping, screen_listener_->state());
+  EXPECT_EQ(State::kStopping, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kStopped);
-  EXPECT_EQ(ScreenListenerState::kStopped, screen_listener_->state());
+  mock_delegate_.SetState(State::kStopped);
+  EXPECT_EQ(State::kStopped, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, StopBeforeRunning) {
   EXPECT_CALL(mock_delegate_, StartListener());
   EXPECT_TRUE(screen_listener_->Start());
-  EXPECT_EQ(ScreenListenerState::kStarting, screen_listener_->state());
+  EXPECT_EQ(State::kStarting, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, StopListener());
   EXPECT_TRUE(screen_listener_->Stop());
   EXPECT_FALSE(screen_listener_->Stop());
-  EXPECT_EQ(ScreenListenerState::kStopping, screen_listener_->state());
+  EXPECT_EQ(State::kStopping, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kStopped);
-  EXPECT_EQ(ScreenListenerState::kStopped, screen_listener_->state());
+  mock_delegate_.SetState(State::kStopped);
+  EXPECT_EQ(State::kStopped, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, StartSuspended) {
@@ -100,10 +102,10 @@ TEST_F(ScreenListenerImplTest, StartSuspended) {
   EXPECT_CALL(mock_delegate_, StartListener()).Times(0);
   EXPECT_TRUE(screen_listener_->StartAndSuspend());
   EXPECT_FALSE(screen_listener_->Start());
-  EXPECT_EQ(ScreenListenerState::kStarting, screen_listener_->state());
+  EXPECT_EQ(State::kStarting, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
-  EXPECT_EQ(ScreenListenerState::kSuspended, screen_listener_->state());
+  mock_delegate_.SetState(State::kSuspended);
+  EXPECT_EQ(State::kSuspended, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, SuspendWhileStarting) {
@@ -111,15 +113,15 @@ TEST_F(ScreenListenerImplTest, SuspendWhileStarting) {
   EXPECT_CALL(mock_delegate_, SuspendListener()).Times(1);
   EXPECT_TRUE(screen_listener_->Start());
   EXPECT_TRUE(screen_listener_->Suspend());
-  EXPECT_EQ(ScreenListenerState::kStarting, screen_listener_->state());
+  EXPECT_EQ(State::kStarting, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
-  EXPECT_EQ(ScreenListenerState::kSuspended, screen_listener_->state());
+  mock_delegate_.SetState(State::kSuspended);
+  EXPECT_EQ(State::kSuspended, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, SuspendAndResume) {
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
   EXPECT_CALL(mock_delegate_, ResumeListener()).Times(0);
   EXPECT_CALL(mock_delegate_, SuspendListener()).Times(2);
@@ -127,8 +129,8 @@ TEST_F(ScreenListenerImplTest, SuspendAndResume) {
   EXPECT_TRUE(screen_listener_->Suspend());
   EXPECT_TRUE(screen_listener_->Suspend());
 
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
-  EXPECT_EQ(ScreenListenerState::kSuspended, screen_listener_->state());
+  mock_delegate_.SetState(State::kSuspended);
+  EXPECT_EQ(State::kSuspended, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, StartListener()).Times(0);
   EXPECT_CALL(mock_delegate_, SuspendListener()).Times(0);
@@ -138,8 +140,8 @@ TEST_F(ScreenListenerImplTest, SuspendAndResume) {
   EXPECT_TRUE(screen_listener_->Resume());
   EXPECT_TRUE(screen_listener_->Resume());
 
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
-  EXPECT_EQ(ScreenListenerState::kRunning, screen_listener_->state());
+  mock_delegate_.SetState(State::kRunning);
+  EXPECT_EQ(State::kRunning, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, ResumeListener()).Times(0);
   EXPECT_FALSE(screen_listener_->Resume());
@@ -149,86 +151,84 @@ TEST_F(ScreenListenerImplTest, SearchWhileRunning) {
   EXPECT_CALL(mock_delegate_, SearchNow(_)).Times(0);
   EXPECT_FALSE(screen_listener_->SearchNow());
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
-  EXPECT_CALL(mock_delegate_, SearchNow(ScreenListenerState::kRunning))
-      .Times(2);
+  EXPECT_CALL(mock_delegate_, SearchNow(State::kRunning)).Times(2);
   EXPECT_TRUE(screen_listener_->SearchNow());
   EXPECT_TRUE(screen_listener_->SearchNow());
 
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
-  EXPECT_EQ(ScreenListenerState::kSearching, screen_listener_->state());
+  mock_delegate_.SetState(State::kSearching);
+  EXPECT_EQ(State::kSearching, screen_listener_->state());
 
   EXPECT_CALL(mock_delegate_, SearchNow(_)).Times(0);
   EXPECT_FALSE(screen_listener_->SearchNow());
 
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
-  EXPECT_EQ(ScreenListenerState::kRunning, screen_listener_->state());
+  mock_delegate_.SetState(State::kRunning);
+  EXPECT_EQ(State::kRunning, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, SearchWhileSuspended) {
   EXPECT_CALL(mock_delegate_, SearchNow(_)).Times(0);
   EXPECT_FALSE(screen_listener_->SearchNow());
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
   EXPECT_TRUE(screen_listener_->Suspend());
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
 
-  EXPECT_CALL(mock_delegate_, SearchNow(ScreenListenerState::kSuspended))
-      .Times(2);
+  EXPECT_CALL(mock_delegate_, SearchNow(State::kSuspended)).Times(2);
   EXPECT_TRUE(screen_listener_->SearchNow());
   EXPECT_TRUE(screen_listener_->SearchNow());
 
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
-  EXPECT_EQ(ScreenListenerState::kSearching, screen_listener_->state());
+  mock_delegate_.SetState(State::kSearching);
+  EXPECT_EQ(State::kSearching, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
-  EXPECT_EQ(ScreenListenerState::kSuspended, screen_listener_->state());
+  mock_delegate_.SetState(State::kSuspended);
+  EXPECT_EQ(State::kSuspended, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, StopWhileSearching) {
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
   EXPECT_TRUE(screen_listener_->SearchNow());
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate_.SetState(State::kSearching);
 
   EXPECT_CALL(mock_delegate_, StopListener());
   EXPECT_TRUE(screen_listener_->Stop());
   EXPECT_FALSE(screen_listener_->Stop());
-  EXPECT_EQ(ScreenListenerState::kStopping, screen_listener_->state());
+  EXPECT_EQ(State::kStopping, screen_listener_->state());
 
-  mock_delegate_.SetState(ScreenListenerState::kStopped);
-  EXPECT_EQ(ScreenListenerState::kStopped, screen_listener_->state());
+  mock_delegate_.SetState(State::kStopped);
+  EXPECT_EQ(State::kStopped, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, ResumeWhileSearching) {
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
   EXPECT_TRUE(screen_listener_->Suspend());
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
   EXPECT_TRUE(screen_listener_->SearchNow());
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate_.SetState(State::kSearching);
 
   EXPECT_CALL(mock_delegate_, ResumeListener()).Times(2);
   EXPECT_TRUE(screen_listener_->Resume());
   EXPECT_TRUE(screen_listener_->Resume());
 
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
-  EXPECT_EQ(ScreenListenerState::kRunning, screen_listener_->state());
+  mock_delegate_.SetState(State::kRunning);
+  EXPECT_EQ(State::kRunning, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, SuspendWhileSearching) {
   EXPECT_TRUE(screen_listener_->Start());
-  mock_delegate_.SetState(ScreenListenerState::kRunning);
+  mock_delegate_.SetState(State::kRunning);
   EXPECT_TRUE(screen_listener_->SearchNow());
-  mock_delegate_.SetState(ScreenListenerState::kSearching);
+  mock_delegate_.SetState(State::kSearching);
 
   EXPECT_CALL(mock_delegate_, SuspendListener()).Times(2);
   EXPECT_TRUE(screen_listener_->Suspend());
   EXPECT_TRUE(screen_listener_->Suspend());
 
-  mock_delegate_.SetState(ScreenListenerState::kSuspended);
-  EXPECT_EQ(ScreenListenerState::kSuspended, screen_listener_->state());
+  mock_delegate_.SetState(State::kSuspended);
+  EXPECT_EQ(State::kSuspended, screen_listener_->state());
 }
 
 TEST_F(ScreenListenerImplTest, ObserveTransitions) {
@@ -238,35 +238,40 @@ TEST_F(ScreenListenerImplTest, ObserveTransitions) {
 
   screen_listener_->Start();
   Expectation start_from_stopped = EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(State::kRunning);
 
   screen_listener_->SearchNow();
   Expectation search_from_running =
       EXPECT_CALL(observer, OnSearching()).After(start_from_stopped);
-  mock_delegate.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(State::kSearching);
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(State::kRunning);
 
   screen_listener_->Suspend();
   Expectation suspend_from_running =
       EXPECT_CALL(observer, OnSuspended()).After(search_from_running);
-  mock_delegate.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(State::kSuspended);
 
   screen_listener_->SearchNow();
   Expectation search_from_suspended =
       EXPECT_CALL(observer, OnSearching()).After(suspend_from_running);
-  mock_delegate.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(State::kSearching);
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(State::kSuspended);
 
   screen_listener_->Resume();
   Expectation resume_from_suspended =
       EXPECT_CALL(observer, OnStarted()).After(suspend_from_running);
-  mock_delegate.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(State::kRunning);
 
   screen_listener_->Stop();
-  EXPECT_CALL(observer, OnStopped()).After(resume_from_suspended);
-  mock_delegate.SetState(ScreenListenerState::kStopped);
+  Expectation stop =
+      EXPECT_CALL(observer, OnStopped()).After(resume_from_suspended);
+  mock_delegate.SetState(State::kStopped);
+
+  screen_listener_->StartAndSuspend();
+  EXPECT_CALL(observer, OnSuspended()).After(stop);
+  mock_delegate.SetState(State::kSuspended);
 }
 
 TEST_F(ScreenListenerImplTest, ObserveFromSearching) {
@@ -275,21 +280,21 @@ TEST_F(ScreenListenerImplTest, ObserveFromSearching) {
   screen_listener_ = MakeUnique<ScreenListenerImpl>(&observer, &mock_delegate);
 
   screen_listener_->Start();
-  mock_delegate.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(State::kRunning);
 
   screen_listener_->SearchNow();
-  mock_delegate.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(State::kSearching);
 
   screen_listener_->Suspend();
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate.SetState(ScreenListenerState::kSuspended);
+  mock_delegate.SetState(State::kSuspended);
 
   EXPECT_TRUE(screen_listener_->SearchNow());
-  mock_delegate.SetState(ScreenListenerState::kSearching);
+  mock_delegate.SetState(State::kSearching);
 
   screen_listener_->Resume();
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(ScreenListenerState::kRunning);
+  mock_delegate.SetState(State::kRunning);
 }
 
 TEST_F(ScreenListenerImplTest, ScreenObserverPassThrough) {

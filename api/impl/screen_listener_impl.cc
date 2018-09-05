@@ -10,31 +10,31 @@ namespace openscreen {
 namespace {
 
 #if DCHECK_IS_ON()
-bool IsTransitionValid(ScreenListenerState from, ScreenListenerState to) {
+bool IsTransitionValid(ScreenListener::State from, ScreenListener::State to) {
   switch (from) {
-    case ScreenListenerState::kStopped:
-      return to == ScreenListenerState::kStarting ||
-             to == ScreenListenerState::kStopping;
-    case ScreenListenerState::kStarting:
-      return to == ScreenListenerState::kRunning ||
-             to == ScreenListenerState::kStopping ||
-             to == ScreenListenerState::kSuspended;
-    case ScreenListenerState::kRunning:
-      return to == ScreenListenerState::kSuspended ||
-             to == ScreenListenerState::kSearching ||
-             to == ScreenListenerState::kStopping;
-    case ScreenListenerState::kStopping:
-      return to == ScreenListenerState::kStopped;
-    case ScreenListenerState::kSearching:
-      return to == ScreenListenerState::kRunning ||
-             to == ScreenListenerState::kSuspended ||
-             to == ScreenListenerState::kStopping;
-    case ScreenListenerState::kSuspended:
-      return to == ScreenListenerState::kRunning ||
-             to == ScreenListenerState::kSearching ||
-             to == ScreenListenerState::kStopping;
+    case ScreenListener::State::kStopped:
+      return to == ScreenListener::State::kStarting ||
+             to == ScreenListener::State::kStopping;
+    case ScreenListener::State::kStarting:
+      return to == ScreenListener::State::kRunning ||
+             to == ScreenListener::State::kStopping ||
+             to == ScreenListener::State::kSuspended;
+    case ScreenListener::State::kRunning:
+      return to == ScreenListener::State::kSuspended ||
+             to == ScreenListener::State::kSearching ||
+             to == ScreenListener::State::kStopping;
+    case ScreenListener::State::kStopping:
+      return to == ScreenListener::State::kStopped;
+    case ScreenListener::State::kSearching:
+      return to == ScreenListener::State::kRunning ||
+             to == ScreenListener::State::kSuspended ||
+             to == ScreenListener::State::kStopping;
+    case ScreenListener::State::kSuspended:
+      return to == ScreenListener::State::kRunning ||
+             to == ScreenListener::State::kSearching ||
+             to == ScreenListener::State::kStopping;
     default:
-      DCHECK(false) << "unknown ScreenListenerState value: "
+      DCHECK(false) << "unknown ScreenListener::State value: "
                     << static_cast<int>(from);
       break;
   }
@@ -53,8 +53,7 @@ void ScreenListenerImpl::Delegate::SetListenerImpl(
   listener_ = listener;
 }
 
-ScreenListenerImpl::ScreenListenerImpl(ScreenListenerObserver* observer,
-                                       Delegate* delegate)
+ScreenListenerImpl::ScreenListenerImpl(Observer* observer, Delegate* delegate)
     : ScreenListener(observer), delegate_(delegate) {
   delegate_->SetListenerImpl(this);
 }
@@ -85,42 +84,40 @@ void ScreenListenerImpl::OnAllScreensRemoved() {
     observer_->OnAllScreensRemoved();
 }
 
-void ScreenListenerImpl::OnError(ScreenListenerErrorInfo error) {
+void ScreenListenerImpl::OnError(ScreenListenerError error) {
   last_error_ = error;
   if (observer_)
     observer_->OnError(error);
 }
 
 bool ScreenListenerImpl::Start() {
-  if (state_ != ScreenListenerState::kStopped)
+  if (state_ != State::kStopped)
     return false;
-  state_ = ScreenListenerState::kStarting;
+  state_ = State::kStarting;
   delegate_->StartListener();
   return true;
 }
 
 bool ScreenListenerImpl::StartAndSuspend() {
-  if (state_ != ScreenListenerState::kStopped)
+  if (state_ != State::kStopped)
     return false;
-  state_ = ScreenListenerState::kStarting;
+  state_ = State::kStarting;
   delegate_->StartAndSuspendListener();
   return true;
 }
 
 bool ScreenListenerImpl::Stop() {
-  if (state_ == ScreenListenerState::kStopped ||
-      state_ == ScreenListenerState::kStopping) {
+  if (state_ == State::kStopped || state_ == State::kStopping) {
     return false;
   }
-  state_ = ScreenListenerState::kStopping;
+  state_ = State::kStopping;
   delegate_->StopListener();
   return true;
 }
 
 bool ScreenListenerImpl::Suspend() {
-  if (state_ != ScreenListenerState::kRunning &&
-      state_ != ScreenListenerState::kSearching &&
-      state_ != ScreenListenerState::kStarting) {
+  if (state_ != State::kRunning && state_ != State::kSearching &&
+      state_ != State::kStarting) {
     return false;
   }
   delegate_->SuspendListener();
@@ -128,8 +125,7 @@ bool ScreenListenerImpl::Suspend() {
 }
 
 bool ScreenListenerImpl::Resume() {
-  if (state_ != ScreenListenerState::kSuspended &&
-      state_ != ScreenListenerState::kSearching) {
+  if (state_ != State::kSuspended && state_ != State::kSearching) {
     return false;
   }
   delegate_->ResumeListener();
@@ -137,8 +133,7 @@ bool ScreenListenerImpl::Resume() {
 }
 
 bool ScreenListenerImpl::SearchNow() {
-  if (state_ != ScreenListenerState::kRunning &&
-      state_ != ScreenListenerState::kSuspended) {
+  if (state_ != State::kRunning && state_ != State::kSuspended) {
     return false;
   }
   delegate_->SearchNow(state_);
@@ -149,34 +144,26 @@ const std::vector<ScreenInfo>& ScreenListenerImpl::GetScreens() const {
   return screen_list_.screens();
 }
 
-void ScreenListenerImpl::SetState(ScreenListenerState state) {
+void ScreenListenerImpl::SetState(State state) {
   DCHECK(IsTransitionValid(state_, state));
-  const auto from = state_;
   state_ = state;
   if (observer_)
-    MaybeNotifyObserver(from);
+    MaybeNotifyObserver();
 }
 
-void ScreenListenerImpl::MaybeNotifyObserver(ScreenListenerState from) {
+void ScreenListenerImpl::MaybeNotifyObserver() {
   DCHECK(observer_);
   switch (state_) {
-    case ScreenListenerState::kRunning:
-      if (from == ScreenListenerState::kStarting ||
-          from == ScreenListenerState::kSuspended ||
-          from == ScreenListenerState::kSearching) {
-        observer_->OnStarted();
-      }
+    case State::kRunning:
+      observer_->OnStarted();
       break;
-    case ScreenListenerState::kStopped:
+    case State::kStopped:
       observer_->OnStopped();
       break;
-    case ScreenListenerState::kSuspended:
-      if (from == ScreenListenerState::kRunning ||
-          from == ScreenListenerState::kSearching) {
-        observer_->OnSuspended();
-      }
+    case State::kSuspended:
+      observer_->OnSuspended();
       break;
-    case ScreenListenerState::kSearching:
+    case State::kSearching:
       observer_->OnSearching();
       break;
     default:

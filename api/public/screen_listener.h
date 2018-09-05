@@ -14,96 +14,95 @@
 
 namespace openscreen {
 
-enum class ScreenListenerState {
-  kStopped = 0,
-  kStarting,
-  kRunning,
-  kStopping,
-  kSearching,
-  kSuspended,
-};
-
-// TODO: Add additional error types, as implementations progress.
-enum class ScreenListenerError {
-  kNone = 0,
-};
-
 // Used to report an error from a ScreenListener implementation.
-struct ScreenListenerErrorInfo {
+struct ScreenListenerError {
  public:
-  ScreenListenerErrorInfo();
-  ScreenListenerErrorInfo(ScreenListenerError error,
-                          const std::string& message);
-  ScreenListenerErrorInfo(const ScreenListenerErrorInfo& other);
-  ~ScreenListenerErrorInfo();
+  // TODO: Add additional error types, as implementations progress.
+  enum class Code {
+    kNone = 0,
+  };
 
-  ScreenListenerErrorInfo& operator=(const ScreenListenerErrorInfo& other);
+  ScreenListenerError();
+  ScreenListenerError(Code error, const std::string& message);
+  ScreenListenerError(const ScreenListenerError& other);
+  ~ScreenListenerError();
 
-  ScreenListenerError error;
+  ScreenListenerError& operator=(const ScreenListenerError& other);
+
+  Code error;
   std::string message;
-};
-
-// Microseconds after the epoch.
-// TODO: Replace with a base::Time object.
-typedef uint64_t timestamp_t;
-
-// Holds a set of metrics, captured over a specific range of time, about the
-// behavior of a ScreenListener instance.
-struct ScreenListenerMetrics {
-  ScreenListenerMetrics();
-  ~ScreenListenerMetrics();
-
-  // The range of time over which the metrics were collected; end_timestamp >
-  // start_timestamp
-  timestamp_t start_timestamp = 0;
-  timestamp_t end_timestamp = 0;
-
-  // The number of packets and bytes sent over the timestamp range.
-  uint64_t num_packets_sent = 0;
-  uint64_t num_bytes_sent = 0;
-
-  // The number of packets and bytes received over the timestamp range.
-  uint64_t num_packets_received = 0;
-  uint64_t num_bytes_received = 0;
-
-  // The maximum number of screens discovered over the timestamp range.  The
-  // latter two fields break this down by screens advertising ipv4 and ipv6
-  // endpoints.
-  size_t num_screens = 0;
-  size_t num_ipv4_screens = 0;
-  size_t num_ipv6_screens = 0;
-};
-
-class ScreenListenerObserver {
- public:
-  virtual ~ScreenListenerObserver() = default;
-
-  // Called when the state becomes kRunning.
-  virtual void OnStarted() = 0;
-  // Called when the state becomes kStopped.
-  virtual void OnStopped() = 0;
-  // Called when the state becomes kSuspended.
-  virtual void OnSuspended() = 0;
-  // Called when the state becomes kSearching.
-  virtual void OnSearching() = 0;
-
-  // Notifications to changes to the listener's screen list.
-  virtual void OnScreenAdded(const ScreenInfo&) = 0;
-  virtual void OnScreenChanged(const ScreenInfo&) = 0;
-  virtual void OnScreenRemoved(const ScreenInfo&) = 0;
-  // Called if all screens are no longer available, e.g. all network interfaces
-  // have been disabled.
-  virtual void OnAllScreensRemoved() = 0;
-
-  // Reports an error.
-  virtual void OnError(ScreenListenerErrorInfo) = 0;
-
-  // Reports metrics.
-  virtual void OnMetrics(ScreenListenerMetrics) = 0;
 };
 
 class ScreenListener {
  public:
+  enum class State {
+    kStopped = 0,
+    kStarting,
+    kRunning,
+    kStopping,
+    kSearching,
+    kSuspended,
+  };
+
+  // Microseconds after the epoch.
+  // TODO: Replace with a base::Time object.
+  typedef uint64_t timestamp_t;
+
+  // Holds a set of metrics, captured over a specific range of time, about the
+  // behavior of a ScreenListener instance.
+  struct Metrics {
+    Metrics();
+    ~Metrics();
+
+    // The range of time over which the metrics were collected; end_timestamp >
+    // start_timestamp
+    timestamp_t start_timestamp = 0;
+    timestamp_t end_timestamp = 0;
+
+    // The number of packets and bytes sent over the timestamp range.
+    uint64_t num_packets_sent = 0;
+    uint64_t num_bytes_sent = 0;
+
+    // The number of packets and bytes received over the timestamp range.
+    uint64_t num_packets_received = 0;
+    uint64_t num_bytes_received = 0;
+
+    // The maximum number of screens discovered over the timestamp range.  The
+    // latter two fields break this down by screens advertising ipv4 and ipv6
+    // endpoints.
+    size_t num_screens = 0;
+    size_t num_ipv4_screens = 0;
+    size_t num_ipv6_screens = 0;
+  };
+
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // Called when the state becomes kRunning.
+    virtual void OnStarted() = 0;
+    // Called when the state becomes kStopped.
+    virtual void OnStopped() = 0;
+    // Called when the state becomes kSuspended.
+    virtual void OnSuspended() = 0;
+    // Called when the state becomes kSearching.
+    virtual void OnSearching() = 0;
+
+    // Notifications to changes to the listener's screen list.
+    virtual void OnScreenAdded(const ScreenInfo&) = 0;
+    virtual void OnScreenChanged(const ScreenInfo&) = 0;
+    virtual void OnScreenRemoved(const ScreenInfo&) = 0;
+    // Called if all screens are no longer available, e.g. all network
+    // interfaces have been disabled.
+    virtual void OnAllScreensRemoved() = 0;
+
+    // Reports an error.
+    virtual void OnError(ScreenListenerError) = 0;
+
+    // Reports metrics.
+    virtual void OnMetrics(Metrics) = 0;
+  };
+
   virtual ~ScreenListener();
 
   // Starts listening for screens using the config object.
@@ -138,20 +137,20 @@ class ScreenListener {
   virtual bool SearchNow() = 0;
 
   // Returns the current state of the listener.
-  ScreenListenerState state() const { return state_; }
+  State state() const { return state_; }
 
   // Returns the last error reported by this listener.
-  const ScreenListenerErrorInfo& last_error() const { return last_error_; }
+  const ScreenListenerError& last_error() const { return last_error_; }
 
   // Returns the current list of screens known to the ScreenListener.
   virtual const std::vector<ScreenInfo>& GetScreens() const = 0;
 
  protected:
-  explicit ScreenListener(ScreenListenerObserver* observer);
+  explicit ScreenListener(Observer* observer);
 
-  ScreenListenerState state_ = ScreenListenerState::kStopped;
-  ScreenListenerErrorInfo last_error_;
-  ScreenListenerObserver* const observer_;
+  State state_ = State::kStopped;
+  ScreenListenerError last_error_;
+  Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenListener);
 };

@@ -13,23 +13,21 @@
 
 namespace openscreen {
 
-// TODO: Add additional error types, as implementations progress.
-enum class ScreenPublisherErrorCode {
-  kNone = 0,
-};
-
 // Used to report an error from a ScreenListener implementation.
 struct ScreenPublisherError {
- public:
+  // TODO: Add additional error types, as implementations progress.
+  enum class Code {
+    kNone = 0,
+  };
+
   ScreenPublisherError();
-  ScreenPublisherError(ScreenPublisherErrorCode error,
-                       const std::string& message);
+  ScreenPublisherError(Code error, const std::string& message);
   ScreenPublisherError(const ScreenPublisherError& other);
   ~ScreenPublisherError();
 
   ScreenPublisherError& operator=(const ScreenPublisherError& other);
 
-  ScreenPublisherErrorCode error;
+  Code error;
   std::string message;
 };
 

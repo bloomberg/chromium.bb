@@ -16,8 +16,7 @@ struct MdnsScreenListenerConfig {
 
 class MdnsScreenListener : public ScreenListener {
  public:
-  MdnsScreenListener(ScreenListenerObserver* observer,
-                     MdnsScreenListenerConfig config);
+  MdnsScreenListener(Observer* observer, MdnsScreenListenerConfig config);
   virtual ~MdnsScreenListener();
 
   // TODO: Subclass/implement remaining API

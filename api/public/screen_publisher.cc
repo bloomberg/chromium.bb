@@ -7,7 +7,7 @@
 namespace openscreen {
 
 ScreenPublisherError::ScreenPublisherError() = default;
-ScreenPublisherError::ScreenPublisherError(ScreenPublisherErrorCode error,
+ScreenPublisherError::ScreenPublisherError(Code error,
                                            const std::string& message)
     : error(error), message(message) {}
 ScreenPublisherError::ScreenPublisherError(const ScreenPublisherError& other) =
