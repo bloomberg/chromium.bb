@@ -424,36 +424,25 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
   if (command_id == current_access)
     return;
 
-  const GURL& url = web_contents->GetLastCommittedURL();
-  ScriptingPermissionsModifier modifier(profile_, extension);
-  DCHECK(modifier.CanAffectExtension());
-  switch (command_id) {
-    case PAGE_ACCESS_RUN_ON_CLICK:
-      if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetWithholdHostPermissions(true);
-      if (modifier.HasGrantedHostPermission(url))
-        modifier.RemoveGrantedHostPermission(url);
-      break;
-    case PAGE_ACCESS_RUN_ON_SITE:
-      if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)
-        modifier.SetWithholdHostPermissions(true);
-      if (!modifier.HasGrantedHostPermission(url))
-        modifier.GrantHostPermission(url);
-      break;
-    case PAGE_ACCESS_RUN_ON_ALL_SITES:
-      modifier.SetWithholdHostPermissions(false);
-      break;
-    default:
-      NOTREACHED();
-  }
+  auto convert_page_access = [](int command_id) {
+    switch (command_id) {
+      case PAGE_ACCESS_RUN_ON_CLICK:
+        return ExtensionActionRunner::PageAccess::RUN_ON_CLICK;
+      case PAGE_ACCESS_RUN_ON_SITE:
+        return ExtensionActionRunner::PageAccess::RUN_ON_SITE;
+      case PAGE_ACCESS_RUN_ON_ALL_SITES:
+        return ExtensionActionRunner::PageAccess::RUN_ON_ALL_SITES;
+    }
+    NOTREACHED();
+    return ExtensionActionRunner::PageAccess::RUN_ON_CLICK;
+  };
 
-  if (command_id == PAGE_ACCESS_RUN_ON_SITE ||
-      command_id == PAGE_ACCESS_RUN_ON_ALL_SITES) {
-    ExtensionActionRunner* runner =
-        ExtensionActionRunner::GetForWebContents(web_contents);
-    if (runner && runner->WantsToRun(extension))
-      runner->RunBlockedActions(extension);
-  }
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  if (runner)
+    runner->HandlePageAccessModified(extension,
+                                     convert_page_access(current_access),
+                                     convert_page_access(command_id));
 }
 
 content::WebContents* ExtensionContextMenuModel::GetActiveWebContents() const {
