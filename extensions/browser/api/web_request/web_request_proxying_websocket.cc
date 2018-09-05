@@ -399,7 +399,7 @@ void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
 }
 
 void WebRequestProxyingWebSocket::OnError(int error_code) {
-  if (!is_done_) {
+  if (!is_done_ && info_.has_value()) {
     is_done_ = true;
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
         browser_context_, info_map_, &info_.value(), true /* started */,
