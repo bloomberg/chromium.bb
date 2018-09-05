@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -26,6 +28,10 @@
 namespace content {
 
 namespace {
+
+const char kBadMessageImproperNotificationImage[] =
+    "Received an unexpected message with image while notification images are "
+    "disabled.";
 
 // Returns the implementation of the PlatformNotificationService. May be NULL.
 PlatformNotificationService* GetNotificationService() {
@@ -83,6 +89,9 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     const NotificationResources& notification_resources,
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!ValidateNotificationResources(notification_resources))
+    return;
+
   if (!GetNotificationService())
     return;
 
@@ -133,12 +142,28 @@ BlinkNotificationServiceImpl::CheckPermissionStatus() {
                             origin_.GetURL());
 }
 
+bool BlinkNotificationServiceImpl::ValidateNotificationResources(
+    const NotificationResources& notification_resources) {
+  if (notification_resources.image.drawsNothing() ||
+      base::FeatureList::IsEnabled(features::kNotificationContentImage))
+    return true;
+  binding_.ReportBadMessage(kBadMessageImproperNotificationImage);
+  // The above ReportBadMessage() closes |binding_| but does not trigger its
+  // connection error handler, so we need to call the error handler explicitly
+  // here to do some necessary work.
+  OnConnectionError();
+  return false;
+}
+
 void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
     const PlatformNotificationData& platform_notification_data,
     const NotificationResources& notification_resources,
     DisplayPersistentNotificationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!ValidateNotificationResources(notification_resources))
+    return;
+
   if (!GetNotificationService()) {
     std::move(callback).Run(PersistentNotificationError::INTERNAL_ERROR);
     return;

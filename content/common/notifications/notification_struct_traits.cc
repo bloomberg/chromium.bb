@@ -4,9 +4,6 @@
 
 #include "content/common/notifications/notification_struct_traits.h"
 
-#include "base/feature_list.h"
-#include "content/public/common/content_features.h"
-
 namespace {
 
 // Maximum number of entries in a vibration pattern.
@@ -36,11 +33,6 @@ bool ValidateActions(
 bool ValidateData(const std::vector<char>& data) {
   return data.size() <=
          blink::mojom::NotificationData::kMaximumDeveloperDataSize;
-}
-
-bool ValidateImage(const SkBitmap& image) {
-  return image.drawsNothing() ||
-         base::FeatureList::IsEnabled(features::kNotificationContentImage);
 }
 
 }  // namespace
@@ -184,11 +176,8 @@ bool StructTraits<blink::mojom::NotificationResourcesDataView,
                   content::NotificationResources>::
     Read(blink::mojom::NotificationResourcesDataView in,
          content::NotificationResources* out) {
-  if (!in.ReadImage(&out->image) || !in.ReadIcon(&out->notification_icon) ||
-      !in.ReadBadge(&out->badge) || !in.ReadActionIcons(&out->action_icons)) {
-    return false;
-  }
-  return ValidateImage(out->image);
+  return in.ReadImage(&out->image) && in.ReadIcon(&out->notification_icon) &&
+         in.ReadBadge(&out->badge) && in.ReadActionIcons(&out->action_icons);
 }
 
 }  // namespace mojo
