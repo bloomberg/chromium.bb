@@ -22,9 +22,9 @@ namespace autofill_assistant {
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate {
  public:
-  // |script| and |delegate| should outlive this object and should not be
-  // nullptr.
-  ScriptExecutor(Script* script, ScriptExecutorDelegate* delegate);
+  // |delegate| should outlive this object and should not be nullptr.
+  ScriptExecutor(const std::string& script_path,
+                 ScriptExecutorDelegate* delegate);
   ~ScriptExecutor() override;
 
   using RunScriptCallback = base::OnceCallback<void(bool)>;
@@ -55,7 +55,7 @@ class ScriptExecutor : public ActionDelegate {
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<Action> action, bool status);
 
-  Script* script_;
+  std::string script_path_;
   ScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
 

@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/controller.h"
 
+#include <utility>
+#include <vector>
+
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,7 +42,8 @@ Controller::Controller(content::WebContents* web_contents,
       client_(std::move(client)),
       web_controller_(WebController::CreateForWebContents(web_contents)),
       service_(std::make_unique<Service>(client_->GetApiKey(),
-                                         web_contents->GetBrowserContext())) {
+                                         web_contents->GetBrowserContext())),
+      script_tracker_(std::make_unique<ScriptTracker>(this, this)) {
   GetUiController()->SetUiDelegate(this);
   GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
@@ -62,10 +66,10 @@ void Controller::OnGetScripts(bool result, const std::string& response) {
     // TODO(crbug.com/806868): Terminate Autofill Assistant.
     return;
   }
-  bool parse_result = ProtocolUtils::ParseScripts(response, &scripts_);
+  std::vector<std::unique_ptr<Script>> scripts;
+  bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
   DCHECK(parse_result);
-  // TODO(crbug.com/806868): Present assistant scripts if necessary or auto
-  // start a script.
+  script_tracker_->SetAndCheckScripts(std::move(scripts));
 }
 
 void Controller::OnClickOverlay() {
@@ -75,6 +79,11 @@ void Controller::OnClickOverlay() {
 
 void Controller::OnDestroy() {
   delete this;
+}
+
+void Controller::OnRunnableScriptsChanged() {
+  // TODO(crbug.com/806868): Take the set of runnable script from the tracker
+  // and make them available for selection. Run the selected script.
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,

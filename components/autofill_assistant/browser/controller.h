@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_H_
 
+#include <memory>
+#include <string>
+
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
+#include "components/autofill_assistant/browser/script_tracker.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/web_controller.h"
@@ -25,6 +29,7 @@ namespace autofill_assistant {
 // the web contents is being destroyed.
 class Controller : public ScriptExecutorDelegate,
                    public UiDelegate,
+                   public ScriptTracker::Listener,
                    private content::WebContentsObserver {
  public:
   static void CreateAndStartForWebContents(content::WebContents* web_contents,
@@ -48,6 +53,9 @@ class Controller : public ScriptExecutorDelegate,
   void OnClickOverlay() override;
   void OnDestroy() override;
 
+  // Overrides ScriptTracker::Listener:
+  void OnRunnableScriptsChanged() override;
+
   // Overrides content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
@@ -56,7 +64,7 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<Client> client_;
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
-  std::map<Script*, std::unique_ptr<Script>> scripts_;
+  std::unique_ptr<ScriptTracker> script_tracker_;
   ClientMemory memory_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
