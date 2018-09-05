@@ -87,8 +87,6 @@ static_library("with_no_strings") {
       "self_cleaning_temp_dir.h",
       "shell_util.cc",
       "shell_util.h",
-      "uninstall_metrics.cc",
-      "uninstall_metrics.h",
     ]
 
     deps += [
@@ -104,8 +102,6 @@ static_library("with_no_strings") {
       "//courgette:courgette_lib",
       "//crypto",
       "//rlz/buildflags",
-      "//third_party/bspatch",
-      "//third_party/crashpad/crashpad/client",
       "//third_party/icu",
       "//third_party/lzma_sdk",
     ]
@@ -316,7 +312,6 @@ if (is_win) {
       "shell_util_unittest.cc",
       "test_app_registration_data.cc",
       "test_app_registration_data.h",
-      "uninstall_metrics_unittest.cc",
       "work_item_list_unittest.cc",
       "work_item_mocks.cc",
       "work_item_mocks.h",
@@ -330,6 +325,7 @@ if (is_win) {
       "//base:i18n",
       "//base/test:test_support",
       "//chrome:other_version",
+      "//chrome/common:constants",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static/test:test_support",
       "//chrome/installer/setup:lib",
