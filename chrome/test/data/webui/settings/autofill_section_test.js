@@ -90,9 +90,7 @@ cr.define('settings_autofill_section', function() {
     test('testAutofillExtensionIndicator', function() {
       // Initializing with fake prefs
       const section = document.createElement('settings-autofill-section');
-      section.prefs = {
-        autofill: {enabled: {}, profile_enabled: {}}
-      };
+      section.prefs = {autofill: {profile_enabled: {}}};
       document.body.appendChild(section);
 
       assertFalse(!!section.$$('#autofillExtensionIndicator'));
@@ -137,8 +135,8 @@ cr.define('settings_autofill_section', function() {
     }
 
     test('verifyNoAddresses', function() {
-      const section = createAutofillSection(
-          [], {enabled: {value: true}, profile_enabled: {value: true}});
+      const section =
+          createAutofillSection([], {profile_enabled: {value: true}});
 
       const addressList = section.$.addressList;
       assertTrue(!!addressList);
@@ -159,9 +157,8 @@ cr.define('settings_autofill_section', function() {
         FakeDataMaker.addressEntry(),
       ];
 
-      const section = createAutofillSection(
-          addresses,
-          {enabled: {value: true}, profile_enabled: {value: true}});
+      const section =
+          createAutofillSection(addresses, {profile_enabled: {value: true}});
 
       const addressList = section.$.addressList;
       assertTrue(!!addressList);
@@ -174,8 +171,8 @@ cr.define('settings_autofill_section', function() {
     });
 
     test('verifyAddressDisabled', function() {
-      const section = createAutofillSection(
-          [], {enabled: {value: true}, profile_enabled: {value: false}});
+      const section =
+          createAutofillSection([], {profile_enabled: {value: false}});
 
       assertFalse(section.$$('#autofillProfileToggle').disabled);
       assertTrue(section.$$('#addAddress').disabled);
