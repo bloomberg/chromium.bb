@@ -531,7 +531,7 @@ if (use_vaapi) {
   }
 }
 
-if (use_v4l2_codec || use_vaapi) {
+if (is_chromeos || is_linux) {
   test("jpeg_decode_accelerator_unittest") {
     deps = [
       "//base",
