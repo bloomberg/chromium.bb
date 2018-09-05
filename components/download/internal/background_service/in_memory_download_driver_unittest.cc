@@ -32,6 +32,11 @@ class TestInMemoryDownload : public InMemoryDownload {
     DCHECK(delegate_) << "Delegate can't be nullptr.";
   }
 
+  void SimulateDownloadStarted() {
+    state_ = InMemoryDownload::State::IN_PROGRESS;
+    delegate_->OnDownloadStarted(this);
+  }
+
   void SimulateDownloadProgress() {
     state_ = InMemoryDownload::State::IN_PROGRESS;
     delegate_->OnDownloadProgress(this);
@@ -130,6 +135,7 @@ TEST_F(InMemoryDownloadDriverTest, DownloadSuccessAndRemove) {
   const std::string guid = "1234";
   EXPECT_CALL(*driver_client(), OnDownloadCreated(_)).Times(1);
   Start(guid);
+  factory()->last_created_download()->SimulateDownloadStarted();
 
   // After starting a download, we should be able to find a record in the
   // driver.
@@ -172,6 +178,7 @@ TEST_F(InMemoryDownloadDriverTest, DownloadFailure) {
 
   const std::string guid = "1234";
   Start(guid);
+  factory()->last_created_download()->SimulateDownloadStarted();
 
   DriverEntry match_entry;
   match_entry.state = DriverEntry::State::INTERRUPTED;

@@ -108,7 +108,6 @@ void InMemoryDownloadDriver::Start(
   downloads_.emplace(guid, std::move(download));
 
   download_ptr->Start();
-  client_->OnDownloadCreated(CreateDriverEntry(*download_ptr));
 }
 
 void InMemoryDownloadDriver::Remove(const std::string& guid) {
@@ -153,6 +152,11 @@ size_t InMemoryDownloadDriver::EstimateMemoryUsage() const {
     memory_usage += it.second->EstimateMemoryUsage();
   }
   return memory_usage;
+}
+
+void InMemoryDownloadDriver::OnDownloadStarted(InMemoryDownload* download) {
+  DCHECK(client_);
+  client_->OnDownloadCreated(CreateDriverEntry(*download));
 }
 
 void InMemoryDownloadDriver::OnDownloadProgress(InMemoryDownload* download) {
