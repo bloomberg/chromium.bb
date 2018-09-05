@@ -340,16 +340,16 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     touch_action_filter_.AppendToGestureSequenceForDebugging("T");
-    touch_action_filter_.IncreaseActiveTouches();
     // Touch action must be auto when there is no consumer
     touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+    touch_action_filter_.SetActiveTouchInProgress(true);
     UpdateTouchAckTimeoutEnabled();
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
-    touch_action_filter_.DecreaseActiveTouches();
     touch_action_filter_.ReportAndResetTouchAction();
+    touch_action_filter_.SetActiveTouchInProgress(false);
     UpdateTouchAckTimeoutEnabled();
   }
 }
@@ -530,11 +530,8 @@ void InputRouterImpl::TouchEventHandled(
   // The SetTouchAction IPC occurs on a different channel so always
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
-  if (touch_action.has_value()) {
-    if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event))
-      touch_action_filter_.IncreaseActiveTouches();
+  if (touch_action.has_value())
     OnSetTouchAction(touch_action.value());
-  }
 
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_.ProcessTouchAck(source, state, latency,
@@ -599,6 +596,7 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+  touch_action_filter_.SetActiveTouchInProgress(true);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
@@ -618,6 +616,7 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   touch_action_filter_.AppendToGestureSequenceForDebugging(
       std::to_string(touch_action).c_str());
   touch_action_filter_.OnSetTouchAction(touch_action);
+  touch_action_filter_.SetActiveTouchInProgress(true);
 
   // kTouchActionNone should disable the touch ack timeout.
   UpdateTouchAckTimeoutEnabled();
