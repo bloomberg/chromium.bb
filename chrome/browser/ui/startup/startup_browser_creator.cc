@@ -35,7 +35,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -318,11 +317,6 @@ bool StartupBrowserCreator::LaunchBrowser(
   DCHECK(profile);
   in_synchronous_profile_launch_ =
       process_startup == chrome::startup::IS_PROCESS_STARTUP;
-
-  // ChromeOS does a direct browser launch from UserSessionManager, so this is
-  // the earliest place we can enable the log.
-  if (command_line.HasSwitch(switches::kDnsLogDetails))
-    chrome_browser_net::EnablePredictorDetailedLog(true);
 
   // Continue with the incognito profile from here on if Incognito mode
   // is forced.

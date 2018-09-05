@@ -545,12 +545,6 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
-  // We do not store information about websites visited in OTR profiles which
-  // is necessary for a Predictor, so we do not have a Predictor at all.
-  return NULL;
-}
-
 GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }

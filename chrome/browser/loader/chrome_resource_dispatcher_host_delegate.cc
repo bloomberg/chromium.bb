@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
-#include "chrome/browser/loader/predictor_resource_throttle.h"
 #include "chrome/browser/loader/safe_browsing_resource_throttle.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -510,11 +509,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
           std::make_unique<prerender::PrerenderResourceThrottle>(request));
     }
   }
-
-  std::unique_ptr<PredictorResourceThrottle> predictor_throttle =
-      PredictorResourceThrottle::MaybeCreate(request, io_data);
-  if (predictor_throttle)
-    throttles->push_back(std::move(predictor_throttle));
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(

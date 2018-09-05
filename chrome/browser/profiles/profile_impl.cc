@@ -54,7 +54,6 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -450,7 +449,6 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      predictor_(nullptr),
       reporting_permissions_checker_factory_(this) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
@@ -491,10 +489,6 @@ ProfileImpl::ProfileImpl(
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
   set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
-
-  // If profile_manager is not present, it means we are in a unittest.
-  predictor_ = chrome_browser_net::Predictor::CreatePredictor(
-      g_browser_process->profile_manager() == NULL);
 
   // If we are creating the profile synchronously, then we should load the
   // policy data immediately.
@@ -678,7 +672,7 @@ void ProfileImpl::DoFinalInit() {
 
   PrefService* local_state = g_browser_process->local_state();
   io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
-                GetPath(), predictor_, GetSpecialStoragePolicy(),
+                GetPath(), GetSpecialStoragePolicy(),
                 reporting_permissions_checker_factory_.CreateChecker(),
                 CreateDomainReliabilityMonitor(local_state));
 
@@ -1375,10 +1369,6 @@ void ProfileImpl::InitChromeOSPreferences() {
 }
 
 #endif  // defined(OS_CHROMEOS)
-
-chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
-  return predictor_;
-}
 
 GURL ProfileImpl::GetHomePage() {
   // --homepage overrides any preferences.

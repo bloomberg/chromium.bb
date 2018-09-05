@@ -16,10 +16,6 @@
 
 class ReportingPermissionsChecker;
 
-namespace chrome_browser_net {
-class Predictor;
-}  // namespace chrome_browser_net
-
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
@@ -48,7 +44,6 @@ class ProfileImplIOData : public ProfileIOData {
               int media_cache_max_size,
               const base::FilePath& extensions_cookie_path,
               const base::FilePath& profile_path,
-              chrome_browser_net::Predictor* predictor,
               storage::SpecialStoragePolicy* special_storage_policy,
               std::unique_ptr<ReportingPermissionsChecker>
                   reporting_permissions_checker,
@@ -164,7 +159,6 @@ class ProfileImplIOData : public ProfileIOData {
   net::URLRequestContext* AcquireIsolatedMediaRequestContext(
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
-  chrome_browser_net::Predictor* GetPredictor() override;
 
   // Returns a net::ReportingService, if reporting should be enabled. Otherwise,
   // returns nullptr.
@@ -181,8 +175,6 @@ class ProfileImplIOData : public ProfileIOData {
   mutable std::unique_ptr<LazyParams> lazy_params_;
 
   mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
-
-  mutable std::unique_ptr<chrome_browser_net::Predictor> predictor_;
 
   mutable std::unique_ptr<net::URLRequestContext> media_request_context_;
 

@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/common/pref_names.h"
@@ -20,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
-using NetPredictor = chrome_browser_net::Predictor;
 using net::NetworkChangeNotifier;
 
 namespace {
@@ -51,14 +49,6 @@ class LoadingPredictorConfigTest : public testing::Test {
     profile_->GetPrefs()->SetInteger(prefs::kNetworkPredictionOptions, value);
   }
 
-  bool IsNetPredictorEnabled() {
-    std::unique_ptr<NetPredictor> predictor = base::WrapUnique(
-        NetPredictor::CreatePredictor(true /* simple_shutdown */));
-    bool is_enabled = predictor->PredictorEnabled();
-    predictor->Shutdown();
-    return is_enabled;
-  }
-
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -76,7 +66,6 @@ TEST_F(LoadingPredictorConfigTest, Enabled) {
 
   EXPECT_TRUE(config.IsLearningEnabled());
   EXPECT_TRUE(config.should_disable_other_preconnects);
-  EXPECT_FALSE(IsNetPredictorEnabled());
   EXPECT_TRUE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
@@ -89,7 +78,6 @@ TEST_F(LoadingPredictorConfigTest, Disabled) {
 
   EXPECT_FALSE(config.IsLearningEnabled());
   EXPECT_FALSE(config.should_disable_other_preconnects);
-  EXPECT_TRUE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
@@ -104,7 +92,6 @@ TEST_F(LoadingPredictorConfigTest, EnablePreconnectLearning) {
   EXPECT_TRUE(config.IsLearningEnabled());
   EXPECT_TRUE(config.is_origin_learning_enabled);
   EXPECT_FALSE(config.should_disable_other_preconnects);
-  EXPECT_TRUE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
@@ -118,7 +105,6 @@ TEST_F(LoadingPredictorConfigTest, EnablePreconnect) {
 
   EXPECT_TRUE(config.IsLearningEnabled());
   EXPECT_TRUE(config.should_disable_other_preconnects);
-  EXPECT_FALSE(IsNetPredictorEnabled());
   EXPECT_TRUE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
@@ -132,7 +118,6 @@ TEST_F(LoadingPredictorConfigTest, EnableNoPreconnect) {
 
   EXPECT_FALSE(config.IsLearningEnabled());
   EXPECT_TRUE(config.should_disable_other_preconnects);
-  EXPECT_FALSE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 

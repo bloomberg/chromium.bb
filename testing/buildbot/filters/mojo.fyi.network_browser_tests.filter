@@ -96,31 +96,6 @@
 # the network service.
 -ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
 
-# https://crbug.com/809583
-# Switch Predictor from using ResourceThrottle and ResourceDispatcherHost to
-# using WebContentsObserver and NavigationHandle.
--PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
--PredictorBrowserTest.CrossSiteRedirectNoPredictionWithPath
--PredictorBrowserTest.CrossSiteRedirectPredictionWithNoPath
--PredictorBrowserTest.CrossSiteRedirectPredictionWithNoPathDifferentHostName
--PredictorBrowserTest.CrossSiteSimplePredictionAfterOneNavigation
--PredictorBrowserTest.CrossSiteSimplePredictionAfterOneNavigationNoInterceptor
--PredictorBrowserTest.CrossSiteSimplePredictionAfterTwoNavigations
--PredictorBrowserTest.CrossSiteSimplePredictionAfterTwoNavigations2
--PredictorBrowserTest.CrossSiteTwoRedirectsPredictionWithNoPath
--PredictorBrowserTest.CrossSiteUseOneSocket
--PredictorBrowserTest.CrossSiteUseThreeSockets
--PredictorBrowserTest.DoNotEvictRecentlyUsed
--PredictorBrowserTest.DontPredictBasedOnSubresources
--PredictorBrowserTest.ForgetBadPrediction
--PredictorBrowserTest.PreconnectAndFetchCORS
--PredictorBrowserTest.PreconnectAndFetchNonCORS
--PredictorBrowserTest.PredictBasedOnSubframeRedirect
--PredictorBrowserTest.RendererInitiatedNavigationPreconnect
--PredictorBrowserTest.SubframeCrossSitePrediction
--PredictorBrowserTest.SubframeInitiatesPreconnects
--PredictorBrowserTest.SubframeLearning
-
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest

@@ -32,10 +32,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chrome_browser_net {
-class Predictor;
-}
-
 namespace content {
 class WebUI;
 }
@@ -251,9 +247,6 @@ class Profile : public content::BrowserContext {
   // Initializes Chrome OS's preferences.
   virtual void InitChromeOSPreferences() = 0;
 #endif  // defined(OS_CHROMEOS)
-
-  // Returns the Predictor object used for dns prefetch.
-  virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
 
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
