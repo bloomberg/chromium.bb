@@ -37,6 +37,11 @@ static const struct pci_device {
 	/* Keep ids sorted by gen; latest gen first */
 	INTEL_ICL_11_IDS(11),
 	INTEL_CNL_IDS(10),
+	INTEL_CFL_IDS(9),
+	INTEL_GLK_IDS(9),
+	INTEL_KBL_IDS(9),
+	INTEL_BXT_IDS(9),
+	INTEL_SKL_IDS(9),
 };
 
 bool intel_is_genx(unsigned int devid, int gen)
