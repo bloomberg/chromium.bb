@@ -19,6 +19,8 @@ namespace network {
 
 namespace cors {
 
+class OriginAccessList;
+
 // Wrapper class that adds cross-origin resource sharing capabilities
 // (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
 // well as potential preflight requests to the supplied
@@ -43,7 +45,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
-      const base::RepeatingCallback<void(int)>& request_finalizer);
+      const base::RepeatingCallback<void(int)>& request_finalizer,
+      const OriginAccessList* origin_access_list);
 
   ~CORSURLLoader() override;
 
@@ -89,6 +92,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   void OnConnectionError();
 
+  void SetCORSFlagIfNeeded();
+
   mojo::Binding<mojom::URLLoader> binding_;
 
   // We need to save these for redirect.
@@ -125,7 +130,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   bool is_waiting_follow_redirect_call_ = false;
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
-  bool fetch_cors_flag_;
+  bool fetch_cors_flag_ = false;
 
   net::RedirectInfo redirect_info_;
 
@@ -141,6 +146,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // We need to save this for redirect.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
+
+  // Outlives |this|.
+  const OriginAccessList* const origin_access_list_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CORSURLLoader> weak_factory_;

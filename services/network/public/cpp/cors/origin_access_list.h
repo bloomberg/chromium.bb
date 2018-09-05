@@ -19,9 +19,8 @@ namespace network {
 
 namespace cors {
 
-// A class to manage origin access whitelisting. It manages two lists for
-// whitelisting and blacklisting. If these lists conflict, blacklisting will be
-// respected. These lists are managed per source-origin basis.
+// A class to manage origin access allow / block lists. If these lists conflict,
+// blacklisting is respected. These lists are managed per source-origin basis.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
  public:
   OriginAccessList();

@@ -121,7 +121,8 @@ class CORSURLLoaderTest : public testing::Test {
         std::make_unique<TestURLLoaderFactory>();
     test_url_loader_factory_ = factory->GetWeakPtr();
     cors_url_loader_factory_ = std::make_unique<CORSURLLoaderFactory>(
-        false, std::move(factory), base::RepeatingCallback<void(int)>());
+        false, std::move(factory), base::RepeatingCallback<void(int)>(),
+        &origin_access_list_);
   }
 
  protected:
@@ -214,6 +215,14 @@ class CORSURLLoaderTest : public testing::Test {
     test_cors_loader_client_.RunUntilRedirectReceived();
   }
 
+  void AddAllowListEntryForOrigin(const url::Origin& source_origin,
+                                  const std::string& protocol,
+                                  const std::string& domain,
+                                  bool allow_subdomains) {
+    origin_access_list_.AddAllowListEntryForOrigin(source_origin, protocol,
+                                                   domain, allow_subdomains);
+  }
+
   static net::RedirectInfo CreateRedirectInfo(
       int status_code,
       base::StringPiece method,
@@ -247,6 +256,9 @@ class CORSURLLoaderTest : public testing::Test {
 
   // TestURLLoaderClient that records callback activities.
   TestURLLoaderClient test_cors_loader_client_;
+
+  // Holds for allowed origin access lists.
+  OriginAccessList origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderTest);
 };
@@ -978,6 +990,32 @@ TEST_F(CORSURLLoaderTest, FollowErrorRedirect) {
   EXPECT_FALSE(client().has_received_response());
   ASSERT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+}
+
+// Tests if OriginAccessList is actually used to decide the cors flag.
+// Does not verify detailed functionalities that are verified in
+// OriginAccessListTest.
+TEST_F(CORSURLLoaderTest, OriginAccessList) {
+  const GURL origin("http://example.com");
+  const GURL url("http://other.com/foo.png");
+
+  // Adds an entry to allow the cross origin request beyond the CORS
+  // rules.
+  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(), false);
+
+  CreateLoaderAndStart(origin, url, mojom::FetchRequestMode::kCORS);
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
 }  // namespace

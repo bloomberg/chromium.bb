@@ -23,14 +23,16 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    mojom::URLLoaderFactoryRequest request)
+    mojom::URLLoaderFactoryRequest request,
+    const OriginAccessList* origin_access_list)
     : context_(context),
       disable_web_security_(params && params->disable_web_security),
       network_loader_factory_(std::make_unique<network::URLLoaderFactory>(
           context,
           std::move(params),
           std::move(resource_scheduler_client),
-          this)) {
+          this)),
+      origin_access_list_(origin_access_list) {
   DCHECK(context_);
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
@@ -40,10 +42,12 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
 CORSURLLoaderFactory::CORSURLLoaderFactory(
     bool disable_web_security,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
-    const base::RepeatingCallback<void(int)>& preflight_finalizer)
+    const base::RepeatingCallback<void(int)>& preflight_finalizer,
+    const OriginAccessList* origin_access_list)
     : disable_web_security_(disable_web_security),
       network_loader_factory_(std::move(network_loader_factory)),
-      preflight_finalizer_(preflight_finalizer) {}
+      preflight_finalizer_(preflight_finalizer),
+      origin_access_list_(origin_access_list) {}
 
 CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
 
@@ -80,7 +84,8 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
         base::BindOnce(&CORSURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), preflight_finalizer_);
+        network_loader_factory_.get(), preflight_finalizer_,
+        origin_access_list_);
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();

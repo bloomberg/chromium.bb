@@ -184,7 +184,8 @@ void ResourceMessageFilter::InitializeOnIOThread() {
       std::make_unique<URLLoaderFactoryImpl>(requester_info_),
       base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
                           base::Unretained(ResourceDispatcherHostImpl::Get()),
-                          requester_info_->child_id()));
+                          requester_info_->child_id()),
+      nullptr);
 
   std::vector<network::mojom::URLLoaderFactoryRequest> requests =
       std::move(queued_clone_requests_);
