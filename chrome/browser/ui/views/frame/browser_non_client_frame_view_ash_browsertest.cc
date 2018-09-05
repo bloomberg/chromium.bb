@@ -20,7 +20,7 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -39,6 +39,7 @@
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1171,7 +1172,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Test that when one browser window is snapped, the header is visible for the
   // snapped browser window, but invisible for the browser window still in
   // overview mode.
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   ash::SplitViewController* split_view_controller =
       shell->split_view_controller();
   split_view_controller->BindRequest(
@@ -1407,7 +1408,7 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
       frame_view->CreateInterfacePtrForTesting());
   frame_view->split_view_controller_.FlushForTesting();
 
-  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   shell->window_selector_controller()->ToggleOverview();
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
