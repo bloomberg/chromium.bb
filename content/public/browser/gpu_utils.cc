@@ -96,6 +96,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.disable_oop_rasterization =
       command_line->HasSwitch(switches::kDisableOopRasterization);
 
+  gpu_preferences.enable_oop_rasterization_ddl =
+      command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
+
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);
 

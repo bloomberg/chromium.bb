@@ -61,6 +61,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
+#include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -746,6 +747,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   int commands_to_process_ = 0;
 
   bool supports_oop_raster_ = false;
+  bool use_ddl_ = false;
 
   bool has_robustness_extension_ = false;
   bool context_was_lost_ = false;
@@ -802,6 +804,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Raster helpers.
   ServiceFontManager font_manager_;
   sk_sp<SkSurface> sk_surface_;
+
+  std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
   std::unique_ptr<SkCanvas> raster_canvas_;
   uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
@@ -1017,6 +1021,7 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     supports_oop_raster_ = !!raster_decoder_context_state_->gr_context;
+    use_ddl_ = group_->gpu_preferences().enable_oop_rasterization_ddl;
   }
 
   return ContextResult::kSuccess;
@@ -3107,9 +3112,21 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     sk_surface_.reset();
     return;
   }
+
+  SkCanvas* canvas = nullptr;
+  if (use_ddl_) {
+    SkSurfaceCharacterization characterization;
+    bool result = sk_surface_->characterize(&characterization);
+    DCHECK(result) << "Failed to characterize raster SkSurface.";
+    recorder_ =
+        std::make_unique<SkDeferredDisplayListRecorder>(characterization);
+    canvas = recorder_->getCanvas();
+  } else {
+    canvas = sk_surface_->getCanvas();
+  }
+
   raster_canvas_ = SkCreateColorSpaceXformCanvas(
-      sk_surface_->getCanvas(),
-      color_space_entry->color_space().ToSkColorSpace());
+      canvas, color_space_entry->color_space().ToSkColorSpace());
   raster_color_space_id_ = color_space_transfer_cache_id;
 
   // All or nothing clearing, as no way to validate the client's input on what
@@ -3207,6 +3224,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 }
 
 void RasterDecoderImpl::DoEndRasterCHROMIUM() {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM");
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "EndRasterCHROMIUM without BeginRasterCHROMIUM");
@@ -3216,6 +3234,12 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   raster_decoder_context_state_->need_context_state_reset = true;
 
   raster_canvas_.reset();
+
+  if (use_ddl_) {
+    auto ddl = recorder_->detach();
+    recorder_ = nullptr;
+    sk_surface_->draw(ddl.get());
+  }
   sk_surface_->prepareForExternalIO();
   sk_surface_.reset();
 
