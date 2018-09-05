@@ -4,28 +4,11 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 TrustedURL::TrustedURL(const KURL& url) : url_(url) {}
-
-TrustedURL* TrustedURL::create(ScriptState* script_state, const String& url) {
-  KURL result(ExecutionContext::From(script_state)->CompleteURL(url));
-
-  if (!result.IsValid() || !result.ProtocolIsInHTTPFamily())
-    result = KURL("about:invalid");
-
-  return TrustedURL::Create(result);
-}
-
-TrustedURL* TrustedURL::unsafelyCreate(ScriptState* script_state,
-                                       const String& url) {
-  return TrustedURL::Create(
-      ExecutionContext::From(script_state)->CompleteURL(url));
-}
 
 String TrustedURL::toString() const {
   return url_.GetString();
