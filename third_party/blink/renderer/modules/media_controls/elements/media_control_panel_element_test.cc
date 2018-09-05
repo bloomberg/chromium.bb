@@ -49,6 +49,7 @@ class MediaControlPanelElementTest : public PageTestBase {
   }
 
   MediaControlPanelElement& GetPanel() { return *panel_element_.Get(); }
+  HTMLMediaElement& GetMediaElement() { return *media_element_.Get(); }
 
  private:
   void TriggerEvent(const AtomicString& name) {
@@ -87,6 +88,14 @@ TEST_F(MediaControlPanelElementTest, StateTransitions) {
   EventListenerAttached();
   SimulateTransitionEnd();
   ExpectPanelIsDisplayed();
+}
+
+TEST_F(MediaControlPanelElementTest, isConnected) {
+  EXPECT_TRUE(
+      GetMediaElement().GetMediaControls()->PanelElement()->isConnected());
+  GetMediaElement().remove();
+  EXPECT_FALSE(
+      GetMediaElement().GetMediaControls()->PanelElement()->isConnected());
 }
 
 }  // namespace blink

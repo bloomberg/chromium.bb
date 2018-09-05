@@ -125,7 +125,8 @@ void MediaControlPanelElement::MakeTransparent() {
   opaque_ = false;
 }
 
-void MediaControlPanelElement::RemovedFrom(ContainerNode&) {
+void MediaControlPanelElement::RemovedFrom(ContainerNode& insertion_point) {
+  MediaControlDivElement::RemovedFrom(insertion_point);
   DetachTransitionEventListener();
 }
 
