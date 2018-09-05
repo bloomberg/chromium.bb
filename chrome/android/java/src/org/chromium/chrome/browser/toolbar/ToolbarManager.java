@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomepageStateListener;
@@ -353,10 +354,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
-                setModelShouldIgnoreSecurityLevelForSearchTerms(false);
                 if (mToolbarModel.getTab() == null) return;
 
                 assert tab == mToolbarModel.getTab();
+                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 mLocationBar.updateSecurityIcon();
                 mLocationBar.setUrlToPageUrl();
             }
@@ -392,12 +393,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                mToolbarModel.setIgnoreSecurityLevelForSearchTerms(true);
+                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), true);
             }
 
             @Override
             public void onPageLoadFinished(Tab tab) {
-                mToolbarModel.setIgnoreSecurityLevelForSearchTerms(false);
+                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 if (tab.isShowingErrorPage()) {
                     handleIPHForErrorPageShown(tab);
                     return;
@@ -409,7 +410,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
-                mToolbarModel.setIgnoreSecurityLevelForSearchTerms(true);
+                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), true);
                 updateButtonStatus();
                 updateTabLoadingState(true);
             }
@@ -417,7 +418,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
-                mToolbarModel.setIgnoreSecurityLevelForSearchTerms(false);
+                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 updateTabLoadingState(true);
 
                 // If we made some progress, fast-forward to complete, otherwise just dismiss any
@@ -1686,23 +1687,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         return mActivity.isTablet()
                 && mActivity.getResources().getConfiguration().keyboard
                 == Configuration.KEYBOARD_QWERTY;
-    }
-
-    /**
-     * Notifies the toolbar model that it should ignore the security level when determining whether
-     * or not to display search terms in the URL bar. This is useful for the interim period between
-     * loading a new page and getting proper security info, to avoid having the full URL flicker
-     * before displaying search terms.
-     *
-     * @param shouldIgnore Whether or not the toolbar model should ignore the security level.
-     */
-    private void setModelShouldIgnoreSecurityLevelForSearchTerms(boolean shouldIgnore) {
-        assert mToolbar != null;
-        boolean wasShowingSearchTerms = mToolbarModel.shouldDisplaySearchTerms();
-        mToolbarModel.setIgnoreSecurityLevelForSearchTerms(shouldIgnore);
-        if (wasShowingSearchTerms != mToolbarModel.shouldDisplaySearchTerms()) {
-            mLocationBar.setUrlToPageUrl();
-        }
     }
 
     private static class LoadProgressSimulator {
