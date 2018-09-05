@@ -120,7 +120,7 @@ interface EmbeddedSearchClient {
   FocusChanged(OmniboxFocusState new_focus_state,
                OmniboxFocusChangeReason reason);
 
-  MostVisitedChanged(array<InstantMostVisitedItem> items);
+  MostVisitedChanged(array<InstantMostVisitedItem> items, bool is_custom_links);
 
   SetInputInProgress(bool input_in_progress);
 

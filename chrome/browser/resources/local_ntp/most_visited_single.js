@@ -155,13 +155,6 @@ let isCustomLinksEnabled = false;
 
 
 /**
- * True if the tiles to be shown are custom links.
- * @type {boolean}
- */
-let tilesAreCustomLinks = false;
-
-
-/**
  * Log an event on the NTP.
  * @param {number} eventType Event from LOG_TYPE.
  */
@@ -213,19 +206,18 @@ var countLoad = function() {
   if (loadedCounter <= 0) {
     swapInNewTiles();
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
+    let tilesAreCustomLinks =
+        isCustomLinksEnabled && chrome.embeddedSearch.newTabPage.isCustomLinks;
     // Note that it's easiest to capture this when all custom links are loaded,
     // rather than when the impression for each link is logged.
-    if (isCustomLinksEnabled && tilesAreCustomLinks) {
+    if (tilesAreCustomLinks) {
       chrome.embeddedSearch.newTabPage.logEvent(
           LOG_TYPE.NTP_SHORTCUT_CUSTOMIZED);
     }
     // Tell the parent page whether to show the restore default shortcuts option
     // in the menu.
     window.parent.postMessage(
-        {
-          cmd: 'loaded',
-          showRestoreDefault: (isCustomLinksEnabled && tilesAreCustomLinks)
-        },
+        {cmd: 'loaded', showRestoreDefault: tilesAreCustomLinks},
         DOMAIN_ORIGIN);
     tilesAreCustomLinks = false;
     // Reset to 1, so that any further 'show' message will cause us to swap in
@@ -670,9 +662,6 @@ function renderMaterialDesignTile(data) {
     return mdTileContainer;
   }
   mdTileContainer.className = CLASSES.MD_TILE_CONTAINER;
-
-  if (data.isCustomLink)
-    tilesAreCustomLinks = true;
 
   // The tile will be appended to tiles.
   const position = tiles.children.length;

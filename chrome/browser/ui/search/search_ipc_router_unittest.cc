@@ -726,9 +726,9 @@ TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {
       .Times(1)
       .WillOnce(Return(true));
 
-  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_));
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_, false));
   GetSearchIPCRouter().SendMostVisitedItems(
-      std::vector<InstantMostVisitedItem>());
+      std::vector<InstantMostVisitedItem>(), false);
 }
 
 TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
@@ -739,9 +739,10 @@ TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedItemsMsg) {
       .Times(1)
       .WillOnce(Return(false));
 
-  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_)).Times(0);
+  EXPECT_CALL(*mock_embedded_search_client(), MostVisitedChanged(_, false))
+      .Times(0);
   GetSearchIPCRouter().SendMostVisitedItems(
-      std::vector<InstantMostVisitedItem>());
+      std::vector<InstantMostVisitedItem>(), false);
 }
 
 TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {

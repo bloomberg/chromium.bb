@@ -388,8 +388,11 @@ void InstantService::OnURLsAvailable(
 void InstantService::OnIconMadeAvailable(const GURL& site_url) {}
 
 void InstantService::NotifyAboutMostVisitedItems() {
+  bool is_custom_links = features::IsCustomLinksEnabled() && most_visited_sites_
+                             ? most_visited_sites_->IsCustomLinksInitialized()
+                             : false;
   for (InstantServiceObserver& observer : observers_)
-    observer.MostVisitedItemsChanged(most_visited_items_);
+    observer.MostVisitedItemsChanged(most_visited_items_, is_custom_links);
 }
 
 void InstantService::NotifyAboutThemeInfo() {

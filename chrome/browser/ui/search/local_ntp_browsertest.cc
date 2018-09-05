@@ -84,8 +84,8 @@ class TestMostVisitedObserver : public InstantServiceObserver {
  private:
   void ThemeInfoChanged(const ThemeBackgroundInfo&) override {}
 
-  void MostVisitedItemsChanged(
-      const std::vector<InstantMostVisitedItem>& items) override {
+  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>& items,
+                               bool is_custom_links) override {
     items_ = items;
 
     if (quit_closure_ && items_.size() == expected_count_) {
