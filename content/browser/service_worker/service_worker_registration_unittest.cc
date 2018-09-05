@@ -137,7 +137,8 @@ class RegistrationTestHelper : public EmbeddedWorkerTestHelper {
 
  protected:
   void OnSetIdleTimerDelayToZero(int embedded_worker_id) override {
-    GetEmbeddedWorkerInstanceHost(embedded_worker_id)->RequestTermination();
+    GetEmbeddedWorkerInstanceHost(embedded_worker_id)
+        ->RequestTermination(base::DoNothing());
   }
 };
 

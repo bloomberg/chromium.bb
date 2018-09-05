@@ -758,11 +758,13 @@ void EmbeddedWorkerInstance::SendStartWorker(
     observer.OnStartWorkerMessageSent();
 }
 
-void EmbeddedWorkerInstance::RequestTermination() {
+void EmbeddedWorkerInstance::RequestTermination(
+    RequestTerminationCallback callback) {
   if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::ReportBadMessage(
         "Invalid termination request: RequestTermination() was called but "
         "S13nServiceWorker is not enabled");
+    std::move(callback).Run(true /* will_be_terminated */);
     return;
   }
 
@@ -771,12 +773,19 @@ void EmbeddedWorkerInstance::RequestTermination() {
     mojo::ReportBadMessage(
         "Invalid termination request: Termination should be requested during "
         "running or stopping");
+    std::move(callback).Run(true /* will_be_terminated */);
     return;
   }
 
-  if (status() == EmbeddedWorkerStatus::STOPPING)
+  if (status() == EmbeddedWorkerStatus::STOPPING) {
+    std::move(callback).Run(true /* will_be_terminated */);
     return;
+  }
   owner_version_->StopWorkerIfIdle(true /* requested_from_renderer */);
+
+  // If DevTools is attached and the worker won't be stopped, the worker needs
+  // to continue to work.
+  std::move(callback).Run(status() != EmbeddedWorkerStatus::RUNNING);
 }
 
 void EmbeddedWorkerInstance::CountFeature(blink::mojom::WebFeature feature) {
