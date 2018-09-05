@@ -161,7 +161,8 @@ cr.define('ntp', function() {
       if (this.details_)
         this.details_.disabled = !app.appData.detailsUrl;
       this.uninstall_.disabled = !app.appData.mayDisable;
-      this.appinfo_.hidden = !app.appData.isLocallyInstalled;
+      if (this.appinfo_)
+        this.appinfo_.hidden = !app.appData.isLocallyInstalled;
 
       this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
           !app.appData.mayCreateShortcuts;
