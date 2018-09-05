@@ -72,8 +72,13 @@ void AssistantUiController::RemoveModelObserver(
 
 void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
                                                       bool active) {
-  if (active)
+  if (active) {
     container_view_->RequestFocus();
+  } else {
+    // When the widget is deactivated the UI should hide. Interacting with
+    // the metalayer does not cause widget deactivation.
+    HideUi(AssistantSource::kUnspecified);
+  }
 }
 
 void AssistantUiController::OnWidgetVisibilityChanged(views::Widget* widget,
