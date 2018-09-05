@@ -89,7 +89,7 @@ class KeyboardAccessoryMediator
 
     void dismiss() {
         closeActiveTab();
-        updateVisibility();
+        close();
     }
 
     void closeActiveTab() {
