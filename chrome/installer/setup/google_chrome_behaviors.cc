@@ -24,6 +24,7 @@
 #include "chrome/installer/setup/uninstall_metrics.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
@@ -79,6 +80,21 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 }
 
 }  // namespace
+
+// If |archive_type| is INCREMENTAL_ARCHIVE_TYPE and |install_status| does not
+// indicate a successful update, "-full" is appended to Chrome's "ap" value in
+// its ClientState key if it is not present, resulting in the full installer
+// being returned from the next update check. If |archive_type| is
+// FULL_ARCHIVE_TYPE or |install_status| indicates a successful update, "-full"
+// is removed from the "ap" value. "-multifail" and "-stage:*" values are
+// unconditionally removed from the "ap" value.
+void UpdateInstallStatus(installer::ArchiveType archive_type,
+                         installer::InstallStatus install_status) {
+  GoogleUpdateSettings::UpdateInstallStatus(
+      install_static::IsSystemInstall(), archive_type,
+      InstallUtil::GetInstallReturnCode(install_status),
+      install_static::GetAppGuid());
+}
 
 // Returns a string holding the following URL query parameters:
 // - brand
