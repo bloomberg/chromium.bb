@@ -3469,9 +3469,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
-    {"mac-touchbar", flag_descriptions::kMacTouchBarName,
-     flag_descriptions::kMacTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kBrowserTouchBar)},
     {"dialog-touchbar", flag_descriptions::kDialogTouchBarName,
      flag_descriptions::kDialogTouchBarDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kDialogTouchBar)},

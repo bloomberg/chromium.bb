@@ -409,11 +409,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // If the OSX version supports this method, the system will automatically
   // hide the item if there's no touch bar. However, for unsupported versions,
-  // we'll have to manually remove the item from the menu. The item also has
-  // to be removed if the feature is disabled.
+  // we'll have to manually remove the item from the menu.
   if (![NSApp
-          respondsToSelector:@selector(toggleTouchBarCustomizationPalette:)] ||
-      !base::FeatureList::IsEnabled(features::kBrowserTouchBar)) {
+          respondsToSelector:@selector(toggleTouchBarCustomizationPalette:)]) {
     NSMenu* mainMenu = [NSApp mainMenu];
     NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
     NSMenuItem* customizeItem = [viewMenu itemWithTag:IDC_CUSTOMIZE_TOUCH_BAR];
