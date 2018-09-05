@@ -636,8 +636,7 @@ def GetHtmlIndexPath(output_dir):
 
 def GetFullPath(path):
   """Return full absolute path."""
-  return (os.path.abspath(
-      os.path.realpath(os.path.expandvars(os.path.expanduser(path)))))
+  return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
 
 
 def GetHostPlatform():
