@@ -190,11 +190,17 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
+  base::HistogramTester histogram_tester;
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "123");
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that metrics are correctly logged to the UseOfLocalCard
+  // sub-histogram.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfLocalCard", 0);
 }
 
 // Having any number of local cards on file and using a new card will not
@@ -250,11 +256,27 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
+  base::HistogramTester histogram_tester;
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "123");
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that metrics are correctly logged to the UseOfLocalCard
+  // sub-histogram.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfLocalCard",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfLocalCard",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_ACCEPTED, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfLocalCard",
+      AutofillMetrics::MAIN_DIALOG_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfLocalCard",
+      AutofillMetrics::MAIN_DIALOG_ACCEPTED, 1);
 }
 
 // Using a local card will not trigger migration even if there are other local
@@ -316,11 +338,27 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
+  base::HistogramTester histogram_tester;
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "123");
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that metrics are correctly logged to the UseOfServerCard
+  // sub-histogram.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_ACCEPTED, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard",
+      AutofillMetrics::MAIN_DIALOG_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard",
+      AutofillMetrics::MAIN_DIALOG_ACCEPTED, 1);
 }
 
 // Using a server card will not trigger migration even if there are other local
@@ -352,11 +390,17 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
+  base::HistogramTester histogram_tester;
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "123");
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that metrics are correctly logged to the UseOfServerCard
+  // sub-histogram.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.LocalCardMigrationOrigin.UseOfServerCard", 0);
 }
 
 // Use one local card with more valid local cards available but experiment flag
@@ -594,12 +638,28 @@ TEST_F(LocalCardMigrationManagerTest,
   AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
                     test::NextYear().c_str(), "1");
 
+  base::HistogramTester histogram_tester;
   // Do the same operation as we bridge back from the settings page.
   local_card_migration_manager_->GetMigratableCreditCards();
   local_card_migration_manager_->AttemptToOfferLocalCardMigration(true);
 
   EXPECT_FALSE(local_card_migration_manager_->IntermediatePromptWasShown());
   EXPECT_TRUE(local_card_migration_manager_->MainPromptWasShown());
+
+  // Verify that metrics are correctly logged to the SettingsPage sub-histogram.
+  // Triggering from settings page won't show intermediate bubble.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.SettingsPage",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.SettingsPage",
+      AutofillMetrics::INTERMEDIATE_BUBBLE_ACCEPTED, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.SettingsPage",
+      AutofillMetrics::MAIN_DIALOG_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LocalCardMigrationOrigin.SettingsPage",
+      AutofillMetrics::MAIN_DIALOG_ACCEPTED, 1);
 }
 
 // Verify that when triggering from submitted form, intermediate prompt and main

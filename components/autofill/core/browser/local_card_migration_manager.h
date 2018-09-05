@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 
 namespace autofill {
@@ -177,6 +178,9 @@ class LocalCardMigrationManager {
   // |true| if the user has accepted migrating their local cards to Google Pay
   // on the main dialog.
   bool user_accepted_main_migration_dialog_ = false;
+
+  // Record the triggering source of the local card migration.
+  AutofillMetrics::LocalCardMigrationOrigin local_card_migration_origin_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 
