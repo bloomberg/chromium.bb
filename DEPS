@@ -1886,6 +1886,14 @@ hooks = [
                '--arch=mips'],
   },
   {
+    'name': 'sysroot_mips64',
+    'pattern': '.',
+    'condition': 'checkout_linux and checkout_mips64',
+    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+               '--arch=mips64el'],
+  },
+
+  {
     'name': 'sysroot_x64',
     'pattern': '.',
     'condition': 'checkout_linux and checkout_x64',
@@ -1925,7 +1933,7 @@ hooks = [
   {
     'name': 'binutils',
     'pattern': 'src/third_party/binutils',
-    'condition': 'host_os == "linux"',
+    'condition': 'host_os == "linux" and host_cpu != "mips64"',
     'action': [
         'python',
         'src/third_party/binutils/download.py',
