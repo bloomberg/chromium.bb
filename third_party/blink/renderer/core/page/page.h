@@ -37,8 +37,6 @@
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
@@ -46,6 +44,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -54,7 +53,6 @@ class BrowserControls;
 class ChromeClient;
 class ContextMenuController;
 class Document;
-class DOMRectList;
 class DragCaret;
 class DragController;
 class FocusController;
@@ -184,8 +182,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetValidationMessageClientForTesting(ValidationMessageClient*);
 
   ScrollingCoordinator* GetScrollingCoordinator();
-
-  DOMRectList* NonFastScrollableRectsForTesting(const LocalFrame*);
 
   Settings& GetSettings() const { return *settings_; }
 
