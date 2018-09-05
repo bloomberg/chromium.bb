@@ -53,8 +53,11 @@ class APP_LIST_EXPORT AppListItemView
                   bool is_in_folder);
   ~AppListItemView() override;
 
-  // Set the icon of this image, adding a drop shadow if |has_shadow|.
-  void SetIcon(const gfx::ImageSkia& icon);
+  // Sets the icon of this image. Clips the icon into |clipped_size| if |clip|
+  // is true.
+  void SetIcon(const gfx::ImageSkia& icon,
+               bool clip,
+               const gfx::Size& clipped_size);
 
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
@@ -246,12 +249,6 @@ class APP_LIST_EXPORT AppListItemView
 
   // The radius of preview circle for non-folder item.
   int preview_circle_radius_ = 0;
-
-  // The insets of folder icon mask to the unclipped folder icon.
-  int folder_icon_insets_ = 0;
-
-  // The folder icon mask used to clip the folder icon.
-  std::unique_ptr<ui::LayerOwner> folder_icon_mask_;
 
   bool is_installing_ = false;
   bool is_highlighted_ = false;
