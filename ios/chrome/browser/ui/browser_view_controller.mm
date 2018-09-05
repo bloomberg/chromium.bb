@@ -1028,7 +1028,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     _formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
         initWithBaseViewController:self
-                      browserState:self.browserState
+                      browserState:browserState
                       webStateList:model.webStateList];
     [_formInputAccessoryCoordinator start];
 
