@@ -108,11 +108,8 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  // Where TextContainerType can be either a TextRun or a StringView.
-  // For legacy layout and LayoutNG respectively.
-  template <typename TextContainerType>
   float FillGlyphsForResult(const ShapeResult*,
-                            const TextContainerType&,
+                            const StringView&,
                             unsigned from,
                             unsigned to,
                             float initial_advance,
@@ -128,9 +125,8 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
 
-  template <typename TextContainerType>
   float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
-                                     const TextContainerType&,
+                                     const StringView&,
                                      unsigned text_length,
                                      TextDirection,
                                      unsigned from,
