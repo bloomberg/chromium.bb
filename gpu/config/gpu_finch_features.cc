@@ -49,4 +49,11 @@ const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
 const base::Feature kDirectCompositionPreferNV12Overlays{
     "DirectCompositionPreferNV12Overlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls the decode acceleration of JPEG images (as opposed to camera
+// captures) in Chrome OS using the VA-API.
+// TODO(andrescj): remove or enable by default in Chrome OS once
+// https://crbug.com/868400 is resolved.
+const base::Feature kVaapiJpegImageDecodeAcceleration{
+    "VaapiJpegImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

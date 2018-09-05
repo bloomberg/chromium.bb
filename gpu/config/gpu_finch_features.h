@@ -30,6 +30,8 @@ GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 
+GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
+
 }  // namespace features
 
 #endif  // GPU_CONFIG_GPU_FEATURES_H_
