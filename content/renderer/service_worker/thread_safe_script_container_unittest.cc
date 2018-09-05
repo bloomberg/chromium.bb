@@ -169,13 +169,13 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   {
     bool result = false;
     WaitOnReaderThread(kKey, &result)->Wait();
-    // Waiting for |kKey| should succeed.
+    // Waiting for |kKey| being already taken should succeed.
     EXPECT_TRUE(result);
 
-    ThreadSafeScriptContainer::Data* taken_data;
-    TakeOnReaderThread(kKey, &taken_data)->Wait();
-    // |taken_data| should be nullptr because it's already taken.
-    EXPECT_EQ(nullptr, taken_data);
+    // The status of |kKey| should still be |kTaken|.
+    ScriptStatus status = ScriptStatus::kFailed;
+    GetStatusOnReaderThread(kKey, &status)->Wait();
+    EXPECT_EQ(ScriptStatus::kTaken, status);
   }
 
   // Finish adding data.
@@ -184,13 +184,13 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   {
     bool result = false;
     WaitOnReaderThread(kKey, &result)->Wait();
-    // The record has been already added, so Wait shouldn't fail.
+    // The record is in |kTaken| status, so Wait shouldn't fail.
     EXPECT_TRUE(result);
 
-    ThreadSafeScriptContainer::Data* taken_data;
-    TakeOnReaderThread(kKey, &taken_data)->Wait();
-    // |taken_data| should be nullptr because it's already taken.
-    EXPECT_EQ(nullptr, taken_data);
+    // The status of |kKey| should still be |kTaken|.
+    ScriptStatus status = ScriptStatus::kFailed;
+    GetStatusOnReaderThread(kKey, &status)->Wait();
+    EXPECT_EQ(ScriptStatus::kTaken, status);
   }
 }
 

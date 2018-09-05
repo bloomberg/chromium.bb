@@ -202,8 +202,7 @@ class Internal : public blink::mojom::ServiceWorkerInstalledScriptsManager {
     DCHECK(receivers);
     if (!receivers->body()->has_received_all_data() ||
         !receivers->meta_data()->has_received_all_data()) {
-      script_container_->AddOnIOThread(script_url,
-                                       RawScriptData::CreateInvalidInstance());
+      script_container_->AddOnIOThread(script_url, nullptr /* data */);
       running_receivers_.erase(iter);
       return;
     }
@@ -295,13 +294,13 @@ WebServiceWorkerInstalledScriptsManagerImpl::GetRawScriptData(
     const bool success = script_container_->WaitOnWorkerThread(script_url);
     // It can fail due to an error on Mojo pipes.
     if (!success)
-      return RawScriptData::CreateInvalidInstance();
+      return nullptr;
     status = script_container_->GetStatusOnWorkerThread(script_url);
     DCHECK_NE(ThreadSafeScriptContainer::ScriptStatus::kPending, status);
   }
 
   if (status == ThreadSafeScriptContainer::ScriptStatus::kFailed)
-    return RawScriptData::CreateInvalidInstance();
+    return nullptr;
   DCHECK_EQ(ThreadSafeScriptContainer::ScriptStatus::kReceived, status);
 
   return script_container_->TakeOnWorkerThread(script_url);

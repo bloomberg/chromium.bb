@@ -231,8 +231,7 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    ASSERT_TRUE(script_data);
-    EXPECT_TRUE(script_data->IsValid());
+    EXPECT_TRUE(script_data);
     ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
     ASSERT_EQ(kExpectedBody.size() + 1,
               script_data->ScriptTextChunks()[0].size());
@@ -270,8 +269,7 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    ASSERT_TRUE(script_data);
-    EXPECT_TRUE(script_data->IsValid());
+    EXPECT_TRUE(script_data);
     ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
     ASSERT_EQ(kExpectedBody.size() + 1,
               script_data->ScriptTextChunks()[0].size());
@@ -316,19 +314,17 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    // script_data->IsValid() should return false since the data pipe for body
+    // |script_data| should be null since the data pipe for body
     // gets disconnected during sending.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    EXPECT_FALSE(script_data);
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // |script_data| should be invalid since the data wasn't received on the
+    // |script_data| should be null since the data wasn't received on the
     // renderer process.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    EXPECT_FALSE(script_data);
   }
 }
 
@@ -363,19 +359,17 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
 
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
-    // script_data->IsValid() should return false since the data pipe for meta
-    // data gets disconnected during sending.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    // |script_data| should be null since the data pipe for meta data gets
+    // disconnected during sending.
+    EXPECT_FALSE(script_data);
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // |script_data| should be invalid since the data wasn't received on the
+    // |script_data| should be null since the data wasn't received on the
     // renderer process.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    EXPECT_FALSE(script_data);
   }
 }
 
@@ -399,18 +393,16 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     // Wait for the script's arrival.
     get_raw_script_data_waiter->Wait();
     // |script_data| should be nullptr since no data will arrive.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    EXPECT_FALSE(script_data);
   }
 
   {
     std::unique_ptr<RawScriptData> script_data;
     // This should not be blocked because data will not arrive anymore.
     GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // |script_data| should be invalid since the data wasn't received on the
+    // |script_data| should be null since the data wasn't received on the
     // renderer process.
-    ASSERT_TRUE(script_data);
-    EXPECT_FALSE(script_data->IsValid());
+    EXPECT_FALSE(script_data);
   }
 }
 

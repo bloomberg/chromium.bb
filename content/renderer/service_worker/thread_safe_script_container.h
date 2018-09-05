@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"
@@ -48,7 +49,9 @@ class CONTENT_EXPORT ThreadSafeScriptContainer
     kPending
   };
 
-  // Called on the IO thread.
+  // Adds a script for the |url| to the container, and records status of the
+  // script as kReceived when |data| is non-null, or kFailed when |data| is
+  // nullptr. Called on the IO thread.
   void AddOnIOThread(const GURL& url, std::unique_ptr<Data> data);
 
   // Called on the worker thread.
@@ -83,7 +86,7 @@ class CONTENT_EXPORT ThreadSafeScriptContainer
   // is added, or OnAllDataAdded is called. The worker thread waits on this, and
   // the IO thread signals it.
   base::ConditionVariable waiting_cv_;
-  std::map<GURL, std::unique_ptr<Data>> script_data_;
+  std::map<GURL, std::pair<ScriptStatus, std::unique_ptr<Data>>> script_data_;
   GURL waiting_url_;
   bool are_all_data_added_;
 };
