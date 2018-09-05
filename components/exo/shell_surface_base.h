@@ -236,9 +236,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Returns the "visible bounds" for the surface from the user's perspective.
   gfx::Rect GetVisibleBounds() const;
 
-  // In the coordinate system of the parent root window.
-  gfx::Point GetMouseLocation() const;
-
   // Returns the bounds of the client area.nnn
   gfx::Rect GetClientViewBounds() const;
 
