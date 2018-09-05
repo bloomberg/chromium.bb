@@ -58,10 +58,6 @@ void DetectAndOpenPrinterConfigDialog() {
 
   bool opened = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
-               OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
-      break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
       opened = OpenPrinterConfigDialog(kKde4KcmPrinterCommand) ||
                OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
@@ -77,10 +73,11 @@ void DetectAndOpenPrinterConfigDialog() {
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand);
       break;
+    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-      LOG(ERROR)
-          << "Failed to detect the command to open printer config dialog";
-      return;
+      opened = OpenPrinterConfigDialog(kSystemConfigPrinterCommand) ||
+               OpenPrinterConfigDialog(kGnomeControlCenterPrintersCommand);
+      break;
   }
   LOG_IF(ERROR, !opened) << "Failed to open printer manager dialog ";
 }
