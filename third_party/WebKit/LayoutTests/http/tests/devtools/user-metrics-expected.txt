@@ -5,6 +5,7 @@ recordActionTaken:
     AnimationsPlaybackRateChanged : 11
     Audits2Finished : 30
     Audits2Started : 29
+    Audits2ViewTrace : 32
     AuditsStarted : 7
     ChangeInspectedNodeInElementsPanel : 26
     CommandEvaluatedInConsolePanel : 15
