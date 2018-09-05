@@ -813,8 +813,7 @@ void MediaControlsImpl::RemovedFrom(ContainerNode& insertion_point) {
 
   HTMLDivElement::RemovedFrom(insertion_point);
 
-  // TODO(mlamouri): we hide show the controls instead of having
-  // HTMLMediaElement do it.
+  Hide();
 
   media_event_listener_->Detach();
   if (orientation_lock_delegate_)

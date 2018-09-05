@@ -720,7 +720,6 @@ void HTMLMediaElement::RemovedFrom(ContainerNode& insertion_point) {
 
   HTMLElement::RemovedFrom(insertion_point);
   if (insertion_point.InActiveDocument()) {
-    UpdateControlsVisibility();
     if (network_state_ > kNetworkEmpty)
       PauseInternal();
   }
@@ -3826,11 +3825,8 @@ void HTMLMediaElement::EnsureMediaControls() {
 }
 
 void HTMLMediaElement::UpdateControlsVisibility() {
-  if (!isConnected()) {
-    if (GetMediaControls())
-      GetMediaControls()->Hide();
+  if (!isConnected())
     return;
-  }
 
   bool native_controls = ShouldShowControls(RecordMetricsBehavior::kDoRecord);
 
