@@ -6,6 +6,8 @@
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
+#include "chromeos/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -84,7 +86,8 @@ extern const SkColor kMobileNotConnectedXIconColor;
 extern const int kHitRegionPadding;
 
 // Width of a line used to separate tray items in the shelf.
-ASH_EXPORT extern const int kSeparatorWidth;
+ASH_EXPORT const int kSeparatorWidth = 1;
+const int kSeparatorWidthNewUi = 0;
 
 // The color of the separators used in the system menu.
 extern const SkColor kMenuSeparatorColor;
@@ -225,6 +228,22 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 // Constants used in the title row of a detailed view in UnifiedSystemTray.
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
+
+class TrayConstants {
+ public:
+  // Returns the width of a line used to separate tray items in the shelf.
+  static int separator_width() {
+    return UseNewUi() ? kSeparatorWidthNewUi : kSeparatorWidth;
+  }
+
+ private:
+  static bool UseNewUi() {
+    static bool use_new_ui = chromeos::switches::ShouldUseShelfNewUi();
+    return use_new_ui;
+  }
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
+};
 
 }  // namespace ash
 
