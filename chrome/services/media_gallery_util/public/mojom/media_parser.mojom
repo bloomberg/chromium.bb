@@ -4,6 +4,7 @@
 
 module chrome.mojom;
 
+import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
@@ -20,6 +21,16 @@ interface MediaParser {
       => (bool parse_success,
           MediaMetadata metadata,
           array<AttachedImage> attached_images);
+
+  // Extracts one video key frame from |media_data_source|. The frame is still
+  // in encoded format.
+  [EnableIf=is_android]
+  ExtractVideoFrame(string mime_type,
+                    uint32 total_size,
+                    MediaDataSource media_data_source)
+      => (bool success,
+          array<uint8> data,
+          media.mojom.VideoDecoderConfig config);
 
   // Validates the passed media file with sanity checks, and file decoding
   // for at most |decode_time| wall clock time. Returns |success| true if
@@ -63,7 +74,6 @@ struct MediaStreamInfo {
 // All data are parsed from user-defined media data. The consumer of this API should filter special
 // characters if needed. The encoding of strings may be UTF-8 that ffmpeg library assumes strings to
 // be UTF-8 but does not validate the encoding.
-// TODO(xingliu): Sanitize strings and AttachedImage in utility and browser processes.
 struct MediaMetadata {
   string mime_type;
 

@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/download/download_media_parser.h"
 
 class DownloadMediaParser;
 
@@ -17,21 +18,17 @@ class DownloadMediaParser;
 // bridge is owned by the Java side.
 class DownloadMediaParserBridge {
  public:
-  DownloadMediaParserBridge();
+  DownloadMediaParserBridge(
+      int64_t size,
+      const std::string& mime_type,
+      const base::FilePath& file_path,
+      DownloadMediaParser::ParseCompleteCB parse_complete_cb);
   ~DownloadMediaParserBridge();
 
   void Destory(JNIEnv* env, jobject obj);
-  void ParseMediaFile(JNIEnv* env,
-                      jobject obj,
-                      const base::android::JavaParamRef<jstring>& jmime_type,
-                      const base::android::JavaParamRef<jstring>& jfile_path,
-                      jlong jtotal_size,
-                      const base::android::JavaParamRef<jobject>& jcallback);
+  void Start(JNIEnv* env, jobject obj);
 
  private:
-  // The task runner that performs blocking disk IO. Created by this object.
-  scoped_refptr<base::SingleThreadTaskRunner> disk_io_task_runner_;
-
   // The media parser that does actual jobs in a sandboxed process.
   std::unique_ptr<DownloadMediaParser> parser_;
 
