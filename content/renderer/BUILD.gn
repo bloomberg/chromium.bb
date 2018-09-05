@@ -844,20 +844,12 @@ target(link_target_type, "renderer") {
 
   if (enable_plugins) {
     sources += [
-      "media/pepper/pepper_to_video_track_adapter.cc",
-      "media/pepper/pepper_to_video_track_adapter.h",
-      "media/pepper/video_track_to_pepper_adapter.cc",
-      "media/pepper/video_track_to_pepper_adapter.h",
       "pepper/pepper_media_stream_audio_track_host.cc",
       "pepper/pepper_media_stream_audio_track_host.h",
       "pepper/pepper_media_stream_track_host_base.cc",
       "pepper/pepper_media_stream_track_host_base.h",
       "pepper/pepper_media_stream_video_track_host.cc",
       "pepper/pepper_media_stream_video_track_host.h",
-      "pepper/pepper_video_destination_host.cc",
-      "pepper/pepper_video_destination_host.h",
-      "pepper/pepper_video_source_host.cc",
-      "pepper/pepper_video_source_host.h",
     ]
   }
 

@@ -1980,8 +1980,6 @@ test("content_unittests") {
       "../browser/renderer_host/pepper/pepper_printing_host_unittest.cc",
       "../browser/renderer_host/pepper/pepper_proxy_lookup_helper_unittest.cc",
       "../browser/renderer_host/pepper/quota_reservation_unittest.cc",
-      "../renderer/media/pepper/pepper_to_video_track_adapter_unittest.cc",
-      "../renderer/media/pepper/video_track_to_pepper_adapter_unittest.cc",
       "../renderer/pepper/event_conversion_unittest.cc",
       "../renderer/pepper/host_var_tracker_unittest.cc",
       "../renderer/pepper/mock_resource.h",

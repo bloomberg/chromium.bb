@@ -67,9 +67,9 @@ const bool kHostedApp = true;
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 const char kChatManifestFS[] = "filesystem:https://talkgadget.google.com/foo";
-#endif
 
 const char kChatAppURL[] = "https://talkgadget.google.com/hangouts/foo";
+#endif
 
 void AddContentTypeHandler(content::WebPluginInfo* info,
                            const char* mime_type,
@@ -302,15 +302,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         &params));
   }
 #endif  // BUILDFLAG(ENABLE_NACL)
-}
-
-TEST_F(ChromeContentRendererClientTest, AllowPepperMediaStreamAPI) {
-  ChromeContentRendererClient test;
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(test.AllowPepperMediaStreamAPI(GURL(kChatAppURL)));
-#else
-  EXPECT_TRUE(test.AllowPepperMediaStreamAPI(GURL(kChatAppURL)));
-#endif
 }
 
 // SearchBouncer doesn't exist on Android.

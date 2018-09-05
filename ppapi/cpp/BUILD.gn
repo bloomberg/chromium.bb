@@ -250,12 +250,8 @@ source_set("objects") {
     "private/uma_private.h",
     "private/var_private.cc",
     "private/var_private.h",
-    "private/video_destination_private.cc",
-    "private/video_destination_private.h",
     "private/video_frame_private.cc",
     "private/video_frame_private.h",
-    "private/video_source_private.cc",
-    "private/video_source_private.h",
     "private/x509_certificate_private.cc",
     "private/x509_certificate_private.h",
 

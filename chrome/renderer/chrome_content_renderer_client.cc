@@ -1427,24 +1427,6 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
   return std::make_unique<TtsDispatcher>(client);
 }
 
-bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
-    const GURL& url) {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  // Allow access for tests.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePepperTesting)) {
-    return true;
-  }
-
-  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
-  // the whitelist in the renderer, since we're only preventing access until
-  // these APIs are public and stable.
-  return (AppCategorizer::IsHangoutsUrl(url));
-#endif  // !defined(OS_ANDROID)
-}
-
 void ChromeContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems) {
   key_systems_provider_.AddSupportedKeySystems(key_systems);

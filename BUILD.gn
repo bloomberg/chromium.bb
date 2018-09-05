@@ -139,7 +139,6 @@ group("gn_all") {
       "//ppapi/examples/url_loader",
       "//ppapi/examples/video_capture",
       "//ppapi/examples/video_decode",
-      "//ppapi/examples/video_effects",
       "//ppapi/examples/video_encode",
       "//printing:printing_unittests",
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",

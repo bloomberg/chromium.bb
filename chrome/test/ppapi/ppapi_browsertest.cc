@@ -1465,14 +1465,6 @@ TEST_PPAPI_NACL(MAYBE_VideoDecoder)
 
 TEST_PPAPI_NACL(VideoEncoder)
 
-// VideoDestination doesn't work in content_browsertests.
-TEST_PPAPI_OUT_OF_PROCESS(VideoDestination)
-TEST_PPAPI_NACL(VideoDestination)
-
-// VideoSource doesn't work in content_browsertests.
-TEST_PPAPI_OUT_OF_PROCESS(VideoSource)
-TEST_PPAPI_NACL(VideoSource)
-
 // Printing doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)
 
