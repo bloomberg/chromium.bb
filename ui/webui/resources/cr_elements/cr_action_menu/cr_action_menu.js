@@ -271,7 +271,7 @@ Polymer({
     var options = this.querySelectorAll('.dropdown-item');
     var numOptions = options.length;
     var focusedIndex =
-        Array.prototype.indexOf.call(options, this.root.activeElement);
+        Array.prototype.indexOf.call(options, getDeepActiveElement());
 
     // Handle case where nothing is focused and up is pressed.
     if (focusedIndex === -1 && step === -1)
