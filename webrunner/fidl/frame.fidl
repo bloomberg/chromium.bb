@@ -5,7 +5,7 @@
 library chromium.web;
 
 using fuchsia.sys;
-using fuchsia.ui;
+using fuchsia.ui.viewsv1token;
 
 interface Frame {
   // Creates and registers a view with the view manager and returns its
