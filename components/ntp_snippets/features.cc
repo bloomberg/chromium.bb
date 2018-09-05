@@ -164,7 +164,7 @@ std::vector<const base::Feature*> GetAllFeatures() {
 }
 
 // Default referrer for the content suggestions.
-const char kDefaultReferrerUrl[] = "https://feed.google.com/";
+const char kDefaultReferrerUrl[] = "https://discover.google.com/";
 
 // Provides ability to customize the referrer URL.
 // When specifying a referrer through a field trial, it must contain a path.
