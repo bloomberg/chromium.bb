@@ -2171,6 +2171,11 @@ if (enable_java_templates) {
                ":$_merge_manifest_target",
                ":$_build_config_target",
              ]
+      if (defined(invoker.alternative_android_sdk_dep)) {
+        deps += [ invoker.alternative_android_sdk_dep ]
+      } else {
+        deps += [ "//third_party/android_tools:android_sdk_java" ]
+      }
       if (defined(invoker.shared_resources_whitelist_target)) {
         _whitelist_gen_dir =
             get_label_info(invoker.shared_resources_whitelist_target,
