@@ -293,7 +293,7 @@ void ArcFileSystemOperationRunner::RemoveWatcher(
   watcher_callbacks_.erase(iter);
 
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->file_system(), AddWatcher);
+      arc_bridge_service_->file_system(), RemoveWatcher);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
