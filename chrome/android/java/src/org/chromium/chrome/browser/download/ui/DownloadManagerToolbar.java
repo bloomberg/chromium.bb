@@ -73,7 +73,7 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
 
-        mSpinner.setVisibility((mIsSelectionEnabled || mIsSearching) ? GONE : VISIBLE);
+        mSpinner.setVisibility((mIsSelectionEnabled || isSearching()) ? GONE : VISIBLE);
         if (mIsSelectionEnabled) {
             int numSelected = mSelectionDelegate.getSelectedItems().size();
 
@@ -100,10 +100,10 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     }
 
     @Override
-    protected void onDataChanged(int numItems) {
-        super.onDataChanged(numItems);
+    public void setSearchEnabled(boolean searchEnabled) {
+        super.setSearchEnabled(searchEnabled);
         MenuItem item = getMenu().findItem(mInfoMenuItemId);
-        if (item != null) item.setVisible(!mIsSearching && !mIsSelectionEnabled && numItems > 0);
+        if (item != null) item.setVisible(!isSearching() && !mIsSelectionEnabled && searchEnabled);
     }
 
     @Override

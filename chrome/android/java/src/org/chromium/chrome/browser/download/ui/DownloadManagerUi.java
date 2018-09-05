@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Handler;
-import android.support.annotation.IntDef;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,6 +34,7 @@ import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
+import org.chromium.chrome.browser.download.home.UmaUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
@@ -58,8 +58,6 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.ui.widget.ViewRectProvider;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -163,22 +161,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
             RecordUserAction.record("Android.DownloadManager.Delete");
         }
-    }
-
-    // Please treat this list as append only and keep it in sync with
-    // Android.DownloadManager.Menu.Actions in enums.xml.
-    @IntDef({MenuAction.CLOSE, MenuAction.MULTI_DELETE, MenuAction.MULTI_SHARE,
-            MenuAction.SHOW_INFO, MenuAction.HIDE_INFO, MenuAction.SEARCH})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface MenuAction {
-        // TODO(shaktisahu): Move these to new download home and make them private.
-        int CLOSE = 0;
-        int MULTI_DELETE = 1;
-        int MULTI_SHARE = 2;
-        int SHOW_INFO = 3;
-        int HIDE_INFO = 4;
-        int SEARCH = 5;
-        int NUM_ENTRIES = 6;
     }
 
     private static final int PREFETCH_BUNDLE_OPEN_DELAY_MS = 500;
@@ -377,7 +359,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         if ((item.getItemId() == R.id.close_menu_id
                     || item.getItemId() == R.id.with_settings_close_menu_id)
                 && mIsSeparateActivity) {
-            recordMenuActionHistogram(MenuAction.CLOSE);
+            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.CLOSE);
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
@@ -385,7 +367,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
                     mBackendProvider.getSelectionDelegate().getSelectedItemsAsList();
             mBackendProvider.getSelectionDelegate().clearSelection();
 
-            recordMenuActionHistogram(MenuAction.MULTI_DELETE);
+            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.MULTI_DELETE);
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Delete.SelectedCount", items.size());
 
@@ -399,7 +381,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             //                    after receiving an OK response. See crbug.com/638916.
             mBackendProvider.getSelectionDelegate().clearSelection();
 
-            recordMenuActionHistogram(MenuAction.MULTI_SHARE);
+            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.MULTI_SHARE);
             RecordHistogram.recordCount100Histogram(
                     "Android.DownloadManager.Menu.Share.SelectedCount", items.size());
 
@@ -407,11 +389,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             return true;
         } else if (item.getItemId() == mInfoMenuId) {
             boolean showInfo = !mHistoryAdapter.shouldShowStorageInfoHeader();
-            recordMenuActionHistogram(showInfo ? MenuAction.SHOW_INFO : MenuAction.HIDE_INFO);
+            UmaUtils.recordMenuActionHistogram(
+                    showInfo ? UmaUtils.MenuAction.SHOW_INFO : UmaUtils.MenuAction.HIDE_INFO);
             enableStorageInfoHeader(showInfo);
             return true;
         } else if (item.getItemId() == mSearchMenuId) {
-            recordMenuActionHistogram(MenuAction.SEARCH);
+            UmaUtils.recordMenuActionHistogram(UmaUtils.MenuAction.SEARCH);
             // The header should be removed as soon as a search is started. It will be added back in
             // DownloadHistoryAdatper#filter() when the search is ended.
             mHistoryAdapter.removeHeader();
@@ -621,11 +604,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     @VisibleForTesting
     public static void setProviderForTests(BackendProvider provider) {
         sProviderForTests = provider;
-    }
-
-    public static void recordMenuActionHistogram(@MenuAction int action) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.DownloadManager.Menu.Action", action, MenuAction.NUM_ENTRIES);
     }
 
     private void shareItems(final List<DownloadHistoryItemWrapper> items) {

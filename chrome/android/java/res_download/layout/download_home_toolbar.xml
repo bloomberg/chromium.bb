@@ -3,24 +3,29 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    style="@style/ModernToolbar">
+    android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/title_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+    <org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height_no_shadow"
+        style="@style/ModernToolbar">
+
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/title_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/BlackHeadline2"
             android:text="@string/menu_downloads"/>
 
-    </LinearLayout>
+    </org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar>
 
-</org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar>
+    <org.chromium.chrome.browser.widget.FadingShadowView
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/action_bar_shadow_height"
+        android:layout_marginTop="@dimen/toolbar_height_no_shadow"
+        android:visibility="gone"/>
+</FrameLayout>

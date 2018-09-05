@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -61,7 +62,8 @@ class DateOrderedListView {
     }
 
     /** Creates an instance of a {@link DateOrderedListView} representing {@code model}. */
-    public DateOrderedListView(Context context, DecoratedListItemModel model) {
+    public DateOrderedListView(Context context, DecoratedListItemModel model,
+            DateOrderedListObserver dateOrderedListObserver) {
         mModel = model;
 
         mImageWidthPx =
@@ -88,6 +90,12 @@ class DateOrderedListView {
                 mModel, new ModelChangeProcessor(mModel), ListItemViewHolder::create);
         mView.setAdapter(adapter);
         mView.post(adapter::notifyDataSetChanged);
+        mView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView view, int dx, int dy) {
+                dateOrderedListObserver.onListScroll(mView.canScrollVertically(-1));
+            }
+        });
     }
 
     /** @return The Android {@link View} representing this widget. */

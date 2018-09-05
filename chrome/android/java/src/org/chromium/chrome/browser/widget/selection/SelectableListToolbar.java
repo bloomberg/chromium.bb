@@ -92,15 +92,15 @@ public class SelectableListToolbar<E>
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
-    protected boolean mIsSearching;
 
+    private boolean mIsSearching;
     private boolean mHasSearchView;
     private LinearLayout mSearchView;
     private EditText mSearchText;
     private EditText mSearchEditText;
     private TintedImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
-    private boolean mSelectableListHasItems;
+    private boolean mSearchEnabled;
     private boolean mIsVrEnabled;
     private boolean mUpdateStatusBarColor;
 
@@ -478,12 +478,12 @@ public class SelectableListToolbar<E>
     }
 
     /**
-     * Called when the data in the selectable list this toolbar is associated with changes.
-     * @param numItems The number of items in the selectable list.
+     * Called to enable/disable search menu button.
+     * @param searchEnabled Whether the search button should be enabled.
      */
-    protected void onDataChanged(int numItems) {
+    public void setSearchEnabled(boolean searchEnabled) {
         if (mHasSearchView) {
-            mSelectableListHasItems = numItems != 0;
+            mSearchEnabled = searchEnabled;
             updateSearchMenuItem();
         }
     }
@@ -646,8 +646,8 @@ public class SelectableListToolbar<E>
         if (!mHasSearchView) return;
         MenuItem searchMenuItem = getMenu().findItem(mSearchMenuItemId);
         if (searchMenuItem != null) {
-            searchMenuItem.setVisible(mSelectableListHasItems && !mIsSelectionEnabled
-                    && !mIsSearching && !mIsVrEnabled);
+            searchMenuItem.setVisible(
+                    mSearchEnabled && !mIsSelectionEnabled && !mIsSearching && !mIsVrEnabled);
         }
     }
 
