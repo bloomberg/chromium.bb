@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ELLIPSIS_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ELLIPSIS_BOX_H_
 
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 
 namespace blink {

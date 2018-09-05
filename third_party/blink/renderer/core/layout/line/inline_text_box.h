@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/text/truncation.h"
