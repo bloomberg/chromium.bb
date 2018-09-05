@@ -438,9 +438,22 @@ void FileSystem::CheckForUpdates(const std::set<std::string>& ids) {
       // It is possible for the team drive to have been deleted by the time we
       // receive the push notification.
       if (it != team_drive_change_list_loaders_.end()) {
-        it->second->CheckForUpdates(base::Bind(&FileSystem::OnUpdateChecked,
-                                               weak_ptr_factory_.GetWeakPtr(),
-                                               it->first, closure));
+        auto update_checked_closure =
+            base::Bind(&FileSystem::OnUpdateChecked,
+                       weak_ptr_factory_.GetWeakPtr(), it->first, closure);
+        if (!it->second->IsRefreshing()) {
+          team_drive_operation_queue_->AddOperation(
+              it->second->GetWeakPtr(),
+              base::BindOnce(
+                  &internal::TeamDriveChangeListLoader::CheckForUpdates,
+                  it->second->GetWeakPtr()),
+              update_checked_closure);
+        } else {
+          // If the change list loader is refreshing, then calling
+          // CheckForUpdates will just add the callback to a queue to be called
+          // when the refresh is complete.
+          it->second->CheckForUpdates(update_checked_closure);
+        }
       } else {
         closure.Run();
       }
