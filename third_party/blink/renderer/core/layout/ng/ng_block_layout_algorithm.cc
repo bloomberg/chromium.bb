@@ -364,23 +364,10 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
       ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
 
-  // Our calculated block-axis size may be indefinite at this point.
-  // If so, just leave the size as NGSizeIndefinite instead of subtracting
-  // borders and padding.
-  NGLogicalSize adjusted_size =
+  child_available_size_ =
       CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
-
-  child_available_size_ = adjusted_size;
-
-  // Anonymous constraint spaces are auto-sized. Don't let that affect
-  // block-axis percentage resolution.
-  if (ConstraintSpace().IsAnonymous() || Node().IsAnonymousBlock())
-    child_percentage_size_ = ConstraintSpace().PercentageResolutionSize();
-  else
-    child_percentage_size_ = adjusted_size;
-  if (ConstraintSpace().IsFixedSizeBlock() &&
-      !ConstraintSpace().FixedSizeBlockIsDefinite())
-    child_percentage_size_.block_size = NGSizeIndefinite;
+  child_percentage_size_ = CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), child_available_size_);
 
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBfcLineOffset(
@@ -1815,19 +1802,8 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const base::Optional<LayoutUnit> floats_bfc_block_offset) {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
 
-  NGLogicalSize available_size(child_available_size);
-  NGLogicalSize percentage_size(child_percentage_size_);
-  if (percentage_size.block_size == NGSizeIndefinite &&
-      Node().GetDocument().InQuirksMode()) {
-    // Implement percentage height calculation quirk
-    // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
-    if (!Style().IsDisplayTableType() && !Style().HasOutOfFlowPosition()) {
-      percentage_size.block_size =
-          constraint_space_.PercentageResolutionSize().block_size;
-    }
-  }
-  space_builder.SetAvailableSize(available_size)
-      .SetPercentageResolutionSize(percentage_size);
+  space_builder.SetAvailableSize(child_available_size)
+      .SetPercentageResolutionSize(child_percentage_size_);
 
   if (NGBaseline::ShouldPropagateBaselines(child))
     space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());

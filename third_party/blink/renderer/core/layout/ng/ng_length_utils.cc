@@ -939,4 +939,30 @@ NGLogicalSize CalculateContentBoxSize(
   return size;
 }
 
+NGLogicalSize CalculateChildPercentageSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    const NGLogicalSize& child_available_size) {
+  // Anonymous block or spaces should pass the percent size straight through.
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return space.PercentageResolutionSize();
+
+  NGLogicalSize child_percentage_size = child_available_size;
+
+  if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite())
+    child_percentage_size.block_size = NGSizeIndefinite;
+
+  // In quirks mode the percentage resolution height is passed from parent to
+  // child.
+  // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
+  if (child_percentage_size.block_size == NGSizeIndefinite &&
+      node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
+      !node.Style().HasOutOfFlowPosition()) {
+    child_percentage_size.block_size =
+        space.PercentageResolutionSize().block_size;
+  }
+
+  return child_percentage_size;
+}
+
 }  // namespace blink
