@@ -51,11 +51,12 @@
       }
 
       .option .email-icon {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 40px;
         margin: 0;
         margin-bottom: 4px;
-         /* TODO(scottchen): Replace below with logo once available. */
-        background: red;
-        height: 40px;
         width: 40px;
       }
 
@@ -91,6 +92,36 @@
         display: flex;
         margin-top: 64px;
         justify-content: space-between;
+      }
+
+      .gmail {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/gmail_1x.png) 1x,
+            url(chrome://welcome/email/gmail_2x.png) 2x);
+      }
+
+      .yahoo {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/yahoo_1x.png) 1x,
+            url(chrome://welcome/email/yahoo_2x.png) 2x);
+      }
+
+      .aol {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/aol_1x.png) 1x,
+            url(chrome://welcome/email/aol_2x.png) 2x);
+      }
+
+      .icloud {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/icloud_1x.png) 1x,
+            url(chrome://welcome/email/icloud_2x.png) 2x);
+      }
+
+      .outlook {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/outlook_1x.png) 1x,
+            url(chrome://welcome/email/outlook_2x.png) 2x);
       }
     </style>
 
