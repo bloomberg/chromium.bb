@@ -165,8 +165,8 @@ class ASH_EXPORT PowerButtonController
   // animation.
   void OnPreShutdownTimeout();
 
-  // Updates |button_type_| and |force_clamshell_power_button_| based on the
-  // current command line.
+  // Updates |button_type_| and power button position info based on the current
+  // command line.
   void ProcessCommandLine();
 
   // Initializes tablet power button behavior related member
@@ -213,10 +213,6 @@ class ASH_EXPORT PowerButtonController
   // True if the device should observe accelerometer events to enter tablet
   // mode.
   bool observe_accelerometer_events_ = false;
-
-  // True if the device should use non-tablet-style power button behavior even
-  // if it is a convertible device.
-  bool force_clamshell_power_button_ = false;
 
   // True if the device has tablet mode switch.
   bool has_tablet_mode_switch_ = false;
