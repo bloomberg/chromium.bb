@@ -269,6 +269,7 @@ class CORE_EXPORT ThreadableLoader final
   // Holds the referrer after a redirect response was received. This referrer is
   // used to populate the HTTP Referer header when following the redirect.
   bool override_referrer_;
+  bool report_upload_progress_ = false;
   Referrer referrer_after_redirect_;
 
   bool detached_ = false;

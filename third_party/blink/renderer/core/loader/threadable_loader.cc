@@ -276,6 +276,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   // cross-origin, we cancel the old request create a new one, and copy these
   // headers.
   request_headers_ = request.HttpHeaderFields();
+  report_upload_progress_ = request.ReportUploadProgress();
 
   ResourceRequest new_request(request);
 
@@ -718,6 +719,7 @@ bool ThreadableLoader::RedirectReceived(
   // original request.
   for (const auto& header : request_headers_)
     cross_origin_request.SetHTTPHeaderField(header.key, header.value);
+  cross_origin_request.SetReportUploadProgress(report_upload_progress_);
   MakeCrossOriginAccessRequest(cross_origin_request);
 
   return false;
