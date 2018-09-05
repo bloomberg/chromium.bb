@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -53,8 +55,10 @@ class StylePropertyMapIterationSource final
 
 }  // namespace
 
-CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
-                                             ExceptionState& exception_state) {
+CSSStyleValue* StylePropertyMapReadOnly::get(
+    const ExecutionContext* execution_context,
+    const String& property_name,
+    ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
   if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
@@ -66,9 +70,10 @@ CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
   if (property.IsShorthand())
     return GetShorthandProperty(property);
 
-  const CSSValue* value = (property_id == CSSPropertyVariable)
-                              ? GetCustomProperty(AtomicString(property_name))
-                              : GetProperty(property_id);
+  const CSSValue* value =
+      (property_id == CSSPropertyVariable)
+          ? GetCustomProperty(*execution_context, AtomicString(property_name))
+          : GetProperty(property_id);
   if (!value)
     return nullptr;
 
@@ -84,6 +89,7 @@ CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
 }
 
 CSSStyleValueVector StylePropertyMapReadOnly::getAll(
+    const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
@@ -101,18 +107,20 @@ CSSStyleValueVector StylePropertyMapReadOnly::getAll(
     return values;
   }
 
-  const CSSValue* value = (property_id == CSSPropertyVariable)
-                              ? GetCustomProperty(AtomicString(property_name))
-                              : GetProperty(property_id);
+  const CSSValue* value =
+      (property_id == CSSPropertyVariable)
+          ? GetCustomProperty(*execution_context, AtomicString(property_name))
+          : GetProperty(property_id);
   if (!value)
     return CSSStyleValueVector();
 
   return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
 }
 
-bool StylePropertyMapReadOnly::has(const String& property_name,
+bool StylePropertyMapReadOnly::has(const ExecutionContext* execution_context,
+                                   const String& property_name,
                                    ExceptionState& exception_state) {
-  return !getAll(property_name, exception_state).IsEmpty();
+  return !getAll(execution_context, property_name, exception_state).IsEmpty();
 }
 
 StylePropertyMapReadOnly::IterationSource*
@@ -138,6 +146,18 @@ CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
   if (serialization.IsEmpty())
     return nullptr;
   return CSSUnsupportedStyleValue::Create(property.PropertyID(), serialization);
+}
+
+const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
+    const ExecutionContext& execution_context,
+    const AtomicString& property_name) {
+  const CSSValue* value = GetCustomProperty(property_name);
+
+  if (!execution_context.IsDocument())
+    return value;
+
+  return PropertyRegistry::ParseIfRegistered(ToDocument(execution_context),
+                                             property_name, value);
 }
 
 }  // namespace blink

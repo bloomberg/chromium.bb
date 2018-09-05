@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/style_property_serializer.h"
 
 namespace blink {
@@ -26,10 +25,8 @@ const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
 const CSSValue* InlineStylePropertyMap::GetCustomProperty(
     AtomicString property_name) {
   const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
-  const CSSValue* value =
-      inline_style ? inline_style->GetPropertyCSSValue(property_name) : nullptr;
-  return PropertyRegistry::ParseIfRegistered(owner_element_->GetDocument(),
-                                             property_name, value);
+  return inline_style ? inline_style->GetPropertyCSSValue(property_name)
+                      : nullptr;
 }
 
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,

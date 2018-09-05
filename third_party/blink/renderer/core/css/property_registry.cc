@@ -22,8 +22,8 @@ const CSSValue* PropertyRegistry::ParseIfRegistered(
     const Document& document,
     const AtomicString& property_name,
     const CSSValue* value) {
-  if (!value)
-    return nullptr;
+  if (!value || !value->IsCustomPropertyDeclaration())
+    return value;
 
   const PropertyRegistry* registry = document.GetPropertyRegistry();
 
@@ -34,8 +34,6 @@ const CSSValue* PropertyRegistry::ParseIfRegistered(
       registry->Registration(property_name);
 
   if (!registration)
-    return value;
-  if (!value->IsCustomPropertyDeclaration())
     return value;
 
   CSSVariableData* tokens = ToCSSCustomPropertyDeclaration(value)->Value();

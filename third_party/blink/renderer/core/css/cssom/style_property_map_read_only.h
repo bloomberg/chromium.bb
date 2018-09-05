@@ -26,9 +26,15 @@ class CORE_EXPORT StylePropertyMapReadOnly
 
   ~StylePropertyMapReadOnly() override = default;
 
-  CSSStyleValue* get(const String& property_name, ExceptionState&);
-  CSSStyleValueVector getAll(const String& property_name, ExceptionState&);
-  bool has(const String& property_name, ExceptionState&);
+  CSSStyleValue* get(const ExecutionContext*,
+                     const String& property_name,
+                     ExceptionState&);
+  CSSStyleValueVector getAll(const ExecutionContext*,
+                             const String& property_name,
+                             ExceptionState&);
+  bool has(const ExecutionContext*,
+           const String& property_name,
+           ExceptionState&);
 
   virtual unsigned int size() = 0;
 
@@ -48,6 +54,8 @@ class CORE_EXPORT StylePropertyMapReadOnly
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
   CSSStyleValue* GetShorthandProperty(const CSSProperty&);
+  const CSSValue* GetCustomProperty(const ExecutionContext&,
+                                    const AtomicString&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnly);
