@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://github.com/wicg/trusted-types
+
 typedef (DOMString or TrustedScriptURL) ScriptURLString;
 
 [
     Exposed=(Window,Worker),
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedScriptURL {
-    [CallWith=ScriptState] static TrustedScriptURL unsafelyCreate(DOMString url);
-
     stringifier;
 };

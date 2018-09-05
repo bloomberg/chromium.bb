@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
