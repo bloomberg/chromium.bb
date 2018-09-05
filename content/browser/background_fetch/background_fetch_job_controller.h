@@ -41,7 +41,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              BackgroundFetchReasonToAbort)>;
+                              blink::mojom::BackgroundFetchFailureReason)>;
   using ProgressCallback =
       base::RepeatingCallback<void(const std::string& /* unique_id */,
                                    uint64_t /* download_total */,
@@ -110,14 +110,10 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   bool HasMoreRequests() override;
   void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                     RequestFinishedCallback request_finished_callback) override;
-  void Abort(BackgroundFetchReasonToAbort reason_to_abort) override;
+  void Abort(
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort) override;
 
  private:
-  // Returns reason_to_abort_ as blink::mojom::BackgroundFetchFailureReason.
-  // TODO(crbug.com/876691): Get rid of BackgroundFetchReasonToAbort and remove
-  // this converter.
-  blink::mojom::BackgroundFetchFailureReason MojoFailureReason() const;
-
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
 
@@ -151,8 +147,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   int completed_downloads_ = 0;
 
   // The reason background fetch was aborted.
-  BackgroundFetchReasonToAbort reason_to_abort_ =
-      BackgroundFetchReasonToAbort::NONE;
+  blink::mojom::BackgroundFetchFailureReason reason_to_abort_ =
+      blink::mojom::BackgroundFetchFailureReason::NONE;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
 

@@ -23,16 +23,18 @@ BackgroundFetchScheduler::Controller::Controller(
 BackgroundFetchScheduler::Controller::~Controller() = default;
 
 void BackgroundFetchScheduler::Controller::Finish(
-    BackgroundFetchReasonToAbort reason_to_abort) {
-  DCHECK(reason_to_abort != BackgroundFetchReasonToAbort::NONE ||
+    blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
+  DCHECK(reason_to_abort != blink::mojom::BackgroundFetchFailureReason::NONE ||
          !HasMoreRequests());
 
   scheduler_->RemoveJobController(this);
 
   // Developer-initiated abortions will have already marked the registration for
   // deletion, so make sure that we don't execute the same code-path twice.
-  if (reason_to_abort == BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER)
+  if (reason_to_abort ==
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER) {
     return;
+  }
 
   // Race conditions make it possible for a controller to finish twice. This
   // should be removed when the scheduler starts owning the controllers.
@@ -141,7 +143,7 @@ void BackgroundFetchScheduler::DidMarkRequestAsComplete() {
     return;
   }
 
-  active_controller_->Finish(BackgroundFetchReasonToAbort::NONE);
+  active_controller_->Finish(blink::mojom::BackgroundFetchFailureReason::NONE);
 }
 
 }  // namespace content

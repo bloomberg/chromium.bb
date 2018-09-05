@@ -16,12 +16,12 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
-enum class BackgroundFetchReasonToAbort;
 
 // Maintains a list of Controllers and chooses which ones should launch new
 // downloads.
@@ -29,7 +29,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              BackgroundFetchReasonToAbort)>;
+                              blink::mojom::BackgroundFetchFailureReason)>;
 
   // Interface for download job controllers.
   class CONTENT_EXPORT Controller {
@@ -46,7 +46,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
     virtual void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                               RequestFinishedCallback callback) = 0;
 
-    void Finish(BackgroundFetchReasonToAbort reason_to_abort);
+    void Finish(blink::mojom::BackgroundFetchFailureReason reason_to_abort);
 
     const BackgroundFetchRegistrationId& registration_id() const {
       return registration_id_;

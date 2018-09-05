@@ -15,6 +15,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
@@ -118,7 +119,8 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_completed_ = true;
   }
 
-  void Abort(BackgroundFetchReasonToAbort reason_to_abort) override {}
+  void Abort(
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort) override {}
 
   bool request_started_ = false;
   bool request_completed_ = false;
