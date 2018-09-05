@@ -18,7 +18,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -36,6 +35,7 @@
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -231,7 +231,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
   bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
-  if (IsUnifiedConsentFeatureEnabled(profile_)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // When unified consent given is set to |true|, the unified consent service
     // enables syncing all datatypes.
     UnifiedConsentServiceFactory::GetForProfile(profile_)
@@ -531,7 +531,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
   }
 
   // Disable unified consent first as otherwise disabling sync is not possible.
-  if (IsUnifiedConsentFeatureEnabled(profile_)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     UnifiedConsentServiceFactory::GetForProfile(profile_)
         ->SetUnifiedConsentGiven(false);
   }

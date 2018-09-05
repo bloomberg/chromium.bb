@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/unified_consent/feature.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -28,7 +28,7 @@ namespace {
 
 const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
-const int kModalDialogWidthForDice = 512;
+const int kModalDialogWidthForUnifiedConsent = 512;
 const int kSyncConfirmationDialogHeight = 487;
 const int kSigninErrorDialogHeight = 164;
 
@@ -40,10 +40,11 @@ int GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
 }
 
 int GetSyncConfirmationDialogPreferredWidth(Profile* profile) {
-  // With Unity-enabled profiles, we show a different sync confirmation dialog
+  // If unified consent is enabled, we show a different sync confirmation dialog
   // which uses a different width.
-  return IsUnifiedConsentFeatureEnabled(profile) && profile->IsSyncAllowed()
-             ? kModalDialogWidthForDice
+  return unified_consent::IsUnifiedConsentFeatureEnabled() &&
+                 profile->IsSyncAllowed()
+             ? kModalDialogWidthForUnifiedConsent
              : kModalDialogWidth;
 }
 

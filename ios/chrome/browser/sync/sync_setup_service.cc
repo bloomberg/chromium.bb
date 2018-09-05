@@ -12,10 +12,10 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_protocol_error.h"
+#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -35,7 +35,7 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
   DCHECK(prefs_);
   for (unsigned int i = 0; i < arraysize(kDataTypes); ++i) {
     if (kDataTypes[i] == syncer::USER_EVENTS &&
-        !IsUnifiedConsentFeatureEnabled())
+        !unified_consent::IsUnifiedConsentFeatureEnabled())
       continue;
     user_selectable_types_.Put(kDataTypes[i]);
   }

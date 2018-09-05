@@ -6,9 +6,9 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
@@ -36,7 +36,7 @@ std::unique_ptr<KeyedService> BuildUnifiedConsentServiceForTesting(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  if (!IsUnifiedConsentFeatureEnabled(profile))
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled())
     return nullptr;
 
   return std::make_unique<unified_consent::UnifiedConsentService>(

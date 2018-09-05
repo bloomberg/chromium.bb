@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -46,6 +45,7 @@
 #include "chrome/grit/settings_resources_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -352,7 +352,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(OS_CHROMEOS)
 
   html_source->AddBoolean("unifiedConsentEnabled",
-                          IsUnifiedConsentFeatureEnabled(profile));
+                          unified_consent::IsUnifiedConsentFeatureEnabled());
 
   // TODO(jdoerrie): https://crbug.com/854562.
   // Remove once Autofill Home is launched.

@@ -24,15 +24,14 @@ extern const base::Feature kUnifiedConsent;
 extern const char kUnifiedConsentShowBumpParameter[];
 extern const base::Feature kForceUnifiedConsentBump;
 
-namespace internal {
-// Returns the state of the "Unified Consent" feature.
-//
-// WARNING: Do not call this method directly to check whether unfied consent
-// is enabled. Please use the per-platfome functions defined in
-// * chrome/browser/signin/unified_consent_helper.h
-// * ios/chrome/browser/unified_consent/feature.h
-unified_consent::UnifiedConsentFeatureState GetUnifiedConsentFeatureState();
-}  // namespace internal
+// Returns true if the unified consent feature state is kEnabledNoBump or
+// kEnabledWithBump. Note that the bump may not be enabled, even if this returns
+// true. To check if the bump is enabled, use
+// IsUnifiedConsentFeatureWithBumpEnabled().
+bool IsUnifiedConsentFeatureEnabled();
+
+// Returns true if the unified consent feature state is kEnabledWithBump.
+bool IsUnifiedConsentFeatureWithBumpEnabled();
 
 }  // namespace unified_consent
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
@@ -26,6 +25,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
@@ -201,7 +201,7 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   web_ui()->CallJavascriptFunctionUnsafe("sync.confirmation.setUserImageURL",
                                          picture_url_value);
 
-  if (IsUnifiedConsentFeatureEnabled(profile_)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     AllowJavascript();
     FireWebUIListener("account-image-changed", picture_url_value);
   }

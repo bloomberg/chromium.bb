@@ -16,6 +16,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -36,7 +37,6 @@
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -115,7 +115,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
     self.collectionViewAccessibilityIdentifier = kPrivacyCollectionViewId;
-    if (!IsUnifiedConsentFeatureEnabled()) {
+    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
       // When unified consent flag is enabled, the suggestion setting is
       // available in the "Google Services and sync" settings.
       _suggestionsEnabled = [[PrefBackedBoolean alloc]
@@ -167,7 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierOtherDevices];
 
-  if (!IsUnifiedConsentFeatureEnabled()) {
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Add "Web services" section only if the unified consent is disabled.
     // Otherwise the metrics reporting and show suggestions feature are
     // available in the Google services settings.

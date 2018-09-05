@@ -20,7 +20,6 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/pref_names.h"
@@ -392,7 +391,6 @@ bool ContextualSearchDelegate::CanSendPageURL(
       anonymized_unified_consent_url_helper =
           UrlKeyedDataCollectionConsentHelper::
               NewAnonymizedDataCollectionConsentHelper(
-                  IsUnifiedConsentFeatureEnabled(profile),
                   ProfileManager::GetActiveUserProfile()->GetPrefs(),
                   sync_service);
   // If they have, then allow sending of the URL.

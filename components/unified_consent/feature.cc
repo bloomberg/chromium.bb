@@ -17,7 +17,7 @@ const char kUnifiedConsentShowBumpParameter[] = "show_consent_bump";
 const base::Feature kForceUnifiedConsentBump{"ForceUnifiedConsentBump",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-namespace internal {
+namespace {
 UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
   // Unified consent requires user consent to be recorded via its own
   // sync model type.The reason is that when unified consent is enabled,
@@ -35,6 +35,16 @@ UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
   return show_bump.empty() ? UnifiedConsentFeatureState::kEnabledNoBump
                            : UnifiedConsentFeatureState::kEnabledWithBump;
 }
-}  // namespace internal
+}  // namespace
+
+bool IsUnifiedConsentFeatureEnabled() {
+  return GetUnifiedConsentFeatureState() !=
+         UnifiedConsentFeatureState::kDisabled;
+}
+
+bool IsUnifiedConsentFeatureWithBumpEnabled() {
+  return GetUnifiedConsentFeatureState() ==
+         UnifiedConsentFeatureState::kEnabledWithBump;
+}
 
 }  // namespace unified_consent
