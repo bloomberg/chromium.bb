@@ -144,38 +144,15 @@ BackgroundFetchJobController::NewRegistration(
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
       0 /* upload_total */, 0 /* uploaded */, total_downloads_size_,
-      complete_requests_downloaded_bytes_cache_, state, MojoFailureReason());
+      complete_requests_downloaded_bytes_cache_, state, reason_to_abort_);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
   return active_request_downloaded_bytes_;
 }
 
-// TODO(crbug.com/876691): Get rid of BackgroundFetchReasonToAbort and remove
-// this method.
-blink::mojom::BackgroundFetchFailureReason
-BackgroundFetchJobController::MojoFailureReason() const {
-  switch (reason_to_abort_) {
-    case BackgroundFetchReasonToAbort::NONE:
-      return blink::mojom::BackgroundFetchFailureReason::NONE;
-    case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
-      return blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI;
-    case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
-      return blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
-    case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-      return blink::mojom::BackgroundFetchFailureReason::
-          TOTAL_DOWNLOAD_SIZE_EXCEEDED;
-    case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
-      return blink::mojom::BackgroundFetchFailureReason::
-          SERVICE_WORKER_UNAVAILABLE;
-    case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
-      return blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED;
-  }
-  NOTREACHED();
-}
-
 void BackgroundFetchJobController::Abort(
-    BackgroundFetchReasonToAbort reason_to_abort) {
+    blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
   reason_to_abort_ = reason_to_abort;
 
   // Stop propagating any in-flight events to the scheduler.

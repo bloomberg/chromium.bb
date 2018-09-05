@@ -29,6 +29,7 @@
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 using testing::_;
 
@@ -55,7 +56,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       const BackgroundFetchRegistrationId& registration_id) {
     if (finished_requests_.count(registration_id)) {
       DCHECK_NE(finished_requests_[registration_id],
-                BackgroundFetchReasonToAbort::NONE);
+                blink::mojom::BackgroundFetchFailureReason::NONE);
 
       return JobCompletionStatus::kAborted;
     }
@@ -179,7 +180,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   uint64_t last_downloaded_ = 0;
 
   std::map<BackgroundFetchRegistrationId, int> pending_requests_counts_;
-  std::map<BackgroundFetchRegistrationId, BackgroundFetchReasonToAbort>
+  std::map<BackgroundFetchRegistrationId,
+           blink::mojom::BackgroundFetchFailureReason>
       finished_requests_;
 
   // Closure that will be invoked every time the JobController receives a
@@ -199,8 +201,9 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       job_progress_closure_.Run();
   }
 
-  void DidFinishJob(const BackgroundFetchRegistrationId& registration_id,
-                    BackgroundFetchReasonToAbort reason_to_abort) {
+  void DidFinishJob(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
     auto iter = pending_requests_counts_.find(registration_id);
     DCHECK(iter != pending_requests_counts_.end());
 
@@ -300,7 +303,8 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
       base::BindOnce(&BackgroundFetchJobControllerTest::OnRequestFinished,
                      base::Unretained(this), registration_id));
 
-  controller->Abort(BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
+  controller->Abort(
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
 
   base::RunLoop().RunUntilIdle();
 

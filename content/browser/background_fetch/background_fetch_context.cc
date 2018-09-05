@@ -25,6 +25,8 @@
 
 namespace content {
 
+using FailureReason = blink::mojom::BackgroundFetchFailureReason;
+
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
@@ -265,7 +267,7 @@ void BackgroundFetchContext::OnQuotaExceeded(
     const BackgroundFetchRegistrationId& registration_id) {
   auto job_it = job_controllers_.find(registration_id.unique_id());
   if (job_it != job_controllers_.end() && job_it->second)
-    job_it->second->Abort(BackgroundFetchReasonToAbort::QUOTA_EXCEEDED);
+    job_it->second->Abort(FailureReason::QUOTA_EXCEEDED);
 }
 
 void BackgroundFetchContext::AbandonFetches(
@@ -285,8 +287,7 @@ void BackgroundFetchContext::AbandonFetches(
             service_worker_registration_id) {
       DCHECK(saved_iter->second);
 
-      saved_iter->second->Abort(
-          BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE);
+      saved_iter->second->Abort(FailureReason::SERVICE_WORKER_UNAVAILABLE);
     }
   }
 
@@ -387,13 +388,13 @@ void BackgroundFetchContext::Abort(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DidFinishJob(std::move(callback), registration_id,
-               BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER);
+               FailureReason::CANCELLED_BY_DEVELOPER);
 }
 
 void BackgroundFetchContext::DidFinishJob(
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchReasonToAbort reason_to_abort) {
+    FailureReason reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If |aborted| is true, this will also propagate the event to any active
@@ -407,7 +408,7 @@ void BackgroundFetchContext::DidFinishJob(
 
 void BackgroundFetchContext::DidMarkForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchReasonToAbort reason_to_abort,
+    FailureReason reason_to_abort,
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
     blink::mojom::BackgroundFetchError error) {
   DCHECK(callback);
@@ -422,7 +423,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
 
   auto controllers_iter = job_controllers_.find(registration_id.unique_id());
 
-  if (reason_to_abort == BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER) {
+  if (reason_to_abort == FailureReason::CANCELLED_BY_DEVELOPER) {
     DCHECK(controllers_iter != job_controllers_.end());
     controllers_iter->second->Abort(reason_to_abort);
   }
@@ -430,17 +431,19 @@ void BackgroundFetchContext::DidMarkForDeletion(
       blink::mojom::BackgroundFetchState::FAILURE);
 
   switch (reason_to_abort) {
-    case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
-    case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
+    case FailureReason::CANCELLED_BY_DEVELOPER:
+    case FailureReason::CANCELLED_FROM_UI:
       CleanupRegistration(registration_id, {},
                           blink::mojom::BackgroundFetchState::FAILURE);
       event_dispatcher_.DispatchBackgroundFetchAbortEvent(
           registration_id, std::move(registration), base::DoNothing());
       return;
-    case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-    case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
-    case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
-    case BackgroundFetchReasonToAbort::NONE:
+    case FailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+    case FailureReason::SERVICE_WORKER_UNAVAILABLE:
+    case FailureReason::QUOTA_EXCEEDED:
+    case FailureReason::BAD_STATUS:
+    case FailureReason::FETCH_ERROR:
+    case FailureReason::NONE:
       // This will send a BackgroundFetchFetched or BackgroundFetchFail event.
       // We still need this to figure out which event to send.
       // TODO(crbug.com/699957, crbug.com/874092): Add a method to only return

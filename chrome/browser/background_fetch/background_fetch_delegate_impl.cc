@@ -27,6 +27,7 @@
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -511,9 +512,9 @@ void BackgroundFetchDelegateImpl::FailFetch(const std::string& job_unique_id) {
   const std::string unique_id = job_unique_id;
   Abort(job_unique_id);
   if (client()) {
-    client()->OnJobCancelled(
-        unique_id,
-        content::BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED);
+    client()->OnJobCancelled(unique_id,
+                             blink::mojom::BackgroundFetchFailureReason::
+                                 TOTAL_DOWNLOAD_SIZE_EXCEEDED);
   }
 }
 
@@ -523,7 +524,7 @@ void BackgroundFetchDelegateImpl::CancelDownload(
 
   if (client()) {
     client()->OnJobCancelled(
-        id.id, content::BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
+        id.id, blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
   }
 }
 

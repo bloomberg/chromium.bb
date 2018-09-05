@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -38,16 +39,6 @@ struct BackgroundFetchResponse;
 struct BackgroundFetchResult;
 struct BackgroundFetchDescription;
 
-// Various reasons a Background Fetch can get aborted.
-enum class BackgroundFetchReasonToAbort {
-  NONE,
-  CANCELLED_FROM_UI,
-  ABORTED_BY_DEVELOPER,
-  TOTAL_DOWNLOAD_SIZE_EXCEEDED,
-  SERVICE_WORKER_UNAVAILABLE,
-  QUOTA_EXCEEDED,
-};
-
 // Interface for launching background fetches. Implementing classes would
 // generally interface with the DownloadService or DownloadManager.
 // Must only be used on the UI thread and generally expected to be called by the
@@ -67,7 +58,7 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // e.g. because the user clicked cancel on a notification.
     virtual void OnJobCancelled(
         const std::string& job_unique_id,
-        BackgroundFetchReasonToAbort reason_to_abort) = 0;
+        blink::mojom::BackgroundFetchFailureReason reason_to_abort) = 0;
 
     // Called after the download has started with the initial response
     // (including headers and URL chain). Always called on the UI thread.
