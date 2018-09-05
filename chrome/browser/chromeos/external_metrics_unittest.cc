@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -19,7 +21,10 @@ namespace chromeos {  // Need this because of the FRIEND_TEST
 
 class ExternalMetricsTest : public testing::Test {
  public:
-  void SetUp() override {
+  ExternalMetricsTest() = default;
+  ~ExternalMetricsTest() override = default;
+
+  void Init() {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     external_metrics_ = ExternalMetrics::CreateForTesting(
         dir_.GetPath().Append("testfile").value());
@@ -30,7 +35,17 @@ class ExternalMetricsTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
+TEST_F(ExternalMetricsTest, CustomInterval) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kExternalMetricsCollectionInterval, "5");
+  Init();
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(5),
+            external_metrics_->collection_interval_);
+}
+
 TEST_F(ExternalMetricsTest, HandleMissingFile) {
+  Init();
   ASSERT_TRUE(base::DeleteFile(
       base::FilePath(external_metrics_->uma_events_file_), false));
 
@@ -38,6 +53,7 @@ TEST_F(ExternalMetricsTest, HandleMissingFile) {
 }
 
 TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
+  Init();
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<metrics::MetricSample> hist =
@@ -52,6 +68,7 @@ TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
 }
 
 TEST_F(ExternalMetricsTest, IncorrectHistogramsAreDiscarded) {
+  Init();
   base::HistogramTester histogram_tester;
 
   // Malformed histogram (min > max).
