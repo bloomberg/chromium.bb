@@ -49,6 +49,7 @@ cc_library(
     deps = [
         ":font_data",
         "//third_party/glew",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
@@ -76,6 +77,7 @@ cc_library(
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
+        "@com_google_glog//:glog",
     ],
 )
 
@@ -86,5 +88,7 @@ cc_binary(
     ],
     deps = [
         ":render_program",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_glog//:glog",
     ],
 )
