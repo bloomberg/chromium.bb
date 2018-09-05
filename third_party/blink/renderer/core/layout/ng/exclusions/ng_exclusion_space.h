@@ -191,7 +191,7 @@ class CORE_EXPORT NGExclusionSpace {
   struct DerivedGeometry {
     DerivedGeometry();
 
-    void Add(scoped_refptr<const NGExclusion> exclusion);
+    void Add(const NGExclusion& exclusion);
 
     NGLayoutOpportunity FindLayoutOpportunity(
         const NGBfcOffset& offset,
