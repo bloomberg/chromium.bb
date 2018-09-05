@@ -735,4 +735,46 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFilesAppBrowserTest, BasicDrive) {
   StartTest();
 }
 
+// Test fixture class for testing migration to DriveFS.
+class DriveFsFilesAppBrowserTest : public FileManagerBrowserTestBase {
+ public:
+  DriveFsFilesAppBrowserTest() = default;
+
+ protected:
+  GuestMode GetGuestMode() const override { return NOT_IN_GUEST_MODE; }
+
+  const char* GetTestCaseName() const override {
+    return test_case_name_.c_str();
+  }
+
+  std::string GetFullTestCaseName() const override { return test_case_name_; }
+
+  const char* GetTestExtensionManifestName() const override {
+    return "file_manager_test_manifest.json";
+  }
+
+  void set_test_case_name(const std::string& name) { test_case_name_ = name; }
+
+  bool GetEnableDriveFs() const override {
+    return !base::StringPiece(
+                ::testing::UnitTest::GetInstance()->current_test_info()->name())
+                .starts_with("PRE");
+  }
+
+ private:
+  std::string test_case_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFsFilesAppBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, PRE_MigratePinnedFiles) {
+  set_test_case_name("PRE_driveMigratePinnedFile");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(DriveFsFilesAppBrowserTest, MigratePinnedFiles) {
+  set_test_case_name("driveMigratePinnedFile");
+  StartTest();
+}
+
 }  // namespace file_manager

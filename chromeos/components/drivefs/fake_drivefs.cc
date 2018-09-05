@@ -126,7 +126,9 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   stored_metadata.mime_type = mime_type;
   stored_metadata.original_name = original_name;
   stored_metadata.hosted = (original_name != path.BaseName().value());
-  stored_metadata.pinned = pinned;
+  if (pinned) {
+    stored_metadata.pinned = true;
+  }
 }
 
 void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,

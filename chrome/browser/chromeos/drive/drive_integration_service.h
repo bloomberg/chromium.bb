@@ -213,6 +213,12 @@ class DriveIntegrationService : public KeyedService,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Migrate pinned files from the old Drive integration to DriveFS.
+  void MigratePinnedFiles();
+
+  // Pin all the files in |files_to_pin| with DriveFS.
+  void PinFiles(const std::vector<base::FilePath>& files_to_pin);
+
   friend class DriveIntegrationServiceFactory;
 
   Profile* profile_;

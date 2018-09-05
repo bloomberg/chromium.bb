@@ -344,3 +344,75 @@ testcase.drivePressCtrlAFromSearch = function() {
   ];
   StepsRunner.run(steps);
 };
+
+testcase.PRE_driveMigratePinnedFile = function() {
+  // Pin a file.
+  testPromise(
+      setupAndWaitUntilReady(null, RootPath.DRIVE).then(function(results) {
+        var windowId = results.windowId;
+        return remoteCall
+            .callRemoteTestUtil('selectFile', windowId, ['hello.txt'])
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['.table-row[selected]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseRightClick', windowId, ['.table-row[selected]']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu:not([hidden])');
+            })
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['[command="#toggle-pinned"]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseClick', windowId, ['[command="#toggle-pinned"]']);
+            })
+            .then(function(result) {
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu[hidden]');
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeEvent', windowId, ['#file-list', 'contextmenu']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '[command="#toggle-pinned"][checked]');
+            });
+      }));
+};
+
+testcase.driveMigratePinnedFile = function() {
+  // After enabling DriveFS, ensure the file is still pinned.
+  testPromise(
+      setupAndWaitUntilReady(null, RootPath.DRIVE).then(function(results) {
+        var windowId = results.windowId;
+        return remoteCall
+            .callRemoteTestUtil('selectFile', windowId, ['hello.txt'])
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['.table-row[selected]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseRightClick', windowId, ['.table-row[selected]']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu:not([hidden])');
+            })
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, '[command="#toggle-pinned"][checked]');
+            });
+      }));
+
+};

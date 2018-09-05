@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
@@ -178,6 +179,11 @@ FileError InitializeMetadata(
     return FILE_ERROR_FAILED;
   }
 
+  // When running with DriveFS and migrating pinned files, only
+  // |metadata_storage| is non-null and needs to be initialized.
+  if (!cache)
+    return FILE_ERROR_OK;
+
   if (!cache->Initialize()) {
     LOG(WARNING) << "Failed to initialize the cache.";
     return FILE_ERROR_FAILED;
@@ -218,6 +224,56 @@ FileError InitializeMetadata(
 
 void ResetCacheDone(base::OnceCallback<void(bool)> callback, FileError error) {
   std::move(callback).Run(error == FILE_ERROR_OK);
+}
+
+base::FilePath GetFullPath(internal::ResourceMetadataStorage* metadata_storage,
+                           const ResourceEntry& entry) {
+  std::vector<std::string> path_components;
+  ResourceEntry current_entry = entry;
+  constexpr int kPathComponentSanityLimit = 100;
+  for (int i = 0; i < kPathComponentSanityLimit; ++i) {
+    path_components.push_back(current_entry.base_name());
+    if (!current_entry.has_parent_local_id()) {
+      // Ignore anything not contained within the drive grand root.
+      return {};
+    }
+    if (current_entry.parent_local_id() == util::kDriveGrandRootLocalId) {
+      // Omit the DriveGrantRoot directory from the path; DriveFS paths are
+      // relative to the mount point.
+      break;
+    }
+    if (metadata_storage->GetEntry(current_entry.parent_local_id(),
+                                   &current_entry) != FILE_ERROR_OK) {
+      return {};
+    }
+  }
+  if (path_components.empty()) {
+    return {};
+  }
+  base::FilePath path("/");
+  for (auto it = path_components.crbegin(); it != path_components.crend();
+       ++it) {
+    path = path.Append(*it);
+  }
+  return path;
+}
+
+std::vector<base::FilePath> GetPinnedFiles(
+    internal::ResourceMetadataStorage* metadata_storage) {
+  std::vector<base::FilePath> pinned_files;
+  for (auto it = metadata_storage->GetIterator(); !it->IsAtEnd();
+       it->Advance()) {
+    const auto& value = it->GetValue();
+    if (!value.has_file_specific_info() ||
+        !value.file_specific_info().cache_state().is_pinned()) {
+      continue;
+    }
+    auto path = GetFullPath(metadata_storage, value);
+    if (!path.empty()) {
+      pinned_files.push_back(std::move(path));
+    }
+  }
+  return pinned_files;
 }
 
 }  // namespace
@@ -443,10 +499,19 @@ DriveIntegrationService::DriveIntegrationService(
   if (preference_watcher_)
     preference_watcher->set_integration_service(this);
 
+  bool migrated_to_drivefs =
+      profile_->GetPrefs()->GetBoolean(prefs::kDriveFsPinnedMigrated);
+  if (!drivefs_holder_ || !migrated_to_drivefs) {
+    metadata_storage_.reset(new internal::ResourceMetadataStorage(
+        cache_root_directory_.Append(kMetadataDirectory),
+        blocking_task_runner_.get()));
+  }
   if (drivefs_holder_) {
     delete test_drive_service;
     delete test_file_system;
-    state_ = INITIALIZED;
+    if (migrated_to_drivefs) {
+      state_ = INITIALIZED;
+    }
     SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
     return;
   }
@@ -481,9 +546,6 @@ DriveIntegrationService::DriveIntegrationService(
   scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),
       blocking_task_runner_.get(), std::move(wake_lock_provider));
-  metadata_storage_.reset(new internal::ResourceMetadataStorage(
-      cache_root_directory_.Append(kMetadataDirectory),
-      blocking_task_runner_.get()));
   cache_.reset(new internal::FileCache(
       metadata_storage_.get(),
       cache_root_directory_.Append(kCacheFileDirectory),
@@ -748,6 +810,10 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
   if (drivefs_holder_ && preference_watcher_) {
     preference_watcher_->UpdateSyncPauseState();
   }
+  if (drivefs_holder_ &&
+      !profile_->GetPrefs()->GetBoolean(prefs::kDriveFsPinnedMigrated)) {
+    MigratePinnedFiles();
+  }
 }
 
 void DriveIntegrationService::RemoveDriveMountPoint() {
@@ -829,6 +895,17 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     FileError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZING, state_);
+
+  if (drivefs_holder_) {
+    if (error != FILE_ERROR_OK) {
+      profile_->GetPrefs()->SetBoolean(prefs::kDriveFsPinnedMigrated, true);
+      metadata_storage_.reset();
+    }
+    state_ = INITIALIZED;
+    if (enabled_)
+      AddDriveMountPoint();
+    return;
+  }
 
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
@@ -914,6 +991,29 @@ void DriveIntegrationService::Observe(
     download_handler_->ObserveIncognitoDownloadManager(
         BrowserContext::GetDownloadManager(created_profile));
   }
+}
+
+void DriveIntegrationService::MigratePinnedFiles() {
+  if (!metadata_storage_)
+    return;
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&GetPinnedFiles, metadata_storage_.get()),
+      base::BindOnce(&DriveIntegrationService::PinFiles,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveIntegrationService::PinFiles(
+    const std::vector<base::FilePath>& files_to_pin) {
+  if (!drivefs_holder_->drivefs_host()->IsMounted())
+    return;
+
+  for (const auto& path : files_to_pin) {
+    GetDriveFsInterface()->SetPinned(path, true, base::DoNothing());
+  }
+  profile_->GetPrefs()->SetBoolean(prefs::kDriveFsPinnedMigrated, true);
+  metadata_storage_.reset();
 }
 
 //===================== DriveIntegrationServiceFactory =======================

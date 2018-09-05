@@ -23,5 +23,8 @@ const char kDisableDriveHostedFiles[] = "gdata.hosted_files.disabled";
 // when passed to drivefs.
 const char kDriveFsProfileSalt[] = "drivefs.profile_salt";
 
+// A boolean pref containing whether pinned files have been migrated to DriveFS.
+const char kDriveFsPinnedMigrated[] = "drivefs.pinned_migrated";
+
 }  // namespace prefs
 }  // namespace drive
