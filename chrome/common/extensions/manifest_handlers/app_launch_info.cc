@@ -289,7 +289,7 @@ void AppLaunchInfo::OverrideLaunchURL(Extension* extension,
 
   URLPattern pattern(Extension::kValidWebExtentSchemes);
   URLPattern::ParseResult result = pattern.Parse(override_url.spec());
-  DCHECK_EQ(result, URLPattern::PARSE_SUCCESS);
+  DCHECK_EQ(result, URLPattern::ParseResult::kSuccess);
   pattern.SetPath(pattern.path() + '*');
   extension->AddWebExtentPattern(pattern);
 }

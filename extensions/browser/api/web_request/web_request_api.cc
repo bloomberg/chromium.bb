@@ -798,7 +798,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
                            URLPattern::SCHEME_EXTENSION |
                            URLPattern::SCHEME_WS | URLPattern::SCHEME_WSS);
         if (!urls_value->GetString(i, &url) ||
-            pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
+            pattern.Parse(url) != URLPattern::ParseResult::kSuccess) {
           *error = ErrorUtils::FormatErrorMessage(
               keys::kInvalidRequestFilterUrl, url);
           return false;

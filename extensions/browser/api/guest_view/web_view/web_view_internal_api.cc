@@ -150,7 +150,7 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
                        extension->id(), extension->location());
   for (const std::string& match : script_value.matches) {
     URLPattern pattern(UserScript::ValidUserScriptSchemes(allowed_everywhere));
-    if (pattern.Parse(match) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(match) != URLPattern::ParseResult::kSuccess) {
       *error = errors::kInvalidMatches;
       return std::unique_ptr<extensions::UserScript>();
     }
@@ -165,7 +165,7 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
       URLPattern pattern(
           UserScript::ValidUserScriptSchemes(allowed_everywhere));
 
-      if (pattern.Parse(exclude_match) != URLPattern::PARSE_SUCCESS) {
+      if (pattern.Parse(exclude_match) != URLPattern::ParseResult::kSuccess) {
         *error = errors::kInvalidExcludeMatches;
         return std::unique_ptr<extensions::UserScript>();
       }

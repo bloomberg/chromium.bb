@@ -275,7 +275,7 @@ base::Optional<URLPattern> ParseRuntimePermissionsPattern(
                                                  URLPattern::SCHEME_FILE;
 
   URLPattern pattern(kValidRuntimePermissionSchemes);
-  if (pattern.Parse(pattern_str) != URLPattern::PARSE_SUCCESS)
+  if (pattern.Parse(pattern_str) != URLPattern::ParseResult::kSuccess)
     return base::nullopt;
 
   // We don't allow adding paths for permissions, because they aren't meaningful

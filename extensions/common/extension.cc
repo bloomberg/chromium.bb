@@ -673,12 +673,12 @@ bool Extension::LoadExtent(const char* key,
 
     URLPattern pattern(kValidWebExtentSchemes);
     URLPattern::ParseResult parse_result = pattern.Parse(pattern_string);
-    if (parse_result == URLPattern::PARSE_ERROR_EMPTY_PATH) {
+    if (parse_result == URLPattern::ParseResult::kEmptyPath) {
       pattern_string += "/";
       parse_result = pattern.Parse(pattern_string);
     }
 
-    if (parse_result != URLPattern::PARSE_SUCCESS) {
+    if (parse_result != URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           value_error, base::NumberToString(i),
           URLPattern::GetParseResultString(parse_result));

@@ -253,7 +253,7 @@ std::unique_ptr<AutomationInfo> AutomationInfo::FromValue(
                            ~URLPattern::SCHEME_CHROMEUI);
         URLPattern::ParseResult parse_result = pattern.Parse(*it);
 
-        if (parse_result != URLPattern::PARSE_SUCCESS) {
+        if (parse_result != URLPattern::ParseResult::kSuccess) {
           install_warnings->push_back(
               InstallWarning(ErrorUtils::FormatErrorMessage(
                   automation_errors::kErrorInvalidMatch, *it,

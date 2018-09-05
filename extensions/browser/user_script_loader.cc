@@ -122,12 +122,12 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
         script->set_description(value);
       } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
         URLPattern pattern(UserScript::ValidUserScriptSchemes());
-        if (URLPattern::PARSE_SUCCESS != pattern.Parse(value))
+        if (URLPattern::ParseResult::kSuccess != pattern.Parse(value))
           return false;
         script->add_url_pattern(pattern);
       } else if (GetDeclarationValue(line, kExcludeMatchDeclaration, &value)) {
         URLPattern exclude(UserScript::ValidUserScriptSchemes());
-        if (URLPattern::PARSE_SUCCESS != exclude.Parse(value))
+        if (URLPattern::ParseResult::kSuccess != exclude.Parse(value))
           return false;
         script->add_exclude_url_pattern(exclude);
       } else if (GetDeclarationValue(line, kRunAtDeclaration, &value)) {

@@ -119,7 +119,7 @@ bool NativeMessagingHostManifest::Parse(base::DictionaryValue* dictionary,
 
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
     URLPattern::ParseResult result = pattern.Parse(pattern_string);
-    if (result != URLPattern::PARSE_SUCCESS) {
+    if (result != URLPattern::ParseResult::kSuccess) {
       *error_message = "Failed to parse pattern \"" + pattern_string +
           "\": " + URLPattern::GetParseResultString(result);
       return false;

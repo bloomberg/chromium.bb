@@ -134,7 +134,7 @@ std::unique_ptr<const PermissionSet> UnpackPermissionSet(
         allowed_schemes &= ~URLPattern::SCHEME_FILE;
       URLPattern origin(allowed_schemes);
       URLPattern::ParseResult parse_result = origin.Parse(*it);
-      if (URLPattern::PARSE_SUCCESS != parse_result) {
+      if (URLPattern::ParseResult::kSuccess != parse_result) {
         *error = ErrorUtils::FormatErrorMessage(
             kInvalidOrigin,
             *it,

@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -70,7 +71,8 @@ const char* const kParseResultMessages[] = {
   kParseErrorInvalidHost,
 };
 
-static_assert(URLPattern::NUM_PARSE_RESULTS == arraysize(kParseResultMessages),
+static_assert(static_cast<int>(URLPattern::ParseResult::kNumParseResults) ==
+                  base::size(kParseResultMessages),
               "must add message for each parse result");
 
 const char kPathSeparator[] = "/";
@@ -162,12 +164,14 @@ URLPattern::URLPattern(int valid_schemes, base::StringPiece pattern)
       match_effective_tld_(true),
       port_("*") {
   ParseResult result = Parse(pattern);
-  if (PARSE_SUCCESS != result) {
+  if (result != ParseResult::kSuccess) {
+    const char* error_string = GetParseResultString(result);
     // Temporarily add more logging to investigate why this code path is
     // reached. For http://crbug.com/856948
     LOG(ERROR) << "Invalid pattern was given " << pattern << " result "
-               << result;
-    NOTREACHED() << "URLPattern invalid: " << pattern << " result " << result;
+               << error_string;
+    NOTREACHED() << "URLPattern invalid: '" << pattern
+                 << "'; error: " << error_string;
   }
 }
 
@@ -207,7 +211,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
     SetMatchAllURLs(true);
-    return PARSE_SUCCESS;
+    return ParseResult::kSuccess;
   }
 
   // Parse out the scheme.
@@ -221,20 +225,20 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
   }
 
   if (scheme_end_pos == base::StringPiece::npos)
-    return PARSE_ERROR_MISSING_SCHEME_SEPARATOR;
+    return ParseResult::kMissingSchemeSeparator;
 
   if (!SetScheme(pattern.substr(0, scheme_end_pos)))
-    return PARSE_ERROR_INVALID_SCHEME;
+    return ParseResult::kInvalidScheme;
 
   bool standard_scheme = IsStandardScheme(scheme_);
   if (standard_scheme != has_standard_scheme_separator)
-    return PARSE_ERROR_WRONG_SCHEME_SEPARATOR;
+    return ParseResult::kWrongSchemeSeparator;
 
   // Advance past the scheme separator.
   scheme_end_pos +=
       (standard_scheme ? strlen(url::kStandardSchemeSeparator) : 1);
   if (scheme_end_pos >= pattern.size())
-    return PARSE_ERROR_EMPTY_HOST;
+    return ParseResult::kEmptyHost;
 
   // Parse out the host and path.
   size_t host_start_pos = scheme_end_pos;
@@ -259,10 +263,10 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
 
     // Host is required.
     if (host_start_pos == host_end_pos)
-      return PARSE_ERROR_EMPTY_HOST;
+      return ParseResult::kEmptyHost;
 
     if (host_end_pos == base::StringPiece::npos)
-      return PARSE_ERROR_EMPTY_PATH;
+      return ParseResult::kEmptyPath;
 
     base::StringPiece host_and_port =
         pattern.substr(host_start_pos, host_end_pos - host_start_pos);
@@ -274,15 +278,15 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     } else {  // IPv6.
       size_t host_end_pos = host_and_port.find(']');
       if (host_end_pos == base::StringPiece::npos)
-        return PARSE_ERROR_INVALID_HOST;
+        return ParseResult::kInvalidHost;
       if (host_end_pos == 1)
-        return PARSE_ERROR_EMPTY_HOST;
+        return ParseResult::kEmptyHost;
 
       if (host_end_pos < host_and_port.length() - 1) {
         // The host isn't the only component. Check for a port. This would
         // require a ':' to follow the closing ']' from the host.
         if (host_and_port[host_end_pos + 1] != ':')
-          return PARSE_ERROR_INVALID_HOST;
+          return ParseResult::kInvalidHost;
 
         port_separator_pos = host_end_pos + 1;
       }
@@ -290,7 +294,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
 
     if (port_separator_pos != base::StringPiece::npos &&
         !SetPort(host_and_port.substr(port_separator_pos + 1))) {
-      return PARSE_ERROR_INVALID_PORT;
+      return ParseResult::kInvalidPort;
     }
 
     // Note: this substr() will be the entire string if the port position
@@ -304,7 +308,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     // Could be empty if the host only consists of whitespace characters.
     if (host_components.empty() ||
         (host_components.size() == 1 && host_components[0].empty()))
-      return PARSE_ERROR_EMPTY_HOST;
+      return ParseResult::kEmptyHost;
 
     if (host_components[0] == "*") {
       match_subdomains_ = true;
@@ -329,7 +333,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
   // done as a convenience to developers who might otherwise be confused and
   // think '*' works as a glob in the host.
   if (host_.find('*') != std::string::npos)
-    return PARSE_ERROR_INVALID_HOST_WILDCARD;
+    return ParseResult::kInvalidHostWildcard;
 
   if (!host_.empty()) {
     // If |host_| is present (i.e., isn't a wildcard), we need to canonicalize
@@ -338,14 +342,14 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     host_ = net::CanonicalizeHost(host_, &host_info);
     // net::CanonicalizeHost() returns an empty string on failure.
     if (host_.empty())
-      return PARSE_ERROR_INVALID_HOST;
+      return ParseResult::kInvalidHost;
   }
 
   // Null characters are not allowed in hosts.
   if (host_.find('\0') != std::string::npos)
-    return PARSE_ERROR_INVALID_HOST;
+    return ParseResult::kInvalidHost;
 
-  return PARSE_SUCCESS;
+  return ParseResult::kSuccess;
 }
 
 void URLPattern::SetValidSchemes(int valid_schemes) {
@@ -677,7 +681,7 @@ base::Optional<URLPattern> URLPattern::CreateIntersection(
         return *copy_source;
       URLPattern result(intersection_schemes);
       ParseResult parse_result = result.Parse(copy_source->GetAsString());
-      CHECK_EQ(PARSE_SUCCESS, parse_result);
+      CHECK_EQ(ParseResult::kSuccess, parse_result);
       return result;
     }
   }
@@ -737,7 +741,7 @@ base::Optional<URLPattern> URLPattern::CreateIntersection(
   // TODO(devlin): I don't think there's any way this should ever fail, but
   // use a CHECK() to flush any cases out. If nothing crops up, downgrade this
   // to a DCHECK in M72.
-  CHECK_EQ(PARSE_SUCCESS, result);
+  CHECK_EQ(ParseResult::kSuccess, result);
 
   return pattern;
 }
@@ -814,5 +818,5 @@ std::vector<URLPattern> URLPattern::ConvertToExplicitSchemes() const {
 // static
 const char* URLPattern::GetParseResultString(
     URLPattern::ParseResult parse_result) {
-  return kParseResultMessages[parse_result];
+  return kParseResultMessages[static_cast<int>(parse_result)];
 }

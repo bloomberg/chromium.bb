@@ -137,7 +137,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     // URL patterns claimed here belong to the app's author verified sites.
     URLPattern pattern(URLPattern::SCHEME_HTTP |
                        URLPattern::SCHEME_HTTPS);
-    if (pattern.Parse(str_pattern) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(str_pattern) != URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           merrors::kInvalidURLHandlerPatternElement, handler_id);
       return false;

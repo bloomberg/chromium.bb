@@ -301,8 +301,9 @@ void UserScript::UnpickleURLPatternSet(const base::Pickle& pickle,
 
     URLPattern pattern(kValidUserScriptSchemes);
     URLPattern::ParseResult result = pattern.Parse(pattern_str);
-    CHECK(URLPattern::PARSE_SUCCESS == result) <<
-        URLPattern::GetParseResultString(result) << " " << pattern_str.c_str();
+    CHECK(URLPattern::ParseResult::kSuccess == result)
+        << URLPattern::GetParseResultString(result) << " "
+        << pattern_str.c_str();
 
     pattern.SetValidSchemes(valid_schemes);
     pattern_list->AddPattern(pattern);

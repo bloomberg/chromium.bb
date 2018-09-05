@@ -72,17 +72,17 @@ class URLPattern {
   };
 
   // Error codes returned from Parse().
-  enum ParseResult {
-    PARSE_SUCCESS = 0,
-    PARSE_ERROR_MISSING_SCHEME_SEPARATOR,
-    PARSE_ERROR_INVALID_SCHEME,
-    PARSE_ERROR_WRONG_SCHEME_SEPARATOR,
-    PARSE_ERROR_EMPTY_HOST,
-    PARSE_ERROR_INVALID_HOST_WILDCARD,
-    PARSE_ERROR_EMPTY_PATH,
-    PARSE_ERROR_INVALID_PORT,
-    PARSE_ERROR_INVALID_HOST,
-    NUM_PARSE_RESULTS
+  enum class ParseResult {
+    kSuccess = 0,
+    kMissingSchemeSeparator,
+    kInvalidScheme,
+    kWrongSchemeSeparator,
+    kEmptyHost,
+    kInvalidHostWildcard,
+    kEmptyPath,
+    kInvalidPort,
+    kInvalidHost,
+    kNumParseResults,
   };
 
   // Types of URLPattern that Parse() considers valid.
@@ -115,8 +115,8 @@ class URLPattern {
   bool operator==(const URLPattern& other) const;
 
   // Initializes this instance by parsing the provided string. Returns
-  // URLPattern::PARSE_SUCCESS on success, or an error code otherwise. On
-  // failure, this instance will have some intermediate values and is in an
+  // URLPattern::ParseResult::kSuccess on success, or an error code otherwise.
+  // On failure, this instance will have some intermediate values and is in an
   // invalid state. If you want to allow the match pattern to specify a wildcard
   // for the effective TLD, specify in |parse_options|.
   ParseResult Parse(base::StringPiece pattern_str);
