@@ -144,7 +144,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     for (size_t i = 0; i < line->line_items.size(); ++i) {
       FlexItem& flex_item = line->line_items[i];
       container_builder_.AddChild(
-          flex_item.layout_result,
+          *flex_item.layout_result,
           {flex_item.desired_location.X(), flex_item.desired_location.Y()});
     }
 

@@ -23,7 +23,9 @@ class CORE_EXPORT NGLink {
   NGLink() = default;
   NGLink(scoped_refptr<const NGPhysicalFragment> fragment,
          NGPhysicalOffset offset)
-      : fragment_(fragment), offset_(offset) {}
+      : fragment_(std::move(fragment)), offset_(offset) {}
+  NGLink(NGLink&& o) noexcept
+      : fragment_(std::move(o.fragment_)), offset_(o.offset_) {}
   ~NGLink() = default;
 
   // Returns the offset relative to the parent fragment's content-box.
@@ -44,10 +46,12 @@ class CORE_EXPORT NGLink {
   friend class NGFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
   friend class NGLayoutResult;
+
+  DISALLOW_COPY_AND_ASSIGN(NGLink);
 };
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::NGLink);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGLink);
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LINK_H_

@@ -65,7 +65,7 @@ void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
         NGLogicalOffset offset;
         scoped_refptr<NGLayoutResult> result =
             LayoutDescendant(candidate, &offset);
-        container_builder_->AddChild(std::move(result), offset);
+        container_builder_->AddChild(*result, offset);
         if (candidate.node.GetLayoutBox() != only_layout)
           candidate.node.UseOldOutOfFlowPositioning();
       } else {
