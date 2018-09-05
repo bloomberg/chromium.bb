@@ -31,12 +31,13 @@ namespace chromeos {
 
 namespace {
 
+const char kReleaseChannelCanary[] = "canary-channel";
 const char kReleaseChannelDev[] = "dev-channel";
 const char kReleaseChannelBeta[] = "beta-channel";
 const char kReleaseChannelStable[] = "stable-channel";
 
 // List of release channels ordered by stability.
-const char* kReleaseChannelsList[] = {kReleaseChannelDev,
+const char* kReleaseChannelsList[] = {kReleaseChannelCanary, kReleaseChannelDev,
                                       kReleaseChannelBeta,
                                       kReleaseChannelStable};
 
