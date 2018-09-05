@@ -1987,7 +1987,7 @@
           'dimension_sets': [
             {
               # WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER
-              'gpu': '8086:5912-24.20.100.6025',
+              'gpu': '8086:5912-24.20.100.6286',
               'os': 'Windows-10',
               'pool': 'Chrome-GPU',
             },
