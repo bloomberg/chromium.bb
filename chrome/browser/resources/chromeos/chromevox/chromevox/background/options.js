@@ -194,6 +194,7 @@ cvox.OptionsPage.update = function() {
     }
   }
 };
+
 /**
  * Adds event listeners to input boxes to update local storage values and
  * make sure that the input is a positive nonempty number between 1 and 99.
@@ -393,15 +394,10 @@ cvox.OptionsPage.eventListener = function(event) {
     var target = event.target;
     if (target.id == 'brailleWordWrap') {
       chrome.storage.local.set({brailleWordWrap: target.checked});
-    } else if (target.name == 'enableSpeechLogging') {
-      cvox.OptionsPage.consoleTts.setEnabled(target.checked);
-      cvox.OptionsPage.prefs.setPref(target.name, target.checked);
-    } else if (target.id == 'enableEventStreamLogging') {
-      cvox.OptionsPage.prefs.setPref(target.name, target.checked);
-      chrome.extension.getBackgroundPage()
-          .EventStreamLogger.instance.notifyEventStreamFilterChangedAll(
-              target.checked);
-      cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
+    } else if (target.classList.contains('logging')) {
+      cvox.ChromeVoxPrefs.setLoggingPrefs(target.name, target.checked);
+      if (target.name == 'enableEventStreamLogging')
+        cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
     } else if (target.className.indexOf('eventstream') != -1) {
       cvox.OptionsPage.prefs.setPref(target.name, target.checked);
       chrome.extension.getBackgroundPage()
