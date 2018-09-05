@@ -724,6 +724,7 @@ test("chromeos_unittests") {
     "dbus/shill_profile_client_unittest.cc",
     "dbus/shill_service_client_unittest.cc",
     "dbus/shill_third_party_vpn_driver_client_unittest.cc",
+    "dbus/update_engine_client_unittest.cc",
     "dbus/util/version_loader_unittest.cc",
     "disks/disk_mount_manager_unittest.cc",
     "disks/disk_unittest.cc",
