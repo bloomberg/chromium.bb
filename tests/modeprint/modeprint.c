@@ -186,7 +186,13 @@ static int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connect
 
 static int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
 {
-	printf("Encoder\n");
+	const char *encoder_name;
+
+	encoder_name = util_lookup_encoder_type_name(encoder->encoder_type);
+	if (encoder_name)
+		printf("Encoder: %s\n", encoder_name);
+	else
+		printf("Encoder\n");
 	printf("\tid     :%i\n", id);
 	printf("\tcrtc_id   :%d\n", encoder->crtc_id);
 	printf("\ttype   :%d\n", encoder->encoder_type);
