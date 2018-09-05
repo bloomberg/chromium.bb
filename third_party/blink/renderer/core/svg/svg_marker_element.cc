@@ -44,32 +44,29 @@ GetStaticStringEntries<SVGMarkerUnitsType>() {
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document),
       SVGFitToViewBox(this),
-      ref_x_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::refXAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      ref_y_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::refYAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
-      marker_width_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::markerWidthAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      marker_height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::markerHeightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      ref_x_(SVGAnimatedLength::Create(this,
+                                       SVGNames::refXAttr,
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kUnitlessZero)),
+      ref_y_(SVGAnimatedLength::Create(this,
+                                       SVGNames::refYAttr,
+                                       SVGLengthMode::kHeight,
+                                       SVGLength::Initial::kUnitlessZero)),
+      // Spec: If the markerWidth/markerHeight attribute is not specified, the
+      // effect is as if a value of "3" were specified.
+      marker_width_(SVGAnimatedLength::Create(this,
+                                              SVGNames::markerWidthAttr,
+                                              SVGLengthMode::kWidth,
+                                              SVGLength::Initial::kNumber3)),
+      marker_height_(SVGAnimatedLength::Create(this,
+                                               SVGNames::markerHeightAttr,
+                                               SVGLengthMode::kHeight,
+                                               SVGLength::Initial::kNumber3)),
       orient_angle_(SVGAnimatedAngle::Create(this)),
       marker_units_(SVGAnimatedEnumeration<SVGMarkerUnitsType>::Create(
           this,
           SVGNames::markerUnitsAttr,
           kSVGMarkerUnitsStrokeWidth)) {
-  // Spec: If the markerWidth/markerHeight attribute is not specified, the
-  // effect is as if a value of "3" were specified.
-  marker_width_->SetDefaultValueAsString("3");
-  marker_height_->SetDefaultValueAsString("3");
-
   AddToPropertyMap(ref_x_);
   AddToPropertyMap(ref_y_);
   AddToPropertyMap(marker_width_);

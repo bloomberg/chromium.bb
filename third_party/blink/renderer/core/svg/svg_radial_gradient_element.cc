@@ -30,34 +30,34 @@ namespace blink {
 
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document),
+      // Spec: If the cx/cy/r attribute is not specified, the effect is as if a
+      // value of "50%" were specified.
       cx_(SVGAnimatedLength::Create(this,
                                     SVGNames::cxAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kPercent50)),
       cy_(SVGAnimatedLength::Create(this,
                                     SVGNames::cyAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kPercent50)),
       r_(SVGAnimatedLength::Create(this,
                                    SVGNames::rAttr,
-                                   SVGLength::Create(SVGLengthMode::kOther))),
+                                   SVGLengthMode::kOther,
+                                   SVGLength::Initial::kPercent50)),
       fx_(SVGAnimatedLength::Create(this,
                                     SVGNames::fxAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kPercent50)),
       fy_(SVGAnimatedLength::Create(this,
                                     SVGNames::fyAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kPercent50)),
+      // SVG2-Draft Spec: If the fr attribute is not specified, the effect is as
+      // if a value of "0%" were specified.
       fr_(SVGAnimatedLength::Create(this,
                                     SVGNames::frAttr,
-                                    SVGLength::Create(SVGLengthMode::kOther))) {
-  // Spec: If the cx/cy/r attribute is not specified, the effect is as if a
-  // value of "50%" were specified.
-  cx_->SetDefaultValueAsString("50%");
-  cy_->SetDefaultValueAsString("50%");
-  r_->SetDefaultValueAsString("50%");
-
-  // SVG2-Draft Spec: If the fr attributed is not specified, the effect is as if
-  // a value of "0%" were specified.
-  fr_->SetDefaultValueAsString("0%");
-
+                                    SVGLengthMode::kOther,
+                                    SVGLength::Initial::kPercent0)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
   AddToPropertyMap(r_);
