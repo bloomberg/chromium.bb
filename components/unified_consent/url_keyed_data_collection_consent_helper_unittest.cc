@@ -10,6 +10,7 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,9 +96,11 @@ class UrlKeyedDataCollectionConsentHelperTest
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        AnonymizedDataCollection_UnifiedConsentEnabled) {
+  ScopedUnifiedConsent scoped_unified_consent(
+      UnifiedConsentFeatureState::kEnabledNoBump);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(true, &pref_service_,
+          NewAnonymizedDataCollectionConsentHelper(&pref_service_,
                                                    &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
@@ -120,9 +123,11 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        AnonymizedDataCollection_UnifiedConsentDisabled) {
+  ScopedUnifiedConsent scoped_unified_consent(
+      UnifiedConsentFeatureState::kDisabled);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(false, &pref_service_,
+          NewAnonymizedDataCollectionConsentHelper(&pref_service_,
                                                    &sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
@@ -138,19 +143,22 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        AnonymizedDataCollection_UnifiedConsentDisabled_NullSyncService) {
+  ScopedUnifiedConsent scoped_unified_consent(
+      UnifiedConsentFeatureState::kDisabled);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(
-              false /* is_unified_consent_enabled */, &pref_service_,
-              nullptr /* sync_service */);
+          NewAnonymizedDataCollectionConsentHelper(&pref_service_,
+                                                   nullptr /* sync_service */);
   EXPECT_FALSE(helper->IsEnabled());
 }
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizeddDataCollection_UnifiedConsentEnabled) {
+  ScopedUnifiedConsent scoped_unified_consent(
+      UnifiedConsentFeatureState::kEnabledNoBump);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewPersonalizedDataCollectionConsentHelper(true, &sync_service_);
+          NewPersonalizedDataCollectionConsentHelper(&sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
@@ -183,9 +191,11 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizedDataCollection_UnifiedConsentDisabled) {
+  ScopedUnifiedConsent scoped_unified_consent(
+      UnifiedConsentFeatureState::kDisabled);
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewPersonalizedDataCollectionConsentHelper(false, &sync_service_);
+          NewPersonalizedDataCollectionConsentHelper(&sync_service_);
   helper->AddObserver(this);
   EXPECT_FALSE(helper->IsEnabled());
   EXPECT_TRUE(state_changed_notifications.empty());
@@ -201,18 +211,20 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 TEST_F(UrlKeyedDataCollectionConsentHelperTest,
        PersonalizedDataCollection_NullSyncService) {
   {
+    ScopedUnifiedConsent scoped_unified_consent(
+        UnifiedConsentFeatureState::kDisabled);
     std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
         UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(
-                false /* is_unified_consent_enabled */,
                 nullptr /* sync_service */);
     EXPECT_FALSE(helper->IsEnabled());
   }
   {
+    ScopedUnifiedConsent scoped_unified_consent(
+        UnifiedConsentFeatureState::kEnabledNoBump);
     std::unique_ptr<UrlKeyedDataCollectionConsentHelper> helper =
         UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(
-                true /* is_unified_consent_enabled */,
                 nullptr /* sync_service */);
     EXPECT_FALSE(helper->IsEnabled());
   }

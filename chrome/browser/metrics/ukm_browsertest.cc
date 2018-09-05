@@ -16,7 +16,6 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -33,6 +32,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/ukm_service.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
@@ -583,7 +583,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   EXPECT_NE(0U, original_client_id);
 
   harness->DisableSyncForDatatype(syncer::TYPED_URLS);
-  if (IsUnifiedConsentFeatureEnabled(profile)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
     EXPECT_TRUE(ukm_enabled());
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableHistorySyncCheck) {
   EXPECT_EQ(original_client_id, client_id());
 
   harness2->DisableSyncForDatatype(syncer::TYPED_URLS);
-  if (IsUnifiedConsentFeatureEnabled(profile2)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Disable history sync does not disable UKM when unified consent is
     // enabled.
     EXPECT_TRUE(ukm_enabled());

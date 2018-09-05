@@ -20,6 +20,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -64,7 +65,6 @@
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -404,7 +404,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [model addItem:[self accountCellItem]
         toSectionWithIdentifier:SectionIdentifierAccount];
   }
-  if (IsUnifiedConsentFeatureEnabled()) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     if (![model hasSectionForSectionIdentifier:SectionIdentifierAccount]) {
       // Add the Account section for the Google services cell, if the user is
       // signed-out.
@@ -454,7 +454,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
-  if (!IsUnifiedConsentFeatureEnabled()) {
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // When unified consent flag is enabled, the bandwidth settings is available
     // under the Google services and sync settings.
     [model addItem:[self bandwidthManagementDetailItem]

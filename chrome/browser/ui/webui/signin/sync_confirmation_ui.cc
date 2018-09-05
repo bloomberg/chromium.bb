@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 #include "chrome/common/url_constants.h"
@@ -19,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -30,7 +30,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
       consent_feature_(consent_auditor::Feature::CHROME_SYNC) {
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
-  bool is_unified_consent_enabled = IsUnifiedConsentFeatureEnabled(profile);
+  bool is_unified_consent_enabled =
+      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);

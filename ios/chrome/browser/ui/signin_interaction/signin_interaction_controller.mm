@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -19,7 +20,6 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -107,7 +107,7 @@ using signin_ui::CompletionCallback;
   completionCallback_ = [completion copy];
   ios::ChromeIdentityService* identityService =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  if (IsUnifiedConsentFeatureEnabled()) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
   } else if (identity) {
     DCHECK(identityService->IsValidIdentity(identity));

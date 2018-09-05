@@ -30,7 +30,6 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
@@ -49,6 +48,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -188,7 +188,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
   init_params.user_events_separate_pref_group =
-      IsUnifiedConsentFeatureEnabled(profile);
+      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   if (!client_factory_) {
     init_params.sync_client =

@@ -1435,8 +1435,6 @@ jumbo_split_static_library("browser") {
     "signin/signin_tracker_factory.h",
     "signin/signin_util.cc",
     "signin/signin_util.h",
-    "signin/unified_consent_helper.cc",
-    "signin/unified_consent_helper.h",
     "site_details.cc",
     "site_details.h",
     "speech/chrome_speech_recognition_manager_delegate.cc",
