@@ -18,22 +18,30 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -42,6 +50,13 @@ namespace {
 
 // Information about found external extension file: {version, crx_path}.
 using TestCrxInfo = std::tuple<std::string, std::string>;
+
+constexpr char kTestExtensionId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+
+constexpr char kTestExtensionUpdateManifest[] =
+    "extensions/good_v1_update_manifest.xml";
+
+constexpr char kTestExtensionCRXVersion[] = "1.0.0.0";
 
 class TestExternalProviderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
@@ -61,6 +76,16 @@ class TestExternalProviderVisitor
     ready_waiter_.reset();
   }
 
+  void WaitForFileFound() {
+    if (!loaded_crx_files_.empty())
+      return;
+    file_waiter_ = std::make_unique<base::RunLoop>();
+    file_waiter_->Run();
+    file_waiter_.reset();
+  }
+
+  void ClearLoadedFiles() { loaded_crx_files_.clear(); }
+
   // extensions::ExternalProviderInterface::VisitorInterface:
   bool OnExternalExtensionFileFound(
       const extensions::ExternalInstallInfoFile& info) override {
@@ -71,14 +96,15 @@ class TestExternalProviderVisitor
     loaded_crx_files_.emplace(
         info.extension_id,
         TestCrxInfo(info.version.GetString(), info.path.value()));
+    if (file_waiter_)
+      file_waiter_->Quit();
     return true;
   }
 
   bool OnExternalExtensionUpdateUrlFound(
       const extensions::ExternalInstallInfoUpdateUrl& info,
       bool is_initial_load) override {
-    ADD_FAILURE() << "Found extensions with update URL";
-    return false;
+    return true;
   }
 
   void OnExternalProviderReady(
@@ -99,9 +125,12 @@ class TestExternalProviderVisitor
 
  private:
   bool ready_ = false;
+
   std::map<std::string, TestCrxInfo> loaded_crx_files_;
 
   std::unique_ptr<base::RunLoop> ready_waiter_;
+
+  std::unique_ptr<base::RunLoop> file_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExternalProviderVisitor);
 };
@@ -110,7 +139,11 @@ class TestExternalProviderVisitor
 
 class DemoExtensionsExternalLoaderTest : public testing::Test {
  public:
-  DemoExtensionsExternalLoaderTest() = default;
+  DemoExtensionsExternalLoaderTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
+
   ~DemoExtensionsExternalLoaderTest() override = default;
 
   void SetUp() override {
@@ -123,6 +156,9 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
     DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
         std::move(image_loader_client));
     session_manager_ = std::make_unique<session_manager::SessionManager>();
+
+    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
+        test_shared_loader_factory_);
   }
 
   void TearDown() override {
@@ -193,7 +229,9 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   std::unique_ptr<extensions::ExternalProviderImpl> CreateExternalProvider(
       extensions::ExternalProviderInterface::VisitorInterface* visitor) {
     return std::make_unique<extensions::ExternalProviderImpl>(
-        visitor, base::MakeRefCounted<DemoExtensionsExternalLoader>(),
+        visitor,
+        base::MakeRefCounted<DemoExtensionsExternalLoader>(
+            base::FilePath() /*cache_dir*/),
         profile_.get(), extensions::Manifest::INTERNAL,
         extensions::Manifest::INTERNAL,
         extensions::Extension::FROM_WEBSTORE |
@@ -203,10 +241,12 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
  protected:
   TestExternalProviderVisitor external_provider_visitor_;
 
+  std::unique_ptr<TestingProfile> profile_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  std::unique_ptr<TestingProfile> profile_;
 
   // Image loader client injected into, and owned by DBusThreadManager.
   FakeImageLoaderClient* image_loader_client_ = nullptr;
@@ -214,6 +254,11 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   base::ScopedTempDir offline_demo_resources_;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
+
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
+
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoExtensionsExternalLoaderTest);
 };
@@ -437,6 +482,75 @@ TEST_F(DemoExtensionsExternalLoaderTest,
   external_provider_visitor_.WaitForReady();
   EXPECT_TRUE(external_provider->IsReady());
   EXPECT_TRUE(external_provider_visitor_.loaded_crx_files().empty());
+}
+
+TEST_F(DemoExtensionsExternalLoaderTest, LoadApp) {
+  InitializeSession(true /*mount_demo_resources*/,
+                    true /*wait_for_offline_resources_load*/);
+
+  // Create a temporary cache directory.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath cache_dir = temp_dir.GetPath().Append("cache");
+  ASSERT_TRUE(base::CreateDirectoryAndGetError(cache_dir, nullptr /*error*/));
+
+  scoped_refptr<chromeos::DemoExtensionsExternalLoader> loader =
+      base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(cache_dir);
+  std::unique_ptr<extensions::ExternalProviderImpl> external_provider =
+      std::make_unique<extensions::ExternalProviderImpl>(
+          &external_provider_visitor_, loader, profile_.get(),
+          extensions::Manifest::INTERNAL,
+          extensions::Manifest::EXTERNAL_PREF_DOWNLOAD,
+          extensions::Extension::FROM_WEBSTORE |
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+
+  external_provider->VisitRegisteredExtension();
+  external_provider_visitor_.WaitForReady();
+  EXPECT_TRUE(external_provider->IsReady());
+
+  loader->LoadApp(kTestExtensionId);
+  // Verify that a downloader has started and is attempting to download an
+  // update manifest.
+  EXPECT_EQ(1, test_url_loader_factory_.NumPending());
+  // Return a manifest to the downloader.
+  std::string manifest;
+  base::FilePath test_dir;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  EXPECT_TRUE(base::ReadFileToString(
+      test_dir.Append(kTestExtensionUpdateManifest), &manifest));
+  EXPECT_EQ(1u, test_url_loader_factory_.pending_requests()->size());
+  test_url_loader_factory_.AddResponse(
+      test_url_loader_factory_.pending_requests()->at(0).request.url.spec(),
+      manifest);
+
+  // Wait for the manifest to be parsed.
+  content::WindowedNotificationObserver(
+      extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+      content::NotificationService::AllSources())
+      .Wait();
+
+  // Verify that the downloader is attempting to download a CRX file.
+  EXPECT_EQ(1u, test_url_loader_factory_.pending_requests()->size());
+  // Trigger downloading of the CRX file.
+  test_url_loader_factory_.AddResponse(
+      test_url_loader_factory_.pending_requests()->at(0).request.url.spec(),
+      "Dummy content.");
+
+  // Verify that the CRX file exists in the cache directory.
+  external_provider_visitor_.WaitForFileFound();
+  const base::FilePath cached_crx_path = cache_dir.Append(base::StringPrintf(
+      "%s-%s.crx", kTestExtensionId, kTestExtensionCRXVersion));
+  const std::map<std::string, TestCrxInfo> expected_info = {
+      {kTestExtensionId,
+       TestCrxInfo(kTestExtensionCRXVersion, cached_crx_path.value())}};
+  EXPECT_EQ(expected_info, external_provider_visitor_.loaded_crx_files());
+
+  // Verify that loading the app again succeeds without downloading.
+  test_url_loader_factory_.ClearResponses();
+  external_provider_visitor_.ClearLoadedFiles();
+  loader->LoadApp(kTestExtensionId);
+  external_provider_visitor_.WaitForFileFound();
+  EXPECT_EQ(expected_info, external_provider_visitor_.loaded_crx_files());
 }
 
 class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {

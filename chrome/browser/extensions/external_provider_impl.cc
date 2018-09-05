@@ -48,14 +48,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_paths.h"
 #include "components/arc/arc_util.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
@@ -693,14 +696,18 @@ void ExternalProviderImpl::CreateExternalProviders(
 
   // For Chrome OS demo sessions, add pre-installed demo extensions and apps.
   if (chromeos::DemoExtensionsExternalLoader::SupportedForProfile(profile)) {
+    base::FilePath cache_dir;
+    CHECK(base::PathService::Get(chromeos::DIR_DEVICE_EXTENSION_LOCAL_CACHE,
+                                 &cache_dir));
+    scoped_refptr<chromeos::DemoExtensionsExternalLoader> loader =
+        base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(cache_dir);
     std::unique_ptr<ExternalProviderImpl> demo_apps_provider =
         std::make_unique<ExternalProviderImpl>(
-            service,
-            base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(),
-            profile, Manifest::EXTERNAL_PREF, Manifest::INVALID_LOCATION,
-            Extension::NO_FLAGS);
+            service, loader, profile, Manifest::EXTERNAL_PREF,
+            Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS);
     demo_apps_provider->set_auto_acknowledge(true);
     demo_apps_provider->set_install_immediately(true);
+    chromeos::DemoSession::Get()->set_extensions_external_loader(loader);
     provider_list->push_back(std::move(demo_apps_provider));
   }
 
