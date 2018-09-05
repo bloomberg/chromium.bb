@@ -114,40 +114,43 @@ bool PaymentsValidators::IsValidErrorMsgFormat(
 }
 
 // static
+bool PaymentsValidators::IsValidAddressErrorsFormat(
+    const mojom::AddressErrorsPtr& errors,
+    std::string* optional_error_message) {
+  return errors &&
+         IsValidErrorMsgFormat(errors->address_line, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->city, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->country, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->dependent_locality,
+                               optional_error_message) &&
+         IsValidErrorMsgFormat(errors->language_code, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->organization, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->phone, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->postal_code, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->recipient, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->region, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->region_code, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->sorting_code, optional_error_message);
+}
+
+// static
+bool PaymentsValidators::IsValidPayerErrorsFormat(
+    const mojom::PayerErrorFieldsPtr& errors,
+    std::string* optional_error_message) {
+  return errors &&
+         IsValidErrorMsgFormat(errors->email, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->name, optional_error_message) &&
+         IsValidErrorMsgFormat(errors->phone, optional_error_message);
+}
+
+// static
 bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
     const mojom::PaymentValidationErrorsPtr& errors,
     std::string* optional_error_message) {
-  if (!errors || !errors->payer || !errors->shipping_address)
-    return false;
-
-  return IsValidErrorMsgFormat(errors->payer->email, optional_error_message) &&
-         IsValidErrorMsgFormat(errors->payer->email, optional_error_message) &&
-         IsValidErrorMsgFormat(errors->payer->name, optional_error_message) &&
-         IsValidErrorMsgFormat(errors->payer->phone, optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->address_line,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->city,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->country,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->dependent_locality,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->language_code,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->organization,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->phone,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->postal_code,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->recipient,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->region,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->region_code,
-                               optional_error_message) &&
-         IsValidErrorMsgFormat(errors->shipping_address->sorting_code,
-                               optional_error_message);
+  return errors &&
+         IsValidAddressErrorsFormat(errors->shipping_address,
+                                    optional_error_message) &&
+         IsValidPayerErrorsFormat(errors->payer, optional_error_message);
 }
 
 }  // namespace payments
