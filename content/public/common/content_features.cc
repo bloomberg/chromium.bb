@@ -477,7 +477,7 @@ const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
 
 // Enable WebAssembly baseline compilation and tier up.
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly threads.
 // https://github.com/WebAssembly/threads
