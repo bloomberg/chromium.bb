@@ -193,7 +193,7 @@ class TCPBoundSocketTest : public testing::Test {
 
 // Try to bind a socket to an address already being listened on, which should
 // fail.
-TEST_F(TCPBoundSocketTest, BindError) {
+TEST_F(TCPBoundSocketTest, DISABLED_BindError) {
   // Set up a listening socket.
   network::mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint bound_address1;
