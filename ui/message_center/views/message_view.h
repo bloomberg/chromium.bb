@@ -132,6 +132,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // MessageView::Mode enum for detail.
   void SetSettingMode(bool setting_mode);
 
+  // Disables slide by vertical swipe regardless of the current notification
+  // mode.
+  void DisableSlideForcibly(bool disable);
+
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() const { return notification_id_; }
 
@@ -174,6 +178,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // True if |this| is embedded in another view. Equivalent to |!top_level| in
   // MessageViewFactory parlance.
   bool is_nested_ = false;
+
+  // True if the slide is disabled forcibly.
+  bool disable_slide_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
