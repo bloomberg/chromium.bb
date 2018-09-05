@@ -47,6 +47,16 @@ class PaymentsValidators {
 
   // Returns false and optionally populate |optional_error_message| if any
   // fields of |errors| have too long string (greater than 2048).
+  static bool IsValidAddressErrorsFormat(const mojom::AddressErrorsPtr& errors,
+                                         std::string* optional_error_message);
+
+  // Returns false and optionally populate |optional_error_message| if any
+  // fields of |errors| have too long string (greater than 2048).
+  static bool IsValidPayerErrorsFormat(const mojom::PayerErrorFieldsPtr& errors,
+                                       std::string* optional_error_message);
+
+  // Returns false and optionally populate |optional_error_message| if any
+  // fields of |errors| have too long string (greater than 2048).
   static bool IsValidPaymentValidationErrorsFormat(
       const mojom::PaymentValidationErrorsPtr& errors,
       std::string* optional_error_message);
