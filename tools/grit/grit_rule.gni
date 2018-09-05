@@ -84,18 +84,20 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
-import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
 import("//third_party/closure_compiler/closure_args.gni")
 
 assert(
-    !enable_resource_whitelist_generation || (is_android && symbol_level > 0),
-    "resource whitelist generation only works on android with symbol_level > 0")
+    !enable_resource_whitelist_generation ||
+        (is_android && symbol_level > 0 && !strip_debug_info &&
+             !is_component_build),
+    "resource whitelist generation only works on non-component android builds with debug info enabled.")
 
 grit_defines = []
 
