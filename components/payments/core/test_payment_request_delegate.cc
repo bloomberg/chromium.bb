@@ -5,6 +5,7 @@
 #include "components/payments/core/test_payment_request_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 
 namespace payments {
 
@@ -18,7 +19,8 @@ TestPaymentRequestDelegate::TestPaymentRequestDelegate(
               &test_url_loader_factory_)),
       payments_client_(test_shared_loader_factory_,
                        /*pref_service=*/nullptr,
-                       /*identity_manager=*/nullptr),
+                       /*identity_manager=*/nullptr,
+                       personal_data_manager),
       full_card_request_(&autofill_client_,
                          &payments_client_,
                          personal_data_manager) {}

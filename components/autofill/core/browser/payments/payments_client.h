@@ -15,11 +15,11 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class IdentityManager;
-class PrimaryAccountAccessTokenFetcher;
 }  // namespace identity
 
 namespace network {
@@ -30,6 +30,7 @@ class SharedURLLoaderFactory;
 
 namespace autofill {
 
+class AccountInfoGetter;
 class MigratableCreditCard;
 
 namespace payments {
@@ -110,13 +111,14 @@ class PaymentsClient {
 
   // |url_loader_factory| is reference counted so it has no lifetime or
   // ownership requirements. |pref_service| is used to get the registered
-  // preference value, |identity_manager|, |unmask_delegate| and |save_delegate|
+  // preference value, |identity_manager| and |account_info_getter|
   // must all outlive |this|. Either delegate might be nullptr.
   // |is_off_the_record| denotes incognito mode.
   PaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* pref_service,
-      identity::IdentityManager* identity_manager,
+      PrefService* const pref_service,
+      identity::IdentityManager* const identity_manager,
+      AccountInfoGetter* const account_info_getter,
       bool is_off_the_record = false);
 
   virtual ~PaymentsClient();
@@ -221,7 +223,11 @@ class PaymentsClient {
   // The pref service for this client.
   PrefService* const pref_service_;
 
+  // Provided in constructor; not owned by PaymentsClient.
   identity::IdentityManager* const identity_manager_;
+
+  // Provided in constructor; not owned by PaymentsClient.
+  AccountInfoGetter* const account_info_getter_;
 
   // The current request.
   std::unique_ptr<PaymentsRequest> request_;
@@ -232,8 +238,8 @@ class PaymentsClient {
   // The URL loader being used to issue the current request.
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
-  // The current OAuth2 token fetcher.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  // The OAuth2 token fetcher for any account.
+  std::unique_ptr<identity::AccessTokenFetcher> token_fetcher_;
 
   // The OAuth2 token, or empty if not fetched.
   std::string access_token_;

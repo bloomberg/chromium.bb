@@ -70,7 +70,8 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
                 &test_url_loader_factory_)),
         payments_client_(test_shared_loader_factory_,
                          /*pref_service=*/nullptr,
-                         /*identity_manager=*/nullptr),
+                         /*identity_manager=*/nullptr,
+                         /*account_info_getter=*/nullptr),
         full_card_request_(&autofill_client_,
                            &payments_client_,
                            &personal_data_) {}

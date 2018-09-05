@@ -23,7 +23,9 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
   DCHECK(pref_service);
 
   if (base::FeatureList::IsEnabled(
-          features::kAutofillUsePaymentsCustomerData)) {
+          features::kAutofillUsePaymentsCustomerData) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountWalletStorage)) {
     // Get billing customer ID from the synced PaymentsCustomerData.
     PaymentsCustomerData* customer_data =
         personal_data_manager->GetPaymentsCustomerData();
