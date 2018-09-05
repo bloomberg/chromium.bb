@@ -70,7 +70,12 @@ class TabNonEmptyPaintWaiter : public content::WebContentsObserver {
 
   ~TabNonEmptyPaintWaiter() override = default;
 
-  void Wait() { run_loop_.Run(); }
+  void Wait() {
+    if (web_contents()->CompletedFirstVisuallyNonEmptyPaint())
+      return;
+
+    run_loop_.Run();
+  }
 
  private:
   // content::WebContentsObserver:
