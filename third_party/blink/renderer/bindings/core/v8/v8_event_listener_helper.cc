@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/custom_wrappable_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_or_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -78,11 +79,16 @@ EventListener* V8EventListenerHelper::GetEventListener(
           : V8PrivateProperty::GetV8EventListenerOrEventHandlerListener(
                 isolate);
 
-  return GetEventListenerInternal<V8AbstractEventListener>(
+  return GetEventListenerInternal<EventListener>(
       script_state, object, listener_property, lookup,
       [object, is_attribute, script_state, listener_property]() {
-        return V8EventListenerOrEventHandler::Create(
-            object, is_attribute, script_state, listener_property);
+        return is_attribute
+                   ? static_cast<EventListener*>(
+                         V8EventListenerOrEventHandler::Create(
+                             object, is_attribute, script_state,
+                             listener_property))
+                   : static_cast<EventListener*>(V8EventListenerImpl::Create(
+                         object, script_state, listener_property));
       });
 }
 

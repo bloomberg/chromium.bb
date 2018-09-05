@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
@@ -48,23 +48,24 @@
 
 namespace blink {
 
-V8AbstractEventListener::V8AbstractEventListener(v8::Isolate* isolate,
-                                                 bool is_attribute,
-                                                 DOMWrapperWorld& world)
-    : EventListener(kJSEventListenerType),
+V8AbstractEventHandler::V8AbstractEventHandler(v8::Isolate* isolate,
+                                               bool is_attribute,
+                                               DOMWrapperWorld& world)
+    : EventListener(kJSEventHandlerType),
       is_attribute_(is_attribute),
       world_(&world),
       isolate_(isolate) {
-  if (IsMainThread())
+  if (IsMainThread()) {
     InstanceCounters::IncrementCounter(
         InstanceCounters::kJSEventListenerCounter);
+  }
 }
 
-V8AbstractEventListener::~V8AbstractEventListener() {
+V8AbstractEventHandler::~V8AbstractEventHandler() {
   // For non-main threads a termination garbage collection clears out the
   // wrapper links to CustomWrappable which result in CustomWrappable not being
   // rooted by JavaScript objects anymore. This means that
-  // V8AbstractEventListener can be collected without while still holding a
+  // V8AbstractEventHandler can be collected without while still holding a
   // valid weak references.
   if (IsMainThread()) {
     DCHECK(listener_.IsEmpty());
@@ -74,13 +75,13 @@ V8AbstractEventListener::~V8AbstractEventListener() {
 }
 
 // static
-v8::Local<v8::Value> V8AbstractEventListener::GetListenerOrNull(
+v8::Local<v8::Value> V8AbstractEventHandler::GetListenerOrNull(
     v8::Isolate* isolate,
     EventTarget* event_target,
     EventListener* listener) {
-  if (listener && listener->GetType() == kJSEventListenerType) {
+  if (listener && listener->GetType() == kJSEventHandlerType) {
     v8::Local<v8::Object> v8_listener =
-        static_cast<V8AbstractEventListener*>(listener)
+        static_cast<V8AbstractEventHandler*>(listener)
             ->GetListenerObjectInternal(event_target->GetExecutionContext());
     if (!v8_listener.IsEmpty())
       return v8_listener;
@@ -88,8 +89,8 @@ v8::Local<v8::Value> V8AbstractEventListener::GetListenerOrNull(
   return v8::Null(isolate);
 }
 
-void V8AbstractEventListener::handleEvent(ExecutionContext* execution_context,
-                                          Event* event) {
+void V8AbstractEventHandler::handleEvent(ExecutionContext* execution_context,
+                                         Event* event) {
   if (!execution_context)
     return;
   // Don't reenter V8 if execution was terminated in this instance of V8.
@@ -110,8 +111,8 @@ void V8AbstractEventListener::handleEvent(ExecutionContext* execution_context,
   HandleEvent(script_state, event);
 }
 
-void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
-                                          Event* event) {
+void V8AbstractEventHandler::HandleEvent(ScriptState* script_state,
+                                         Event* event) {
   ScriptState::Scope scope(script_state);
 
   // Get the V8 wrapper for the event object.
@@ -123,7 +124,7 @@ void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
                      v8::Local<v8::Value>::New(GetIsolate(), js_event));
 }
 
-void V8AbstractEventListener::SetListenerObject(
+void V8AbstractEventHandler::SetListenerObject(
     ScriptState* script_state,
     v8::Local<v8::Object> listener,
     const V8PrivateProperty::Symbol& property) {
@@ -132,10 +133,9 @@ void V8AbstractEventListener::SetListenerObject(
   Attach(script_state, listener, property, this);
 }
 
-void V8AbstractEventListener::InvokeEventHandler(
-    ScriptState* script_state,
-    Event* event,
-    v8::Local<v8::Value> js_event) {
+void V8AbstractEventHandler::InvokeEventHandler(ScriptState* script_state,
+                                                Event* event,
+                                                v8::Local<v8::Value> js_event) {
   if (!event->CanBeDispatchedInWorld(World()))
     return;
 
@@ -216,7 +216,7 @@ void V8AbstractEventListener::InvokeEventHandler(
   }
 }
 
-bool V8AbstractEventListener::ShouldPreventDefault(
+bool V8AbstractEventHandler::ShouldPreventDefault(
     v8::Local<v8::Value> return_value,
     Event*) {
   // Prevent default action if the return value is false in accord with the spec
@@ -224,7 +224,7 @@ bool V8AbstractEventListener::ShouldPreventDefault(
   return return_value->IsBoolean() && !return_value.As<v8::Boolean>()->Value();
 }
 
-v8::Local<v8::Object> V8AbstractEventListener::GetReceiverObject(
+v8::Local<v8::Object> V8AbstractEventHandler::GetReceiverObject(
     ScriptState* script_state,
     Event* event) {
   v8::Local<v8::Object> listener = listener_.NewLocal(GetIsolate());
@@ -240,7 +240,7 @@ v8::Local<v8::Object> V8AbstractEventListener::GetReceiverObject(
                                     v8::Local<v8::Object>::Cast(value));
 }
 
-bool V8AbstractEventListener::BelongsToTheCurrentWorld(
+bool V8AbstractEventHandler::BelongsToTheCurrentWorld(
     ExecutionContext* execution_context) const {
   if (!GetIsolate()->GetCurrentContext().IsEmpty() &&
       &World() == &DOMWrapperWorld::Current(GetIsolate()))
@@ -256,19 +256,19 @@ bool V8AbstractEventListener::BelongsToTheCurrentWorld(
   return false;
 }
 
-void V8AbstractEventListener::ClearListenerObject() {
+void V8AbstractEventHandler::ClearListenerObject() {
   if (!HasExistingListenerObject())
     return;
   probe::AsyncTaskCanceled(GetIsolate(), this);
   listener_.Clear();
 }
 
-void V8AbstractEventListener::WrapperCleared(
-    const v8::WeakCallbackInfo<V8AbstractEventListener>& data) {
+void V8AbstractEventHandler::WrapperCleared(
+    const v8::WeakCallbackInfo<V8AbstractEventHandler>& data) {
   data.GetParameter()->ClearListenerObject();
 }
 
-void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
+void V8AbstractEventHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(listener_.Cast<v8::Value>());
   EventListener::Trace(visitor);
 }

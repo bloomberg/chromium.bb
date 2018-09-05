@@ -28,6 +28,10 @@ class TraceWrapperV8Reference {
 
   ~TraceWrapperV8Reference() { Clear(); }
 
+  bool operator==(const TraceWrapperV8Reference& other) const {
+    return handle_ == other.handle_;
+  }
+
   void Set(v8::Isolate* isolate, v8::Local<T> handle) {
     InternalSet(isolate, handle);
     handle_.SetWeak();
