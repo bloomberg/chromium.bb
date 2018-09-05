@@ -300,7 +300,7 @@ cvox.ChromeVoxPrefs.loggingPrefs = {
  * @param {cvox.ChromeVoxPrefs.loggingPrefs} key The pref key.
  * @param {boolean} value The new value of the pref.
  */
-cvox.ChromeVoxPrefs.setLoggingPrefs = function(key, value) {
+cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
   localStorage[key] = value;
   if (key == 'enableSpeechLogging')
     cvox.ConsoleTts.getInstance().setEnabled(value);

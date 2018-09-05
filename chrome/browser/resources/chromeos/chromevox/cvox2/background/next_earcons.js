@@ -12,6 +12,7 @@ goog.provide('NextEarcons');
 
 goog.require('EarconEngine');
 goog.require('LogStore');
+goog.require('TextLog');
 goog.require('cvox.AbstractEarcons');
 
 
@@ -58,7 +59,7 @@ NextEarcons.prototype = {
       return;
     }
     if (localStorage['enableEarconLogging'] == 'true') {
-      LogStore.getInstance().writeLog(earcon, LogStore.LogType.EARCON);
+      LogStore.getInstance().writeTextLog(earcon, TextLog.LogType.EARCON);
       console.log('Earcon ' + earcon);
     }
     if (ChromeVoxState.instance.currentRange &&

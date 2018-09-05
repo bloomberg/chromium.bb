@@ -10,6 +10,7 @@
 goog.provide('LogPage');
 
 goog.require('LogStore');
+goog.require('TreeLog');
 goog.require('Msgs');
 
 /**
@@ -88,8 +89,9 @@ LogPage.saveLogEvent = function(event) {
  * update logs.
  */
 LogPage.update = function() {
-  for (var type in LogStore.LogType) {
-    var typeFilter = LogStore.LogType[type] + 'Filter';
+  var logTypes = LogStore.logTypeStr();
+  for (var i = 0; i < logTypes.length; i++) {
+    var typeFilter = logTypes[i] + 'Filter';
     var element = document.getElementById(typeFilter);
     /** If sessionStorage is null, set true. */
     if (!sessionStorage.getItem(typeFilter))
@@ -103,7 +105,7 @@ LogPage.update = function() {
 
 /**
  * Updates the log section.
- * @param {!Array<Log>} log Array of speech.
+ * @param {Array<BaseLog>} log Array of speech.
  * @param {Element} div
  */
 LogPage.updateLog = function(log, div) {
@@ -118,8 +120,8 @@ LogPage.updateLog = function(log, div) {
     var timeStamp = document.createElement('span');
     timeStamp.textContent = LogPage.formatTimeStamp(log[i].date);
     timeStamp.className = 'log-time-tag';
-    var textWrapper = document.createElement('span');
-    textWrapper.textContent = log[i].logStr;
+    var textWrapper = document.createElement('pre');
+    textWrapper.textContent = log[i].toString();
     textWrapper.className = 'log-text';
 
     p.appendChild(typeName);

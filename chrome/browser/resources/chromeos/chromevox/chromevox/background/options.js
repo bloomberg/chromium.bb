@@ -394,8 +394,8 @@ cvox.OptionsPage.eventListener = function(event) {
     var target = event.target;
     if (target.id == 'brailleWordWrap') {
       chrome.storage.local.set({brailleWordWrap: target.checked});
-    } else if (target.classList.contains('logging')) {
-      cvox.ChromeVoxPrefs.setLoggingPrefs(target.name, target.checked);
+    } else if (target.className.indexOf('logging') != -1) {
+      cvox.OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
       if (target.name == 'enableEventStreamLogging')
         cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
     } else if (target.className.indexOf('eventstream') != -1) {

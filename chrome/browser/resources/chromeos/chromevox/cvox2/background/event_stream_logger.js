@@ -9,6 +9,7 @@
 goog.provide('EventStreamLogger');
 
 goog.require('LogStore');
+goog.require('TextLog');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -84,7 +85,7 @@ EventStreamLogger.prototype = {
     logStr += ', RootName = ' + evt.target.root.name;
     logStr += ', DocumentURL = ' + evt.target.docUrl;
 
-    LogStore.getInstance().writeLog(logStr, LogStore.LogType.EVENT);
+    LogStore.getInstance().writeTextLog(logStr, TextLog.LogType.EVENT);
     console.log(logStr);
   },
 

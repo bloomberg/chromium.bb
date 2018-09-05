@@ -10,7 +10,9 @@ goog.provide('CommandHandler');
 
 goog.require('ChromeVoxState');
 goog.require('CustomAutomationEvent');
+goog.require('LogStore');
 goog.require('Output');
+goog.require('TreeDumper');
 goog.require('cvox.ChromeVoxBackground');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.ChromeVoxKbHandler');
@@ -119,8 +121,9 @@ CommandHandler.onCommand = function(command) {
       chrome.commandLinePrivate.hasSwitch(
           'enable-chromevox-developer-option', function(enable) {
             if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
               for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                cvox.ChromeVoxPrefs.setLoggingPrefs(
+                prefs.setLoggingPrefs(
                     cvox.ChromeVoxPrefs.loggingPrefs[type], true);
               }
             }
@@ -130,10 +133,21 @@ CommandHandler.onCommand = function(command) {
       chrome.commandLinePrivate.hasSwitch(
           'enable-chromevox-developer-option', function(enable) {
             if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
               for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                cvox.ChromeVoxPrefs.setLoggingPrefs(
+                prefs.setLoggingPrefs(
                     cvox.ChromeVoxPrefs.loggingPrefs[type], false);
               }
+            }
+          });
+      break;
+    case 'dumpTree':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              chrome.automation.getDesktop(function(root) {
+                LogStore.getInstance().writeTreeLog(new TreeDumper(root));
+              });
             }
           });
       break;
