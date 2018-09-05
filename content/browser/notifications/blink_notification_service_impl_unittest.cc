@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/notifications/blink_notification_service_impl.h"
@@ -19,18 +20,21 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/test_content_browser_client.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using ::testing::Return;
 using ::testing::_;
@@ -41,6 +45,16 @@ namespace {
 
 const char kTestOrigin[] = "https://example.com";
 const char kTestServiceWorkerUrl[] = "https://example.com/sw.js";
+const char kBadMessageImproperNotificationImage[] =
+    "Received an unexpected message with image while notification images are "
+    "disabled.";
+
+SkBitmap CreateBitmap(int width, int height, SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  return bitmap;
+}
 
 class MockNonPersistentNotificationListener
     : public blink::mojom::NonPersistentNotificationListener {
@@ -110,19 +124,25 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     // will be initialized long before it is read from so this is fine.
     RunAllTasksUntilIdle();
 
-    blink::mojom::NotificationServicePtr notification_service_ptr;
     notification_service_ = std::make_unique<BlinkNotificationServiceImpl>(
         notification_context_.get(), &browser_context_,
         embedded_worker_helper_->context_wrapper(),
         url::Origin::Create(GURL(kTestOrigin)),
-        mojo::MakeRequest(&notification_service_ptr));
+        mojo::MakeRequest(&notification_service_ptr_));
 
     // Provide a mock permission manager to the |browser_context_|.
     browser_context_.SetPermissionControllerDelegate(
         std::make_unique<testing::NiceMock<MockPermissionManager>>());
+
+    mojo::core::SetDefaultProcessErrorCallback(base::AdaptCallbackForRepeating(
+        base::BindOnce(&BlinkNotificationServiceImplTest::OnMojoError,
+                       base::Unretained(this))));
   }
 
   void TearDown() override {
+    mojo::core::SetDefaultProcessErrorCallback(
+        mojo::core::ProcessErrorCallback());
+
     embedded_worker_helper_.reset();
 
     // Give pending shutdown operations a chance to finish.
@@ -242,12 +262,29 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     std::move(quit_closure).Run();
   }
 
+  void DisplayNonPersistentNotification(
+      const std::string& token,
+      const PlatformNotificationData& platform_notification_data,
+      const NotificationResources& notification_resources,
+      blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
+    notification_service_ptr_->DisplayNonPersistentNotification(
+        token, platform_notification_data, notification_resources,
+        std::move(event_listener_ptr));
+    // TODO(https://crbug.com/787459): Pass a callback to
+    // DisplayNonPersistentNotification instead of waiting for all tasks to run
+    // here; a callback parameter will be needed anyway to enable
+    // non-persistent notification event acknowledgements - see bug.
+    RunAllTasksUntilIdle();
+  }
+
   void DisplayPersistentNotificationSync(
       int64_t service_worker_registration_id,
       const PlatformNotificationData& platform_notification_data,
       const NotificationResources& notification_resources) {
     base::RunLoop run_loop;
-    notification_service_->DisplayPersistentNotification(
+    notification_service_ptr_.set_connection_error_handler(
+        run_loop.QuitClosure());
+    notification_service_ptr_->DisplayPersistentNotification(
         service_worker_registration_id, platform_notification_data,
         notification_resources,
         base::BindOnce(
@@ -308,11 +345,15 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   }
 
  protected:
+  void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }
+
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
 
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
 
   std::unique_ptr<BlinkNotificationServiceImpl> notification_service_;
+
+  blink::mojom::NotificationServicePtr notification_service_ptr_;
 
   TestBrowserContext browser_context_;
 
@@ -323,6 +364,8 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   MockNonPersistentNotificationListener non_persistent_notification_listener_;
 
   blink::mojom::PersistentNotificationError display_persistent_callback_result_;
+
+  std::vector<std::string> bad_messages_;
 
  private:
   NotificationBrowserClient notification_browser_client_;
@@ -383,15 +426,9 @@ TEST_F(BlinkNotificationServiceImplTest,
        DisplayNonPersistentNotificationWithPermission) {
   SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
-  notification_service_->DisplayNonPersistentNotification(
+  DisplayNonPersistentNotification(
       "token", PlatformNotificationData(), NotificationResources(),
       non_persistent_notification_listener_.GetPtr());
-
-  // TODO(https://crbug.com/787459): Pass a callback to
-  // DisplayNonPersistentNotification instead of waiting for all tasks to run
-  // here; a callback parameter will be needed anyway to enable
-  // non-persistent notification event acknowledgements - see bug.
-  RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, GetDisplayedNotifications().size());
 }
@@ -400,17 +437,81 @@ TEST_F(BlinkNotificationServiceImplTest,
        DisplayNonPersistentNotificationWithoutPermission) {
   SetPermissionStatus(blink::mojom::PermissionStatus::DENIED);
 
-  notification_service_->DisplayNonPersistentNotification(
+  DisplayNonPersistentNotification(
       "token", PlatformNotificationData(), NotificationResources(),
       non_persistent_notification_listener_.GetPtr());
 
-  // TODO(https://crbug.com/787459): Pass a callback to
-  // DisplayNonPersistentNotification instead of waiting for all tasks to run
-  // here; a callback parameter will be needed anyway to enable
-  // non-persistent notification event acknowledgements - see bug.
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayNonPersistentNotificationWithContentImageSwitchOn) {
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  NotificationResources resources;
+  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
+  DisplayNonPersistentNotification(
+      "token", PlatformNotificationData(), resources,
+      non_persistent_notification_listener_.GetPtr());
+
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayNonPersistentNotificationWithContentImageSwitchOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kNotificationContentImage);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  ASSERT_TRUE(bad_messages_.empty());
+  NotificationResources resources;
+  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
+  DisplayNonPersistentNotification(
+      "token", PlatformNotificationData(), resources,
+      non_persistent_notification_listener_.GetPtr());
+  EXPECT_EQ(1u, bad_messages_.size());
+  EXPECT_EQ(kBadMessageImproperNotificationImage, bad_messages_[0]);
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayPersistentNotificationWithContentImageSwitchOn) {
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  NotificationResources resources;
+  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
+  DisplayPersistentNotificationSync(registration->id(),
+                                    PlatformNotificationData(), resources);
+
+  EXPECT_EQ(blink::mojom::PersistentNotificationError::NONE,
+            display_persistent_callback_result_);
+
+  // Wait for service to receive the Display call.
   RunAllTasksUntilIdle();
 
-  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayPersistentNotificationWithContentImageSwitchOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kNotificationContentImage);
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  ASSERT_TRUE(bad_messages_.empty());
+  NotificationResources resources;
+  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
+  DisplayPersistentNotificationSync(registration->id(),
+                                    PlatformNotificationData(), resources);
+  EXPECT_EQ(1u, bad_messages_.size());
+  EXPECT_EQ(kBadMessageImproperNotificationImage, bad_messages_[0]);
 }
 
 TEST_F(BlinkNotificationServiceImplTest,

@@ -7,9 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/platform_notification_data.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -207,21 +205,6 @@ TEST(NotificationStructTraitsTest, DataExceedsMaximumSize) {
   ASSERT_FALSE(
       mojo::test::SerializeAndDeserialize<blink::mojom::NotificationData>(
           &notification_data, &platform_notification_data));
-}
-
-// Check round-trip fails if image supplied when kill-switch is active.
-TEST(NotificationStructTraitsTest, ContentImageKillSwitch) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kNotificationContentImage);
-
-  NotificationResources resources;
-  resources.image = CreateBitmap(200, 100, SK_ColorMAGENTA);
-
-  NotificationResources roundtrip_resources;
-  ASSERT_FALSE(
-      mojo::test::SerializeAndDeserialize<blink::mojom::NotificationResources>(
-          &resources, &roundtrip_resources));
 }
 
 TEST(NotificationStructTraitsTest, NotificationResourcesRoundtrip) {

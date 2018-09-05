@@ -62,6 +62,13 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   // Check the permission status for the current |origin_|.
   blink::mojom::PermissionStatus CheckPermissionStatus();
 
+  // Validate |notification_resources| received in a Mojo IPC message.
+  // If the validation failed, we'd close the Mojo connection |binding_| and
+  // destroy |this| by calling OnConnectionError() directly, then return false.
+  // So, please do not touch |this| again after you got a false return value.
+  bool ValidateNotificationResources(
+      const NotificationResources& notification_resources);
+
   void DisplayPersistentNotificationOnIOThread(
       int64_t service_worker_registration_id,
       int64_t persistent_notification_id,
