@@ -115,12 +115,12 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
 
 void ServiceWorkerRegistrationObjectHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
-    ChangedVersionAttributesMask changed_mask,
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     const ServiceWorkerRegistrationInfo& info) {
   DCHECK_EQ(registration->id(), registration_->id());
-  SetVersionAttributes(changed_mask, registration->installing_version(),
-                       registration->waiting_version(),
-                       registration->active_version());
+  SetServiceWorkerObjects(
+      std::move(changed_mask), registration->installing_version(),
+      registration->waiting_version(), registration->active_version());
 }
 
 void ServiceWorkerRegistrationObjectHost::OnUpdateViaCacheChanged(
@@ -131,11 +131,9 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateViaCacheChanged(
 void ServiceWorkerRegistrationObjectHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
-  ChangedVersionAttributesMask changed_mask(
-      ChangedVersionAttributesMask::INSTALLING_VERSION |
-      ChangedVersionAttributesMask::WAITING_VERSION |
-      ChangedVersionAttributesMask::ACTIVE_VERSION);
-  SetVersionAttributes(changed_mask, nullptr, nullptr, nullptr);
+  auto changed_mask =
+      blink::mojom::ChangedServiceWorkerObjectsMask::New(true, true, true);
+  SetServiceWorkerObjects(std::move(changed_mask), nullptr, nullptr, nullptr);
 }
 
 void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
@@ -371,29 +369,30 @@ void ServiceWorkerRegistrationObjectHost::DidUpdateNavigationPreloadHeader(
                           base::nullopt);
 }
 
-void ServiceWorkerRegistrationObjectHost::SetVersionAttributes(
-    ChangedVersionAttributesMask changed_mask,
+void ServiceWorkerRegistrationObjectHost::SetServiceWorkerObjects(
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  if (!changed_mask.changed())
+  if (!(changed_mask->installing || changed_mask->waiting ||
+        changed_mask->active))
     return;
 
   blink::mojom::ServiceWorkerObjectInfoPtr installing;
   blink::mojom::ServiceWorkerObjectInfoPtr waiting;
   blink::mojom::ServiceWorkerObjectInfoPtr active;
-  if (changed_mask.installing_changed()) {
+  if (changed_mask->installing) {
     installing =
         CreateCompleteObjectInfoToSend(provider_host_, installing_version);
   }
-  if (changed_mask.waiting_changed())
+  if (changed_mask->waiting)
     waiting = CreateCompleteObjectInfoToSend(provider_host_, waiting_version);
-  if (changed_mask.active_changed())
+  if (changed_mask->active)
     active = CreateCompleteObjectInfoToSend(provider_host_, active_version);
 
   DCHECK(remote_registration_);
-  remote_registration_->SetVersionAttributes(
-      changed_mask.changed(), std::move(installing), std::move(waiting),
+  remote_registration_->SetServiceWorkerObjects(
+      std::move(changed_mask), std::move(installing), std::move(waiting),
       std::move(active));
 }
 

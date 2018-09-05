@@ -321,22 +321,21 @@ void WebServiceWorkerRegistrationImpl::OnUpdated(
       base::WrapRefCounted(this)));
 }
 
-void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
-    int changed_mask,
+void WebServiceWorkerRegistrationImpl::SetServiceWorkerObjects(
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     blink::mojom::ServiceWorkerObjectInfoPtr installing,
     blink::mojom::ServiceWorkerObjectInfoPtr waiting,
     blink::mojom::ServiceWorkerObjectInfoPtr active) {
-  ChangedVersionAttributesMask mask(changed_mask);
-  DCHECK(mask.installing_changed() || !installing);
-  if (mask.installing_changed()) {
+  DCHECK(changed_mask->installing || !installing);
+  if (changed_mask->installing) {
     SetInstalling(std::move(installing));
   }
-  DCHECK(mask.waiting_changed() || !waiting);
-  if (mask.waiting_changed()) {
+  DCHECK(changed_mask->waiting || !waiting);
+  if (changed_mask->waiting) {
     SetWaiting(std::move(waiting));
   }
-  DCHECK(mask.active_changed() || !active);
-  if (mask.active_changed()) {
+  DCHECK(changed_mask->active || !active);
+  if (changed_mask->active) {
     SetActive(std::move(active));
   }
 }

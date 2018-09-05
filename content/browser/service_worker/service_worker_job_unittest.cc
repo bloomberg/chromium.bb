@@ -897,7 +897,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
  public:
   struct AttributeChangeLogEntry {
     int64_t registration_id;
-    ChangedVersionAttributesMask mask;
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr mask;
     ServiceWorkerRegistrationInfo info;
   };
 
@@ -1042,13 +1042,13 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   // ServiceWorkerRegistration::Listener overrides
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       const ServiceWorkerRegistrationInfo& info) override {
     AttributeChangeLogEntry entry;
     entry.registration_id = registration->id();
-    entry.mask = changed_mask;
+    entry.mask = std::move(changed_mask);
     entry.info = info;
-    attribute_change_log_.push_back(entry);
+    attribute_change_log_.push_back(std::move(entry));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1064,7 +1064,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     StateChangeLogEntry entry;
     entry.version_id = version->version_id();
     entry.status = version->status();
-    state_change_log_.push_back(entry);
+    state_change_log_.push_back(std::move(entry));
   }
 
   scoped_refptr<ServiceWorkerRegistration> observed_registration_;
@@ -1232,39 +1232,47 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   EXPECT_FALSE(registration->waiting_version());
   ASSERT_EQ(3u, update_helper->attribute_change_log_.size());
 
-  UpdateJobTestHelper::AttributeChangeLogEntry entry;
-  entry = update_helper->attribute_change_log_[0];
-  EXPECT_TRUE(entry.mask.installing_changed());
-  EXPECT_FALSE(entry.mask.waiting_changed());
-  EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_NE(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[0];
+    EXPECT_TRUE(entry.mask->installing);
+    EXPECT_FALSE(entry.mask->waiting);
+    EXPECT_FALSE(entry.mask->active);
+    EXPECT_NE(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_EQ(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
-  entry = update_helper->attribute_change_log_[1];
-  EXPECT_TRUE(entry.mask.installing_changed());
-  EXPECT_TRUE(entry.mask.waiting_changed());
-  EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_EQ(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[1];
+    EXPECT_TRUE(entry.mask->installing);
+    EXPECT_TRUE(entry.mask->waiting);
+    EXPECT_FALSE(entry.mask->active);
+    EXPECT_EQ(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
-  entry = update_helper->attribute_change_log_[2];
-  EXPECT_FALSE(entry.mask.installing_changed());
-  EXPECT_TRUE(entry.mask.waiting_changed());
-  EXPECT_TRUE(entry.mask.active_changed());
-  EXPECT_EQ(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[2];
+    EXPECT_FALSE(entry.mask->installing);
+    EXPECT_TRUE(entry.mask->waiting);
+    EXPECT_TRUE(entry.mask->active);
+    EXPECT_EQ(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_EQ(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
   // expected version state transitions:
   // new.installing, new.installed,

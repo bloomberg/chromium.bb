@@ -19,6 +19,12 @@ enum ServiceWorkerUpdateViaCache {
   kNone,
 };
 
+struct ChangedServiceWorkerObjectsMask {
+  bool installing;
+  bool waiting;
+  bool active;
+};
+
 // Represents options for register():
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 struct ServiceWorkerRegistrationOptions {
@@ -94,16 +100,13 @@ interface ServiceWorkerRegistrationObjectHost {
 interface ServiceWorkerRegistrationObject {
   // Sets changed service worker objects for this registration object.
   // |changed_mask| indicates which objects of {|installing|,|waiting|,|active|}
-  // have changed. See ChangedVersionAttributesMask in service_worker_types.h
-  // for details.
+  // have changed.
   // Changed objects may be null to indicate that the object does not exist
   // anymore. Unchanged ones are always null.
-  // TODO(leonhsl): Use mojofied ChangedVersionAttributesMask directly instead
-  // of an int32 for |changed_mask|.
-  SetVersionAttributes(int32 changed_mask,
-                       ServiceWorkerObjectInfo? installing,
-                       ServiceWorkerObjectInfo? waiting,
-                       ServiceWorkerObjectInfo? active);
+  SetServiceWorkerObjects(ChangedServiceWorkerObjectsMask changed_mask,
+                          ServiceWorkerObjectInfo? installing,
+                          ServiceWorkerObjectInfo? waiting,
+                          ServiceWorkerObjectInfo? active);
 
   // Sets ServiceWorkerRegistration#updateViaCache.
   SetUpdateViaCache(ServiceWorkerUpdateViaCache update_via_cache);

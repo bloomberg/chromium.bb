@@ -394,11 +394,11 @@ ServiceWorkerProviderHost::GetControllerMode() const {
 
 void ServiceWorkerProviderHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
-    ChangedVersionAttributesMask changed_mask,
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     const ServiceWorkerRegistrationInfo& /* info */) {
   if (!get_ready_callback_ || get_ready_callback_->is_null())
     return;
-  if (changed_mask.active_changed() && registration->active_version()) {
+  if (changed_mask->active && registration->active_version()) {
     // Wait until the state change so we don't send the get for ready
     // registration complete message before set version attributes message.
     registration->active_version()->RegisterStatusChangeCallback(base::BindOnce(

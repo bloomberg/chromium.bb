@@ -46,7 +46,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
    public:
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
-        ChangedVersionAttributesMask changed_mask,
+        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
         const ServiceWorkerRegistrationInfo& info) {}
     virtual void OnUpdateViaCacheChanged(
         ServiceWorkerRegistration* registation) {}
@@ -120,7 +120,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   virtual void RemoveListener(Listener* listener);
   void NotifyRegistrationFailed();
   void NotifyUpdateFound();
-  void NotifyVersionAttributesChanged(ChangedVersionAttributesMask mask);
+  void NotifyVersionAttributesChanged(
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr mask);
 
   ServiceWorkerRegistrationInfo GetInfo();
 
@@ -193,7 +194,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,
-      ChangedVersionAttributesMask* mask);
+      blink::mojom::ChangedServiceWorkerObjectsMask* mask);
 
   // ServiceWorkerVersion::Observer override.
   void OnNoControllees(ServiceWorkerVersion* version) override;
