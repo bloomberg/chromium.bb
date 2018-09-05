@@ -35,11 +35,10 @@ constexpr int kClientControlledWindowMinimumOnScreenArea =
 
 // static
 void ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-    aura::Window* window,
+    const gfx::Rect& display_bounds,
     gfx::Rect* bounds) {
   AdjustBoundsToEnsureWindowVisibility(
-      window->GetRootWindow()->bounds(),
-      kClientControlledWindowMinimumOnScreenArea,
+      display_bounds, kClientControlledWindowMinimumOnScreenArea,
       kClientControlledWindowMinimumOnScreenArea, bounds);
 }
 
@@ -135,7 +134,8 @@ void ClientControlledState::HandleWorkspaceEvents(WindowState* window_state,
   if (event->type() == WM_EVENT_ADDED_TO_WORKSPACE) {
     aura::Window* window = window_state->window();
     gfx::Rect bounds = window->bounds();
-    AdjustBoundsForMinimumWindowVisibility(window, &bounds);
+    AdjustBoundsForMinimumWindowVisibility(window->GetRootWindow()->bounds(),
+                                           &bounds);
 
     if (window->bounds() != bounds)
       window_state->SetBoundsConstrained(bounds);

@@ -20,6 +20,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -113,6 +114,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set geometry for surface. The geometry represents the "visible bounds"
   // for the surface from the user's perspective.
   void SetGeometry(const gfx::Rect& geometry);
+
+  // If set, geometry is in display rather than window or screen coordinates.
+  void SetDisplay(int64_t display_id);
 
   // Set origin in screen coordinate space.
   void SetOrigin(const gfx::Point& origin);
@@ -258,6 +262,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   int container_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
+  int64_t display_id_ = display::kInvalidDisplayId;
+  int64_t pending_display_id_ = display::kInvalidDisplayId;
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
   base::string16 title_;
