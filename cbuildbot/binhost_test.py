@@ -58,10 +58,12 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     self.fatal_complaints = []
 
   def tearDown(self):
-    if self.complaints:
-      logging.warn('\n' + '\n'.join(self.complaints))
+    for complaint in self.complaints:
+      logging.warn(complaint)
+    for complaint in self.fatal_complaints:
+      logging.error(complaint)
     if self.fatal_complaints:
-      self.assertFalse(self.fatal_complaints, '\n'.join(self.fatal_complaints))
+      self.fail('Fatal errors found in this test')
 
   def Complain(self, msg, fatal):
     """Complain about an error when the test exits.
