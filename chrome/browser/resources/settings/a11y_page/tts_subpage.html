@@ -147,15 +147,11 @@
         <div id="extension_name_[[index]]" class="start">
           [[extension.name]]
         </div>
-        <a href="[[extension.optionsPage]]"
-            tabindex=-1
-            target="_blank"
+        <paper-button on-click="onEngineSettingsTap_"
             aria-describedby$="extension_name_[[index]]"
             hidden$="[[!extension.optionsPage]]">
-          <paper-button>
-            $i18n{settings}
-          </paper-button>
-        </a>
+          $i18n{settings}
+        </paper-button>
       </div>
     </template>
   </template>
