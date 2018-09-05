@@ -113,10 +113,7 @@ WritableUnalignedMapping::WritableUnalignedMapping(
     size_t size,
     off_t offset)
     : WritableUnalignedMapping(
-          mojo::UnwrapUnsafeSharedMemoryRegion(mojo::WrapSharedMemoryHandle(
-              handle,
-              handle.GetSize(),
-              mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite)),
+          base::UnsafeSharedMemoryRegion::CreateFromHandle(handle),
           size,
           offset) {}
 
