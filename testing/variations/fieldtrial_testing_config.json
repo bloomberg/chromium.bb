@@ -2867,9 +2867,6 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTabSwitchSuggestions",
                         "OmniboxTailSuggestions",
-                        "OmniboxUIExperimentShowSuggestionFavicons",
-                        "OmniboxUIExperimentSwapTitleAndUrl",
-                        "OmniboxUIExperimentVerticalMargin",
                         "ZeroSuggestRedirectToChrome",
                         "ZeroSuggestSwapTitleAndUrl"
                     ]
