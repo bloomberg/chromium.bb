@@ -360,6 +360,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION);
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
   source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
+  source->AddLocalizedString("managedOption",
+                             IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT);
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("configuringInProgressText",
                              IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT);
