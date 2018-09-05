@@ -2240,17 +2240,27 @@ DOMRectList* Internals::nonFastScrollableRects(
     Document* document,
     ExceptionState& exception_state) const {
   DCHECK(document);
-  if (!document->GetFrame()) {
+  const LocalFrame* frame = document->GetFrame();
+  if (!frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The document provided is invalid.");
     return nullptr;
   }
 
-  Page* page = document->GetPage();
-  if (!page)
-    return nullptr;
+  // Update lifecycle to kPrePaintClean.  This includes the compositing update
+  // and ScrollingCoordinator::UpdateAfterPaint, which computes the non-fast
+  // scrollable region.
+  frame->View()->UpdateAllLifecyclePhases();
 
-  return page->NonFastScrollableRectsForTesting(document->GetFrame());
+  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
+  if (!layer)
+    return DOMRectList::Create();
+  const cc::Region& region = layer->CcLayer()->non_fast_scrollable_region();
+  Vector<IntRect> rects;
+  rects.ReserveCapacity(region.GetRegionComplexity());
+  for (const gfx::Rect& rect : region)
+    rects.push_back(IntRect(rect));
+  return DOMRectList::Create(rects);
 }
 
 void Internals::evictAllResources() const {
