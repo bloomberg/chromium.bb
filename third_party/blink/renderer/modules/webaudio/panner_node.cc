@@ -740,10 +740,10 @@ PannerNode* PannerNode::Create(BaseAudioContext* context,
 
   node->setRefDistance(options.refDistance(), exception_state);
   node->setMaxDistance(options.maxDistance(), exception_state);
-  node->setRolloffFactor(options.rolloffFactor());
+  node->setRolloffFactor(options.rolloffFactor(), exception_state);
   node->setConeInnerAngle(options.coneInnerAngle());
   node->setConeOuterAngle(options.coneOuterAngle());
-  node->setConeOuterGain(options.coneOuterGain());
+  node->setConeOuterGain(options.coneOuterGain(), exception_state);
 
   return node;
 }
@@ -818,7 +818,15 @@ double PannerNode::rolloffFactor() const {
   return GetPannerHandler().RolloffFactor();
 }
 
-void PannerNode::setRolloffFactor(double factor) {
+void PannerNode::setRolloffFactor(double factor,
+                                  ExceptionState& exception_state) {
+  if (factor < 0) {
+    exception_state.ThrowRangeError(
+        ExceptionMessages::IndexExceedsMinimumBound<double>("rolloffFactor",
+                                                            factor, 0));
+    return;
+  }
+
   GetPannerHandler().SetRolloffFactor(factor);
 }
 
@@ -842,7 +850,17 @@ double PannerNode::coneOuterGain() const {
   return GetPannerHandler().ConeOuterGain();
 }
 
-void PannerNode::setConeOuterGain(double gain) {
+void PannerNode::setConeOuterGain(double gain,
+                                  ExceptionState& exception_state) {
+  if (gain < 0 || gain > 1) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        ExceptionMessages::IndexOutsideRange<double>(
+            "coneOuterGain", gain, 0, ExceptionMessages::kInclusiveBound, 1,
+            ExceptionMessages::kInclusiveBound));
+    return;
+  }
+
   GetPannerHandler().SetConeOuterGain(gain);
 }
 
