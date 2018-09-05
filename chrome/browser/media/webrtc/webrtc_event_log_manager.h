@@ -132,6 +132,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
+      size_t web_app_id,
       base::OnceCallback<void(bool, const std::string&, const std::string&)>
           reply);
 
@@ -280,6 +281,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& peer_connection_id,
       const base::FilePath& browser_context_dir,
       size_t max_file_size_bytes,
+      size_t web_app_id,
       base::OnceCallback<void(bool, const std::string&, const std::string&)>
           reply);
 

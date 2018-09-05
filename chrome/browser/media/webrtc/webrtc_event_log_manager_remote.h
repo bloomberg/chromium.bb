@@ -89,11 +89,14 @@ class WebRtcRemoteEventLogManager final
   // 3. The maximum file size must be sensible.
   //
   // If all of the restrictions were observed, and if a file was successfully
-  // created, true will be return.
+  // created, true will be returned.
   //
   // If the call succeeds, the log's identifier will be written to |log_id|.
   // The log identifier is exactly 32 uppercase ASCII characters from the
   // ranges 0-9 and A-F.
+  //
+  // The log's filename will also incorporate |web_app_id|.
+  // |web_app_id| must be between 1 and 99 (inclusive); error otherwise.
   //
   // If the call fails, an error message is written to |error_message|.
   // The error message will be specific to the failure (as opposed to a generic
@@ -109,6 +112,7 @@ class WebRtcRemoteEventLogManager final
                           const std::string& peer_connection_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
+                          size_t web_app_id,
                           std::string* log_id,
                           std::string* error_message);
 
@@ -173,10 +177,11 @@ class WebRtcRemoteEventLogManager final
   void ShutDownForTesting(base::OnceClosure reply);
 
  private:
-  // Validates log parameters (at the moment, only max file size).
+  // Validates log parameters.
   // If valid, returns true. Otherwise, false, and |error_message| gets
   // a relevant error.
   bool AreLogParametersValid(size_t max_file_size_bytes,
+                             size_t web_app_id,
                              std::string* error_message) const;
 
   // Checks whether a browser context has already been enabled via a call to
@@ -240,8 +245,9 @@ class WebRtcRemoteEventLogManager final
   bool StartWritingLog(const PeerConnectionKey& key,
                        const base::FilePath& browser_context_dir,
                        size_t max_file_size_bytes,
-                       std::string* log_id,
-                       std::string* error_message);
+                       size_t web_app_id,
+                       std::string* log_id_out,
+                       std::string* error_message_out);
 
   // Checks if the referenced peer connection has an associated active
   // remote-bound log. If it does, the log is changed from ACTIVE to PENDING.

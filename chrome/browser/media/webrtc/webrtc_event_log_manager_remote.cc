@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/unguessable_token.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -83,17 +82,6 @@ bool TimePointInRange(const base::Time& time_point,
          range_begin <= range_end);
   return (range_begin.is_null() || range_begin <= time_point) &&
          (range_end.is_null() || time_point < range_end);
-}
-
-// Create a random identifier of 32 hexadecimal (uppercase) characters.
-std::string CreateLogId() {
-  // UnguessableToken's interface makes no promisses over case. We therefore
-  // convert, even if the current implementation does not require it.
-  std::string log_id =
-      base::ToUpperASCII(base::UnguessableToken::Create().ToString());
-  DCHECK_EQ(log_id.size(), 32u);
-  DCHECK_EQ(log_id.find_first_not_of("0123456789ABCDEF"), std::string::npos);
-  return log_id;
 }
 
 // Do not attempt to upload when there is no active connection.
@@ -198,13 +186,6 @@ const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention =
 // Maximum time to keep history files on disk. These serve to display an upload
 // on chrome://webrtc-logs/. It is persisted for longer than the log itself.
 const base::TimeDelta kHistoryFileRetention = base::TimeDelta::FromDays(30);
-
-// The "01" prefix is for future-proofing. If more than one web-app is allowed
-// to log, but all upload the logs to Crash, this will allow us to distinguish
-// logs from different web-apps.
-// TODO(crbug.com/775415): Support additional web-apps.
-const base::FilePath::CharType kRemoteBoundWebRtcEventLogFileNamePrefix[] =
-    FILE_PATH_LITERAL("webrtc_event_log_01_");
 
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer,
@@ -410,6 +391,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
+    size_t web_app_id,
     std::string* log_id,
     std::string* error_message) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -418,7 +400,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   DCHECK(error_message);
   DCHECK(error_message->empty());
 
-  if (!AreLogParametersValid(max_file_size_bytes, error_message)) {
+  if (!AreLogParametersValid(max_file_size_bytes, web_app_id, error_message)) {
     // |error_message| will have been set by AreLogParametersValid().
     DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
                                        "error without an error message.";
@@ -457,8 +439,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     return false;
   }
 
-  return StartWritingLog(key, browser_context_dir, max_file_size_bytes, log_id,
-                         error_message);
+  return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
+                         web_app_id, log_id, error_message);
 }
 
 bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
@@ -648,6 +630,7 @@ void WebRtcRemoteEventLogManager::ShutDownForTesting(base::OnceClosure reply) {
 
 bool WebRtcRemoteEventLogManager::AreLogParametersValid(
     size_t max_file_size_bytes,
+    size_t web_app_id,
     std::string* error_message) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -666,6 +649,13 @@ bool WebRtcRemoteEventLogManager::AreLogParametersValid(
   if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
     LOG(WARNING) << "File size exceeds maximum allowed.";
     *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
+    return false;
+  }
+
+  if (web_app_id < kMinWebRtcEventLogWebAppId ||
+      web_app_id > kMaxWebRtcEventLogWebAppId) {
+    LOG(WARNING) << "Illegal web-app identifier.";
+    *error_message = kStartRemoteLoggingFailureIllegalWebAppId;
     return false;
   }
 
@@ -803,6 +793,10 @@ bool WebRtcRemoteEventLogManager::LoadPendingLogInfo(
     base::Time last_modified) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
+  if (!IsValidRemoteBoundLogFilePath(path)) {
+    return false;
+  }
+
   const base::FilePath history_path = GetWebRtcEventLogHistoryFilePath(path);
   if (base::PathExists(history_path)) {
     // Log file has associated history file, indicating an upload was started
@@ -828,6 +822,10 @@ WebRtcRemoteEventLogManager::LoadHistoryFile(
     const base::Time& prune_begin,
     const base::Time& prune_end) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  if (!IsValidRemoteBoundLogFilePath(path)) {
+    return nullptr;
+  }
 
   std::unique_ptr<WebRtcEventLogHistoryFileReader> reader =
       WebRtcEventLogHistoryFileReader::Create(path);
@@ -922,41 +920,47 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    std::string* log_id,
-    std::string* error_message) {
+    size_t web_app_id,
+    std::string* log_id_out,
+    std::string* error_message_out) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // The log is assigned a universally unique ID (with high probability).
-  const std::string id = CreateLogId();
+  const std::string log_id = CreateWebRtcEventLogId();
 
   // Use the log ID as part of the filename. In the highly unlikely event that
   // this filename is already taken, or that an earlier log with the same name
   // existed and left a history file behind, it will be treated the same way as
   // any other failure to start the log file.
   // TODO(crbug.com/775415): Add a unit test for above comment.
-  const base::FilePath base_path =
+  const base::FilePath remote_logs_dir =
       GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
-  const base::FilePath file_path =
-      base_path.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
-          .AddExtension(log_file_writer_factory_->Extension())
-          .InsertBeforeExtensionASCII(id);
+  const base::FilePath log_path =
+      WebRtcEventLogPath(remote_logs_dir, log_id, web_app_id,
+                         log_file_writer_factory_->Extension());
+
+  if (base::PathExists(log_path)) {
+    LOG(ERROR) << "Previously used ID selected.";
+    *error_message_out = kStartRemoteLoggingFailureGeneric;
+    return false;
+  }
 
   const base::FilePath history_file_path =
-      GetWebRtcEventLogHistoryFilePath(file_path);
+      GetWebRtcEventLogHistoryFilePath(log_path);
   if (base::PathExists(history_file_path)) {
     LOG(ERROR) << "Previously used ID selected.";
-    *error_message = kStartRemoteLoggingFailureGeneric;
+    *error_message_out = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
   // The log is now ACTIVE.
   DCHECK_NE(max_file_size_bytes, kWebRtcEventLogManagerUnlimitedFileSize);
   auto log_file =
-      log_file_writer_factory_->Create(file_path, max_file_size_bytes);
+      log_file_writer_factory_->Create(log_path, max_file_size_bytes);
   if (!log_file) {
     // TODO(crbug.com/775415): Add UMA for exact failure type.
     LOG(ERROR) << "Failed to initialize remote-bound WebRTC event log file.";
-    *error_message = kStartRemoteLoggingFailureGeneric;
+    *error_message_out = kStartRemoteLoggingFailureGeneric;
     return false;
   }
   const auto it = active_logs_.emplace(key, std::move(log_file));
@@ -964,7 +968,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
 
   observer_->OnRemoteLogStarted(key, it.first->second->path());
 
-  *log_id = id;
+  *log_id_out = log_id;
   return true;
 }
 

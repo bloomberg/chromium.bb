@@ -353,6 +353,8 @@ const base::FilePath::CharType kUnpackedFullscreenAppName[] =
 // Arbitrary port range for testing the WebRTC UDP port policy.
 const char kTestWebRtcUdpPortRange[] = "10000-10100";
 
+constexpr size_t kWebAppId = 42;
+
 void GetTestDataDirectory(base::FilePath* test_data_directory) {
   ASSERT_TRUE(
       base::PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
@@ -6516,7 +6518,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
     // Test focus - remote-bound logging allowed if and only if the policy
     // is configured to allow it.
     webrtc_event_log_manager->StartRemoteLogging(
-        render_process_id, kPeerConnectionId, kMaxFileSizeBytes,
+        render_process_id, kPeerConnectionId, kMaxFileSizeBytes, kWebAppId,
         BlockingBoolExpectingReplyWithExtras(&run_loop,
                                              remote_logging_allowed));
     run_loop.Run();
