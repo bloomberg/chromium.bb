@@ -35,8 +35,7 @@ void InitOpenGl() {
     LOG(FATAL) << "Failed to initalize GLEW: " << glewGetErrorString(err);
   }
 
-  if (GL_KHR_debug && FLAGS_opengl_debug) {
-    return;
+  if (GLEW_KHR_debug && FLAGS_opengl_debug) {
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(
         +[](GLenum source, GLenum type, GLuint id, GLenum severity,
