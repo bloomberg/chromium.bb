@@ -167,6 +167,20 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     should_request_name_from_user_ = true;
   }
 
+  // If the relevant feature is enabled, only send the country of the
+  // recently-used addresses.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSendOnlyCountryInGetUploadDetails)) {
+    for (size_t i = 0; i < upload_request_.profiles.size(); i++) {
+      AutofillProfile country_only;
+      country_only.SetInfo(ADDRESS_HOME_COUNTRY,
+                           upload_request_.profiles[i].GetInfo(
+                               ADDRESS_HOME_COUNTRY, app_locale_),
+                           app_locale_);
+      upload_request_.profiles[i] = std::move(country_only);
+    }
+  }
+
   // All required data is available, start the upload process.
   if (observer_for_testing_)
     observer_for_testing_->OnDecideToRequestUploadSave();
@@ -380,20 +394,6 @@ void CreditCardSaveManager::SetProfilesForCreditCardUpload(
   // invalid.
   if (verified_zip.empty() && !candidate_profiles.empty())
     upload_decision_metrics_ |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE;
-
-  // If the relevant feature is enabled, only send the country of the
-  // recently-used addresses.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSendOnlyCountryInGetUploadDetails)) {
-    for (size_t i = 0; i < candidate_profiles.size(); i++) {
-      AutofillProfile country_only;
-      country_only.SetInfo(
-          ADDRESS_HOME_COUNTRY,
-          candidate_profiles[i].GetInfo(ADDRESS_HOME_COUNTRY, app_locale_),
-          app_locale_);
-      candidate_profiles[i] = std::move(country_only);
-    }
-  }
 
   // Set up |upload_request->profiles|.
   upload_request->profiles.assign(candidate_profiles.begin(),
