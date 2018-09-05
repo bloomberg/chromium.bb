@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -24,12 +25,11 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URI;
@@ -59,8 +60,6 @@ public class ToolbarModel implements ToolbarDataProvider {
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
-    /** Query in Omnibox cached values to avoid unnecessary expensive calls. */
-    private boolean mQueryInOmniboxEnabled;
     private String mPreviousUrl;
     @ConnectionSecurityLevel
     private int mPreviousSecurityLevel;
@@ -91,7 +90,6 @@ public class ToolbarModel implements ToolbarDataProvider {
      */
     public void initializeWithNative() {
         mNativeToolbarModelAndroid = nativeInit();
-        mQueryInOmniboxEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_IN_OMNIBOX);
         mIsNativeLibraryReady = true;
     }
 
@@ -201,9 +199,10 @@ public class ToolbarModel implements ToolbarDataProvider {
             return buildUrlBarData(url, formattedUrl);
         }
 
-        if (shouldDisplaySearchTerms()) {
+        String searchTerms = getDisplaySearchTerms();
+        if (searchTerms != null) {
             // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
-            return buildUrlBarData(url, getDisplaySearchTerms());
+            return buildUrlBarData(url, searchTerms);
         }
 
         if (ChromeFeatureList.isEnabled(
@@ -448,87 +447,27 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     @Override
     public boolean shouldDisplaySearchTerms() {
-        if (!securityLevelSafeForQueryInOmnibox() && !mIgnoreSecurityLevelForSearchTerms) {
-            return false;
-        }
-        if (!mQueryInOmniboxEnabled) return false;
-        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return false;
-        if (TextUtils.isEmpty(getDisplaySearchTerms())) return false;
-        return true;
-    }
-
-    private boolean securityLevelSafeForQueryInOmnibox() {
-        int securityLevel = getSecurityLevel();
-        return securityLevel == ConnectionSecurityLevel.SECURE
-                || securityLevel == ConnectionSecurityLevel.EV_SECURE;
+        return getDisplaySearchTerms() != null;
     }
 
     /**
-     * Extracts query terms from the current URL if it's a SRP URL from the default search engine,
-     * caching the result of the more expensive call to {@link #getDisplaySearchTermsInternal}.
+     * If the current tab state is eligible for displaying the search query terms instead of the
+     * URL, this extracts the query terms from the current URL. See {@link QueryInOmnibox}.
      *
-     * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
-     *         extract, if query in omnibox is disabled, or if the security level is insufficient to
-     *         display search terms in place of SRP URL. This will also return nothing if the search
-     *         terms look too much like a URL, since we don't want to display URL look-a-likes with
-     *         "Query in Omnibox" to avoid confusion.
+     * @return The search terms. Returns null if the tab is ineligible to display the search terms
+     *         instead of the URL.
      */
     private String getDisplaySearchTerms() {
-        String url = getCurrentUrl();
-        if (url == null) {
-            mCachedSearchTerms = null;
-        } else {
-            @ConnectionSecurityLevel
-            int securityLevel = getSecurityLevel();
-            if (!url.equals(mPreviousUrl) || securityLevel != mPreviousSecurityLevel) {
-                mCachedSearchTerms = getDisplaySearchTermsInternal(url);
-                mPreviousUrl = url;
-                mPreviousSecurityLevel = securityLevel;
-            }
+        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
+
+        // We can't fetch the Profile while the browser is still starting.
+        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            return null;
         }
-        return mCachedSearchTerms;
-    }
 
-    /**
-     * Extracts query terms from a URL if it's a SRP URL from the default search engine, returning
-     * the cached result of the previous call if this call is being performed for the same URL and
-     * security level as last time.
-     *
-     * @param url The URL to extract search terms from.
-     * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
-     *         extract, if query in omnibox is disabled, or if the security level is insufficient to
-     *         display search terms in place of SRP URL.
-     */
-    private String getDisplaySearchTermsInternal(String url) {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        if (!templateUrlService.isSearchResultsPageFromDefaultSearchProvider(url)) return null;
-
-        String searchTerms = templateUrlService.extractSearchTermsFromUrl(url);
-        // Avoid showing search terms that would be interpreted as a URL if typed into the
-        // omnibox.
-        return looksLikeUrl(searchTerms) ? null : searchTerms;
-    }
-
-    /**
-     * Checks if the provided {@link String} look like a URL.
-     *
-     * @param input The {@link String} to check.
-     * @return Whether or not the {@link String} appeared to be a URL.
-     */
-    private boolean looksLikeUrl(String input) {
-        return !TextUtils.isEmpty(input)
-                && !TextUtils.isEmpty(AutocompleteController.nativeQualifyPartialURLQuery(input));
-    }
-
-    /**
-     * Sets a flag telling the model to ignore the security level in its check for whether to
-     * display search terms or not. This is useful for avoiding the flicker that occurs when loading
-     * a SRP URL before our SSL state updates.
-     *
-     * @param ignore Whether or not we should ignore the security level.
-     */
-    protected void setIgnoreSecurityLevelForSearchTerms(boolean ignore) {
-        mIgnoreSecurityLevelForSearchTerms = ignore;
+        return QueryInOmnibox.getDisplaySearchTerms(
+                getProfile(), getSecurityLevel(), getCurrentUrl());
     }
 
     /** @return The formatted URL suitable for editing. */
