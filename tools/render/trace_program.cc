@@ -50,7 +50,6 @@ TraceProgram::TraceProgram()
 }
 
 void TraceProgram::LoadTrace(std::unique_ptr<Trace> trace) {
-  LOG(INFO) << trace->events_size();
   trace_ = absl::make_unique<ProcessedTrace>(std::move(trace), renderer_.get());
   state_.viewport.x = renderer_->max_x();
   state_.viewport.y = renderer_->max_y();
