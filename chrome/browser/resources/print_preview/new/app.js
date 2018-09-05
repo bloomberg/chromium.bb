@@ -268,7 +268,7 @@ Polymer({
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.
-        if (!cr.isWin || this.state == print_preview_new.State.READY)
+        if (!cr.isWindows || this.state == print_preview_new.State.READY)
           this.onPrintWithSystemDialog_();
         e.preventDefault();
         return;
@@ -305,7 +305,7 @@ Polymer({
   onCrDialogClose_: function(e) {
     // Note: due to event re-firing in cr_dialog.js, this event will always
     // appear to be coming from the outermost child dialog.
-    // TODO (rbpotter): Fix event re-firing so that the event comes from the
+    // TODO(rbpotter): Fix event re-firing so that the event comes from the
     // dialog that has been closed, and add an assertion that the removed
     // dialog matches e.composedPath()[0].
     if (e.composedPath()[0].nodeName == 'CR-DIALOG')
