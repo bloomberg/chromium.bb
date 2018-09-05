@@ -2523,27 +2523,34 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       !GetPage()->MainFrame()->IsLocalFrame())
     return;
 
-  if (!GetSettings()->ViewportEnabled()) {
-    GetPageScaleConstraintsSet().ClearPageDefinedConstraints();
-    UpdateMainFrameLayoutSize();
-
-    // If we don't support mobile viewports, allow GPU rasterization.
-    matches_heuristics_for_gpu_rasterization_ = true;
-    if (layer_tree_view_) {
-      layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
-          matches_heuristics_for_gpu_rasterization_);
-    }
-    return;
-  }
-
-  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
-
+  // When viewport is disabled (non-mobile), we always use gpu rasterization.
+  // Otherwise, on platforms that do support viewport tags, we only enable it
+  // when they are present. But Why? Historically this was used to gate usage of
+  // gpu rasterization to a smaller set of less complex cases to avoid driver
+  // bugs dealing with websites designed for desktop. The concern is that on
+  // older android devices (<L according to https://crbug.com/419521#c9),
+  // drivers are more likely to encounter bugs with gpu raster when encountering
+  // the full possibility of desktop web content. Further, Adreno devices <=L
+  // have encountered problems that look like driver bugs when enabling
+  // OOP-Raster which is gpu-based. Thus likely a blacklist would be required
+  // for non-viewport-specified pages in order to avoid crashes or other
+  // problems on mobile devices with gpu rasterization.
+  bool viewport_enabled = GetSettings()->ViewportEnabled();
   matches_heuristics_for_gpu_rasterization_ =
-      description.MatchesHeuristicsForGpuRasterization();
+      viewport_enabled ? description.MatchesHeuristicsForGpuRasterization()
+                       : true;
   if (layer_tree_view_) {
     layer_tree_view_->HeuristicsForGpuRasterizationUpdated(
         matches_heuristics_for_gpu_rasterization_);
   }
+
+  if (!viewport_enabled) {
+    GetPageScaleConstraintsSet().ClearPageDefinedConstraints();
+    UpdateMainFrameLayoutSize();
+    return;
+  }
+
+  Document* document = GetPage()->DeprecatedLocalMainFrame()->GetDocument();
 
   Length default_min_width =
       document->GetViewportData().ViewportDefaultMinWidth();
@@ -2598,11 +2605,8 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       MainFrameImpl()->GetFrameView()->SetNeedsLayout();
   }
 
-  if (LocalFrame* frame = GetPage()->DeprecatedLocalMainFrame()) {
-    if (TextAutosizer* text_autosizer =
-            frame->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
+  if (TextAutosizer* text_autosizer = document->GetTextAutosizer())
+    text_autosizer->UpdatePageInfoInAllFrames();
 
   UpdateMainFrameLayoutSize();
 }
