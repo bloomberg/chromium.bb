@@ -106,8 +106,8 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     # Skip over useflags from the useflag if needed.
     msg_prefix = ''
     if skip_useflags and config.useflags:
-      msg_prefix = 'When we take out config-requested useflags (%s), ' % (
-          config.useflags)
+      msg_prefix = 'When we take out config-requested useflags %s, ' % (
+          tuple(x.encode('ascii') for x in config.useflags),)
       config = config.deepcopy()
       config.useflags = []
 

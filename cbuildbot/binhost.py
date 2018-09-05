@@ -18,6 +18,15 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
 
+def _Ascii(s):
+  """Convert |s| to ASCII.
+
+  Produces slightly simpler output when debugging, and all these fields are
+  guaranteed to only be ASCII.
+  """
+  return s.encode('ascii')
+
+
 # A unique identifier for looking up CompatIds by board/useflags.
 _BoardKey = collections.namedtuple('_BoardKey', ['board', 'useflags'])
 
@@ -29,7 +38,7 @@ def BoardKey(board, useflags):
     board: The board associated with this config.
     useflags: A sequence of extra useflags associated with this config.
   """
-  return _BoardKey(board, tuple(useflags))
+  return _BoardKey(_Ascii(board), tuple(_Ascii(x) for x in useflags))
 
 
 def GetBoardKey(config, board=None):
@@ -250,7 +259,9 @@ def CompatId(arch, useflags, cflags):
     useflags: The full list of use flags for Chrome.
     cflags: The full list of CFLAGS.
   """
-  return _CompatId(arch, tuple(useflags), tuple(cflags))
+  return _CompatId(_Ascii(arch),
+                   tuple(_Ascii(x) for x in useflags),
+                   tuple(_Ascii(x) for x in cflags))
 
 
 def CalculateCompatId(board, extra_useflags):
