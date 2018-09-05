@@ -196,7 +196,7 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
     auto result = context_provider_->BindToCurrentThread();
 
     has_good_context =
-        result == gpu::ContextResult::kSuccess ||
+        result == gpu::ContextResult::kSuccess &&
         context_provider_->ContextGL()->GetGraphicsResetStatusKHR() ==
             GL_NO_ERROR;
   }
