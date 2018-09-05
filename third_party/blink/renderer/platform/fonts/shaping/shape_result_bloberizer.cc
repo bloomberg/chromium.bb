@@ -93,15 +93,15 @@ float ShapeResultBloberizer::FillGlyphs(
       const scoped_refptr<const ShapeResult>& word_result = results[resolved_index];
       word_offset -= word_result->NumCharacters();
       advance =
-          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
-                              run_info.to, advance, word_offset);
+          FillGlyphsForResult(word_result.get(), run_info.run.ToStringView(),
+                              run_info.from, run_info.to, advance, word_offset);
     }
   } else {
     unsigned word_offset = 0;
     for (const auto& word_result : results) {
       advance =
-          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
-                              run_info.to, advance, word_offset);
+          FillGlyphsForResult(word_result.get(), run_info.run.ToStringView(),
+                              run_info.from, run_info.to, advance, word_offset);
       word_offset += word_result->NumCharacters();
     }
   }
@@ -138,7 +138,7 @@ void ShapeResultBloberizer::FillTextEmphasisGlyphs(
       unsigned resolved_offset =
           word_offset - (run_info.run.Rtl() ? word_result->NumCharacters() : 0);
       advance += FillTextEmphasisGlyphsForRun(
-          word_result->runs_[i].get(), run_info.run,
+          word_result->runs_[i].get(), run_info.run.ToStringView(),
           run_info.run.CharactersLength(), run_info.run.Direction(),
           run_info.from, run_info.to, emphasis_data, advance, resolved_offset);
     }
@@ -164,9 +164,8 @@ void ShapeResultBloberizer::FillTextEmphasisGlyphs(const StringView& text,
 
 namespace {
 
-template <typename TextContainerType>
 inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
-                               const TextContainerType& text,
+                               const StringView& text,
                                unsigned character_index) {
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
@@ -175,14 +174,13 @@ inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
              text.CodepointAt(character_index));
 }
 
-template <typename TextContainerType>
 inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
                                  float advance,
                                  hb_direction_t direction,
                                  CanvasRotationInVertical canvas_rotation,
                                  const SimpleFontData* font_data,
                                  const HarfBuzzRunGlyphData& glyph_data,
-                                 const TextContainerType& text,
+                                 const StringView& text,
                                  unsigned character_index) {
   FloatPoint start_offset = HB_DIRECTION_IS_HORIZONTAL(direction)
                                 ? FloatPoint(advance, 0)
@@ -243,9 +241,8 @@ inline unsigned CountGraphemesInCluster(const UChar* str,
 
 }  // namespace
 
-template <typename TextContainerType>
 float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
-                                                 const TextContainerType& text,
+                                                 const StringView& text,
                                                  unsigned from,
                                                  unsigned to,
                                                  float initial_advance,
@@ -328,10 +325,9 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   return advance;
 }
 
-template <typename TextContainerType>
 float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
     const ShapeResult::RunInfo* run,
-    const TextContainerType& text,
+    const StringView& text,
     unsigned text_length,
     TextDirection direction,
     unsigned from,
