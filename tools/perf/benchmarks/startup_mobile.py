@@ -62,11 +62,12 @@ class _MobileStartupSharedState(story_module.SharedState):
     self.platform.network_controller.Close()
     self.platform.SetFullPerformanceModeEnabled(False)
 
-  def LaunchBrowser(self, url):
-    self.platform.FlushDnsCache()
-    # TODO(crbug.com/811244): Determine whether this ensures the page cache is
-    # cleared after |FlushOsPageCaches()| returns.
-    self._possible_browser.FlushOsPageCaches()
+  def LaunchBrowser(self, url, flush_caches):
+    if flush_caches:
+      self.platform.FlushDnsCache()
+      # TODO(crbug.com/811244): Determine whether this ensures the page cache is
+      # cleared after |FlushOsPageCaches()| returns.
+      self._possible_browser.FlushOsPageCaches()
     self.platform.WaitForBatteryTemperature(35)
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
@@ -119,21 +120,32 @@ class _MobileStartupSharedState(story_module.SharedState):
     return True
 
 
+def _DriveMobileStartupWithIntent(state, flush_caches):
+  for _ in xrange(10):
+    # TODO(pasko): Find a way to fail the benchmark when WPR is set up
+    # incorrectly and error pages get loaded.
+    state.LaunchBrowser('http://bbc.co.uk', flush_caches)
+    with state.FindBrowser() as browser:
+      action_runner = browser.foreground_tab.action_runner
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+
 class _MobileStartupWithIntentStory(story_module.Story):
   def __init__(self):
     super(_MobileStartupWithIntentStory, self).__init__(
         _MobileStartupSharedState, name='intent:coldish:bbc')
-    self._action_runner = None
 
   def Run(self, state):
-    """Drives the benchmark with repetitions."""
-    # TODO(pasko): Find a way to fail the benchmark when WPR is set up
-    # incorrectly and error pages get loaded.
-    for _ in xrange(10):
-      state.LaunchBrowser('http://bbc.co.uk')
-      with state.FindBrowser() as browser:
-        action_runner = browser.foreground_tab.action_runner
-        action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    _DriveMobileStartupWithIntent(state, flush_caches=True)
+
+
+class _MobileStartupWithIntentStoryWarm(story_module.Story):
+  def __init__(self):
+    super(_MobileStartupWithIntentStoryWarm, self).__init__(
+        _MobileStartupSharedState, name='intent:warm:bbc')
+
+  def Run(self, state):
+    _DriveMobileStartupWithIntent(state, flush_caches=False)
 
 
 class _MobileStartupStorySet(story_module.StorySet):
@@ -142,6 +154,7 @@ class _MobileStartupStorySet(story_module.StorySet):
           archive_data_file='../page_sets/data/startup_pages.json',
           cloud_storage_bucket=story_module.PARTNER_BUCKET)
     self.AddStory(_MobileStartupWithIntentStory())
+    self.AddStory(_MobileStartupWithIntentStoryWarm())
 
 
 # The mobile startup benchmark uses specifics of AndroidPlatform and hardcodes
