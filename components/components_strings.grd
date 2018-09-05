@@ -195,6 +195,7 @@
       <part file="find_in_page_strings.grdp" />
       <part file="history_strings.grdp" />
       <part file="login_dialog_strings.grdp" />
+      <part file="management_strings.grdp" />
       <part file="new_or_sad_tab_strings.grdp" />
       <part file="nux_google_apps_strings.grdp" />
       <part file="nux_email_strings.grdp" />
