@@ -568,6 +568,12 @@
 
 #define IS_GEN11(devid)		(IS_ICELAKE_11(devid))
 
+/* New platforms use kernel pci ids */
+#include <stdbool.h>
+
+bool intel_is_genx(unsigned int devid, int gen);
+bool intel_get_genx(unsigned int devid, int *gen);
+
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
 				 IS_GEN4(dev) || \
 				 IS_GEN5(dev) || \
@@ -576,6 +582,7 @@
 				 IS_GEN8(dev) || \
 				 IS_GEN9(dev) || \
 				 IS_GEN10(dev) || \
-				 IS_GEN11(dev))
+				 IS_GEN11(dev) || \
+				 intel_get_genx(dev, NULL))
 
 #endif /* _INTEL_CHIPSET_H */

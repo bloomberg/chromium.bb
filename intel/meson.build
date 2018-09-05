@@ -23,7 +23,7 @@ libdrm_intel = shared_library(
   [
     files(
       'intel_bufmgr.c', 'intel_bufmgr_fake.c', 'intel_bufmgr_gem.c',
-      'intel_decode.c', 'mm.c',
+      'intel_decode.c', 'mm.c', 'intel_chipset.c',
     ),
     config_file,
   ],
