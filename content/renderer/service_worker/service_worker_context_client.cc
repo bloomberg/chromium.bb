@@ -1941,7 +1941,25 @@ void ServiceWorkerContextClient::OnIdleTimeout() {
   // ServiceWorkerContextClient::OnIdleTiemout() has been called. It means
   // termination has been requested.
   DCHECK(RequestedTermination());
-  (*instance_host_)->RequestTermination();
+  (*instance_host_)
+      ->RequestTermination(base::BindOnce(
+          &ServiceWorkerContextClient::OnRequestedTermination, GetWeakPtr()));
+}
+
+void ServiceWorkerContextClient::OnRequestedTermination(
+    bool will_be_terminated) {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(context_);
+  DCHECK(context_->timeout_timer);
+
+  // This worker will be terminated soon. Ignore the message.
+  if (will_be_terminated)
+    return;
+
+  // Dispatch a dummy event to run all of queued tasks. This updates the
+  // idle timer too.
+  const int event_id = context_->timeout_timer->StartEvent(base::DoNothing());
+  context_->timeout_timer->EndEvent(event_id);
 }
 
 bool ServiceWorkerContextClient::RequestedTermination() const {
