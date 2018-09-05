@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -241,19 +240,9 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   scrolling_touch_action_ = allowed_touch_action_;
 }
 
-void TouchActionFilter::IncreaseActiveTouches() {
-  // The touch start and associated touch end should be acked in order. If not,
-  // dump.
-  if (num_of_active_touches_ > 0)
-    base::debug::DumpWithoutCrashing();
-  num_of_active_touches_++;
-}
-
-void TouchActionFilter::DecreaseActiveTouches() {
-  // Something is seriously wrong if this is true.
-  if (num_of_active_touches_ == 0)
-    base::debug::DumpWithoutCrashing();
-  num_of_active_touches_--;
+void TouchActionFilter::SetActiveTouchInProgress(
+    bool active_touch_in_progress) {
+  active_touch_in_progress_ = active_touch_in_progress;
 }
 
 void TouchActionFilter::ReportAndResetTouchAction() {
@@ -262,8 +251,7 @@ void TouchActionFilter::ReportAndResetTouchAction() {
   else
     gesture_sequence_.append("R0");
   ReportTouchAction();
-  if (num_of_active_touches_ <= 0)
-    ResetTouchAction();
+  ResetTouchAction();
 }
 
 void TouchActionFilter::ReportTouchAction() {
@@ -372,7 +360,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   // We have set the associated touch action if the touch start already happened
   // or there is a gesture in progress. In these cases, we should not reset the
   // associated touch action.
-  if (!gesture_sequence_in_progress_ && num_of_active_touches_ <= 0) {
+  if (!gesture_sequence_in_progress_ && !active_touch_in_progress_) {
     ResetTouchAction();
     if (has_touch_event_handler_)
       scrolling_touch_action_.reset();

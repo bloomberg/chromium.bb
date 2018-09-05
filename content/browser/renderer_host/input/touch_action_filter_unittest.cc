@@ -1079,40 +1079,13 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedAfterTouchStart) {
 
   // Receive a touch start ack, set the touch action.
   filter_.OnSetTouchAction(cc::kTouchActionPanY);
-  filter_.IncreaseActiveTouches();
+  filter_.SetActiveTouchInProgress(true);
   filter_.OnHasTouchEventHandlers(false);
   EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPanY);
   EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPanY);
   filter_.OnHasTouchEventHandlers(true);
   EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPanY);
   EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPanY);
-}
-
-TEST_F(TouchActionFilterTest, ResetTouchActionWithActiveTouch) {
-  filter_.OnHasTouchEventHandlers(true);
-  EXPECT_FALSE(ScrollingTouchAction().has_value());
-  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
-
-  // Receive a touch start ack, set the touch action.
-  filter_.OnSetTouchAction(cc::kTouchActionPanY);
-  filter_.IncreaseActiveTouches();
-
-  // Somehow we get the ACK for the second touch start before the ACK for the
-  // first touch end.
-  filter_.OnSetTouchAction(cc::kTouchActionPan);
-  filter_.IncreaseActiveTouches();
-
-  // The first touch end comes, we report and reset touch action. The touch
-  // actions should still have value.
-  filter_.DecreaseActiveTouches();
-  filter_.ReportAndResetTouchAction();
-  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPanY);
-  EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPanY);
-
-  // The ack for the second touch end comes, the touch actions will be reset.
-  filter_.DecreaseActiveTouches();
-  filter_.ReportAndResetTouchAction();
-  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 }
 
 // If the renderer is busy, the gesture event might have come before the

@@ -67,8 +67,7 @@ class CONTENT_EXPORT TouchActionFilter {
 
   void OnHasTouchEventHandlers(bool has_handlers);
 
-  void IncreaseActiveTouches();
-  void DecreaseActiveTouches();
+  void SetActiveTouchInProgress(bool active_touch_in_progress);
 
   // Debugging only.
   void AppendToGestureSequenceForDebugging(const char* str);
@@ -108,8 +107,8 @@ class CONTENT_EXPORT TouchActionFilter {
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
 
-  // Increment at receiving ACK for touch start and decrement at touch end.
-  int num_of_active_touches_ = 0;
+  // True at touch start and false at touch end.
+  bool active_touch_in_progress_ = false;
 
   // What touch actions are currently permitted.
   base::Optional<cc::TouchAction> allowed_touch_action_;
