@@ -702,7 +702,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             recordBottomToolbarUseForIPH();
             openHomepage();
         };
-        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.ic_home);
+        final Drawable drawable =
+                ContextCompat.getDrawable(mActivity, mToolbarModel.getHomeButtonIcon());
         final CharSequence accessibilityString =
                 mActivity.getString(R.string.accessibility_toolbar_btn_home);
         return new ToolbarButtonData(
@@ -1284,6 +1285,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     public void openHomepage() {
         RecordUserAction.record("Home");
 
+        mLocationBar.hideSuggestions();
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab == null) return;
         String homePageUrl = HomepageManager.getHomepageUri();

@@ -179,4 +179,12 @@ public interface ToolbarDataProvider {
      * @return Whether or not we should display search terms instead of a URL for query in omnibox.
      */
     boolean shouldDisplaySearchTerms();
+
+    /**
+     * @return The resource ID of drawable for the home button.
+     */
+    @DrawableRes
+    default int getHomeButtonIcon() {
+        return 0;
+    }
 }
