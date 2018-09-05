@@ -16593,6 +16593,7 @@ Called by update_net_error_codes.py.-->
   <int value="1272"
       label="FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER"/>
   <int value="1273" label="AUTOTESTPRIVATE_SETCROSTINIENABLED"/>
+  <int value="1274" label="AUTOTESTPRIVATE_GETHISTOGRAM"/>
 </enum>
 
 <enum name="ExtensionIconState">

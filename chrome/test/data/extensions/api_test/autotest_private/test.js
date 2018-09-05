@@ -28,7 +28,7 @@ chrome.test.runTests([
   function loginStatus() {
     chrome.autotestPrivate.loginStatus(
         chrome.test.callbackPass(function(status) {
-          chrome.test.assertEq(typeof(status), 'object');
+          chrome.test.assertEq(typeof status, 'object');
           chrome.test.assertTrue(status.hasOwnProperty("isLoggedIn"));
           chrome.test.assertTrue(status.hasOwnProperty("isOwner"));
           chrome.test.assertTrue(status.hasOwnProperty("isScreenLocked"));
@@ -43,7 +43,7 @@ chrome.test.runTests([
   function getExtensionsInfo() {
     chrome.autotestPrivate.getExtensionsInfo(
         chrome.test.callbackPass(function(extInfo) {
-          chrome.test.assertEq(typeof(extInfo), 'object');
+          chrome.test.assertEq(typeof extInfo, 'object');
           chrome.test.assertTrue(extInfo.hasOwnProperty('extensions'));
           chrome.test.assertTrue(extInfo.extensions.constructor === Array);
           for (var i = 0; i < extInfo.extensions.length; ++i) {
@@ -133,6 +133,24 @@ chrome.test.runTests([
         chrome.test.succeed();
       });
     });
+  },
+  function getHistogramExists() {
+    // Request an arbitrary histogram that is reported once at startup and seems
+    // unlikely to go away.
+    chrome.autotestPrivate.getHistogram(
+        "Startup.BrowserProcessImpl_PreMainMessageLoopRunTime",
+        chrome.test.callbackPass(function(histogram) {
+          chrome.test.assertEq(typeof histogram, 'object');
+          chrome.test.assertEq(histogram.buckets.length, 1);
+          chrome.test.assertEq(histogram.buckets[0].count, 1);
+          chrome.test.assertTrue(
+              histogram.buckets[0].max > histogram.buckets[0].min);
+        }));
+  },
+  function getHistogramMissing() {
+    chrome.autotestPrivate.getHistogram(
+        'Foo.Nonexistent',
+        chrome.test.callbackFail('Histogram Foo.Nonexistent not found'));
   },
   // This test verifies that Play Store window is not shown by default but
   // Chrome is shown.

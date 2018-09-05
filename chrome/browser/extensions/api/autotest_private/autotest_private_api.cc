@@ -8,6 +8,10 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -647,6 +651,43 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
 #else
   return RespondNow(Error(kOnlyAvailableOnChromeOSError));
 #endif
+}
+
+AutotestPrivateGetHistogramFunction::~AutotestPrivateGetHistogramFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetHistogramFunction";
+  std::unique_ptr<api::autotest_private::GetHistogram::Params> params(
+      api::autotest_private::GetHistogram::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram(params->name);
+  if (!histogram) {
+    return RespondNow(
+        Error(base::StrCat({"Histogram ", params->name, " not found"})));
+  }
+
+  std::unique_ptr<base::HistogramSamples> samples =
+      histogram->SnapshotSamples();
+  api::autotest_private::Histogram result;
+
+  for (std::unique_ptr<base::SampleCountIterator> it = samples->Iterator();
+       !it->Done(); it->Next()) {
+    base::HistogramBase::Sample min = 0;
+    int64_t max = 0;
+    base::HistogramBase::Count count = 0;
+    it->Get(&min, &max, &count);
+
+    api::autotest_private::HistogramBucket bucket;
+    bucket.min = min;
+    bucket.max = max;
+    bucket.count = count;
+    result.buckets.push_back(std::move(bucket));
+  }
+
+  return RespondNow(OneArgument(result.ToValue()));
 }
 
 AutotestPrivateIsAppShownFunction::~AutotestPrivateIsAppShownFunction() =

@@ -231,6 +231,16 @@ class AutotestPrivateSetPlayStoreEnabledFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetHistogramFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getHistogram",
+                             AUTOTESTPRIVATE_GETHISTOGRAM)
+
+ private:
+  ~AutotestPrivateGetHistogramFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.isAppShown",
@@ -339,7 +349,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
-  bool test_mode_;  // true for ExtensionApiTest.AutotestPrivate browser test.
+  bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
 };
 
 template <>
