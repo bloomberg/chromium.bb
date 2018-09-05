@@ -66,10 +66,12 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
-        <div class="settings-box first">
-          <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>
-        </div>
         <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
+          <div class="settings-box first">
+            <p class="privacy-explanation">
+              $i18nRaw{improveBrowsingExperience}
+            </p>
+          </div>
           <settings-personalization-options prefs="{{prefs}}"
               page-visibility="[[pageVisibility]]"
               unified-consent-enabled="[[unifiedConsentEnabled_]]">
