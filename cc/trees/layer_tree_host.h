@@ -106,10 +106,19 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     InitParams& operator=(InitParams&&);
   };
 
+  // Constructs a LayerTreeHost with a compositor thread where scrolling and
+  // animation take place. This is used for the web compositor in the renderer
+  // process to move work off the main thread which javascript can dominate.
   static std::unique_ptr<LayerTreeHost> CreateThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
       InitParams params);
 
+  // Constructs a LayerTreeHost without a separate compositor thread, but which
+  // behaves and looks the same as a threaded compositor externally, with the
+  // exception of the additional client interface. This is used in other cases
+  // where the main thread creating this instance can be expected to not become
+  // blocked, so moving work to another thread and the overhead it adds are not
+  // required.
   static std::unique_ptr<LayerTreeHost> CreateSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client,
       InitParams params);
@@ -120,7 +129,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   int GetId() const;
 
   // The current source frame number. This is incremented for each main frame
-  // update(commit) pushed to the compositor thread.
+  // update(commit) pushed to the compositor thread. The initial frame number
+  // is 0, and it is incremented once commit is completed (which is before the
+  // compositor-thread-side submits its frame for the commit).
   int SourceFrameNumber() const;
 
   // Returns the UIResourceManager used to create UIResources for
@@ -131,26 +142,38 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // thread task runners.
   TaskRunnerProvider* GetTaskRunnerProvider() const;
 
-  // Returns the settings used by this host.
+  // Returns the settings used by this host. These settings are constants given
+  // at startup.
   const LayerTreeSettings& GetSettings() const;
 
   // Sets the LayerTreeMutator interface used to directly mutate the compositor
   // state on the compositor thread. (Compositor-Worker)
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
-  // Call this function when you expect there to be a swap buffer.
+  // Attachs a SwapPromise to the Layer tree, that passes through the
+  // LayerTreeHost and LayerTreeHostImpl with the next commit and frame
+  // submission, which can be used to observe that progress. This also
+  // causes a main frame to be requested.
   // See swap_promise.h for how to use SwapPromise.
   void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise);
 
-  // Returns the SwapPromiseManager used to create SwapPromiseMonitors for this
-  // host.
+  // Returns the SwapPromiseManager, used to insert SwapPromises dynamically
+  // when a main frame is requested.
   SwapPromiseManager* GetSwapPromiseManager();
 
-  // Sets whether the content is suitable to use Gpu Rasterization.
+  // Sets whether the content is suitable to use Gpu Rasterization. This flag is
+  // used to enable gpu rasterization, and can be modified at any time to change
+  // the setting based on content.
   void SetHasGpuRasterizationTrigger(bool has_trigger);
 
   // Visibility and LayerTreeFrameSink -------------------------------
 
+  // Sets or gets if the LayerTreeHost is visible. When not visible it will:
+  // - Not request a new LayerTreeFrameSink from the client.
+  // - Stop submitting frames to the display compositor.
+  // - Stop producing main frames and committing them.
+  // The LayerTreeHost is not visible when first created, so this must be called
+  // to make it visible before it will attempt to start producing output.
   void SetVisible(bool visible);
   bool IsVisible() const;
 
