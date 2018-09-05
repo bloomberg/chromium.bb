@@ -142,6 +142,29 @@ class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
                ? &event_targeter_
                : EventGeneratorDelegateAura::GetEventSource(target);
   }
+  gfx::Point CenterOfTarget(const ui::EventTarget* target) const override {
+    if (target != &event_targeter_)
+      return EventGeneratorDelegateAura::CenterOfTarget(target);
+    return display::Screen::GetScreen()
+        ->GetPrimaryDisplay()
+        .bounds()
+        .CenterPoint();
+  }
+  void ConvertPointFromTarget(const ui::EventTarget* target,
+                              gfx::Point* point) const override {
+    if (target != &event_targeter_)
+      EventGeneratorDelegateAura::ConvertPointFromTarget(target, point);
+  }
+  void ConvertPointToTarget(const ui::EventTarget* target,
+                            gfx::Point* point) const override {
+    if (target != &event_targeter_)
+      EventGeneratorDelegateAura::ConvertPointToTarget(target, point);
+  }
+  void ConvertPointFromHost(const ui::EventTarget* hosted_target,
+                            gfx::Point* point) const override {
+    if (hosted_target != &event_targeter_)
+      EventGeneratorDelegateAura::ConvertPointFromHost(hosted_target, point);
+  }
   void DispatchEventToPointerWatchers(ui::EventTarget* target,
                                       const ui::PointerEvent& event) override {
     // Does nothing as events are injected into mus, which should trigger
