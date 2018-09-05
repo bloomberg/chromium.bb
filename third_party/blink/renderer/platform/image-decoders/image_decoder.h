@@ -41,8 +41,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/third_party/skcms/skcms.h"
+
+class SkColorSpace;
 
 namespace blink {
 
