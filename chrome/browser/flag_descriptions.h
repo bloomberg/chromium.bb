@@ -1421,6 +1421,9 @@ extern const char kEnableAndroidPayIntegrationV1Description[];
 extern const char kEnableAndroidPayIntegrationV2Name[];
 extern const char kEnableAndroidPayIntegrationV2Description[];
 
+extern const char kEnableAutofillRefreshStyleName[];
+extern const char kEnableAutofillRefreshStyleDescription[];
+
 extern const char kEnableAndroidSpellcheckerName[];
 extern const char kEnableAndroidSpellcheckerDescription[];
 

@@ -278,6 +278,12 @@ const char kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[] =
 
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 
+#if defined(OS_ANDROID)
+// Controls whether to use modernized style for the Autofill dropdown.
+const base::Feature kAutofillRefreshStyleAndroid{
+    "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_ANDROID
+
 #if defined(OS_MACOSX)
 const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

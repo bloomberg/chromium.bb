@@ -3093,7 +3093,8 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillUpstreamUpdatePromptExplanation)},
     {"enable-autofill-native-dropdown-views",
      flag_descriptions::kEnableAutofillNativeDropdownViewsName,
-     flag_descriptions::kEnableAutofillNativeDropdownViewsDescription, kOsAll,
+     flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
+     kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillExpandedPopupViews)},
     {"enable-autofill-save-card-dialog-unlabeled-expiration-date",
      flag_descriptions::
@@ -3125,6 +3126,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
+    {"enable-autofill-refresh-style",
+     flag_descriptions::kEnableAutofillRefreshStyleName,
+     flag_descriptions::kEnableAutofillRefreshStyleDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillRefreshStyleAndroid)},
     {"lsd-permission-prompt", flag_descriptions::kLsdPermissionPromptName,
      flag_descriptions::kLsdPermissionPromptDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kLsdPermissionPrompt)},
