@@ -170,10 +170,6 @@ bool ContentRendererClient::IsOriginIsolatedPepperPlugin(
   return false;
 }
 
-bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
-  return false;
-}
-
 void ContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {}
 

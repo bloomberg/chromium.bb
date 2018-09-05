@@ -143,8 +143,6 @@ source_set("c") {
     "private/ppb_testing_private.h",
     "private/ppb_udp_socket_private.h",
     "private/ppb_uma_private.h",
-    "private/ppb_video_destination_private.h",
-    "private/ppb_video_source_private.h",
     "private/ppb_x509_certificate_private.h",
     "private/ppp_find_private.h",
     "private/ppp_flash_browser_operations.h",

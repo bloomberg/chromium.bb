@@ -27,9 +27,7 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
-#include "content/renderer/pepper/pepper_video_destination_host.h"
 #include "content/renderer/pepper/pepper_video_encoder_host.h"
-#include "content/renderer/pepper/pepper_video_source_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -54,18 +52,6 @@ using ppapi::UnpackMessage;
 namespace content {
 
 namespace {
-
-bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
-  blink::WebPluginContainer* container =
-      host->GetContainerForInstance(instance);
-  if (!container)
-    return false;
-
-  GURL document_url = container->GetDocument().Url();
-  ContentRendererClient* content_renderer_client =
-      GetContentClient()->renderer();
-  return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
-}
 
 static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
                                   PP_Instance instance) {
@@ -187,19 +173,6 @@ ContentRendererPepperHostFactory::CreateResourceHost(
     case PpapiHostMsg_MediaStreamVideoTrack_Create::ID:
       return std::make_unique<PepperMediaStreamVideoTrackHost>(host_, instance,
                                                                resource);
-    // These private MediaStream interfaces are exposed as if they were public
-    // so they can be used by NaCl plugins. However, they are available only
-    // for whitelisted apps.
-    case PpapiHostMsg_VideoDestination_Create::ID:
-      if (CanUseMediaStreamAPI(host_, instance))
-        return std::make_unique<PepperVideoDestinationHost>(host_, instance,
-                                                            resource);
-      return nullptr;
-    case PpapiHostMsg_VideoSource_Create::ID:
-      if (CanUseMediaStreamAPI(host_, instance))
-        return std::make_unique<PepperVideoSourceHost>(host_, instance,
-                                                       resource);
-      return nullptr;
   }
 
   // Dev interfaces.

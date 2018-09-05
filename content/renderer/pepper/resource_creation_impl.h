@@ -128,9 +128,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   PP_Resource CreateVideoDecoderDev(PP_Instance instance,
                                     PP_Resource graphics3d_id,
                                     PP_VideoDecoder_Profile profile) override;
-  PP_Resource CreateVideoDestination(PP_Instance instance) override;
   PP_Resource CreateVideoEncoder(PP_Instance instance) override;
-  PP_Resource CreateVideoSource(PP_Instance instance) override;
   PP_Resource CreateVpnProvider(PP_Instance instance) override;
   PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                     PP_TimeTicks time_stamp,

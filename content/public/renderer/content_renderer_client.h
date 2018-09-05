@@ -272,9 +272,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // language.
   virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
 
-  // Returns true if the page at |url| can use Pepper MediaStream APIs.
-  virtual bool AllowPepperMediaStreamAPI(const GURL& url);
-
   // Allows an embedder to provide a MediaStreamRendererFactory.
   virtual std::unique_ptr<MediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
