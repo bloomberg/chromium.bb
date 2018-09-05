@@ -246,21 +246,6 @@
 #define PCI_CHIP_WHISKEYLAKE_U_GT3_2     0x3EA3
 #define PCI_CHIP_WHISKEYLAKE_U_GT3_3     0x3EA4
 
-#define PCI_CHIP_CANNONLAKE_0		0x5A51
-#define PCI_CHIP_CANNONLAKE_1		0x5A59
-#define PCI_CHIP_CANNONLAKE_2		0x5A41
-#define PCI_CHIP_CANNONLAKE_3		0x5A49
-#define PCI_CHIP_CANNONLAKE_4		0x5A52
-#define PCI_CHIP_CANNONLAKE_5		0x5A5A
-#define PCI_CHIP_CANNONLAKE_6		0x5A42
-#define PCI_CHIP_CANNONLAKE_7		0x5A4A
-#define PCI_CHIP_CANNONLAKE_8		0x5A50
-#define PCI_CHIP_CANNONLAKE_9		0x5A40
-#define PCI_CHIP_CANNONLAKE_10		0x5A54
-#define PCI_CHIP_CANNONLAKE_11		0x5A5C
-#define PCI_CHIP_CANNONLAKE_12		0x5A44
-#define PCI_CHIP_CANNONLAKE_13		0x5A4C
-
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
 				 (devid) == PCI_CHIP_I945_GM || \
@@ -527,29 +512,13 @@
 				 IS_GEMINILAKE(devid) || \
 				 IS_COFFEELAKE(devid))
 
-#define IS_CANNONLAKE(devid)	((devid) == PCI_CHIP_CANNONLAKE_0 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_1 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_2 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_3 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_4 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_5 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_6 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_7 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_8 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_9 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_10 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_11 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_12 || \
-				 (devid) == PCI_CHIP_CANNONLAKE_13)
-
-#define IS_GEN10(devid)		(IS_CANNONLAKE(devid))
-
 /* New platforms use kernel pci ids */
 #include <stdbool.h>
 
 bool intel_is_genx(unsigned int devid, int gen);
 bool intel_get_genx(unsigned int devid, int *gen);
 
+#define IS_GEN10(devid) intel_is_genx(devid, 10)
 #define IS_GEN11(devid) intel_is_genx(devid, 11)
 
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
@@ -559,7 +528,6 @@ bool intel_get_genx(unsigned int devid, int *gen);
 				 IS_GEN7(dev) || \
 				 IS_GEN8(dev) || \
 				 IS_GEN9(dev) || \
-				 IS_GEN10(dev) || \
 				 intel_get_genx(dev, NULL))
 
 #endif /* _INTEL_CHIPSET_H */
