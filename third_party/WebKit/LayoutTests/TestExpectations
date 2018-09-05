@@ -1694,20 +1694,15 @@ crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross
 # Timeout tests in dictionary order.
 crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
 crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/authenticated_worker.https.html [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/unauthenticated_worker.html [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 
 # Failing tests in dictionary order.
 crbug.com/867834 virtual/outofblink-cors/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
 crbug.com/879991 virtual/outofblink-cors/http/tests/security/cors-check-for-cached-image.html [ Failure ]
@@ -1722,7 +1717,6 @@ crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/867834 virtual/outofblink-cors-ns/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
 crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-image.html [ Failure ]
 crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-script.html [ Failure ]
