@@ -237,6 +237,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppDefaultApp) {
   ASSERT_TRUE(helper.extension());
   EXPECT_TRUE(helper.extension()->from_bookmark());
   EXPECT_TRUE(helper.extension()->was_installed_by_default());
+  EXPECT_EQ(Manifest::EXTERNAL_PREF_DOWNLOAD, helper.extension()->location());
   EXPECT_FALSE(Manifest::IsPolicyLocation(helper.extension()->location()));
 }
 
