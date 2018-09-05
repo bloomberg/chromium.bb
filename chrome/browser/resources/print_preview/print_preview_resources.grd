@@ -165,7 +165,8 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_HEADER_HTML"
                  file="new/header.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_HEADER_JS"
                  file="new/header.js"
                  type="chrome_html" />
