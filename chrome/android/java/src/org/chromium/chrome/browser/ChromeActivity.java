@@ -298,6 +298,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
 
+    /** A means of providing the foreground tab of the activity to different features. */
+    private ActivityTabProvider mActivityTabProvider;
+
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
 
@@ -331,6 +334,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         mFullscreenManager = createFullscreenManager();
         mCreatedFullscreenManager = true;
+        mActivityTabProvider = new ActivityTabProvider();
     }
 
     @SuppressLint("NewApi")
@@ -583,6 +587,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mTabModelsInitialized) return;
 
         mTabModelSelector = createTabModelSelector();
+        mActivityTabProvider.setTabModelSelector(mTabModelSelector);
+
         if (mTabModelSelector == null) {
             assert isFinishing();
             mTabModelsInitialized = true;
@@ -1275,6 +1281,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
         }
 
+        mActivityTabProvider.destroy();
+
         super.onDestroy();
     }
 
@@ -1613,6 +1621,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return The provider of the visible tab in the current activity.
+     */
+    public ActivityTabProvider getActivityTabProvider() {
+        return mActivityTabProvider;
+    }
+
+    /**
      * Returns the {@link InsetObserverView} that has the current system window
      * insets information.
      * @return The {@link InsetObserverView}, possibly null.
@@ -1667,6 +1682,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * DEPRECATED: Instead, use/hold a reference to {@link #mActivityTabProvider}. See
+     *             https://crbug.com/871279 for more details.
+     *
      * Returns the tab being displayed by this ChromeActivity instance. This allows differentiation
      * between ChromeActivity subclasses that swap between multiple tabs (e.g. ChromeTabbedActivity)
      * and subclasses that only display one Tab (e.g. FullScreenActivity and DocumentActivity).
@@ -1796,6 +1814,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             controlContainer.setSwipeHandler(
                     getCompositorViewHolder().getLayoutManager().getToolbarSwipeHandler());
         }
+
+        mActivityTabProvider.setLayoutManager(layoutManager);
     }
 
     /**
