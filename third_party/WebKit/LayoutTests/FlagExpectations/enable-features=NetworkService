@@ -5,6 +5,10 @@ crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-wo
 
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
+Bug(none) virtual/outofblink-cors/http/tests/security/cors-rfc1918 [ Crash Timeout ]
+Bug(none) virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
+Bug(none) virtual/outofblink-cors-ns/http/tests/security/cors-rfc1918 [ Crash Timeout ]
+Bug(none) virtual/outofblink-cors-ns/http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
 # Only passes with Network Servce enabled (unfortunately these expectations still
 # allow Failure or Timeout from the top-level expectations though).

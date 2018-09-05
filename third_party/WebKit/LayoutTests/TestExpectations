@@ -170,6 +170,8 @@ crbug.com/857490 virtual/paint-touchaction-rects/fast/events/touch/gesture/touch
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 virtual/outofblink-cors/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
+crbug.com/846747 virtual/outofblink-cors-ns/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
@@ -1677,48 +1679,67 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 # virtual/outofblink-cors and virtual/outofblink-cors-ns.
 # These are entries specific to outofblink-cors. Entries having the same
 # expectations with the base tests (without virtual/outofblink-cors, for
-# example) are not listed here.
+# example) are not listed here. crbug.com/870173 is used to track failing tests
+# that fail only for our virtual tests, and do not have a specific bug entry.
 #
-# ./third_party/blink/tools/run_web_tests.py virtual/outofblink-cors
-# Passed 2005
-# Total  2098
-# Counts skip: 2 crash: 14 text: 67 image: 1 pass: 2005 timeout: 9
+# ./third_party/blink/tools/run_web_tests.py virtual/outofblink-cors \
+# virtual/outofblink-cors-ns
+# Passed 8297
+# Total  8418
+# Counts skip: 34 crash: 3 text: 67 pass: 8297 timeout: 17
 
 # Crashing tests in dictionary order.
+crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
 crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Timeout ]
 crbug.com/867834 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/authenticated_worker.https.html [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/unauthenticated_worker.html [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 
 # Failing tests in dictionary order.
 crbug.com/867834 virtual/outofblink-cors/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/event-upload-progress.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/fetch/chromium/error-messages.html [ Failure ]
+crbug.com/879991 virtual/outofblink-cors/http/tests/security/cors-check-for-cached-image.html [ Failure ]
+crbug.com/879991 virtual/outofblink-cors/http/tests/security/cors-check-for-cached-script.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/security/video-poster-cross-origin-crash2.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/867834 virtual/outofblink-cors-ns/external/wpt/fetch/api/cors/sandboxed-iframe.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/fetch/chromium/error-messages.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
-crbug.com/736308 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied-without-wildcard.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/access-control-sandboxed-iframe-denied.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress-crossorigin.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/event-upload-progress.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/external/wpt/xhr/send-redirect-to-cors.htm [ Failure ]
+crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-image.html [ Failure ]
+crbug.com/879991 virtual/outofblink-cors-ns/http/tests/security/cors-check-for-cached-script.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/video-poster-cross-origin-crash2.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/fetch/chromium/error-messages.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/navigation/form-targets-cross-site-frame-no-referrer.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
+crbug.com/870173 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
 # ====== Out of Blink CORS related tests END ======
 
@@ -1800,6 +1821,8 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
+crbug.com/518883 crbug.com/390452 virtual/outofblink-cors/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
+crbug.com/518883 crbug.com/390452 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
@@ -1863,8 +1886,12 @@ crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumen
 
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
+crbug.com/411164 [ Win ] virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
+crbug.com/411164 [ Win ] virtual/outofblink-cors-ns/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -2186,6 +2213,14 @@ crbug.com/528062 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cache
 crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
@@ -2458,6 +2493,8 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 virtual/outofblink-cors/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 virtual/outofblink-cors-ns/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/545140 [ Mac ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
@@ -2582,6 +2619,8 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 
 # Skip the non-virtualized CORS-RFC1918 tests:
 crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
+crbug.com/763830 virtual/outofblink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
+crbug.com/763830 virtual/outofblink-cors-ns/http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/831729 http/tests/event-timing/event-timing-crossiframe.html [ Timeout ]
 crbug.com/831729 http/tests/event-timing/event-timing-observer-manual.html [ Skip ]
@@ -3782,6 +3821,8 @@ crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.tentative.
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
+crbug.com/610835 virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
+crbug.com/610835 virtual/outofblink-cors-ns/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
 # Added 2016-12-12
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
@@ -3802,6 +3843,16 @@ crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inl
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
+crbug.com/664816 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
+crbug.com/664816 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/664819 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 
 crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 
@@ -3874,6 +3925,8 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openK
 
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
+crbug.com/678499 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
+crbug.com/678499 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
 crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
 
@@ -3972,6 +4025,10 @@ crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 # Sheriff failures 2017-05-11
 crbug.com/724027 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
 crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
+crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
@@ -4068,6 +4125,8 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
+crbug.com/708994 virtual/outofblink-cors/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
+crbug.com/708994 virtual/outofblink-cors-ns/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
 
@@ -4108,6 +4167,12 @@ crbug.com/849694 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/c
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
+crbug.com/686118 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
 
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
@@ -4246,9 +4311,13 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 # Sheriff failures 2017-09-20
 # Fails reliably on last 3 builds of this bot.
 crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
+crbug.com/767091 [ Mac10.12 ] virtual/outofblink-cors/http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
+crbug.com/767091 [ Mac10.12 ] virtual/outofblink-cors-ns/http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
+crbug.com/767469 virtual/outofblink-cors/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
+crbug.com/767469 virtual/outofblink-cors-ns/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 
 # Sheriff failures 2017-10-02
@@ -4728,12 +4797,16 @@ crbug.com/853852 [ Win7 Linux ] virtual/threaded/external/wpt/feature-policy/exp
 crbug.com/853852 [ Linux ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
 
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
+crbug.com/854538 [ Win7 ] virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
+crbug.com/854538 [ Win7 ] virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
 # Sheriff 2018-06-21
 crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 
 # Sheriff 2018-06-25
+crbug.com/855816 [ Win7 ] virtual/outofblink-cors/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
+crbug.com/855816 [ Win7 ] virtual/outofblink-cors-ns/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # Sheriff 2018-06-29
@@ -4891,6 +4964,8 @@ crbug.com/824539 [ Android ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/824539 [ Android ] fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
+crbug.com/824539 [ Android ] virtual/outofblink-cors/http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
+crbug.com/824539 [ Android ] virtual/outofblink-cors-ns/http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
 crbug.com/824539 [ Android ] images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
 crbug.com/824539 [ Android ] images/size-failure.html [ Failure ]
 crbug.com/824539 [ Android ] paint/invalidation/shadow-multiple.html [ Failure ]
