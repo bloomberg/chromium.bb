@@ -68,6 +68,8 @@ class NodeMutationObserverData final
 };
 
 class NodeRenderingData {
+  USING_FAST_MALLOC(NodeRenderingData);
+
  public:
   explicit NodeRenderingData(LayoutObject*,
                              scoped_refptr<ComputedStyle> non_attached_style);
