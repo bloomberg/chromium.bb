@@ -523,14 +523,6 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
     thread->GetRendererHost()->SuddenTerminationChanged(enabled);
 }
 
-void RendererBlinkPlatformImpl::AddRefProcess() {
-  ChildProcess::current()->AddRefProcess();
-}
-
-void RendererBlinkPlatformImpl::ReleaseRefProcess() {
-  ChildProcess::current()->ReleaseProcess();
-}
-
 blink::WebThread* RendererBlinkPlatformImpl::CompositorThread() const {
   return compositor_thread_;
 }

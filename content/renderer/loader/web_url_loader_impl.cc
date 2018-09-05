@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -101,18 +100,6 @@ constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
-
-class KeepAliveHandleWithChildProcessReference {
- public:
-  explicit KeepAliveHandleWithChildProcessReference(
-      mojom::KeepAliveHandlePtr ptr)
-      : keep_alive_handle_(std::move(ptr)) {}
-  ~KeepAliveHandleWithChildProcessReference() {}
-
- private:
-  mojom::KeepAliveHandlePtr keep_alive_handle_;
-  ScopedChildProcessReference reference_;
-};
 
 // TODO(estark): Figure out a way for the embedder to provide the
 // security style for a resource. Ideally, the logic for assigning
@@ -463,7 +450,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
-  std::unique_ptr<KeepAliveHandleWithChildProcessReference> keep_alive_handle_;
+  mojom::KeepAliveHandlePtr keep_alive_handle_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
@@ -542,11 +529,7 @@ WebURLLoaderImpl::Context::Context(
       resource_dispatcher_(resource_dispatcher),
       task_runner_handle_(std::move(task_runner_handle)),
       task_runner_(task_runner_handle_->GetTaskRunner()),
-      keep_alive_handle_(
-          keep_alive_handle_ptr
-              ? std::make_unique<KeepAliveHandleWithChildProcessReference>(
-                    std::move(keep_alive_handle_ptr))
-              : nullptr),
+      keep_alive_handle_(std::move(keep_alive_handle_ptr)),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(std::move(url_loader_factory)) {

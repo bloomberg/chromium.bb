@@ -237,4 +237,12 @@ int RenderProcessImpl::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
+void RenderProcessImpl::AddRefProcess() {
+  NOTREACHED();
+}
+
+void RenderProcessImpl::ReleaseProcess() {
+  NOTREACHED();
+}
+
 }  // namespace content

@@ -436,10 +436,6 @@ RenderWidget::RenderWidget(
       widget_binding_(this, std::move(widget_request)),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
-  // TODO(nasko, alexmos): ref count the process based on the lifetime of
-  // RenderFrames rather than RenderWidgets.
-  if (!swapped_out)
-    RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
 
   // In tests there may not be a RenderThreadImpl.
@@ -470,9 +466,6 @@ RenderWidget::~RenderWidget() {
   if (input_event_queue_)
     input_event_queue_->ClearClient();
 
-  // If we are swapped out, we have released already.
-  if (!is_swapped_out_ && RenderProcess::current())
-    RenderProcess::current()->ReleaseProcess();
 #if defined(USE_AURA)
   // It is possible for a RenderWidget to be destroyed before it was embedded
   // in a mus window. The RendererWindowTreeClient will leak in such cases. So

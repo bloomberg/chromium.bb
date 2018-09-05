@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/scoped_child_process_reference.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/common/appcache_info.h"

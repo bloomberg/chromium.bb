@@ -459,14 +459,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // This method should only be called on the main thread.
   virtual void SuddenTerminationChanged(bool enabled) {}
 
-  // Increase/decrease the process refcount. The process won't shut itself
-  // down until this refcount reaches 0. The browser might still shut down the
-  // renderer through fast shutdown. See SuddenTerminationChanged to disable
-  // that.
-  // These methods should only be called on the main thread.
-  virtual void AddRefProcess() {}
-  virtual void ReleaseRefProcess() {}
-
   // System --------------------------------------------------------------
 
   // Returns a value such as "en-US".

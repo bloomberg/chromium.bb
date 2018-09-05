@@ -1621,6 +1621,7 @@ void RenderThreadImpl::OnProcessFinalRelease() {
   // caused race conditions, where the browser process was reusing renderer
   // processes that were shutting down.
   // See https://crbug.com/535246 or https://crbug.com/873541/#c8.
+  NOTREACHED();
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
