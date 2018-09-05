@@ -165,6 +165,10 @@ SwitchAccessPredicate.isActionable = function(node) {
   if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0)
     return false;
 
+  // Skip things that are disabled.
+  if (node.restriction === chrome.automation.Restriction.DISABLED)
+    return false;
+
   // These web containers are not directly actionable.
   if (role === RoleType.WEB_VIEW || role === RoleType.ROOT_WEB_AREA)
     return false;
