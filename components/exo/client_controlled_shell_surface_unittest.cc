@@ -1266,8 +1266,11 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
   std::unique_ptr<Buffer> desktop_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
   surface->Attach(desktop_buffer.get());
+
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect initial_bounds(-150, 10, 200, 200);
-  shell_surface->SetGeometry(initial_bounds);
+  shell_surface->SetBounds(primary_display.id(), initial_bounds);
   surface->Commit();
   shell_surface->GetWidget()->Show();
 
@@ -1312,8 +1315,12 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
   std::unique_ptr<Buffer> desktop_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
   surface->Attach(desktop_buffer.get());
+
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+
   gfx::Rect initial_bounds(-174, 10, 200, 200);
-  shell_surface->SetGeometry(initial_bounds);
+  shell_surface->SetBounds(primary_display.id(), initial_bounds);
   surface->Commit();
   shell_surface->GetWidget()->Show();
 
@@ -1327,8 +1334,6 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
       &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
       base::Unretained(this)));
 
-  display::Display primary_display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
   display::Display secondary_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
 
@@ -1336,13 +1341,13 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
 
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   ASSERT_EQ(1, bounds_change_count());
-  EXPECT_EQ(gfx::Rect(226, 10, 200, 200), requested_bounds()[0]);
+  EXPECT_EQ(gfx::Rect(-174, 10, 200, 200), requested_bounds()[0]);
   EXPECT_EQ(secondary_display.id(), requested_display_ids()[0]);
 
-  gfx::Rect secondary_position(1100, 10, 200, 200);
-  shell_surface->SetGeometry(secondary_position);
+  gfx::Rect secondary_position(700, 10, 200, 200);
+  shell_surface->SetBounds(secondary_display.id(), secondary_position);
   surface->Commit();
-  EXPECT_EQ(secondary_position, window->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(1100, 10, 200, 200), window->GetBoundsInScreen());
 
   Reset();
 
@@ -1352,7 +1357,7 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   ASSERT_EQ(2, bounds_change_count());
   // Should fit in the primary display.
-  EXPECT_EQ(gfx::Rect(700, 10, 200, 200), requested_bounds()[0]);
+  EXPECT_EQ(gfx::Rect(1100, 10, 200, 200), requested_bounds()[0]);
   EXPECT_EQ(primary_display.id(), requested_display_ids()[0]);
 
   EXPECT_EQ(gfx::Rect(374, 10, 200, 200), requested_bounds()[1]);
@@ -1535,14 +1540,15 @@ TEST_F(ClientControlledShellSurfaceTest, NoFrameOnModalContainer) {
   EXPECT_FALSE(shell_surface->frame_enabled());
 }
 
-TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
-  display::test::DisplayManagerTestApi test_api(
-      ash::Shell::Get()->display_manager());
-  test_api.UpdateDisplay("100x100,100+0-100x100");
+TEST_F(ClientControlledShellSurfaceTest,
+       SetGeometryReparentsToDisplayOnFirstCommit) {
+  UpdateDisplay("100x100,100+0-100x100");
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
+  const auto* screen = display::Screen::GetScreen();
 
   {
     std::unique_ptr<Surface> surface(new Surface);
@@ -1553,16 +1559,12 @@ TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
     shell_surface->SetGeometry(geometry);
     surface->Attach(buffer.get());
     surface->Commit();
-    EXPECT_EQ(geometry.size().ToString(), shell_surface->GetWidget()
-                                              ->GetWindowBoundsInScreen()
-                                              .size()
-                                              .ToString());
+    EXPECT_EQ(geometry, shell_surface->GetWidget()->GetWindowBoundsInScreen());
 
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            shell_surface->host_window());
-    EXPECT_EQ(gfx::Point(0, 0).ToString(),
-              display.bounds().origin().ToString());
+    display::Display primary_display = screen->GetPrimaryDisplay();
+    display::Display display = screen->GetDisplayNearestWindow(
+        shell_surface->GetWidget()->GetNativeWindow());
+    EXPECT_EQ(primary_display.id(), display.id());
   }
 
   {
@@ -1574,17 +1576,77 @@ TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
     shell_surface->SetGeometry(geometry);
     surface->Attach(buffer.get());
     surface->Commit();
-    EXPECT_EQ(geometry.size().ToString(), shell_surface->GetWidget()
-                                              ->GetWindowBoundsInScreen()
-                                              .size()
-                                              .ToString());
+    EXPECT_EQ(geometry, shell_surface->GetWidget()->GetWindowBoundsInScreen());
 
-    display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
-            shell_surface->host_window());
-    EXPECT_EQ(gfx::Point(100, 0).ToString(),
-              display.bounds().origin().ToString());
+    auto root_windows = ash::Shell::GetAllRootWindows();
+    display::Display secondary_display =
+        screen->GetDisplayNearestWindow(root_windows[1]);
+    display::Display display = screen->GetDisplayNearestWindow(
+        shell_surface->GetWidget()->GetNativeWindow());
+    EXPECT_EQ(secondary_display.id(), display.id());
   }
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetBoundsReparentsToDisplay) {
+  UpdateDisplay("100x100,100+0-100x100");
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
+  const auto* screen = display::Screen::GetScreen();
+
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  display::Display primary_display = screen->GetPrimaryDisplay();
+  gfx::Rect geometry(16, 16, 32, 32);
+
+  // Move to primary display with bounds inside display.
+  shell_surface->SetBounds(primary_display.id(), geometry);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(geometry, shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  display::Display display = screen->GetDisplayNearestWindow(
+      shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(primary_display.id(), display.id());
+
+  auto root_windows = ash::Shell::GetAllRootWindows();
+  display::Display secondary_display =
+      screen->GetDisplayNearestWindow(root_windows[1]);
+
+  // Move to secondary display with bounds inside display.
+  shell_surface->SetBounds(secondary_display.id(), geometry);
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(116, 16, 32, 32),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  display = screen->GetDisplayNearestWindow(
+      shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(secondary_display.id(), display.id());
+
+  // Move to primary display with bounds outside display.
+  geometry.set_origin({-100, 0});
+  shell_surface->SetBounds(primary_display.id(), geometry);
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(-6, 0, 32, 32),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  display = screen->GetDisplayNearestWindow(
+      shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(primary_display.id(), display.id());
+
+  // Move to secondary display with bounds outside display.
+  shell_surface->SetBounds(secondary_display.id(), geometry);
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(94, 0, 32, 32),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  display = screen->GetDisplayNearestWindow(
+      shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(secondary_display.id(), display.id());
 }
 
 // Set orientation lock to a window.

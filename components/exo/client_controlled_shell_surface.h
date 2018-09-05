@@ -56,6 +56,9 @@ class ClientControlledShellSurface
     client_controlled_move_resize_ = client_controlled_move_resize;
   }
 
+  // Set bounds in root window coordinates relative to the given display.
+  void SetBounds(int64_t display_id, const gfx::Rect& bounds);
+
   // Called when the client was maximized.
   void SetMaximized();
 
@@ -297,6 +300,8 @@ class ClientControlledShellSurface
   // widget is not created yet orientation lock is being set.
   ash::OrientationLockType initial_orientation_lock_ =
       ash::OrientationLockType::kAny;
+
+  bool preserve_widget_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

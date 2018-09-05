@@ -327,6 +327,20 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
+void ClientControlledShellSurface::SetBounds(int64_t display_id,
+                                             const gfx::Rect& bounds) {
+  TRACE_EVENT2("exo", "ClientControlledShellSurface::SetBounds", "display_id",
+               display_id, "bounds", bounds.ToString());
+
+  if (bounds.IsEmpty()) {
+    DLOG(WARNING) << "Bounds must be non-empty";
+    return;
+  }
+
+  SetDisplay(display_id);
+  SetGeometry(bounds);
+}
+
 void ClientControlledShellSurface::SetMaximized() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::SetMaximized");
   pending_window_state_ = ash::mojom::WindowStateType::MAXIMIZED;
@@ -630,7 +644,6 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
-  ScopedSetBoundsLocally scoped_set_bounds(this);
   ScopedLockedToRoot scoped_locked_to_root(widget_);
   UpdateWidgetBounds();
 }
@@ -734,66 +747,83 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 // ShellSurfaceBase overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
+  const auto* screen = display::Screen::GetScreen();
+  aura::Window* window = widget_->GetNativeWindow();
+  display::Display current_display = screen->GetDisplayNearestWindow(window);
+
+  bool is_display_move_pending = false;
+  display::Display target_display = current_display;
+
+  display::Display display;
+  if (screen->GetDisplayWithDisplayId(display_id_, &display)) {
+    bool is_display_stale = display_id_ != current_display.id();
+
+    // Preserve widget bounds until client acknowledges display move.
+    if (preserve_widget_bounds_ && is_display_stale)
+      return;
+
+    // True if the window has just been reparented to another root window, and
+    // the move was initiated by the server.
+    // TODO(oshima): Improve the window moving logic. https://crbug.com/875047
+    is_display_move_pending =
+        window->GetProperty(ash::kLockedToRootKey) && is_display_stale;
+
+    if (!is_display_move_pending)
+      target_display = display;
+
+    preserve_widget_bounds_ = is_display_move_pending;
+  } else {
+    preserve_widget_bounds_ = false;
+  }
+
+  if (bounds == widget_->GetWindowBoundsInScreen() &&
+      target_display.id() == current_display.id()) {
+    return;
+  }
+
+  bool set_bounds_locally = !client_controlled_move_resize_ &&
+                            GetWindowState()->is_dragged() &&
+                            !is_display_move_pending;
+
   // Android PIP windows can be dismissed by swiping off the screen. Let them be
-  // positioned off-screen. Apart from swipe to dismiss, the PIP window will
-  // be kept on screen.
-  // TODO(edcourtney): This should be done as a client controlled move, not
-  // a special case.
-  if (((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
-       client_controlled_move_resize_) &&
-      !client_controlled_state_->set_bounds_locally() &&
-      !GetWindowState()->IsPip()) {
+  // positioned off-screen. Apart from swipe to dismiss, the PIP window will be
+  // kept on screen.
+  // TODO(edcourtney): This should be done as a client controlled move, not a
+  // special case.
+  if (set_bounds_locally || client_controlled_state_->set_bounds_locally() ||
+      GetWindowState()->IsPip()) {
+    // Convert from screen to display coordinates.
+    gfx::Point origin = bounds.origin();
+    wm::ConvertPointFromScreen(window->parent(), &origin);
+
+    // Move the window relative to the current display.
     {
-      // Calculate a minimum window visibility required bounds.
-      aura::Window* window = widget_->GetNativeWindow();
-      gfx::Rect root_rect(bounds);
-      wm::ConvertRectFromScreen(window->GetRootWindow(), &root_rect);
-      ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
-          window, &root_rect);
-      gfx::Rect screen_rect(root_rect);
-      wm::ConvertRectToScreen(window->GetRootWindow(), &screen_rect);
-      if (bounds != screen_rect &&
-          !GetWindowState()->IsMaximizedOrFullscreenOrPinned()) {
-        {
-          ScopedSetBoundsLocally scoped_set_bounds(this);
-          window->SetBounds(root_rect);
-        }
-        // Request the client a new bounds to ensure that it has enough visible
-        // area.
-        auto state_type = GetWindowState()->GetStateType();
-        int64_t display_id =
-            display::Screen::GetScreen()
-                ->GetDisplayNearestWindow(window->GetRootWindow())
-                .id();
-        OnBoundsChangeEvent(state_type, state_type, display_id, screen_rect, 0);
-      } else {
-        // TODO(oshima|domlaskowski): This prevent a client from moving a window
-        // between display. This is ok for now because a user needs to take an
-        // action to move right now. This will be fixed by new API.
-        ScopedLockedToRoot scoped_locked_to_root(widget_);
-        ScopedSetBoundsLocally scoped_set_bounds(this);
-        widget_->SetBounds(bounds);
-      }
+      ScopedSetBoundsLocally scoped_set_bounds(this);
+      window->SetBounds(gfx::Rect(origin, bounds.size()));
     }
     UpdateSurfaceBounds();
     return;
   }
 
-  // TODO(domlaskowski): Synchronize window state transitions with the client,
-  // and abort client-side dragging on transition to fullscreen.
-  // See crbug.com/699746.
-  DLOG_IF(ERROR, widget_->GetWindowBoundsInScreen().size() != bounds.size())
-      << "Window size changed during client-driven drag";
+  // Calculate a minimum window visibility required bounds.
+  gfx::Rect adjusted_bounds = bounds;
+  if (!is_display_move_pending) {
+    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+        target_display.bounds(), &adjusted_bounds);
+  }
 
-  // Convert from screen to display coordinates.
-  gfx::Point origin = bounds.origin();
-  wm::ConvertPointFromScreen(widget_->GetNativeWindow()->parent(), &origin);
-
-  // Move the window relative to the current display.
   {
     ScopedSetBoundsLocally scoped_set_bounds(this);
-    widget_->GetNativeWindow()->SetBounds(gfx::Rect(origin, bounds.size()));
+    window->SetBoundsInScreen(adjusted_bounds, target_display);
   }
+
+  if (bounds != adjusted_bounds || is_display_move_pending) {
+    // Notify client that bounds were adjusted or window moved across displays.
+    auto state_type = GetWindowState()->GetStateType();
+    OnBoundsChangeEvent(state_type, state_type, target_display.id(),
+                        adjusted_bounds, 0);
+  }
+
   UpdateSurfaceBounds();
 }
 
@@ -858,6 +888,8 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   if (!widget_) {
     // Modify the |origin_| to the |pending_geometry_| to place the window on
     // the intended display. See b/77472684 for details.
+    // TODO(domlaskowski): Remove this once clients migrate to geometry API with
+    // explicit target display.
     if (!pending_geometry_.IsEmpty())
       origin_ = pending_geometry_.origin();
     CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));

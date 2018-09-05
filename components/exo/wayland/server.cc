@@ -2438,6 +2438,19 @@ void remote_surface_pip(wl_client* client, wl_resource* resource) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetPip();
 }
 
+void remote_surface_set_bounds(wl_client* client,
+                               wl_resource* resource,
+                               uint32_t display_id_hi,
+                               uint32_t display_id_lo,
+                               int32_t x,
+                               int32_t y,
+                               int32_t width,
+                               int32_t height) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetBounds(
+      static_cast<int64_t>(display_id_hi) << 32 | display_id_lo,
+      gfx::Rect(x, y, width, height));
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2479,7 +2492,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_frame_buttons,
     remote_surface_set_extra_title,
     remote_surface_set_orientation_lock,
-    remote_surface_pip};
+    remote_surface_pip,
+    remote_surface_set_bounds};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2938,7 +2952,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_get_notification_surface,
     remote_shell_get_input_method_surface};
 
-const uint32_t remote_shell_version = 17;
+const uint32_t remote_shell_version = 18;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

@@ -59,22 +59,10 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
   if (!shell_surface->host_window()->GetRootWindow())
     return;
 
-  gfx::Rect bounds_in_screen(bounds);
-  ::wm::ConvertRectToScreen(window_state->window()->GetRootWindow(),
-                            &bounds_in_screen);
-  if (shell_surface->has_bounds_changed_callback()) {
-    int64_t display_id = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(window_state->window())
-                             .id();
-    shell_surface->OnBoundsChangeEvent(
-        window_state->GetStateType(), requested_state, display_id,
-        bounds_in_screen,
-        window_state->drag_details()
-            ? window_state->drag_details()->bounds_change
-            : 0);
-  }
-
-  shell_surface->SetGeometry(bounds_in_screen);
+  int64_t display_id = display::Screen::GetScreen()
+                           ->GetDisplayNearestWindow(window_state->window())
+                           .id();
+  shell_surface->SetBounds(display_id, bounds);
 
   if (requested_state != window_state->GetStateType()) {
     DCHECK(requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
