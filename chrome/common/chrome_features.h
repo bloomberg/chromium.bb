@@ -77,10 +77,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBookmarkApps;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBrowserHangFixesExperiment;
 
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBrowserTouchBar;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBundledConnectionHelpFeature;
 
