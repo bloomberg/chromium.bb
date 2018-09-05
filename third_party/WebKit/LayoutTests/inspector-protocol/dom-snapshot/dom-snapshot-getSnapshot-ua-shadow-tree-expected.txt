@@ -13,7 +13,9 @@ Tests DOMSnapshot.getSnapshot method with includeUserAgentShadowTree defaulted t
       "documentURL": "<string>",
       "baseURL": "<string>",
       "documentEncoding": "windows-1252",
-      "frameId": "<string>"
+      "frameId": "<string>",
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
     },
     {
       "nodeType": 1,
