@@ -24,7 +24,7 @@ def _GenerateAFDOGenerateTest(chrome_version_str,
     def setUp(self):
       self.PatchObject(afdo, 'CanGenerateAFDOData', lambda _: True)
       chrome_version = portage_util.SplitCPV(chrome_version_str)
-      self.PatchObject(portage_util, 'BestVisible',
+      self.PatchObject(portage_util, 'PortageqBestVisible',
                        lambda *_, **_2: chrome_version)
       self.wait_for_data = self.PatchObject(afdo, 'WaitForAFDOPerfData',
                                             autospec=True,
@@ -81,8 +81,8 @@ class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
     # called.
     self.patch_mock = self.PatchObject(afdo, 'UpdateChromeEbuildAFDOFile',
                                        autospec=True)
-    # Don't care the return value of portage_util.BestVisible
-    self.PatchObject(portage_util, 'BestVisible')
+    # Don't care the return value of portage_util.PortageqBestVisible
+    self.PatchObject(portage_util, 'PortageqBestVisible')
     # Don't care the return value of gs.GSContext
     self.PatchObject(gs, 'GSContext')
     # Don't call the getters; Use mock responses instead.

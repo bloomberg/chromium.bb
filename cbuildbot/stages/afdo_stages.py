@@ -39,8 +39,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     arch = self._GetCurrentArch()
     buildroot = self._build_root
     gs_context = gs.GSContext()
-    cpv = portage_util.BestVisible(constants.CHROME_CP,
-                                   buildroot=buildroot)
+    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, cwd=buildroot)
     afdo_file = None
 
     # We have a mismatch between how we version the perf.data we collect and
@@ -110,8 +109,7 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
   def PerformStage(self):
     buildroot = self._build_root
     gs_context = gs.GSContext()
-    cpv = portage_util.BestVisible(constants.CHROME_CP,
-                                   buildroot=buildroot)
+    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, cwd=buildroot)
 
     # We need the name of one board that has been setup in this
     # builder to find the Chrome ebuild. The chrome ebuild should be

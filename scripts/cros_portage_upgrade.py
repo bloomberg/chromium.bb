@@ -21,6 +21,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import operation
+from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
 from chromite.scripts import parallel_emerge
@@ -279,13 +280,8 @@ class Upgrader(object):
       return 'amd64'
 
     # Leverage Portage 'portageq' tool to do this.
-    cmd = ['portageq-%s' % board, 'envvar', 'ARCH']
-    cmd_result = cros_build_lib.RunCommand(
-        cmd, print_cmd=False, redirect_stdout=True)
-    if cmd_result.returncode == 0:
-      return cmd_result.output.strip()
-    else:
-      return None
+    return portage_util.PortageqEnvvar('ARCH', board=board,
+                                       allow_undefined=True)
 
   @staticmethod
   def _GetPreOrderDepGraphPackage(deps_graph, package, pkglist, visited):

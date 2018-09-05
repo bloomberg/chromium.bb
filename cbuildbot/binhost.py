@@ -16,6 +16,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
+from chromite.lib import portage_util
 
 
 def _Ascii(s):
@@ -279,12 +280,8 @@ def CalculateCompatId(board, extra_useflags):
   """
   assert cros_build_lib.IsInsideChroot()
   useflags = GetChromeUseFlags(board, extra_useflags)
-  cmd = ['portageq-%s' % board, 'envvar', 'ARCH', 'CFLAGS']
-  arch_cflags = cros_build_lib.RunCommand(
-      cmd, print_cmd=False, capture_output=True).output.rstrip()
-  arch, cflags = arch_cflags.split('\n', 1)
-  cflags_split = cflags.split()
-  return CompatId(arch, useflags, cflags_split)
+  result = portage_util.PortageqEnvvars(['ARCH', 'CFLAGS'], board=board)
+  return CompatId(result['ARCH'], useflags, result['CFLAGS'].split())
 
 
 class CompatIdFetcher(object):

@@ -454,12 +454,7 @@ class PackageInfo(object):
       for line in output:
         logging.info(line)
 
-      portageq_cmd = cros_build_lib.GetSysrootToolPath(
-          cros_build_lib.GetSysroot(self.board), 'portageq')
-      args = [portageq_cmd, 'envvar', 'PORTAGE_TMPDIR']
-      result = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                         redirect_stdout=True)
-      tmpdir = result.output.splitlines()[0]
+      tmpdir = portage_util.PortageqEnvvar('PORTAGE_TMPDIR', board=self.board)
       # tmpdir gets something like /build/daisy/tmp/
       src_dir = os.path.join(tmpdir, 'portage', self.fullnamerev, 'work')
 

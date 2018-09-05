@@ -32,6 +32,7 @@ from chromite.lib import filetype
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import parseelf
+from chromite.lib import portage_util
 
 from chromite.cros.test import usergroup_baseline
 
@@ -183,20 +184,13 @@ class LinkageTest(image_test_lib.ImageTestCase):
     )
 
   def _IsPackageMerged(self, package_name):
-    cmd = [
-        'portageq',
-        'has_version',
-        image_test_lib.ROOT_A,
-        package_name
-    ]
-    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                    combine_stdout_stderr=True,
-                                    extra_env={'ROOT': image_test_lib.ROOT_A})
-    if ret.returncode == 0:
+    has_version = portage_util.PortageqHasVersion(package_name,
+                                                  root=image_test_lib.ROOT_A)
+    if has_version:
       logging.info('Package is available: %s', package_name)
     else:
       logging.info('Package is not available: %s', package_name)
-    return ret.returncode == 0
+    return has_version
 
   def TestLinkage(self):
     """Find main executable binaries and check their linkage."""

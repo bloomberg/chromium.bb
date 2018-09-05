@@ -448,15 +448,8 @@ class BuilderStage(object):
       The value of the environment variable, as a string. If no such variable
       can be found, return the empty string.
     """
-    cwd = os.path.join(self._build_root, 'src', 'scripts')
-    if board:
-      portageq = 'portageq-%s' % board
-    else:
-      portageq = 'portageq'
-    binhost = cros_build_lib.RunCommand(
-        [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
-        enter_chroot=True, error_code_ok=True)
-    return binhost.output.rstrip('\n')
+    return portage_util.PortageqEnvvar(envvar, board=board,
+                                       allow_undefined=True)
 
   def _GetSlaveConfigs(self):
     """Get the slave configs for the current build config.
