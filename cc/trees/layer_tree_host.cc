@@ -982,7 +982,7 @@ void LayerTreeHost::SetLayerTreeMutator(
   // from the main thread, which will not be the case if we're running in
   // single-threaded mode.
   if (!task_runner_provider_->HasImplThread()) {
-    LOG(ERROR) << "LayerTreeMutator not supported in single-thread mode";
+    DLOG(ERROR) << "LayerTreeMutator not supported in single-thread mode";
     return;
   }
   proxy_->SetMutator(std::move(mutator));
