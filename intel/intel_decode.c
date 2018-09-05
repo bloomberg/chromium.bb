@@ -3823,12 +3823,8 @@ drm_intel_decode_context_alloc(uint32_t devid)
 	ctx->devid = devid;
 	ctx->out = stdout;
 
-	if (IS_GEN11(devid))
-		ctx->gen = 11;
-	else if (IS_GEN10(devid))
-		ctx->gen = 10;
-	else if (IS_GEN9(devid))
-		ctx->gen = 9;
+	if (intel_get_genx(devid, &ctx->gen))
+		;
 	else if (IS_GEN8(devid))
 		ctx->gen = 8;
 	else if (IS_GEN7(devid))
