@@ -73,6 +73,19 @@ enum NigoriMigrationState {
   MIGRATION_STATE_SIZE,
 };
 
+// Enumeration of possible values for a key derivation method (including a
+// special value of "not set"). Used in UMA metrics. Do not re-order or delete
+// these entries; they are used in a UMA histogram.  Please edit
+// SyncCustomPassphraseKeyDerivationMethodState in enums.xml if a value is
+// added.
+enum class KeyDerivationMethodStateForMetrics {
+  NOT_SET = 0,
+  UNSUPPORTED = 1,
+  PBKDF2_HMAC_SHA1_1003 = 2,
+  SCRYPT_8192_8_11 = 3,
+  kMaxValue = SCRYPT_8192_8_11
+};
+
 // The new passphrase state is sufficient to determine whether a nigori node
 // is migrated to support keystore encryption. In addition though, we also
 // want to verify the conditions for proper keystore encryption functionality.
@@ -252,6 +265,24 @@ void UpdateNigoriSpecificsKeyDerivationParams(
   }
 }
 
+KeyDerivationMethodStateForMetrics GetKeyDerivationMethodStateForMetrics(
+    const base::Optional<KeyDerivationParams>& key_derivation_params) {
+  if (!key_derivation_params.has_value()) {
+    return KeyDerivationMethodStateForMetrics::NOT_SET;
+  }
+  switch (key_derivation_params.value().method()) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003;
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11;
+    case KeyDerivationMethod::UNSUPPORTED:
+      return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
+  }
+
+  NOTREACHED();
+  return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
+}
+
 // The custom passphrase key derivation method in Nigori can be unspecified
 // (which means that PBKDF2 was implicitly used). In those cases, we want to set
 // it explicitly to PBKDF2. This function checks whether this needs to be done.
@@ -329,10 +360,15 @@ void SyncEncryptionHandlerImpl::Init() {
     WriteEncryptionStateToNigori(&trans);
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sync.PassphraseType",
-      static_cast<unsigned>(GetPassphraseType(trans.GetWrappedTrans())),
-      static_cast<unsigned>(PassphraseType::PASSPHRASE_TYPE_SIZE));
+  PassphraseType passphrase_type = GetPassphraseType(trans.GetWrappedTrans());
+  UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", passphrase_type,
+                            PassphraseType::PASSPHRASE_TYPE_SIZE);
+  if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
+        GetKeyDerivationMethodStateForMetrics(
+            custom_passphrase_key_derivation_params_));
+  }
 
   bool has_pending_keys =
       UnlockVault(trans.GetWrappedTrans()).cryptographer.has_pending_keys();
@@ -1295,6 +1331,11 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
   DCHECK(IsNigoriMigratedToKeystore(nigori_node->GetNigoriSpecifics()));
   KeyDerivationParams key_derivation_params =
       CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnNewPassphrase",
+      GetKeyDerivationMethodStateForMetrics(key_derivation_params));
+
   KeyParams key_params = {key_derivation_params, passphrase};
 
   if (GetPassphraseType(trans->GetWrappedTrans()) !=
@@ -1392,6 +1433,15 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
     DVLOG(1) << "Explicit passphrase accepted for decryption.";
     cryptographer->GetBootstrapToken(&bootstrap_token);
     success = true;
+
+    if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
+      DCHECK(custom_passphrase_key_derivation_params_.has_value());
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.Crypto."
+          "CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
+          GetKeyDerivationMethodStateForMetrics(
+              custom_passphrase_key_derivation_params_));
+    }
   } else {
     DVLOG(1) << "Explicit passphrase failed to decrypt.";
     success = false;

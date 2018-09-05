@@ -12,8 +12,10 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "crypto/encryptor.h"
@@ -31,6 +33,8 @@ const size_t kDerivedKeySizeInBytes = kDerivedKeySizeInBits / 8;
 const size_t kHashSize = 32;
 
 namespace syncer {
+
+namespace {
 
 // NigoriStream simplifies the concatenation operation of the Nigori protocol.
 class NigoriStream {
@@ -61,6 +65,23 @@ class NigoriStream {
  private:
   std::ostringstream stream_;
 };
+
+const char* GetHistogramSuffixForKeyDerivationMethod(
+    KeyDerivationMethod method) {
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return "Pbkdf2";
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return "Scrypt8192";
+    case KeyDerivationMethod::UNSUPPORTED:
+      break;
+  }
+
+  NOTREACHED();
+  return "Unsupported";
+}
+
+}  // namespace
 
 KeyDerivationParams::KeyDerivationParams(KeyDerivationMethod method,
                                          const std::string& pbkdf2_hostname,
@@ -215,22 +236,31 @@ Nigori::~Nigori() {}
 
 bool Nigori::InitByDerivation(const KeyDerivationParams& key_derivation_params,
                               const std::string& password) {
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+  bool result = false;
   switch (key_derivation_params.method()) {
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return keys_.InitByDerivationUsingPbkdf2(
+      result = keys_.InitByDerivationUsingPbkdf2(
           key_derivation_params.pbkdf2_hostname(),
           key_derivation_params.pbkdf2_username(), password);
+      break;
     case KeyDerivationMethod::SCRYPT_8192_8_11:
       DCHECK(!base::FeatureList::IsEnabled(
           switches::kSyncForceDisableScryptForCustomPassphrase));
-      return keys_.InitByDerivationUsingScrypt(
+      result = keys_.InitByDerivationUsingScrypt(
           key_derivation_params.scrypt_salt(), password);
+      break;
     case KeyDerivationMethod::UNSUPPORTED:
       return false;
   }
 
-  NOTREACHED();
-  return false;
+  UmaHistogramTimes(
+      base::StringPrintf("Sync.Crypto.NigoriKeyDerivationDuration.%s",
+                         GetHistogramSuffixForKeyDerivationMethod(
+                             key_derivation_params.method())),
+      base::TimeTicks::Now() - begin_time);
+
+  return result;
 }
 
 bool Nigori::InitByImport(const std::string& user_key,
