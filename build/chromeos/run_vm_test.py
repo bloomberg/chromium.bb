@@ -168,6 +168,16 @@ class GTestTest(RemoteTest):
     # Build the shell script that will be used on the VM to invoke the test.
     vm_test_script_contents = ['#!/bin/sh']
 
+    # Clear out directories that persist logs and crash dumps. These can
+    # accumulate over a VM's lifetime and consume disk space.
+    # TODO(crbug.com/878526): Remove this once cros_run_vm_test handles it.
+    vm_test_script_contents += [
+        # We run tests as chronos, but need to be root to rm the files. So pass
+        # in the public plaintext root password to sudo via stdin.
+        'echo "test0000" | sudo -S find /var/spool/crash/ -type f -delete',
+        'echo "test0000" | sudo -S find /var/log/chrome/ -type f -delete',
+    ]
+
     # /home is mounted with "noexec" in the VM, but some of our tools
     # and tests use the home dir as a workspace (eg: vpython downloads
     # python binaries to ~/.vpython-root). /tmp doesn't have this
