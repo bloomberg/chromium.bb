@@ -7,8 +7,6 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 
-#import "cwv_export.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVScrollView;
@@ -18,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods are forwarded from the internal UIScrollViewDelegate. Please
 // see the <UIKit/UIScrollViewDelegate.h> documentation for details about the
 // following methods.
-CWV_EXPORT
 @protocol CWVScrollViewDelegate<NSObject>
 @optional
 - (void)scrollViewWillBeginDragging:(CWVScrollView*)scrollView;

@@ -4,8 +4,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "cwv_export.h"
-
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_CONTROLLER_DELEGATE_H
 #define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_CONTROLLER_DELEGATE_H
 
@@ -15,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVTranslationLanguage;
 
 // Updates delegate on translation progress.
-CWV_EXPORT
 @protocol CWVTranslationControllerDelegate<NSObject>
 
 @optional
