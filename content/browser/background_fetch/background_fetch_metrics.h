@@ -24,6 +24,17 @@ void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error);
 // associated with a registration has been completely deleted.
 void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error);
 
+// Records the BackgroundFetch UKM event. Must be called before a Background
+// Fetch registration has been created. Will be a no-op if |frame_tree_node_id|
+// does not identify a valid, live frame.
+void RecordBackgroundFetchUkmEvent(
+    const url::Origin& origin,
+    const std::vector<ServiceWorkerFetchRequest>& requests,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int frame_tree_node_id,
+    bool has_permission);
+
 }  // namespace background_fetch
 
 }  // namespace content

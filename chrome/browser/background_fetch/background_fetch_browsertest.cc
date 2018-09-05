@@ -29,10 +29,13 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/origin.h"
 
 using offline_items_collection::ContentId;
@@ -66,6 +69,17 @@ const int kDownloadTotalBytesTooHigh = 1000;
 // Incorrect downloadTotal, when it's set too low in the JavaScript file
 // loaded by this test (chrome/test/data/background_fetch/background_fetch.js)
 const int kDownloadTotalBytesTooLow = 80;
+
+// Number of requests in the fetch() call from the JavaScript file loaded by
+// this test (chrome/test/data/background_fetch/background_fetch.js)
+const int kNumRequestsInFetch = 1;
+
+// Number of icons in the fetch() call from the JavaScript file loaded by this
+// test (chrome/test/data/background_fetch/background_fetch.js)
+const int kNumIconsInFetch = 1;
+
+// Exponential bucket spacing for UKM event data.
+const double kUkmEventDataBucketSpacing = 2.0;
 
 // Implementation of a download system logger that provides the ability to wait
 // for certain events to happen, notably added and progressing downloads.
@@ -203,6 +217,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(RunScript("RegisterServiceWorker()", &script_result));
       ASSERT_EQ("ok - service worker registered", script_result);
     }
+
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   void TearDownOnMainThread() override {
@@ -336,6 +352,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<WaitableDownloadLoggerObserver> download_observer_;
   std::unique_ptr<OfflineContentProviderObserver>
       offline_content_provider_observer_;
+  std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
 
  private:
   // Callback for RunScriptAndWaitForOfflineItems(), called when the |items|
@@ -378,6 +395,35 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   }
 
   EXPECT_FALSE(guid.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       RecordBackgroundFetchUkmEvent) {
+  // Start a Background Fetch for a single to-be-downloaded file and  test that
+  // the expected UKM data has been recorded.
+
+  ASSERT_NO_FATAL_FAILURE(
+      RunScriptFunction("StartSingleFileDownloadWithCorrectDownloadTotal()"));
+
+  std::vector<const ukm::mojom::UkmEntry*> entries =
+      test_ukm_recorder_->GetEntriesByName(
+          ukm::builders::BackgroundFetch::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  const auto* entry = entries[0];
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kHasTitleName, 1);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kNumIconsName, kNumIconsInFetch);
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kDownloadTotalName,
+      ukm::GetExponentialBucketMin(kDownloadedResourceSizeInBytes,
+                                   kUkmEventDataBucketSpacing));
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kNumRequestsInFetchName,
+      ukm::GetExponentialBucketMin(kNumRequestsInFetch,
+                                   kUkmEventDataBucketSpacing));
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kDeniedDueToPermissionsName, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,

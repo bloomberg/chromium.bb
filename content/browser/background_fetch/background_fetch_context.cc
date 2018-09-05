@@ -143,23 +143,14 @@ void BackgroundFetchContext::StartFetch(
   // operator uses.
   DCHECK_EQ(0u, fetch_callbacks_.count(registration_id));
   fetch_callbacks_[registration_id] = std::move(callback);
-
-  // |data_manager| is guaranteed to outlive |this|. |create_registration| is
-  // passed to `DidGetPermission`, which is tied to |weak_factory_|. That means
-  // that if |create_registration| runs, |this| is still alive, as is
-  // |data_manager| (a pointer owned by |this|).
-  auto create_registration = base::BindOnce(
-      &BackgroundFetchDataManager::CreateRegistration,
-      base::Unretained(data_manager_.get()), registration_id, requests, options,
-      icon,
-      base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
-                     weak_factory_.GetWeakPtr(), registration_id));
+  int frame_tree_node_id =
+      render_frame_host ? render_frame_host->GetFrameTreeNodeId() : 0;
 
   GetPermissionForOrigin(
       registration_id.origin(), render_frame_host,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
-                     weak_factory_.GetWeakPtr(), std::move(create_registration),
-                     registration_id));
+                     weak_factory_.GetWeakPtr(), registration_id, requests,
+                     options, icon, frame_tree_node_id));
 }
 
 void BackgroundFetchContext::GetPermissionForOrigin(
@@ -167,7 +158,6 @@ void BackgroundFetchContext::GetPermissionForOrigin(
     RenderFrameHost* render_frame_host,
     GetPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   ResourceRequestInfo::WebContentsGetter wc_getter = base::NullCallback();
 
   // Permissions need to go through the DownloadRequestLimiter if the fetch
@@ -182,11 +172,25 @@ void BackgroundFetchContext::GetPermissionForOrigin(
 }
 
 void BackgroundFetchContext::DidGetPermission(
-    base::OnceClosure permission_closure,
     const BackgroundFetchRegistrationId& registration_id,
+    const std::vector<ServiceWorkerFetchRequest>& requests,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int frame_tree_node_id,
     bool has_permission) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
+                     registration_id.origin(), requests, options, icon,
+                     frame_tree_node_id, has_permission));
+
   if (has_permission) {
-    std::move(permission_closure).Run();
+    data_manager_->BackgroundFetchDataManager::CreateRegistration(
+        registration_id, requests, options, icon,
+        base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
+                       weak_factory_.GetWeakPtr(), registration_id));
     return;
   }
 

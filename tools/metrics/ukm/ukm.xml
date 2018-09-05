@@ -2531,6 +2531,48 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="BackgroundFetch">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A BackgroundFetch event is logged before a background fetch is started from
+    a document context.
+  </summary>
+  <metric name="DeniedDueToPermissions">
+    <summary>
+      Boolean for whether the background fetch was denied due to permission.
+      This includes only the content setting permission.
+    </summary>
+  </metric>
+  <metric name="DownloadTotal">
+    <summary>
+      The value of downloadTotal provided with the background fetch. This is the
+      number of bytes that the developer expects to be downloaded with the
+      background fetch. This number is exponentially bucketed for privacy
+      reasons, and uses the UKM GetExponentialBucketMin method with a value of
+      2.0 for spacing.
+    </summary>
+  </metric>
+  <metric name="HasTitle">
+    <summary>
+      Boolean for whether a title was provided with the background fetch.
+    </summary>
+  </metric>
+  <metric name="NumIcons">
+    <summary>
+      Count of icons provided with the background fetch.
+    </summary>
+  </metric>
+  <metric name="NumRequestsInFetch">
+    <summary>
+      Number of requests in the background fetch. This number is exponentially
+      bucketed for privacy reasons, and uses the UKM GetExponentialBucketMin
+      method with a value of 2.0 for spacing.
+    </summary>
+  </metric>
+</event>
+
 <event name="OfflinePages.SavePageRequested">
   <owner>petewil@chromium.org</owner>
   <metric name="RequestedFromForeground">
