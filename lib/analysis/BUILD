@@ -14,17 +14,12 @@
 
 licenses(["notice"])  # Apache 2.0
 
-cc_binary(
-    name = "quic_trace_to_time_sequence_gnuplot",
-    srcs = ["quic_trace_to_time_sequence_gnuplot.cc"],
-    deps = [
-        "//lib:quic_trace_cc_proto",
-        "@com_github_gflags_gflags//:gflags",
-    ],
+package(
+    default_visibility = ["//visibility:public"],
 )
 
-sh_binary(
-    name = "time_sequence_gnuplot",
-    srcs = ["time_sequence_gnuplot.sh"],
-    data = [":quic_trace_to_time_sequence_gnuplot"],
+cc_library(
+    name = "numbering",
+    hdrs = ["trace_numbering.h"],
+    deps = ["//lib:quic_trace_cc_proto"],
 )

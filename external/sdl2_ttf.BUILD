@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
-
-cc_binary(
-    name = "quic_trace_to_time_sequence_gnuplot",
-    srcs = ["quic_trace_to_time_sequence_gnuplot.cc"],
-    deps = [
-        "//lib:quic_trace_cc_proto",
-        "@com_github_gflags_gflags//:gflags",
-    ],
-)
-
-sh_binary(
-    name = "time_sequence_gnuplot",
-    srcs = ["time_sequence_gnuplot.sh"],
-    data = [":quic_trace_to_time_sequence_gnuplot"],
+# TODO(vasilvv): make freetype a statically linked dependency for non-Linux ports.
+cc_library(
+    name = "sdl2_ttf",
+    srcs = ["SDL_ttf.c"],
+    hdrs = ["SDL_ttf.h"],
+    copts = ["-I/usr/include/freetype2"],
+    linkopts = ["-lfreetype"],
+    visibility = ["//visibility:public"],
+    deps = ["@sdl2"],
 )
