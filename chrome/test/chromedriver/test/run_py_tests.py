@@ -1696,6 +1696,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self._driver.FindElement('id', 'top')
     thread.join()
 
+  def testTakeElementScreenshot(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/page_with_redBox.html'))
+    elementScreenshot = self._driver.FindElement(
+        'id', 'box').TakeElementScreenshot()
+    self.assertIsNotNone(elementScreenshot)
+    dataActualScreenshot = base64.b64decode(elementScreenshot)
+    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
+                                              'chromedriver/goldenScreenshots',
+                                              'redBoxScreenshot.png')
+    imageGoldenScreenshot = open(filenameOfGoldenScreenshot, 'rb').read()
+    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
