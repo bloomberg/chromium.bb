@@ -24,7 +24,7 @@ TestFormActivityInfo* TestFormActivityObserver::form_activity_info() {
   return form_activity_info_.get();
 }
 
-void TestFormActivityObserver::DidSubmitDocument(web::WebState* web_state,
+void TestFormActivityObserver::DocumentSubmitted(web::WebState* web_state,
                                                  const std::string& form_name,
                                                  bool has_user_gesture,
                                                  bool form_in_main_frame) {
@@ -36,7 +36,7 @@ void TestFormActivityObserver::DidSubmitDocument(web::WebState* web_state,
   submit_document_info_->form_in_main_frame = form_in_main_frame;
 }
 
-void TestFormActivityObserver::OnFormActivity(
+void TestFormActivityObserver::FormActivityRegistered(
     web::WebState* web_state,
     const web::FormActivityParams& params) {
   ASSERT_EQ(web_state_, web_state);

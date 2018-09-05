@@ -583,7 +583,7 @@ void GetFormAndField(autofill::FormData* form,
 #pragma mark FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   if (![self isAutofillEnabled])
     return;
 
@@ -644,7 +644,7 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame {
   if (!formInMainFrame) {

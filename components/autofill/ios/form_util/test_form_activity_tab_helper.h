@@ -21,10 +21,10 @@ class TestFormActivityTabHelper {
   explicit TestFormActivityTabHelper(web::WebState* web_state);
   ~TestFormActivityTabHelper();
 
-  void OnFormActivity(const web::FormActivityParams& params);
-  void OnDocumentSubmitted(const std::string& form_name,
-                           bool has_user_gesture,
-                           bool form_in_main_frame);
+  void FormActivityRegistered(const web::FormActivityParams& params);
+  void DocumentSubmitted(const std::string& form_name,
+                         bool has_user_gesture,
+                         bool form_in_main_frame);
 
  private:
   web::WebState* web_state_ = nullptr;

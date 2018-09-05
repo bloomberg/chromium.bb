@@ -23,10 +23,10 @@
 
 @implementation FakeFormActivityObserver {
   // Arguments passed to
-  // |webState:submittedDocumentWithFormNamed:hasUserGesture:formInMainFrame:|.
+  // |webState:didSubmitDocumentWithFormNamed:hasUserGesture:formInMainFrame:|.
   std::unique_ptr<autofill::TestSubmitDocumentInfo> _submitDocumentInfo;
   // Arguments passed to
-  // |webState:registeredFormActivity:|.
+  // |webState:didRegisterFormActivity:|.
   std::unique_ptr<autofill::TestFormActivityInfo> _formActivityInfo;
 }
 
@@ -39,7 +39,7 @@
 }
 
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame {
   _submitDocumentInfo = std::make_unique<autofill::TestSubmitDocumentInfo>();
@@ -50,7 +50,7 @@
 }
 
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   _formActivityInfo = std::make_unique<autofill::TestFormActivityInfo>();
   _formActivityInfo->web_state = webState;
   _formActivityInfo->form_activity = params;
@@ -77,7 +77,7 @@ TEST_F(FormActivityObserverBridgeTest, DocumentSubmitted) {
   std::string kTestFormName("form-name");
   bool has_user_gesture = true;
   bool form_in_main_frame = true;
-  observer_bridge_.DidSubmitDocument(&test_web_state_, kTestFormName,
+  observer_bridge_.DocumentSubmitted(&test_web_state_, kTestFormName,
                                      has_user_gesture, form_in_main_frame);
   ASSERT_TRUE([observer_ submitDocumentInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ submitDocumentInfo]->web_state);
@@ -98,7 +98,7 @@ TEST_F(FormActivityObserverBridgeTest, FormActivityRegistered) {
   params.type = "type";
   params.value = "value";
   params.input_missing = true;
-  observer_bridge_.OnFormActivity(&test_web_state_, params);
+  observer_bridge_.FormActivityRegistered(&test_web_state_, params);
   ASSERT_TRUE([observer_ formActivityInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ formActivityInfo]->web_state);
   EXPECT_EQ(params.form_name,

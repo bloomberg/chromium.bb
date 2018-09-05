@@ -38,13 +38,13 @@ class TestFormActivityObserver : public autofill::FormActivityObserver {
   // Arguments passed to |FormActivityRegistered|.
   TestFormActivityInfo* form_activity_info();
 
-  void DidSubmitDocument(web::WebState* web_state,
+  void DocumentSubmitted(web::WebState* web_state,
                          const std::string& form_name,
                          bool has_user_gesture,
                          bool form_in_main_frame) override;
 
-  void OnFormActivity(web::WebState* web_state,
-                      const web::FormActivityParams& params) override;
+  void FormActivityRegistered(web::WebState* web_state,
+                              const web::FormActivityParams& params) override;
 
  private:
   web::WebState* web_state_ = nullptr;

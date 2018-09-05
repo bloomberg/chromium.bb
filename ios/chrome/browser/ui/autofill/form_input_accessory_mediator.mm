@@ -143,7 +143,7 @@
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));

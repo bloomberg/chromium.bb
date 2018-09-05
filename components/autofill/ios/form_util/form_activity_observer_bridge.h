@@ -13,22 +13,12 @@
 @protocol FormActivityObserver<NSObject>
 @optional
 // Invoked by WebStateObserverBridge::FormActivity.
-// TODO(crbug.com/823285): during the transition from CRWWebStateObserver
-// to FormActivityObserver, some class will implement from both protocols
-// so the method need to use a different name. Once the transition is
-// complete and the methods removed from CRWWebStateObserver, this method
-// will be renamed to didRegisterFormActivity.
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params;
+    didRegisterFormActivity:(const web::FormActivityParams&)params;
 
 // Invoked by WebStateObserverBridge::DidSubmitDocument.
-// TODO(crbug.com/823285): during the transition from CRWWebStateObserver
-// to FormActivityObserver, some class will implement from both protocols
-// so the method need to use a different name. Once the transition is
-// complete and the methods removed from CRWWebStateObserver, this method
-// will be renamed to didSubmitDocumentWithFormNamed.
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame;
 
@@ -51,10 +41,10 @@ class FormActivityObserverBridge : public FormActivityObserver {
   ~FormActivityObserverBridge() override;
 
   // FormActivityObserver overrides:
-  void OnFormActivity(web::WebState* web_state,
-                      const web::FormActivityParams& params) override;
+  void FormActivityRegistered(web::WebState* web_state,
+                              const web::FormActivityParams& params) override;
 
-  void DidSubmitDocument(web::WebState* web_state,
+  void DocumentSubmitted(web::WebState* web_state,
                          const std::string& form_name,
                          bool has_user_gesture,
                          bool form_in_main_frame) override;
