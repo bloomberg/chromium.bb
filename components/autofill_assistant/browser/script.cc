@@ -6,6 +6,10 @@
 
 namespace autofill_assistant {
 
+ScriptHandle::ScriptHandle() = default;
+
+ScriptHandle::~ScriptHandle() = default;
+
 Script::Script() = default;
 
 Script::~Script() = default;

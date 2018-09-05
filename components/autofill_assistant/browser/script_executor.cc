@@ -18,9 +18,9 @@
 
 namespace autofill_assistant {
 
-ScriptExecutor::ScriptExecutor(Script* script, ScriptExecutorDelegate* delegate)
-    : script_(script), delegate_(delegate), weak_ptr_factory_(this) {
-  DCHECK(script_);
+ScriptExecutor::ScriptExecutor(const std::string& script_path,
+                               ScriptExecutorDelegate* delegate)
+    : script_path_(script_path), delegate_(delegate), weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
 ScriptExecutor::~ScriptExecutor() {}
@@ -30,8 +30,8 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
   DCHECK(delegate_->GetService());
 
   delegate_->GetService()->GetActions(
-      script_->path, base::BindOnce(&ScriptExecutor::OnGetActions,
-                                    weak_ptr_factory_.GetWeakPtr()));
+      script_path_, base::BindOnce(&ScriptExecutor::OnGetActions,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptExecutor::ShowStatusMessage(const std::string& message) {

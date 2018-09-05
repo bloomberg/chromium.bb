@@ -35,7 +35,7 @@ std::string ProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
 // static
 bool ProtocolUtils::ParseScripts(
     const std::string& response,
-    std::map<Script*, std::unique_ptr<Script>>* scripts) {
+    std::vector<std::unique_ptr<Script>>* scripts) {
   DCHECK(scripts);
 
   SupportsScriptResponseProto response_proto;
@@ -44,14 +44,15 @@ bool ProtocolUtils::ParseScripts(
     return false;
   }
 
+  scripts->clear();
   for (const auto& script_proto : response_proto.scripts()) {
     auto script = std::make_unique<Script>();
-    script->path = script_proto.path();
+    script->handle.path = script_proto.path();
 
     if (script_proto.has_presentation()) {
       const auto& presentation = script_proto.presentation();
       if (presentation.has_name())
-        script->name = presentation.name();
+        script->handle.name = presentation.name();
 
       if (presentation.has_precondition()) {
         std::vector<std::vector<std::string>> elements_exist;
@@ -70,8 +71,7 @@ bool ProtocolUtils::ParseScripts(
         }
       }
     }
-
-    (*scripts)[script.get()] = std::move(script);
+    scripts->emplace_back(std::move(script));
   }
 
   return true;

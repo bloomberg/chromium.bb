@@ -39,6 +39,8 @@ jumbo_static_library("browser") {
     "script_executor_delegate.h",
     "script_precondition.cc",
     "script_precondition.h",
+    "script_tracker.cc",
+    "script_tracker.h",
     "service.cc",
     "service.h",
     "ui_controller.h",
@@ -69,6 +71,7 @@ source_set("unit_tests") {
     "mock_web_controller.cc",
     "mock_web_controller.h",
     "script_executor_unittest.cc",
+    "script_tracker_unittest.cc",
   ]
 
   deps = [

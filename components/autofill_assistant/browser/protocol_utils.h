@@ -31,7 +31,7 @@ class ProtocolUtils {
   // Parsed assistant scripts are returned through |scripts|, which
   // should not be nullptr. Return false if parse failed, otherwise return true.
   static bool ParseScripts(const std::string& response,
-                           std::map<Script*, std::unique_ptr<Script>>* scripts);
+                           std::vector<std::unique_ptr<Script>>* scripts);
 
   // Create initial request to get script actions for the given |script_path|.
   static std::string CreateInitialScriptActionsRequest(

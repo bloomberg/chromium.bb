@@ -11,13 +11,21 @@
 
 namespace autofill_assistant {
 
+// Minimal information about a script necessary to display and run it.
+struct ScriptHandle {
+  ScriptHandle();
+  ~ScriptHandle();
+
+  std::string name;
+  std::string path;
+};
+
 // Script represents a sequence of actions.
 struct Script {
   Script();
   ~Script();
 
-  std::string name;
-  std::string path;
+  ScriptHandle handle;
   std::unique_ptr<ScriptPrecondition> precondition;
 };
 

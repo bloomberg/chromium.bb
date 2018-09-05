@@ -28,10 +28,7 @@ using ::testing::_;
 class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
  public:
   void SetUp() override {
-    script_.name = "script name";
-    script_.path = "script path";
-
-    executor_ = std::make_unique<ScriptExecutor>(&script_, this);
+    executor_ = std::make_unique<ScriptExecutor>("script path", this);
 
     // In this test, "tell" actions always succeed and "click" actions always
     // fail.
