@@ -147,16 +147,21 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteUpdate) {
   submitted_form_.new_password_element = new_password_element;
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
-  ServerFieldTypeSet expexted_field_types = {NEW_PASSWORD,
+  submitted_form_.submission_event =
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  ServerFieldTypeSet expected_field_types = {NEW_PASSWORD,
                                              CONFIRMATION_PASSWORD};
   FieldTypeMap expected_types = {{new_password_element, NEW_PASSWORD},
                                  {confirmation_element, CONFIRMATION_PASSWORD}};
+  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(*mock_autofill_download_manager_,
               StartUploadRequest(
                   AllOf(SignatureIsSameAs(form_to_upload_),
-                        UploadedAutofillTypesAre(expected_types)),
-                  false, expexted_field_types, login_form_signature_, true));
+                        UploadedAutofillTypesAre(expected_types),
+                        SubmissionEventIsSameAs(expected_submission_event)),
+                  false, expected_field_types, login_form_signature_, true));
 
   EXPECT_TRUE(votes_uploader.UploadPasswordVote(
       form_to_upload_, submitted_form_, NEW_PASSWORD, login_form_signature_));
@@ -170,11 +175,16 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteSave) {
   submitted_form_.password_element = password_element;
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
-  ServerFieldTypeSet expexted_field_types = {PASSWORD, CONFIRMATION_PASSWORD};
+  submitted_form_.submission_event =
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  ServerFieldTypeSet expected_field_types = {PASSWORD, CONFIRMATION_PASSWORD};
+  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(*mock_autofill_download_manager_,
-              StartUploadRequest(_, false, expexted_field_types,
-                                 login_form_signature_, true));
+              StartUploadRequest(
+                  SubmissionEventIsSameAs(expected_submission_event), false,
+                  expected_field_types, login_form_signature_, true));
 
   EXPECT_TRUE(votes_uploader.UploadPasswordVote(
       form_to_upload_, submitted_form_, PASSWORD, login_form_signature_));
