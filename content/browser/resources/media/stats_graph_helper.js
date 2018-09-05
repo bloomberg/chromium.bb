@@ -36,8 +36,8 @@ var totalToPerSecond = function(srcDataSeries) {
   if (length >= 2) {
     var lastDataPoint = srcDataSeries.dataPoints_[length - 1];
     var secondLastDataPoint = srcDataSeries.dataPoints_[length - 2];
-    return (lastDataPoint.value - secondLastDataPoint.value) * 1000 /
-           (lastDataPoint.time - secondLastDataPoint.time);
+    return Math.floor((lastDataPoint.value - secondLastDataPoint.value) * 1000 /
+           (lastDataPoint.time - secondLastDataPoint.time));
   }
 
   return 0;
