@@ -211,6 +211,7 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
     bool /*is_new_navigation*/, bool is_same_document_navigation) {
   if (is_same_document_navigation)
     return;
+  password_is_generated_ = false;
   generation_element_.Reset();
   last_focused_password_element_.Reset();
 }
@@ -602,7 +603,12 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     const WebInputElement& element) {
   if (element != generation_element_) {
     // Presave the username if it has been changed.
-    if (password_is_generated_ &&
+    // TODO(crbug.com/879713): investigate why the following DCHECKs can be
+    // triggered.
+    DCHECK(!element.IsNull());
+    DCHECK(!password_is_generated_ || !generation_element_.IsNull());
+    if (password_is_generated_ && !element.IsNull() &&
+        !generation_element_.IsNull() &&
         (element.Form() == generation_element_.Form())) {
       std::unique_ptr<PasswordForm> presaved_form(
           CreatePasswordFormToPresave());
