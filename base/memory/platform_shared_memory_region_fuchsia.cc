@@ -4,9 +4,9 @@
 
 #include "base/memory/platform_shared_memory_region.h"
 
+#include <lib/zx/vmar.h>
 #include <zircon/process.h>
 #include <zircon/rights.h>
-#include <zircon/syscalls.h>
 
 #include "base/bits.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -35,8 +35,8 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   if (size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return {};
 
-  CHECK(
-      CheckPlatformHandlePermissionsCorrespondToMode(handle.get(), mode, size));
+  CHECK(CheckPlatformHandlePermissionsCorrespondToMode(zx::unowned_vmo(handle),
+                                                       mode, size));
 
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
 }
@@ -54,8 +54,8 @@ PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
               handle.GetGUID());
 }
 
-zx_handle_t PlatformSharedMemoryRegion::GetPlatformHandle() const {
-  return handle_.get();
+zx::unowned_vmo PlatformSharedMemoryRegion::GetPlatformHandle() const {
+  return zx::unowned_vmo(handle_);
 }
 
 bool PlatformSharedMemoryRegion::IsValid() const {
@@ -122,8 +122,8 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
 
   bool write_allowed = mode_ != Mode::kReadOnly;
   uintptr_t addr;
-  zx_status_t status = zx_vmar_map_old(
-      zx_vmar_root_self(), 0, handle_.get(), offset, size,
+  zx_status_t status = zx::vmar::root_self()->map(
+      0, handle_, offset, size,
       ZX_VM_FLAG_PERM_READ | (write_allowed ? ZX_VM_FLAG_PERM_WRITE : 0),
       &addr);
   if (status != ZX_OK) {
@@ -175,8 +175,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
     Mode mode,
     size_t size) {
   zx_info_handle_basic_t basic = {};
-  zx_status_t status = zx_object_get_info(handle, ZX_INFO_HANDLE_BASIC, &basic,
-                                          sizeof(basic), nullptr, nullptr);
+  zx_status_t status = handle->get_info(ZX_INFO_HANDLE_BASIC, &basic,
+                                        sizeof(basic), nullptr, nullptr);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_object_get_info";
     return false;
