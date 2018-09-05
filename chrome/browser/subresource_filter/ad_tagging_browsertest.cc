@@ -222,8 +222,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
-                       DISABLED_VerifyCrossOriginWithoutNavigate) {
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
   base::HistogramTester histogram_tester;
 
   // Main frame.
