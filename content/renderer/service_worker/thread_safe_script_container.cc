@@ -14,7 +14,8 @@ ThreadSafeScriptContainer::ThreadSafeScriptContainer()
 void ThreadSafeScriptContainer::AddOnIOThread(const GURL& url,
                                               std::unique_ptr<Data> data) {
   base::AutoLock lock(lock_);
-  script_data_[url] = std::move(data);
+  ScriptStatus status = data ? ScriptStatus::kReceived : ScriptStatus::kFailed;
+  script_data_.emplace(url, std::make_pair(status, std::move(data)));
   if (url == waiting_url_)
     waiting_cv_.Signal();
 }
@@ -25,11 +26,7 @@ ThreadSafeScriptContainer::GetStatusOnWorkerThread(const GURL& url) {
   auto it = script_data_.find(url);
   if (it == script_data_.end())
     return ScriptStatus::kPending;
-  if (!it->second)
-    return ScriptStatus::kTaken;
-  if (!it->second->IsValid())
-    return ScriptStatus::kFailed;
-  return ScriptStatus::kReceived;
+  return it->second.first;
 }
 
 void ThreadSafeScriptContainer::ResetOnWorkerThread(const GURL& url) {
@@ -54,17 +51,19 @@ bool ThreadSafeScriptContainer::WaitOnWorkerThread(const GURL& url) {
     waiting_cv_.Wait();
   }
   waiting_url_ = GURL();
-  // TODO(shimazu): Keep the status for each entries instead of using IsValid().
-  const auto& data = script_data_[url];
-  return !data || data->IsValid();
+  return true;
 }
 
 std::unique_ptr<ThreadSafeScriptContainer::Data>
 ThreadSafeScriptContainer::TakeOnWorkerThread(const GURL& url) {
   base::AutoLock lock(lock_);
-  DCHECK(base::ContainsKey(script_data_, url))
-      << "Script should be added before calling Take.";
-  return std::move(script_data_[url]);
+  auto it = script_data_.find(url);
+  DCHECK(it != script_data_.end())
+      << "Script should have been received before calling Take";
+  std::pair<ScriptStatus, std::unique_ptr<Data>>& pair = it->second;
+  DCHECK_EQ(ScriptStatus::kReceived, pair.first);
+  pair.first = ScriptStatus::kTaken;
+  return std::move(pair.second);
 }
 
 void ThreadSafeScriptContainer::OnAllDataAddedOnIOThread() {
