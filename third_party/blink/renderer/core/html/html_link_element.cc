@@ -65,6 +65,11 @@ HTMLLinkElement* HTMLLinkElement::Create(Document& document,
 
 HTMLLinkElement::~HTMLLinkElement() = default;
 
+const HashSet<AtomicString>& HTMLLinkElement::GetCheckedAttributeNames() const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
+  return attribute_set;
+}
+
 void HTMLLinkElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;

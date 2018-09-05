@@ -39,6 +39,12 @@ inline HTMLFrameElement::HTMLFrameElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)
 
+const HashSet<AtomicString>& HTMLFrameElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
   // For compatibility, frames render even when display: none is set.
   return ContentFrame();

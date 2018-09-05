@@ -55,6 +55,12 @@ HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
   return element;
 }
 
+const HashSet<AtomicString>& HTMLEmbedElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 static inline LayoutEmbeddedContent* FindPartLayoutObject(const Node* n) {
   if (!n->GetLayoutObject())
     n = Traversal<HTMLObjectElement>::FirstAncestor(*n);

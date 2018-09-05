@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -42,12 +43,11 @@
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/network_hints.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
 namespace blink {
 
@@ -169,6 +169,12 @@ void HTMLAnchorElement::SetActive(bool down) {
     return;
 
   ContainerNode::SetActive(down);
+}
+
+const HashSet<AtomicString>& HTMLAnchorElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
+  return attribute_set;
 }
 
 void HTMLAnchorElement::AttributeChanged(

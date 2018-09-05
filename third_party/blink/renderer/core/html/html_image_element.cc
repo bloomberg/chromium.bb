@@ -125,6 +125,12 @@ void HTMLImageElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
+const HashSet<AtomicString>& HTMLImageElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 void HTMLImageElement::NotifyViewportChanged() {
   // Re-selecting the source URL in order to pick a more fitting resource
   // And update the image's intrinsic dimensions when the viewport changes.
