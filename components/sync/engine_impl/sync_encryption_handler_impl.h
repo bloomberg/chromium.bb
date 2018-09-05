@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -38,6 +39,9 @@ class WriteTransaction;
 // The class should live as long as the directory itself in order to ensure
 // any data read/written is properly decrypted/encrypted.
 //
+// |random_salt_generator| is a callback that accepts no arguments and returns a
+// random salt. Used with scrypt key derivation method.
+//
 // Note: See sync_encryption_handler.h for a description of the chrome visible
 // methods and what they do, and nigori_handler.h for a description of the
 // sync methods.
@@ -50,7 +54,8 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
       UserShare* user_share,
       Encryptor* encryptor,
       const std::string& restored_key_for_bootstrapping,
-      const std::string& restored_keystore_key_for_bootstrapping);
+      const std::string& restored_keystore_key_for_bootstrapping,
+      const base::RepeatingCallback<std::string()>& random_salt_generator);
   ~SyncEncryptionHandlerImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -200,6 +205,7 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   void SetCustomPassphrase(const std::string& passphrase,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
+
   // Decrypt the encryption keybag using a user provided passphrase.
   // Should only be called if the current passphrase is a frozen implicit
   // passphrase or a custom passphrase.
@@ -325,10 +331,12 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   // before support for this field was added.
   base::Time custom_passphrase_time_;
 
-  // The key derivation method we are using for the custom passphrase. This can
+  // The key derivation params we are using for the custom passphrase. This can
   // end up not being set e.g. in cases when we reach a CUSTOM_PASSPHRASE state
   // through a legacy code path.
-  base::Optional<KeyDerivationMethod> custom_passphrase_key_derivation_method_;
+  base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params_;
+
+  base::RepeatingCallback<std::string()> random_salt_generator_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 

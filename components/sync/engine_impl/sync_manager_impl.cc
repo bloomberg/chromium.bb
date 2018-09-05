@@ -19,6 +19,7 @@
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/nigori.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/engine_util.h"
@@ -220,7 +221,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
       !args->restored_keystore_key_for_bootstrapping.empty());
   sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
       &share_, args->encryptor, args->restored_key_for_bootstrapping,
-      args->restored_keystore_key_for_bootstrapping);
+      args->restored_keystore_key_for_bootstrapping,
+      base::BindRepeating(&Nigori::GenerateScryptSalt));
   sync_encryption_handler_->AddObserver(this);
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
@@ -337,7 +339,7 @@ void SyncManagerImpl::NotifyInitializationFailure() {
 
 void SyncManagerImpl::OnPassphraseRequired(
     PassphraseRequiredReason reason,
-    KeyDerivationMethod key_derivation_method,
+    const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   // Does nothing.
 }

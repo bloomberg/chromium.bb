@@ -30,7 +30,7 @@ void JsSyncEncryptionHandlerObserver::SetJsEventHandler(
 
 void JsSyncEncryptionHandlerObserver::OnPassphraseRequired(
     PassphraseRequiredReason reason,
-    KeyDerivationMethod key_derivation_method,
+    const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;

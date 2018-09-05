@@ -32,12 +32,12 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 
   void OnPassphraseRequired(
       PassphraseRequiredReason reason,
-      KeyDerivationMethod key_derivation_method,
+      const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&SyncEncryptionHandler::Observer::OnPassphraseRequired,
-                       observer_, reason, key_derivation_method, pending_keys));
+                       observer_, reason, key_derivation_params, pending_keys));
   }
 
   void OnPassphraseAccepted() override {
@@ -107,20 +107,20 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 // true if decryption was successful. Returns false otherwise. Must be called
 // with non-empty pending keys cache.
 bool CheckPassphraseAgainstPendingKeys(
-    const sync_pb::EncryptedData pending_keys,
-    KeyDerivationMethod key_derivation_method,
+    const sync_pb::EncryptedData& pending_keys,
+    const KeyDerivationParams& key_derivation_params,
     const std::string& passphrase) {
   DCHECK(pending_keys.has_blob());
   DCHECK(!passphrase.empty());
-  if (key_derivation_method == KeyDerivationMethod::UNSUPPORTED) {
+  if (key_derivation_params.method() == KeyDerivationMethod::UNSUPPORTED) {
     DLOG(ERROR) << "Cannot derive keys using an unsupported key derivation "
                    "method. Rejecting passphrase.";
     return false;
   }
 
   Nigori nigori;
-  bool derivation_result = nigori.InitByDerivation(
-      key_derivation_method, "localhost", "dummy", passphrase);
+  bool derivation_result =
+      nigori.InitByDerivation(key_derivation_params, passphrase);
   DCHECK(derivation_result);
   std::string plaintext;
   bool decrypt_result = nigori.Decrypt(pending_keys.blob(), &plaintext);
@@ -137,8 +137,8 @@ SyncServiceCrypto::SyncServiceCrypto(
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
       sync_prefs_(sync_prefs),
-      passphrase_key_derivation_method_(
-          KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003),
+      passphrase_key_derivation_params_(
+          KeyDerivationParams::CreateForPbkdf2("localhost", "dummy")),
       weak_factory_(this) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);
@@ -221,7 +221,7 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   // For types other than CUSTOM_PASSPHRASE, we should be using the old PBKDF2
   // key derivation method.
   if (cached_passphrase_type_ != PassphraseType::CUSTOM_PASSPHRASE) {
-    DCHECK_EQ(passphrase_key_derivation_method_,
+    DCHECK_EQ(passphrase_key_derivation_params_.method(),
               KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
   }
 
@@ -231,7 +231,7 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   // immediately call OnPassphraseRequired again without showing the user a
   // spinner.
   if (!CheckPassphraseAgainstPendingKeys(cached_pending_keys_,
-                                         passphrase_key_derivation_method_,
+                                         passphrase_key_derivation_params_,
                                          passphrase)) {
     return false;
   }
@@ -277,15 +277,15 @@ ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
 
 void SyncServiceCrypto::OnPassphraseRequired(
     PassphraseRequiredReason reason,
-    KeyDerivationMethod key_derivation_method,
+    const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update our cache of the cryptographer's pending keys.
   cached_pending_keys_ = pending_keys;
 
-  // Update the key derivation method to be used.
-  passphrase_key_derivation_method_ = key_derivation_method;
+  // Update the key derivation params to be used.
+  passphrase_key_derivation_params_ = key_derivation_params;
 
   DVLOG(1) << "Passphrase required with reason: "
            << PassphraseRequiredReasonToString(reason);

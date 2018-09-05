@@ -650,10 +650,10 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   } while (0)
 
 TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
-  KeyParams key_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                          "localhost", "dummy", "foobar"};
-  KeyParams other_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                            "localhost", "dummy", "foobar2"};
+  KeyParams key_params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
+  KeyParams other_params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar2"};
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark;
   bookmark.mutable_bookmark()->set_url("url");
   bookmark.mutable_bookmark()->set_title("title");
@@ -1027,8 +1027,8 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrderMaxEntries) {
 }
 
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
-  KeyParams key_params = {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003,
-                          "localhost", "dummy", "foobar"};
+  KeyParams key_params = {
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
   Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;

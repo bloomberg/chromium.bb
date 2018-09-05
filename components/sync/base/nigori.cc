@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "components/sync/base/sync_base_switches.h"
@@ -61,6 +62,60 @@ class NigoriStream {
   std::ostringstream stream_;
 };
 
+KeyDerivationParams::KeyDerivationParams(KeyDerivationMethod method,
+                                         const std::string& pbkdf2_hostname,
+                                         const std::string& pbkdf2_username,
+                                         const std::string& scrypt_salt)
+    : method_(method),
+      pbkdf2_hostname_(pbkdf2_hostname),
+      pbkdf2_username_(pbkdf2_username),
+      scrypt_salt_(scrypt_salt) {}
+
+KeyDerivationParams::KeyDerivationParams(const KeyDerivationParams& other) =
+    default;
+KeyDerivationParams::KeyDerivationParams(KeyDerivationParams&& other) = default;
+
+KeyDerivationParams& KeyDerivationParams::operator=(
+    const KeyDerivationParams& other) = default;
+
+bool KeyDerivationParams::operator==(const KeyDerivationParams& other) const {
+  return method_ == other.method_ &&
+         pbkdf2_hostname_ == other.pbkdf2_hostname_ &&
+         pbkdf2_username_ == other.pbkdf2_username_ &&
+         scrypt_salt_ == other.scrypt_salt_;
+}
+
+const std::string& KeyDerivationParams::pbkdf2_username() const {
+  DCHECK(method_ == KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
+  return pbkdf2_username_;
+}
+const std::string& KeyDerivationParams::pbkdf2_hostname() const {
+  DCHECK(method_ == KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
+  return pbkdf2_hostname_;
+}
+const std::string& KeyDerivationParams::scrypt_salt() const {
+  DCHECK(method_ == KeyDerivationMethod::SCRYPT_8192_8_11);
+  return scrypt_salt_;
+}
+
+KeyDerivationParams KeyDerivationParams::CreateForPbkdf2(
+    const std::string& hostname,
+    const std::string& username) {
+  return {KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003, hostname, username,
+          /* scrypt_salt_ = */ ""};
+}
+
+KeyDerivationParams KeyDerivationParams::CreateForScrypt(
+    const std::string& salt) {
+  return {KeyDerivationMethod::SCRYPT_8192_8_11,
+          /* pbkdf2_hostname_ = */ "", /* pbkf2_username = */ "", salt};
+}
+
+KeyDerivationParams KeyDerivationParams::CreateWithUnsupportedMethod() {
+  return {KeyDerivationMethod::UNSUPPORTED, /* pbkdf2_hostname_ = */ "",
+          /* pbkdf2_username_ = */ "", /* scrypt_salt_ = */ ""};
+}
+
 Nigori::Keys::Keys() = default;
 Nigori::Keys::~Keys() = default;
 
@@ -106,12 +161,11 @@ bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& hostname,
   return user_key && encryption_key && mac_key;
 }
 
-bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& password) {
+bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
+                                               const std::string& password) {
   const size_t kCostParameter = 8192;  // 2^13.
   const size_t kBlockSize = 8;
   const size_t kParallelizationParameter = 11;
-  // TODO(davidovic): Do not use a constant salt here.
-  const char kConstantSalt[] = "ScryptConstantSalt";
   const size_t kMaxMemoryBytes = 32 * 1024 * 1024;  // 32 MiB.
 
   // |user_key| is not used anymore. However, old clients may fail to import a
@@ -124,8 +178,8 @@ bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& password) {
   // into two to get the encryption and MAC keys.
   std::unique_ptr<SymmetricKey> master_key =
       SymmetricKey::DeriveKeyFromPasswordUsingScrypt(
-          SymmetricKey::AES, password, kConstantSalt, kCostParameter,
-          kBlockSize, kParallelizationParameter, kMaxMemoryBytes,
+          SymmetricKey::AES, password, salt, kCostParameter, kBlockSize,
+          kParallelizationParameter, kMaxMemoryBytes,
           2 * kDerivedKeySizeInBits);
   std::string master_key_str = master_key->key();
 
@@ -159,17 +213,18 @@ Nigori::Nigori() {}
 
 Nigori::~Nigori() {}
 
-bool Nigori::InitByDerivation(KeyDerivationMethod method,
-                              const std::string& hostname,
-                              const std::string& username,
+bool Nigori::InitByDerivation(const KeyDerivationParams& key_derivation_params,
                               const std::string& password) {
-  switch (method) {
+  switch (key_derivation_params.method()) {
     case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return keys_.InitByDerivationUsingPbkdf2(hostname, username, password);
-    case KeyDerivationMethod::SCRYPT_8192_8_11_CONST_SALT:
+      return keys_.InitByDerivationUsingPbkdf2(
+          key_derivation_params.pbkdf2_hostname(),
+          key_derivation_params.pbkdf2_username(), password);
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
       DCHECK(!base::FeatureList::IsEnabled(
           switches::kSyncForceDisableScryptForCustomPassphrase));
-      return keys_.InitByDerivationUsingScrypt(password);
+      return keys_.InitByDerivationUsingScrypt(
+          key_derivation_params.scrypt_salt(), password);
     case KeyDerivationMethod::UNSUPPORTED:
       return false;
   }
@@ -304,6 +359,15 @@ void Nigori::ExportKeys(std::string* user_key,
 
   *encryption_key = keys_.encryption_key->key();
   *mac_key = keys_.mac_key->key();
+}
+
+// static
+std::string Nigori::GenerateScryptSalt() {
+  static const size_t kSaltSizeInBytes = 32;
+  std::string salt;
+  salt.resize(kSaltSizeInBytes);
+  crypto::RandBytes(base::data(salt), salt.size());
+  return salt;
 }
 
 }  // namespace syncer

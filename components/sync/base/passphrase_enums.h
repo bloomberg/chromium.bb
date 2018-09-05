@@ -31,9 +31,8 @@ sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
 // user's custom passphrase.
 enum class KeyDerivationMethod {
   PBKDF2_HMAC_SHA1_1003 = 0,  // PBKDF2-HMAC-SHA1 with 1003 iterations.
-  SCRYPT_8192_8_11_CONST_SALT =
-      1,            // scrypt with N = 2^13, r = 8, p = 11 and constant salt.
-  UNSUPPORTED = 2,  // Unsupported method, likely from a future version.
+  SCRYPT_8192_8_11 = 1,  // scrypt with N = 2^13, r = 8, p = 11 and random salt.
+  UNSUPPORTED = 2,       // Unsupported method, likely from a future version.
 };
 
 // This function accepts an integer and not KeyDerivationMethod from the proto

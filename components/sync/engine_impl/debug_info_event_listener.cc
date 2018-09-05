@@ -65,7 +65,7 @@ void DebugInfoEventListener::OnConnectionStatusChange(ConnectionStatus status) {
 
 void DebugInfoEventListener::OnPassphraseRequired(
     PassphraseRequiredReason reason,
-    KeyDerivationMethod key_derivation_method,
+    const KeyDerivationParams& key_derivation_params,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_REQUIRED);
