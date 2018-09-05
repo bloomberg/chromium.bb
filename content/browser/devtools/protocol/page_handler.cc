@@ -448,6 +448,8 @@ void PageHandler::Navigate(const std::string& url,
     type = ui::PAGE_TRANSITION_LINK;
   else if (transition_type == Page::TransitionTypeEnum::Typed)
     type = ui::PAGE_TRANSITION_TYPED;
+  else if (transition_type == Page::TransitionTypeEnum::Address_bar)
+    type = ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
   else if (transition_type == Page::TransitionTypeEnum::Auto_bookmark)
     type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   else if (transition_type == Page::TransitionTypeEnum::Auto_subframe)
