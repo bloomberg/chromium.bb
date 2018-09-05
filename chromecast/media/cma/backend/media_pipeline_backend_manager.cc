@@ -60,11 +60,18 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
           new base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>()),
       global_volume_multipliers_({{AudioContentType::kMedia, 1.0f},
                                   {AudioContentType::kAlarm, 1.0f},
-                                  {AudioContentType::kCommunication, 1.0f}},
+                                  {AudioContentType::kCommunication, 1.0f},
+                                  {AudioContentType::kOther, 1.0f}},
                                  base::KEEP_FIRST_OF_DUPES),
       buffer_delegate_(nullptr),
       weak_factory_(this) {
   DCHECK(media_task_runner_);
+  DCHECK(playing_audio_streams_count_.size() ==
+         static_cast<unsigned long>(AudioContentType::kNumTypes));
+  DCHECK(playing_noneffects_audio_streams_count_.size() ==
+         static_cast<unsigned long>(AudioContentType::kNumTypes));
+  DCHECK(global_volume_multipliers_.size() ==
+         static_cast<unsigned long>(AudioContentType::kNumTypes));
   for (int i = 0; i < NUM_DECODER_TYPES; ++i) {
     decoder_count_[i] = 0;
   }
