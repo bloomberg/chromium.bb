@@ -171,7 +171,7 @@ std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
 
 std::string BrowserDMTokenStorageMac::InitDMToken() {
   base::FilePath token_file_path;
-  if (!GetDmTokenFilePath(&token_file_path, RetrieveClientId(), true))
+  if (!GetDmTokenFilePath(&token_file_path, RetrieveClientId(), false))
     return std::string();
 
   std::string token;

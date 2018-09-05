@@ -42,6 +42,8 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitDMToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
+                           InitDMTokenWithoutDirectory);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, SaveDMToken);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageLinux);

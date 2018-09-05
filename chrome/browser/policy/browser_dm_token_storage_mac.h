@@ -39,6 +39,8 @@ class BrowserDMTokenStorageMac : public BrowserDMTokenStorage {
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitEnrollmentToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitDMToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest,
+                           InitDMTokenWithoutDirectory);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, SaveDMToken);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageMac);
