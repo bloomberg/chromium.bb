@@ -14,6 +14,9 @@ extern const base::Feature kNuxEmailFeature{"NuxEmail",
 extern const base::Feature kNuxGoogleAppsFeature{
     "NuxGoogleApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
+extern const base::Feature kNuxOnboardingFeature{
+    "NuxOnboarding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 extern const char kNuxEmailUrl[] = "chrome://welcome/email";
 extern const char kNuxGoogleAppsUrl[] = "chrome://welcome/apps";
 

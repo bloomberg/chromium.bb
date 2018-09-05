@@ -13,6 +13,7 @@ namespace nux {
 
 extern const base::Feature kNuxEmailFeature;
 extern const base::Feature kNuxGoogleAppsFeature;
+extern const base::Feature kNuxOnboardingFeature;
 extern const char kNuxEmailUrl[];
 extern const char kNuxGoogleAppsUrl[];
 

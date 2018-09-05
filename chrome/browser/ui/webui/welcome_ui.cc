@@ -28,6 +28,7 @@
 #include "components/nux/constants.h"
 #include "components/nux/email/email_handler.h"
 #include "components/nux/google_apps/google_apps_handler.h"
+#include "components/nux/set_as_default/set_as_default_handler.h"
 #include "components/nux/show_promo_delegate.h"
 #include "content/public/browser/web_contents.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -112,6 +113,14 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
+    web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
+    nux::SetAsDefaultHandler::AddSources(html_source);
+
+    // TODO(scottchen): move all NUX features under this flag once individual
+    // experiments launch.
+  }
+
   if (base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
     content::BrowserContext* browser_context =
         web_ui->GetWebContents()->GetBrowserContext();

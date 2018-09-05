@@ -3901,6 +3901,7 @@ jumbo_split_static_library("ui") {
       "//components/nux:constants",
       "//components/nux:email_feature",
       "//components/nux:google_apps_feature",
+      "//components/nux:set_as_default_feature",
     ]
   }
 
