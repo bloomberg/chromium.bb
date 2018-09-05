@@ -16,6 +16,10 @@
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "services/network/public/cpp/features.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -91,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   EXPECT_EQ(kCookieValue, cookies[0].Value());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
 // The cookies.size() ASSERT is failing flakily on the Win7 bots.
 // See https://crbug.com/868667
 #define MAYBE_EncryptedCookies DISABLED_EncryptedCookies
@@ -101,6 +105,11 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
 
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest,
                        MAYBE_EncryptedCookies) {
+#if defined(OS_MACOSX)
+  // TODO(https://crbug.com/868667): Fix and reenable test.
+  if (base::mac::IsOS10_11())
+    return;
+#endif
   net::CookieCryptoDelegate* crypto_delegate =
       cookie_config::GetCookieCryptoDelegate();
   std::string ciphertext;

@@ -79,6 +79,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 const char kCacheRandomPath[] = "/cacherandom";
@@ -1234,15 +1238,12 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
 #if defined(OS_MACOSX)
-// https://crbug.com/880496
-#define MAYBE_CookiesEnabled DISABLED_CookiesEnabled
-#else
-#define MAYBE_CookiesEnabled CookiesEnabled
+  // TODO(https://crbug.com/880496): Fix and reenable test.
+  if (base::mac::IsOS10_11())
+    return;
 #endif
-
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       MAYBE_CookiesEnabled) {
   // Check that the cookie from the first stage of the test was / was not
   // preserved between browser restarts, as expected.
   bool has_cookies = !GetCookies(embedded_test_server()->base_url()).empty();
