@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
-#include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
@@ -57,11 +56,7 @@ constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
 
 // Path relative to the path at which offline demo resources are loaded that
 // contains the highlights app.
-constexpr char kHighlightsAppPath[] = "chrome_apps/highlights/dist";
-
-// The name of the subdirectory that contains the resources for the default
-// highlights app, used when a board-specific version is not available.
-constexpr char kDefaultHighlightsAppResourcesPath[] = "default";
+constexpr char kHighlightsAppPath[] = "chrome_apps/highlights";
 
 // Path relative to the path at which offline demo resources are loaded that
 // contains sample photos.
@@ -360,18 +355,8 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
   }
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(profile);
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  const std::string board_name = board[0];
-  base::FilePath resources_path =
-      offline_resources_path_.Append(kHighlightsAppPath)
-          .Append(kDefaultHighlightsAppResourcesPath);
-  base::FilePath board_specific_resources_path =
-      offline_resources_path_.Append(kHighlightsAppPath).Append(board_name);
-  if (base::PathExists(board_specific_resources_path))
-    resources_path = board_specific_resources_path;
-
+  const base::FilePath resources_path =
+      offline_resources_path_.Append(kHighlightsAppPath);
   if (!apps::AppLoadService::Get(profile)->LoadAndLaunch(
           resources_path, base::CommandLine(base::CommandLine::NO_PROGRAM),
           base::FilePath() /* cur_dir */)) {
