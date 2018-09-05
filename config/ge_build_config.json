@@ -2088,6 +2088,12 @@
       "models": [
         {
           "board_name": "octopus",
+          "name": "bip",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "bobba",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
