@@ -85,6 +85,10 @@ extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char
     kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[];
 
+#if defined(OS_ANDROID)
+extern const base::Feature kAutofillRefreshStyleAndroid;
+#endif  // OS_ANDROID
+
 #if defined(OS_MACOSX)
 extern const base::Feature kMacViewsAutofillPopup;
 #endif  // defined(OS_MACOSX)

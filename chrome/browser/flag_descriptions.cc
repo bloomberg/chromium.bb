@@ -2351,6 +2351,11 @@ const char kEnableAndroidPayIntegrationV2Name[] = "Enable Android Pay v2";
 const char kEnableAndroidPayIntegrationV2Description[] =
     "Enable integration with Android Pay using the second version of the API";
 
+const char kEnableAutofillRefreshStyleName[] =
+    "Enable Autofill refresh style (Android)";
+const char kEnableAutofillRefreshStyleDescription[] =
+    "Enable modernized style for Autofill on Android";
+
 const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
 const char kEnableAndroidSpellcheckerDescription[] =
     "Enables use of the Android spellchecker.";
