@@ -24,7 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -113,7 +113,7 @@ void DecodeFileAndCopyToClipboard(
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
   if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
     LOG(ERROR) << "Failed to read the screenshot file: "
