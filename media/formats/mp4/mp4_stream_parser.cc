@@ -799,6 +799,10 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
     subsamples = decrypt_config->subsamples();
   }
 
+  // This may change if analysis results indicate runs_->is_keyframe() is
+  // opposite of what the coded frame contains.
+  bool is_keyframe = runs_->is_keyframe();
+
   std::vector<uint8_t> frame_buf(buf, buf + sample_size);
   if (video) {
     if (runs_->video_description().video_codec == kCodecH264 ||
@@ -806,7 +810,7 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
         runs_->video_description().video_codec == kCodecDolbyVision) {
       DCHECK(runs_->video_description().frame_bitstream_converter);
       if (!runs_->video_description().frame_bitstream_converter->ConvertFrame(
-              &frame_buf, runs_->is_keyframe(), &subsamples)) {
+              &frame_buf, is_keyframe, &subsamples)) {
         MEDIA_LOG(ERROR, media_log_)
             << "Failed to prepare video sample for decode";
         return ParseResult::kError;
@@ -827,14 +831,25 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
       // if the analysis mismatches the container's keyframe metadata for
       // |frame_buf|.
       if (analysis.is_keyframe.has_value() &&
-          runs_->is_keyframe() != analysis.is_keyframe.value()) {
+          is_keyframe != analysis.is_keyframe.value()) {
         LIMITED_MEDIA_LOG(DEBUG, media_log_, num_video_keyframe_mismatches_,
                           kMaxVideoKeyframeMismatchLogs)
             << "ISO-BMFF container metadata for video frame indicates that the "
                "frame is "
-            << (runs_->is_keyframe() ? "" : "not ")
+            << (is_keyframe ? "" : "not ")
             << "a keyframe, but the video frame contents indicate the "
                "opposite.";
+        // As of September 2018, it appears that all of Edge, Firefox, Safari
+        // work with content that marks non-avc-keyframes as a keyframe in the
+        // container. Encoders/muxers/old streams still exist that produce
+        // all-keyframe mp4 video tracks, though many of the coded frames are
+        // not keyframes (likely workaround due to the impact on low-latency
+        // live streams until https://crbug.com/229412 was fixed).  We'll trust
+        // the AVC frame's keyframe-ness over the mp4 container's metadata if
+        // they mismatch. If other out-of-order codecs in mp4 (e.g. HEVC, DV)
+        // implement keyframe analysis in their frame_bitstream_converter, we'll
+        // similarly trust that analysis instead of the mp4.
+        is_keyframe = analysis.is_keyframe.value();
       }
     }
   }
@@ -868,9 +883,9 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   StreamParserBuffer::Type buffer_type = audio ? DemuxerStream::AUDIO :
       DemuxerStream::VIDEO;
 
-  scoped_refptr<StreamParserBuffer> stream_buf = StreamParserBuffer::CopyFrom(
-      &frame_buf[0], frame_buf.size(), runs_->is_keyframe(), buffer_type,
-      runs_->track_id());
+  scoped_refptr<StreamParserBuffer> stream_buf =
+      StreamParserBuffer::CopyFrom(&frame_buf[0], frame_buf.size(), is_keyframe,
+                                   buffer_type, runs_->track_id());
 
   if (decrypt_config)
     stream_buf->set_decrypt_config(std::move(decrypt_config));
@@ -898,8 +913,7 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   }
 
   DVLOG(3) << "Emit " << (audio ? "audio" : "video") << " frame: "
-           << " track_id=" << runs_->track_id()
-           << ", key=" << runs_->is_keyframe()
+           << " track_id=" << runs_->track_id() << ", key=" << is_keyframe
            << ", dur=" << runs_->duration().InMilliseconds()
            << ", dts=" << runs_->dts().InMilliseconds()
            << ", cts=" << runs_->cts().InMilliseconds()
