@@ -237,9 +237,12 @@ bool ShouldUseActiveSignedInAccount() {
 class UnmaskCardRequest : public PaymentsRequest {
  public:
   UnmaskCardRequest(const PaymentsClient::UnmaskRequestDetails& request_details,
+                    const bool full_sync_enabled,
                     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                                             const std::string&)> callback)
-      : request_details_(request_details), callback_(std::move(callback)) {
+      : request_details_(request_details),
+        full_sync_enabled_(full_sync_enabled),
+        callback_(std::move(callback)) {
     DCHECK(
         CreditCard::MASKED_SERVER_CARD == request_details.card.record_type() ||
         CreditCard::FULL_SERVER_CARD == request_details.card.record_type());
@@ -266,6 +269,13 @@ class UnmaskCardRequest : public PaymentsRequest {
                           request_details_.billing_customer_number));
     }
     request_dict.Set("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      std::unique_ptr<base::DictionaryValue> chrome_user_context(
+          new base::DictionaryValue());
+      chrome_user_context->SetBoolean("full_sync_enabled", full_sync_enabled_);
+      request_dict.Set("chrome_user_context", std::move(chrome_user_context));
+    }
 
     int value = 0;
     if (base::StringToInt(request_details_.user_response.exp_month, &value))
@@ -297,6 +307,7 @@ class UnmaskCardRequest : public PaymentsRequest {
 
  private:
   PaymentsClient::UnmaskRequestDetails request_details_;
+  const bool full_sync_enabled_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                           const std::string&)>
       callback_;
@@ -309,6 +320,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
       const std::vector<const char*>& active_experiments,
+      const bool full_sync_enabled,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
@@ -317,6 +329,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       : addresses_(addresses),
         detected_values_(detected_values),
         active_experiments_(active_experiments),
+        full_sync_enabled_(full_sync_enabled),
         app_locale_(app_locale),
         callback_(std::move(callback)),
         billable_service_number_(billable_service_number) {}
@@ -334,6 +347,13 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     context->SetString("language_code", app_locale_);
     context->SetInteger("billable_service", billable_service_number_);
     request_dict.Set("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      std::unique_ptr<base::DictionaryValue> chrome_user_context(
+          new base::DictionaryValue());
+      chrome_user_context->SetBoolean("full_sync_enabled", full_sync_enabled_);
+      request_dict.Set("chrome_user_context", std::move(chrome_user_context));
+    }
 
     std::unique_ptr<base::ListValue> addresses(new base::ListValue());
     for (const AutofillProfile& profile : addresses_) {
@@ -380,6 +400,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   const std::vector<AutofillProfile> addresses_;
   const int detected_values_;
   const std::vector<const char*> active_experiments_;
+  const bool full_sync_enabled_;
   std::string app_locale_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                           const base::string16&,
@@ -393,9 +414,12 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 class UploadCardRequest : public PaymentsRequest {
  public:
   UploadCardRequest(const PaymentsClient::UploadRequestDetails& request_details,
+                    const bool full_sync_enabled,
                     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                                             const std::string&)> callback)
-      : request_details_(request_details), callback_(std::move(callback)) {}
+      : request_details_(request_details),
+        full_sync_enabled_(full_sync_enabled),
+        callback_(std::move(callback)) {}
   ~UploadCardRequest() override {}
 
   std::string GetRequestUrlPath() override { return kUploadCardRequestPath; }
@@ -422,6 +446,13 @@ class UploadCardRequest : public PaymentsRequest {
                           request_details_.billing_customer_number));
     }
     request_dict.Set("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      std::unique_ptr<base::DictionaryValue> chrome_user_context(
+          new base::DictionaryValue());
+      chrome_user_context->SetBoolean("full_sync_enabled", full_sync_enabled_);
+      request_dict.Set("chrome_user_context", std::move(chrome_user_context));
+    }
 
     SetStringIfNotEmpty(request_details_.card, CREDIT_CARD_NAME_FULL,
                         app_locale, "cardholder_name", &request_dict);
@@ -481,6 +512,7 @@ class UploadCardRequest : public PaymentsRequest {
 
  private:
   const PaymentsClient::UploadRequestDetails request_details_;
+  const bool full_sync_enabled_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                           const std::string&)>
       callback_;
@@ -492,9 +524,11 @@ class MigrateCardsRequest : public PaymentsRequest {
   MigrateCardsRequest(
       const PaymentsClient::MigrationRequestDetails& request_details,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      const bool full_sync_enabled,
       MigrateCardsCallback callback)
       : request_details_(request_details),
         migratable_credit_cards_(migratable_credit_cards),
+        full_sync_enabled_(full_sync_enabled),
         callback_(std::move(callback)) {}
   ~MigrateCardsRequest() override {}
 
@@ -521,6 +555,13 @@ class MigrateCardsRequest : public PaymentsRequest {
                           request_details_.billing_customer_number));
     }
     request_dict.Set("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      std::unique_ptr<base::DictionaryValue> chrome_user_context(
+          new base::DictionaryValue());
+      chrome_user_context->SetBoolean("full_sync_enabled", full_sync_enabled_);
+      request_dict.Set("chrome_user_context", std::move(chrome_user_context));
+    }
 
     request_dict.SetString("context_token", request_details_.context_token);
 
@@ -597,6 +638,7 @@ class MigrateCardsRequest : public PaymentsRequest {
 
   const PaymentsClient::MigrationRequestDetails request_details_;
   const std::vector<MigratableCreditCard>& migratable_credit_cards_;
+  const bool full_sync_enabled_;
   MigrateCardsCallback callback_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
   std::string display_text_;
@@ -652,7 +694,9 @@ void PaymentsClient::UnmaskCard(
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const std::string&)> callback) {
   IssueRequest(
-      std::make_unique<UnmaskCardRequest>(request_details, std::move(callback)),
+      std::make_unique<UnmaskCardRequest>(
+          request_details, account_info_getter_->IsSyncFeatureEnabled(),
+          std::move(callback)),
       true);
 }
 
@@ -666,7 +710,8 @@ void PaymentsClient::GetUploadDetails(
                             std::unique_ptr<base::DictionaryValue>)> callback,
     const int billable_service_number) {
   IssueRequest(std::make_unique<GetUploadDetailsRequest>(
-                   addresses, detected_values, active_experiments, app_locale,
+                   addresses, detected_values, active_experiments,
+                   account_info_getter_->IsSyncFeatureEnabled(), app_locale,
                    std::move(callback), billable_service_number),
                false);
 }
@@ -676,7 +721,9 @@ void PaymentsClient::UploadCard(
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const std::string&)> callback) {
   IssueRequest(
-      std::make_unique<UploadCardRequest>(request_details, std::move(callback)),
+      std::make_unique<UploadCardRequest>(
+          request_details, account_info_getter_->IsSyncFeatureEnabled(),
+          std::move(callback)),
       true);
 }
 
@@ -686,7 +733,8 @@ void PaymentsClient::MigrateCards(
     MigrateCardsCallback callback) {
   IssueRequest(
       std::make_unique<MigrateCardsRequest>(
-          request_details, migratable_credit_cards, std::move(callback)),
+          request_details, migratable_credit_cards,
+          account_info_getter_->IsSyncFeatureEnabled(), std::move(callback)),
       /*authenticate=*/true);
 }
 
