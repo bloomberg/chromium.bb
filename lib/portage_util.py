@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import collections
+import cStringIO
 import errno
 import fileinput
 import glob
@@ -34,7 +35,7 @@ RepositoryInfoTuple = collections.namedtuple('RepositoryInfoTuple',
 
 _PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
 
-# Define datastructures for holding PV and CPV objects.
+# Define data structures for holding PV and CPV objects.
 _PV_FIELDS = ['pv', 'package', 'version', 'version_no_rev', 'rev']
 PV = collections.namedtuple('PV', _PV_FIELDS)
 CPV = collections.namedtuple('CPV', ['category'] + _PV_FIELDS)
@@ -257,10 +258,7 @@ def FindSysrootOverlays(sysroot):
   Returns:
     list of overlays used in sysroot.
   """
-  cmd = (cros_build_lib.GetSysrootToolPath(sysroot, 'portageq'),
-         'envvar', 'PORTDIR_OVERLAY')
-  return cros_build_lib.RunCommand(cmd, print_cmd=False,
-                                   capture_output=True).output.strip().split()
+  return PortageqEnvvar('PORTDIR_OVERLAY', board=os.path.basename(sysroot))
 
 
 def ReadOverlayFile(filename, overlay_type='both', board=None,
@@ -1004,7 +1002,7 @@ class EBuild(object):
 
     Args:
       commit_ids: Commit ID of the tip of tree for the source dir.
-      srcdirs: Source direutory where the git repo is located.
+      srcdirs: Source directory where the git repo is located.
       subdirs_to_rev: Test subdirectories which have to be checked for
       modifications since the last stable commit hash.
 
@@ -1172,7 +1170,7 @@ class InstalledPackage(object):
       category: The category of the package. If omitted, it will be loaded from
           the package contents.
       pf: The package and version of the package. If omitted, it will be loaded
-          from the package contents. This avoids unncessary lookup when this
+          from the package contents. This avoids unnecessary lookup when this
           value is known.
 
     Raises:
@@ -1633,28 +1631,6 @@ def ListInstalledPackages(sysroot):
           for pkg in PortageDB(sysroot).InstalledPackages()]
 
 
-def BestVisible(atom, board=None, pkg_type='ebuild',
-                buildroot=constants.SOURCE_ROOT):
-  """Get the best visible ebuild CPV for the given atom.
-
-  Args:
-    atom: Portage atom.
-    board: Board to look at. By default, look in chroot.
-    pkg_type: Package type (ebuild, binary, or installed).
-    buildroot: Directory
-
-  Returns:
-    A CPV object.
-  """
-  portageq = 'portageq' if board is None else 'portageq-%s' % board
-  root = cros_build_lib.GetSysroot(board=board)
-  cmd = [portageq, 'best_visible', root, pkg_type, atom]
-  result = cros_build_lib.RunCommand(
-      cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG,
-      capture_output=True)
-  return SplitCPV(result.output.strip())
-
-
 def IsPackageInstalled(package, sysroot='/'):
   """Return whether a portage package is in a given portage-managed root.
 
@@ -1675,7 +1651,7 @@ def FindPackageNameMatches(pkg_str, board=None,
 
   Args:
     pkg_str: The package name with optional category, version, and slot.
-    board: The board to insepct.
+    board: The board to inspect.
     buildroot: Source root to find overlays.
 
   Returns:
@@ -1794,11 +1770,7 @@ def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
 
 def GetBoardUseFlags(board):
   """Returns a list of USE flags in effect for a board."""
-  portageq = 'portageq-%s' % board
-  cmd = [portageq, 'envvar', 'USE']
-  return cros_build_lib.RunCommand(
-      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
-      capture_output=True).output.split()
+  return PortageqEnvvar('USE', board=board).split()
 
 
 def GetPackageDependencies(board, package):
@@ -1823,7 +1795,7 @@ def GetPackageDependencies(board, package):
 
 
 def GetFullAndroidPortagePackageName(android_package_name):
-  """Returns the full portage pacakge name for the given android package.
+  """Returns the full portage package name for the given android package.
 
   Args:
     android_package_name: Android package name. E.g. android-container.
@@ -1923,3 +1895,156 @@ def PackagesWithTest(sysroot, packages):
   # discard that value.
   pkg_with_test.discard(None)
   return pkg_with_test
+
+
+class PortageqError(Error):
+  """Portageq command error."""
+
+
+def _Portageq(command, board=None, **kwargs):
+  """Run a portageq command.
+
+  Args:
+    command: list - Portageq command to run excluding portageq.
+    board: [str] - Specific board to query.
+    kwargs: Additional RunCommand arguments.
+
+  Returns:
+    cros_build_lib.CommandResult
+
+  Raises:
+    cros_build_lib.RunCommandError
+  """
+  kwargs.setdefault('capture_output', True)
+  kwargs.setdefault('cwd', constants.SOURCE_ROOT)
+  kwargs.setdefault('debug_level', logging.DEBUG)
+  kwargs.setdefault('enter_chroot', True)
+
+  portageq = 'portageq-%s' % board if board else 'portageq'
+  return cros_build_lib.RunCommand([portageq] + command, **kwargs)
+
+
+def PortageqBestVisible(atom, board=None, pkg_type='ebuild', cwd=None):
+  """Get the best visible ebuild CPV for the given atom.
+
+  Args:
+    atom: Portage atom.
+    board: Board to look at. By default, look in chroot.
+    pkg_type: Package type (ebuild, binary, or installed).
+    cwd: Path to use for the working directory for RunCommand.
+
+  Returns:
+    A CPV object.
+  """
+  root = cros_build_lib.GetSysroot(board=board)
+  cmd = ['best_visible', root, pkg_type, atom]
+  result = _Portageq(cmd, board=board, cwd=cwd)
+  return SplitCPV(result.output.strip())
+
+
+def PortageqEnvvar(variable, board=None, allow_undefined=False):
+  """Run portageq envvar for a single variable.
+
+  Like PortageqEnvvars, but returns the value of the single variable rather
+  than a mapping.
+
+  Args:
+    variable: str - The variable to retrieve.
+    board: str|None - See PortageqEnvvars.
+    allow_undefined: bool - See PortageqEnvvars.
+
+  Returns:
+    str - The value retrieved from portageq envvar.
+
+  Raises:
+    See PortageqEnvvars.
+    TypeError when variable is not a valid type.
+    ValueError when variable is empty.
+  """
+  if not isinstance(variable, basestring):
+    raise TypeError('Variable must be a string.')
+  elif not variable:
+    raise ValueError('Variable must not be empty.')
+
+  result = PortageqEnvvars([variable], board=board,
+                           allow_undefined=allow_undefined)
+  return result[variable]
+
+
+def PortageqEnvvars(variables, board=None, allow_undefined=False):
+  """Run portageq envvar for the given variables.
+
+  Args:
+    variables: List[str] - Variables to query.
+    board: str|None - Specific board to query.
+    allow_undefined: bool - True to quietly allow empty strings when the
+        variable is undefined. False to raise an error.
+
+  Returns:
+    dict - Variable to envvar value mapping for each of the |variables|.
+
+  Raises:
+    TypeError if variables is a string.
+    PortageqError when a variable is undefined and not allowed to be.
+    cros_build_lib.RunCommandError when the command does not run successfully.
+  """
+  if isinstance(variables, basestring):
+    raise TypeError('Variables must not be a string. '
+                    'See PortageqEnvvar for single variable support.')
+
+  if not variables:
+    return {}
+
+  try:
+    result = _Portageq(['envvar', '-v'] + variables, board=board)
+  except cros_build_lib.RunCommandError as e:
+    if e.result.returncode != 1:
+      # Actual error running command, raise.
+      raise e
+    elif not allow_undefined:
+      # Error for undefined variable.
+      raise PortageqError(
+          'One or more variables undefined: %s' % e.result.output)
+    else:
+      # Undefined variable but letting it slide.
+      result = e.result
+
+  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(result.output),
+                                         ignore_missing=True, multiline=True)
+
+
+def PortageqHasVersion(category_package, root='/', board=None):
+  """Run portageq has_version.
+
+  Args:
+    category_package: str - The atom whose version is to be verified.
+    root: str - Root directory to consider.
+    board: str|None - Specific board to query.
+
+  Returns:
+    bool
+
+  Raises:
+    cros_build_lib.RunCommandError when the command fails to run.
+  """
+  # Exit codes 0/1+ indicate "have"/"don't have".
+  # Normalize them into True/False values.
+  result = _Portageq(['has_version', root, category_package], board=board,
+                     error_code_ok=True)
+  return not result.returncode
+
+
+def PortageqMatch(atom, board=None):
+  """Run portageq match.
+
+  Find the full category/package-version for the specified atom.
+
+  Args:
+    atom: str - Portage atom.
+    board: str|None - Specific board to query.
+
+  Returns:
+    CPV|None
+  """
+  result = _Portageq(['match', '/', atom], board=board)
+  return SplitCPV(result.output.strip()) if result.output else None

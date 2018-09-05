@@ -11,8 +11,9 @@ import cStringIO
 import os
 
 from chromite.lib import constants
-from chromite.lib import failures_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -1278,3 +1279,128 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     # Check that doesn't fail when the package name is provided.
     pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')
     self.assertEquals('package-1', pkg.pf)
+
+
+class PortageqBestVisibleTest(cros_test_lib.MockTestCase):
+  """PortageqBestVisible tests."""
+
+  def testValidPackage(self):
+    """Test valid outputs."""
+    result = cros_build_lib.CommandResult(output='cat/pkg-1.0', returncode=0)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    self.assertIsInstance(portage_util.PortageqBestVisible('cat/pkg'),
+                          portage_util.CPV)
+
+
+class PortageqEnvvarTest(cros_test_lib.MockTestCase):
+  """PortageqEnvvar[s] tests."""
+
+  def testValidEnvvar(self):
+    """Test valid variables."""
+    result = cros_build_lib.CommandResult(output='TEST=value\n', returncode=0)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    envvar1 = portage_util.PortageqEnvvar('TEST')
+    envvars1 = portage_util.PortageqEnvvars(['TEST'])
+
+    self.assertEqual('value', envvar1)
+    self.assertEqual(envvar1, envvars1['TEST'])
+
+  def testUndefinedEnvvars(self):
+    """Test undefined variable handling."""
+    # The variable exists in the command output even when not actually defined.
+    result = cros_build_lib.CommandResult(output='DOES_NOT_EXIST=\n',
+                                          returncode=1)
+    success_error = cros_build_lib.RunCommandError('', result)
+    self.PatchObject(portage_util, '_Portageq', side_effect=success_error)
+
+    # Test ignoring error when just from undefined variable.
+    envv = portage_util.PortageqEnvvar('DOES_NOT_EXIST', allow_undefined=True)
+    envvs = portage_util.PortageqEnvvars(['DOES_NOT_EXIST'],
+                                         allow_undefined=True)
+    self.assertEqual('', envv)
+    self.assertEqual(envv, envvs['DOES_NOT_EXIST'])
+
+    # Test raising the error when just from undefined variable.
+    with self.assertRaises(portage_util.PortageqError):
+      portage_util.PortageqEnvvar('DOES_NOT_EXIST')
+    with self.assertRaises(portage_util.PortageqError):
+      portage_util.PortageqEnvvars(['DOES_NOT_EXIST'])
+
+    run_error = cros_build_lib.CommandResult(output='\n', returncode=2)
+    failure_error = cros_build_lib.RunCommandError('', run_error)
+    self.PatchObject(portage_util, '_Portageq', side_effect=failure_error)
+
+    # Test re-raising the error when the command did not run successfully.
+    with self.assertRaises(cros_build_lib.RunCommandError):
+      portage_util.PortageqEnvvar('DOES_NOT_EXIST')
+    with self.assertRaises(cros_build_lib.RunCommandError):
+      portage_util.PortageqEnvvars(['DOES_NOT_EXIST'])
+
+  def testInvalidEnvvars(self):
+    """Test invalid variables handling."""
+    # Envvar tests.
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvar([])
+    with self.assertRaises(ValueError):
+      portage_util.PortageqEnvvar('')
+
+    # Envvars tests.
+    self.assertEqual({}, portage_util.PortageqEnvvars([]))
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvars('')
+
+    # Raised when extending the command list. This is currently expected, and
+    # ints should not be accepted, but more formal handling can be added.
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvars(1)
+
+
+class PortageqHasVersionTest(cros_test_lib.MockTestCase):
+  """PortageqHasVersion tests."""
+
+  def testPortageqHasVersion(self):
+    """Test HasVersion."""
+    result_true = cros_build_lib.CommandResult(returncode=0)
+    result_false = cros_build_lib.CommandResult(returncode=1)
+    result_error = cros_build_lib.CommandResult(returncode=2)
+
+    # Test has version.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_true)
+    self.assertTrue(portage_util.PortageqHasVersion('cat/pkg'))
+
+    # Test not has version.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_false)
+    self.assertFalse(portage_util.PortageqHasVersion('cat/pkg'))
+
+    # Test run error.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_error)
+    self.assertFalse(portage_util.PortageqHasVersion('cat/pkg'))
+
+
+class PortageqMatchTest(cros_test_lib.MockTestCase):
+  """PortageqMatch tests."""
+
+  def testMultiError(self):
+    """Test unspecific query results in error.
+
+    The method currently isn't setup to support multiple values in the output.
+    It is instead interpreted as a cpv format error by SplitCPV. This isn't
+    a hard requirement, just the current expected behavior.
+    """
+    output_str = "cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n"
+    result = cros_build_lib.CommandResult(returncode=0,
+                                          output=output_str)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    with self.assertRaises(ValueError):
+      portage_util.PortageqMatch('*/*')
+
+  def testValidPackage(self):
+    """Test valid package produces a CPV."""
+    result = cros_build_lib.CommandResult(returncode=0, output='cat/pkg-1.0-r1')
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    self.assertIsInstance(portage_util.PortageqMatch('cat/pkg'),
+                          portage_util.CPV)
