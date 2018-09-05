@@ -185,8 +185,7 @@ public class CustomTabsConnection {
             new EnumeratedHistogramSample(
                     "CustomTabs.ParallelRequestStatusOnStart", ParallelRequestStatus.NUM_ENTRIES);
 
-    private static final CustomTabsConnection sInstance =
-            AppHooks.get().createCustomTabsConnection();
+    private static CustomTabsConnection sInstance;
     private @Nullable String mTrustedPublisherUrlPackage;
 
     /** Holds the parameters for the current hidden tab speculation. */
@@ -259,7 +258,15 @@ public class CustomTabsConnection {
      * @return The unique instance of ChromeCustomTabsConnection.
      */
     public static CustomTabsConnection getInstance() {
+        if (sInstance == null) {
+            sInstance = AppHooks.get().createCustomTabsConnection();
+        }
+
         return sInstance;
+    }
+
+    private static boolean hasInstance() {
+        return sInstance != null;
     }
 
     /**
@@ -390,7 +397,7 @@ public class CustomTabsConnection {
      * @return Whether {@link CustomTabsConnection#warmup(long)} has been called.
      */
     public static boolean hasWarmUpBeenFinished() {
-        return sInstance.mWarmupHasBeenFinished.get();
+        return getInstance().mWarmupHasBeenFinished.get();
     }
 
     /**
@@ -1314,6 +1321,13 @@ public class CustomTabsConnection {
     @VisibleForTesting
     void cleanUpSession(final CustomTabsSessionToken session) {
         ThreadUtils.runOnUiThread(() -> mClientManager.cleanupSession(session));
+    }
+
+    /**
+     * Clean up unused sessions, i.e sessions without callback.
+     */
+    public static void cleanUpUnusedSessions() {
+        if (hasInstance()) getInstance().mClientManager.cleanupUnusedSessions();
     }
 
     @VisibleForTesting
