@@ -306,7 +306,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
 
   // Search child widgets first, since they're on top in the z-order.
   std::vector<Widget*> child_widgets;
-  PopulateChildWidgetVector(&child_widgets, nullptr);
+  bool is_tab_modal_showing;
+  PopulateChildWidgetVector(&child_widgets, &is_tab_modal_showing);
   for (Widget* child_widget : child_widgets) {
     View* child_root_view = child_widget->GetRootView();
     gfx::Point point(x, y);
