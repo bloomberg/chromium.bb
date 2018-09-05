@@ -91,7 +91,6 @@ void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
     return;
 
   is_under_advanced_protection_ = info.is_under_advanced_protection;
-  primary_account_id_ = info.account_id;
 
   if (profile_->GetPrefs()->HasPrefPath(
           prefs::kAdvancedProtectionLastRefreshInUs)) {
@@ -157,8 +156,8 @@ void AdvancedProtectionStatusManager::OnAccountRemoved(
     return;
 
   // If user signed out primary account, cancel refresh.
-  if (!primary_account_id_.empty() && primary_account_id_ == info.account_id) {
-    primary_account_id_.clear();
+  std::string primary_account_id = GetPrimaryAccountId();
+  if (!primary_account_id.empty() && primary_account_id == info.account_id) {
     is_under_advanced_protection_ = false;
     OnAdvancedProtectionDisabled();
   }
@@ -166,15 +165,12 @@ void AdvancedProtectionStatusManager::OnAccountRemoved(
 
 void AdvancedProtectionStatusManager::GoogleSigninSucceeded(
     const AccountInfo& account_info) {
-  primary_account_id_ = account_info.account_id;
   if (account_info.is_under_advanced_protection)
     OnAdvancedProtectionEnabled();
 }
 
 void AdvancedProtectionStatusManager::GoogleSignedOut(
     const AccountInfo& account_info) {
-  if (primary_account_id_ == account_info.account_id)
-    primary_account_id_.clear();
   OnAdvancedProtectionDisabled();
 }
 
@@ -196,7 +192,8 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
   auto* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
 
-  if (!token_service || !IsUserSignedIn() || primary_account_id_.empty())
+  std::string primary_account_id = GetPrimaryAccountId();
+  if (!token_service || primary_account_id.empty())
     return;
   // Refresh OAuth access token.
   OAuth2TokenService::ScopeSet scopes;
@@ -207,9 +204,9 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
     return;
 
   token_consumer_.reset(
-      new AdvancedProtectionTokenConsumer(primary_account_id_, this));
+      new AdvancedProtectionTokenConsumer(primary_account_id, this));
   access_token_request_ = token_service->StartRequest(
-      primary_account_id_, scopes, token_consumer_.get());
+      primary_account_id, scopes, token_consumer_.get());
 }
 
 void AdvancedProtectionStatusManager::ScheduleNextRefresh() {
@@ -251,15 +248,10 @@ bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection(
       ->is_under_advanced_protection();
 }
 
-bool AdvancedProtectionStatusManager::IsUserSignedIn() {
-  return signin_manager_ &&
-         !signin_manager_->GetAuthenticatedAccountInfo().account_id.empty();
-}
-
 bool AdvancedProtectionStatusManager::IsPrimaryAccount(
     const AccountInfo& account_info) {
-  return IsUserSignedIn() && account_info.account_id ==
-                                 signin_manager_->GetAuthenticatedAccountId();
+  return !account_info.account_id.empty() &&
+         account_info.account_id == GetPrimaryAccountId();
 }
 
 void AdvancedProtectionStatusManager::OnGetIDToken(
@@ -267,16 +259,23 @@ void AdvancedProtectionStatusManager::OnGetIDToken(
     const std::string& id_token) {
   // Skips if the ID token is not for the primary account. Or user is no longer
   // signed in.
-  if (account_id != primary_account_id_ || !IsUserSignedIn())
+  std::string primary_account_id = GetPrimaryAccountId();
+  if (primary_account_id.empty() || account_id != primary_account_id)
     return;
 
   gaia::TokenServiceFlags service_flags = gaia::ParseServiceFlags(id_token);
-  // |OnAccountUpdated()| will only be triggered if the advanced protection
-  // status changed. Therefore, we need to call |UpdateLastRefreshTime()| here
-  // to force update and persist last refresh time.
-  account_tracker_service_->SetIsAdvancedProtectionAccount(
-      primary_account_id_, service_flags.is_under_advanced_protection);
-  UpdateLastRefreshTime();
+
+  // If there's a change in advanced protection status, updates account info.
+  // This also triggers |OnAccountUpdated()|.
+  if (is_under_advanced_protection_ !=
+      service_flags.is_under_advanced_protection) {
+    account_tracker_service_->SetIsAdvancedProtectionAccount(
+        GetPrimaryAccountId(), service_flags.is_under_advanced_protection);
+  } else if (service_flags.is_under_advanced_protection) {
+    OnAdvancedProtectionEnabled();
+  } else {
+    OnAdvancedProtectionDisabled();
+  }
 }
 
 void AdvancedProtectionStatusManager::OnTokenRefreshDone(
@@ -308,6 +307,11 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
     return;
   Initialize();
   MaybeRefreshOnStartUp();
+}
+
+std::string AdvancedProtectionStatusManager::GetPrimaryAccountId() const {
+  return signin_manager_ ? signin_manager_->GetAuthenticatedAccountId()
+                         : std::string();
 }
 
 }  // namespace safe_browsing
