@@ -6,6 +6,9 @@
 
 namespace installer {
 
+void UpdateInstallStatus(installer::ArchiveType archive_type,
+                         installer::InstallStatus install_status) {}
+
 base::string16 GetDistributionData() {
   return base::string16();
 }
