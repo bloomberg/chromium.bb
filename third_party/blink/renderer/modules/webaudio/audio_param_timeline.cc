@@ -551,12 +551,43 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
       // Events of type |kSetValueCurveEnd| or |kCancelValues| never
       // conflict.
       if (!(test_type == ParamEvent::kSetValueCurveEnd ||
-            test_type == ParamEvent::kCancelValues) &&
-          events_[i]->Time() > event->Time() && events_[i]->Time() < end_time) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kNotSupportedError,
-            EventToString(*event) + " overlaps " + EventToString(*events_[i]));
-        return;
+            test_type == ParamEvent::kCancelValues)) {
+        if (test_type == ParamEvent::kSetValueCurve) {
+          // A SetValueCurve overlapping an existing SetValueCurve requires
+          // special care.
+          double test_end_time = events_[i]->Time() + events_[i]->Duration();
+          // Test if old event starts somewhere in the middle of the new event.
+          bool overlap = (events_[i]->Time() >= event->Time() &&
+                          events_[i]->Time() < end_time);
+          // Test if old event ends somewhere in the middle of the new event.
+          overlap = overlap ||
+                    (test_end_time > event->Time() && test_end_time < end_time);
+          // Test if new event starts somewhere in the middle of the old event.
+          overlap = overlap || (event->Time() >= events_[i]->Time() &&
+                                event->Time() < test_end_time);
+          // Test if new event ends somewhere in the middle of the old event.
+          overlap = overlap || (end_time >= events_[i]->Time() &&
+                                end_time < test_end_time);
+          if (overlap) {
+            // If the start time of the event overlaps the start/end of an
+            // existing event or if the existing event end overlaps the
+            // start/end of the event, it's an error.
+            exception_state.ThrowDOMException(
+                DOMExceptionCode::kNotSupportedError,
+                EventToString(*event) + " overlaps " +
+                    EventToString(*events_[i]));
+            return;
+          }
+        } else {
+          if (events_[i]->Time() > event->Time() &&
+              events_[i]->Time() < end_time) {
+            exception_state.ThrowDOMException(
+                DOMExceptionCode::kNotSupportedError,
+                EventToString(*event) + " overlaps " +
+                    EventToString(*events_[i]));
+            return;
+          }
+        }
       }
     } else {
       // Otherwise, make sure this event doesn't overlap any existing
