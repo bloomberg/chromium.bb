@@ -161,8 +161,12 @@ AssistantContainerView::AssistantContainerView(
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 
-  // These attributes can only be set after bubble creation:
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(kCornerRadiusDip);
+  // Corner radius can only be set after bubble creation.
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+      assistant_controller_->ui_controller()->model()->ui_mode() ==
+              AssistantUiMode::kMiniUi
+          ? kMiniUiCornerRadiusDip
+          : kCornerRadiusDip);
 
   // Update the initial shadow layer with correct corner radius.
   UpdateShadow();
