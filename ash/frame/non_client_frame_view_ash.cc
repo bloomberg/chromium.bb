@@ -237,7 +237,6 @@ const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 NonClientFrameViewAsh::NonClientFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    bool control_immersive,
     mojom::WindowStyle window_style,
     std::unique_ptr<CaptionButtonModel> model)
     : frame_(frame),
@@ -257,7 +256,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
     immersive_helper_ = std::make_unique<NonClientFrameViewAshImmersiveHelper>(
-        frame, this, control_immersive);
+        frame, this, !immersive_delegate);
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);

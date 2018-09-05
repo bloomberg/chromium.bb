@@ -24,7 +24,6 @@
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -240,42 +239,24 @@ TEST_F(DesktopWindowTreeHostMusTest, ActivateBeforeShow) {
                                      ->active_focus_client());
 }
 
-// Tests that changes to a widget's show state will cause the client area to be
-// updated.
-TEST_F(DesktopWindowTreeHostMusTest, ServerShowStateChangeUpdatesClientArea) {
-  WindowManagerFrameValues test_frame_values;
-  test_frame_values.normal_insets = {3, 0, 0, 0};
-  test_frame_values.maximized_insets = {7, 0, 0, 0};
-  WindowManagerFrameValues::SetInstance(test_frame_values);
-
+// Tests that changes to kTopViewInset will cause the client area to be updated.
+TEST_F(DesktopWindowTreeHostMusTest, ServerTopInsetChangeUpdatesClientArea) {
   std::unique_ptr<Widget> widget(CreateWidget());
   widget->Show();
 
-  // Simulate state changes from the server.
-  auto set_widget_state =
-      [&widget](ui::WindowShowState state) {
-        widget->GetNativeWindow()->GetRootWindow()->SetProperty(
-            aura::client::kShowStateKey, state);
-      };
+  auto set_top_inset = [&widget](int value) {
+    widget->GetNativeWindow()->GetRootWindow()->SetProperty(
+        aura::client::kTopViewInset, value);
+  };
 
-  // A restored window respects normal_insets (the client area is inset from the
-  // root view).
-  gfx::Rect expected_restored_bounds = widget->GetRootView()->bounds();
-  expected_restored_bounds.Inset(test_frame_values.normal_insets);
-  EXPECT_EQ(expected_restored_bounds, widget->client_view()->bounds());
-
-  // A fullscreen window has no insets.
-  EXPECT_FALSE(widget->IsFullscreen());
-  set_widget_state(ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_TRUE(widget->IsFullscreen());
   EXPECT_EQ(widget->GetRootView()->bounds(), widget->client_view()->bounds());
 
-  // A maximized window respects maximized_insets.
-  gfx::Rect expected_maximized_bounds = widget->GetRootView()->bounds();
-  expected_maximized_bounds.Inset(test_frame_values.maximized_insets);
-  set_widget_state(ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_FALSE(widget->IsFullscreen());
-  EXPECT_EQ(expected_maximized_bounds, widget->client_view()->bounds());
+  set_top_inset(3);
+  gfx::Rect root_bounds = widget->GetRootView()->bounds();
+  root_bounds.Inset(gfx::Insets(3, 0, 0, 0));
+
+  set_top_inset(0);
+  EXPECT_EQ(widget->GetRootView()->bounds(), widget->client_view()->bounds());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {

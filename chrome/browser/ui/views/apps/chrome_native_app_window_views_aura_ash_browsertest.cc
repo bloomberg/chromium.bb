@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   EXPECT_FALSE(IsImmersiveActive());
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_FALSE(IsImmersiveActive());
-  window()->Show();
+  window()->Restore();
   EXPECT_TRUE(IsImmersiveActive());
   app_window_->Minimize();
   EXPECT_FALSE(IsImmersiveActive());

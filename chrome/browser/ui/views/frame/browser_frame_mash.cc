@@ -27,7 +27,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/window_manager_frame_values.h"
 
 BrowserFrameMash::BrowserFrameMash(BrowserFrame* browser_frame,
                                    BrowserView* browser_view)
