@@ -87,6 +87,7 @@ class PaymentsClient {
     ~UploadRequestDetails();
 
     int64_t billing_customer_number = 0;
+    int detected_values;
     CreditCard card;
     base::string16 cvc;
     std::vector<AutofillProfile> profiles;

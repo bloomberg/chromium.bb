@@ -156,12 +156,15 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
         features::kAutofillUpstreamUpdatePromptExplanation.name);
   }
 
-  int detected_values = GetDetectedValues();
+  // We store the detected values in the upload request, because the addresses
+  // are being possibly modified in the next code block, and we want the
+  // detected values to reflect addresses *before* they are modified.
+  upload_request_.detected_values = GetDetectedValues();
   // If the user must provide cardholder name, log it and set
   // |should_request_name_from_user_| so the offer-to-save dialog know to ask
   // for it.
   should_request_name_from_user_ = false;
-  if (detected_values & DetectedValue::USER_PROVIDED_NAME) {
+  if (upload_request_.detected_values & DetectedValue::USER_PROVIDED_NAME) {
     upload_decision_metrics_ |=
         AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
     should_request_name_from_user_ = true;
@@ -185,7 +188,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   if (observer_for_testing_)
     observer_for_testing_->OnDecideToRequestUploadSave();
   payments_client_->GetUploadDetails(
-      upload_request_.profiles, detected_values,
+      upload_request_.profiles, upload_request_.detected_values,
       upload_request_.active_experiments, app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -276,12 +279,11 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // if there's a network breakdown or Payments outage, resulting in sometimes
     // showing upload and sometimes offering local save, but such cases should
     // be rare.)
-    int detected_values = GetDetectedValues();
     bool found_name_and_postal_code_and_cvc =
-        (detected_values & DetectedValue::CARDHOLDER_NAME ||
-         detected_values & DetectedValue::ADDRESS_NAME) &&
-        detected_values & DetectedValue::POSTAL_CODE &&
-        detected_values & DetectedValue::CVC;
+        (upload_request_.detected_values & DetectedValue::CARDHOLDER_NAME ||
+         upload_request_.detected_values & DetectedValue::ADDRESS_NAME) &&
+        upload_request_.detected_values & DetectedValue::POSTAL_CODE &&
+        upload_request_.detected_values & DetectedValue::CVC;
     if (found_name_and_postal_code_and_cvc && !uploading_local_card_)
       OfferCardLocalSave(upload_request_.card);
     upload_decision_metrics_ |=
