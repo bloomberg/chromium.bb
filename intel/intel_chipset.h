@@ -261,16 +261,6 @@
 #define PCI_CHIP_CANNONLAKE_12		0x5A44
 #define PCI_CHIP_CANNONLAKE_13		0x5A4C
 
-#define PCI_CHIP_ICELAKE_11_0		0x8A50
-#define PCI_CHIP_ICELAKE_11_1		0x8A51
-#define PCI_CHIP_ICELAKE_11_2		0x8A5C
-#define PCI_CHIP_ICELAKE_11_3		0x8A5D
-#define PCI_CHIP_ICELAKE_11_4		0x8A52
-#define PCI_CHIP_ICELAKE_11_5		0x8A5A
-#define PCI_CHIP_ICELAKE_11_6		0x8A5B
-#define PCI_CHIP_ICELAKE_11_7		0x8A71
-#define PCI_CHIP_ICELAKE_11_8		0x8A70
-
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
 				 (devid) == PCI_CHIP_I945_GM || \
@@ -554,25 +544,13 @@
 
 #define IS_GEN10(devid)		(IS_CANNONLAKE(devid))
 
-#define IS_ICELAKE_11(devid)	((devid) == PCI_CHIP_ICELAKE_11_0 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_1 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_2 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_3 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_4 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_5 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_6 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_7 || \
-				 (devid) == PCI_CHIP_ICELAKE_11_8)
-
-#define IS_ICELAKE(devid)	(IS_ICELAKE_11(devid))
-
-#define IS_GEN11(devid)		(IS_ICELAKE_11(devid))
-
 /* New platforms use kernel pci ids */
 #include <stdbool.h>
 
 bool intel_is_genx(unsigned int devid, int gen);
 bool intel_get_genx(unsigned int devid, int *gen);
+
+#define IS_GEN11(devid) intel_is_genx(devid, 11)
 
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
 				 IS_GEN4(dev) || \
@@ -582,7 +560,6 @@ bool intel_get_genx(unsigned int devid, int *gen);
 				 IS_GEN8(dev) || \
 				 IS_GEN9(dev) || \
 				 IS_GEN10(dev) || \
-				 IS_GEN11(dev) || \
 				 intel_get_genx(dev, NULL))
 
 #endif /* _INTEL_CHIPSET_H */
