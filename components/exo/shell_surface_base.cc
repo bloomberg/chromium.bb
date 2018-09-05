@@ -32,7 +32,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
@@ -1117,15 +1116,6 @@ gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
 
   // Convert from display to screen coordinates.
   return geometry_ + display.bounds().OffsetFromOrigin();
-}
-
-gfx::Point ShellSurfaceBase::GetMouseLocation() const {
-  aura::Window* const root_window = widget_->GetNativeWindow()->GetRootWindow();
-  gfx::Point location =
-      root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
-  aura::Window::ConvertPointToTarget(
-      root_window, widget_->GetNativeWindow()->parent(), &location);
-  return location;
 }
 
 gfx::Rect ShellSurfaceBase::GetClientViewBounds() const {

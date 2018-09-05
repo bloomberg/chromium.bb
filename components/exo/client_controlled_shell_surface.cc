@@ -19,11 +19,9 @@
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/drag_details.h"
-#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
@@ -63,22 +61,6 @@ ClientControlledShellSurface::DelegateFactoryCallback& GetFactoryForTesting() {
 // TODO(oshima): Looks like android is generating unnecessary frames.
 // Fix it on Android side and reduce the timeout.
 constexpr int kOrientationLockTimeoutMs = 2500;
-
-// Minimal WindowResizer that unlike DefaultWindowResizer does not handle
-// dragging and resizing windows.
-class CustomWindowResizer : public ash::WindowResizer {
- public:
-  explicit CustomWindowResizer(ash::wm::WindowState* window_state)
-      : WindowResizer(window_state) {}
-
-  // Overridden from ash::WindowResizer:
-  void Drag(const gfx::Point& location, int event_flags) override {}
-  void CompleteDrag() override {}
-  void RevertDrag() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowResizer);
-};
 
 Orientation SizeToOrientation(const gfx::Size& size) {
   DCHECK_NE(size.width(), size.height());
