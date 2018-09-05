@@ -86,9 +86,10 @@ TreeDumper.prototype.treeToString = function() {
  * @private
  */
 TreeDumper.prototype.createTreeRecursive_ = function(node, rank) {
-  var nodeStr = '\n';
+  var nodeStr = '';
   nodeStr += '++'.repeat(rank);
   nodeStr += node.toString();
+  nodeStr += '\n';
 
   for (var i = 0; i < node.children.length; i++) {
     var nextNode = node.children[i];
@@ -103,5 +104,5 @@ TreeDumper.prototype.createTreeRecursive_ = function(node, rank) {
  * */
 TreeDumper.prototype.formatTree_ = function() {
   var treeStr = this.createTreeRecursive_(this.rootNode, 0);
-  return treeStr + '\n';
+  return treeStr;
 };
