@@ -540,6 +540,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         if (mSearch == null && mSearchItem != null) {
             SearchUtils.clearSearch(mSearchItem, getActivity());
+            mSearch = null;
         }
 
         getInfoForOrigins();
