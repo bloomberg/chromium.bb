@@ -99,7 +99,7 @@ jinja_template("chrome_sync_shell_android_manifest") {
   ]
 }
 
-android_resources("chrome_java_resources") {
+android_resources("chrome_app_java_resources") {
   resource_dirs = [
     "java/res",
     "//chrome/android/java/res_chromium",
@@ -123,6 +123,14 @@ android_resources("chrome_java_resources") {
     "//third_party/android_tools:android_support_v7_recyclerview_java",
   ]
   custom_package = "org.chromium.chrome"
+}
+
+android_resources("chrome_download_java_resources") {
+  resource_dirs = [ "//chrome/android/java/res_download" ]
+  deps = [
+    ":chrome_app_java_resources",
+  ]
+  custom_package = "org.chromium.chrome.download"
 }
 
 java_strings_grd("chrome_strings_grd") {
@@ -204,7 +212,8 @@ android_aidl("cct_dynamic_module_aidl") {
 
 android_library("chrome_java") {
   deps = [
-    ":chrome_java_resources",
+    ":chrome_app_java_resources",
+    ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     ":document_tab_model_info_proto_java",
@@ -472,8 +481,8 @@ junit_binary("chrome_junit_tests") {
 
   deps = [
     ":app_hooks_java",
+    ":chrome_app_java_resources",
     ":chrome_java",
-    ":chrome_java_resources",
     ":chrome_junit_test_support",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
@@ -844,13 +853,13 @@ if (enable_vr || (enable_arcore && package_arcore)) {
   }
 }
 
-# Overrides icon / name defined in chrome_java_resources.
+# Overrides icon / name defined in chrome_app_java_resources.
 android_resources("chrome_public_apk_resources") {
   resource_dirs = [ "java/res_chromium" ]
 
   # Dep needed to ensure override works properly.
   deps = [
-    ":chrome_java_resources",
+    ":chrome_app_java_resources",
   ]
 }
 

@@ -15,39 +15,39 @@
         <TextView
             android:text="@string/oma_download_name_label"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
         <TextView
             android:id="@+id/oma_download_name"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
     </TableRow>
 
     <TableRow>
         <TextView
             android:text="@string/oma_download_vendor_label"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
         <TextView
             android:id="@+id/oma_download_vendor"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
     </TableRow>
 
     <TableRow>
         <TextView
             android:text="@string/oma_download_size_label"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
         <TextView
             android:id="@+id/oma_download_size"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
     </TableRow>
 
 
@@ -55,25 +55,25 @@
         <TextView
             android:text="@string/oma_download_type_label"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
         <TextView
             android:id="@+id/oma_download_type"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dp" />
+            android:padding="3dp"
+            android:textAppearance="@style/BlackBodyDefault" />
     </TableRow>
 
     <TableRow>
         <TextView
             android:text="@string/oma_download_description_label"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textAppearance="@style/BlackBodyDefault" />
         <TextView
             android:id="@+id/oma_download_description"
             android:gravity="start"
-            android:textColor="@android:color/black"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textAppearance="@style/BlackBodyDefault" />
     </TableRow>
 </TableLayout>

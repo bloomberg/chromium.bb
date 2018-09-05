@@ -9,9 +9,9 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.chrome.download.R;
 
 import java.util.List;
 
