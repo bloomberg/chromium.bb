@@ -101,6 +101,47 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
                                     1);
 }
 
+// Test that non-HTTP URLs are not reported.
+TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
+  HistogramTester histogram_tester;
+
+  // Tests that an HTTPS page with a data anchor is not reported when the anchor
+  // is clicked.
+  SimRequest http_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  http_resource.Complete("<a id='anchor' href='data://google.com/'>google</a>");
+  HTMLAnchorElement* anchor_element =
+      ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+
+  AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+                                    0);
+
+  // Tests that a data page with an HTTPS anchor is not reported when the anchor
+  // is clicked.
+  SimRequest data_resource("data://example.com/", "text/html");
+  LoadURL("data://example.com/");
+  data_resource.Complete(
+      "<a id='anchor' href='https://google.com/'>google</a>");
+  anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+
+  AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+                                    0);
+
+  // Tests that an HTTPS page with an HTTPS anchor is reported when the anchor
+  // is clicked.
+  SimRequest http_resource_2("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  http_resource_2.Complete(
+      "<a id='anchor' href='https://google.com/'>google</a>");
+  anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+
+  AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+                                    1);
+}
+
 // The main frame contains an anchor element, which contains an image element.
 TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
   SimRequest main_resource("https://example.com/", "text/html");
