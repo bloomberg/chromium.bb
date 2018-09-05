@@ -281,18 +281,6 @@ void CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
   GetBrowserProcessReceiverCallbackInstance() = callback;
 }
 
-void CallStackProfileBuilder::PassProfilesToMetricsProvider(
-    SampledProfile sampled_profile) {
-  if (profile_params_.process == CallStackProfileParams::BROWSER_PROCESS) {
-    GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time_,
-                                                    std::move(sampled_profile));
-  } else {
-    g_child_call_stack_profile_collector.Get()
-        .ChildCallStackProfileCollector::Collect(profile_start_time_,
-                                                 std::move(sampled_profile));
-  }
-}
-
 // static
 void CallStackProfileBuilder::SetProcessMilestone(int milestone) {
   DCHECK_LE(0, milestone);
@@ -307,6 +295,18 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
     metrics::mojom::CallStackProfileCollectorPtr browser_interface) {
   g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
+}
+
+void CallStackProfileBuilder::PassProfilesToMetricsProvider(
+    SampledProfile sampled_profile) {
+  if (profile_params_.process == CallStackProfileParams::BROWSER_PROCESS) {
+    GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time_,
+                                                    std::move(sampled_profile));
+  } else {
+    g_child_call_stack_profile_collector.Get()
+        .ChildCallStackProfileCollector::Collect(profile_start_time_,
+                                                 std::move(sampled_profile));
+  }
 }
 
 // These operators permit types to be compared and used in a map of Samples.
