@@ -41,6 +41,7 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
       io_task_runner_(io_task_runner),
       delegate_(delegate),
       completion_notified_(false),
+      started_(false),
       weak_ptr_factory_(this) {
   DCHECK(!guid_.empty());
 }
@@ -125,11 +126,22 @@ void InMemoryDownloadImpl::OnComplete(bool success) {
 
   // Release download data.
   data_.clear();
+
+  // OnComplete() called without OnResponseStarted(). This will happen when the
+  // request was aborted.
+  if (!started_)
+    OnResponseStarted(GURL(), network::ResourceResponseHead());
+
   NotifyDelegateDownloadComplete();
 }
 
 void InMemoryDownloadImpl::OnRetry(base::OnceClosure start_retry) {
   Reset();
+
+  // The original URL is recorded in this class instead of |loader_|, so when
+  // running retry closure from SimpleUrlLoader, add back the original URL.
+  url_chain_.push_back(request_params_.url);
+
   std::move(start_retry).Run();
 }
 
@@ -204,7 +216,11 @@ void InMemoryDownloadImpl::OnRedirect(
 void InMemoryDownloadImpl::OnResponseStarted(
     const GURL& final_url,
     const network::ResourceResponseHead& response_head) {
+  started_ = true;
   response_headers_ = response_head.headers;
+
+  if (delegate_)
+    delegate_->OnDownloadStarted(this);
 }
 
 void InMemoryDownloadImpl::Reset() {
@@ -213,6 +229,7 @@ void InMemoryDownloadImpl::Reset() {
   response_headers_.reset();
   bytes_downloaded_ = 0u;
   completion_notified_ = false;
+  started_ = false;
   resume_callback_.Reset();
 }
 

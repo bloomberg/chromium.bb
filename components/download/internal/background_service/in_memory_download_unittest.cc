@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::NiceMock;
 
 namespace download {
@@ -26,6 +27,14 @@ namespace {
 const char kTestDownloadData[] =
     "In earlier tellings, the dog had a better reputation than the cat, "
     "however the president veto it.";
+
+MATCHER_P2(InMemoryDownloadMatcher,
+           response_headers,
+           url_chain,
+           "Verify in memory download.") {
+  return arg->response_headers()->raw_headers() == response_headers &&
+         arg->url_chain() == url_chain;
+}
 
 // Dummy callback used for IO_PENDING state in blob operations, this is not
 // called when the blob operation is done, but called when chained with other
@@ -46,6 +55,7 @@ class MockDelegate : public InMemoryDownload::Delegate {
 
   // InMemoryDownload::Delegate implementation.
   MOCK_METHOD1(OnDownloadProgress, void(InMemoryDownload*));
+  MOCK_METHOD1(OnDownloadStarted, void(InMemoryDownload*));
   void OnDownloadComplete(InMemoryDownload* download) override {
     if (run_loop_.running())
       run_loop_.Quit();
@@ -170,6 +180,8 @@ TEST_F(InMemoryDownloadTest, DownloadTest) {
   CreateDownload(request_params);
   url_loader_factory()->AddResponse(request_params.url.spec(),
                                     kTestDownloadData);
+
+  EXPECT_CALL(*delegate(), OnDownloadStarted(_));
   // TODO(xingliu): More tests on pause/resume.
   download()->Start();
   delegate()->WaitForCompletion();
@@ -202,14 +214,19 @@ TEST_F(InMemoryDownloadTest, RedirectResponseHeaders) {
   url_loader_factory()->AddResponse(request_params.url, response_head,
                                     kTestDownloadData, status, redirects);
 
+  std::vector<GURL> expected_url_chain = {request_params.url,
+                                          redirect_info.new_url};
+
+  EXPECT_CALL(*delegate(),
+              OnDownloadStarted(InMemoryDownloadMatcher(
+                  response_head.headers->raw_headers(), expected_url_chain)));
+
   download()->Start();
   delegate()->WaitForCompletion();
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
 
   // Verify the response headers and URL chain. The URL chain should contain
   // the original URL and redirect URL, and should not contain the final URL.
-  std::vector<GURL> expected_url_chain = {request_params.url,
-                                          redirect_info.new_url};
   EXPECT_EQ(download()->url_chain(), expected_url_chain);
   EXPECT_EQ(download()->response_headers()->raw_headers(),
             response_head.headers->raw_headers());

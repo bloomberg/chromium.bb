@@ -72,6 +72,7 @@ class InMemoryDownloadDriver : public DownloadDriver,
   size_t EstimateMemoryUsage() const override;
 
   // InMemoryDownload::Delegate implementation.
+  void OnDownloadStarted(InMemoryDownload* download) override;
   void OnDownloadProgress(InMemoryDownload* download) override;
   void OnDownloadComplete(InMemoryDownload* download) override;
 

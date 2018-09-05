@@ -61,15 +61,10 @@ class LayoutTestBackgroundFetchDelegate::LayoutTestBackgroundFetchDownloadClient
     if (!client_)
       return download::Client::ShouldDownload::ABORT;
 
-    // TODO(crbug.com/863949): In-memory downloads don't properly populate
-    // |url_chain| and |headers| for this method call. Augment success instead.
-    auto mock_headers =
-        base::MakeRefCounted<const net::HttpResponseHeaders>("200 OK\r\n\r\n");
-
     client_->OnDownloadStarted(
         guid_to_unique_job_id_mapping_[guid], guid,
-        std::make_unique<content::BackgroundFetchResponse>(
-            url_chain, std::move(mock_headers)));
+        std::make_unique<content::BackgroundFetchResponse>(url_chain,
+                                                           std::move(headers)));
 
     return download::Client::ShouldDownload::CONTINUE;
   }
