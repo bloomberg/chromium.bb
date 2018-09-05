@@ -211,8 +211,10 @@ base::Optional<AnchorElementMetrics>
 AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     const HTMLAnchorElement* anchor_element) {
   if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsClicked) ||
-      !anchor_element->Href().ProtocolIsInHTTPFamily())
+      !anchor_element->Href().ProtocolIsInHTTPFamily() ||
+      !anchor_element->GetDocument().BaseURL().ProtocolIsInHTTPFamily()) {
     return base::nullopt;
+  }
 
   auto anchor_metrics = Create(anchor_element);
   if (anchor_metrics.has_value()) {
