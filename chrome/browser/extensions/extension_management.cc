@@ -365,7 +365,7 @@ void ExtensionManagement::Refresh() {
       std::string url_pattern;
       if (it->GetAsString(&url_pattern)) {
         URLPattern entry(URLPattern::SCHEME_ALL);
-        if (entry.Parse(url_pattern) == URLPattern::PARSE_SUCCESS) {
+        if (entry.Parse(url_pattern) == URLPattern::ParseResult::kSuccess) {
           global_settings_->install_sources.AddPattern(entry);
         } else {
           LOG(WARNING) << "Invalid URL pattern in for preference "

@@ -77,7 +77,7 @@ TEST(ExtensionUserScriptTest, Glob_StringAnywhere) {
 
 TEST(ExtensionUserScriptTest, UrlPattern) {
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*/foo*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse("http://*/foo*"));
 
   UserScript script;
   script.add_url_pattern(pattern);
@@ -91,11 +91,13 @@ TEST(ExtensionUserScriptTest, ExcludeUrlPattern) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*.nytimes.com/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern.Parse("http://*.nytimes.com/*"));
   script.add_url_pattern(pattern);
 
   URLPattern exclude(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude.Parse("*://*/*business*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            exclude.Parse("*://*/*business*"));
   script.add_exclude_url_pattern(exclude);
 
   EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/health")));
@@ -107,11 +109,12 @@ TEST(ExtensionUserScriptTest, ExcludeUrlPatternWithTrailingDot) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("*://*/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse("*://*/*"));
   script.add_url_pattern(pattern);
 
   URLPattern exclude(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude.Parse("*://mail.nytimes.com/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            exclude.Parse("*://mail.nytimes.com/*"));
   script.add_exclude_url_pattern(exclude);
 
   EXPECT_TRUE(script.MatchesURL(GURL("http://www.nytimes.com/health")));
@@ -126,7 +129,8 @@ TEST(ExtensionUserScriptTest, UrlPatternAndIncludeGlobs) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*.nytimes.com/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern.Parse("http://*.nytimes.com/*"));
   script.add_url_pattern(pattern);
 
   script.add_glob("*nytimes.com/???s/*");
@@ -140,7 +144,8 @@ TEST(ExtensionUserScriptTest, UrlPatternAndExcludeGlobs) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*.nytimes.com/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern.Parse("http://*.nytimes.com/*"));
   script.add_url_pattern(pattern);
 
   script.add_exclude_glob("*science*");
@@ -155,7 +160,7 @@ TEST(ExtensionUserScriptTest, UrlPatternGlobInteraction) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
             pattern.Parse("http://www.google.com/*"));
   script.add_url_pattern(pattern);
 
@@ -186,10 +191,11 @@ TEST(ExtensionUserScriptTest, Pickle) {
   URLPattern pattern2(kAllSchemes);
   URLPattern exclude1(kAllSchemes);
   URLPattern exclude2(kAllSchemes);
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://*/foo*"));
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse("http://bar/baz*"));
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude1.Parse("*://*/*bar"));
-  ASSERT_EQ(URLPattern::PARSE_SUCCESS, exclude2.Parse("https://*/*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess, pattern1.Parse("http://*/foo*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern2.Parse("http://bar/baz*"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess, exclude1.Parse("*://*/*bar"));
+  ASSERT_EQ(URLPattern::ParseResult::kSuccess, exclude2.Parse("https://*/*"));
 
   UserScript script1;
   script1.js_scripts().push_back(std::make_unique<UserScript::File>(

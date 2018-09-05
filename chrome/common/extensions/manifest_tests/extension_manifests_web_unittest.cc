@@ -18,34 +18,28 @@ namespace errors = extensions::manifest_errors;
 
 TEST_F(ChromeManifestTest, AppWebUrls) {
   Testcase testcases[] = {
-    Testcase("web_urls_wrong_type.json", errors::kInvalidWebURLs),
-    Testcase("web_urls_invalid_1.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidWebURL,
-                 base::IntToString(0),
-                 errors::kExpectString)),
-    Testcase("web_urls_invalid_2.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidWebURL,
-                 base::IntToString(0),
-                 URLPattern::GetParseResultString(
-                 URLPattern::PARSE_ERROR_MISSING_SCHEME_SEPARATOR))),
-    Testcase("web_urls_invalid_3.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidWebURL,
-                 base::IntToString(0),
-                 errors::kNoWildCardsInPaths)),
-    Testcase("web_urls_invalid_4.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidWebURL,
-                 base::IntToString(0),
-                 errors::kCannotClaimAllURLsInExtent)),
-    Testcase("web_urls_invalid_5.json",
-             ErrorUtils::FormatErrorMessage(
-                 errors::kInvalidWebURL,
-                 base::IntToString(1),
-                 errors::kCannotClaimAllHostsInExtent))
-  };
+      Testcase("web_urls_wrong_type.json", errors::kInvalidWebURLs),
+      Testcase("web_urls_invalid_1.json",
+               ErrorUtils::FormatErrorMessage(errors::kInvalidWebURL,
+                                              base::IntToString(0),
+                                              errors::kExpectString)),
+      Testcase("web_urls_invalid_2.json",
+               ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidWebURL, base::IntToString(0),
+                   URLPattern::GetParseResultString(
+                       URLPattern::ParseResult::kMissingSchemeSeparator))),
+      Testcase("web_urls_invalid_3.json",
+               ErrorUtils::FormatErrorMessage(errors::kInvalidWebURL,
+                                              base::IntToString(0),
+                                              errors::kNoWildCardsInPaths)),
+      Testcase("web_urls_invalid_4.json",
+               ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidWebURL, base::IntToString(0),
+                   errors::kCannotClaimAllURLsInExtent)),
+      Testcase("web_urls_invalid_5.json",
+               ErrorUtils::FormatErrorMessage(
+                   errors::kInvalidWebURL, base::IntToString(1),
+                   errors::kCannotClaimAllHostsInExtent))};
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
 

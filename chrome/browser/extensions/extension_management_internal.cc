@@ -137,7 +137,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
           unparsed_str.append("/*");
         URLPattern::ParseResult parse_result = pattern.Parse(
             unparsed_str, URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
-        if (parse_result != URLPattern::PARSE_SUCCESS) {
+        if (parse_result != URLPattern::ParseResult::kSuccess) {
           LOG(WARNING) << kMalformedPreferenceWarning;
           LOG(WARNING) << "Invalid URL pattern '" + unparsed_str +
                               "' for attribute " + key;

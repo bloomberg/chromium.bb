@@ -195,7 +195,8 @@ bool URLPatternSet::AddOrigin(int valid_schemes, const GURL& origin) {
   DCHECK(real_origin.IsSameOriginWith(url::Origin::Create(origin.GetOrigin())));
   URLPattern origin_pattern(valid_schemes);
   // Origin adding could fail if |origin| does not match |valid_schemes|.
-  if (origin_pattern.Parse(origin.spec()) != URLPattern::PARSE_SUCCESS) {
+  if (origin_pattern.Parse(origin.spec()) !=
+      URLPattern::ParseResult::kSuccess) {
     return false;
   }
   origin_pattern.SetPath("/*");
@@ -280,7 +281,7 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
   ClearPatterns();
   for (size_t i = 0; i < patterns.size(); ++i) {
     URLPattern pattern(valid_schemes);
-    if (pattern.Parse(patterns[i]) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(patterns[i]) != URLPattern::ParseResult::kSuccess) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
                                                 patterns[i]);

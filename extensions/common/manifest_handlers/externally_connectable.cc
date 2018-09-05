@@ -117,7 +117,7 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // Safe to use SCHEME_ALL here; externally_connectable gives a page ->
       // extension communication path, not the other way.
       URLPattern pattern(URLPattern::SCHEME_ALL);
-      if (pattern.Parse(*it) != URLPattern::PARSE_SUCCESS) {
+      if (pattern.Parse(*it) != URLPattern::ParseResult::kSuccess) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             externally_connectable_errors::kErrorInvalidMatchPattern, *it);
         return std::unique_ptr<ExternallyConnectableInfo>();

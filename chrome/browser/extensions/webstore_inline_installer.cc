@@ -305,9 +305,9 @@ bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
   URLPattern verified_site_pattern(valid_schemes);
   URLPattern::ParseResult parse_result =
       verified_site_pattern.Parse(verified_site_pattern_spec);
-  if (parse_result != URLPattern::PARSE_SUCCESS) {
-    DLOG(WARNING) << "Could not parse " << verified_site_pattern_spec <<
-        " as URL pattern " << parse_result;
+  if (parse_result != URLPattern::ParseResult::kSuccess) {
+    DLOG(WARNING) << "Failed to parse '" << verified_site_pattern_spec
+                  << "': " << URLPattern::GetParseResultString(parse_result);
     return false;
   }
   verified_site_pattern.SetScheme("*");

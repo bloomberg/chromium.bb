@@ -125,7 +125,7 @@ void NaClBrowserDelegateImpl::SetDebugPatterns(
     // since they can be dangerous in the context of chrome extension
     // permissions, but they are okay here, for NaCl GDB avoidance.
     URLPattern pattern(URLPattern::SCHEME_ALL);
-    if (pattern.Parse(pattern_str) == URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(pattern_str) == URLPattern::ParseResult::kSuccess) {
       // If URL pattern has scheme equal to *, Parse method resets valid
       // schemes mask to http and https only, so we need to reset it after
       // Parse to re-include chrome-extension and chrome schema.

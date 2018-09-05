@@ -259,7 +259,7 @@ TEST(URLPatternSetTest, CreateIntersection_Detailed) {
     URLPatternSet set1;
     for (const auto& pattern_str : test_case.set1) {
       URLPattern pattern(kValidSchemes);
-      ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse(pattern_str))
+      ASSERT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse(pattern_str))
           << "Failed to parse: " << pattern_str;
       set1.AddPattern(pattern);
     }
@@ -267,7 +267,7 @@ TEST(URLPatternSetTest, CreateIntersection_Detailed) {
     URLPatternSet set2;
     for (const auto& pattern_str : test_case.set2) {
       URLPattern pattern(kValidSchemes);
-      ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse(pattern_str))
+      ASSERT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse(pattern_str))
           << "Failed to parse: " << pattern_str;
       set2.AddPattern(pattern);
     }
