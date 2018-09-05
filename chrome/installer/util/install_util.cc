@@ -693,6 +693,11 @@ base::string16 InstallUtil::GetAppDescription() {
   return installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
 }
 
+// static
+base::string16 InstallUtil::GetPublisherName() {
+  return installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
+}
+
 InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)
     : path_to_match_(path_to_match),
       file_info_() {
