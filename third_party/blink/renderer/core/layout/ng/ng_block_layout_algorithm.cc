@@ -926,7 +926,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   PositionOrPropagateListMarker(*layout_result, &logical_offset);
 
-  container_builder_.AddChild(layout_result, logical_offset);
+  container_builder_.AddChild(*layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
 
   // The margins we store will be used by e.g. getComputedStyle().
@@ -1277,7 +1277,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
         layout_result->AdjoiningFloatTypes());
   }
 
-  container_builder_.AddChild(layout_result, logical_offset);
+  container_builder_.AddChild(*layout_result, logical_offset);
   if (child.IsBlock())
     container_builder_.PropagateBreak(layout_result);
 
@@ -2071,7 +2071,8 @@ void NGBlockLayoutAlgorithm::AddPositionedFloats(
         child_fragment, positioned_float.bfc_offset, bfc_offset,
         container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
-    container_builder_.AddChild(positioned_float.layout_result, logical_offset);
+    container_builder_.AddChild(*positioned_float.layout_result,
+                                logical_offset);
     container_builder_.PropagateBreak(positioned_float.layout_result);
   }
 }

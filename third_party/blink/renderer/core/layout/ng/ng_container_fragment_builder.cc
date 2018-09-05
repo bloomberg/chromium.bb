@@ -48,15 +48,15 @@ NGContainerFragmentBuilder::SetUnpositionedListMarker(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    scoped_refptr<NGLayoutResult> child,
+    const NGLayoutResult& child,
     const NGLogicalOffset& child_offset) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
-  const auto& out_of_flow_descendants = child->OutOfFlowPositionedDescendants();
+  const auto& out_of_flow_descendants = child.OutOfFlowPositionedDescendants();
   if (!out_of_flow_descendants.IsEmpty()) {
     NGLogicalOffset top_left_offset;
-    NGPhysicalSize child_size = child->PhysicalFragment()->Size();
+    NGPhysicalSize child_size = child.PhysicalFragment()->Size();
     switch (GetWritingMode()) {
       case WritingMode::kHorizontalTb:
         top_left_offset =
@@ -91,7 +91,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  return AddChild(child->PhysicalFragment(), child_offset);
+  return AddChild(child.PhysicalFragment(), child_offset);
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
