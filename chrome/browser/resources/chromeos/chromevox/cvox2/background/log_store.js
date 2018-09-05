@@ -52,9 +52,7 @@ LogStore = function() {
   this.startIndex_ = 0;
 };
 
-/**
- * @enum {string}
- */
+/** @enum {string} */
 LogStore.LogType = {
   SPEECH: 'speech',
   EARCON: 'earcon',

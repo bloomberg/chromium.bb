@@ -12,6 +12,7 @@ goog.require('ChromeVoxState');
 goog.require('CustomAutomationEvent');
 goog.require('Output');
 goog.require('cvox.ChromeVoxBackground');
+goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.ChromeVoxKbHandler');
 
 goog.scope(function() {
@@ -111,6 +112,28 @@ CommandHandler.onCommand = function(command) {
             if (enable) {
               var logPage = {url: 'cvox2/background/log.html', type: 'panel'};
               chrome.windows.create(logPage);
+            }
+          });
+      break;
+    case 'enableLogging':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                cvox.ChromeVoxPrefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+              }
+            }
+          });
+      break;
+    case 'disableLogging':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                cvox.ChromeVoxPrefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+              }
             }
           });
       break;
