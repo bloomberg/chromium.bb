@@ -102,6 +102,9 @@ declare_args() {
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false
 
+  # Strip the debug info of symbols file in lib.unstripped to reduce size.
+  strip_debug_info = false
+
   # Path to an AFDO profile to use while building with clang, if any. Empty
   # implies none.
   clang_sample_profile_path = ""

@@ -221,10 +221,8 @@ def RePack(output_file, input_files, whitelist_file=None,
   input_info_files = [filename + '.info' for filename in input_files]
   whitelist = None
   if whitelist_file:
-    lines = util.ReadFile(whitelist_file, util.RAW_TEXT).strip().splitlines()
-    if not lines:
-      raise Exception('Whitelist file should not be empty')
-    whitelist = set(int(x) for x in lines)
+    whitelist = util.ReadFile(whitelist_file, util.RAW_TEXT).strip().split('\n')
+    whitelist = set(map(int, whitelist))
   inputs = [(p.resources, p.encoding) for p in input_data_packs]
   resources, encoding = RePackFromDataPackStrings(
       inputs, whitelist, suppress_removed_key_output)
