@@ -9,15 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_codecs.h"
-#include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats.pb.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
-#include "media/capabilities/video_decode_stats_db_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,7 +22,6 @@
 using leveldb_proto::test::FakeDB;
 using testing::Pointee;
 using testing::Eq;
-using testing::_;
 
 namespace media {
 
@@ -192,37 +188,6 @@ TEST_F(VideoDecodeStatsDBImplTest, FailedWrite) {
       base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
                      base::Unretained(this)));
   fake_db_->GetCallback(false);
-}
-
-class MockVideoDecodeStatsDBProvider : public VideoDecodeStatsDBProvider {
- public:
-  MOCK_METHOD1(GetVideoDecodeStatsDB, void(GetCB get_db_cb));
-};
-
-TEST_F(VideoDecodeStatsDBImplTest, DependentInMemoryDB) {
-  MockVideoDecodeStatsDBProvider mock_db_provider;
-  EXPECT_CALL(mock_db_provider, GetVideoDecodeStatsDB(_))
-      .WillOnce([&](auto cb) { std::move(cb).Run(stats_db_.get()); });
-
-  InMemoryVideoDecodeStatsDBImpl in_memory_db(&mock_db_provider);
-
-  // Initialize should trigger the call to GetVideoDecodeStatsDB expected above.
-  base::RunLoop run_loop;
-  in_memory_db.Initialize(base::BindOnce(
-      [](base::RunLoop* run_loop, bool success) {
-        EXPECT_TRUE(success);
-        run_loop->Quit();
-      },
-      &run_loop));
-
-  testing::Mock::VerifyAndClearExpectations(&mock_db_provider);
-
-  // With connection now established, destroying the dependency should trigger
-  // a crash.
-  EXPECT_DEATH_IF_SUPPORTED(
-      { stats_db_.reset(); },
-      "Check failed: !dependent_db_. ~VideoDecodeStatsDBImpl "
-      "Destroying before dependent_db_!");
 }
 
 }  // namespace media

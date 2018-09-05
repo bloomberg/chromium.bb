@@ -55,9 +55,6 @@ VideoDecodeStatsDBImpl::VideoDecodeStatsDBImpl(
 
 VideoDecodeStatsDBImpl::~VideoDecodeStatsDBImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Tracking down crash. See https://crbug/865321.
-  CHECK(!dependent_db_) << __func__ << " Destroying before dependent_db_!";
 }
 
 void VideoDecodeStatsDBImpl::Initialize(InitializeCB init_cb) {
