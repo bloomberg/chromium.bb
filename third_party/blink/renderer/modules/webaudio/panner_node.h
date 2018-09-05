@@ -236,13 +236,13 @@ class PannerNode final : public AudioNode {
   double maxDistance() const;
   void setMaxDistance(double, ExceptionState&);
   double rolloffFactor() const;
-  void setRolloffFactor(double);
+  void setRolloffFactor(double, ExceptionState&);
   double coneInnerAngle() const;
   void setConeInnerAngle(double);
   double coneOuterAngle() const;
   void setConeOuterAngle(double);
   double coneOuterGain() const;
-  void setConeOuterGain(double);
+  void setConeOuterGain(double, ExceptionState&);
 
  private:
   PannerNode(BaseAudioContext&);
