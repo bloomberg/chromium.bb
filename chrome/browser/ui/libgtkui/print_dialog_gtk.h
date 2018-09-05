@@ -13,11 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_linux.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/glib/glib_signal.h"
 
 namespace printing {
 class MetafilePlayer;
@@ -61,7 +61,7 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
   ~PrintDialogGtk() override;
 
   // Handles dialog response.
-  CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
+  CHROMEG_CALLBACK_1(PrintDialogGtk, void, OnResponse, GtkWidget*, int);
 
   // Prints document named |document_name|.
   void SendDocumentToPrinter(const base::string16& document_name);

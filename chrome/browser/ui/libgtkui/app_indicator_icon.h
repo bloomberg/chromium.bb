@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/nix/xdg_util.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
+#include "ui/base/glib/glib_signal.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 
 typedef struct _AppIndicator AppIndicator;
