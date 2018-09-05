@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/common/password_form.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -231,6 +232,11 @@ class FormStructure {
     return has_author_specified_upi_vpa_hint_;
   }
 
+  void set_submission_event(
+      PasswordForm::SubmissionIndicatorEvent submission_event) {
+    submission_event_ = submission_event;
+  }
+
   void set_upload_required(UploadRequired required) {
     upload_required_ = required;
   }
@@ -283,6 +289,11 @@ class FormStructure {
         << "|password_length_vote_| doesn't make sense if "
            "|password_attributes_vote_| has no value.";
     return password_length_vote_;
+  }
+
+  PasswordForm::SubmissionIndicatorEvent get_submission_event_for_testing()
+      const {
+    return submission_event_;
   }
 #endif
 
@@ -443,6 +454,10 @@ class FormStructure {
 
   // The name of the form.
   base::string16 form_name_;
+
+  // The type of the event that was taken as an indication that the form has
+  // been successfully submitted.
+  PasswordForm::SubmissionIndicatorEvent submission_event_;
 
   // The source URL.
   GURL source_url_;

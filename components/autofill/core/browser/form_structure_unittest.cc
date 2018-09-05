@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2831,6 +2832,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasNumeric, true));
   form_structure->set_password_length_vote(10u);
+  form_structure->set_submission_event(
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
@@ -2855,6 +2858,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   // Prepare the expected proto string.
   AutofillUploadContents upload;
   upload.set_submission(true);
+  upload.set_submission_event(AutofillUploadContents::HTML_FORM_SUBMISSION);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
   upload.set_form_signature(8736493185895608956U);
   upload.set_autofill_used(false);
@@ -2913,7 +2917,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasNumeric, true));
   form_structure->set_password_length_vote(10u);
-
+  form_structure->set_submission_event(
+      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   ASSERT_EQ(form_structure->field_count(),
             possible_field_types_validities.size());

@@ -52,7 +52,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 30
+// Next available id: 31
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -187,6 +187,26 @@ message AutofillUploadContents {
   // Noisifed password length.
   optional uint32 password_length = 29;
   // The end of the section of password attributes.
+
+  // Event observed by the password manager which indicated that the form was
+  // successfully submitted. Corresponds to
+  // |PasswordForm::SubmissionIndicatorEvent|.
+  enum SubmissionIndicatorEvent {
+    NONE = 0;
+    HTML_FORM_SUBMISSION = 1;
+    SAME_DOCUMENT_NAVIGATION = 2;
+    XHR_SUCCEEDED = 3;
+    FRAME_DETACHED = 4;
+    DEPRECATED_MANUAL_SAVE = 5;  // obsolete
+    DOM_MUTATION_AFTER_XHR = 6;
+    PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7;
+    DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD = 8;            // unused
+    DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD = 9;  // unused
+  }
+
+  // The type of the event that was taken as an indication that the form has
+  // been successfully submitted.
+  optional SubmissionIndicatorEvent submission_event = 30;
 }
 
 // This proto contains information about the validity of each field in an
