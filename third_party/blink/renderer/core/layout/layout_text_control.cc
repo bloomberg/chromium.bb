@@ -67,7 +67,6 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
       inner_editor_layout_object->InvalidateSelectedChildrenOnStyleChange();
     }
   }
-  GetTextControlElement()->UpdatePlaceholderVisibility();
 }
 
 int LayoutTextControl::TextBlockLogicalHeight() const {
