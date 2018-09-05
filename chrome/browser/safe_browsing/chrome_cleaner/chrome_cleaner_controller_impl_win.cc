@@ -20,7 +20,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
@@ -89,8 +88,6 @@ enum IPCDisconnectedHistogramValue {
 base::FilePath VerifyAndRenameDownloadedCleaner(
     base::FilePath downloaded_path,
     ChromeCleanerFetchStatus fetch_status) {
-  base::AssertBlockingAllowed();
-
   if (downloaded_path.empty() || !base::PathExists(downloaded_path))
     return base::FilePath();
 
