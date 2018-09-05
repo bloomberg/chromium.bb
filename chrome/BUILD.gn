@@ -163,6 +163,9 @@ if (!is_android && !is_mac) {
           "$root_out_dir/locales/en-US.pak",
           "$root_out_dir/locales/fr.pak",
         ]
+        if (enable_hidpi || enable_mus) {
+          data += [ "$root_out_dir/chrome_200_percent.pak" ]
+        }
       }
 
       data_deps = []
@@ -360,9 +363,6 @@ if (!is_android && !is_mac) {
       # what telemetry test-runner expects.
       output_name = "test_chrome"
       sources = []
-      data = [
-        "$root_out_dir/chrome_200_percent.pak",
-      ]
       if (!is_win && use_aura) {
         sources += [ "app/chrome_exe_main_aura.cc" ]
       }
