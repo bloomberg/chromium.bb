@@ -49,7 +49,11 @@ class ASH_EXPORT WorkspaceLayoutManager
   // the WorkspaceLayoutManager.
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
-  // Overridden from aura::LayoutManager:
+  BackdropController* backdrop_controller() {
+    return backdrop_controller_.get();
+  }
+
+  // aura::LayoutManager:
   void OnWindowResized() override;
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnWillRemoveWindowFromLayout(aura::Window* child) override;
@@ -59,7 +63,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // Overriden from aura::WindowObserver:
+  // aura::WindowObserver:
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -71,7 +75,7 @@ class ASH_EXPORT WorkspaceLayoutManager
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  // wm::ActivationChangeObserver overrides:
+  // wm::ActivationChangeObserver:
   void OnWindowActivating(ActivationReason reason,
                           aura::Window* gaining_active,
                           aura::Window* losing_active) override;
@@ -80,19 +84,19 @@ class ASH_EXPORT WorkspaceLayoutManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // keyboard::KeyboardControllerObserver overrides:
+  // keyboard::KeyboardControllerObserver:
   void OnKeyboardWorkspaceDisplacingBoundsChanged(
       const gfx::Rect& new_bounds) override;
 
-  // WindowStateObserver overrides:
+  // WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type) override;
 
-  // display::DisplayObserver overrides:
+  // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // ShellObserver overrides:
+  // ShellObserver:
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;

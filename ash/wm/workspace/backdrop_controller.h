@@ -64,6 +64,8 @@ class BackdropController : public ShellObserver,
   // the other windows in the container.
   void UpdateBackdrop();
 
+  aura::Window* backdrop_window() { return backdrop_window_; }
+
   // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
