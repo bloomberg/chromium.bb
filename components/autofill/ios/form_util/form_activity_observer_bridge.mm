@@ -24,25 +24,26 @@ FormActivityObserverBridge::~FormActivityObserverBridge() {
       ->RemoveObserver(this);
 }
 
-void FormActivityObserverBridge::OnFormActivity(
+void FormActivityObserverBridge::FormActivityRegistered(
     web::WebState* web_state,
     const web::FormActivityParams& params) {
   DCHECK_EQ(web_state, web_state_);
-  if ([owner_ respondsToSelector:@selector(webState:registeredFormActivity:)]) {
-    [owner_ webState:web_state registeredFormActivity:params];
+  if ([owner_
+          respondsToSelector:@selector(webState:didRegisterFormActivity:)]) {
+    [owner_ webState:web_state didRegisterFormActivity:params];
   }
 }
 
-void FormActivityObserverBridge::DidSubmitDocument(web::WebState* web_state,
+void FormActivityObserverBridge::DocumentSubmitted(web::WebState* web_state,
                                                    const std::string& form_name,
                                                    bool has_user_gesture,
                                                    bool form_in_main_frame) {
   DCHECK_EQ(web_state, web_state_);
   if ([owner_ respondsToSelector:@selector
-              (webState:submittedDocumentWithFormNamed:hasUserGesture
+              (webState:didSubmitDocumentWithFormNamed:hasUserGesture
                           :formInMainFrame:)]) {
     [owner_ webState:web_state
-        submittedDocumentWithFormNamed:form_name
+        didSubmitDocumentWithFormNamed:form_name
                         hasUserGesture:has_user_gesture
                        formInMainFrame:form_in_main_frame];
   }

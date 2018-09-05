@@ -96,7 +96,7 @@ bool FormActivityTabHelper::HandleFormActivity(
 
   params.is_main_frame = form_in_main_frame;
   for (auto& observer : observers_)
-    observer.OnFormActivity(web_state_, params);
+    observer.FormActivityRegistered(web_state_, params);
   return true;
 }
 
@@ -118,7 +118,7 @@ bool FormActivityTabHelper::FormSubmissionHandler(
       has_user_gesture || [web_state_->GetWebViewProxy() keyboardAccessory];
 
   for (auto& observer : observers_)
-    observer.DidSubmitDocument(web_state_, form_name, submitted_by_user,
+    observer.DocumentSubmitted(web_state_, form_name, submitted_by_user,
                                form_in_main_frame);
   return true;
 }

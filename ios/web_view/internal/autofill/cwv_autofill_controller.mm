@@ -345,7 +345,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
 
   [_JSSuggestionManager inject];
@@ -389,7 +389,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)userInitiated
                    formInMainFrame:(BOOL)isMainFrame {
   if ([_delegate respondsToSelector:@selector

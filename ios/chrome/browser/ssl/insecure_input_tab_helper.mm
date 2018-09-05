@@ -120,7 +120,7 @@ InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
       ->AddObserver(this);
 }
 
-void InsecureInputTabHelper::OnFormActivity(
+void InsecureInputTabHelper::FormActivityRegistered(
     web::WebState* web_state,
     const web::FormActivityParams& params) {
   DCHECK_EQ(web_state_, web_state);

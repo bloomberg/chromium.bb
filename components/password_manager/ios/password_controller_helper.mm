@@ -166,7 +166,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
                    formInMainFrame:(BOOL)formInMainFrame {
   DCHECK_EQ(_webState, webState);

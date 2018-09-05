@@ -27,24 +27,14 @@ class FormActivityObserver {
   // Called when the user is typing on a form field in the main frame or in a
   // same-origin iframe. |params.input_missing| is indicating if there is any
   // error when parsing the form field information.
-  // TODO(crbug.com/823285): during the transition from WebStateObserver
-  // to FormActivityObserver, some class will inherit from both interface
-  // so the method need to use a different name. Once the transition is
-  // complete and the methods removed from WebStateObserver, this method
-  // will be renamed to FormActivityRegistered.
-  virtual void OnFormActivity(web::WebState* web_state,
-                              const web::FormActivityParams& params) {}
+  virtual void FormActivityRegistered(web::WebState* web_state,
+                                      const web::FormActivityParams& params) {}
 
   // Called on form submission in the main frame or in a same-origin iframe.
   // |has_user_gesture| is true if the user interacted with the page.
   // |form_in_main_frame| is true if the submitted form is hosted in the main
   // frame.
-  // TODO(crbug.com/823285): during the transition from WebStateObserver
-  // to FormActivityObserver, some class will inherit from both interface
-  // so the method need to use a different name. Once the transition is
-  // complete and the methods removed from WebStateObserver, this method
-  // will be renamed to DocumentSubmitted.
-  virtual void DidSubmitDocument(web::WebState* web_state,
+  virtual void DocumentSubmitted(web::WebState* web_state,
                                  const std::string& form_name,
                                  bool has_user_gesture,
                                  bool form_in_main_frame) {}
