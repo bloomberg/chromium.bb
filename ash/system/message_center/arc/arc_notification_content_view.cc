@@ -483,15 +483,16 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   DCHECK(surface_->GetWindow());
   surface_copy_ = ::wm::RecreateLayers(surface_->GetWindow());
   // |surface_copy_| is at (0, 0) in owner_->layer().
-  surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
+  gfx::Rect size(surface_copy_->root()->size());
+  surface_copy_->root()->SetBounds(size);
   layer()->Add(surface_copy_->root());
 
   if (!surface_copy_mask_) {
     surface_copy_mask_ = views::Painter::CreatePaintedLayer(
         std::make_unique<message_center::NotificationBackgroundPainter>(
             top_radius_, bottom_radius_));
-    surface_copy_mask_->layer()->SetBounds(
-        gfx::Rect(surface_copy_->root()->size()));
+    surface_copy_mask_->layer()->SetBounds(size);
+    surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
   }
   DCHECK(!surface_copy_mask_->layer()->parent());
   surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
