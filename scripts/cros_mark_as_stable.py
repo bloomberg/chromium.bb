@@ -213,6 +213,8 @@ def GetParser():
   parser.add_argument('--force', action='store_true',
                       help='Force the stabilization of blacklisted packages. '
                       '(only compatible with -p)')
+  parser.add_argument('--list_revisions', action='store_true',
+                      help='List all revisions included in the commit message.')
   parser.add_argument('-o', '--overlays',
                       help='Colon-separated list of overlays to modify.')
   parser.add_argument('--overlay-type',
@@ -494,6 +496,29 @@ def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
         ebuild_paths_to_remove.append(ebuild_path_to_remove)
 
       messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
+
+      if options.list_revisions:
+        info = ebuild.GetSourceInfo(os.path.join(options.buildroot, 'src'),
+                                    manifest)
+        srcdirs = [os.path.join(options.buildroot, 'src', srcdir)
+                   for srcdir in ebuild.cros_workon_vars.localname]
+        old_commit_ids = dict(
+            zip(srcdirs, ebuild.cros_workon_vars.commit.split(',')))
+        git_log = []
+        for srcdir in info.srcdirs:
+          old_commit_id = old_commit_ids.get(srcdir)
+          new_commit_id = ebuild.GetCommitId(srcdir)
+          if not old_commit_id or old_commit_id == new_commit_id:
+            continue
+
+          logs = git.RunGit(srcdir, [
+              'log', '%s..%s' % (old_commit_id[:8], new_commit_id[:8]),
+              '--pretty=format:%h %<(63,trunc)%s'])
+          git_log.append('$ ' + logs.cmdstr)
+          git_log.extend(line.strip() for line in logs.output.splitlines())
+        if git_log:
+          messages.append('\n'.join(git_log))
+
       revved_packages.append(ebuild.package)
       new_package_atoms.append('=%s' % new_package)
   except (OSError, IOError):
