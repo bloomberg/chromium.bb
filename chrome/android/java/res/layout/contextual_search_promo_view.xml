@@ -41,9 +41,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:text="@string/contextual_search_allow_button"
-        android:textAllCaps="true"
-        android:textColor="#FFF"
-        android:textSize="14sp"
+        android:textAppearance="@style/WhiteButtonText"
         app:buttonColor="@color/light_active_color" />
 
     <Button
@@ -57,7 +55,8 @@
         android:layout_marginEnd="16dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:text="@string/contextual_search_no_thanks_button" />
+        android:text="@string/contextual_search_no_thanks_button"
+        style="@style/MainButtonStyle" />
 
     <View
         android:layout_below="@id/contextual_search_allow_button"
