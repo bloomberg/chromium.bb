@@ -26,30 +26,24 @@
         overflow: hidden;
       }
     </style>
-    <settings-toggle-button id="autofillToggle"
-        class="first"
-        aria-label="$i18n{autofill}" no-extension-indicator
-        label="$i18n{autofillFormsLabel}"
-        pref="{{prefs.autofill.enabled}}">
-    </settings-toggle-button>
-    <template is="dom-if" if="[[prefs.autofill.enabled.extensionId]]">
-      <div class="settings-box continuation">
-        <extension-controlled-indicator class="start"
-            id="autofillExtensionIndicator"
-            extension-id="[[prefs.autofill.enabled.extensionId]]"
-            extension-name="[[prefs.autofill.enabled.controlledByName]]"
-            extension-can-be-disabled="[[
-                prefs.autofill.enabled.extensionCanBeDisabled]]">
-        </extension-controlled-indicator>
-      </div>
-    </template>
     <settings-toggle-button id="autofillProfileToggle"
         class="settings-box first"
         aria-label="$i18n{autofill}" no-extension-indicator
         label="$i18n{enableProfilesLabel}"
-        pref="{{prefs.autofill.profile_enabled}}"
-        disabled$="[[!prefs.autofill.enabled.value]]">
+        sub-label="$i18n{enableProfilesSublabel}"
+        pref="{{prefs.autofill.profile_enabled}}">
     </settings-toggle-button>
+    <template is="dom-if" if="[[prefs.autofill.profile_enabled.extensionId]]">
+      <div class="settings-box continuation">
+        <extension-controlled-indicator class="start"
+            id="autofillExtensionIndicator"
+            extension-id="[[prefs.autofill.profile_enabled.extensionId]]"
+            extension-name="[[prefs.autofill.profile_enabled.controlledByName]]"
+            extension-can-be-disabled="[[
+                prefs.autofill.profile_enabled.extensionCanBeDisabled]]">
+        </extension-controlled-indicator>
+      </div>
+    </template>
     <div class="settings-box continuation">
       <h2 class="start">$i18n{addresses}</h2>
       <paper-button id="addAddress"

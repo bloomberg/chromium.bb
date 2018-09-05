@@ -6,7 +6,7 @@
 // that callbacks are correctly invoked, expected parameters are correct,
 // and failures are detected.
 
-var kTestPrefName = 'autofill.enabled';
+var kTestPrefName = 'autofill.profile_enabled';
 var kTestPrefValue = true;
 
 // This corresponds to policy key: kHomepageIsNewTabPage used in

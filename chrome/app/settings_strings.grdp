@@ -624,15 +624,8 @@
   <message name="IDS_SETTINGS_AUTOFILL" desc="Name for the autofill section and toggle.">
     Autofill settings
   </message>
-  <!-- TODO(https://crbug.com/854562): Rename this to "IDS_SETTINGS_AUTOFILL" once Autofill Home is fully launched. -->
-  <message name="IDS_SETTINGS_AUTOFILL_AUTOFILL_HOME" desc="Name for the addresses section used for Autofill Home.">
-    Addresses
-  </message>
   <message name="IDS_SETTINGS_GOOGLE_PAYMENTS" desc="Label used to differentiate when an address or credit card entry comes from Google Pay. This should follow the casing of the 'Google Pay' brand. 'Google Pay' should not be translated as it is the product name.">
     Google Pay
-  </message>
-  <message name="IDS_SETTINGS_AUTOFILL_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether forms should be autofilled with data such as addresses and credit cards, but not passwords.">
-    Autofill forms
   </message>
   <message name="IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE" desc="This is the title for the 'Add address' dialog. This dialog allows a user to create a new address.">
     Add address
