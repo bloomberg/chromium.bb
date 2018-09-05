@@ -33,7 +33,6 @@ namespace {
 
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr int kCornerRadiusDip = 20;
 constexpr int kMiniUiCornerRadiusDip = 24;
 constexpr int kMarginBottomDip = 8;
 
