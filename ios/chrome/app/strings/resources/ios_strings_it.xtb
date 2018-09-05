@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elemento aggiornato</translation>
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="1049743911850919806">In incognito</translation>
+<translation id="1063454504051558093">Utilizza un'altra password…</translation>
 <translation id="1076421457278169141">Scansione del codice eseguita</translation>
 <translation id="1084365883616172403">Pubblicazione su Facebook completata.</translation>
 <translation id="1104948393051856124">Accetta e continua</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1886928167269928266">Tutto</translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
+<translation id="191179954310195971">Altri servizi Google</translation>
 <translation id="1941314575388338491">Tocca due volte per copiare.</translation>
 <translation id="1952728750904661634">Accedi con l'account gestito</translation>
 <translation id="1974060860693918893">Avanzate</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Il tuo elenco di lettura è disponibile offline. Per aggiungere una pagina all'elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Utilizza un'altra password</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3779810277399252432">Nessuna connessione a Internet.</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
@@ -315,6 +318,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6344783595350022745">Cancella testo</translation>
 <translation id="6346549652287021269">Iniziare un nuovo download?</translation>
 <translation id="6362362396625799311">Nessuna scheda in incognito</translation>
+<translation id="6363526231572697780">Nessun nome utente</translation>
 <translation id="6374469231428023295">Riprova</translation>
 <translation id="6380866119319257197">Se non ricordi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome sulla carta</translation>

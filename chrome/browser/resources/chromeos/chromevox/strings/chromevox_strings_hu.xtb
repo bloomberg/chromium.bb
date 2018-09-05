@@ -139,6 +139,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2267945578749931355">Következő karakter</translation>
 <translation id="2281234842553884450">Előző dia</translation>
 <translation id="2294136146931447363">Dőlt betű kezdődik</translation>
+<translation id="2311237334957139798">Ugrás az előző részletességi szintre</translation>
 <translation id="2318372665160196757">Fő</translation>
 <translation id="2329324941084714723">Lappanel</translation>
 <translation id="2344193891939537199">Dátum és idő beállítása</translation>
@@ -520,6 +521,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5106547198195128110">Érdekes módosításokat hajtottunk végre ebben az új kiadásban; íme az újdonságok:</translation>
 <translation id="5110983769041734144">Nincs előző űrlap mező.</translation>
 <translation id="5111640677200759579">Oszlopfejléc</translation>
+<translation id="5115892389597951922">ChromeVox-napló</translation>
 <translation id="5136967254288895616">Nincs előző link.</translation>
 <translation id="513774504516943387">link</translation>
 <translation id="5158275234811857234">Borító</translation>
@@ -687,6 +689,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6540201937398578274">A ChromeVox szolgáltatásban a keresőgomb a módosító billentyű. A legtöbb ChromeVox-billentyűparancs a keresőgombbal kezdődik. A navigációhoz a nyílbillentyűket is használnia kell.</translation>
 <translation id="6550720799683018100">A jelenlegi billentyűzetkiosztást az alábbi listáról választva változtathatja meg.</translation>
 <translation id="6561818612645211875">Ugrás az aktuális sor elejére</translation>
+<translation id="6583174818554398774">Ugrás a következő részletességi szintre</translation>
 <translation id="6587021927234520429">Nincs következő 4-es szintű címsor.</translation>
 <translation id="6601344353291556895">Terjedelmesebb leírások engedélyezése.</translation>
 <translation id="6615602925644411249">Keresés az oldalon.</translation>

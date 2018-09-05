@@ -357,6 +357,7 @@
 <translation id="199764499252435679">I-enable ang mga pag-update ng bahagi sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Pamamahala ng power</translation>
 <translation id="201557587962247231">Dalas ng pag-upload ng mga ulat ng status ng device</translation>
+<translation id="2017301949684549118">Mga URL para sa Mga Web App na ii-install nang hindi napapansin.</translation>
 <translation id="2018836497795982119">Tinutukoy ang tagal sa mga millisecond kung gaano katagal na-query ang serbisyo ng pamamahala sa device para sa impormasyon ng patakaran ng user.
 
       Kapag itinakda ang patakarang ito, mao-override ang default na value na 3 oras. Ang mga wastong value para sa patakarang ito ay nasa saklaw mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Maka-clamp sa kaukulang hangganan ang anumang mga value na wala sa saklaw na ito. Kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran.
@@ -669,6 +670,11 @@
           Ang URL sa paghahanap ng Google ay maaaring tukuyin bilang: <ph name="GOOGLE_SEARCH_URL" />.
 
           Dapat na itakda ang opsyong ito kapag naka-enable ang patakaran na 'DefaultSearchProviderEnabled' at kikilalanin lang kung ganito ang sitwasyon.</translation>
+<translation id="2659019163577049044">Kung naka-enable ang setting na ito, papayagan ang mga user na i-set up ang kanilang mga device para ma-sync ang mga mensaheng SMS sa kanilang mga telepono at Chromebook. Tandaang kung papayagan ang patakarang ito, dapat ay tahasang mag-opt in ang mga user sa feature na ito sa pamamagitan ng pagkumpleto sa proseso ng pag-set up. Kapag kumpleto na ang proseso ng pag-set up, magagawa na ng mga user na magpadala at tumanggap ng mga mensaheng SMS sa kanilang Mga Chromebook.
+
+      Kung naka-disable ang setting na ito, hindi papayagan ang mga user na i-set up ang pag-sync ng SMS.
+
+      Kung hahayaang hindi nakatakda ang patakarang ito, ang default ay hindi pinapayagan para sa mga pinapamahalaang user at pinapayagan para sa mga hindi pinapamahalaang user.</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
@@ -739,7 +745,6 @@
       Kung idi-disable mo ang setting na ito o hindi ka magtatakda ng value, gagamitin ng Preview ng Pag-print ang pinakahuling ginamit na printer bilang default na pagpipilian.
 
       Kung ie-enable mo ang setting na ito, gagamitin ng Preview sa Pag-print ang default na printer ng OS system bilang default na pagpipilian.</translation>
-<translation id="2867699958489427143">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Magsagawa ng ganap na pag-powerwash habang nasa proseso.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
@@ -983,7 +988,6 @@
 <translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3715569262675717862">Pag-authenticate batay sa mga certificate ng kliyente</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
-<translation id="3737544779868348650">Hostname ng network ng device</translation>
 <translation id="3746590506846867985">
       Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magkatugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na natukoy ng patakaran ng user.
       Kung ie-enable ang patakaran, ang bawat isa sa mga pinangalanang pinagmulan sa isang comma-separated list ay tatakbo sa sarili nitong proseso. Ia-isolate din nito ang mga pinagmulang pinangalanan ayon sa mga subdomain; hal. kapag tinukoy ang https://example.com/, maa-isolate din ang https://foo.example.com/ bilang bahagi ng site na https://example.com/.
@@ -1092,6 +1096,7 @@
       Ang bawat entry sa listahan ay naglalaman ng diksyunaryong dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ng URL ng update nito sa field na 'update-url.'</translation>
 <translation id="3874773863217952418">I-enable ang I-tap para Maghanap</translation>
 <translation id="3877517141460819966">Kasamang second factor authentication mode</translation>
+<translation id="3879208481373875102">I-configure ang listahan ng mga sapilitang na-install na Web App</translation>
 <translation id="388237772682176890">Ang patakarang ito ay hindi na ginagamit sa M53 at inalis na sa M54, dahil inalis na ang suporta sa SPDY/3.1.
 
       Dini-disable ang paggamit ng SPDY protocol sa <ph name="PRODUCT_NAME" />.
@@ -1335,6 +1340,10 @@
           Para sa kumpletong paglalarawan ng mga posibleng setting at istruktura ng patakarang ito, pakibisita ang https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">loopback processing mode ng patakaran ng user</translation>
+<translation id="4554841826517980623">Kinokontrol ng patakarang ito kung gagamitin ng feature na Mga File Share sa Network para sa <ph name="PRODUCT_NAME" /> ang <ph name="NETBIOS_PROTOCOL" /> para tumuklas ng mga pagbabahagi sa network.
+      Kapag nakatakda sa True ang patakarang ito, gagamitin sa pagtuklas ng pagbabahagi ang protocol na <ph name="NETBIOS_PROTOCOL" /> para tumuklas ng mga pagbabahagi sa network.
+      Kapag nakatakda ang patakarang ito sa False, hindi gagamitin sa pagtuklas ng pagbabahagi ang protocol na <ph name="NETBIOS_PROTOCOL" /> para tumuklas ng mga pagbabahagi.
+      Kung hahayaang hindi nakatakda ang patakaran, ang default ay naka-disable para sa mga user na pinapamahalaan ang enterprise at naka-enable para sa mga user na hindi pinapamahalaan.</translation>
 <translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
 <translation id="4557134566541205630">URL ng pahina ng bagong tab ng default na search provider</translation>
 <translation id="4567137030726189378">Payagan ang paggamit ng Mga Tool ng Developer</translation>
@@ -1756,6 +1765,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang sinasalitang feedback kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang sinasalitang feedback anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
 <translation id="5868414965372171132">Configuration ng network sa antas ng user</translation>
+<translation id="5879014913445067283">Kinokontrol ang pagtuklas ng File Share sa Network sa pamamagitan ng <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Default na setting ng cookies</translation>
 <translation id="5887414688706570295">Kino-configure ang prefix ng TalkGadget na gagamitin ng mga host ng malayuang pag-access at pinipigilan ang mga user na baguhin ito.
 
@@ -2217,6 +2227,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="7063895219334505671">Pinapayagan ang mga popup sa mga site na ito</translation>
+<translation id="706568410943497889">
+      Kung nakatakda ang patakaran sa true, pinapayagan ang <ph name="PRODUCT_NAME" /> na mangolekta ng mga log ng event sa WebRTC mula sa mga serbisyo ng Google (hal. Google Meet), at i-upload ang mga log na iyon sa Google.
+
+      Kung nakatakda ang patakaran sa false, o hindi ito nakatakda, hindi maaaring kolektahin o i-upload ng <ph name="PRODUCT_NAME" /> ang mga nasabing log.
+
+      Ang mga log na ito ay naglalaman ng diagnostic na impormasyong makakatulong kapag nagde-debug ng mga isyu sa mga audio o video call sa Chrome, gaya ng oras at laki ng mga naipadala at natanggap na RTP packet, feedback tungkol sa pagdami ng gumagamit sa network, at metadata tungkol sa oras at kalidad ng mga audio at video frame. Ang mga log na ito ay hindi naglalaman ng mga audio o video content mula sa tawag.
+
+      Mati-trigger lang ang ganitong pagkolekta ng data sa pamamagitan ng mga serbisyo sa web ng Google, gaya ng Google Hangouts o Google Meet.
+
+      Maiuugnay ng Google ang mga log na ito, sa pamamagitan ng session ID, sa iba pang log na nakolekta ng mismong serbisyo ng Google; layunin nitong mas padaliin ang pag-debug.
+      </translation>
 <translation id="706669471845501145">Payagan ang mga site upang magpakita ng mga notification sa desktop</translation>
 <translation id="7072208053150563108">Rate ng pagpapalit ng password ng machine</translation>
 <translation id="7074513465313721551">Nagko-configure sa listahan ng mga domain na pagkakatiwalaan ng Ligtas na Pag-browse. Ang ibig sabihin nito ay:
@@ -2350,6 +2371,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
+<translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
+
+      Ang bawat item ng patakaran ay isang object na may dalawang miyembro: "url" at "launch_container." Ang "url" ay dapat ang URL ng web app na ii-install at ang "launch_container" ay dapat alinman sa "window" o "tab" para maisaad kung paano bubuksan ang Web App kapag na-install na. Kung tatanggalin ang "launch_container," ilulunsad ang app sa window kung ituturing ito ng Chrome na Progressive Web App at kung hindi naman, ilulunsad ito sa tab.</translation>
 <translation id="7367028210010532881">Nagpapakita ang serbisyo ng Ligtas na Pag-browse ng page ng babala kapag nag-navigate ang mga user sa mga site na naka-flag bilang posibleng nakakahamak. Kapag na-enable ang setting na ito, mapipigilan ang mga user na tumuloy pa rin sa nakakahamak na site mula sa page ng babala.
 
       Kung naka-disable o hindi naka-configure ang setting na ito, maaaring piliin ng mga user na tumuloy sa naka-flag na site pagkatapos mabigyan ng babala.
@@ -2813,6 +2837,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Dito, ang "Bersyon" ay maaaring maging eksaktong bersyon tulad ng '61.0.3163.120' o prefix ng bersyon, tulad ng '61.0'  </translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Payagan ang Mga Mensaheng SMS na ma-sync mula sa telepono papunta sa Chromebook.</translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
 <translation id="8586528890725660268">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
@@ -2857,6 +2882,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung iiwang hindi nakatakda ang patakarang ito, ang mga password lang sa Google ang poprotektahan ng serbisyo sa pagprotekta ng password ngunit mababago ng user ang setting na ito.</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Nagbibigay-daan sa iyong itakda ang yugto ng panahon, sa millisecond, kung kailan aabisuhan ang mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o dapat i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
+
+      Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user ang pangangailangang mag-update. Para sa mga <ph name="PRODUCT_OS_NAME" /> device, lalabas sa system tray ang notification sa pag-restart kapag may na-detect na pag-upgrade. Para sa mga <ph name="PRODUCT_NAME" /> browser, magbabago ang menu ng app para isaad na kinakailangan ng muling paglulunsad kapag lumipas ang one third ng yugto ng panahon ng notification. Magbabago ng kulay ang notification na ito kapag lumipas ang two thirds ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Ang mga karagdagang notification na na-enable ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ay sumusunod sa kaparehong iskedyul na ito.
+
+      Kung hindi itatakda, ang default na yugto ng panahong 345600000 millisecond (apat na araw) ang gagamitin para sa mga <ph name="PRODUCT_OS_NAME" /> device at 604800000 millisecond (isang linggo) ang gagamitin para sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Ang babala ng proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="8693243869659262736">Gamitin ang built-in na DNS client</translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
@@ -2901,6 +2931,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
           Dapat nasa 100% o higit pa ang salik ng scale. Hindi pinahihintulutan ang mga value magpapaikli sa pag-aantala ng pagdilim ng screen sa presentation mode kaysa sa regular.</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8801680448782904838">Abisuhan ang user na inirerekomenda o kinakailangang muling ilunsad ang browser o i-restart ang device</translation>
 <translation id="8818173863808665831">I-ulat ang heyograpikong lokasyon ng device.
 
       Kung hindi naitakda ang patakaran, o naitakda sa false, hindi ma-uulat ang lokasyon.</translation>
@@ -3064,6 +3095,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung nakatakda sa true ang patakarang ito, magti-trigger ang <ph name="PRODUCT_OS_NAME" /> ng reboot kapag i-shut down ng user ang device. Papalitan ng <ph name="PRODUCT_OS_NAME" /> ang lahat ng button ng pag-shutdown sa UI ng mga button sa pag-reboot. Kung i-shut down ng user ang device gamit ang button ng power, hindi ito awtomatikong magre-reboot, kahit na naka-enable ang patakaran.</translation>
 <translation id="9152473318295429890">Ine-enable ang mga kontekstwal na suhestyon ng mga nauugnay na web page</translation>
 <translation id="9158929520101169054">Payagan ang Maraming Pag-sign Sa Browser</translation>
+<translation id="9159126470527871268">Nag-aabiso sa mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o i-restart ang <ph name="PRODUCT_OS_NAME" /> para malapat ang nakabinbing pag-update.
+
+      Ine-enable ng setting ng patakarang ito ang mga notification para ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser o pag-restart ng device. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito, at ipapaalam iyon ng <ph name="PRODUCT_OS_NAME" /> sa pamamagitan ng notification sa system tray. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito para ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Ang default na panahon ay pitong araw para sa <ph name="PRODUCT_NAME" /> at apat na araw para sa <ph name="PRODUCT_OS_NAME" />, at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Ire-restore ang session ng user pagkatapos ng muling paglulunsad/pag-restart.</translation>
 <translation id="9165792353046089850">Binibigyang-daan kang itakda kung pinapayagan ang mga website na magkaroon ng access sa mga nakakonektang USB device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na magkaroon ng access sa mga nakakonektang USB device.
 
           Maaaring ma-override ang patakarang ito para sa mga partikular na pattern ng URL gamit ang mga patakarang 'WebUsbAskForUrls' at 'WebUsbBlockedForUrls.'

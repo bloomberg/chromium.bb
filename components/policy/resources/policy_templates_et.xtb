@@ -361,6 +361,7 @@
 <translation id="199764499252435679">Komponentide värskenduste lubamine teenuses <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Toitehaldus</translation>
 <translation id="201557587962247231">Seadme oleku aruannete üleslaadimise sagedus</translation>
+<translation id="2017301949684549118">Märkamatult installitavate veebirakenduste URL-id.</translation>
 <translation id="2018836497795982119">Määrab perioodi millisekundites, mille jooksul seadme haldusteenusele esitatakse päring kasutajareegli teabe hankimiseks.
 
       Selle reegli määramisel alistatakse vaikeväärtus 3 tundi. Selle reegli kehtivad väärtused jäävad vahemikku 1 800 000 (30 minutit) kuni 86 400 000 (1 päev). Sellest vahemikust välja jäävad väärtused surutakse vastavatesse piiridesse. Kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi, kuna eeldatakse, et reegli märguanded jõustavad värskendamise reegli muutmisel automaatselt.
@@ -673,6 +674,11 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
           Google'i otsingu URL-iks võib määrata: <ph name="GOOGLE_SEARCH_URL" />
 
           Valik tuleb määrata ja seda rakendatakse vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
+<translation id="2659019163577049044">Kui seade on lubatud, võivad kasutajad seadmetes seadistada SMS-ide sünkroonimise telefoni ja Chromebooki vahel. Pange tähele, et kui reegel on lubatud, peavad kasutajad funktsiooni selgesõnaliselt lubama, viies lõpule seadistusvoo. Pärast seadistusvoo lõppu saavad kasutajad Chromebookis SMS-e saata ja vastu võtta.
+
+      Kui seade on keelatud, ei ole kasutajatel lubatud SMS-ide sünkroonimist seadistada.
+
+      Kui seade jäetakse seadistamata, on see hallatavate kasutajate puhul vaikimisi keelatud ja haldamata kasutajate puhul lubatud.</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
 <translation id="267596348720209223">Määrab tähemärkide kodeeringu, mida otsingupakkuja toetab. Kodeeringud on koodilehtede nimed, näiteks UTF-8, GB2312 või ISO-8859-1. Neid proovitakse sisestatud järjestuses.
 
@@ -743,7 +749,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Kui keelate seade või jätate väärtuse määramata, kasutab printimise eelvaade vaikesihtkohana viimati kasutatud printerit.
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
-<translation id="2867699958489427143">Mine tagasi ja jää sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Protsessi käigus tehakse täielik Powerwash.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
@@ -984,7 +989,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="3711895659073496551">Peata</translation>
 <translation id="3715569262675717862">Kliendi sertifikaatidel põhinev autentimine</translation>
 <translation id="3736879847913515635">Kasutajahalduris inimese lisamise lubamine</translation>
-<translation id="3737544779868348650">Seadme võrgu hostinimi</translation>
 <translation id="3746590506846867985">
       See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
       Kui reegel on lubatud, käitab iga komadega eraldatud loendis nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide nimetatud lähtekohad; nt aadressi https://example.com/ määramisel isoleeritakse saidi https://example.com/ osana ka aadress https://foo.example.com/.
@@ -1094,6 +1098,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Iga loendi kirje sisaldab sõnastikku, mis peab väljal „extension-id” sisaldama laienduse ID-d ja väljal „update-url” värskenduse URL-i.</translation>
 <translation id="3874773863217952418">Funktsiooni Puuduta otsimiseks lubamine</translation>
 <translation id="3877517141460819966">Integreeritud kahe teguriga autentimise režiim</translation>
+<translation id="3879208481373875102">Sunnitult installitud veebirakenduste loendi seadistamine</translation>
 <translation id="388237772682176890">Selle reegli tugi katkestatakse versioonis M53 ja see eemaldatakse versioonis M54, kuna SPDY/3.1 tugi eemaldatakse.
 
       Keelab SPDY-protokolli kasutamise rakenduses <ph name="PRODUCT_NAME" />.
@@ -1336,6 +1341,10 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
           Vaadake reegli võimalike seadete ja struktuuri täielikku kirjeldust https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Kasutajareeglite tagastusliidese töötlemisrežiim</translation>
+<translation id="4554841826517980623">Reegel määrab, kas teenuse<ph name="PRODUCT_NAME" /> failide võrguhoidlate funktsioon peab võrguhoidlate tuvastamiseks kasutama protokolli <ph name="NETBIOS_PROTOCOL" />.
+      Kui reegel on seatud väärtusele Tõene, kasutab hoidlate tuvastamise funktsioon võrgus hoidlate tuvastamiseks protokolli <ph name="NETBIOS_PROTOCOL" />.
+      Kui reegel on seatud väärtusele Väär, ei kasuta hoidlate tuvastamise funktsioon hoidlate tuvastamiseks protokolli <ph name="NETBIOS_PROTOCOL" />.
+      Kui reegel jäetakse seadistamata, on seade ettevõtte hallatavate kasutajate puhul vaikimisi keelatud ja haldamata kasutajate puhul lubatud.</translation>
 <translation id="4555850956567117258">Kasutajale kaugatesteerimise lubamine</translation>
 <translation id="4557134566541205630">Otsingupakkuja uue vahelehe vaike-URL</translation>
 <translation id="4567137030726189378">Arendaja tööriistade kasutamise lubamine</translation>
@@ -1758,6 +1767,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui jätate reegli määramata, on suuline tagasiside algselt keelatud. Kasutaja võib suulise tagasiside igal ajal lubada või keelata ja selle olek jääb sisselogimisekraanil kasutajati püsivaks.</translation>
 <translation id="5868414965372171132">Kasutaja tasemel võrgukonfiguratsioon</translation>
+<translation id="5879014913445067283">Juhib võrguhoidlate tuvastamist teenuse <ph name="NETBIOS_NAME" /> kaudu</translation>
 <translation id="5883015257301027298">Küpsiste vaikeseade</translation>
 <translation id="5887414688706570295">Seadistab TalkGadgeti eesliite, mida kasutavad kaugjuurdepääsu hostid, ja takistab kasutajatel selle muutmist.
 
@@ -2221,6 +2231,16 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="7063895219334505671">Luba hüpikaknad nendel saitidel</translation>
+<translation id="706568410943497889">
+      Kui reegli väärtuseks määratakse Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
+
+      Kui reegli väärtuseks määratakse Väär või jäetakse see määramata, ei tohi <ph name="PRODUCT_NAME" /> logisid koguda ega üles laadida.
+
+      Need logid sisaldavad diagnostikateavet, mis on kasulik Chrome'i hääl- või videokõnedega seotud probleemide silumisel. See hõlmab näiteks näiteks saadetud ja vastuvõetud RTP-pakettide kellaaja ja suuruse teavet, tagasisidet võrgu ummistuste kohta ja metaandmeid heli- ja videokaadrite aja ja kvaliteedi kohta. Logid ei sisalda kõne hääl- ega videosisu.
+
+      Chrome'is savad andmete kogumise käivitada ainult Google'i veebiteenused, nt Google Hangouts või Google Meet.
+      Google võib seansi ID alusel seostada logid muude logidega, mida Google'i teenus kogub. Selle eesmärk on hõlbustada silumist.
+      </translation>
 <translation id="706669471845501145">Luba saitidel töölauateatiste näitamine</translation>
 <translation id="7072208053150563108">Seadme parooli muutmise sagedus</translation>
 <translation id="7074513465313721551">Seadistage loend domeenidest, mida ohutu sirvimise funktsioon usaldab. See tähendab järgmist.
@@ -2354,6 +2374,9 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7340034977315324840">Saada teavet seadme aktiivsuse aja kohta</translation>
 <translation id="7343497214039883642">Ettevõtte printerite konfiguratsioonifail seadmetele</translation>
+<translation id="7349338075015720646">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma.
+
+      Reegli iga loendiüksus on objekt, mis koosneb kahest liikmest: „url” ja „launch_container”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Kui väärtus „launch_container” jäetakse tühjaks ja Chrome peab rakendust progressiivseks veebirakenduseks, avaneb see aknas, muidu avaneb rakendus vahelehel.</translation>
 <translation id="7367028210010532881">Kui kasutajad satuvad navigeerides saitidele, mis on märgistatud potentsiaalselt pahatahtlikuks, kuvab teenus Google'i ohutu sirvimine hoiatuslehe. Selle seade lubamine takistab kasutajatel hoiatuslehelt pahatahtlikule saidile edasi liikuda.
 
       Kui seade on keelatud või seadistamata, saavad kasutajad pärast hoiatuse kuvamist teha valiku edasiminekuks märgistatud saidile.
@@ -2819,6 +2842,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Siin võib „versioon” tähendada nii täpset versiooninumbrit „61.0.3163.120” kui ka versiooni eesliidet „61.0”  </translation>
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME" /> HTML-i vaikerenderdaja</translation>
+<translation id="8544465954173828789">SMS-ide sünkroonimise lubamine telefoni ja Chromebooki vahel</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
 <translation id="8586528890725660268">Määrab printerid, mida kasutaja ei saa kasutada.
@@ -2864,6 +2888,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui see reegel jäetakse määramata, kaitseb paroolikaitse ainult Google'i paroole, ent kasutaja saab seda seadet muuta.</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
 <translation id="867410340948518937">U2F (universaalne teine tegur)</translation>
+<translation id="8682611302223077049">Võimaldab määrata ajaperioodi (millisekundites), mille jooksul antakse kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade taaskäivitada.
+
+      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. <ph name="PRODUCT_OS_NAME" />-i seadmete puhul kuvatakse värskenduse tuvastamisel taaskäivituse märguanne süsteemisalves. <ph name="PRODUCT_NAME" />'i brauseri puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
+
+      Kui reegel on määramata, kasutatakse vaikeperioodi, mis on <ph name="PRODUCT_OS_NAME" />-iga seadmete puhul 345 600 000 millisekundit (neli päeva) ja <ph name="PRODUCT_NAME" />'i puhul 604 800 000 millisekundit (üks nädal).</translation>
 <translation id="8685024486845674965">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
@@ -2908,6 +2937,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
           Skaleerimistegur peab olema vähemalt 100%. Väärtused, mis võivad teha ekraani tumenduse viivituse esitlusrežiimis lühemaks kui tavaline ekraani tumenduse viivitus, pole lubatud.</translation>
 <translation id="8798099450830957504">Vaikimisi</translation>
+<translation id="8801680448782904838">Kasutaja teavitamine brauseri või seadme soovitatavast või kohustuslikust taaskäivitamisest</translation>
 <translation id="8818173863808665831">Esitab seadme geograafilise asukoha.
 
       Kui jätate eeskirjad määramata või keelate need, siis asukohta ei esitata.</translation>
@@ -3070,6 +3100,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on seatud väärtusele Tõene ja kasutaja lülitab seadme välja, taaskäivitab <ph name="PRODUCT_OS_NAME" /> seadme. <ph name="PRODUCT_OS_NAME" /> asendab kasutajaliidese kõik väljalülitamisnupud taaskäivitusnuppudega. Kui kasutaja lülitab seadme toitenupuga välja, ei taaskäivitata seda automaatselt, isegi kui reegel on lubatud.</translation>
 <translation id="9152473318295429890">Seotud veebilehtede kontekstipõhiste soovituste lubamine</translation>
 <translation id="9158929520101169054">Brauseris mitmele kontole sisselogimise lubamine</translation>
+<translation id="9159126470527871268">Võimaldab anda kasutajatele teada, et ootel oleva värskenduse rakendamiseks tuleb <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" /> taaskäivitada.
+
+      See reegli seade lubab märguanded, mis annavad kasutajale teada, et brauseri või seadme taaskäivitamine on soovitatav või kohustuslik. Kui reegel on määramata, teavitab <ph name="PRODUCT_NAME" /> kasutajat menüüs ilmuvate väikeste muutuste abil, <ph name="PRODUCT_OS_NAME" /> kasutab teavitamiseks süsteemisalves kuvatavat märguannet. Kui reegel on seatud väärtusele „Soovitatav”, kuvatakse kasutajale korduvalt soovitatava taaskäivitamise hoiatus. Kasutaja saab taaskäivitamise edasilükkamiseks hoiatusest loobuda. Kui reegel on seatud väärtusele „Nõutav”, kuvatakse kasutajale korduvalt hoiatus, mis annab teada, et brauser sundtaaskäivitatakse pärast märguandeperioodi möödumist. Vaikeperiood on rakenduse <ph name="PRODUCT_NAME" /> puhul seitse päeva ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> puhul neli päeva ning seda saab reegli <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> seade abil muuta.
+
+      Pärast taaskäivitamist kasutaja seanss taastatakse.</translation>
 <translation id="9165792353046089850">Võimaldab määrata, kas veebisaitidel on juurdepääs ühendatud USB-seadmetele. Juurdepääsu saab täielikult blokeerida või küsida kasutaja käest iga kord luba, kui veebisait soovib juurdepääsu ühendatud USB-seadmetele.
 
           Selle reegli saab teatud URL-i mustrite puhul alistada, kasutades reegleid „WebUsbAskForUrls” ja „WebUsbBlockedForUrls”.

@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Kas soovite selle kaardi salvestada oma Google'i kontole ja sellesse seadmesse?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Kahjulik sisu on blokeeritud.</translation>
 <translation id="382518646247711829">Kui kasutate puhverserverit ...</translation>
 <translation id="3828924085048779000">Tühi parool ei ole lubatud.</translation>
 <translation id="385051799172605136">Tagasi</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4958444002117714549">Laienda loendit</translation>
 <translation id="4974590756084640048">Luba hoiatused uuesti</translation>
+<translation id="4988217478422488391">Võimaldab veebis kiiremini maksta</translation>
 <translation id="4989809363548539747">Seda pistikprogrammi ei toetata</translation>
 <translation id="5002932099480077015">Kui see on lubatud, salvestab Chrome teie kaardi koopia vormide kiiremini täitmiseks sellesse seadmesse.</translation>
 <translation id="5018422839182700155">Seda lehte ei saa avada</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Muuda uuesti</translation>
 <translation id="5481076368049295676">See sisu võib üritada installida teie seadmesse ohtlikku tarkvara, mis varastab või kustutab teie teavet. <ph name="BEGIN_LINK" />Kuva ikkagi<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Sisestage sobiv aadress</translation>
+<translation id="5490432419156082418">Aadressid ja muu</translation>
 <translation id="5492298309214877701">Sellel ettevõtte, organisatsiooni või kooli intranetis oleval saidil on sama URL mis välisel veebisaidil.
     <ph name="LINE_BREAK" />
     Võtke ühendust süsteemiadministraatoriga.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 on kasutusel}other{# on kasutusel}}</translation>
 <translation id="5922853866070715753">Peaaegu valmis</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
+<translation id="5951495562196540101">Tarbijakontoga ei saa registreeruda (paketipõhine litsents on saadaval).</translation>
 <translation id="5967592137238574583">Kontaktteabe muutmine</translation>
 <translation id="5967867314010545767">Eemalda ajaloost</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
@@ -1065,6 +1069,7 @@ Lisateave:
 <translation id="8433057134996913067">See logib teid välja enamikult veebisaitidelt.</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 krediitkaart}other{# krediitkaarti}}</translation>
+<translation id="8473863474539038330">Aadressid ja muu</translation>
 <translation id="8483780878231876732">Google'i konto kaartide kasutamiseks logige sisse Chrome'i</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
@@ -1124,6 +1129,7 @@ Lisateave:
 <translation id="8952525071319348207">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie Google Paymentsi konto kaardi üksikasju selle saidiga.</translation>
 <translation id="8957210676456822347">Kontrollportaali volitamine</translation>
 <translation id="8971063699422889582">Serveri sertifikaat on aegunud.</translation>
+<translation id="8975012916872825179">Hõlmab näiteks telefoninumbreid, e-posti ja postiaadresse</translation>
 <translation id="8978053250194585037">Google'i ohutu sirvimise funktsioon <ph name="BEGIN_LINK" />tuvastas hiljuti andmepüügi<ph name="END_LINK" /> saidil <ph name="SITE" />. Andmepüügisaidid teesklevad teie petmiseks, et tegemist on teise saidiga.</translation>
 <translation id="8983003182662520383">Makseviisid ja aadressid, mis kasutavad teenust Google Pay</translation>
 <translation id="8987927404178983737">kuu</translation>
@@ -1172,6 +1178,7 @@ Lisateave:
 <translation id="935608979562296692">TÜHJENDA VORM</translation>
 <translation id="939736085109172342">Uus kaust</translation>
 <translation id="951104842009476243">Aktsepteeritavad ettemakstud ja deebetkaardid</translation>
+<translation id="962484866189421427">Sisu võib üritada installida petlikke rakendusi, mis esinevad millegi muuna või koguda andmeid, mida saab kasutada teie jälgimiseks. <ph name="BEGIN_LINK" />Kuva siiski<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Ametlik järk</translation>
 <translation id="973773823069644502">Lisage kohaletoimetamisaadress</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ühtegi}=1{1 üksus}other{# üksust}}</translation>

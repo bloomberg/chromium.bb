@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">Створити подію</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
 <translation id="290376772003165898">Ця сторінка відображається не такою мовою: <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Запитувати, перш ніж дозволити сайтам відтворювати захищений вміст</translation>
 <translation id="2913331724188855103">Дозволити сайтам зберігати та розпізнавати дані файлів cookie (рекомендується)</translation>
 <translation id="2932150158123903946">Дані додатка Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Покращуйте Chrome і функції безпеки, надсилаючи в Google дані про систему та використання</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">Оновити поточну сторінку</translation>
 <translation id="3452612588551937789">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d файл завантажено}one{%1$d файл завантажено}few{%1$d файли завантажено}many{%1$d файлів завантажено}other{%1$d файлу завантажено}}</translation>
-<translation id="3487093336331957349">Пропозиції пошукових термінів і сайтів</translation>
 <translation id="3492207499832628349">Нова анонімна вкладка</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про пропонований вміст</translation>
 <translation id="3518985090088779359">Прийняти та продовж.</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">Керування синхронізацією, персоналізацією тощо</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Спливаючі вікна й переадресація</translation>
-<translation id="4445444302979002552">Пропонувати пошукові терміни та веб-сайти за допомогою служб для показу пропозицій</translation>
 <translation id="4452411734226507615">Закрити вкладку <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4453340223357552416">Файл <ph name="FILE_NAME" /> завантажено в продукті <ph name="PRODUCT_NAME" /></translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="6295158916970320988">Усі сайти</translation>
 <translation id="629730747756840877">Обліковий запис</translation>
+<translation id="6303969859164067831">Вийти й вимкнути синхронізацію</translation>
 <translation id="6320088164292336938">Вібросигнал</translation>
 <translation id="6324034347079777476">Синхронізацію системи Android вимкнено</translation>
 <translation id="6333140779060797560">Надіслати через <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">Не вдається отримати пропозиції</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
+<translation id="757524316907819857">Заборонити сайтам відтворювати захищений вміст</translation>
 <translation id="7589445247086920869">Заблокувати для поточної пошукової системи</translation>
 <translation id="7593557518625677601">Щоб почати синхронізацію Chrome, відкрийте параметри Android і знову ввімкніть синхронізацію системи</translation>
 <translation id="7596558890252710462">Операційна система</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8986494364107987395">Автоматично надсилати статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="8993760627012879038">Відкрити нове вікно в режимі анонімного перегляду</translation>
 <translation id="8998729206196772491">Ви входите в обліковий запис, зареєстрований у домені <ph name="MANAGED_DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chrome. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису в Chrome, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
-<translation id="9018881455348618200">Кнопка пошуку</translation>
 <translation id="9019902583201351841">Керується батьками</translation>
 <translation id="9040142327097499898">На цьому пристрої вимкнено геодані. Сповіщення дозволено.</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>

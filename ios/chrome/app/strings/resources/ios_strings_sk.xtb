@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Položka bola aktualizovaná</translation>
 <translation id="1047726139967079566">Pridať stránku medzi záložky…</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1063454504051558093">Použiť iné heslo…</translation>
 <translation id="1076421457278169141">Kód bol naskenovaný</translation>
 <translation id="1084365883616172403">Príspevok bol uverejnený na Facebook.</translation>
 <translation id="1104948393051856124">Prijať a pokračovať</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Odosielanie údajov o používaní</translation>
 <translation id="1886928167269928266">Celé obdobie</translation>
 <translation id="1911619930368729126">Nahrať na Disk Google</translation>
+<translation id="191179954310195971">Ďalšie služby Googlu</translation>
 <translation id="1941314575388338491">Dvojitým klepnutím skopírujete.</translation>
 <translation id="1952728750904661634">Prihlásenie pomocou spravovaného účtu</translation>
 <translation id="1974060860693918893">Rozšírené</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Váš čitateľský zoznam je k dispozícii offline. Ak chcete pridať stránku do čitateľského zoznamu, klepnite na položku <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Použiť iné heslo</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3779810277399252432">Internetové pripojenie nie je k dispozícii.</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
@@ -315,6 +318,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6344783595350022745">Prehľadný text</translation>
 <translation id="6346549652287021269">Spustiť nové sťahovanie?</translation>
 <translation id="6362362396625799311">Žiadne karty inkognito</translation>
+<translation id="6363526231572697780">Žiadne používateľské meno</translation>
 <translation id="6374469231428023295">Skúsiť znova</translation>
 <translation id="6380866119319257197">Ak prístupovú frázu zabudnete alebo budete chcieť toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" />.</translation>
 <translation id="6389470377220713856">Meno na karte</translation>

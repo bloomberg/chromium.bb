@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">項目已更新</translation>
 <translation id="1047726139967079566">把此頁加入書籤...</translation>
 <translation id="1049743911850919806">無痕模式</translation>
+<translation id="1063454504051558093">使用其他密碼...</translation>
 <translation id="1076421457278169141">已掃描圖碼/條碼</translation>
 <translation id="1084365883616172403">已順利發佈到 Facebook。</translation>
 <translation id="1104948393051856124">接受並繼續</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">傳送使用情況資料</translation>
 <translation id="1886928167269928266">不限時間</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
+<translation id="191179954310195971">其他 Google 服務</translation>
 <translation id="1941314575388338491">輕觸兩下即可複製。</translation>
 <translation id="1952728750904661634">使用受管理的帳戶登入</translation>
 <translation id="1974060860693918893">進階</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
+<translation id="3765471630796399471">使用其他密碼</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3779810277399252432">沒有網際網路連線。</translation>
 <translation id="3783017676699494206">儲存圖片</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">清除文字</translation>
 <translation id="6346549652287021269">要開始進行新的下載作業嗎？</translation>
 <translation id="6362362396625799311">沒有已開啟的無痕式分頁</translation>
+<translation id="6363526231572697780">沒有使用者名稱</translation>
 <translation id="6374469231428023295">再試一次</translation>
 <translation id="6380866119319257197">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">持卡人姓名</translation>

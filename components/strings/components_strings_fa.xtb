@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">‏آیا می‌خواهید این کارت در حساب Google شما و این دستگاه ذخیره شود؟</translation>
 <translation id="3783418713923659662">مسترکارت</translation>
 <translation id="3787705759683870569">تاریخ انقضا <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">محتوای مضر مسدود شد.</translation>
 <translation id="382518646247711829">اگر از سرور پراکسی استفاده می‌کنید...</translation>
 <translation id="3828924085048779000">عبارت عبور خالی مجاز نیست.</translation>
 <translation id="385051799172605136">بازگشت</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
 <translation id="4974590756084640048">فعال کردن مجدد اخطارها</translation>
+<translation id="4988217478422488391">کمک می‌کند پرداخت‌های آنلاین سریع‌تر انجام شود</translation>
 <translation id="4989809363548539747">این افزایه پشتیبانی نمی‌شود</translation>
 <translation id="5002932099480077015">‏اگر فعال شود، Chrome یک کپی از کارت شما را برای پرکردن سریع‌تر فرم در این دستگاه ذخیره می‌کند.</translation>
 <translation id="5018422839182700155">این صفحه نمی‌تواند باز شود</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;انجام مجدد ویرایش</translation>
 <translation id="5481076368049295676">شاید این محتوا تلاش کند نرم‌افزار خطرناکی در دستگاهتان نصب کند که اطلاعاتتان را به سرقت برد یا حذف کند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">نشانی معتبری اضافه کنید</translation>
+<translation id="5490432419156082418">نشانی‌ها و سایر موارد</translation>
 <translation id="5492298309214877701">نشانی وب این سایت در اینترانت شرکت، سازمان یا محل تحصیل با نشانی وب یک وب‌سایت خارجی یکسان است.
     <ph name="LINE_BREAK" />
     با سرپرست سیستم تماس بگیرید.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}}</translation>
 <translation id="5922853866070715753">تقريباً تمام است</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
+<translation id="5951495562196540101">نمی‌توان با حساب مصرف‌کننده ثبت‌نام کرد (مجوز بسته‌بندی دردسترس است).</translation>
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5975083100439434680">کوچک نمایی</translation>
@@ -1065,6 +1069,7 @@
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{۱ کارت اعتباری}one{# کارت اعتباری}other{# کارت اعتباری}}</translation>
+<translation id="8473863474539038330">نشانی‌ها و سایر موارد</translation>
 <translation id="8483780878231876732">‏برای استفاده از کارت‌ها از حساب Google خود، به سیستم Chrome وارد شوید</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
@@ -1124,6 +1129,7 @@
 <translation id="8952525071319348207">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت از حساب «پرداخت‌های Google» با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
+<translation id="8975012916872825179">شامل اطلاعاتی مانند شماره تلفن، نشانی ایمیل و نشانی تحویل کالا می‌شود</translation>
 <translation id="8978053250194585037">‏Google Safe Browsing اخیراً در <ph name="SITE" />، <ph name="BEGIN_LINK" />فیشینگ شناسایی کرده است<ph name="END_LINK" />. سایت‌های فیشینگ وانمود می‌کنند وب‌سایت‌های دیگری هستند تا شما را فریب دهند.</translation>
 <translation id="8983003182662520383">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
 <translation id="8987927404178983737">ماه</translation>
@@ -1172,6 +1178,7 @@
 <translation id="935608979562296692">پاک کردن فرم</translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="951104842009476243">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
+<translation id="962484866189421427">این محتوا ممکن است برنامه‌های فریب‌دهنده‌ای نصب کند که وانمود می‌کنند برنامه دیگری هستند یا اینکه داده‌هایی برای ردیابی شما جمع‌آوری می‌کنند. <ph name="BEGIN_LINK" />درهرصورت نشان داده شود<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">ساخت رسمی</translation>
 <translation id="973773823069644502">افزودن نشانی ارسال</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{هیچ‌کدام}=1{۱ مورد}one{# مورد}other{# مورد}}</translation>

@@ -138,6 +138,7 @@
 <translation id="2267945578749931355">下一个字符</translation>
 <translation id="2281234842553884450">上一个滑块</translation>
 <translation id="2294136146931447363">斜体文字的开头</translation>
+<translation id="2311237334957139798">前移一个朗读单位</translation>
 <translation id="2318372665160196757">主体内容</translation>
 <translation id="2329324941084714723">标签面板</translation>
 <translation id="2344193891939537199">日期时间控件</translation>
@@ -519,6 +520,7 @@
 <translation id="5106547198195128110">这一新版本中有一些重大变更，具体如下：</translation>
 <translation id="5110983769041734144">不存在上一个表单字段。</translation>
 <translation id="5111640677200759579">列标题</translation>
+<translation id="5115892389597951922">ChromeVox 日志</translation>
 <translation id="5136967254288895616">不存在上一个链接。</translation>
 <translation id="513774504516943387">链接</translation>
 <translation id="5158275234811857234">封面</translation>
@@ -686,6 +688,7 @@
 <translation id="6540201937398578274">在 ChromeVox 中，搜索键是辅助键。大多数 ChromeVox 快捷键都是用搜索键搭配其他按键。若要进行导航，您也会用到箭头键。</translation>
 <translation id="6550720799683018100">从下面的列表中选择一个选项，以更改当前键映射。</translation>
 <translation id="6561818612645211875">转到当前行的开头</translation>
+<translation id="6583174818554398774">后移一个朗读单位</translation>
 <translation id="6587021927234520429">不存在下一个4级标题。</translation>
 <translation id="6601344353291556895">启用详细说明。</translation>
 <translation id="6615602925644411249">在网页中查找。</translation>

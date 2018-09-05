@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">तुम्हाला हे कार्ड तुमच्या Google खात्यामध्ये आणि या डिव्हाइसवर सेव्ह करायचे आहे का?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">समाप्त होते: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">हानिकारक आशय ब्लॉक केला गेला.</translation>
 <translation id="382518646247711829">आपण प्रॉक्सी सर्व्हर वापरत असल्यास...</translation>
 <translation id="3828924085048779000">रिक्त सांकेतिक वाक्यांशाची परवानगी नाही.</translation>
 <translation id="385051799172605136">मागील</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4958444002117714549">सूची विस्तृत करा</translation>
 <translation id="4974590756084640048">चेतावण्या पुन्हा सक्षम करा</translation>
+<translation id="4988217478422488391">गोष्टींसाठी ऑनलाइन पैसे देणे आणखी जलद करते</translation>
 <translation id="4989809363548539747">हे प्लगिन समर्थित नाही</translation>
 <translation id="5002932099480077015">सक्षम केल्‍यास, Chrome जलदपणे फॉर्म भरण्‍यासाठी आपल्‍या कार्डची एक प्रत या डिव्‍हाइसवर संग्रहित करेल.</translation>
 <translation id="5018422839182700155">हे पृष्‍ठ उघडू शकत नाही</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="5481076368049295676">हा आशय तुमच्या डिव्हाइसवर तुमची माहिती चोरू किंवा मिटवू शकणारे धोकादायक सॉफ्टवेअर इंस्टॉल करण्याचा कदाचित प्रयत्न करेल. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">वैध पत्ता जोडा</translation>
+<translation id="5490432419156082418">पत्ते आणि बरेच काही</translation>
 <translation id="5492298309214877701">कंपनी, संस्था किंवा शाळा इंट्रानेट वरील या साइटची URL बाह्य वेबसाइटसारखीच आहे.
     <ph name="LINE_BREAK" />
     सिस्टम प्रशासकाशी संपर्क साधण्याचा प्रयत्न करा.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 वापरात आहे}one{# वापरात आहे}other{# वापरात आहेत}}</translation>
 <translation id="5922853866070715753">जवळजवळ पूर्ण झाले</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
+<translation id="5951495562196540101">उपभोक्ता खात्याने नोंदणी करू शकत नाही (पॅकेज केलेला परवाना उपलब्ध).</translation>
 <translation id="5967592137238574583">संपर्क माहिती संपादित करा</translation>
 <translation id="5967867314010545767">इतिहासातून काढा</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>
@@ -1066,6 +1070,7 @@
 <translation id="8433057134996913067">हे आपल्याला बहुतांश वेबसाइट वरून साइन आउट करेल.</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
+<translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>
@@ -1125,6 +1130,7 @@
 <translation id="8952525071319348207">तुमच्या कार्डाचे तपशील अपडेट करण्यासाठी <ph name="CREDIT_CARD" /> कार्डाची मुदत संपण्याची तारीख आणि CVV टाका. तुम्ही निश्चित केल्यावर, तुमच्या Google पेमेंट खात्यावरील कार्डाचे तपशील या साइटसोबत शेअर केले जातील.</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
+<translation id="8975012916872825179">फोन नंबर, ईमेल अॅड्रेस आणि शिपिंग पत्ते यांसारखी माहिती समाविष्ट आहे</translation>
 <translation id="8978053250194585037">Google सुरक्षित ब्राउझिंगला <ph name="SITE" /> वर अलीकडे <ph name="BEGIN_LINK" />फिशिंग आढळले<ph name="END_LINK" />. तुम्हाला फसवण्यासाठी फिशिंग साइट दुसर्‍याच कुठल्यातरी वेबसाइट असल्याचे भासवतात.</translation>
 <translation id="8983003182662520383">Google Pay वापरून पेमेंट पद्धती आणि पत्ते</translation>
 <translation id="8987927404178983737">महिना</translation>
@@ -1173,6 +1179,7 @@
 <translation id="935608979562296692">फॉर्म साफ करा</translation>
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
 <translation id="951104842009476243">स्वीकारली जाणारी डेबिट आणि प्रीपेड कार्डे</translation>
+<translation id="962484866189421427">हा आशय काहीतरी दुसरे असण्याची बतावणी करणारी फसवी अॅप्स इंस्टॉल करण्याचा किंवा तुमचा माग ठेवण्यासाठी वापरला जाऊ शकणारा डेटा गोळा करण्याचा प्रयत्न करू शकतो. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">अधिकृत बिल्ड</translation>
 <translation id="973773823069644502">वितरणाचा पत्ता जोडा</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{काहीही नाही}=1{1 आयटम}one{# आयटम}other{# आयटम}}</translation>

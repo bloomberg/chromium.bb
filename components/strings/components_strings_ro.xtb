@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Dorești să salvezi acest card în Contul Google și pe acest dispozitiv?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expiră în <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Conținutul dăunător a fost blocat.</translation>
 <translation id="382518646247711829">Dacă utilizați un server proxy...</translation>
 <translation id="3828924085048779000">Trebuie să fie introdusă expresia de acces.</translation>
 <translation id="385051799172605136">Înapoi</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
 <translation id="4974590756084640048">Reactivează avertismentele</translation>
+<translation id="4988217478422488391">Te ajută să plătești mai rapid online</translation>
 <translation id="4989809363548539747">Acest plugin nu este acceptat</translation>
 <translation id="5002932099480077015">Dacă este activată, Chrome va stoca o copie a cardului pe acest dispozitiv, pentru completarea mai rapidă a formularelor.</translation>
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Repetați editarea</translation>
 <translation id="5481076368049295676">Acest conținut ar putea încerca să instaleze software periculos pe dispozitivul tău, care îți fură sau îți șterge informațiile. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Adaugă o adresă validă</translation>
+<translation id="5490432419156082418">Adrese și altele</translation>
 <translation id="5492298309214877701">Acest site din rețeaua intranet a companiei, organizației sau școlii are aceeași adresă URL folosită de un site extern.
     <ph name="LINE_BREAK" />
     Contactează administratorul sistemului.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 în uz}few{# în uz}other{# în uz}}</translation>
 <translation id="5922853866070715753">Aproape finalizat</translation>
 <translation id="5939518447894949180">Resetează</translation>
+<translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
 <translation id="5967592137238574583">Editează informațiile de contact</translation>
 <translation id="5967867314010545767">Eliminați din istoric</translation>
 <translation id="5975083100439434680">Micșorează</translation>
@@ -1065,6 +1069,7 @@ Detalii suplimentare:
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
+<translation id="8473863474539038330">Adrese și altele</translation>
 <translation id="8483780878231876732">Pentru a folosi cardurile din Contul Google, conectează-te la Chrome</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>
@@ -1125,6 +1130,7 @@ Detalii suplimentare:
 <translation id="8952525071319348207">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău din contul Google Payments.</translation>
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
+<translation id="8975012916872825179">Include informații precum numerele de telefon, adresele de e-mail și adresele de expediere</translation>
 <translation id="8978053250194585037">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat phishing<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile de phishing falsifică alte site-uri, pentru a te înșela.</translation>
 <translation id="8983003182662520383">Metodele de plată și adresele care folosesc Google Pay</translation>
 <translation id="8987927404178983737">Lună</translation>
@@ -1173,6 +1179,7 @@ Detalii suplimentare:
 <translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>
 <translation id="939736085109172342">Dosar nou</translation>
 <translation id="951104842009476243">Carduri de debit și preplătite acceptate</translation>
+<translation id="962484866189421427">Acest conținut poate încerca să instaleze aplicații înșelătoare care pretind a fi altceva sau culeg date care pot fi folosite pentru a te urmări. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Versiune oficială</translation>
 <translation id="973773823069644502">Adaugă o adresă de livrare</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Niciunul}=1{1 element}few{# elemente}other{# de elemente}}</translation>

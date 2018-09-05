@@ -1007,7 +1007,6 @@
 <translation id="2508428939232952663">Google Play Store Account</translation>
 <translation id="2509495747794740764">Scale amount must be a number between 10 and 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2512222046227390255">Auto-fill forms</translation>
 <translation id="2513403576141822879">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google services<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Scan</translation>
@@ -1952,7 +1951,6 @@
 <translation id="3920504717067627103">Certificate Policies</translation>
 <translation id="392089482157167418">Enable ChromeVox (spoken feedback)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">You have no recently captured WebRTC logs.</translation>
 <translation id="3925573269917483990">Camera:</translation>
 <translation id="3925842537050977900">Unpin from Shelf</translation>
 <translation id="3926002189479431949">Smart Lock phone changed</translation>
@@ -4280,7 +4278,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Google's Location service uses sources such as Wi-Fi, mobile networks and sensors to help estimate your device’s location. This service is active when your device’s Location setting is on.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks and sensors for location in location settings.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Create a password -</translation>
-<translation id="7518150891539970662">WebRTC logs (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Create</translation>
 <translation id="7529411698175791732">Check your Internet connection. If the problem continues, try signing out and signing in again.</translation>

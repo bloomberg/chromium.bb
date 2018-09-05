@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">słaby sygnał</translation>
 <translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
+<translation id="1294929383540927798">Zmień ustawienia powiadomień na ekranie blokady</translation>
 <translation id="1302880136325416935">Pokaż ustawienia Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351937230027495976">Zwiń menu</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Włącz lub wyłącz Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
 <translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Rozwiń menu</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Zawsze pokazuj półkę</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="315116470104423982">Komórkowa transmisja danych</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="3893630138897523026">ChromeVox (potwierdzenia głosowe)</translation>
+<translation id="3897533311200664389">Rozpocznij zapytanie tekstowe</translation>
 <translation id="3899995891769452915">Rozpoznawanie mowy</translation>
 <translation id="3900355044994618856">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Łączę z: <ph name="NAME" /></translation>
@@ -461,6 +465,7 @@
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
 <translation id="9056839673611986238">Na urządzeniu zostanie przywrócona wcześniejsza wersja oprogramowania</translation>
+<translation id="9070640332319875144">Ustawienia Asystenta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>

@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Vill du spara det här kortet i Google-kontot och på den här enheten?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Utgångsdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Skadligt innehåll har blockerats.</translation>
 <translation id="382518646247711829">Om du använder en proxyserver ...</translation>
 <translation id="3828924085048779000">Lösenfrasen får inte vara tom.</translation>
 <translation id="385051799172605136">Bakåt</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4958444002117714549">Expandera lista</translation>
 <translation id="4974590756084640048">Aktivera varningar igen</translation>
+<translation id="4988217478422488391">Det blir snabbare att göra betalningar online</translation>
 <translation id="4989809363548539747">Det här pluginprogrammet stöds inte</translation>
 <translation id="5002932099480077015">Om alternativet är aktiverat sparar Chrome en kopia av kortet på enheten så att det går snabbare att fylla i formulär.</translation>
 <translation id="5018422839182700155">Det går inte att öppna den här sidan</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Gör om Redigera</translation>
 <translation id="5481076368049295676">Sidan kan ha till syfte att installera farlig programvara som stjäl eller raderar information på enheten. <ph name="BEGIN_LINK" />Visa ändå<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Lägg till giltig adress</translation>
+<translation id="5490432419156082418">Adresser och annat</translation>
 <translation id="5492298309214877701">Webbplatsen på företagets, organisationens eller skolans intranät har samma webbadress som en extern webbplats.
     <ph name="LINE_BREAK" />
     Testa med att kontakta systemadministratören.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 används}other{# används}}</translation>
 <translation id="5922853866070715753">Nästan klart</translation>
 <translation id="5939518447894949180">Återställ</translation>
+<translation id="5951495562196540101">Det går inte att registrera enheten med ett konsumentkonto (paketerad licens är tillgänglig).</translation>
 <translation id="5967592137238574583">Redigera kontaktuppgifter</translation>
 <translation id="5967867314010545767">Ta bort från historiken</translation>
 <translation id="5975083100439434680">Zooma ut</translation>
@@ -1065,6 +1069,7 @@ Mer information:
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8437238597147034694">&amp;Ångra Flytta</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditkort}other{# kreditkort}}</translation>
+<translation id="8473863474539038330">Adresser och annat</translation>
 <translation id="8483780878231876732">Logga in i Chrome om du vill använda kort i Google-kontot</translation>
 <translation id="8488350697529856933">Gäller för</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tog för lång tid på sig att svara.</translation>
@@ -1125,6 +1130,7 @@ Mer information:
 <translation id="8952525071319348207">Uppdatera kortinformationen genom att ange utgångsdatumet och CVC-koden för <ph name="CREDIT_CARD" />. När du bekräftar delas kortuppgifter från Google Payments-konto med webbplatsen.</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
+<translation id="8975012916872825179">Gäller uppgifter som telefonnummer, e-postadresser och leveransadresser</translation>
 <translation id="8978053250194585037"><ph name="BEGIN_LINK" />Nätfiske<ph name="END_LINK" /> upptäcktes nyligen av Google Säker webbsökning på <ph name="SITE" />. Webbplatser som används för nätfiske imiterar andra webbplatser i syfte att lura dig.</translation>
 <translation id="8983003182662520383">Betalningsmetoder och adresser som används med Google Pay</translation>
 <translation id="8987927404178983737">Månad</translation>
@@ -1173,6 +1179,7 @@ Mer information:
 <translation id="935608979562296692">RENSA FORMULÄRET</translation>
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="951104842009476243">Godkända bankkort och förbetalda kort</translation>
+<translation id="962484866189421427">Bedrägliga appar som inte gör vad de påstås göra eller insamling av data som används för att spåra dig skulle kunna installeras via innehållet. <ph name="BEGIN_LINK" />Visa ändå<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Officiell version</translation>
 <translation id="973773823069644502">Lägg till leveransadress</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 objekt}other{# objekt}}</translation>

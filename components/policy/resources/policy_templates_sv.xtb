@@ -359,6 +359,7 @@
 <translation id="199764499252435679">Aktivera komponentuppdateringar i <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="201557587962247231">Frekvens för antal uppladdningar av statusrapport för enhet</translation>
+<translation id="2017301949684549118">Webbadresser till webbappar som ska installeras obemärkt</translation>
 <translation id="2018836497795982119">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten tillfrågas om användarpolicyinformation.
 
       När denna policy har ställts in åsidosätts standardvärdet tre timmar. Giltiga värden är från 1800000 (30 minuter) till 86400000 (en dag). Värden utanför intervallet ändras till närmaste gräns. Om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning, eftersom uppdateringar då sker automatiskt så fort policyn förändras.
@@ -672,6 +673,11 @@
          Googles sökadress kan anges så här: <ph name="GOOGLE_SEARCH_URL" />.
 
           Alternativet måste anges om principen DefaultSearchProviderEnabled är aktiverad och används bara om så är fallet.</translation>
+<translation id="2659019163577049044">Om inställningen är aktiverad tillåts användare att konfigurera sina enheter så att sms synkroniseras mellan deras mobiler och Chromebook-enheter. Observera att om principen är tillåten måste användare uttryckligen välja att delta genom att slutföra ett konfigurationsflöde. Användaren kan skicka och ta emot sms på sin Chromebook när konfigurationsflödet har slutförts.
+
+      Om inställningen är inaktiverad tillåts inte användare att konfigurera synkronisering för sms.
+
+      Om principen inte anges tillåts som standard inte hanterade användare att använda funktionen medan användare som inte hanteras får göra det.</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
 <translation id="267596348720209223">Policyn anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De testas i den ordning som de anges.
 
@@ -742,7 +748,6 @@
       Om du inaktiverar den här inställningen eller inte anger något värde används den senast använda skrivaren som standardval för Förhandsgranskning.
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
-<translation id="2867699958489427143">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför en komplett powerwash under processen.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
@@ -987,7 +992,6 @@
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3715569262675717862">Autentisering utifrån klientcertifikat</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
-<translation id="3737544779868348650">Värdnamn för enhetsnätverk</translation>
 <translation id="3746590506846867985">
       Den här principen gäller inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipens inställning tillämpas.
       Om principen aktiveras körs varje namngivet ursprung i en kommaavgränsad lista som en egen process. Även underdomäner isoleras. Om du exempelvis anger https://example.com/ isoleras även https://foo.example.com/ som en del av webbplatsen https://example.com/.
@@ -1102,6 +1106,7 @@
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
 <translation id="3874773863217952418">Aktivera Tryck för att söka</translation>
 <translation id="3877517141460819966">Läget för integrerad tvåfaktorsautentisering</translation>
+<translation id="3879208481373875102">Konfigurera listan över tvångsinstallerade webbappar</translation>
 <translation id="388237772682176890">Den här principen har fasats ut i M53 och tagits bort från M54, eftersom stödet för SPDY/3.1 har tagits bort.
 
       Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME" />.
@@ -1345,6 +1350,10 @@
           Du hittar en fullständig beskrivning av möjliga inställningar och strukturen för principen på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Behandlingsläge för användarprincip-loopback</translation>
+<translation id="4554841826517980623">Principen styr om funktionen Network File Share i <ph name="PRODUCT_NAME" /> ska använda <ph name="NETBIOS_PROTOCOL" /> för att registrera delningar i nätverket.
+      Om principen är inställd på Sant används protokollet <ph name="NETBIOS_PROTOCOL" /> för att registrera delningar i nätverket.
+      Om principen är inställd på Falskt används inte protokollet <ph name="NETBIOS_PROTOCOL" /> för att registrera delningar i nätverket.
+      Om principen inte ställs in är den inaktiverad för företagshanterade användare och aktiverad för användare som inte hanteras som standard.</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
 <translation id="4557134566541205630">Webbadress för standardsökleverantören av ny fliksida</translation>
 <translation id="4567137030726189378">Tillåt användning av utvecklarverktygen</translation>
@@ -1769,6 +1778,7 @@
 
           Om den här principen inte anges är talad feedback inaktiverad första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera talad feedback när som helst och funktionens status på inloggningsskärmen sparas.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
+<translation id="5879014913445067283">Styr registrering med Network File Share via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
 <translation id="5887414688706570295">Konfigurerar prefixet TalkGadget som kommer att användas av fjärråtkomstvärdar och förhindrar att användare ändrar det.
 
@@ -2231,6 +2241,17 @@
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras, eller så utförs importen automatiskt.</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
+<translation id="706568410943497889">
+      Om principen är inställd på Sant får <ph name="PRODUCT_NAME" /> behörighet att samla in WebRTC-händelseloggar från Googles tjänster (t.ex. Google Meet) och ladda upp loggarna till Google.
+
+      Om principen är inställd på Falskt eller inte angiven får <ph name="PRODUCT_NAME" /> inte samla in eller ladda upp sådana loggar.
+
+      Loggarna innehåller diagnostisk information som är användbar vid felsökning av problem med ljud- eller videosamtal i Chrome, till exempel när RTP-paket skickades och togs emot och hur stora de var, feedback om överbelastning i nätverket och metadata om ljud och bildramars längd och kvalitet. Loggarna innehåller inte ljud eller video från själva samtalet.
+
+      Datainsamlingen kan bara aktiveras av Googles webbtjänster som Google Hangouts eller Google Meet.
+
+      Google kan koppla loggarna via ett sessions-id till andra loggar som samlats in av Google-tjänsten. Detta är avsiktligt för att underlätta felsökningen.
+      </translation>
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
 <translation id="7072208053150563108">Ändringsfrekvens för datorns lösenord</translation>
 <translation id="7074513465313721551">Konfigurera listan över domäner som Säker webbsökning litar på. Detta innebär:
@@ -2363,6 +2384,9 @@
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="7343497214039883642">Skivarkonfigurationsfil för företagsenheter</translation>
+<translation id="7349338075015720646">Anger en lista över webbplatser som installeras obemärkt utan att användaren gör något, och som användaren inte kan avinstallera eller inaktivera.
+
+      Varje post i principens listan är ett objekt med två medlemmar: "url" och "launch_container". "url" bör vara webbadressen till webbappen som ska installeras och "launch_container" ska anges antingen som "window" eller "tab" för att visa hur webbappen ska öppnas när den har installerats. Om "launch_container" utelämnas öppnas appen i ett fönster om den anses vara en progressiv webbapp i Chrome och på en flik i annat fall.</translation>
 <translation id="7367028210010532881">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
 
       Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
@@ -2824,6 +2848,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Versionen kan vara ett exakt versionsnummer som 61.0.3163.120 eller ett versionsprefix som 61.0.  </translation>
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Tillåt att sms synkroniseras från mobilen till Chromebook.</translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
 <translation id="8586528890725660268">Anger skrivare som inte får användas.
@@ -2868,6 +2893,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principen har lämnats utan inställning skyddas endast lösenord på Google av lösenordsskyddet, men användaren kan ändra inställningen.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Gör att du kan ställa in i millisekunder under hur lång tid in som användare aviseras om att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om när en uppdatering väntar.
+
+      Under den tiden visas upprepade uppmaningar att starta om för användaren. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om att starta om i systemfältet när en uppgradering har upptäckts. I <ph name="PRODUCT_NAME" />-webbläsare ändras appmenyn för att visa att en omstart behövs när en tredjedel av tidsperioden har gått. Aviseringen byter färg när två tredjedelar av tidsperioden har gått och igen när tidsperioden har löpt ut. För ytterligare aviseringar som aktiveras med principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> används samma schema.
+
+      Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Lösenordsskyddets varningar utlöses av att lösenordet återanvänds</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
@@ -2912,6 +2942,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Skalningsfaktorn måste vara 100 % eller mer. Värden som skulle göra fördröjningen av skärmdämpningen i presentationsläge kortare än den vanliga fördröjningen tillåts inte.</translation>
 <translation id="8798099450830957504">Standard</translation>
+<translation id="8801680448782904838">Meddela användaren att webbläsaren eller enheten bör eller måste startas om</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>
@@ -3076,6 +3107,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om policyn är inställd på sant utlöser <ph name="PRODUCT_OS_NAME" /> en omstart när användaren stänger av enheten. <ph name="PRODUCT_OS_NAME" /> ersätter alla förekomster av avstängningsknappar i gränssnittet med omstartsknappar. Om användaren stänger av enheten med strömbrytaren startas den inte om automatiskt även om policyn är aktiverad.</translation>
 <translation id="9152473318295429890">Aktivera innehållsbaserade förslag för relaterade webbsidor</translation>
 <translation id="9158929520101169054">Aktivera multiinloggning i webbläsaren</translation>
+<translation id="9159126470527871268">Meddela användarna att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> måste startas om eftersom en uppdatering väntar.
+
+      Med den här principen kan användaren få en avisering om att webbläsaren eller enheten bör eller måste startas om. Om principen inte ställs in framgår det av en diskret ändring i menyn i <ph name="PRODUCT_NAME" /> att omstart krävs medan en avisering visas i systemfältet för <ph name="PRODUCT_OS_NAME" />.Med inställningen Rekommenderas visas ett återkommande meddelande för användaren att en omstart rekommenderas. Användaren kan ignorera meddelandet och skjuta upp omstarten. Med inställningen Krävs visas ett återkommande meddelande om att webbläsaren kommer att startas om efter en viss tid. Tidsperioden är sju dagar för <ph name="PRODUCT_NAME" /> och fyra dagar för <ph name="PRODUCT_OS_NAME" /> som standard. Den kan konfigureras via inställningarna för principen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Användarens session återställs efter omstarten.</translation>
 <translation id="9165792353046089850">Låter dig ange om webbplatser får åtkomst till anslutna USB-enheter. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär åtkomst till anslutna USB-enheter.
 
           Den här principen kan åsidosättas för enskilda webbadressmönster med principerna WebUsbAskForUrls och WebUsbBlockedForUrls.

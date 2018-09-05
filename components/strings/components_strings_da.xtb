@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Vil du gemme dette kort på din Google-konto og på denne enhed?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Udløber <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Skadeligt indhold blokeres.</translation>
 <translation id="382518646247711829">Hvis du bruger en proxyserver...</translation>
 <translation id="3828924085048779000">Tomme adgangssætninger er ikke tilladt.</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Udvid liste</translation>
 <translation id="4974590756084640048">Genaktiver advarsler</translation>
+<translation id="4988217478422488391">Gør det hurtigere at betale for ting online</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
 <translation id="5481076368049295676">Dette indhold forsøger muligvis at installere farlig software på din enhed, der kan stjæle eller slette dine oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tilføj gyldig adresse</translation>
+<translation id="5490432419156082418">Adresser og meget mere</translation>
 <translation id="5492298309214877701">Dette website på virksomhedens, organisationens eller skolens intranet har samme webadresse som et eksternt website.
     <ph name="LINE_BREAK" />
     Prøv at kontakte din systemadministrator.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 i brug}one{# i brug}other{# i brug}}</translation>
 <translation id="5922853866070715753">Næsten færdig</translation>
 <translation id="5939518447894949180">Nulstil</translation>
+<translation id="5951495562196540101">Det er ikke muligt at tilmelde sig med en forbrugerkonto (pakket licens er tilgængelig).</translation>
 <translation id="5967592137238574583">Rediger kontaktoplysninger</translation>
 <translation id="5967867314010545767">Fjern fra historik</translation>
 <translation id="5975083100439434680">Zoom ud</translation>
@@ -1065,6 +1069,7 @@ Yderligere oplysninger:
 <translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditkort}one{# kreditkort}other{# kreditkort}}</translation>
+<translation id="8473863474539038330">Adresser og meget mere</translation>
 <translation id="8483780878231876732">Hvis du vil bruge kort fra din Google-konto, skal du logge ind i Chrome</translation>
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>
@@ -1125,6 +1130,7 @@ Yderligere oplysninger:
 <translation id="8952525071319348207">Opdater dine kortoplysninger ved at indtaste udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles kortoplysningerne på din konto i Google Payments med dette website.</translation>
 <translation id="8957210676456822347">Godkendelse af captive portal</translation>
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
+<translation id="8975012916872825179">Omfatter oplysninger såsom telefonnumre, mailadresser og leveringsadresser</translation>
 <translation id="8978053250194585037">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede phishing<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Phishing-websites udgiver sig for at være andre websites med det formål at narre dig.</translation>
 <translation id="8983003182662520383">Betalingsmetoder og adresser, der bruger Google Pay</translation>
 <translation id="8987927404178983737">Måned</translation>
@@ -1173,6 +1179,7 @@ Yderligere oplysninger:
 <translation id="935608979562296692">RYD FORMULAREN</translation>
 <translation id="939736085109172342">Ny mappe</translation>
 <translation id="951104842009476243">Accepterede betalingskort og forudbetalte kort</translation>
+<translation id="962484866189421427">Dette indhold kan forsøge at installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Officiel version</translation>
 <translation id="973773823069644502">Tilføj leveringsadresse</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ingen}=1{1 element}one{# element}other{# elementer}}</translation>

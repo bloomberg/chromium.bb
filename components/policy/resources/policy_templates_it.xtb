@@ -328,6 +328,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="199764499252435679">Consenti gli aggiornamenti dei componenti in <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gestione dell'alimentazione</translation>
 <translation id="201557587962247231">Frequenza dei caricamenti del rapporto sullo stato del dispositivo</translation>
+<translation id="2017301949684549118">URL per abb web da installare automaticamente.</translation>
 <translation id="2018836497795982119">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative agli utenti al servizio di gestione del dispositivo.
 
       Se questa norma viene impostata, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questa norma è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite. Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme.
@@ -624,6 +625,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           L'URL per la ricerca di Google può essere specificato come segue: <ph name="GOOGLE_SEARCH_URL" />.
 
           Questa opzione deve essere impostata quando la norma "DefaultSearchProviderEnabled" è attiva e verrà rispettata soltanto in questo caso.</translation>
+<translation id="2659019163577049044">Se questa impostazione viene attivata, gli utenti potranno configurare il proprio dispositivo in modo da sincronizzare i messaggi SMS tra i telefoni e i Chromebooks. Tieni presente che se questa norma viene consentita, gli utenti devono attivare in modo esplicito questa funzione tramite il completamento del flusso di configurazione. Una volta completato il flusso di configurazione, gli utenti potranno inviare e ricevere messaggi SMS sui loro Chromebook.
+
+      Se questa impostazione è disattivata, gli utenti non potranno configurare la sincronizzazione degli SMS.
+
+      Se questa norma non viene impostata, per impostazione predefinita non sarà disponibile per gli utenti gestiti, mentre lo sarà invece per gli utenti non gestiti.</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
@@ -690,7 +696,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se disattivi o non configuri questa impostazione, in Anteprima di stampa viene indicata la stampante utilizzata più di recente come destinazione predefinita.
 
       Se attivi questa impostazione, in Anteprima di stampa viene usata la stampante predefinita del sistema operativo come destinazione predefinita.</translation>
-<translation id="2867699958489427143">Esegui il rollback alla versione target se la versione del sistema operativo è più nuova del target. Esegui un powerwash completo durante la procedura.</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
@@ -924,7 +929,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
-<translation id="3737544779868348650">Nome host della rete del dispositivo</translation>
 <translation id="3746590506846867985">
       Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
       Se la norma viene attivata, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
@@ -1028,6 +1032,7 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
 <translation id="3874773863217952418">Attiva Tocca per cercare</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
+<translation id="3879208481373875102">Configura l'elenco delle app web con installazione forzata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
       Consente di disattivare l'utilizzo del protocollo SPDY in <ph name="PRODUCT_NAME" />.
@@ -1255,6 +1260,10 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
           Per una descrizione completa delle possibili impostazioni e della struttura di questa norma, visita la pagina https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Modalità di elaborazione loopback delle norme relative agli utenti</translation>
+<translation id="4554841826517980623">Questa norma controlla se per <ph name="PRODUCT_NAME" /> la funzione Condivisioni file di rete debba utilizzare o meno il protocollo <ph name="NETBIOS_PROTOCOL" /> per individuare le condivisioni sulla rete.
+      Quando questa norma è impostata su Vero, il rilevamento delle condivisioni utilizza il protocollo <ph name="NETBIOS_PROTOCOL" /> per individuare le condivisioni sulla rete.
+      Quando questa norma è impostata su Falso, il rilevamento delle condivisioni non utilizza il protocollo <ph name="NETBIOS_PROTOCOL" /> per individuare le condivisioni sulla rete.
+      Se la norma viene lasciata senza impostazione, per impostazione predefinita la norma sarà disattivata per gli utenti gestiti dall'azienda, mentre sarà attiva per gli utenti non gestiti.</translation>
 <translation id="4555850956567117258">Attivazione dell'attestazione da remoto per l'utente</translation>
 <translation id="4557134566541205630">URL pagina Nuova scheda provider di ricerca predefinito</translation>
 <translation id="4567137030726189378">Consenti l'utilizzo degli Strumenti per sviluppatori</translation>
@@ -1646,6 +1655,7 @@ Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attiva
 
 Se la norma non viene impostata, la lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la lettura vocale in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="5868414965372171132">Configurazione di rete a livello di utente</translation>
+<translation id="5879014913445067283">Consente di controllare la funzione Condivisioni file di rete tramite il protocollo <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Impostazione cookie predefiniti</translation>
 <translation id="5887414688706570295">Consente di configurare il prefisso TalkGadget che verrà utilizzato dagli host di accesso remoto e impedisce agli utenti di modificarlo.
 
@@ -2075,6 +2085,16 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7049373494483449255">Permette di consentire a <ph name="PRODUCT_NAME" /> di inviare documenti da stampare a <ph name="CLOUD_PRINT_NAME" />. NOTA. Questo riguarda soltanto il supporto di <ph name="CLOUD_PRINT_NAME" /> in <ph name="PRODUCT_NAME" />. Non impedisce agli utenti di inviare processi di stampa su siti web. Se questa impostazione viene attivata o non viene configurata, gli utenti potranno stampare con <ph name="CLOUD_PRINT_NAME" /> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />. Se questa impostazione viene disattivata, gli utenti non potranno stampare con <ph name="CLOUD_PRINT_NAME" /> utilizzando la finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Se è attiva, questa norma impone l'importazione dei Preferiti dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, i Preferiti non vengono importati. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
+<translation id="706568410943497889">
+      Se la norma è impostata su vero, <ph name="PRODUCT_NAME" /> può raccogliere log eventi WebRTC dai servizi Google (ad es., Google Meet) e caricare i log su Google.
+
+      Se la norma è impostata su falso o è priva di impostazione, <ph name="PRODUCT_NAME" /> potrebbe non raccogliere né caricare tali log.
+      Questi log contengono informazioni di diagnostica utili per il debug dei problemi relativi a chiamate vocali o videochiamate in Chrome, ad esempio data/ora e dimensioni dei pacchetti RTP inviati e ricevuti,feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Questi log non contengono l'audio o i video delle chiamate.
+
+      Questa raccolta di dati da parte di Chrome può essere attivata soltanto dai servizi web di Google, ad esempio Google Hangouts o Google Meet.
+
+      Google potrebbe associare questi log tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
+      </translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7072208053150563108">Frequenza di modifica della password del computer</translation>
 <translation id="7074513465313721551">Configura l'elenco dei domini che Navigazione sicura ritiene affidabili. Ciò significa che Navigazione sicura non controllerà la presenza di risorse pericolose (ad es. phishing, malware o software indesiderato) se i rispettivi URL corrispondono a questi domini.
@@ -2205,6 +2225,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
+<translation id="7349338075015720646">Consente di specificare un elenco di siti web installati automaticamente, senza interazione dell'utente e che non possono essere disinstallati o disattivati dall'utente.
+
+      Ogni elemento dell'elenco della norma è un oggetto con due componenti: "url" e "launch_container". "url" deve essere l'URL dell'app web da installare e "launch_container" deve essere "finestra" o "scheda" per indicare in che modo l'app web verrà aperta una volta installata. Se il valore di "launch_container" non viene specificato, l'app verrà avviata in una finestra se Chrome la considera un'applicazione web progressiva, altrimenti in una scheda.</translation>
 <translation id="7367028210010532881">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
 
       Se questa impostazione viene disattivata o non viene configurata, gli utenti possono scegliere di visitare il sito segnalato dopo che è stato mostrato l'avviso.
@@ -2643,6 +2666,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Qui per "versione" si intende sia una versione esatta come "61.0.3163.120", sia un prefisso per la versione, come "61.0".  </translation>
 <translation id="8544375438507658205">Renderer HTML predefinito per <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Consente la sincronizzazione di messaggi SMS dal telefono al Chromebook.</translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
 <translation id="8566842294717252664">Nascondi il Web Store nella pagina Nuova scheda e in Avvio applicazioni</translation>
 <translation id="8586528890725660268">Consente di specificare le stampanti non utilizzabili dagli utenti.
@@ -2687,6 +2711,11 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
+
+      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio quando viene rilevato un upgrade. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base alla norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
+
+      Se la norma non viene impostata, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
 <translation id="8704831857353097849">Elenco dei plug-in disattivati</translation>
@@ -2723,6 +2752,7 @@ Se la norma non viene impostata viene utilizzato un fattore di regolazione prede
 
 Il fattore di regolazione minimo deve essere 100%. Valori che renderebbero il ritardo di oscuramento dello schermo in modalità di presentazione inferiore al ritardo di oscuramento normale non sono consentiti.</translation>
 <translation id="8798099450830957504">Predefinito</translation>
+<translation id="8801680448782904838">Consente di inviare a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo</translation>
 <translation id="8818173863808665831">Consente di segnalare la posizione geografica del dispositivo.
 
 Se la norma non viene impostata o viene impostata su false, la posizione non viene segnalata.</translation>
@@ -2863,6 +2893,11 @@ https://www.w3.org/TR/secure-contexts/
       Se questa norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> attiva il riavvio quando l'utente spegne il dispositivo. <ph name="PRODUCT_OS_NAME" /> sostituisce tutte le occorrenze dei pulsanti di spegnimento nell'interfaccia utente con pulsanti di riavvio. Se l'utente spegne il dispositivo utilizzando il tasto di accensione, il dispositivo non viene riavviato, anche se la norma è attivata.</translation>
 <translation id="9152473318295429890">Attiva i suggerimenti contestuali delle pagine web correlate</translation>
 <translation id="9158929520101169054">Consenti accesso simultaneo nel browser</translation>
+<translation id="9159126470527871268">Consente di inviare agli utenti una notifica che comunica che <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso.
+
+      Questa impostazione della norma attiva le notifiche che informano l'utente che è consigliabile oppure obbligatorio riavviare il browser o il dispositivo. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu, mentre <ph name="PRODUCT_OS_NAME" /> indica ciò con una notifica nella barra delle applicazioni. Se l'impostazione è "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni per <ph name="PRODUCT_NAME" /> e di quattro giorni per <ph name="PRODUCT_OS_NAME" /> e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="9165792353046089850">Consente di stabilire se consentire o meno ai siti web di accedere ai dispositivi USB collegati. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web vuole accedere ai dispositivi USB collegati.
 
           Questa norma può essere sostituita per pattern URL specifici che utilizzano le norme "WebUsbAskForUrls" e "WebUsbBlockedForUrls".

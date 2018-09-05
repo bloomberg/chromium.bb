@@ -42,6 +42,7 @@
 <translation id="1056775291175587022">Žádné sítě</translation>
 <translation id="1056898198331236512">Upozornění</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1059855432287631118">Registrace otisku prstu</translation>
 <translation id="1061904396131502319">Brzy bude čas na přestávku</translation>
 <translation id="1062407476771304334">Nahradit</translation>
 <translation id="1067048845568873861">Vytvořeno</translation>
@@ -74,6 +75,7 @@
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Váš počítač obsahuje bezpečnostní zařízení TPM (Trusted Platform Module), jehož pomocí je do systému Chrome OS implementováno mnoho důležitých bezpečnostních funkcí. Další informace najdete v centru nápovědy k Chromebookům: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Při zavření víka přejít do režimu spánku</translation>
+<translation id="1115324527092594775">Nastavení lepší spolupráce</translation>
 <translation id="1116694919640316211">Informace</translation>
 <translation id="1116779635164066733">Toto nastavení je vynucováno rozšířením <ph name="NAME" />.</translation>
 <translation id="111844081046043029">Jste si jisti, že chcete opustit tuto stránku?</translation>
@@ -109,6 +111,7 @@
 <translation id="1156488781945104845">Aktuální čas</translation>
 <translation id="1157102636231978136">Vaše údaje o prohlížení a aktivita synchronizované do účtu Google</translation>
 <translation id="1161575384898972166">Chcete-li exportovat certifikát klienta, přihlaste se prosím do zařízení <ph name="TOKEN_NAME" />.</translation>
+<translation id="1161699061380012396">Metoda zadávání v systému Chrome OS</translation>
 <translation id="1163931534039071049">Zobrazit zdrojový kód rámu</translation>
 <translation id="1164674268730883318">Vypnout v zařízení <ph name="DEVICE_TYPE" /> funkci Smart Lock?</translation>
 <translation id="1164899421101904659">Zadejte klíč k odemknutí kódu PIN</translation>
@@ -1004,7 +1007,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2508428939232952663">Účet Obchodu Google Play</translation>
 <translation id="2509495747794740764">Hodnota měřítka musí být v intervalu 10 až 200.</translation>
 <translation id="2509566264613697683">8×</translation>
-<translation id="2512222046227390255">Automaticky vyplňovat formuláře</translation>
 <translation id="2513403576141822879">Další nastavení související s ochranou soukromí, zabezpečením a shromažďováním dat naleznete v části <ph name="BEGIN_LINK" />Synchronizace a služby Google<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Vyhledat</translation>
@@ -1357,6 +1359,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
 <translation id="3022978424994383087">Nerozumím.</translation>
+<translation id="3023464535986383522">Poslech vybraného textu</translation>
 <translation id="3024374909719388945">Použít hodiny s formátem 24 h</translation>
 <translation id="302781076327338683">Znovu načíst bez použití mezipaměti</translation>
 <translation id="3031417829280473749">Agentka</translation>
@@ -1751,6 +1754,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="363903084947548957">Další metoda zadávání</translation>
 <translation id="3640214691812501263">Přidat aplikaci <ph name="EXTENSION_NAME" /> pro uživatele <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Šířka</translation>
+<translation id="3645372836428131288">Lehce prst natočte, aby se zaznamenala jiná část otisku.</translation>
 <translation id="3648348069317717750">Bylo rozpoznáno zařízení <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Fotografie byla pořízena</translation>
 <translation id="3650952250015018111">Povolte aplikaci "<ph name="APP_NAME" />" tyto přístupy:</translation>
@@ -1946,7 +1950,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3920504717067627103">Zásady certifikátů</translation>
 <translation id="392089482157167418">Zapnout funkci ChromeVox (hlasovou odezvu)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">Nemáte žádné nedávno zaznamenané protokoly WebRTC.</translation>
 <translation id="3925573269917483990">Kamera:</translation>
 <translation id="3925842537050977900">Uvolnit z poličky</translation>
 <translation id="3926002189479431949">Došlo ke změně telefonu funkce Smart Lock</translation>
@@ -2221,6 +2224,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="438503109373656455">Hříbě</translation>
 <translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
 <translation id="4389091756366370506">Uživatel <ph name="VALUE" /></translation>
+<translation id="439266289085815679">Konfiguraci rozhraní Bluetooth spravuje <ph name="USER_EMAIL" />.</translation>
 <translation id="4394049700291259645">Deaktivovat</translation>
 <translation id="4400367121200150367">Zde se zobrazí weby, které nikdy neukládají heslo</translation>
 <translation id="4400632832271803360">Podržením tlačítka spouštěče přepnete chování tlačítek v horním řádku</translation>
@@ -2294,6 +2298,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4522600456902129422">I nadále tomuto webu přístup ke schránce povolovat</translation>
 <translation id="4530494379350999373">Původ</translation>
 <translation id="4533985347672295764">Doba využití procesoru</translation>
+<translation id="4534661889221639075">Zkuste to znovu.</translation>
 <translation id="4535127706710932914">Výchozí profil</translation>
 <translation id="4538417792467843292">Smazat slovo</translation>
 <translation id="4538684596480161368">Vždy blokovat rozbalené pluginy u hostitele <ph name="HOST" /></translation>
@@ -2523,6 +2528,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4880520557730313061">Automatická oprava</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
 <translation id="4881695831933465202">Otevřít</translation>
+<translation id="4882312758060467256">Má přístup k této síti</translation>
 <translation id="4882473678324857464">Přejít do záložek</translation>
 <translation id="4882831918239250449">Nastavte, jak se má vaše historie procházení používat k personalizaci Vyhledávání, reklam a dalších služeb</translation>
 <translation id="4883178195103750615">Exportovat záložky do souboru HTML...</translation>
@@ -2588,6 +2594,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Po dokončení otevřít</translation>
 <translation id="4972129977812092092">Úprava tiskárny</translation>
+<translation id="4972164225939028131">Špatné heslo</translation>
 <translation id="497287958838527945">Platební karty a adresy pomocí služby Google Pay</translation>
 <translation id="4973307593867026061">Přidat tiskárny</translation>
 <translation id="4973523518332075481">Název nesmí být delší než <ph name="MAX_LENGTH" /> znaků</translation>
@@ -3014,6 +3021,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Načítání aplikací...</translation>
 <translation id="5592595402373377407">Zatím není k dispozici dostatek dat.</translation>
+<translation id="5593357315997824387">Synchronizovat moje soubory</translation>
 <translation id="5595152862129936745">Velmi daleko</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="5596627076506792578">Další možnosti</translation>
@@ -3729,6 +3737,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6664237456442406323">Váš počítač je bohužel nakonfigurován pomocí chybného čísla hardwaru. Systému Chrome OS to zabraňuje získat aktualizace s nejnovějšími bezpečnostními opravami, a počítač tak <ph name="BEGIN_BOLD" />může být zranitelnější vůči škodlivým úrokům<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Při otevírání vašeho profilu se něco pokazilo. Odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
+<translation id="6674412557034343536">zastavit časovač</translation>
 <translation id="667517062706956822">Chcete, aby Google tuto stránku přeložil z jazyka <ph name="SOURCE_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Je připojeno polohovací zařízení</translation>
 <translation id="6678717876183468697">Adresa URL dotazu</translation>
@@ -4055,6 +4064,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7186088072322679094">Ponechat na liště</translation>
 <translation id="7187428571767585875">Záznamy v registru, které budou odstraněny nebo změněny:</translation>
 <translation id="7189234443051076392">V zařízení musí být dost místa</translation>
+<translation id="7189965711416741966">Otisk byl přidán.</translation>
 <translation id="7191159667348037">Neznámá tiskárna (USB)</translation>
 <translation id="7191454237977785534">Uložit soubor jako</translation>
 <translation id="7193374945610105795">Pro web <ph name="ORIGIN" /> nejsou uložena žádná hesla</translation>
@@ -4155,6 +4165,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7340431621085453413">Stránka <ph name="FULLSCREEN_ORIGIN" /> se zobrazuje na celou obrazovku.</translation>
 <translation id="7340650977506865820">Web sdílí vaši obrazovku</translation>
+<translation id="7341834142292923918">Chce přístup k tomuto webu</translation>
 <translation id="7345706641791090287">Potvrďte heslo</translation>
 <translation id="7346909386216857016">Dobře, rozumím</translation>
 <translation id="7347751611463936647">Chcete-li použít toto rozšíření, zadejte klíčové slovo <ph name="EXTENSION_KEYWORD" />, stiskněte klávesu Tab a poté začněte psát příslušný příkaz nebo vyhledávaný výraz.</translation>
@@ -4264,7 +4275,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
     <ph name="BEGIN_PARAGRAPH2" />Služby určování polohy Google používají zdroje, jako jsou sítě Wi-Fi, mobilní sítě a senzory, pomocí kterých se snaží odhadnout polohu vašeho zařízení. Tato služba je aktivní, když je v zařízení zapnuto nastavení Poloha.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Určování polohy můžete vypnout tím, že v zařízení deaktivujete hlavní nastavení polohy. V nastavení polohy můžete také vypnout používání sítí Wi-Fi, mobilních sítí a senzorů k určování polohy.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Vytvořte heslo –</translation>
-<translation id="7518150891539970662">Protokoly WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Vytvořit</translation>
 <translation id="7529411698175791732">Zkontrolujte připojení k internetu. Pokud problém přetrvává, zkuste se odhlásit a znovu přihlásit.</translation>
@@ -4740,6 +4750,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8214962590150211830">Odebrat tohoto uživatele</translation>
 <translation id="8217399928341212914">I nadále blokovat automatické stahování několika souborů</translation>
 <translation id="8223479393428528563">Chcete-li tyto soubory uložit pro používání offline, vraťte se zpět online, klikněte na ně pravým tlačítkem a vyberte možnost <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8225753906568652947">Využít nabídky</translation>
 <translation id="8226222018808695353">Zakázané</translation>
 <translation id="8226619461731305576">Fronta</translation>
 <translation id="8226742006292257240">Níže je náhodně vygenerované heslo modulu TPM, které bylo přiřazeno vašemu počítači:</translation>
@@ -4786,6 +4797,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8286036467436129157">Přihlásit se</translation>
 <translation id="8286963743045814739">V anonymním okně můžete web procházet v soukromí.</translation>
 <translation id="82871696630048499">Webová stránka byla načtena znovu, protože nebylo k dispozici dost paměti.</translation>
+<translation id="8288032458496410887">Odinstalovat aplikaci <ph name="APP" />…</translation>
 <translation id="8291967909914612644">Země domácího poskytovatele</translation>
 <translation id="8294431847097064396">Zdroj</translation>
 <translation id="8297006494302853456">Slabý</translation>
@@ -4847,6 +4859,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8413385045638830869">Nejprve se dotázat (doporučeno)</translation>
 <translation id="8418445294933751433">Zobrazit jako kartu</translation>
 <translation id="8419098111404128271">Výsledky vyhledávání pro <ph name="SEARCH_TEXT" /></translation>
+<translation id="8419368276599091549">Vítá vás <ph name="DEVICE_TYPE" />!</translation>
 <translation id="8420060421540670057">Zobrazit soubory Dokumentů Google</translation>
 <translation id="8424039430705546751">dolů</translation>
 <translation id="8425213833346101688">Změnit</translation>
@@ -4973,6 +4986,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8620765578342452535">Konfigurovat síťová připojení</translation>
 <translation id="8624205858755890468">Umožňuje Asistentovi zobrazovat vám související informace, aplikace a akce.</translation>
 <translation id="862542460444371744">Rozšíř&amp;ení</translation>
+<translation id="8626219642120025691">Dokončeno</translation>
 <translation id="8627151598708688654">Vyberte zdroj</translation>
 <translation id="862727964348362408">Pozastaveno</translation>
 <translation id="862750493060684461">Mezipaměť CSS</translation>
@@ -5093,6 +5107,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8775404590947523323">Úpravy se ukládají automaticky.<ph name="BREAKS" />Chcete-li zachovat kopii původního obrázku, zrušte zaškrtnutí políčka Přepsat originál.</translation>
 <translation id="8777628254805677039">heslo uživatele root</translation>
 <translation id="8780443667474968681">Hlasové vyhledávání bylo vypnuto.</translation>
+<translation id="878068003854005405">Začněte tím, že umístíte prst na snímač.</translation>
 <translation id="878069093594050299">Tento certifikát byl ověřen pro následující použití:</translation>
 <translation id="8781980678064919987">Při zavření víka vypnout</translation>
 <translation id="8782565991310229362">Spouštění aplikací pro režim veřejného terminálu bylo zrušeno.</translation>
@@ -5270,6 +5285,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9050666287014529139">Heslová fráze</translation>
 <translation id="9052208328806230490">Registrovali jste tiskárny ve službě <ph name="CLOUD_PRINT_NAME" /> pomocí účtu <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Pokračovat v blokování</translation>
+<translation id="9053091947372579468">Vaše zařízení obsahuje licenci Chrome, ale vaše uživatelské jméno není přidruženo k administrátorské konzoli. Chcete-li pokračovat s registrací, vytvořte účet administrátorské konzole. Poznámka: Pokud se rozhodnete vytvořit nový účet administrátorské konzole za pomoci vlastní domény, musíte po registraci provést také ověření domény. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053893665344928494">Zapamatovat si výběr</translation>
 <translation id="9055636786322918818">Vynutit šifrování RC4. Použití této možnosti zvyšuje riziko, protože šifry RC4 nejsou bezpečné.</translation>
 <translation id="9056034633062863292">Aktualizace zařízení Chromebox</translation>
@@ -5373,6 +5389,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9218430445555521422">Nastavit jako výchozí</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="9220525904950070496">Odebrat účet</translation>
+<translation id="9220820413868316583">Zdvihněte prst a zkuste to znovu.</translation>
 <translation id="923467487918828349">Zobrazit vše</translation>
 <translation id="928985544179707652">Rozšíření:</translation>
 <translation id="930268624053534560">Podrobná časová razítka</translation>

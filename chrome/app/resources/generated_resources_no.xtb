@@ -42,6 +42,7 @@
 <translation id="1056775291175587022">Ingen nettverk</translation>
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1059855432287631118">Registrerer fingeravtrykk</translation>
 <translation id="1061904396131502319">Snart tid for en pause</translation>
 <translation id="1062407476771304334">Erstatt</translation>
 <translation id="1067048845568873861">Opprettet</translation>
@@ -74,6 +75,7 @@
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Datamaskinen din inneholder en TPM-sikkerhetsenhet (Trusted Platform Module) som brukes til å implementere mange viktige sikkerhetsfunksjoner i Chrome OS. Gå til Chromebook-brukerstøtten for å finne ut mer: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Gå i hvilemodus når maskinen lukkes</translation>
+<translation id="1115324527092594775">Konfigurer Better Together</translation>
 <translation id="1116694919640316211">Info</translation>
 <translation id="1116779635164066733">Denne innstillingen håndheves av «<ph name="NAME" />»-utvidelsen.</translation>
 <translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
@@ -109,6 +111,7 @@
 <translation id="1156488781945104845">Klokkeslettet nå</translation>
 <translation id="1157102636231978136">Nettleserdata og nettleseraktivitet blir synkronisert med Google-kontoen din</translation>
 <translation id="1161575384898972166">Logg på <ph name="TOKEN_NAME" /> for å eksportere klientsertifikatet.</translation>
+<translation id="1161699061380012396">Chrome OS-inndatametode</translation>
 <translation id="1163931534039071049">&amp;Vis rammekilde</translation>
 <translation id="1164674268730883318">Vis du slå av Smart Lock for <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164899421101904659">Skriv inn PUK-koden</translation>
@@ -1001,7 +1004,6 @@
 <translation id="2508428939232952663">Google Play Butikk-konto</translation>
 <translation id="2509495747794740764">Skaleringsverdien må være et tall mellom 10 og 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2512222046227390255">Fyll ut skjemaer automatisk</translation>
 <translation id="2513403576141822879">Se <ph name="BEGIN_LINK" />Synkronisering og Google tjenester<ph name="END_LINK" /> for flere innstillinger knyttet til personvern, sikkerhet og datainnsamling.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Skann</translation>
@@ -1353,6 +1355,7 @@
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;Vis rammekilde</translation>
 <translation id="3022978424994383087">Det skjønte jeg ikke.</translation>
+<translation id="3023464535986383522">Tekstopplesing</translation>
 <translation id="3024374909719388945">Bruk 24-timersklokke</translation>
 <translation id="302781076327338683">Last inn omgåelsesbufferen på nytt</translation>
 <translation id="3031417829280473749">Agent X</translation>
@@ -1748,6 +1751,7 @@
 <translation id="363903084947548957">Neste inndatametode</translation>
 <translation id="3640214691812501263">Vil du legge til «<ph name="EXTENSION_NAME" />» for <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Bredde</translation>
+<translation id="3645372836428131288">Flytt litt på fingeren for å registrere en annen del av fingeravtrykket.</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> oppdaget</translation>
 <translation id="3649138363871392317">Bildet er tatt</translation>
 <translation id="3650952250015018111">Tillat at «<ph name="APP_NAME" />» får tilgang til</translation>
@@ -1943,7 +1947,6 @@
 <translation id="3920504717067627103">Administratorinnstillinger for sertifikater</translation>
 <translation id="392089482157167418">Slå på ChromeVox (taletilbakemelding)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">Du har ingen nylig lagrede WebRTC-logger.</translation>
 <translation id="3925573269917483990">Kamera:</translation>
 <translation id="3925842537050977900">Løsne fra hyllen</translation>
 <translation id="3926002189479431949">Smart Lock-telefon endret</translation>
@@ -2217,6 +2220,7 @@
 <translation id="438503109373656455">Jockey</translation>
 <translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
 <translation id="4389091756366370506">Bruker <ph name="VALUE" /></translation>
+<translation id="439266289085815679">Bluetooth-konfigurasjonen kontrolleres av <ph name="USER_EMAIL" />.</translation>
 <translation id="4394049700291259645">Slå av</translation>
 <translation id="4400367121200150367">Nettsteder som aldri lagrer passord, vises her</translation>
 <translation id="4400632832271803360">Hold Appoversikt-tasten inne for å endre funksjonene for tastene på øverste rad</translation>
@@ -2290,6 +2294,7 @@
 <translation id="4522600456902129422">Fortsett å gi dette nettstedet tillatelse til å se utklippstavlen</translation>
 <translation id="4530494379350999373">Opprinnelse</translation>
 <translation id="4533985347672295764">CPU-tid</translation>
+<translation id="4534661889221639075">Prøv på nytt.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
 <translation id="4538417792467843292">Slett ord</translation>
 <translation id="4538684596480161368">Blokkér alltid programtillegg som ikke er prosessisolert, på <ph name="HOST" /></translation>
@@ -2519,6 +2524,7 @@
 <translation id="4880520557730313061">Autokorrigering</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="4882312758060467256">Har tilgang til dette nettstedet</translation>
 <translation id="4882473678324857464">Fokus på bokmerker</translation>
 <translation id="4882831918239250449">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av søk, annonser med mer</translation>
 <translation id="4883178195103750615">Eksportér bokmerker til HTML-fil</translation>
@@ -2584,6 +2590,7 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Åpne når ferdig</translation>
 <translation id="4972129977812092092">Endre skriveren</translation>
+<translation id="4972164225939028131">Feil passord</translation>
 <translation id="497287958838527945">Kredittkort og adresser ved bruk av Google Pay.</translation>
 <translation id="4973307593867026061">Legg til skrivere</translation>
 <translation id="4973523518332075481">Bruk et navn på <ph name="MAX_LENGTH" /> eller færre tegn</translation>
@@ -3010,6 +3017,7 @@
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Laster inn apper …</translation>
 <translation id="5592595402373377407">Nok data er ikke tilgjengelig ennå.</translation>
+<translation id="5593357315997824387">Synkroniser filene mine</translation>
 <translation id="5595152862129936745">Veldig langt unna</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
@@ -3724,6 +3732,7 @@
 <translation id="6664237456442406323">Dessverre er datamaskinen konfigurert med en feilformatert maskinvare-ID. Dette hindrer Chrome OS fra å oppdatere til de siste sikkerhetsoppdateringene, og datamaskinen din <ph name="BEGIN_BOLD" />kan utsettes for skadelige angrep<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Det oppsto en feil ved åpning av profilen din. Logg av og på igjen.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
+<translation id="6674412557034343536">stopp nedtellingen</translation>
 <translation id="667517062706956822">Vil du at Google skal oversette denne siden fra <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">En pekeenhet er koblet til</translation>
 <translation id="6678717876183468697">Nettadresse for søk</translation>
@@ -4050,6 +4059,7 @@
 <translation id="7186088072322679094">Behold i verktøyraden</translation>
 <translation id="7187428571767585875">Registeroppføringer som skal fjernes eller endres:</translation>
 <translation id="7189234443051076392">Sørg for at det er nok plass på enheten</translation>
+<translation id="7189965711416741966">Fingeravtrykket er lagt til.</translation>
 <translation id="7191159667348037">Ukjent skriver (USB)</translation>
 <translation id="7191454237977785534">Lagre filen som</translation>
 <translation id="7193374945610105795">Ingen passord er lagret for <ph name="ORIGIN" /></translation>
@@ -4150,6 +4160,7 @@
 <translation id="7339898014177206373">Nytt vindu</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kjører nå i full skjerm.</translation>
 <translation id="7340650977506865820">Nettstedet deler skjermen din</translation>
+<translation id="7341834142292923918">Vil ha tilgang til dette nettstedet</translation>
 <translation id="7345706641791090287">Bekreft passordet</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7347751611463936647">For å bruke denne utvidelsen, skriver du «<ph name="EXTENSION_KEYWORD" />» , trykker på TAB, og skriver kommandoordet eller søkeordet.</translation>
@@ -4259,7 +4270,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Googles posisjonstjeneste bruker kilder som Wi-Fi, mobilnettverk og sensorer til å beregne enhetens posisjon. Denne tjenesten er aktiv når posisjonsinnstillingen på enheten din er slått på.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Du kan slå av Posisjon ved å slå av hovedinnstillingen for Posisjon på enheten. Du kan også slå av bruken av Wi-Fi, mobilnettverk og sensorer for posisjon fra posisjonsinnstillingene.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Lag et passord –</translation>
-<translation id="7518150891539970662">WebRTC-logger (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Opprett</translation>
 <translation id="7529411698175791732">Sjekk Internett-tilkoblingen din. Hvis problemet vedvarer, bør du prøve å logge av og så logge på igjen.</translation>
@@ -4735,6 +4745,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8214962590150211830">Fjern denne personen</translation>
 <translation id="8217399928341212914">Fortsett blokkeringen av automatisk nedlasting av flere filer</translation>
 <translation id="8223479393428528563">For å lagre disse filene for bruk utenfor Internett, går du på nettet, høyreklikker på filene og velger <ph name="OFFLINE_CHECKBOX_NAME" />-alternativet.</translation>
+<translation id="8225753906568652947">Løs inn tilbudene dine</translation>
 <translation id="8226222018808695353">Forbudt</translation>
 <translation id="8226619461731305576">Kø</translation>
 <translation id="8226742006292257240">Nedenfor ser du et tilfeldig generert TPM-passord som er tildelt datamaskinen din:</translation>
@@ -4781,6 +4792,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8286036467436129157">Logg på</translation>
 <translation id="8286963743045814739">Med et inkognitovindu kan du besøke nettsteder anonymt</translation>
 <translation id="82871696630048499">Nettsiden ble oppdatert fordi den gikk tom for minne.</translation>
+<translation id="8288032458496410887">Avinstaller <ph name="APP" /></translation>
 <translation id="8291967909914612644">Land for leverandøren av hjemmeenheten</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8297006494302853456">Svak</translation>
@@ -4842,6 +4854,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="8418445294933751433">Vi&amp;s som fane</translation>
 <translation id="8419098111404128271">Søkeresultater for «<ph name="SEARCH_TEXT" />»</translation>
+<translation id="8419368276599091549">Velkommen til <ph name="DEVICE_TYPE" />!</translation>
 <translation id="8420060421540670057">Vis filer fra Google Dokumenter</translation>
 <translation id="8424039430705546751">ned</translation>
 <translation id="8425213833346101688">Endre</translation>
@@ -4968,6 +4981,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8620765578342452535">Konfigurering av nettverkstilkoblinger</translation>
 <translation id="8624205858755890468">Gjør at assistenten kan vise deg relatert informasjon og relaterte apper og handlinger.</translation>
 <translation id="862542460444371744">&amp;Utvidelser</translation>
+<translation id="8626219642120025691">Nedtellingen er ferdig</translation>
 <translation id="8627151598708688654">Velg kilde</translation>
 <translation id="862727964348362408">Stanset</translation>
 <translation id="862750493060684461">CSS-buffer</translation>
@@ -5088,6 +5102,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8775404590947523323">Endringene dine lagres automatisk.<ph name="BREAKS" />For å beholde en kopi av originalbildet, må du fjerne avmerkingen for «Overskriv originalen»</translation>
 <translation id="8777628254805677039">rotpassord</translation>
 <translation id="8780443667474968681">Talesøk er slått av.</translation>
+<translation id="878068003854005405">La oss komme i gang. Plassér fingeren på sensoren.</translation>
 <translation id="878069093594050299">Dette sertifikatet er verifisert for følgende bruksområder:</translation>
 <translation id="8781980678064919987">Slå av maskinen når den lukkes</translation>
 <translation id="8782565991310229362">Oppstart av kiosk-appen er avbrutt.</translation>
@@ -5265,6 +5280,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9052208328806230490">Du har registrert skriverne dine med <ph name="CLOUD_PRINT_NAME" /> ved hjelp av konto <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsett blokkering</translation>
+<translation id="9053091947372579468">Enheten din leveres med en Chrome-lisens, men brukernavnet ditt er ikke tilknyttet noen administrasjonskonsoll. Opprett en konto for administrasjonskonsollen for å fortsette registreringen. Merk: Hvis du velger å bruke ditt eget domene for å opprette en ny konto for administrasjonskonsollen, må du også fullføre en domenebekreftelse etter registreringen. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053893665344928494">Husk valget mitt</translation>
 <translation id="9055636786322918818">Start håndheving av RC4-kryptering. Hvis du bruker dette alternativet, øker risikoen, ettersom RC4-chiffere ikke er sikre.</translation>
 <translation id="9056034633062863292">Oppdaterer Chromeboxen</translation>
@@ -5368,6 +5384,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9218430445555521422">Bruk som standard</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9220525904950070496">Fjern konto</translation>
+<translation id="9220820413868316583">Løft fingeren, og prøv deretter på nytt.</translation>
 <translation id="923467487918828349">Vis alle</translation>
 <translation id="928985544179707652">Utvidelser:</translation>
 <translation id="930268624053534560">Detaljerte tidsstempler</translation>

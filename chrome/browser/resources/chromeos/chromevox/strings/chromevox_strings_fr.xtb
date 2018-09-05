@@ -139,6 +139,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2267945578749931355">Caractère suivant</translation>
 <translation id="2281234842553884450">Curseur précédent</translation>
 <translation id="2294136146931447363">Début du texte en italique</translation>
+<translation id="2311237334957139798">Reculer avec précision</translation>
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Panneau tab</translation>
 <translation id="2344193891939537199">Commande relative à la date et à l'heure</translation>
@@ -520,6 +521,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5106547198195128110">Dans cette nouvelle version, nous avons apporté quelques modifications intéressantes :</translation>
 <translation id="5110983769041734144">Aucun champ de formulaire précédent</translation>
 <translation id="5111640677200759579">En-tête de colonne</translation>
+<translation id="5115892389597951922">Journal ChromeVox</translation>
 <translation id="5136967254288895616">Aucun lien précédent</translation>
 <translation id="513774504516943387">lien</translation>
 <translation id="5158275234811857234">Couverture</translation>
@@ -687,6 +689,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6540201937398578274">Dans ChromeVox, la touche de recherche correspond à la touche de modification. La plupart des raccourcis ChromeVox commencent par la touche de recherche. Les touches fléchées sont utilisées pour la navigation.</translation>
 <translation id="6550720799683018100">Modifiez le mappage actuel du clavier en sélectionnant une option dans la liste ci-dessous.</translation>
 <translation id="6561818612645211875">Accéder au début de la ligne actuelle</translation>
+<translation id="6583174818554398774">Avancer avec précision</translation>
 <translation id="6587021927234520429">Aucun titre de niveau 4 suivant</translation>
 <translation id="6601344353291556895">Activer les descriptions détaillées</translation>
 <translation id="6615602925644411249">Rechercher sur la page</translation>

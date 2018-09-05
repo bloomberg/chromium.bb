@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">S'ha actualitzat l'element.</translation>
 <translation id="1047726139967079566">Afegeix aquesta pàgina a les adreces d'interès...</translation>
 <translation id="1049743911850919806">Incògnit</translation>
+<translation id="1063454504051558093">Utilitza una altra contrasenya...</translation>
 <translation id="1076421457278169141">S'ha escanejat el codi</translation>
 <translation id="1084365883616172403">S'ha completat la publicació a Facebook.</translation>
 <translation id="1104948393051856124">Accepta i continua</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1886928167269928266">L'inici</translation>
 <translation id="1911619930368729126">Penja a Google Drive</translation>
+<translation id="191179954310195971">Altres serveis de Google</translation>
 <translation id="1941314575388338491">Feu doble toc per copiar-ho.</translation>
 <translation id="1952728750904661634">Inicieu la sessió amb un compte gestionat</translation>
 <translation id="1974060860693918893">Configuració avançada</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Utilitza una altra contrasenya</translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3779810277399252432">No hi ha connexió a Internet.</translation>
 <translation id="3783017676699494206">Desa la imatge</translation>
@@ -315,6 +318,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6344783595350022745">Esborra el text</translation>
 <translation id="6346549652287021269">Vols iniciar una baixada nova?</translation>
 <translation id="6362362396625799311">No hi ha cap pestanya d'incògnit</translation>
+<translation id="6363526231572697780">Sense nom d'usuari</translation>
 <translation id="6374469231428023295">Torna-ho a provar</translation>
 <translation id="6380866119319257197">Si oblideu la frase de contrasenya o voleu canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Titular de la targeta</translation>

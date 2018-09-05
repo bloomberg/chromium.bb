@@ -249,6 +249,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2902702728133930130">Se ha producido un error inesperado en Chrome durante el inicio.</translation>
 <translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Preguntar antes de permitir que los sitios web reproduzcan contenido protegido</translation>
 <translation id="2913331724188855103">Permitir que los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2932150158123903946">Almacenamiento de Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Envía información de uso y del sistema a Google para mejorar Chrome y su seguridad</translation>
@@ -307,7 +308,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3443221991560634068">Vuelve a cargar la página actual</translation>
 <translation id="3452612588551937789">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d archivo descargado}other{%1$d archivos descargados}}</translation>
-<translation id="3487093336331957349">Sugerencias de búsqueda y sitios web</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
@@ -417,7 +417,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4419556793104466535">Controlar la sincronización, la personalización y mucho más</translation>
 <translation id="4432792777822557199">Las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /> a partir de ahora</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirecciones</translation>
-<translation id="4445444302979002552">Utiliza servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
 <translation id="4452411734226507615">Cerrar la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcador añadido a <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> se ha descargado en <ph name="PRODUCT_NAME" /></translation>
@@ -669,6 +668,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6277522088822131679">Se ha producido un problema al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
+<translation id="6303969859164067831">Cerrar sesión y desactivar la sincronización</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir a través de <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7542481630195938534">No se pueden obtener sugerencias</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
 <translation id="756809126120519699">Datos de Chrome borrados</translation>
+<translation id="757524316907819857">Impedir que los sitios web reproduzcan contenido protegido</translation>
 <translation id="7589445247086920869">Bloquearlo para el motor de búsqueda actual</translation>
 <translation id="7593557518625677601">Abre los ajustes de Android y vuelve a habilitar la sincronización del sistema Android para iniciar la sincronización de Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
@@ -1001,7 +1002,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8986494364107987395">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abre una nueva pestaña en modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
-<translation id="9018881455348618200">Botón de búsqueda</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

@@ -711,7 +711,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si inhabilitas esta configuración o no estableces un valor, Vista previa de impresión usará la impresora que se usó de forma más reciente como la opción de destino predeterminada.
 
       Si habilitas esta configuración, Vista previa de impresión usará la impresora predeterminada del sistema operativo como la opción de destino predeterminada.</translation>
-<translation id="2867699958489427143">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Aplica la función Powerwash durante el proceso.</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>
@@ -949,7 +948,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autenticación basada en certificados de clientes</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
-<translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
 <translation id="3746590506846867985">
       Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
       Si se habilita la política, cada origen designado en una lista de elementos separados por comas se ejecutará en su propio proceso. Esta acción también aislará los orígenes designados a partir de subdominios; p. ej., al especificar https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte del sitio https://ejemplo.com/.

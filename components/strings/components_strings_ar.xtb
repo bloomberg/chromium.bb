@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">‏هل تريد حفظ هذه البطاقة في حسابك في Google وعلى هذا الجهاز؟</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">تنتهي في <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">تم حظر المحتوى الضار.</translation>
 <translation id="382518646247711829">إذا كنت تستخدم خادمًا وكيلاً...</translation>
 <translation id="3828924085048779000">غير مسموح باستخدام عبارة مرور فارغة.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4958444002117714549">توسيع القائمة</translation>
 <translation id="4974590756084640048">إعادة تفعيل التحذيرات</translation>
+<translation id="4988217478422488391">دفع ثمن المشتريات على الإنترنت بشكلِ أسرع</translation>
 <translation id="4989809363548539747">هذا المكوِّن الإضافي غير مدعوم</translation>
 <translation id="5002932099480077015">‏إذا تم التمكين، سيخزن Chrome نسخة من بطاقتك على هذا الجهاز لملء النموذج بشكل أسرع.</translation>
 <translation id="5018422839182700155">يتعذّر فتح هذه الصفحة</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">إعادة الت&amp;حرير</translation>
 <translation id="5481076368049295676">قد يحاول هذا المحتوى تثبيت برامج خطيرة على جهازك تسرق معلوماتك أو تحذفها. <ph name="BEGIN_LINK" />عرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">إضافة عنوان صالح</translation>
+<translation id="5490432419156082418">العناوين والمزيد</translation>
 <translation id="5492298309214877701">‏يكون لموقع الويب هذا على الشبكة الداخلية للشركة أو المؤسسة أو المدرسة نفس عنوان URL لأحد مواقع الويب الخارجية.
     <ph name="LINE_BREAK" />
     حاول الاتصال بمشرف النظام.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 قيد الاستخدام}zero{# قيد الاستخدام}two{# قيد الاستخدام}few{# قيد الاستخدام}many{# قيد الاستخدام}other{# قيد الاستخدام}}</translation>
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
 <translation id="5939518447894949180">إعادة</translation>
+<translation id="5951495562196540101">لا يمكن التسجيل في حساب المستهلك (الترخيص المجمّع متوفّر).</translation>
 <translation id="5967592137238574583">تعديل معلومات الاتصال</translation>
 <translation id="5967867314010545767">إزالة من السجل</translation>
 <translation id="5975083100439434680">تصغير</translation>
@@ -1065,6 +1069,7 @@
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8437238597147034694">تراجع عن ال&amp;نقل</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{بطاقة ائتمان واحدة}zero{# بطاقة ائتمان}two{بطاقتا ائتمان (#)}few{# بطاقات ائتمان}many{# بطاقة ائتمان}other{# بطاقة ائتمان}}</translation>
+<translation id="8473863474539038330">العناوين والمزيد</translation>
 <translation id="8483780878231876732">‏لاستخدام البطاقات من حسابك في Google، يُرجى تسجيل الدخول إلى Chrome</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>
@@ -1125,6 +1130,7 @@
 <translation id="8952525071319348207">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حساب دفعات Google مع هذا الموقع.</translation>
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
+<translation id="8975012916872825179">تضمين معلومات مثل أرقام الهواتف وعناوين البريد الإلكتروني وعناوين الشحن</translation>
 <translation id="8978053250194585037">‏رصد التصفح الآمن من Google عن وجود‬ <ph name="BEGIN_LINK" />تصيّد احتيالي<ph name="END_LINK" /> مؤخرًا على موقع <ph name="SITE" />، إذ تتظاهر مواقع التصيد الاحتيالي بكونها مواقع ويب أخرى لخداعك.</translation>
 <translation id="8983003182662520383">‏طرق الدفع والعناوين باستخدام Google Pay</translation>
 <translation id="8987927404178983737">شهر</translation>
@@ -1173,6 +1179,7 @@
 <translation id="935608979562296692">محو النموذج</translation>
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="951104842009476243">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
+<translation id="962484866189421427">قد يحاول هذا المحتوى تثبيت تطبيقات مضللة تدعي أنها شيء آخر أو تجمع بيانات قد تُستخدم لتتبعك. <ph name="BEGIN_LINK" />العرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">البنية الرسمية</translation>
 <translation id="973773823069644502">إضافة عنوان التسليم للمستخدم</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{بدون}=1{عنصر واحد}two{عنصران (#)}few{# عناصر}many{# عنصرًا}other{# عنصر}}</translation>

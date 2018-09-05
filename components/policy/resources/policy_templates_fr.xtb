@@ -361,6 +361,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="199764499252435679">Activer la mise à jour des composants de <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
+<translation id="2017301949684549118">URL des applications Web à installer de façon silencieuse.</translation>
 <translation id="2018836497795982119">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux utilisateurs.
 
       La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Toutes les valeurs non comprises dans cette plage seront nivelées à la limite respective. Si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation est défini par défaut sur 24 heures. De plus, la règle est actualisée automatiquement chaque fois qu'elle est modifiée.
@@ -681,6 +682,11 @@ Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilis
           L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_SEARCH_URL" />.
 
           Cette option doit être définie lorsque la règle "DefaultSearchProviderEnabled" est activée et ne sera respectée que si c'est le cas.</translation>
+<translation id="2659019163577049044">Si ce paramètre est activé, les utilisateurs peuvent configurer la synchronisation des SMS entre leur téléphone et leur appareil Chromebook. Ils doivent activer explicitement cette fonctionnalité en suivant une procédure de configuration, à l'issue de laquelle ils pourront envoyer et recevoir des SMS sur leur Chromebook.
+
+      Si ce paramètre est désactivé, les utilisateurs n'auront pas la possibilité de configurer la synchronisation des SMS.
+
+      Si vous ne configurez pas cette règle, le paramètre sera désactivé par défaut pour les utilisateurs gérés et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
 <translation id="267596348720209223">Spécifie les encodages de caractères compatibles avec le moteur de recherche. Les encodages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
@@ -751,7 +757,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
       Si vous désactivez ce paramètre ou si vous ne définissez pas de valeur, l'aperçu avant impression utilisera par défaut l'imprimante qui a servi le plus récemment.
 
       Si vous activez ce paramètre, l'aperçu avant impression utilisera l'imprimante par défaut du système d'exploitation.</translation>
-<translation id="2867699958489427143">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS. Effectuez un Powerwash complet pendant le processus.</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2874209944580848064">Remarque concernant les appareils <ph name="PRODUCT_OS_NAME" /> compatibles avec les applications Android :</translation>
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>
@@ -996,7 +1001,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3715569262675717862">Authentification basée sur les certificats client</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
-<translation id="3737544779868348650">Nom d'hôte du réseau de l'appareil</translation>
 <translation id="3746590506846867985">
       Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui concerne la session utilisateur. Nous vous recommandons de définir ces deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
       Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par une virgule exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez https://example.com/, https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
@@ -1111,6 +1115,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
 <translation id="3874773863217952418">Activer la fonctionnalité "Appuyer pour rechercher"</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
+<translation id="3879208481373875102">Configurer la liste des applications Web installées d'office</translation>
 <translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus pris en charge.
 
       Elle désactive l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME" />.
@@ -1354,6 +1359,10 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
           Pour accéder à une description complète de la structure et des paramètres possibles pour cette règle, veuillez consulter https://www.chromium.org/administrators/policy-list-3/extension-settings-full.</translation>
 <translation id="4554651132977135445">Mode de traitement du bouclage pour les règles relatives aux utilisateurs</translation>
+<translation id="4554841826517980623">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> doit détecter les partages sur le réseau via le protocole <ph name="NETBIOS_PROTOCOL" />.
+      Lorsque cette règle est définie sur "True", la détection des partages sur le réseau s'effectue via le protocole <ph name="NETBIOS_PROTOCOL" />.
+      Lorsque cette règle est définie sur "False", le protocole <ph name="NETBIOS_PROTOCOL" /> n'est pas utilisé pour détecter les partages.
+      Si vous ne configurez pas cette règle, le paramètre sera désactivé par défaut pour les utilisateurs gérés par une entreprise et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="4555850956567117258">Activer l'attestation à distance pour l'utilisateur</translation>
 <translation id="4557134566541205630">URL de la page Nouvel onglet du moteur de recherche par défaut</translation>
 <translation id="4567137030726189378">Autoriser l'utilisation des outils pour les développeurs</translation>
@@ -1779,6 +1788,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
           Si vous ne définissez pas cette règle, les commentaires audio sont désactivés au premier affichage de l'écran de connexion. Les utilisateurs peuvent les activer ou les désactiver à tout moment, et leur état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
+<translation id="5879014913445067283">Contrôler la détection des partages de fichiers sur le réseau via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Paramètre de cookies par défaut</translation>
 <translation id="5887414688706570295">Configure le préfixe TalkGadget utilisé par les hôtes d'accès à distance et empêche les utilisateurs de le modifier.
 
@@ -2242,6 +2252,17 @@ Si elle est désactivée, les favoris ne sont pas importés.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
+<translation id="706568410943497889">
+      Lorsque cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux d'événements WebRTC à partir des services Google (Google Meet, par exemple) et à les transférer vers Google.
+
+      Si la règle est définie sur "False" ou n'est pas définie, <ph name="PRODUCT_NAME" /> ne peut pas collecter ces journaux ni les transférer.
+
+      Ces journaux contiennent des informations de diagnostic utiles lors du débogage de problèmes liés aux appels audio ou vidéo dans Chrome, telles que l'horodatage et la taille des paquets RTP envoyés et reçus, des commentaires sur l'encombrement du réseau, et des métadonnées relatives à l'horodatage et à la qualité des trames vidéo et audio. Les journaux n'incluent aucun contenu audio ou vidéo des appels.
+
+      Cette collecte de données par Chrome ne peut être déclenchée que par des services Web de Google, tels que Google Hangouts ou Google Meet.
+
+      Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
+      </translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7072208053150563108">Fréquence de modification du mot de passe machine</translation>
 <translation id="7074513465313721551">Configurez la liste des domaines de confiance pour la navigation privée. Cela signifie que, pour les domaines de cette liste :
@@ -2375,6 +2396,9 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7343497214039883642">Fichier de configuration des imprimantes d'entreprise pour des appareils</translation>
+<translation id="7349338075015720646">Établit une liste de sites Web installés de façon silencieuse, sans intervention de l'utilisateur, qui ne peuvent être ni désinstallés, ni désactivés par l'utilisateur.
+
+      Chaque élément de la liste de cette règle est un objet constitué de deux paramètres : "url" et "launch_container". "url" correspond à l'URL de l'application Web à installer et "launch_container" désigne l'endroit où celle-ci doit s'ouvrir ("window" ou "tab"). Lorsque le paramètre "launch_container" n'est pas défini, l'application se lance dans une fenêtre si Chrome considère qu'il s'agit d'une progressive web app. Sinon, elle s'affiche dans un onglet.</translation>
 <translation id="7367028210010532881">Dans le cadre du service de navigation sécurisée, un avertissement s'affiche lorsque les utilisateurs essaient d'accéder à des sites potentiellement malveillants. Si cette règle est activée, les utilisateurs ne peuvent pas poursuivre et accéder aux sites en question lorsqu'un cet avertissement s'affiche.
 
       Si cette règle est désactivée ou n'est pas configurée, les utilisateurs peuvent choisir de poursuivre et accéder ainsi aux sites potentiellement malveillants après avoir lu l'avertissement.
@@ -2839,6 +2863,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Notez que le terme "version" désigne autant les versions exactes (telles que 61.0.3163.120) que les préfixes de version (tels que 61.0).  </translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Autoriser la synchronisation des SMS entre le téléphone et le Chromebook</translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
 <translation id="8586528890725660268">Indique les imprimantes auxquelles un utilisateur n'a pas accès.
@@ -2883,6 +2908,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si cette règle n'est pas configurée, le service de protection par mot de passe ne protège que les mots de passe Google. Toutefois, l'utilisateur peut modifier ce paramètre.</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="867410340948518937">U2F (Deuxième facteur universel)</translation>
+<translation id="8682611302223077049">Permet de fixer la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
+
+      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système lorsqu'une mise à jour est détectée. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent ce même programme.
+
+      Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour les navigateurs <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
@@ -2927,6 +2957,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 
           Ce facteur doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai d'assombrissement de l'écran standard ne sont pas autorisées.</translation>
 <translation id="8798099450830957504">Par défaut</translation>
+<translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou requis</translation>
 <translation id="8818173863808665831">Permet d'indiquer l'emplacement géographique de l'appareil.
 
       Si cette règle n'est pas définie, ou si la valeur "false" lui est attribuée, l'emplacement n'est pas indiqué.</translation>
@@ -3093,6 +3124,11 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
       Si cette règle est définie sur "True", <ph name="PRODUCT_OS_NAME" /> déclenche un redémarrage lorsque l'utilisateur arrête l'appareil. <ph name="PRODUCT_OS_NAME" /> remplace toutes les occurrences des boutons d'arrêt de l'interface utilisateur par des boutons de redémarrage. Si l'utilisateur arrête l'appareil au moyen du bouton Marche/Arrêt, celui-ci ne redémarre pas automatiquement, même si la règle est activée.</translation>
 <translation id="9152473318295429890">Activer les suggestions contextuelles des pages Web associées</translation>
 <translation id="9158929520101169054">Autoriser la connexion multicompte dans le navigateur</translation>
+<translation id="9159126470527871268">Avertit les utilisateurs que <ph name="PRODUCT_NAME" /> doit être relancé ou que l'appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour qu'une mise à jour en cours puisse être appliquée.
+
+      Cette règle active l'envoi de notifications pour avertir l'utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou requis. Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> indique à l'utilisateur, par le biais de modifications discrètes du menu, qu'un redémarrage est nécessaire. Pour l'appareil <ph name="PRODUCT_OS_NAME" />, une notification s'affiche dans la barre d'état système. Si la règle est définie sur "Recommandé", un avertissement récurrent s'affiche, indiquant qu'un redémarrage est recommandé. L'utilisateur peut ignorer cet avertissement et redémarrer le navigateur ou l'appareil plus tard. Si elle est définie sur "Requis", un avertissement récurrent s'affiche, indiquant que le redémarrage du navigateur ou de l'appareil sera forcé à l'issue de la période de notification. Par défaut, ce délai est de sept jours pour <ph name="PRODUCT_NAME" /> et de quatre jours pour l'appareil <ph name="PRODUCT_OS_NAME" />, et peut être configuré à l'aide du paramètre <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      La session de l'utilisateur est restaurée après le redémarrage.</translation>
 <translation id="9165792353046089850">Cette règle permet de définir si les sites Web sont autorisés à accéder aux appareils USB connectés. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils USB connectés.
 
           Cette règle peut être ignorée pour les formats d'URL spécifiques qui utilisent les règles "WebUsbAskForUrls" et "WebUsbBlockedForUrls".

@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">खराब सिग्नल</translation>
 <translation id="1293264513303784526">USB-C डिव्‍हाइस (डावे पोर्ट)</translation>
+<translation id="1294929383540927798">लॉक स्क्रीन सूचना सेटिंग्ज बदला</translation>
 <translation id="1302880136325416935">ब्लूटूथ सेटिंग्ज दाखवा. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">हा वापरकर्ता काढा</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
 <translation id="1658406695958299976">सॉरी, तुमच्या पासवर्डची पडताळणी अजूनही झालेली नाही. टीप: तुम्ही तुमचा पासवर्ड अलीकडेच बदलला असल्यास, तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल, कृपया येथे जुना पासवर्ड वापरा.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
 <translation id="1698760176351776263">IPv6 पत्ता: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">मेनूचा विस्तार करा</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">नेहमी शेल्फ दाखवा</translation>
 <translation id="3126069444801937830">अद्यतनासाठी पुनर्प्रारंभ करा</translation>
 <translation id="3147142846278915599">लाँचर (संकालन अॅप्स...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">मागील</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="3893630138897523026">ChromeVox (बोललेला अभिप्राय)</translation>
+<translation id="3897533311200664389">मजकूर क्वेरी सुरू करा</translation>
 <translation id="3899995891769452915">व्हॉइस इनपुट</translation>
 <translation id="3900355044994618856"><ph name="SESSION_TIME_REMAINING" /> मध्ये तुमचे सेशन समाप्त होईल</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>
+<translation id="9070640332319875144">असिस्टंट सेटिंग्ज</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">वाय-फाय: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">मायक्रोफोन वापरात आहे.</translation>

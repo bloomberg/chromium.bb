@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Закладку оновлено</translation>
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
+<translation id="1063454504051558093">Ввести інший пароль…</translation>
 <translation id="1076421457278169141">Код зіскановано</translation>
 <translation id="1084365883616172403">Опубліковано у Facebook</translation>
 <translation id="1104948393051856124">Прийняти та продовжити</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1886928167269928266">Весь період</translation>
 <translation id="1911619930368729126">Завантажити на Google Диск</translation>
+<translation id="191179954310195971">Інші сервіси Google</translation>
 <translation id="1941314575388338491">Двічі торкніться, щоб скопіювати.</translation>
 <translation id="1952728750904661634">Увійти в керований обліковий запис</translation>
 <translation id="1974060860693918893">Розширені</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Ваш список читання доступний офлайн. Щоб додати до нього сторінку, торкніться опції <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
+<translation id="3765471630796399471">Ввести інший пароль</translation>
 <translation id="3771033907050503522">Анонімні вкладки</translation>
 <translation id="3779810277399252432">Немає з’єднання з Інтернетом</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">Очистити текст</translation>
 <translation id="6346549652287021269">Почати нове завантаження?</translation>
 <translation id="6362362396625799311">Немає анонімних вкладок</translation>
+<translation id="6363526231572697780">Немає імені користувача</translation>
 <translation id="6374469231428023295">Повторити спробу</translation>
 <translation id="6380866119319257197">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Ім’я на картці</translation>

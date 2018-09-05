@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">更新済みのアイテム</translation>
 <translation id="1047726139967079566">ブックマークに追加...</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
+<translation id="1063454504051558093">他のパスワードを使用...</translation>
 <translation id="1076421457278169141">コードをスキャンしました</translation>
 <translation id="1084365883616172403">Facebookへの投稿が完了しました。</translation>
 <translation id="1104948393051856124">同意して続行</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1886928167269928266">始めから</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
+<translation id="191179954310195971">他の Google サービス</translation>
 <translation id="1941314575388338491">ダブルタップしてコピー。</translation>
 <translation id="1952728750904661634">管理対象アカウントでログインする</translation>
 <translation id="1974060860693918893">詳細設定</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> をタップします。</translation>
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
+<translation id="3765471630796399471">他のパスワードを使用</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3779810277399252432">インターネットに接続されていません。</translation>
 <translation id="3783017676699494206">画像を保存</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">テキストを消去</translation>
 <translation id="6346549652287021269">新たにダウンロードを開始しますか？</translation>
 <translation id="6362362396625799311">シークレット タブはありません</translation>
+<translation id="6363526231572697780">ユーザー名が指定されていません</translation>
 <translation id="6374469231428023295">再試行</translation>
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6389470377220713856">カード名義人（半角英文字）</translation>

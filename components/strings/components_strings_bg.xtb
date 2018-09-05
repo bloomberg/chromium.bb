@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Искате ли тази карта да се запази на устройството и в профила ви в Google?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Блокирано бе вредно съдържание.</translation>
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Разгъване на списъка</translation>
 <translation id="4974590756084640048">Повторно активиране на предупрежденията</translation>
+<translation id="4988217478422488391">Ускорява плащанията ви онлайн</translation>
 <translation id="4989809363548539747">Тази приставка не се поддържа</translation>
 <translation id="5002932099480077015">Ако настройката е активирана, копие на картата ви ще се съхранява в Chrome на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="5018422839182700155">Тази страница не може да се отвори</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
 <translation id="5481076368049295676">Въпросното съдържание може да се опита да инсталира опасен софтуер на устройството ви, който да открадне или изтрие информацията ви. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Добавяне на валиден адрес</translation>
+<translation id="5490432419156082418">Адреси и др.</translation>
 <translation id="5492298309214877701">Този интранет сайт на фирмата, организацията или училището има същия URL адрес като на външен уебсайт.
 <ph name="LINE_BREAK" />
 Опитайте да се свържете със системния си администратор.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Използва се 1}other{Използват се #}}</translation>
 <translation id="5922853866070715753">Почти готово</translation>
 <translation id="5939518447894949180">Нулиране</translation>
+<translation id="5951495562196540101">Не е възможно регистриране с профил на потребител (налице е лиценз в пакет).</translation>
 <translation id="5967592137238574583">Редактиране на информацията за връзка</translation>
 <translation id="5967867314010545767">Премахване от историята</translation>
 <translation id="5975083100439434680">Намаляване на мащаба</translation>
@@ -1065,6 +1069,7 @@
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
+<translation id="8473863474539038330">Адреси и др.</translation>
 <translation id="8483780878231876732">За да използвате картите от профила си в Google, влезте в Chrome</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
@@ -1124,6 +1129,7 @@
 <translation id="8952525071319348207">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си. След като я потвърдите, данните за нея от профила ви в Google Payments ще бъдат споделени с този сайт.</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
+<translation id="8975012916872825179">Включва информация като телефонни номера, имейл адреси и адреси за доставка</translation>
 <translation id="8978053250194585037">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри фишинг<ph name="END_LINK" /> на <ph name="SITE" />. Сайтовете за фишинг се представят за други уебсайтове с цел да ви подведат.</translation>
 <translation id="8983003182662520383">Начини на плащане и адреси посредством Google Pay</translation>
 <translation id="8987927404178983737">Месец</translation>
@@ -1172,6 +1178,7 @@
 <translation id="935608979562296692">ИЗЧИСТВАНЕ НА ФОРМУЛЯРА</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="951104842009476243">Приемани дебитни и предплатени карти</translation>
+<translation id="962484866189421427">Въпросното съдържание може да се опита да инсталира измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Официално издание</translation>
 <translation id="973773823069644502">Добавяне на адрес за бърза доставка</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Няма}=1{1 елемент}other{# елемента}}</translation>

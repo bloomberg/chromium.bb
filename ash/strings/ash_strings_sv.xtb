@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">svag signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
+<translation id="1294929383540927798">Ändra aviseringsinställningarna för låsskärmen</translation>
 <translation id="1302880136325416935">Visa Bluetooth-inställningar. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351937230027495976">Komprimera menyn</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1698760176351776263">IPv6-adress: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Utöka menyn</translation>
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Visa alltid hyllan</translation>
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
 <translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="315116470104423982">Mobildata</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
+<translation id="3897533311200664389">Skriv en sökfråga</translation>
 <translation id="3899995891769452915">Röstinmatning</translation>
 <translation id="3900355044994618856">Sessionen avslutas om <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En uppdatering av Adobe Flash Player är tillgänglig</translation>
 <translation id="9056839673611986238">Enheten återställs</translation>
+<translation id="9070640332319875144">Inställningar för Assistent</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen används.</translation>

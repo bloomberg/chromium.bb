@@ -249,6 +249,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2900528713135656174">Skapa händelse</translation>
 <translation id="2902702728133930130">Ett oväntat fel uppstod när Chrome skulle startas.</translation>
 <translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Fråga innan webbplatser tillåts att spela upp skyddat innehåll</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2932150158123903946">Lagring för Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Gör Chrome bättre och säkrare genom att skicka information om system och användning till Google</translation>
@@ -307,7 +308,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
 <translation id="3452612588551937789">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d fil har laddats ned}other{%1$d filer har laddats ned}}</translation>
-<translation id="3487093336331957349">Sök- och webbplatsförslag</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om förslag på innehåll</translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
@@ -417,7 +417,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4419556793104466535">Styr synkronisering, anpassning med mera</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
 <translation id="4434045419905280838">Popup-fönster och omdirigeringar</translation>
-<translation id="4445444302979002552">Med förslagstjänster får du förslag på söktermer och webbplatser</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> har laddats ned i <ph name="PRODUCT_NAME" /></translation>
@@ -669,6 +668,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6303969859164067831">Logga ut och inaktivera synkronisering</translation>
 <translation id="6320088164292336938">Vibration</translation>
 <translation id="6324034347079777476">Synkronisering av Android-system har inaktiverats</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7542481630195938534">Det går inte att få förslag</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
+<translation id="757524316907819857">Blockera webbplatser från att spela upp skyddat innehåll</translation>
 <translation id="7589445247086920869">Blockera för den nuvarande sökmotorn</translation>
 <translation id="7593557518625677601">Återaktivera synkronisering i Android-inställningarna så börjar Chrome synkas</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
@@ -1001,7 +1002,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8986494364107987395">Skicka användningsstatistik och kraschrapporter till Google automatiskt</translation>
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
-<translation id="9018881455348618200">Knappen Sök</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9050666287014529139">Lösenfras</translation>

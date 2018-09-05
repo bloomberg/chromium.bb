@@ -307,7 +307,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="3443221991560634068">Volver a cargar la página actual</translation>
 <translation id="3452612588551937789">Accede con tu cuenta de Google para obtener tus favoritos, contraseñas, historial y otras opciones de configuración en todos tus dispositivos.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{Se descargó %1$d archivo}other{Se descargaron %1$d archivos}}</translation>
-<translation id="3487093336331957349">Sugerencias de sitios y de búsqueda</translation>
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre el contenido sugerido</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
@@ -417,7 +416,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4419556793104466535">Controlar la sincronización, la personalización y mucho más</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
-<translation id="4445444302979002552">Usar los servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
 <translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">Se descargó <ph name="FILE_NAME" /> en <ph name="PRODUCT_NAME" /></translation>
@@ -1001,7 +999,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abrir ventana nueva en modo de navegación incógnito</translation>
 <translation id="8998729206196772491">Estás accediendo con una cuenta administrada por <ph name="MANAGED_DOMAIN" /> y dándole permiso a su administrador para que controle tus datos de Chrome. Tus datos se vincularán de forma permanente a esta cuenta. Si sales de Chrome, tus datos se borrarán en este dispositivo, pero quedarán guardados en tu cuenta de Google.</translation>
-<translation id="9018881455348618200">Botón de búsqueda</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9040142327097499898">Las notificaciones están habilitadas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

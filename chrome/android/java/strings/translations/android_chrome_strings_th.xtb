@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">สร้างกิจกรรม</translation>
 <translation id="2902702728133930130">Chrome ล้มเหลวในระหว่างเริ่มต้นเนื่องจากข้อผิดพลาดที่ไม่คาดคิด</translation>
 <translation id="290376772003165898">หน้านี้ไม่ใช่ภาษา<ph name="LANGUAGE" />ใช่ไหม</translation>
+<translation id="2910701580606108292">ถามก่อนอนุญาตให้เว็บไซต์เล่นเนื้อหาที่มีการคุ้มครอง</translation>
 <translation id="2913331724188855103">อนุญาตให้ไซต์บันทึกและอ่านข้อมูลคุกกี้ (แนะนำ)</translation>
 <translation id="2932150158123903946">พื้นที่เก็บข้อมูล Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">ปรับปรุง Chrome และความปลอดภัยด้วยการส่งข้อมูลระบบและการใช้งานไปยัง Google</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">โหลดหน้าปัจจุบันอีกครั้ง</translation>
 <translation id="3452612588551937789">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{ดาวน์โหลดแล้ว %1$d ไฟล์}other{ดาวน์โหลดแล้ว %1$d ไฟล์}}</translation>
-<translation id="3487093336331957349">คำแนะนำการค้นหาและเว็บไซต์</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และอื่นๆ</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
-<translation id="4445444302979002552">ใช้บริการการคาดคะเนเพื่อแนะนำข้อความค้นหาและเว็บไซต์</translation>
 <translation id="4452411734226507615">ปิดแท็บ <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4453340223357552416">ดาวน์โหลด <ph name="FILE_NAME" /> ไว้ใน <ph name="PRODUCT_NAME" /> แล้ว</translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">ไซต์ทั้งหมด</translation>
 <translation id="629730747756840877">บัญชี</translation>
+<translation id="6303969859164067831">ออกจากระบบและปิดการซิงค์</translation>
 <translation id="6320088164292336938">สั่น</translation>
 <translation id="6324034347079777476">ปิดใช้การซิงค์ระบบ Android อยู่</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
+<translation id="757524316907819857">บล็อกไม่ให้เว็บไซต์เล่นเนื้อหาที่มีการคุ้มครอง</translation>
 <translation id="7589445247086920869">บล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7593557518625677601">เปิดการตั้งค่า Android และเปิดการซิงค์ Android ใหม่เพื่อเริ่มการซิงค์ของ Chrome</translation>
 <translation id="7596558890252710462">ระบบปฏิบัติการ</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8986494364107987395">ส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="8993760627012879038">เปิดแท็บใหม่ในโหมดไม่ระบุตัวตน</translation>
 <translation id="8998729206196772491">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการโดย <ph name="MANAGED_DOMAIN" /> และทำให้ผู้ดูแลระบบของโดเมนควบคุมข้อมูล Chrome ของคุณได้ ข้อมูลดังกล่าวจะโยงกับบัญชีนี้อย่างถาวร การออกจากระบบ Chrome จะลบข้อมูลของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google</translation>
-<translation id="9018881455348618200">ปุ่มค้นหา</translation>
 <translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
 <translation id="9040142327097499898">อนุญาตให้แสดงการแจ้งเตือน ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>

@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Bokmärket har uppdaterats</translation>
 <translation id="1047726139967079566">Skapa bokmärke för den här sidan...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1063454504051558093">Använd ett annat lösenord …</translation>
 <translation id="1076421457278169141">Koden skannades</translation>
 <translation id="1084365883616172403">Inlägg på Facebook klart.</translation>
 <translation id="1104948393051856124">Godkänn och fortsätt</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Skicka statistik</translation>
 <translation id="1886928167269928266">Tidens början</translation>
 <translation id="1911619930368729126">Ladda upp till Google Drive</translation>
+<translation id="191179954310195971">Andra Google-tjänster</translation>
 <translation id="1941314575388338491">Tryck snabbt två gånger om du vill kopiera informationen.</translation>
 <translation id="1952728750904661634">Logga in med ett hanterat konto</translation>
 <translation id="1974060860693918893">Avancerat</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Läslistan är tillgänglig offline. Om du vill lägga till en sida i läslistan trycker du på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Använd ett annat lösenord</translation>
 <translation id="3771033907050503522">Inkognitoflikar</translation>
 <translation id="3779810277399252432">Ingen internetanslutning.</translation>
 <translation id="3783017676699494206">Spara bild</translation>
@@ -315,6 +318,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="6344783595350022745">Rensa text</translation>
 <translation id="6346549652287021269">Starta ny nedladdning?</translation>
 <translation id="6362362396625799311">Inga inkognitoflikar</translation>
+<translation id="6363526231572697780">Inget användarnamn</translation>
 <translation id="6374469231428023295">Försök igen</translation>
 <translation id="6380866119319257197">Om du glömmer lösenfrasen eller vill ändra inställningen <ph name="BEGIN_LINK" />återställer du synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Namn på kort</translation>

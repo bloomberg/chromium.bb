@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Vājš signāls</translation>
 <translation id="1293264513303784526">USB-C ierīce (pieslēgvieta pa kreisi)</translation>
+<translation id="1294929383540927798">Mainiet bloķēšanas ekrāna paziņojumu rādīšanas iestatījumus</translation>
 <translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Pārslēgt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Noņemt šo lietotāju</translation>
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
+<translation id="1654477262762802994">Sākt balss vaicājumu</translation>
 <translation id="1658406695958299976">Diemžēl jūsu paroli joprojām nevarēja verificēt. Ņemiet vērā: ja nesen mainījāt paroli, jaunā parole tiks lietota pēc izrakstīšanās. Lūdzu, šeit izmantojiet iepriekšējo paroli.</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adrese: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Izvērst izvēlni</translation>
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Vienmēr rādīt plauktu</translation>
 <translation id="3126069444801937830">Restartēt, lai atjauninātu</translation>
 <translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
 <translation id="315116470104423982">Mobilie dati</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3891340733213178823">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (balss komentāri)</translation>
+<translation id="3897533311200664389">Sākt teksta vaicājumu</translation>
 <translation id="3899995891769452915">Balss ievade</translation>
 <translation id="3900355044994618856">Atlikušais laiks līdz jūsu sesijas beigām: <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Pārvalda domēnu <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Ir pieejams Adobe Flash Player atjauninājums</translation>
 <translation id="9056839673611986238">Ierīcē tiks veikta atrite</translation>
+<translation id="9070640332319875144">Asistenta iestatījumi</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi adrese: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Tiek izmantots mikrofons.</translation>

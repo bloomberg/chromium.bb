@@ -42,6 +42,7 @@
 <translation id="1056775291175587022">Keine Netzwerke</translation>
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1059855432287631118">Registrieren des Fingerabdrucks</translation>
 <translation id="1061904396131502319">Bald ist es Zeit für eine Pause</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1067048845568873861">Erstellt</translation>
@@ -74,6 +75,7 @@
 <translation id="1114202307280046356">Raute</translation>
 <translation id="1114335938027186412">Ihr Computer enthält einen TPM-Sicherheitschip (Trusted Platform Module), über den viele wichtige Sicherheitsfunktionen in Chrome OS implementiert sind. Weitere Informationen dazu finden Sie in der Chromebook-Hilfe unter https://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="1114525161406758033">Beim Zuklappen Ruhemodus aktivieren</translation>
+<translation id="1115324527092594775">"Better Together" einrichten</translation>
 <translation id="1116694919640316211">Über</translation>
 <translation id="1116779635164066733">Diese Einstellung wird durch die Erweiterung "<ph name="NAME" />" erzwungen.</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
@@ -109,6 +111,7 @@
 <translation id="1156488781945104845">Aktuelle Uhrzeit</translation>
 <translation id="1157102636231978136">Mit Ihrem Google-Konto synchronisierte Browserdaten und -aktivitäten</translation>
 <translation id="1161575384898972166">Melden Sie sich in <ph name="TOKEN_NAME" /> an, um das Clientzertifikat zu exportieren.</translation>
+<translation id="1161699061380012396">Chrome OS-Eingabemethode</translation>
 <translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="1164674268730883318">Smart Lock für <ph name="DEVICE_TYPE" /> deaktivieren?</translation>
 <translation id="1164899421101904659">PUK eingeben</translation>
@@ -1001,7 +1004,6 @@
 <translation id="2508428939232952663">Google Play Store-Konto</translation>
 <translation id="2509495747794740764">Der Wert für die Skalierung muss zwischen 10 und 200 liegen.</translation>
 <translation id="2509566264613697683">8-fach</translation>
-<translation id="2512222046227390255">Formulare automatisch ausfüllen</translation>
 <translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Suchen</translation>
@@ -1353,6 +1355,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="3022978424994383087">Nicht verstanden.</translation>
+<translation id="3023464535986383522">Vorlesen</translation>
 <translation id="3024374909719388945">24-Stunden-Format verwenden</translation>
 <translation id="302781076327338683">Unter Umgehung des Cache neu laden</translation>
 <translation id="3031417829280473749">Agentin X</translation>
@@ -1749,6 +1752,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="363903084947548957">Nächste Eingabemethode</translation>
 <translation id="3640214691812501263">"<ph name="EXTENSION_NAME" />" für <ph name="USER_NAME" /> hinzufügen?</translation>
 <translation id="3644896802912593514">Breite</translation>
+<translation id="3645372836428131288">Bewegen Sie Ihren Finger etwas, um einen anderen Teil des Fingerabdrucks zu erfassen.</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> erkannt</translation>
 <translation id="3649138363871392317">Das Foto wurde aufgenommen.</translation>
 <translation id="3650952250015018111">"<ph name="APP_NAME" />" Zugriff erlauben auf:</translation>
@@ -1944,7 +1948,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3920504717067627103">Zertifikatrichtlinien</translation>
 <translation id="392089482157167418">ChromeVox aktivieren (gesprochenes Feedback)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">Es sind keine kürzlich erfassten WebRTC-Protokolle vorhanden.</translation>
 <translation id="3925573269917483990">Kamera:</translation>
 <translation id="3925842537050977900">Von Ablage loslösen</translation>
 <translation id="3926002189479431949">Telefon für Smart Lock geändert</translation>
@@ -2220,6 +2223,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="438503109373656455">Brauner</translation>
 <translation id="4387004326333427325">Remote-Ablehnung des Authentifizierungszertifikats</translation>
 <translation id="4389091756366370506">Nutzer <ph name="VALUE" /></translation>
+<translation id="439266289085815679">Die Bluetooth-Konfiguration wird von <ph name="USER_EMAIL" /> festgelegt.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4400367121200150367">Hier werden Websites angezeigt, für die keine Passwörter gespeichert werden</translation>
 <translation id="4400632832271803360">Halten Sie die Taste "Suche" gedrückt, um die Funktion der Tasten in der obersten Reihe zu ändern</translation>
@@ -2293,6 +2297,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4522600456902129422">Weiterhin zulassen, dass diese Website die Zwischenablage aufruft</translation>
 <translation id="4530494379350999373">Ursprung</translation>
 <translation id="4533985347672295764">CPU-Zeit</translation>
+<translation id="4534661889221639075">Versuchen Sie es noch einmal.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
 <translation id="4538417792467843292">Wort löschen</translation>
 <translation id="4538684596480161368">Plug-ins ohne Sandbox auf <ph name="HOST" /> immer blockieren</translation>
@@ -2522,6 +2527,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4880520557730313061">Autom. Korrektur</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
+<translation id="4882312758060467256">Hat Zugriff auf diese Website</translation>
 <translation id="4882473678324857464">Fokus auf Lesezeichen</translation>
 <translation id="4882831918239250449">Legen Sie fest, wie Ihr Browserverlauf zur Personalisierung verwendet wird, z. B. bei der Suche und bei Werbung</translation>
 <translation id="4883178195103750615">Lesezeichen in HTML-Datei exportieren...</translation>
@@ -2587,6 +2593,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4969785127455456148">Album</translation>
 <translation id="4971412780836297815">Nach abgeschlossenem Download öffnen</translation>
 <translation id="4972129977812092092">Druckerinformationen bearbeiten</translation>
+<translation id="4972164225939028131">Falsches Passwort</translation>
 <translation id="497287958838527945">Kreditkarten und Adressen aus Google Pay.</translation>
 <translation id="4973307593867026061">Drucker hinzufügen</translation>
 <translation id="4973523518332075481">Der Name darf höchstens <ph name="MAX_LENGTH" /> Zeichen lang sein</translation>
@@ -3014,6 +3021,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Apps werden geladen...</translation>
 <translation id="5592595402373377407">Noch nicht genügend Daten vorhanden</translation>
+<translation id="5593357315997824387">Meine Dateien synchronisieren</translation>
 <translation id="5595152862129936745">Sehr weit entfernt</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
@@ -3729,6 +3737,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6664237456442406323">Ihr Computer wurde mit einer ungültigen Hardware-ID konfiguriert. Daher kann Chrome OS keine aktuellen Sicherheitsupdates installieren und Ihr Computer ist <ph name="BEGIN_BOLD" />möglicherweise anfällig für schädliche Angriffe<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Beim Öffnen Ihres Profils ist ein Fehler aufgetreten. Melden Sie sich bitte ab und dann wieder an.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
+<translation id="6674412557034343536">Timer stoppen</translation>
 <translation id="667517062706956822">Soll Google diese Seite von <ph name="SOURCE_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" /> übersetzen?</translation>
 <translation id="6675665718701918026">Zeigegerät verbunden</translation>
 <translation id="6678717876183468697">Abfrage-URL</translation>
@@ -4055,6 +4064,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7186088072322679094">In Symbolleiste behalten</translation>
 <translation id="7187428571767585875">Registrierungseinträge, die entfernt oder geändert werden:</translation>
 <translation id="7189234443051076392">Achten Sie darauf, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist</translation>
+<translation id="7189965711416741966">Fingerabdruck hinzugefügt.</translation>
 <translation id="7191159667348037">Unbekannter Drucker (USB)</translation>
 <translation id="7191454237977785534">Datei speichern unter</translation>
 <translation id="7193374945610105795">Für <ph name="ORIGIN" /> sind keine Passwörter gespeichert</translation>
@@ -4155,6 +4165,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> wird jetzt im Vollbildmodus angezeigt.</translation>
 <translation id="7340650977506865820">Ihr Bildschirm wurde von der Website freigegeben</translation>
+<translation id="7341834142292923918">Möchte auf diese Website zugreifen</translation>
 <translation id="7345706641791090287">Passwort bestätigen</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7347751611463936647">Um diese Erweiterung zu verwenden, geben Sie "<ph name="EXTENSION_KEYWORD" />" ein, dann TAB, und dann Ihren Befehl oder Ihre Suchanfrage.</translation>
@@ -4264,7 +4275,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
     <ph name="BEGIN_PARAGRAPH2" />Der Standortdienst von Google nutzt Quellen wie WLANs, Mobilfunknetze und Sensoren, um den Standort Ihres Geräts zu bestimmen. Der Dienst ist aktiv, wenn die Standorteinstellung Ihres Geräts aktiviert ist.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Sie können die Standortermittlung deaktivieren, indem Sie die Haupteinstellung "Standort" auf Ihrem Gerät deaktivieren. In den Standorteinstellungen können Sie auch die Nutzung von WLANs, Mobilfunknetzen und Sensoren für die Standortbestimmung deaktivieren.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Passwort erstellen –</translation>
-<translation id="7518150891539970662">WebRTC-Protokolle (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Erstellen</translation>
 <translation id="7529411698175791732">Prüfen Sie Ihre Internetverbindung. Wenn das Problem weiterhin besteht, melden Sie sich ab und wieder an.</translation>
@@ -4742,6 +4752,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8214962590150211830">Diese Person entfernen</translation>
 <translation id="8217399928341212914">Weiterhin automatisches Herunterladen mehrerer Dateien blockieren</translation>
 <translation id="8223479393428528563">Wenn Sie diese Dateien zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Dateien und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
+<translation id="8225753906568652947">Meine Angebote einlösen</translation>
 <translation id="8226222018808695353">Unzulässig</translation>
 <translation id="8226619461731305576">Warteschlange</translation>
 <translation id="8226742006292257240">Hier ist das zufällig generierte TPM-Passwort, das Ihrem Computer zugewiesen wurde:</translation>
@@ -4788,6 +4799,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8286036467436129157">Anmelden</translation>
 <translation id="8286963743045814739">In einem Inkognitofenster können Sie privat surfen</translation>
 <translation id="82871696630048499">Die Webseite wurde neu geladen, weil kein Arbeitsspeicher mehr verfügbar war.</translation>
+<translation id="8288032458496410887"><ph name="APP" /> deinstallieren…</translation>
 <translation id="8291967909914612644">Land des Homepageanbieters</translation>
 <translation id="8294431847097064396">Quelle</translation>
 <translation id="8297006494302853456">Schwach</translation>
@@ -4850,6 +4862,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
 <translation id="8419098111404128271">Suchergebnisse für "<ph name="SEARCH_TEXT" />"</translation>
+<translation id="8419368276599091549">Willkommen bei Ihrem <ph name="DEVICE_TYPE" />!</translation>
 <translation id="8420060421540670057">Google Docs-Dateien zeigen</translation>
 <translation id="8424039430705546751">Nach unten</translation>
 <translation id="8425213833346101688">Ändern</translation>
@@ -4976,6 +4989,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8620765578342452535">Netzwerkverbindungen konfigurieren</translation>
 <translation id="8624205858755890468">Ermöglicht Assistant, Ihnen relevante Informationen, Apps und Aktionen anzuzeigen.</translation>
 <translation id="862542460444371744">&amp;Erweiterungen</translation>
+<translation id="8626219642120025691">Timer abgelaufen</translation>
 <translation id="8627151598708688654">Quelle auswählen</translation>
 <translation id="862727964348362408">Ausgesetzt</translation>
 <translation id="862750493060684461">CSS-Cache</translation>
@@ -5096,6 +5110,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8775404590947523323">Ihre Änderungen werden automatisch gespeichert.<ph name="BREAKS" />Um eine Kopie des Originalbilds beizubehalten, deaktivieren Sie die Funktion "Original überschreiben".</translation>
 <translation id="8777628254805677039">Root-Passwort</translation>
 <translation id="8780443667474968681">Die Sprachsuche wurde deaktiviert.</translation>
+<translation id="878068003854005405">Fangen wir an. Legen Sie Ihren Finger auf den Sensor.</translation>
 <translation id="878069093594050299">Dieses Zertifikat wurde für folgende Verwendungszwecke verifiziert:</translation>
 <translation id="8781980678064919987">Beim Zuklappen herunterfahren</translation>
 <translation id="8782565991310229362">Starten der Kioskanwendung wurde abgebrochen.</translation>
@@ -5266,7 +5281,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9039890312082871605">Tabs stummschalten</translation>
 <translation id="9040661932550800571">Passwort für <ph name="ORIGIN" /> aktualisieren?</translation>
 <translation id="9041692268811217999">Der Zugriff auf lokale Dateien auf Ihrem Gerät wurde von Ihrem Administrator deaktiviert</translation>
-<translation id="9042893549633094279">Sicherheit und Datenschutz</translation>
+<translation id="9042893549633094279">Datenschutz und Sicherheit</translation>
 <translation id="904451693890288097">Geben Sie bitte den Zugangscode für "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Die Webadresse der Seite, die Sie aufrufen möchten, wird an Google gesendet</translation>
@@ -5274,6 +5289,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">Sie haben Ihre Drucker unter dem Konto <ph name="EMAIL" /> bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="9052404922357793350">Weiterhin blockieren</translation>
+<translation id="9053091947372579468">Ihr Gerät beinhaltet eine Chrome-Lizenz, doch Ihr Nutzername ist mit keiner Admin-Konsole verknüpft. Erstellen Sie ein Admin-Konsole-Konto, um mit der Registrierung fortzufahren. Hinweis: Wenn Sie Ihre eigene Domain zur Erstellung eines neuen Admin-Konsole-Kontos verwenden, müssen Sie nach der Registrierung auch die Domain verifizieren. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053893665344928494">Meine Auswahl merken</translation>
 <translation id="9055636786322918818">RC4-Verschlüsselung durchsetzen. Mit dieser Option ist ein höheres Risiko verbunden, da RC4-Verschlüsselungen nicht sicher sind.</translation>
 <translation id="9056034633062863292">Chromebox aktualisieren</translation>
@@ -5377,6 +5393,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9218430445555521422">Als Standardbrowser festlegen</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9220525904950070496">Konto entfernen</translation>
+<translation id="9220820413868316583">Finger hochheben und dann Versuch wiederholen.</translation>
 <translation id="923467487918828349">Alle einblenden</translation>
 <translation id="928985544179707652">Erweiterungen:</translation>
 <translation id="930268624053534560">Detaillierter Zeitstempel</translation>

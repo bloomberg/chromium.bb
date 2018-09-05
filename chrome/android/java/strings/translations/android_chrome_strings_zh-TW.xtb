@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
 <translation id="290376772003165898">不是<ph name="LANGUAGE" />網頁嗎？</translation>
+<translation id="2910701580606108292">允許網站播放受保護的內容前，必須先詢問你</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 儲存資料量</translation>
 <translation id="2943166482989655199">傳送系統資訊和使用情形資料給 Google，協助改善 Chrome 及其安全性</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄、密碼和其他設定。</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{已下載 %1$d 個檔案}other{已下載 %1$d 個檔案}}</translation>
-<translation id="3487093336331957349">搜尋與網站建議</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />建議的內容</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">管理同步處理、個人化功能等更多設定</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">彈出式視窗與重新導向</translation>
-<translation id="4445444302979002552">運用預測服務取得建議的搜尋字詞和網站</translation>
 <translation id="4452411734226507615">關閉 [<ph name="TAB_TITLE" />] 分頁</translation>
 <translation id="4452548195519783679">已將書籤加入「<ph name="FOLDER_NAME" />」</translation>
 <translation id="4453340223357552416"><ph name="PRODUCT_NAME" /> 已下載「<ph name="FILE_NAME" />」</translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="629730747756840877">帳戶</translation>
+<translation id="6303969859164067831">登出並關閉同步處理功能</translation>
 <translation id="6320088164292336938">震動</translation>
 <translation id="6324034347079777476">Android 系統同步處理功能已停用</translation>
 <translation id="6333140779060797560">透過 <ph name="APPLICATION" /> 分享</translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">無法取得建議</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
+<translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="7589445247086920869">對目前的搜尋引擎封鎖</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理設定</translation>
 <translation id="7596558890252710462">作業系統</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
-<translation id="9018881455348618200">搜尋按鈕</translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
 <translation id="9040142327097499898">允許顯示通知。這部裝置的定位功能已關閉。</translation>
 <translation id="9050666287014529139">通關密語</translation>

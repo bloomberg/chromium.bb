@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Öğe güncellendi</translation>
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
+<translation id="1063454504051558093">Diğer Şifreyi Kullan...</translation>
 <translation id="1076421457278169141">Kod tarandı</translation>
 <translation id="1084365883616172403">Facebook yayını tamamlandı.</translation>
 <translation id="1104948393051856124">Kabul Et ve Devam Et</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Kull. Veril. Gönder</translation>
 <translation id="1886928167269928266">En Baştan</translation>
 <translation id="1911619930368729126">Google Drive'a yükle</translation>
+<translation id="191179954310195971">Diğer Google Hizmetleri</translation>
 <translation id="1941314575388338491">Kopyalamak için iki kez dokunun.</translation>
 <translation id="1952728750904661634">Yönetilen hesapla oturum açın</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Okuma listeniz çevrimdışı olarak kullanılabilir. Okuma listenize sayfa eklemek için <ph name="SHARE_OPENING_ICON" /> simgesine dokunun.</translation>
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
 <translation id="3691593122358196899">Yer işareti <ph name="FOLDER_TITLE" /> klasörüne eklendi</translation>
+<translation id="3765471630796399471">Diğer Şifreyi Kullan</translation>
 <translation id="3771033907050503522">Gizli Sekmeler</translation>
 <translation id="3779810277399252432">İnternet bağlantısı yok.</translation>
 <translation id="3783017676699494206">Resmi Kaydet</translation>
@@ -315,6 +318,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6346549652287021269">Yeni İndirme İşlemi Başlatılsın mı?</translation>
 <translation id="6362362396625799311">Gizli Sekme Yok</translation>
+<translation id="6363526231572697780">Kullanıcı Adı Yok</translation>
 <translation id="6374469231428023295">Tekrar Dene</translation>
 <translation id="6380866119319257197">Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Karttaki Ad</translation>

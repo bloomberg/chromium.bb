@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Sinal fraco</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta esquerda)</translation>
+<translation id="1294929383540927798">Alterar as definições de bloqueio do ecrã de bloqueio</translation>
 <translation id="1302880136325416935">Mostrar definições de Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351937230027495976">Reduzir menu</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
 <translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Expandir menu</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Mostrar sempre a prateleira</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="3147142846278915599">Launcher (a sincronizar aplicações...)</translation>
 <translation id="315116470104423982">Dados móveis</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
+<translation id="3897533311200664389">Iniciar uma consulta de texto</translation>
 <translation id="3899995891769452915">Entrada de texto por voz</translation>
 <translation id="3900355044994618856">A sessão termina dentro de <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9056839673611986238">O dispositivo voltará à versão anterior</translation>
+<translation id="9070640332319875144">Definições do Assistente</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>

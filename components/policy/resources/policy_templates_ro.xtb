@@ -340,6 +340,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="199764499252435679">Permite actualizările componentelor în <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gestionarea consumului de energie</translation>
 <translation id="201557587962247231">Frecvența de încărcare a raportului privind starea dispozitivului</translation>
+<translation id="2017301949684549118">Adresele URL pentru aplicațiile web de instalat silențios.</translation>
 <translation id="2018836497795982119">Specifică intervalul (în milisecunde) la care serviciului de gestionare a dispozitivelor i se solicită informații legate de politica privind utilizatorii.
 
       Setarea acestei politici înlocuiește valoarea prestabilită de 3 ore. Valorile valide pentru această politică se află în intervalul 1800000 (30 de minute) – 86400000 (1 zi). Toate valorile care nu se află în acest interval vor fi fixate în limitele respective. Dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore, deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică.
@@ -644,6 +645,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Adresa URL pentru căutarea Google poate fi specificată ca: <ph name="GOOGLE_SEARCH_URL" />.
 
           Această opțiune trebuie setată dacă politica „DefaultSearchProviderEnabled” este activată și va fi urmată numai în acest caz.</translation>
+<translation id="2659019163577049044">Dacă această setare este activată, utilizatorii își vor putea configura dispozitivele să sincronizeze mesajele SMS între telefoane și Chromebookuri. Dacă politica este permisă, utilizatorii trebuie să opteze explicit pentru această funcție, prin parcurgerea unui flux de configurare. După finalizarea acestuia, utilizatorii vor putea să trimită și să primească mesaje SMS pe Chromebookuri.
+
+      Dacă această setare este dezactivată, utilizatorii nu vor avea permisiunea să configureze sincronizarea SMS-urilor.
+
+      Dacă politica nu este configurată, în mod prestabilit, permisiunea nu este acordată utilizatorilor gestionați de companie și este acordată utilizatorilor care nu sunt gestionați.</translation>
 <translation id="2660846099862559570">Nu utiliza niciodată un proxy</translation>
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
@@ -710,7 +716,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă dezactivezi această setare sau nu setezi o valoare, funcția Previzualizare înainte de printare va utiliza imprimanta folosită cel mai recent ca opțiune de destinație prestabilită.
 
       Dacă activezi această setare, funcția Previzualizare înainte de printare va folosi imprimanta prestabilită pentru sistemul de operare ca opțiune de destinație prestabilită.</translation>
-<translation id="2867699958489427143">Revino și rămâi la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Efectuează un Powerwash complet în timpul procesului.</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2874209944580848064">Notă pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> care acceptă aplicațiile Android:</translation>
 <translation id="2877225735001246144">Dezactivează căutarea CNAME la negocierea autentificării pentru Kerberos</translation>
@@ -949,7 +954,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
-<translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
 <translation id="3746590506846867985">
       Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
       Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a site-ului https://example.com/.
@@ -1062,6 +1066,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Fiecare intrare din listă conține un dicționar care trebuie să includă codul extensiei în câmpul „extension-id”, precum și adresa URL pentru actualizare în câmpul „update-url”.</translation>
 <translation id="3874773863217952418">Activează funcția Atinge pentru a căuta</translation>
 <translation id="3877517141460819966">Modul integrat de autentificare cu doi factori</translation>
+<translation id="3879208481373875102">Configurează lista aplicațiilor web cu instalare automată</translation>
 <translation id="388237772682176890">Politica nu mai este dezvoltată în M53 și a fost eliminată din M54, deoarece compatibilitatea cu SPDY/3.1 a fost eliminată.
 
       Dezactivează folosirea protocolului SPDY în <ph name="PRODUCT_NAME" />.
@@ -1295,6 +1300,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Pentru o descriere completă a setărilor posibile și a structurii acestei politici, accesează https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Modul de procesare loopback conform politicii privind utilizatorii</translation>
+<translation id="4554841826517980623">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> trebuie să folosească <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul în rețea.
+      Când politica este activată, descoperirea elementelor la care se permite accesul va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul în rețea.
+      Când politica este dezactivată, descoperirea elementelor la care se permite accesul nu va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul.
+      Dacă politica nu este configurată, opțiunea prestabilită este dezactivată pentru utilizatorii gestionați de întreprindere și activată pentru utilizatorii negestionați.</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
 <translation id="4557134566541205630">Adresa URL pentru pagina Filă nouă a furnizorului de căutare prestabilit</translation>
 <translation id="4567137030726189378">Permite folosirea Instrumentelor pentru dezvoltatori</translation>
@@ -1693,6 +1702,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă această politică nu este configurată, feedbackul vocal este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze feedbackul vocal, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="5868414965372171132">Configurație de rețea la nivel de utilizator</translation>
+<translation id="5879014913445067283">Controlează descoperirea elementelor la care se permite accesul din rețea prin <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Setări prestabilite cu privire la cookie-uri</translation>
 <translation id="5887414688706570295">Configurează prefixul TalkGadget care va fi utilizat de gazdele de acces la distanță și nu le permite utilizatorilor să-l modifice.
 
@@ -2132,6 +2142,17 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
 <translation id="7049373494483449255">Permite <ph name="PRODUCT_NAME" /> să trimită documente la <ph name="CLOUD_PRINT_NAME" /> pentru printare. NOTĂ: această politică afectează numai compatibilitatea <ph name="CLOUD_PRINT_NAME" /> din <ph name="PRODUCT_NAME" />. Politica nu împiedică utilizatorii să trimită activități de printare pe site-urile web. Dacă această setare este activată sau nu este configurată, utilizatorii pot printa prin <ph name="CLOUD_PRINT_NAME" /> din fereastra de dialog pentru printare aflată în <ph name="PRODUCT_NAME" />. Dacă această setare este dezactivată, utilizatorii nu pot printa prin <ph name="CLOUD_PRINT_NAME" /> din fereastra de dialog pentru printare aflată în <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Dacă este activată, această politică forțează importarea marcajelor din browserul prestabilit. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, marcajele nu sunt importate. Dacă nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="7063895219334505671">Permite ferestre pop-up de pe aceste site-uri</translation>
+<translation id="706568410943497889">
+      Dacă politica este activată, <ph name="PRODUCT_NAME" /> poate să colecteze jurnale de evenimente WebRTC din serviciile Google (de exemplu, Google Meet) și să le încarce pe Google.
+
+      Dacă politica este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> nu poate colecta sau încărca astfel de jurnale.
+
+      Aceste jurnale conțin informații de diagnosticare utile la remedierea problemelor cu apelurile audio sau video din Chrome, precum ora și dimensiunea pachetelor RTP trimite și primite, feedback privind congestionarea rețelei și metadate despre ora și calitatea cadrelor audio și video. Jurnalele nu conțin înregistrări audio sau video din apel.
+
+      Această colectare a datelor de către Chrome poate fi declanșată numai de serviciile web Google, precum Google Hangouts sau Google Meet.
+
+      Google poate asocia aceste jurnale, prin intermediul unui ID de sesiune, cu alte jurnale colectate chiar de serviciile Google. Astfel, se poate simplifica remedierea erorilor.
+      </translation>
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
 <translation id="7074513465313721551">Configurează lista de domenii în care Navigarea sigură va avea încredere. Aceasta înseamnă că:
@@ -2263,6 +2284,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
 <translation id="7343497214039883642">Fișierul de configurare a imprimantelor companiei pentru dispozitive</translation>
+<translation id="7349338075015720646">Specifică o listă cu site-uri care sunt instalate silențios, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de utilizator.
+
+      Fiecare element din lista politicii este un obiect cu două componente: „url” și „launch_container”. „url” trebuie să fie adresa URL a aplicației web de instalat, iar „launch_container” trebuie să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare. Dacă se omite „launch_container”, aplicația se va lansa într-o fereastră dacă Chrome o consideră a fi o aplicație web progresivă și într-o filă în caz contrar.</translation>
 <translation id="7367028210010532881">Serviciul Navigare sigură afișează o pagină de avertisment când utilizatorii navighează pe site-uri semnalate ca fiind potențial dăunătoare. Dacă activezi această setare, utilizatorii nu vor putea să navigheze mai departe de pe pagina de avertisment pe site-ul dăunător.
 
       Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să acceseze site-ul semnalat după ce li se afișează avertismentul.
@@ -2712,6 +2736,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Aici, „Versiune” poate însemna o versiune exactă, cum ar fi „61.0.3163.120”, sau un prefix de versiune, cum ar fi „61.0”  </translation>
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Permite sincronizarea mesajelor SMS de pe telefon pe Chromebook.</translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
 <translation id="8586528890725660268">Specifică imprimantele pe care nu le poate folosi un utilizator.
@@ -2756,6 +2781,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
       Dacă această politică nu este configurată, serviciul de protecție a parolei va proteja doar parolele Google, dar utilizatorul va putea modifica această setare.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
+
+      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem atunci când se detectează un upgrade. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
+
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>
 <translation id="8693243869659262736">Utilizați clientul DNS integrat</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
@@ -2792,6 +2822,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
           Factorul de ajustare trebuie să fie de minimum 100 %. Valorile prin care intervalul până la reducerea luminozității ecranului în modul de prezentare ar deveni mai scurt decât intervalul obișnuit până la reducerea luminozității ecranului nu sunt permise.</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
+<translation id="8801680448782904838">Notifică utilizatorul că relansarea browserului sau repornirea dispozitivului este recomandată sau necesară</translation>
 <translation id="8818173863808665831">Raportează locația geografică a dispozitivului.
 
           Dacă politica nu este setată sau nu este activată, locația nu va fi raportată.</translation>
@@ -2935,6 +2966,11 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9152473318295429890">Activează sugestiile contextuale ale paginilor web asociate</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
+<translation id="9159126470527871268">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru aplicarea unei actualizări în așteptare.
+
+      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului sau repornirea utilizatorului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului, în timp ce <ph name="PRODUCT_OS_NAME" /> indică acest lucru printr-o notificare în bara de sistem. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile pentru <ph name="PRODUCT_NAME" /> și patru zile pentru <ph name="PRODUCT_OS_NAME" /> și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Sesiunea utilizatorului este restabilită după relansare/repornire.</translation>
 <translation id="9165792353046089850">Îți permite să stabilești dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
 
           Această politică poate fi înlocuită pentru anumite șabloane de adrese URL prin aplicarea politicilor „WebUsbAskForUrls” și „WebUsbBlockedForUrls”.

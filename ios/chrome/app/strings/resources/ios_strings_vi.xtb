@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Đã cập nhật mục</translation>
 <translation id="1047726139967079566">Đánh dấu Trang Này...</translation>
 <translation id="1049743911850919806">Ẩn danh</translation>
+<translation id="1063454504051558093">Dùng mật khẩu khác...</translation>
 <translation id="1076421457278169141">Đã quét mã</translation>
 <translation id="1084365883616172403">Đã đăng lên Facebook.</translation>
 <translation id="1104948393051856124">Chấp nhận và tiếp tục</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
 <translation id="1886928167269928266">Mọi thứ</translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
+<translation id="191179954310195971">Dịch vụ khác của Google</translation>
 <translation id="1941314575388338491">Nhấn đúp để sao chép.</translation>
 <translation id="1952728750904661634">Đăng nhập bằng tài khoản được quản lý</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Danh sách đọc của bạn khả dụng khi ngoại tuyến. Để thêm một trang vào danh sách đọc, nhấn <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Dùng mật khẩu khác</translation>
 <translation id="3771033907050503522">Tab ẩn danh</translation>
 <translation id="3779810277399252432">Không có kết nối Internet.</translation>
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
@@ -315,6 +318,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6346549652287021269">Bắt đầu lượt tải xuống mới?</translation>
 <translation id="6362362396625799311">Không có tab ẩn danh nào</translation>
+<translation id="6363526231572697780">Không có tên người dùng</translation>
 <translation id="6374469231428023295">Thử lại</translation>
 <translation id="6380866119319257197">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Tên trên thẻ</translation>

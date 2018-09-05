@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Slabý signál</translation>
 <translation id="1293264513303784526">Zařízení USB Type-C (levý port)</translation>
+<translation id="1294929383540927798">Změnit nastavení oznámení na obrazovce uzamčení</translation>
 <translation id="1302880136325416935">Zobrazit nastavení Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Sbalit nabídku</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Přepnout Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Rozbalit nabídku</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Vždy zobrazovat poličku</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
 <translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
+<translation id="3897533311200664389">Zahájit textový dotaz</translation>
 <translation id="3899995891769452915">Hlasový vstup</translation>
 <translation id="3900355044994618856">Relace skončí za <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Správce: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Je k dispozici aktualizace přehrávače Adobe Flash Player</translation>
 <translation id="9056839673611986238">V zařízení bude obnovena předchozí verze systému</translation>
+<translation id="9070640332319875144">Nastavení Asistenta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon je používán.</translation>

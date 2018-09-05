@@ -418,6 +418,7 @@
 <translation id="3778403066972421603">Chcete tuto kartu uložit do svého účtu Google a do tohoto zařízení?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Platnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Byl zablokován škodlivý obsah.</translation>
 <translation id="382518646247711829">Pokud používáte proxy server...</translation>
 <translation id="3828924085048779000">Prázdná heslová fráze není povolena.</translation>
 <translation id="385051799172605136">Zpět</translation>
@@ -574,6 +575,7 @@
 <translation id="495170559598752135">Akce</translation>
 <translation id="4958444002117714549">Rozbalit seznam</translation>
 <translation id="4974590756084640048">Znovu zapnout upozornění</translation>
+<translation id="4988217478422488391">Urychluje placení za nákupy na internetu</translation>
 <translation id="4989809363548539747">Tento plugin není podporován</translation>
 <translation id="5002932099480077015">Pokud je tato možnost aktivována, Chrome do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="5018422839182700155">Tuto stránku nelze otevřít</translation>
@@ -653,6 +655,7 @@
 <translation id="5470861586879999274">&amp;Opakovat úpravy</translation>
 <translation id="5481076368049295676">Tento obsah by vám do zařízení mohl zkusit nainstalovat nebezpečný software, který odcizuje nebo maže informace. <ph name="BEGIN_LINK" />Přesto zobrazit<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Přidejte platnou adresu</translation>
+<translation id="5490432419156082418">Adresy a další</translation>
 <translation id="5492298309214877701">Tato stránka v intranetu společnosti, organizace nebo školy má stejnou adresu URL jako externí web.
 <ph name="LINE_BREAK" />
 Kontaktujte administrátora systému.</translation>
@@ -716,6 +719,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Používá se 1}few{Používají se #}many{Používá se #}other{Používá se #}}</translation>
 <translation id="5922853866070715753">Téměř dokončeno</translation>
 <translation id="5939518447894949180">Resetovat</translation>
+<translation id="5951495562196540101">Pomocí běžného uživatelského účtu se nelze zaregistrovat (je k dispozici licence v balíčku).</translation>
 <translation id="5967592137238574583">Úprava kontaktních údajů</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
 <translation id="5975083100439434680">Oddálit</translation>
@@ -1059,6 +1063,7 @@ Další podrobnosti:
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 platební karta}few{# platební karty}many{# platební karty}other{# platebních karet}}</translation>
+<translation id="8473863474539038330">Adresy a další</translation>
 <translation id="8483780878231876732">Chcete-li používat karty z účtu Google, přihlaste se do Chromu.</translation>
 <translation id="8488350697529856933">Platí pro</translation>
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>
@@ -1119,6 +1124,7 @@ Další podrobnosti:
 <translation id="8952525071319348207">Chcete-li aktualizovat údaje o kartě, zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />. Po ověření budou údaje o kartě z vašeho účtu Google Payments poskytnuty tomuto webu.</translation>
 <translation id="8957210676456822347">Autorizace captive portálu</translation>
 <translation id="8971063699422889582">Platnost certifikátu serveru vypršela.</translation>
+<translation id="8975012916872825179">Zahrnuje informace jako telefonní čísla, e-mailové adresy a dodací adresy</translation>
 <translation id="8978053250194585037">Služba Bezpečné prohlížení Google nedávno na webu <ph name="SITE" /> <ph name="BEGIN_LINK" />zjistila phishing<ph name="END_LINK" />. Phishingové weby se vás snaží oklamat tím, že se vydávají za jiné weby.</translation>
 <translation id="8983003182662520383">Platební metody a adresy pomocí služby Google Pay</translation>
 <translation id="8987927404178983737">Měsíc</translation>
@@ -1167,6 +1173,7 @@ Další podrobnosti:
 <translation id="935608979562296692">VYMAZAT FORMULÁŘ</translation>
 <translation id="939736085109172342">Nová složka</translation>
 <translation id="951104842009476243">Přijímané debetní a předplacené karty</translation>
+<translation id="962484866189421427">Tento obsah by se mohl pokusit instalovat klamavé aplikace, které se vydávají za něco jiného nebo shromažďují data ke sledování vaší aktivity. <ph name="BEGIN_LINK" />Přesto zobrazit<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficiální sestavení</translation>
 <translation id="973773823069644502">Přidat adresu doručení</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Žádné}=1{1 položka}few{# položky}many{# položky}other{# položek}}</translation>

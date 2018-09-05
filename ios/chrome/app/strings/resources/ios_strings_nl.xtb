@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Item geüpdated</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Ander wachtwoord gebruiken...</translation>
 <translation id="1076421457278169141">Code gescand</translation>
 <translation id="1084365883616172403">Facebook-bericht voltooid.</translation>
 <translation id="1104948393051856124">Accepteren en doorgaan</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Gebruiksgegevens verzenden</translation>
 <translation id="1886928167269928266">Het eerste gebruik</translation>
 <translation id="1911619930368729126">Uploaden naar Google Drive</translation>
+<translation id="191179954310195971">Andere Google-services</translation>
 <translation id="1941314575388338491">Dubbeltik om te kopiëren.</translation>
 <translation id="1952728750904661634">Inloggen met een beheerd account</translation>
 <translation id="1974060860693918893">Geavanceerd</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Je leeslijst is offline beschikbaar. Als je een pagina aan je leeslijst wilt toevoegen, tik je op <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Ander wachtwoord gebruiken</translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
 <translation id="3779810277399252432">Geen internetverbinding.</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
@@ -315,6 +318,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6344783595350022745">Tekst wissen</translation>
 <translation id="6346549652287021269">Nieuwe download starten?</translation>
 <translation id="6362362396625799311">Geen incognitotabbladen</translation>
+<translation id="6363526231572697780">Geen gebruikersnaam</translation>
 <translation id="6374469231428023295">Opnieuw proberen</translation>
 <translation id="6380866119319257197">Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Naam op kaart</translation>

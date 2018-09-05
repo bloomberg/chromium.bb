@@ -725,7 +725,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos poistat tämän asetuksen käytöstä tai et määritä sille arvoa, Tulostuksen esikatselussa valitaan oletuskohteeksi viimeksi käytetty tulostin.
 
       Jos otat tämän asetuksen käyttöön, Tulostuksen esikatselussa valitaan oletuskohteeksi käyttöjärjestelmän oletustulostin.</translation>
-<translation id="2867699958489427143">Palaa ja pysy kohdeversiossa, jos käyttöjärjestelmän versio on uudempi kuin kohde. Suorita täysi powerwash-toiminto prosessin aikana.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
@@ -964,7 +963,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3711895659073496551">Keskeytä</translation>
 <translation id="3715569262675717862">Käyttöoikeusvarmenteisiin perustuva todennus</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
-<translation id="3737544779868348650">Laitteen verkon isäntänimi</translation>
 <translation id="3746590506846867985">
       Tätä käytäntöä sovelletaan kirjautumisnäytöllä. Tutustu myös käytäntöön <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
       Jos käytäntö on käytössä, jokainen pilkuilla erotetussa luettelossa nimetty alkuperäkohde suoritetaan omana prosessinaan. Tällöin myös nimettyjen kohteiden aliverkkotunnukset eristetään. Esimerkiksi jos luetteloon lisätään osoite https://example.com/, myös https://foo.example.com/ eristetään osana https://example.com/-sivustoa.

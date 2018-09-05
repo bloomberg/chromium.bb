@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">مورد به‌روز شد</translation>
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
 <translation id="1049743911850919806">ناشناس</translation>
+<translation id="1063454504051558093">استفاده از سایر گذرواژه‌ها…</translation>
 <translation id="1076421457278169141">کد اسکن شد</translation>
 <translation id="1084365883616172403">‏پست Facebook ارسال شد.</translation>
 <translation id="1104948393051856124">پذیرش و ادامه</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1886928167269928266">از ابتدا</translation>
 <translation id="1911619930368729126">‏بارگذاری در Google Drive</translation>
+<translation id="191179954310195971">‏سایر سرویس‌های Google</translation>
 <translation id="1941314575388338491">برای کپی کردن دو ضربه سریع بزنید.</translation>
 <translation id="1952728750904661634">ورود به سیستم با حساب مدیریت‌شده</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">فهرست خواندن شما در حالت آفلاین در دسترس است. برای افزودن صفحه‌ای به فهرست خواندنتان، روی <ph name="SHARE_OPENING_ICON" /> ضربه بزنید.</translation>
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
+<translation id="3765471630796399471">استفاده از سایر گذرواژه‌ها</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
 <translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
@@ -315,6 +318,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
 <translation id="6346549652287021269">بارگیری جدید شروع شود؟</translation>
 <translation id="6362362396625799311">برگه ناشناسی موجود نیست</translation>
+<translation id="6363526231572697780">بدون نام کاربری</translation>
 <translation id="6374469231428023295">دوباره امتحان کنید</translation>
 <translation id="6380866119319257197">اگر عبارت عبورتان را فراموش کردید یا می‌خواهید این تنظیم را تغییر دهید، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">نام روی کارت</translation>

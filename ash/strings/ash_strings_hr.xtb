@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Slab signal</translation>
 <translation id="1293264513303784526">USB-C uređaj (lijevi priključak)</translation>
+<translation id="1294929383540927798">Promijenite postavke obavijesti o zaključanom zaslonu</translation>
 <translation id="1302880136325416935">Prikaz postavki Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Udesno</translation>
 <translation id="1351937230027495976">Sažmi izbornik</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">Prebacivanje Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Ukloni tog korisnika</translation>
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">Pokrenite glasovni upit</translation>
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">Proširi izbornik</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3124698051292518391">Uvijek prikaži policu</translation>
 <translation id="3126069444801937830">Ponovo pokrenite za ažuriranje</translation>
 <translation id="3147142846278915599">Pokretač (sinkronizacija aplikacija...)</translation>
 <translation id="315116470104423982">Mobilni podaci</translation>
@@ -177,6 +180,7 @@
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
+<translation id="3897533311200664389">Pokrenite tekstualni upit</translation>
 <translation id="3899995891769452915">Glasovni unos</translation>
 <translation id="3900355044994618856">Vaša će sesija završiti za <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
@@ -460,6 +464,7 @@
 <translation id="8995603266996330174">Upravlja <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostupno je ažuriranje za Adobe Flash Player</translation>
 <translation id="9056839673611986238">Uređaj će se vratiti na prethodnu verziju sustava</translation>
+<translation id="9070640332319875144">Postavke Asistenta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Upotrebljava se mikrofon.</translation>

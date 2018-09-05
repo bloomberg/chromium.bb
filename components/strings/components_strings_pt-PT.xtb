@@ -422,6 +422,7 @@
 <translation id="3778403066972421603">Pretende guardar este cartão na sua Conta Google e neste dispositivo?</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expira a <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="3807873520724684969">Conteúdo prejudicial bloqueado.</translation>
 <translation id="382518646247711829">Se utilizar um servidor de proxy...</translation>
 <translation id="3828924085048779000">Não é permitida uma frase de acesso vazia.</translation>
 <translation id="385051799172605136">Anterior</translation>
@@ -578,6 +579,7 @@
 <translation id="495170559598752135">Ações</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4974590756084640048">Reativar avisos</translation>
+<translation id="4988217478422488391">Permite pagar itens online mais depressa</translation>
 <translation id="4989809363548539747">Este plug-in não é compatível</translation>
 <translation id="5002932099480077015">Quando esta opção está ativada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
@@ -657,6 +659,7 @@
 <translation id="5470861586879999274">&amp;Refazer edição</translation>
 <translation id="5481076368049295676">Este conteúdo pode tentar instalar software perigoso no dispositivo que rouba ou elimina as suas informações. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Adicionar endereço válido</translation>
+<translation id="5490432419156082418">Endereços e Mais</translation>
 <translation id="5492298309214877701">Este site na intranet da empresa, da entidade ou da escola tem o mesmo URL que um Website externo.
     <ph name="LINE_BREAK" />
     Experimente contactar o gestor do sistema.</translation>
@@ -720,6 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em utilização}other{# em utilização}}</translation>
 <translation id="5922853866070715753">Estamos quase a terminar</translation>
 <translation id="5939518447894949180">Repor</translation>
+<translation id="5951495562196540101">Não é possível inscrever com conta de consumidor (licença em pacote disponível).</translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Reduzir</translation>
@@ -1064,6 +1068,7 @@ Detalhes adicionais:
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Sites.</translation>
 <translation id="8437238597147034694">&amp;Anular movimentação</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}other{# cartões de crédito}}</translation>
+<translation id="8473863474539038330">Endereços e mais</translation>
 <translation id="8483780878231876732">Para utilizar cartões da sua Conta Google, inicie sessão no Chrome.</translation>
 <translation id="8488350697529856933">Aplica-se a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou demasiado tempo a responder.</translation>
@@ -1124,6 +1129,7 @@ Detalhes adicionais:
 <translation id="8952525071319348207">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois de confirmar, os detalhes do cartão da conta do Google Payments são partilhados com este site.</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>
+<translation id="8975012916872825179">Inclui informações como números de telefone, endereços de email e moradas para envio</translation>
 <translation id="8978053250194585037">A Navegação segura do Google <ph name="BEGIN_LINK" />detetou phishing<ph name="END_LINK" /> recentemente em <ph name="SITE" />. Os sites de phishing simulam ser outros Websites para o enganar.</translation>
 <translation id="8983003182662520383">Métodos de pagamento e endereços com o Google Pay</translation>
 <translation id="8987927404178983737">Mês</translation>
@@ -1172,6 +1178,7 @@ Detalhes adicionais:
 <translation id="935608979562296692">LIMPAR FORMULÁRIO</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="951104842009476243">Cartões de débito e pré-pagos aceites</translation>
+<translation id="962484866189421427">Este conteúdo poderá tentar instalar aplicações fraudulentas que se fazem passar por algo diferente ou que recolhem dados que podem ser utilizados para o monitorizar. <ph name="BEGIN_LINK" />Mostrar, mesmo assim<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Compilação oficial</translation>
 <translation id="973773823069644502">Adicionar endereço de entrega</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nenhum}=1{1 item}other{# itens}}</translation>

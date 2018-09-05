@@ -419,6 +419,7 @@
 <translation id="3778403066972421603">要将此卡的信息保存到您的 Google 帐号中和此设备上吗？</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">失效日期：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
+<translation id="3807873520724684969">有害内容已被拦截。</translation>
 <translation id="382518646247711829">如果您使用代理服务器…</translation>
 <translation id="3828924085048779000">密码输入字段不能留空。</translation>
 <translation id="385051799172605136">后退</translation>
@@ -575,6 +576,7 @@
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4974590756084640048">重新启用警告功能</translation>
+<translation id="4988217478422488391">加快在线支付速度</translation>
 <translation id="4989809363548539747">该插件不受支持</translation>
 <translation id="5002932099480077015">如果您选中此项，Chrome 会将您的卡的副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="5018422839182700155">无法打开此网页</translation>
@@ -654,6 +656,7 @@
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">添加有效地址</translation>
+<translation id="5490432419156082418">地址和其他信息</translation>
 <translation id="5492298309214877701">这个位于公司、组织或学校内网中的网站使用的网址与某个外部网站的网址相同。
     <ph name="LINE_BREAK" />
     请尝试与您的系统管理员联系。</translation>
@@ -717,6 +720,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
 <translation id="5922853866070715753">即将完成</translation>
 <translation id="5939518447894949180">重置</translation>
+<translation id="5951495562196540101">无法通过消费者帐号注册（有封装的许可）。</translation>
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -1061,6 +1065,7 @@
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 张信用卡}other{# 张信用卡}}</translation>
+<translation id="8473863474539038330">地址和其他信息</translation>
 <translation id="8483780878231876732">要使用您 Google 帐号中的信用卡，请登录 Chrome</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
@@ -1121,6 +1126,7 @@
 <translation id="8952525071319348207">请输入 <ph name="CREDIT_CARD" /> 的失效日期和银行卡验证码 (CVC)，以更新您的信用卡详细信息。在您确认之后，您的 Google Payments 帐号中的信用卡详细信息将会共享给该网站。</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
+<translation id="8975012916872825179">包括电话号码、电子邮件地址和送货地址等信息</translation>
 <translation id="8978053250194585037">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />检测到网上诱骗行为<ph name="END_LINK" />。网上诱骗网站会假冒其他网站来欺骗您。</translation>
 <translation id="8983003182662520383">Google Pay 中存储的付款方式和地址信息</translation>
 <translation id="8987927404178983737">月</translation>
@@ -1169,6 +1175,7 @@
 <translation id="935608979562296692">清除表单内容</translation>
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="951104842009476243">接受的借记卡和预付卡</translation>
+<translation id="962484866189421427">此内容可能会尝试安装欺骗性应用，而这些应用能够冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="973773823069644502">添加速递地址</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{无}=1{1 项内容}other{# 项内容}}</translation>

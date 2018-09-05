@@ -27,6 +27,7 @@
 <translation id="1821985195704844674">樹狀目錄網格</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">在遠端裝置上播放</translation>
+<translation id="1838818994221231429">切換為包含螢幕凹口區域的全螢幕模式</translation>
 <translation id="190587075670221089">刪除</translation>
 <translation id="1907737156431278478">範例</translation>
 <translation id="1921819250265091946">日</translation>
@@ -103,6 +104,7 @@
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
 <translation id="4668956016107839909">附錄</translation>
 <translation id="4742539557769756338">封面</translation>
+<translation id="4748357248530471599">切換螢幕凹口全螢幕模式</translation>
 <translation id="4757246831282535685">分頁面板</translation>
 <translation id="4763480195061959176">影片</translation>
 <translation id="479989351350248267">search</translation>

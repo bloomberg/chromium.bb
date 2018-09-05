@@ -308,7 +308,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d file downloaded}other{%1$d files downloaded}}</translation>
-<translation id="3487093336331957349">Search and site suggestions</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -418,7 +417,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4419556793104466535">Control sync, personalisation and more</translation>
 <translation id="4432792777822557199">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
-<translation id="4445444302979002552">Use prediction services to suggest search terms and websites</translation>
 <translation id="4452411734226507615">Close <ph name="TAB_TITLE" /> tab</translation>
 <translation id="4452548195519783679">Bookmarked to <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> downloaded in <ph name="PRODUCT_NAME" /></translation>
@@ -1002,7 +1000,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google account.</translation>
-<translation id="9018881455348618200">Search button</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
