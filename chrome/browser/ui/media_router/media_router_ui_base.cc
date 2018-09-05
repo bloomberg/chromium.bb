@@ -543,6 +543,13 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
                                           : url::Origin::Create(GURL());
   DVLOG(1) << "DoCreateRoute: origin: " << params.origin;
 
+  // This callback must be invoked before
+  // HandleCreateSessionRequestRouteResponse(), which closes the dialog and
+  // destroys |this|.
+  params.route_result_callbacks.push_back(
+      base::BindOnce(&MediaRouterUIBase::MaybeReportCastingSource,
+                     weak_factory_.GetWeakPtr(), cast_mode));
+
   // There are 3 cases. In cases (1) and (3) the MediaRouterUIBase will need to
   // be notified via OnRouteResponseReceived(). In case (2) the dialog will be
   // closed via HandleCreateSessionRequestRouteResponse().
@@ -575,10 +582,6 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
           presentation_service_delegate_, *presentation_request_);
     }
   }
-
-  params.route_result_callbacks.push_back(
-      base::BindOnce(&MediaRouterUIBase::MaybeReportCastingSource,
-                     weak_factory_.GetWeakPtr(), cast_mode));
 
   params.timeout = GetRouteRequestTimeout(cast_mode);
   CHECK(initiator_);

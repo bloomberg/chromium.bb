@@ -7,6 +7,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/grit/generated_resources.h"
@@ -167,6 +168,8 @@ void CastToolbarButton::ButtonPressed(views::Button* sender,
     dialog_controller->HideMediaRouterDialog();
   } else {
     dialog_controller->ShowMediaRouterDialog();
+    MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+        MediaRouterDialogOpenOrigin::TOOLBAR);
   }
 }
 
