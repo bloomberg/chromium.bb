@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include <memory>
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -88,6 +89,14 @@ class CrostiniManagerTest : public testing::Test {
   void StartTerminaVmSuccessCallback(base::OnceClosure closure,
                                      ConciergeClientResult result) {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+    std::move(closure).Run();
+  }
+
+  void OnStartTremplinRecordsRunningVmCallback(base::OnceClosure closure,
+                                               ConciergeClientResult result) {
+    // Check that running_vms_ contains the running vm.
+    EXPECT_TRUE(
+        CrostiniManager::GetInstance()->IsVmRunning(profile(), kVmName));
     std::move(closure).Run();
   }
 
@@ -297,6 +306,23 @@ TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
       kOwnerId, kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+  const std::string owner_id = CryptohomeIdForProfile(profile());
+
+  // Start the Vm.
+  CrostiniManager::GetInstance()->StartTerminaVm(
+      owner_id, kVmName, disk_path,
+      base::BindOnce(
+          &CrostiniManagerTest::OnStartTremplinRecordsRunningVmCallback,
+          base::Unretained(this), run_loop()->QuitClosure()));
+
+  // Check that the Vm start is not recorded (without tremplin start).
+  EXPECT_FALSE(CrostiniManager::GetInstance()->IsVmRunning(profile(), kVmName));
+
   run_loop()->Run();
 }
 

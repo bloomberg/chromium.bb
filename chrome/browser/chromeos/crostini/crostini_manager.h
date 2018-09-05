@@ -404,12 +404,21 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       base::Optional<vm_tools::concierge::ListVmDisksResponse> reply);
 
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
-  // service method finishes.
+  // service method finishes. |callback| is called if the container has already
+  // been started, otherwise it is passed to OnStartTremplin.
   void OnStartTerminaVm(
       std::string owner_id,
       std::string vm_name,
       StartTerminaVmCallback callback,
       base::Optional<vm_tools::concierge::StartVmResponse> reply);
+
+  // Callback for ConciergeClient::TremplinStartedSignal. Called after the
+  // Tremplin service starts. Updates running containers list and then calls the
+  // |callback|.
+  void OnStartTremplin(std::pair<std::string, std::string> key,
+                       vm_tools::concierge::VmInfo vm_info,
+                       StartTerminaVmCallback callback,
+                       ConciergeClientResult result);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.

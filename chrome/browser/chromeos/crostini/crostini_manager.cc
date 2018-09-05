@@ -1328,17 +1328,31 @@ void CrostiniManager::OnStartTerminaVm(
   // Wait for the Tremplin signal if the vm isn't already marked "running".
   auto key = std::make_pair(owner_id, vm_name);
   if (running_vms_.find(key) == running_vms_.end()) {
-    // Record the running vm.
-    running_vms_[key] = std::move(response.vm_info());
-
     VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id << ", "
             << vm_name;
+
+    // Record the container start and run the callback after the VM starts.
     tremplin_started_callbacks_.emplace(
-        key,
-        base::BindOnce(std::move(callback), ConciergeClientResult::SUCCESS));
+        key, base::BindOnce(&CrostiniManager::OnStartTremplin,
+                            weak_ptr_factory_.GetWeakPtr(), key,
+                            std::move(response.vm_info()), std::move(callback),
+                            ConciergeClientResult::SUCCESS));
     return;
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS);
+}
+
+void CrostiniManager::OnStartTremplin(std::pair<std::string, std::string> key,
+                                      vm_tools::concierge::VmInfo vm_info,
+                                      StartTerminaVmCallback callback,
+                                      ConciergeClientResult result) {
+  // Record the running vm.
+  VLOG(1) << "Received TremplinStartedSignal, VM: " << key.first << ", "
+          << key.second;
+  running_vms_[key] = std::move(vm_info);
+
+  // Run the original callback.
+  std::move(callback).Run(result);
 }
 
 void CrostiniManager::OnStopVm(
