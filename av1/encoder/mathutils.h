@@ -26,7 +26,7 @@ static INLINE int linsolve(int n, double *A, int stride, double *b, double *x) {
   double c;
   // Forward elimination
   for (k = 0; k < n - 1; k++) {
-    // Bring the largest magitude to the diagonal position
+    // Bring the largest magnitude to the diagonal position
     for (i = n - 1; i > k; i--) {
       if (fabs(A[(i - 1) * stride + k]) < fabs(A[i * stride + k])) {
         for (j = 0; j < n; j++) {
