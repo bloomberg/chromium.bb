@@ -649,6 +649,8 @@ function showNotification(msg) {
     notification.scrollTop;
     notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
   }
+
+  $(IDS.UNDO_LINK).focus();
 }
 
 
@@ -742,6 +744,8 @@ function floatDownNotification(notification, notificationContainer) {
       notification.classList.remove(CLASSES.HAS_LINK);
       notificationContainer.removeEventListener('transitionend', afterHide);
     }
+    // Focus on the omnibox after the notification is hidden.
+    window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
   };
   notificationContainer.addEventListener('transitionend', afterHide);
 }
@@ -908,6 +912,11 @@ function handlePostMessage(event) {
     }, 10);
   } else if (cmd === 'closeDialog') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG).close();
+  } else if (cmd === 'focusMenu') {
+    // Focus the edited tile's menu or the add shortcut tile after closing the
+    // custom link edit dialog without saving.
+    $(IDS.TILES_IFRAME)
+        .contentWindow.postMessage({cmd: 'focusMenu', tid: args.tid}, '*');
   }
 }
 

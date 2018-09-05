@@ -43,6 +43,7 @@ const IDS = {
 const KEYCODES = {
   ENTER: 13,
   ESC: 27,
+  SPACE: 32,
   TAB: 9,
 };
 
@@ -209,6 +210,24 @@ function closeDialog() {
 
 
 /**
+ * Send a message to refocus the edited tile's three dot menu or the add
+ * shortcut tile after the cancel button is clicked.
+ * @param {Event} event The keydown event
+ */
+function focusBackOnCancel(event) {
+  if (event.keyCode === KEYCODES.ENTER || event.keyCode === KEYCODES.SPACE) {
+    let message = {
+      cmd: 'focusMenu',
+      tid: prepopulatedLink.rid
+    };
+    window.parent.postMessage(message, DOMAIN_ORIGIN);
+    event.preventDefault();
+    closeDialog();
+  }
+}
+
+
+/**
  * Event handler for messages from the host page.
  * @param {Event} event Event received.
  */
@@ -302,6 +321,7 @@ function init() {
   };
   $(IDS.DELETE).addEventListener('click', deleteLink);
   $(IDS.CANCEL).addEventListener('click', closeDialog);
+  $(IDS.CANCEL).addEventListener('keydown', focusBackOnCancel);
   $(IDS.FORM).addEventListener('submit', (event) => {
     // Prevent the form from submitting and modifying the URL.
     event.preventDefault();

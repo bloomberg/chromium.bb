@@ -276,6 +276,8 @@ var handleCommand = function(data) {
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
+  } else if (cmd === 'focusMenu') {
+    focusTileMenu(data);
   } else {
     console.error('Unknown command: ' + JSON.stringify(data));
   }
@@ -306,6 +308,21 @@ var updateTheme = function(info) {
       !info.isThemeDark && !info.isUsingTheme &&
       (navigator.userAgent.indexOf('Mac') > -1 ||
       navigator.userAgent.indexOf('CrOS') > -1));
+};
+
+
+/**
+ * Handler for 'focusMenu' message from the host page. Focuses the edited tile's
+ * menu or the add shortcut tile after closing the custom link edit dialog
+ * without saving.
+ * @param {object} info Data received in the message.
+ */
+var focusTileMenu = function(info) {
+  let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
+  if (info.tid === -1 /* Add shortcut tile */)
+    tile.focus();
+  else
+    tile.parentNode.childNodes[1].focus();
 };
 
 
@@ -713,7 +730,7 @@ function renderMaterialDesignTile(data) {
           data.dataGenerationTime);
     }
   });
-  mdTile.addEventListener('keyup', function(event) {
+  mdTile.addEventListener('keydown', function(event) {
     if ((event.keyCode === KEYCODES.DELETE ||
          event.keyCode === KEYCODES.BACKSPACE) &&
         !data.isAddButton) {
