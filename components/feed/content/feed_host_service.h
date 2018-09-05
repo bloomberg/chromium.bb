@@ -46,6 +46,9 @@ class FeedHostService : public KeyedService {
   std::unique_ptr<FeedSchedulerHost> scheduler_host_;
   std::unique_ptr<FeedContentDatabase> content_database_;
   std::unique_ptr<FeedJournalDatabase> journal_database_;
+
+  // Depends on the |scheduler_host_|, so must come after in this file to be
+  // destroyed before the scheduler.
   std::unique_ptr<FeedOfflineHost> offline_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
