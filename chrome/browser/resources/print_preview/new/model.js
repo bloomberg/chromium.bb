@@ -755,7 +755,7 @@ Polymer({
     }
 
     if (destination.isPrivet || destination.isExtension) {
-      // TODO (rbpotter): Get local and PDF printers to use the same ticket and
+      // TODO(rbpotter): Get local and PDF printers to use the same ticket and
       // send only this ticket instead of nesting it in a larger ticket.
       ticket.ticket = this.createCloudJobTicket(destination);
       ticket.capabilities = JSON.stringify(destination.capabilities);
