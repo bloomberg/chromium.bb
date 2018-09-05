@@ -109,6 +109,8 @@ class TestBrowserThreadBundle {
   // Used to specify the type of MessageLoop that backs the UI thread, and
   // which of the named BrowserThreads should be backed by a real
   // threads. The UI thread is always the main thread in a unit test.
+  // TODO(https://crbug.com/881041): The mainloop types are mutually exclusive,
+  // and can be removed from here and given as a separate constructor argument.
   enum Options {
     DEFAULT = 0,
     // The main thread will use a MessageLoopForIO (and support the
@@ -116,6 +118,9 @@ class TestBrowserThreadBundle {
     IO_MAINLOOP = 1 << 0,
     REAL_IO_THREAD = 1 << 1,
     DONT_CREATE_BROWSER_THREADS = 1 << 2,
+    // The main thread will use a plain main loop instead of a MessageLoopForUI.
+    // (i.e. will support ThreadTaskRunnerHandle::Get() and RunLoop only).
+    PLAIN_MAINLOOP = 1 << 3,
   };
 
   TestBrowserThreadBundle();
