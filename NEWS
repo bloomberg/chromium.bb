@@ -88,7 +88,16 @@ issues]].
 *** Renamed
 - None
 *** Removed
-- None
+Tables that are only useful in the context of liblouisutdml were moved
+there
+- marburg.ctb
+- marburg_edit.ctb
+- nemeth.ctb
+- nemeth_edit.ctb
+- ukmaths.ctb
+- ukmaths_edit.ctb
+- wiskunde-translation.cti
+- wiskunde.ctb
 
 * Noteworthy changes in release 3.6.0 (2018-06-04)
 This release contains the usual assortment of braille table
