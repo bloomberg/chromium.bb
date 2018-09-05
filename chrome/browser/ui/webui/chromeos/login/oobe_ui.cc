@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
@@ -424,6 +425,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<UpdateRequiredScreenHandler>());
 
+  AddScreenHandler(std::make_unique<AssistantOptInFlowScreenHandler>());
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
       std::make_unique<KioskAppMenuHandler>(network_state_informer_);
@@ -597,6 +600,10 @@ WaitForContainerReadyScreenView* OobeUI::GetWaitForContainerReadyScreenView() {
 
 UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
   return GetView<UpdateRequiredScreenHandler>();
+}
+
+AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
+  return GetView<AssistantOptInFlowScreenHandler>();
 }
 
 UserImageView* OobeUI::GetUserImageView() {

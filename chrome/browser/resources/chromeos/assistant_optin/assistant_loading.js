@@ -60,7 +60,7 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
-    chrome.send('dialogClose');
+    chrome.send('assistantOptInFlow.flowFinished');
   },
 
   /**

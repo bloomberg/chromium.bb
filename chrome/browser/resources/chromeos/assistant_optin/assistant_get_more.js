@@ -58,7 +58,7 @@ Polymer({
     var emailOptedIn = toggle2 != null && toggle2.hasAttribute('checked');
 
     // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
-    chrome.send('hotwordResult', [hotword]);
+    chrome.send('assistantOptInFlow.hotwordResult', [hotword]);
     chrome.send(
         'assistant.GetMoreScreen.userActed', [screenContext, emailOptedIn]);
   },
