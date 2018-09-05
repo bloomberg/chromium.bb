@@ -23,6 +23,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
@@ -1138,6 +1139,7 @@ bool VaapiWrapper::GetVaImage(VASurfaceID va_surface_id,
                               const gfx::Size& size,
                               VAImage* image,
                               void** mem) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::GetVaImage");
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
@@ -1525,6 +1527,7 @@ void VaapiWrapper::DeinitializeVpp() {
 }
 
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::Execute");
   base::AutoLock auto_lock(*va_lock_);
 
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
