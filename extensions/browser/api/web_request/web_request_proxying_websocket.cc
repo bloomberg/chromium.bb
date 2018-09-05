@@ -265,17 +265,16 @@ void WebRequestProxyingWebSocket::StartProxying(
     InfoMap* info_map,
     network::mojom::WebSocketPtrInfo proxied_socket_ptr_info,
     network::mojom::WebSocketRequest proxied_request,
-    network::mojom::AuthenticationHandlerRequest auth_request,
-    scoped_refptr<WebRequestAPI::ProxySet> proxies) {
+    network::mojom::AuthenticationHandlerRequest auth_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (proxies->is_shutdown())
-    return;
+  auto* proxies =
+      WebRequestAPI::ProxySet::GetFromResourceContext(resource_context);
 
   auto proxy = std::make_unique<WebRequestProxyingWebSocket>(
       process_id, render_frame_id, origin, browser_context, resource_context,
       info_map, std::move(request_id_generator),
       network::mojom::WebSocketPtr(std::move(proxied_socket_ptr_info)),
-      std::move(proxied_request), std::move(auth_request), proxies.get());
+      std::move(proxied_request), std::move(auth_request), proxies);
 
   proxies->AddProxy(std::move(proxy));
 }
@@ -400,9 +399,6 @@ void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
 }
 
 void WebRequestProxyingWebSocket::OnError(int error_code) {
-  if (proxies_->IsAPIDestroyed())
-    return;
-
   if (!is_done_) {
     is_done_ = true;
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
