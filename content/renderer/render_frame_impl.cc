@@ -6169,13 +6169,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
         !weak_self) {
       return blink::kWebNavigationPolicyIgnore;
     }
-
-    // |navigation_start| must be recorded immediately after dispatching the
-    // beforeunload event.
-    if (pending_navigation_params_) {
-      pending_navigation_params_->common_params.navigation_start =
-          base::TimeTicks::Now();
-    }
   }
 
   // When an MHTML Archive is present, it should be used to serve iframe content
