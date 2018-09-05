@@ -181,18 +181,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     subresource_expected_["/bar.jpg"] = expect_bar_jpg_requested;
   }
 
-  // Verify that all subresources that were expected to be fetched were actually
-  // fetched.
-  void VerifyAllSubresourcesFetched() const {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    base::RunLoop().RunUntilIdle();
-
-    for (const auto& expect : subresource_expected_) {
-      EXPECT_FALSE(expect.second);
-    }
-  }
-
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -200,7 +188,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
     EXPECT_TRUE(http_server_->ShutdownAndWaitUntilComplete());
-    VerifyAllSubresourcesFetched();
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -232,6 +219,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
     for (const auto& expect : subresource_expected_) {
       if (gurl.path() == expect.first) {
+        // Verify that |gurl| is expected to be fetched. This ensures that a
+        // resource whose loading is blocked is not loaded.
         EXPECT_TRUE(expect.second);
         // Subresource should not be fetched again.
         subresource_expected_[gurl.path()] = false;
@@ -282,9 +271,9 @@ class ResourceLoadingHintsBrowserTest
 };
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
-// See crbug.com/782322 for details. Also occasional flakes on win7/linux
-// (crbug.com/789542, crbug.com/866212).
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_LINUX)
+// See https://crbug.com/782322 for details. Also occasional flakes on win7
+// (https://crbug.com/789542).
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 #define MAYBE_ResourceLoadingHintsHttpsWhitelisted \
   ResourceLoadingHintsHttpsWhitelisted
 #define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
@@ -336,7 +325,6 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   // SetResourceLoadingHintsPatterns sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
-  VerifyAllSubresourcesFetched();
 
   // Load the same webpage to ensure that the resource loading hints are sent
   // again.
