@@ -121,12 +121,19 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
+  if (to_be_removed_request_headers) {
+    for (const std::string& header : *to_be_removed_request_headers)
+      request_.headers.RemoveHeader(header);
+  }
 
-  if (target_loader_.is_bound())
-    target_loader_->FollowRedirect(base::nullopt, base::nullopt);
+  if (modified_request_headers)
+    request_.headers.MergeFrom(*modified_request_headers);
+
+  if (target_loader_.is_bound()) {
+    target_loader_->FollowRedirect(to_be_removed_request_headers,
+                                   modified_request_headers);
+  }
+
   Restart();
 }
 
