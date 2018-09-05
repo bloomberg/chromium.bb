@@ -58,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       const ServiceWorkerRegistrationInfo& info) override;
   void OnUpdateViaCacheChanged(
       ServiceWorkerRegistration* registration) override;
@@ -115,10 +115,11 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
 
   // Sets the corresponding version field to the given version or if the given
   // version is nullptr, clears the field.
-  void SetVersionAttributes(ChangedVersionAttributesMask changed_mask,
-                            ServiceWorkerVersion* installing_version,
-                            ServiceWorkerVersion* waiting_version,
-                            ServiceWorkerVersion* active_version);
+  void SetServiceWorkerObjects(
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
+      ServiceWorkerVersion* installing_version,
+      ServiceWorkerVersion* waiting_version,
+      ServiceWorkerVersion* active_version);
 
   void OnConnectionError();
 

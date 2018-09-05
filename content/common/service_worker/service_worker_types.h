@@ -121,30 +121,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   bool is_history_navigation = false;
 };
 
-class ChangedVersionAttributesMask {
- public:
-  enum {
-    INSTALLING_VERSION = 1 << 0,
-    WAITING_VERSION = 1 << 1,
-    ACTIVE_VERSION = 1 << 2,
-    CONTROLLING_VERSION = 1 << 3,
-  };
-
-  ChangedVersionAttributesMask() : changed_(0) {}
-  explicit ChangedVersionAttributesMask(int changed) : changed_(changed) {}
-
-  int changed() const { return changed_; }
-
-  void add(int changed_versions) { changed_ |= changed_versions; }
-  bool installing_changed() const { return !!(changed_ & INSTALLING_VERSION); }
-  bool waiting_changed() const { return !!(changed_ & WAITING_VERSION); }
-  bool active_changed() const { return !!(changed_ & ACTIVE_VERSION); }
-  bool controller_changed() const { return !!(changed_ & CONTROLLING_VERSION); }
-
- private:
-  int changed_;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_

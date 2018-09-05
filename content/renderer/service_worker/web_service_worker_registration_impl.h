@@ -128,8 +128,8 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
                  const base::Optional<std::string>& error_msg);
 
   // Implements blink::mojom::ServiceWorkerRegistrationObject.
-  void SetVersionAttributes(
-      int changed_mask,
+  void SetServiceWorkerObjects(
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       blink::mojom::ServiceWorkerObjectInfoPtr installing,
       blink::mojom::ServiceWorkerObjectInfoPtr waiting,
       blink::mojom::ServiceWorkerObjectInfoPtr active) override;

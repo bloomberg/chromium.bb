@@ -80,7 +80,9 @@ class MockServiceWorkerRegistrationObject
   int set_update_via_cache_called_count() const {
     return set_update_via_cache_called_count_;
   }
-  int changed_mask() const { return changed_mask_; }
+  const blink::mojom::ChangedServiceWorkerObjectsMask& changed_mask() const {
+    return *changed_mask_;
+  }
   const blink::mojom::ServiceWorkerObjectInfoPtr& installing() const {
     return installing_;
   }
@@ -96,13 +98,13 @@ class MockServiceWorkerRegistrationObject
 
  private:
   // Implements blink::mojom::ServiceWorkerRegistrationObject.
-  void SetVersionAttributes(
-      int changed_mask,
+  void SetServiceWorkerObjects(
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       blink::mojom::ServiceWorkerObjectInfoPtr installing,
       blink::mojom::ServiceWorkerObjectInfoPtr waiting,
       blink::mojom::ServiceWorkerObjectInfoPtr active) override {
     set_version_attributes_called_count_++;
-    changed_mask_ = changed_mask;
+    changed_mask_ = std::move(changed_mask);
     installing_ = std::move(installing);
     waiting_ = std::move(waiting);
     active_ = std::move(active);
@@ -117,7 +119,7 @@ class MockServiceWorkerRegistrationObject
   int update_found_called_count_ = 0;
   int set_version_attributes_called_count_ = 0;
   int set_update_via_cache_called_count_ = 0;
-  int changed_mask_ = 0;
+  blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask_;
   blink::mojom::ServiceWorkerObjectInfoPtr installing_;
   blink::mojom::ServiceWorkerObjectInfoPtr waiting_;
   blink::mojom::ServiceWorkerObjectInfoPtr active_;
@@ -172,10 +174,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 
     void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
-        ChangedVersionAttributesMask changed_mask,
+        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
         const ServiceWorkerRegistrationInfo& info) override {
       observed_registration_ = registration;
-      observed_changed_mask_ = changed_mask;
+      observed_changed_mask_ = std::move(changed_mask);
       observed_info_ = info;
     }
 
@@ -190,12 +192,12 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 
     void Reset() {
       observed_registration_ = nullptr;
-      observed_changed_mask_ = ChangedVersionAttributesMask();
+      observed_changed_mask_ = nullptr;
       observed_info_ = ServiceWorkerRegistrationInfo();
     }
 
     scoped_refptr<ServiceWorkerRegistration> observed_registration_;
-    ChangedVersionAttributesMask observed_changed_mask_;
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr observed_changed_mask_;
     ServiceWorkerRegistrationInfo observed_info_;
   };
 
@@ -230,8 +232,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
   EXPECT_EQ(version_1.get(), registration->active_version());
   EXPECT_EQ(registration, listener.observed_registration_);
-  EXPECT_EQ(ChangedVersionAttributesMask::ACTIVE_VERSION,
-            listener.observed_changed_mask_.changed());
+  EXPECT_TRUE(listener.observed_changed_mask_->active);
   EXPECT_EQ(kScope, listener.observed_info_.pattern);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(kScript, listener.observed_info_.active_version.script_url);
@@ -244,8 +245,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   registration->SetInstallingVersion(version_2);
 
   EXPECT_EQ(version_2.get(), registration->installing_version());
-  EXPECT_EQ(ChangedVersionAttributesMask::INSTALLING_VERSION,
-            listener.observed_changed_mask_.changed());
+  EXPECT_TRUE(listener.observed_changed_mask_->installing);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(version_2_id,
             listener.observed_info_.installing_version.version_id);
@@ -257,8 +257,8 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
   EXPECT_EQ(version_2.get(), registration->waiting_version());
   EXPECT_FALSE(registration->installing_version());
-  EXPECT_TRUE(listener.observed_changed_mask_.waiting_changed());
-  EXPECT_TRUE(listener.observed_changed_mask_.installing_changed());
+  EXPECT_TRUE(listener.observed_changed_mask_->waiting);
+  EXPECT_TRUE(listener.observed_changed_mask_->installing);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(version_2_id, listener.observed_info_.waiting_version.version_id);
   EXPECT_EQ(listener.observed_info_.installing_version.version_id,
@@ -268,8 +268,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   registration->UnsetVersion(version_2.get());
 
   EXPECT_FALSE(registration->waiting_version());
-  EXPECT_EQ(ChangedVersionAttributesMask::WAITING_VERSION,
-            listener.observed_changed_mask_.changed());
+  EXPECT_TRUE(listener.observed_changed_mask_->waiting);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
             blink::mojom::kInvalidServiceWorkerVersionId);
@@ -1125,75 +1124,59 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
           registration, kScriptUrl, version_2_id, context()->AsWeakPtr());
 
   // Set an active worker.
-  {
-    registration->SetActiveVersion(version_1);
-    EXPECT_EQ(version_1.get(), registration->active_version());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(1,
-              mock_registration_object->set_version_attributes_called_count());
-    ChangedVersionAttributesMask mask(mock_registration_object->changed_mask());
-    EXPECT_FALSE(mask.installing_changed());
-    EXPECT_FALSE(mock_registration_object->installing());
-    EXPECT_FALSE(mask.waiting_changed());
-    EXPECT_FALSE(mock_registration_object->waiting());
-    EXPECT_TRUE(mask.active_changed());
-    EXPECT_TRUE(mock_registration_object->active());
-    EXPECT_EQ(version_1_id, mock_registration_object->active()->version_id);
-    EXPECT_EQ(kScriptUrl, mock_registration_object->active()->url);
-  }
+  registration->SetActiveVersion(version_1);
+  EXPECT_EQ(version_1.get(), registration->active_version());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_registration_object->set_version_attributes_called_count());
+  EXPECT_FALSE(mock_registration_object->changed_mask().installing);
+  EXPECT_FALSE(mock_registration_object->installing());
+  EXPECT_FALSE(mock_registration_object->changed_mask().waiting);
+  EXPECT_FALSE(mock_registration_object->waiting());
+  EXPECT_TRUE(mock_registration_object->changed_mask().active);
+  EXPECT_TRUE(mock_registration_object->active());
+  EXPECT_EQ(version_1_id, mock_registration_object->active()->version_id);
+  EXPECT_EQ(kScriptUrl, mock_registration_object->active()->url);
 
   // Set an installing worker.
-  {
-    registration->SetInstallingVersion(version_2);
-    EXPECT_EQ(version_2.get(), registration->installing_version());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(2,
-              mock_registration_object->set_version_attributes_called_count());
-    ChangedVersionAttributesMask mask(mock_registration_object->changed_mask());
-    EXPECT_TRUE(mask.installing_changed());
-    EXPECT_TRUE(mock_registration_object->installing());
-    EXPECT_FALSE(mask.waiting_changed());
-    EXPECT_FALSE(mock_registration_object->waiting());
-    EXPECT_FALSE(mask.active_changed());
-    EXPECT_FALSE(mock_registration_object->active());
-    EXPECT_EQ(version_2_id, mock_registration_object->installing()->version_id);
-    EXPECT_EQ(kScriptUrl, mock_registration_object->installing()->url);
-  }
+  registration->SetInstallingVersion(version_2);
+  EXPECT_EQ(version_2.get(), registration->installing_version());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, mock_registration_object->set_version_attributes_called_count());
+  EXPECT_TRUE(mock_registration_object->changed_mask().installing);
+  EXPECT_TRUE(mock_registration_object->installing());
+  EXPECT_FALSE(mock_registration_object->changed_mask().waiting);
+  EXPECT_FALSE(mock_registration_object->waiting());
+  EXPECT_FALSE(mock_registration_object->changed_mask().active);
+  EXPECT_FALSE(mock_registration_object->active());
+  EXPECT_EQ(version_2_id, mock_registration_object->installing()->version_id);
+  EXPECT_EQ(kScriptUrl, mock_registration_object->installing()->url);
 
   // Promote the installing worker to waiting.
-  {
-    registration->SetWaitingVersion(version_2);
-    EXPECT_EQ(version_2.get(), registration->waiting_version());
-    EXPECT_FALSE(registration->installing_version());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(3,
-              mock_registration_object->set_version_attributes_called_count());
-    ChangedVersionAttributesMask mask(mock_registration_object->changed_mask());
-    EXPECT_TRUE(mask.installing_changed());
-    EXPECT_FALSE(mock_registration_object->installing());
-    EXPECT_TRUE(mask.waiting_changed());
-    EXPECT_TRUE(mock_registration_object->waiting());
-    EXPECT_FALSE(mask.active_changed());
-    EXPECT_FALSE(mock_registration_object->active());
-    EXPECT_EQ(version_2_id, mock_registration_object->waiting()->version_id);
-    EXPECT_EQ(kScriptUrl, mock_registration_object->waiting()->url);
-  }
+  registration->SetWaitingVersion(version_2);
+  EXPECT_EQ(version_2.get(), registration->waiting_version());
+  EXPECT_FALSE(registration->installing_version());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, mock_registration_object->set_version_attributes_called_count());
+  EXPECT_TRUE(mock_registration_object->changed_mask().installing);
+  EXPECT_FALSE(mock_registration_object->installing());
+  EXPECT_TRUE(mock_registration_object->changed_mask().waiting);
+  EXPECT_TRUE(mock_registration_object->waiting());
+  EXPECT_FALSE(mock_registration_object->changed_mask().active);
+  EXPECT_FALSE(mock_registration_object->active());
+  EXPECT_EQ(version_2_id, mock_registration_object->waiting()->version_id);
+  EXPECT_EQ(kScriptUrl, mock_registration_object->waiting()->url);
 
   // Remove the waiting worker.
-  {
-    registration->UnsetVersion(version_2.get());
-    EXPECT_FALSE(registration->waiting_version());
-    base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(4,
-              mock_registration_object->set_version_attributes_called_count());
-    ChangedVersionAttributesMask mask(mock_registration_object->changed_mask());
-    EXPECT_FALSE(mask.installing_changed());
-    EXPECT_FALSE(mock_registration_object->installing());
-    EXPECT_TRUE(mask.waiting_changed());
-    EXPECT_FALSE(mock_registration_object->waiting());
-    EXPECT_FALSE(mask.active_changed());
-    EXPECT_FALSE(mock_registration_object->active());
-  }
+  registration->UnsetVersion(version_2.get());
+  EXPECT_FALSE(registration->waiting_version());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(4, mock_registration_object->set_version_attributes_called_count());
+  EXPECT_FALSE(mock_registration_object->changed_mask().installing);
+  EXPECT_FALSE(mock_registration_object->installing());
+  EXPECT_TRUE(mock_registration_object->changed_mask().waiting);
+  EXPECT_FALSE(mock_registration_object->waiting());
+  EXPECT_FALSE(mock_registration_object->changed_mask().active);
+  EXPECT_FALSE(mock_registration_object->active());
 }
 
 TEST_F(ServiceWorkerRegistrationObjectHostTest, SetUpdateViaCache) {

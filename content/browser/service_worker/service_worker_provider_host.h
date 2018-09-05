@@ -494,7 +494,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       const ServiceWorkerRegistrationInfo& info) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
   void OnRegistrationFinishedUninstalling(
