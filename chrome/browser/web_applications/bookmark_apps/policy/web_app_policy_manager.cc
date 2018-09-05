@@ -104,8 +104,10 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
       container = PendingAppManager::LaunchContainer::kTab;
 
     // There is a separate policy to create shortcuts/pin apps to shelf.
-    apps_to_install.push_back(PendingAppManager::AppInfo::CreateForPolicy(
-        GURL(url.GetString()), container, false /* create_shortcuts */));
+    apps_to_install.emplace_back(
+        GURL(url.GetString()), container,
+        web_app::PendingAppManager::InstallSource::kPolicyInstalled,
+        false /* create_shortcuts */);
     app_urls.emplace_back(url.GetString());
   }
 

@@ -44,25 +44,22 @@ class PendingAppManager {
     kWindow,
   };
 
-  // What flags will be used when installing the app.
-  enum class InstallationFlag {
-    kNone,
-    kDefaultApp,
-    kFromPolicy,
+  // Where an app was installed from. This affects what flags will be used when
+  // installing the app.
+  enum class InstallSource {
+    // Installed by default on the system, such as "all such-and-such make and
+    // model Chromebooks should have this app installed".
+    kDefaultInstalled,
+    // Installed by sys-admin policy, such as "all example.com employees should
+    // have this app installed".
+    kPolicyInstalled,
   };
 
   struct AppInfo {
-    static AppInfo Create(GURL url,
-                          LaunchContainer launch_container,
-                          bool create_shortcuts = true);
-    static AppInfo CreateForDefaultApp(GURL url,
-                                       LaunchContainer launch_container,
-                                       bool create_shortcuts = true);
-    static AppInfo CreateForPolicy(GURL url,
-                                   LaunchContainer launch_container,
-                                   bool create_shortcuts = true);
-
-    // Prefer static methods above.
+    AppInfo(GURL url,
+            LaunchContainer launch_container,
+            InstallSource install_source,
+            bool create_shortcuts = true);
     AppInfo(AppInfo&& other);
     ~AppInfo();
 
@@ -72,15 +69,10 @@ class PendingAppManager {
 
     const GURL url;
     const LaunchContainer launch_container;
+    const InstallSource install_source;
     const bool create_shortcuts;
-    const InstallationFlag installation_flag;
 
    private:
-    AppInfo(GURL url,
-            LaunchContainer launch_container,
-            bool create_shortcuts,
-            InstallationFlag installation_flag);
-
     DISALLOW_COPY_AND_ASSIGN(AppInfo);
   };
 
