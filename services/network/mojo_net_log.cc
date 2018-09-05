@@ -28,6 +28,7 @@ void MojoNetLog::ShutDown() {
   if (file_net_log_observer_) {
     file_net_log_observer_->StopObserving(nullptr /*polled_data*/,
                                           base::OnceClosure());
+    file_net_log_observer_.reset();
   }
 }
 
