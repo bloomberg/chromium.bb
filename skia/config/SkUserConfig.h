@@ -155,18 +155,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
-// The matrix image filter imperceptibly alters the following two layout tests:
-//   fast/css/transformed-mask.html
-//   fast/reflections/opacity-reflection-transform.html
-// and changes the following cc_unittests:
-//   LayerTreeHostCommonTest.VisibleRectWithScalingClippingAndFilters
-//   LayerTreeHostCommonTest.VisibleRectWithClippingAndFilters
-// Landing the fix in Skia behind this flag will allow those all to be updated
-// together in Chrome (along with the removal of this flag).
-#ifndef SK_IGNORE_MATRIX_IMAGE_FILTER_FIX
-#define SK_IGNORE_MATRIX_IMAGE_FILTER_FIX
-#endif
-
 // remove after rebaselining svg layout tests
 #ifndef SK_SUPPORT_LEGACY_SVG_ARC_TO
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO

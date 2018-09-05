@@ -2705,8 +2705,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithClippingAndFilters) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(gfx::Rect(50, 40, 10, 20), filter_child->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, -10, 10, 20),
+  EXPECT_EQ(gfx::Rect(49, 39, 12, 21), filter_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(-1, -11, 12, 21),
             GetRenderSurface(filter)->content_rect());
 }
 
@@ -2758,8 +2758,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(gfx::Rect(50, 40, 10, 20), filter_child->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, -30, 30, 60),
+  EXPECT_EQ(gfx::Rect(49, 39, 12, 21), filter_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(-1, -31, 32, 61),
             GetRenderSurface(filter)->content_rect());
 }
 
