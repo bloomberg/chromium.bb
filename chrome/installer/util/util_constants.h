@@ -216,7 +216,6 @@ extern const wchar_t kSetupExe[];
 extern const wchar_t kUninstallArgumentsField[];
 extern const wchar_t kUninstallDisplayNameField[];
 extern const wchar_t kUninstallInstallationDate[];
-extern const char kUninstallMetricsName[];
 extern const wchar_t kUninstallStringField[];
 
 // Google Update installer result API.
