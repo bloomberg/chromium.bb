@@ -7,9 +7,9 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
+#include "ui/base/glib/glib_signal.h"
 
 namespace libgtkui {
 
@@ -110,28 +110,37 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                   gfx::NativeWindow parent);
 
   // Callback for when the user responds to a Save As or Open File dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectSingleFileDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectSingleFileDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the user responds to a Select Folder dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectSingleFolderDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectSingleFolderDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the user responds to a Open Multiple Files dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectMultiFileDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectMultiFileDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the file chooser gets destroyed.
-  CHROMEGTK_CALLBACK_0(SelectFileDialogImplGTK, void, OnFileChooserDestroy);
+  CHROMEG_CALLBACK_0(SelectFileDialogImplGTK,
+                     void,
+                     OnFileChooserDestroy,
+                     GtkWidget*);
 
   // Callback for when we update the preview for the selection.
-  CHROMEGTK_CALLBACK_0(SelectFileDialogImplGTK, void, OnUpdatePreview);
+  CHROMEG_CALLBACK_0(SelectFileDialogImplGTK,
+                     void,
+                     OnUpdatePreview,
+                     GtkWidget*);
 
   // The GtkImage widget for showing previews of selected images.
   GtkWidget* preview_;
