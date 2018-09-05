@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/tab_node_pool.h"
@@ -249,6 +250,13 @@ void TestSyncedWindowDelegate::OverrideTabAt(int index,
   tab_delegates_[index] = delegate;
 }
 
+void TestSyncedWindowDelegate::CloseTab(SessionID tab_id) {
+  base::EraseIf(tab_delegates_,
+                [tab_id](const std::pair<int, SyncedTabDelegate*>& entry) {
+                  return entry.second->GetSessionId() == tab_id;
+                });
+}
+
 void TestSyncedWindowDelegate::SetIsSessionRestoreInProgress(bool value) {
   is_session_restore_in_progress_ = value;
 }
@@ -344,6 +352,14 @@ TestSyncedTabDelegate* TestSyncedWindowDelegatesGetter::AddTab(
   // navigations.
   router_.NotifyNav(tabs_.back().get());
   return tabs_.back().get();
+}
+
+void TestSyncedWindowDelegatesGetter::CloseTab(SessionID tab_id) {
+  for (auto& window : windows_) {
+    // CloseTab() will only take effect with the belonging window, the rest will
+    // simply ignore the call.
+    window->CloseTab(tab_id);
+  }
 }
 
 void TestSyncedWindowDelegatesGetter::SessionRestoreComplete() {

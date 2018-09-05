@@ -122,6 +122,8 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   // |delegate| must not be nullptr and must outlive this object.
   void OverrideTabAt(int index, SyncedTabDelegate* delegate);
 
+  void CloseTab(SessionID tab_id);
+
   void SetIsSessionRestoreInProgress(bool value);
 
   // SyncedWindowDelegate overrides.
@@ -143,8 +145,6 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   const sync_pb::SessionWindow_BrowserType window_type_;
 
   std::map<int, SyncedTabDelegate*> tab_delegates_;
-  std::map<int, SyncedTabDelegate*> tab_overrides_;
-  std::map<int, SessionID> tab_id_overrides_;
   bool is_session_restore_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncedWindowDelegate);
@@ -164,6 +164,7 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   // TestSyncedTabDelegate (not owned).
   TestSyncedTabDelegate* AddTab(SessionID window_id,
                                 SessionID tab_id = SessionID::NewUnique());
+  void CloseTab(SessionID tab_id);
   void SessionRestoreComplete();
   LocalSessionEventRouter* router();
 

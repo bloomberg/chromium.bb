@@ -298,6 +298,10 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return tab;
   }
 
+  void CloseTab(int tab_id) {
+    window_getter_.CloseTab(SessionID::FromSerializedValue(tab_id));
+  }
+
   void SessionRestoreComplete() { window_getter_.SessionRestoreComplete(); }
 
   SessionSyncBridge* bridge() { return bridge_.get(); }
@@ -871,6 +875,77 @@ TEST_F(SessionSyncBridgeTest, ShouldExposeTabbedWindowAfterCustomTabOnly) {
                   Pair(_, EntityDataHasSpecifics(MatchesTab(
                               kLocalSessionTag, kWindowId2, kTabId2,
                               /*tab_node_id=*/1, {"http://bar.com/"})))));
+}
+
+TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+  const int kTabId1 = 1000003;
+  const int kTabId2 = 1000004;
+  const int kTabId3 = 1000005;
+  const int kTabId4 = 1000006;
+  // Zero is the first assigned tab node ID.
+  const int kTabNodeId1 = 0;
+  const int kTabNodeId2 = 1;
+
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab1 = AddTab(kWindowId1, "http://foo.com/", kTabId1);
+  AddTab(kWindowId1, "http://bar.com/", kTabId2);
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+  const std::string tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId1);
+  const std::string tab_storage_key2 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId2);
+
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(GetData(header_storage_key),
+              EntityDataHasSpecifics(MatchesHeader(
+                  kLocalSessionTag, {kWindowId1}, {kTabId1, kTabId2})));
+
+  // Close |kTabId2| and force reassociation by navigating in the remaining open
+  // tab, leading to a freed tab entity.
+  CloseTab(kTabId2);
+  tab1->Navigate("http://baz.com/");
+
+  ASSERT_THAT(GetData(header_storage_key),
+              EntityDataHasSpecifics(
+                  MatchesHeader(kLocalSessionTag, {kWindowId1}, {kTabId1})));
+
+  ShutdownBridge();
+  ResetWindows();
+
+  // The browser gets restarted with a new initial tab, for example because the
+  // user chose "Continue where you left off".
+  AddWindow(kWindowId2);
+  AddTab(kWindowId2, "http://qux.com/", kTabId3);
+
+  // Start the bridge again.
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(GetData(header_storage_key),
+              EntityDataHasSpecifics(
+                  MatchesHeader(kLocalSessionTag, {kWindowId2}, {kTabId3})));
+
+  // |kTabNodeId1| should be free at this point. When a new tab is opened
+  // (|kTabId4|), it should be reused.
+  AddTab(kWindowId2, "http://quux.com/", kTabId4);
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               EntityDataHasSpecifics(MatchesHeader(
+                   kLocalSessionTag, {kWindowId2}, {kTabId3, kTabId4}))),
+          Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId2, kTabId3,
+                                     kTabNodeId2, {"http://qux.com/"}))),
+          Pair(tab_storage_key1, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId2, kTabId4,
+                                     kTabNodeId1, {"http://quux.com/"})))));
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
