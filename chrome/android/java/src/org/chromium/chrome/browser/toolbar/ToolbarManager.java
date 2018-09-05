@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -908,9 +909,18 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         assert mToolbar != null;
         final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
         if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) {
-            ViewRectProvider provider = new ViewRectProvider(mToolbar);
-            TextBubble bubble = new TextBubble(mToolbar.getContext(), mToolbar,
-                    R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, true, provider);
+            TextBubble bubble;
+            // If on the NTP, there is no toolbar. Place the bubble in the space where the toolbar
+            // would be.
+            if (NewTabPage.isNTPUrl(tab.getUrl())) {
+                bubble = new TextBubble(mToolbar.getContext(), mToolbar,
+                        R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, false,
+                        new Rect(0, 0, mToolbar.getWidth(), 0));
+            } else {
+                bubble = new TextBubble(mToolbar.getContext(), mToolbar,
+                        R.string.iph_duet_icons_moved, R.string.iph_duet_icons_moved, true,
+                        new ViewRectProvider(mToolbar));
+            }
             bubble.setDismissOnTouchInteraction(true);
             bubble.addOnDismissListener(
                     () -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE));
