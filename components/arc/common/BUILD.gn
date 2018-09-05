@@ -81,22 +81,23 @@ if (is_chromeos) {
       ":media",  # for gfx.mojom
     ]
   }
-}
 
-# Media related mojo interfaces. There are used by //services/ws/public/mojom.
-# We have this separate mojom target to avoid pulling in unnecessary interfaces.
-mojom("media") {
-  sources = [
-    "gfx.mojom",
-    "protected_buffer_manager.mojom",
-    "video.mojom",
-    "video_common.mojom",
-    "video_decode_accelerator.mojom",
-    "video_encode_accelerator.mojom",
-    "video_protected_buffer_allocator.mojom",
-  ]
+  # Media related mojo interfaces. There are used by //services/ws/public/mojom.
+  # We have this separate mojom target to avoid pulling in unnecessary
+  # interfaces.
+  mojom("media") {
+    sources = [
+      "gfx.mojom",
+      "protected_buffer_manager.mojom",
+      "video.mojom",
+      "video_common.mojom",
+      "video_decode_accelerator.mojom",
+      "video_encode_accelerator.mojom",
+      "video_protected_buffer_allocator.mojom",
+    ]
 
-  public_deps = [
-    "//ui/gfx/geometry/mojo",
-  ]
+    public_deps = [
+      "//ui/gfx/geometry/mojo",
+    ]
+  }
 }
