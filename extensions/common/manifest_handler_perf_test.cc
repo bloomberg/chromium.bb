@@ -53,4 +53,18 @@ TEST(ManifestHandlerPerfTest, MANUAL_LookupTest) {
   LoggingTimer::Print();
 }
 
+TEST(ManifestHandlerPerfTest, MANUAL_CommonMeasureFinalization) {
+  ManifestHandlerRegistry::ResetForTesting();
+  static constexpr char kTimerId[] = "Finalize";
+  for (int i = 0; i < 100000; ++i) {
+    {
+      RegisterCommonManifestHandlers();
+      LoggingTimer timer(kTimerId);
+      ManifestHandler::FinalizeRegistration();
+    }
+    ManifestHandlerRegistry::ResetForTesting();
+  }
+  LoggingTimer::Print();
+}
+
 }  // namespace extensions

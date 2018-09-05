@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -220,29 +221,25 @@ void ManifestHandlerRegistry::ResetForTesting() {
 }
 
 void ManifestHandlerRegistry::SortManifestHandlers() {
-  std::set<ManifestHandler*> unsorted_handlers;
-  for (ManifestHandlerMap::const_iterator iter = handlers_.begin();
-       iter != handlers_.end(); ++iter) {
-    unsorted_handlers.insert(iter->second.get());
+  std::vector<ManifestHandler*> unsorted_handlers;
+  unsorted_handlers.reserve(handlers_.size());
+  for (const auto& key_value : handlers_) {
+    unsorted_handlers.push_back(key_value.second.get());
   }
 
   int priority = 0;
   while (true) {
-    std::set<ManifestHandler*> next_unsorted_handlers;
-    for (std::set<ManifestHandler*>::const_iterator iter =
-             unsorted_handlers.begin();
-         iter != unsorted_handlers.end(); ++iter) {
-      ManifestHandler* handler = *iter;
+    std::vector<ManifestHandler*> next_unsorted_handlers;
+    next_unsorted_handlers.reserve(unsorted_handlers.size());
+    for (ManifestHandler* handler : unsorted_handlers) {
       const std::vector<std::string>& prerequisites =
           handler->PrerequisiteKeys();
       int unsatisfied = prerequisites.size();
-      for (size_t i = 0; i < prerequisites.size(); ++i) {
-        ManifestHandlerMap::const_iterator prereq_iter =
-            handlers_.find(prerequisites[i]);
+      for (const std::string& key : prerequisites) {
+        ManifestHandlerMap::const_iterator prereq_iter = handlers_.find(key);
         // If the prerequisite does not exist, crash.
         CHECK(prereq_iter != handlers_.end())
-            << "Extension manifest handler depends on unrecognized key "
-            << prerequisites[i];
+            << "Extension manifest handler depends on unrecognized key " << key;
         // Prerequisite is in our map.
         if (base::ContainsKey(priority_map_, prereq_iter->second.get()))
           unsatisfied--;
@@ -252,7 +249,7 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
         priority++;
       } else {
         // Put in the list for next time.
-        next_unsorted_handlers.insert(handler);
+        next_unsorted_handlers.push_back(handler);
       }
     }
     if (next_unsorted_handlers.size() == unsorted_handlers.size())
@@ -262,7 +259,7 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
 
   // If there are any leftover unsorted handlers, they must have had
   // circular dependencies.
-  CHECK_EQ(unsorted_handlers.size(), std::set<ManifestHandler*>::size_type(0))
+  CHECK(unsorted_handlers.empty())
       << "Extension manifest handlers have circular dependencies!";
 }
 
