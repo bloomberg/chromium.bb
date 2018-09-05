@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_
-#define UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_
+#ifndef UI_ACCESSIBILITY_AX_MODE_H_
+#define UI_ACCESSIBILITY_AX_MODE_H_
 
 namespace ui {
 
@@ -89,4 +89,4 @@ static constexpr AXMode kAXModeComplete(AXMode::kNativeAPIs |
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_
+#endif  // UI_ACCESSIBILITY_AX_MODE_H_

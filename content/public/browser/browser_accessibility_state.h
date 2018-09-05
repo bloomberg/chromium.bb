@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 
 #include "content/common/content_export.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace content {
 
