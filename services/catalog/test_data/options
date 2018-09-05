@@ -3,7 +3,7 @@
   "display_name": "Foo",
   "options": {
     "instance_sharing": "singleton",
-    "allow_other_user_ids": true,
+    "can_connect_to_other_services_as_any_user": true,
     "allow_other_instance_names": true,
     "instance_for_client_process": true
   },

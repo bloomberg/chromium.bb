@@ -10,9 +10,6 @@
       // TODO(rockot): Fix this. We can bake this file into ServiceManager at
       // build time or something. Same with service:catalog.
       "provides": {
-        // Clients requesting this class are able to connect to other clients as
-        // specific users other than their own.
-        "service_manager:user_id": [ ],
         // Clients requesting this class are allowed to register clients for
         // processes they launch themselves.
         "service_manager:client_process": [ ],
