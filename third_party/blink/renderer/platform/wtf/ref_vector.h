@@ -38,6 +38,10 @@ class RefVector : public RefCounted<RefVector<T>> {
   wtf_size_t size() const { return vector_.size(); }
   bool IsEmpty() const { return !size(); }
   void push_back(const T& decoration) { vector_.push_back(decoration); }
+  template <typename... Args>
+  T& emplace_back(Args&&... args) {
+    return vector_.emplace_back(std::forward<Args>(args)...);
+  }
   const Vector<T>& GetVector() const { return vector_; }
   Vector<T>* GetMutableVector() { return &vector_; }
 
