@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -290,6 +290,8 @@ bool ReplacePrefix(std::string* s,
 
 std::string GetDownloadLocationText(Profile* profile, const std::string& path) {
   std::string result(path);
+  auto* drive_integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
   if (ReplacePrefix(&result, "/home/chronos/user/Downloads",
                     kDownloadsFolderName)) {
   } else if (ReplacePrefix(&result,
@@ -297,13 +299,15 @@ std::string GetDownloadLocationText(Profile* profile, const std::string& path) {
                                profile->GetPath().BaseName().value() +
                                "/Downloads",
                            kDownloadsFolderName)) {
-  } else if (ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+  } else if (drive_integration_service &&
+             ReplacePrefix(&result,
+                           drive_integration_service->GetMountPointPath()
                                .Append(kRootRelativeToDriveMount)
                                .value(),
                            kGoogleDriveDisplayName)) {
-  } else if (ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+  } else if (drive_integration_service &&
+             ReplacePrefix(&result,
+                           drive_integration_service->GetMountPointPath()
                                .Append(kTeamDrivesRelativeToDriveMount)
                                .value(),
                            l10n_util::GetStringUTF8(
