@@ -430,6 +430,8 @@ jumbo_component("platform") {
     "bindings/origin_trial_features.h",
     "bindings/parkable_string.cc",
     "bindings/parkable_string.h",
+    "bindings/parkable_string_manager.cc",
+    "bindings/parkable_string_manager.h",
     "bindings/runtime_call_stats.cc",
     "bindings/runtime_call_stats.h",
     "bindings/scoped_persistent.h",

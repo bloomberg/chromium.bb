@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 
+#include <thread>
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
@@ -14,7 +16,7 @@ namespace blink {
 class ParkableStringTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    ParkableStringTable::Instance().SetRendererBackgrounded(false);
+    ParkableStringManager::Instance().SetRendererBackgrounded(false);
   }
 };
 
@@ -81,43 +83,43 @@ TEST_F(ParkableStringTest, TableSimple) {
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
   ASSERT_FALSE(parkable.Impl()->is_parked());
 
-  auto& table = ParkableStringTable::Instance();
-  EXPECT_EQ(1u, table.table_.size());
+  auto& manager = ParkableStringManager::Instance();
+  EXPECT_EQ(1u, manager.table_.size());
 
   // Small strings are not in the table.
   ParkableString small(String("abc").ReleaseImpl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
 
   // No parking as the current state is not "backgrounded".
-  table.SetRendererBackgrounded(false);
-  ASSERT_FALSE(table.IsRendererBackgrounded());
-  table.MaybeParkAll();
+  manager.SetRendererBackgrounded(false);
+  ASSERT_FALSE(manager.IsRendererBackgrounded());
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_FALSE(parkable.Impl()->is_parked());
   histogram_tester.ExpectTotalCount("Memory.MovableStringsCount", 0);
 
-  table.SetRendererBackgrounded(true);
-  ASSERT_TRUE(table.IsRendererBackgrounded());
-  table.MaybeParkAll();
+  manager.SetRendererBackgrounded(true);
+  ASSERT_TRUE(manager.IsRendererBackgrounded());
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
 
   // Park and unpark.
   parkable.ToString();
   EXPECT_FALSE(parkable.Impl()->is_parked());
-  table.MaybeParkAll();
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_TRUE(parkable.Impl()->is_parked());
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 2);
 
   // More than one reference, no parking.
-  table.SetRendererBackgrounded(false);
+  manager.SetRendererBackgrounded(false);
   String alive_unparked = parkable.ToString();  // Unparked in foreground.
-  table.SetRendererBackgrounded(true);
-  table.MaybeParkAll();
+  manager.SetRendererBackgrounded(true);
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_FALSE(parkable.Impl()->is_parked());
 
   // Other reference is dropped, OK to park.
   alive_unparked = String();
-  table.MaybeParkAll();
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
   histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 5);
@@ -140,38 +142,38 @@ TEST_F(ParkableStringTest, TableMultiple) {
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
   ParkableString parkable2(String(data.data(), data.size()).ReleaseImpl());
 
-  auto& table = ParkableStringTable::Instance();
-  EXPECT_EQ(2u, table.table_.size());
+  auto& manager = ParkableStringManager::Instance();
+  EXPECT_EQ(2u, manager.table_.size());
 
   parkable2 = ParkableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
 
   ParkableString copy = parkable;
   parkable = ParkableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
   copy = ParkableString();
-  EXPECT_EQ(0u, table.table_.size());
+  EXPECT_EQ(0u, manager.table_.size());
 
   String str(data.data(), data.size());
   ParkableString parkable3(str.Impl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
   // De-duplicated.
   ParkableString other_parkable3(str.Impl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
   EXPECT_EQ(parkable3.Impl(), other_parkable3.Impl());
 
   // If all the references to a string are in the table, park it.
   str = String();
-  table.SetRendererBackgrounded(true);
-  ASSERT_TRUE(table.IsRendererBackgrounded());
-  table.MaybeParkAll();
+  manager.SetRendererBackgrounded(true);
+  ASSERT_TRUE(manager.IsRendererBackgrounded());
+  manager.ParkAllIfRendererBackgrounded();
   EXPECT_TRUE(parkable3.Impl()->is_parked());
 
   // Only drop it from the table when the last one is gone.
   parkable3 = ParkableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, manager.table_.size());
   other_parkable3 = ParkableString();
-  EXPECT_EQ(0u, table.table_.size());
+  EXPECT_EQ(0u, manager.table_.size());
 
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsTotalSizeKb",
@@ -180,6 +182,24 @@ TEST_F(ParkableStringTest, TableMultiple) {
   histogram_tester.ExpectBucketCount(
       "Memory.MovableStringParkingAction",
       ParkableStringImpl::ParkingAction::kParkedInBackground, 1);
+}
+
+TEST_F(ParkableStringTest, ShouldPark) {
+  String null_string;
+  EXPECT_FALSE(ParkableStringManager::ShouldPark(null_string.Impl()));
+  String empty_string("");
+  EXPECT_FALSE(ParkableStringManager::ShouldPark(empty_string.Impl()));
+  std::vector<char> data(20 * 1000, 'a');
+
+  String parkable(String(data.data(), data.size()).ReleaseImpl());
+  EXPECT_TRUE(ParkableStringManager::ShouldPark(parkable.Impl()));
+
+  std::thread t([]() {
+    std::vector<char> data(20 * 1000, 'a');
+    String parkable(String(data.data(), data.size()).ReleaseImpl());
+    EXPECT_FALSE(ParkableStringManager::ShouldPark(parkable.Impl()));
+  });
+  t.join();
 }
 
 }  // namespace blink
