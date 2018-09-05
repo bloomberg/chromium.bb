@@ -4,7 +4,7 @@
 
 module chrome_cleaner.mojom;
 
-enum SpecialWindowsHandle {
+enum PredefinedHandle {
   NULL_HANDLE,
   INVALID_HANDLE,
   CLASSES_ROOT,
@@ -14,13 +14,12 @@ enum SpecialWindowsHandle {
   USERS,
 };
 
-// Mojo's |handle| type passes handles with DUPLICATE_CLOSE_SOURCE. The special
-// handles above can't be closed, so they can't be passed as |handle|. Use a
+// Mojo can't pass predefined handles through its |handle| type, so use a
 // wrapper that puts these in |special_handle| and plain handles in
 // |raw_handle|. Typemapped to HANDLE.
 union WindowsHandle {
   handle raw_handle;
-  SpecialWindowsHandle special_handle;
+  PredefinedHandle special_handle;
 };
 
 interface TestWindowsHandle {

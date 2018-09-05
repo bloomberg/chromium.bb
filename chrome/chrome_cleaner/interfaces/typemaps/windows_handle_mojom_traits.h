@@ -11,10 +11,16 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<chrome_cleaner::mojom::PredefinedHandle, HANDLE> {
+  static chrome_cleaner::mojom::PredefinedHandle ToMojom(HANDLE handle);
+  static bool FromMojom(chrome_cleaner::mojom::PredefinedHandle input,
+                        HANDLE* result);
+};
+
+template <>
 struct UnionTraits<chrome_cleaner::mojom::WindowsHandleDataView, HANDLE> {
   static mojo::ScopedHandle raw_handle(HANDLE handle);
-  static chrome_cleaner::mojom::SpecialWindowsHandle special_handle(
-      HANDLE handle);
+  static chrome_cleaner::mojom::PredefinedHandle special_handle(HANDLE handle);
   static chrome_cleaner::mojom::WindowsHandleDataView::Tag GetTag(
       HANDLE handle);
   static bool Read(
