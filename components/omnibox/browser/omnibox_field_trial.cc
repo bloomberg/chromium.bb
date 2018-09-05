@@ -136,18 +136,26 @@ const base::Feature kUIExperimentJogTextfieldOnPopup{
     "OmniboxUIExperimentJogTextfieldOnPopup",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature used for showing the URL suggestion favicons as a UI experiment.
+// Feature used for showing the URL suggestion favicons as a UI experiment,
+// currently only used on desktop platforms.
 const base::Feature kUIExperimentShowSuggestionFavicons{
     "OmniboxUIExperimentShowSuggestionFavicons",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{
-    "OmniboxUIExperimentSwapTitleAndUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxUIExperimentSwapTitleAndUrl",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
-// Feature used for the vertical margin UI experiment.
+// Feature used for the vertical margin UI experiment, currently only used on
+// desktop platforms.
 const base::Feature kUIExperimentVerticalMargin{
-    "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxUIExperimentVerticalMargin", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
@@ -766,10 +774,8 @@ int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
   if (base::FeatureList::IsEnabled(features::kExperimentalUi))
     return 10;
 
-  using Md = ui::MaterialDesignController;
   return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam,
-      Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
+      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam, 10);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
