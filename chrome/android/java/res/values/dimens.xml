@@ -270,6 +270,7 @@
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_icon_width">28dp</dimen>
+    <dimen name="location_bar_start_icon_width">28dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
