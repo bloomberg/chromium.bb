@@ -27,6 +27,10 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+// Enables committed error pages instead of transient navigation entries for
+// SSL interstitial error pages (i.e. certificate errors).
+extern const base::Feature kUseMultiloginEndpoint;
+
 namespace signin {
 class AccountReconcilorDelegate;
 }

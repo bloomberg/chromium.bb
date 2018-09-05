@@ -1226,6 +1226,10 @@ const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "
     "center on platforms where these are available.";
 
+const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
+const char kUseMultiloginEndpointDescription[] =
+    "Use Gaia OAuth multilogin for identity consistency.";
+
 #if defined(OS_POSIX)
 const char kNtlmV2EnabledName[] = "Enable NTLMv2 Authentication";
 const char kNtlmV2EnabledDescription[] =

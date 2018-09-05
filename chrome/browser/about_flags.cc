@@ -87,6 +87,7 @@
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -4419,6 +4420,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncSupportSecondaryAccountName,
      flag_descriptions::kSyncSupportSecondaryAccountDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
+
+    {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
+     flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

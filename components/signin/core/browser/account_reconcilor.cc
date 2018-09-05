@@ -30,6 +30,9 @@
 
 using signin::AccountReconcilorDelegate;
 
+const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 
 class AccountEqualToFunc {
