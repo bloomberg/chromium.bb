@@ -105,13 +105,16 @@ if (!is_ios && !is_android) {
 
   test("cronet_tests") {
     deps = [
-      ":cronet",
+      ":cronet_common",
       "//base",
       "//base/test:test_support",
+      "//components/cronet/native:cronet_native_impl",
       "//components/cronet/native/test:cronet_native_tests",
+      "//net",
     ]
 
     sources = [
+      "cronet_global_state_stubs.cc",
       "run_all_unittests.cc",
     ]
 
