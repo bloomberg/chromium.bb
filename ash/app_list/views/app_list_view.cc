@@ -1149,10 +1149,12 @@ void AppListView::Layout() {
   contents_view->Layout();
 
   gfx::Rect app_list_background_shield_bounds = contents_bounds;
-  // Inset by |kAppListBackgroundRadius| to account for the rounded corners
-  // on the top and bottom of the |app_list_background_shield_|, and offset by
-  // |kAppListBackgroundRadius| to center |app_list_background_shield_|.
-  app_list_background_shield_bounds.Inset(0, -kAppListBackgroundRadius);
+  // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded
+  // corners on the top and bottom of the |app_list_background_shield_|.
+  // Only add the inset to the bottom to keep padding at the top of the AppList
+  // the same.
+  app_list_background_shield_bounds.Inset(0, 0, 0,
+                                          -kAppListBackgroundRadius * 2);
   app_list_background_shield_->SetBoundsRect(app_list_background_shield_bounds);
   app_list_background_shield_->UpdateCornerRadius(kAppListBackgroundRadius);
   if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode() &&
@@ -1163,6 +1165,16 @@ void AppListView::Layout() {
     app_list_background_shield_mask_->layer()->SetBounds(
         app_list_background_shield_bounds);
   }
+
+  float app_list_transition_progress = GetAppListTransitionProgress();
+  gfx::Transform transform;
+  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
+    // Translate background shield so that it ends drag at y position
+    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
+    transform.Translate(
+        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+  }
+  app_list_background_shield_->SetTransform(transform);
 }
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
