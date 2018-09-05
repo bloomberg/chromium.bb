@@ -11,16 +11,8 @@
 
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/installer_util_strings.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 
 GoogleChromeDistribution::GoogleChromeDistribution()
     : BrowserDistribution(std::make_unique<UpdatingAppRegistrationData>(
           install_static::GetAppGuid())) {}
-
-base::string16 GoogleChromeDistribution::GetPublisherName() {
-  const base::string16& publisher_name =
-      installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
-  return publisher_name;
-}

@@ -11,9 +11,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 
 class GoogleChromeDistribution : public BrowserDistribution {
- public:
-  base::string16 GetPublisherName() override;
-
  protected:
   // Disallow construction from others.
   GoogleChromeDistribution();

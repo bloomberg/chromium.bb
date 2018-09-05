@@ -550,12 +550,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          static_cast<DWORD>(1),
                                          true);
 
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"Publisher",
-                                         browser_dist->GetPublisherName(),
-                                         true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"Publisher",
+                                         InstallUtil::GetPublisherName(), true);
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          KEY_WOW64_32KEY,

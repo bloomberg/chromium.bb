@@ -44,8 +44,6 @@ class BrowserDistribution {
   virtual base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type);
 
-  virtual base::string16 GetPublisherName();
-
   virtual base::string16 GetLongAppDescription();
 
  protected:

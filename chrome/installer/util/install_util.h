@@ -196,6 +196,9 @@ class InstallUtil {
   // Returns the app description for shortcuts.
   static base::string16 GetAppDescription();
 
+  // Returns the name of the browser's publisher.
+  static base::string16 GetPublisherName();
+
   // A predicate that compares the program portion of a command line with a
   // given file path.  First, the file paths are compared directly.  If they do
   // not match, the filesystem is consulted to determine if the paths reference
