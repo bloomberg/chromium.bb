@@ -131,6 +131,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
   void Stop() override {
     if (IsEncodedFormat(format_)) {
+      device_owner_->SetDelegate(nullptr);
       main_thread_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&AudioStreamHandler::OnStopped,
@@ -306,9 +307,12 @@ void AudioDeviceOwner::StartOnMainThread(
 
 void AudioDeviceOwner::StopOnBackgroundThread() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  base::AutoLock lock(lock_);
   output_device_.reset();
-  delegate_->OnStopped();
-  delegate_ = nullptr;
+  if (delegate_) {
+    delegate_->OnStopped();
+    delegate_ = nullptr;
+  }
 }
 
 void AudioDeviceOwner::StartDeviceOnBackgroundThread(
@@ -360,8 +364,15 @@ int AudioDeviceOwner::Render(base::TimeDelta delay,
 
 void AudioDeviceOwner::OnRenderError() {
   DVLOG(1) << "OnRenderError()";
+  base::AutoLock lock(lock_);
   if (delegate_)
     delegate_->OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
+}
+
+void AudioDeviceOwner::SetDelegate(
+    assistant_client::AudioOutput::Delegate* delegate) {
+  base::AutoLock lock(lock_);
+  delegate_ = delegate;
 }
 
 void AudioDeviceOwner::ScheduleFillLocked(const base::TimeTicks& time) {

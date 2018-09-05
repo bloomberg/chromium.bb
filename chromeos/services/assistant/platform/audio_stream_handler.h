@@ -94,8 +94,6 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
   // Temporary storage of |on_filled| passed by |FillBuffer|.
   assistant_client::Callback1<int> on_filled_;
 
-  // True after |start_device_owner_on_main_thread_| is called.
-  bool device_owner_started_ = false;
   InitCB start_device_owner_on_main_thread_;
 
   base::circular_deque<std::vector<uint8_t>> decoded_data_;

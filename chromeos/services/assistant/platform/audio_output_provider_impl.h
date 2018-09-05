@@ -106,6 +106,8 @@ class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
 
   void OnRenderError() override;
 
+  void SetDelegate(assistant_client::AudioOutput::Delegate* delegate);
+
  private:
   void StartDeviceOnBackgroundThread(
       std::unique_ptr<service_manager::Connector> connector);
