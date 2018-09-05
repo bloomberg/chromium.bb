@@ -28,6 +28,7 @@ cr.define('settings_sections_tests', function() {
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
     DisableMarginsByPagesPerSheet: 'disable margins by pages per sheet',
+    ColorManaged: 'color selection disabled by policy',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -247,12 +248,16 @@ cr.define('settings_sections_tests', function() {
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = capabilityAndValue.colorCap;
         page.set('destination_.capabilities', capabilities);
+        const selectElement = colorElement.$$('select');
         assertFalse(colorElement.hidden);
         assertEquals(
             capabilityAndValue.expectedValue ? 'color' : 'bw',
-            colorElement.$$('select').value);
+            selectElement.value);
         assertEquals(
             capabilityAndValue.expectedValue, page.getSettingValue('color'));
+        // Check that setting is not marked as managed.
+        assertFalse(colorElement.$$('print-preview-settings-section').managed);
+        assertFalse(selectElement.disabled);
       });
     });
 
@@ -992,6 +997,66 @@ cr.define('settings_sections_tests', function() {
       cr.webUIListenerCallback('print-preset-options', false, 1, duplex);
       assertTrue(page.settings.duplex.value);
       assertTrue(checkbox.checked);
+    });
+
+    test(assert(TestNames.ColorManaged), function() {
+      const colorElement = page.$$('print-preview-color-settings');
+      assertFalse(colorElement.hidden);
+
+      // Remove color capability.
+      let capabilities =
+          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+      delete capabilities.printer.color;
+
+      [{
+        // Policy has no effect.
+        colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
+        colorPolicy: print_preview.ColorMode.COLOR,
+        expectedValue: true,
+        expectedHidden: true,
+      },
+       {
+         // Policy contradicts actual capabilities and should be ignored.
+         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
+         colorPolicy: print_preview.ColorMode.GRAY,
+         expectedValue: true,
+         expectedHidden: true,
+       },
+       {
+         // Policy overrides default.
+         colorCap: {
+           option: [
+             {type: 'STANDARD_MONOCHROME', is_default: true},
+             {type: 'STANDARD_COLOR'}
+           ]
+         },
+         colorPolicy: print_preview.ColorMode.COLOR,
+         expectedValue: true,
+         expectedHidden: false,
+         expectedManaged: true,
+       }].forEach(subtestParams => {
+        capabilities =
+            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+        capabilities.printer.color = subtestParams.colorCap;
+        const policies = {allowedColorModes: subtestParams.colorPolicy};
+        // In practice |capabilities| are always set after |policies| and
+        // observers only check for |capabilities|, so the order is important.
+        page.set('destination_.policies', policies);
+        page.set('destination_.capabilities', capabilities);
+        assertEquals(
+            subtestParams.expectedValue, page.getSettingValue('color'));
+        assertEquals(subtestParams.expectedHidden, colorElement.hidden);
+        if (!subtestParams.expectedHidden) {
+          const selectElement = colorElement.$$('select');
+          assertEquals(
+              subtestParams.expectedValue ? 'color' : 'bw',
+              selectElement.value);
+          assertEquals(
+              subtestParams.expectedManaged,
+              colorElement.$$('print-preview-settings-section').managed);
+          assertEquals(subtestParams.expectedManaged, selectElement.disabled);
+        }
+      });
     });
   });
 

@@ -154,6 +154,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'ColorManaged', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.ColorManaged);
+});
+
 PrintPreviewPolicyTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
