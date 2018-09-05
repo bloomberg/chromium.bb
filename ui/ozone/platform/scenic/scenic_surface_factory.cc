@@ -15,6 +15,10 @@
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "ui/ozone/platform/scenic/vulkan_implementation_scenic.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -99,5 +103,12 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
   return new ScenicPixmap(widget, size, format);
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+std::unique_ptr<gpu::VulkanImplementation>
+ScenicSurfaceFactory::CreateVulkanImplementation() {
+  return std::make_unique<ui::VulkanImplementationScenic>(window_manager_);
+}
+#endif
 
 }  // namespace ui

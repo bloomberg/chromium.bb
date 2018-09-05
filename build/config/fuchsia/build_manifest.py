@@ -188,13 +188,14 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     expanded_files = expanded_files.union(dist_libs)
 
     # Format and write out the manifest contents.
+    gen_dir = os.path.join(out_dir, "gen")
     app_found = False
     for current_file in expanded_files:
       if _IsBinary(current_file):
         current_file = _GetStrippedPath(current_file)
 
       in_package_path = MakePackagePath(os.path.join(out_dir, current_file),
-                                        [root_dir, out_dir])
+                                        [gen_dir, root_dir, out_dir])
       if in_package_path == app_filename:
         in_package_path = 'bin/app'
         app_found = True

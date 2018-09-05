@@ -428,3 +428,19 @@ fuchsia_sdk_pkg("zx") {
     "vmo.cpp",
   ]
 }
+
+copy("vulkan_layers") {
+  sources = [
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_core_validation.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_image_pipe_swapchain.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_object_tracker.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_parameter_validation.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_standard_validation.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_threading.json",
+    "sdk/pkg/vulkan_layers/data/vulkan/explicit_layer.d/VkLayer_unique_objects.json",
+  ]
+
+  outputs = [
+    "${root_gen_dir}/data/vulkan/explicit_layer.d/{{source_file_part}}",
+  ]
+}

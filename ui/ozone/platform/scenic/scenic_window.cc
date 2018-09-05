@@ -225,6 +225,7 @@ void ScenicWindow::UpdateSize() {
   scenic_session_.SetNodeShape(shape_id_, rect_id);
   scenic_session_.SetNodeTranslation(shape_id_, translation);
   scenic_session_.ReleaseResource(rect_id);
+  scenic_session_.Present();
 
   delegate_->OnBoundsChanged(size_rect);
 }
