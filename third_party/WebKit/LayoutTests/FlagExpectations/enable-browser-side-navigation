@@ -3,6 +3,8 @@
 
 # These tests are flaky.
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
+Bug(none) virtual/outofblink-cors/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
+Bug(none) virtual/outofblink-cors-ns/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 
 # Not disclosing |source_location| and/or |blocked url| between cross-origin
 # renderers when a CSP policy is violated regresses the quality of console
@@ -11,6 +13,12 @@ Bug(718942) http/tests/misc/onload-detach-during-csp-frame-src-none.html [ Failu
 Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
 Bug(718942) http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
 Bug(718942) http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
+Bug(718942) virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
+Bug(718942) virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
+Bug(718942) virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/1.1/form-action-src-get-blocked-with-redirect.html [ Failure ]
+Bug(718942) virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+Bug(718942) virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 
 # Console error message source location is present with PlzNavigate. It means
 # that URLs are potentially disclosed across cross-origin renderers.
@@ -26,6 +34,22 @@ Bug(726178) http/tests/security/mixedContent/insecure-iframe-in-main-frame.html 
 Bug(726178) http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure ]
 Bug(726178) http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
 Bug(726178) http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/insecure-frame-in-data-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-frame-in-data-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-iframe.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame-allowed.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame-blocked.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html [ Failure ]
+Bug(726178) virtual/outofblink-cors-ns/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html [ Failure ]
 
 # ------------------------------------------------------------
 # These tests are correct with PlzNavigate but not without it

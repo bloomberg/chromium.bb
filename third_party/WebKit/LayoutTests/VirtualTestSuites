@@ -512,6 +512,16 @@
   },
   {
     "prefix": "outofblink-cors",
+    "base": "http/tests/navigation",
+    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "http/tests/security",
+    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+  },
+  {
+    "prefix": "outofblink-cors",
     "base": "http/tests/xmlhttprequest",
     "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
   },
@@ -543,6 +553,16 @@
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/fetch",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/navigation",
+    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+  },
+  {
+    "prefix": "outofblink-cors-ns",
+    "base": "http/tests/security",
     "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
   },
   {

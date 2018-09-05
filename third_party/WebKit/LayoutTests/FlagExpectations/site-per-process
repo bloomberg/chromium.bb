@@ -3,6 +3,8 @@
 
 # https://crbug.com/793127: NOTREACHED() from clamy@ tickled by frame consolidation CL?
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+crbug.com/793127 virtual/outofblink-cors/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+crbug.com/793127 virtual/outofblink-cors-ns/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 
 # https://crbug.com/769508: PlzNavigate-related, not-yet-investigated failures.
@@ -19,12 +21,16 @@ crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+crbug.com/669083 virtual/outofblink-cors-ns/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 
 # https://crbug.com/608015 - node.contentDocument is undefined.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 
 # https://crbug.com/771003 - Dump history from all processes in layout tests
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+crbug.com/771003 virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+crbug.com/771003 virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessAllowListEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
@@ -42,6 +48,8 @@ crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
 
 # https://crbug.com/619662 - Expected console output differences.
 crbug.com/619662 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/619662 virtual/outofblink-cors/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/619662 virtual/outofblink-cors-ns/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 crbug.com/619662 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 
 # https://crbug.com/623268 - Can't inspect OOPIFs from main page's DevTools window.
