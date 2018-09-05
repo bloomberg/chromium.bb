@@ -8,8 +8,10 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -328,6 +330,86 @@ TEST_F(ContentSettingsStoreTest, SetFromList) {
                                        std::string(),
                                        false));
 
+  store()->RemoveObserver(&observer);
+}
+
+// Test that embedded patterns are properly removed.
+TEST_F(ContentSettingsStoreTest, RemoveEmbedded) {
+  content_settings::ContentSettingsRegistry::GetInstance();
+
+  ::testing::StrictMock<MockContentSettingsStoreObserver> observer;
+  store()->AddObserver(&observer);
+
+  GURL primary_url("http://www.youtube.com");
+  GURL secondary_url("http://www.google.com");
+
+  // Register first extension.
+  std::string ext_id("my_extension");
+  RegisterExtension(ext_id);
+
+  // Set setting via a list.
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromURL(primary_url);
+  ContentSettingsPattern secondary_pattern =
+      ContentSettingsPattern::FromURL(secondary_url);
+  EXPECT_CALL(observer, OnContentSettingChanged(ext_id, false)).Times(4);
+
+  // Build a preference list in JSON format.
+  base::ListValue pref_list;
+  auto dict_value = std::make_unique<base::DictionaryValue>();
+  dict_value->SetString(keys::kPrimaryPatternKey, primary_pattern.ToString());
+  dict_value->SetString(keys::kSecondaryPatternKey,
+                        secondary_pattern.ToString());
+  dict_value->SetString(keys::kContentSettingsTypeKey, "cookies");
+  dict_value->SetString(keys::kContentSettingKey, "allow");
+  pref_list.Append(std::move(dict_value));
+
+  dict_value = std::make_unique<base::DictionaryValue>();
+  dict_value->SetString(keys::kPrimaryPatternKey, primary_pattern.ToString());
+  dict_value->SetString(keys::kSecondaryPatternKey,
+                        secondary_pattern.ToString());
+  dict_value->SetString(keys::kContentSettingsTypeKey, "geolocation");
+  dict_value->SetString(keys::kContentSettingKey, "allow");
+  pref_list.Append(std::move(dict_value));
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        ::features::kPermissionDelegation);
+    store()->SetExtensionContentSettingFromList(ext_id, &pref_list,
+                                                kExtensionPrefsScopeRegular);
+
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetContentSettingFromStore(store(), primary_url, secondary_url,
+                                         CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), false));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetContentSettingFromStore(store(), primary_url, secondary_url,
+                                         CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         std::string(), false));
+
+    store()->ClearContentSettingsForExtension(ext_id,
+                                              kExtensionPrefsScopeRegular);
+  }
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(::features::kPermissionDelegation);
+    store()->SetExtensionContentSettingFromList(ext_id, &pref_list,
+                                                kExtensionPrefsScopeRegular);
+
+    // The embedded geolocation pattern should be removed but cookies kept.
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetContentSettingFromStore(store(), primary_url, secondary_url,
+                                         CONTENT_SETTINGS_TYPE_COOKIES,
+                                         std::string(), false));
+    EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+              GetContentSettingFromStore(store(), primary_url, secondary_url,
+                                         CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         std::string(), false));
+  }
+
+  Mock::VerifyAndClear(&observer);
   store()->RemoveObserver(&observer);
 }
 
