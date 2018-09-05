@@ -135,9 +135,6 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   if (linux_ui) {
     if (ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme()) {
       prefs->focus_ring_color = linux_ui->GetFocusRingColor();
-      prefs->thumb_active_color = linux_ui->GetThumbActiveColor();
-      prefs->thumb_inactive_color = linux_ui->GetThumbInactiveColor();
-      prefs->track_color = linux_ui->GetTrackColor();
       prefs->active_selection_bg_color = linux_ui->GetActiveSelectionBgColor();
       prefs->active_selection_fg_color = linux_ui->GetActiveSelectionFgColor();
       prefs->inactive_selection_bg_color =

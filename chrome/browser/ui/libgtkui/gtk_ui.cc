@@ -490,18 +490,6 @@ SkColor GtkUi::GetFocusRingColor() const {
   return focus_ring_color_;
 }
 
-SkColor GtkUi::GetThumbActiveColor() const {
-  return thumb_active_color_;
-}
-
-SkColor GtkUi::GetThumbInactiveColor() const {
-  return thumb_inactive_color_;
-}
-
-SkColor GtkUi::GetTrackColor() const {
-  return track_color_;
-}
-
 SkColor GtkUi::GetActiveSelectionBgColor() const {
   return active_selection_bg_color_;
 }
@@ -880,14 +868,6 @@ void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
   UpdateDeviceScaleFactor();
 }
 
-void GtkUi::SetScrollbarColors() {
-  // TODO(thomasanderson): Do not hardcode these values.  Get them from the
-  // theme.
-  thumb_active_color_ = SkColorSetRGB(244, 244, 244);
-  thumb_inactive_color_ = SkColorSetRGB(234, 234, 234);
-  track_color_ = SkColorSetRGB(211, 211, 211);
-}
-
 void GtkUi::LoadGtkValues() {
   // TODO(erg): GtkThemeService had a comment here about having to muck with
   // the raw Prefs object to remove prefs::kCurrentThemeImages or else we'd
@@ -1070,7 +1050,6 @@ void GtkUi::LoadGtkValues() {
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
 
   // Generate the colors that we pass to WebKit.
-  SetScrollbarColors();
   focus_ring_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_FocusedBorderColor);
 

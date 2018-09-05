@@ -104,9 +104,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Returns the preferences that we pass to WebKit.
   virtual SkColor GetFocusRingColor() const = 0;
-  virtual SkColor GetThumbActiveColor() const = 0;
-  virtual SkColor GetThumbInactiveColor() const = 0;
-  virtual SkColor GetTrackColor() const = 0;
   virtual SkColor GetActiveSelectionBgColor() const = 0;
   virtual SkColor GetActiveSelectionFgColor() const = 0;
   virtual SkColor GetInactiveSelectionBgColor() const = 0;

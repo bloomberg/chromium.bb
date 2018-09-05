@@ -76,9 +76,6 @@ class GtkUi : public views::LinuxUI {
                 SkColor* color,
                 PrefService* pref_service) const override;
   SkColor GetFocusRingColor() const override;
-  SkColor GetThumbActiveColor() const override;
-  SkColor GetThumbInactiveColor() const override;
-  SkColor GetTrackColor() const override;
   SkColor GetActiveSelectionBgColor() const override;
   SkColor GetActiveSelectionFgColor() const override;
   SkColor GetInactiveSelectionBgColor() const override;
@@ -130,11 +127,6 @@ class GtkUi : public views::LinuxUI {
                      void*,
                      GParamSpec*);
 
-  // This method returns the colors webkit will use for the scrollbars. When no
-  // colors are specified by the GTK+ theme, this function averages of the
-  // thumb part and of the track colors.
-  void SetScrollbarColors();
-
   // Extracts colors and tints from the GTK theme, both for the
   // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();
@@ -167,9 +159,6 @@ class GtkUi : public views::LinuxUI {
   // Colors that we pass to WebKit. These are generated each time the theme
   // changes.
   SkColor focus_ring_color_;
-  SkColor thumb_active_color_;
-  SkColor thumb_inactive_color_;
-  SkColor track_color_;
   SkColor active_selection_bg_color_;
   SkColor active_selection_fg_color_;
   SkColor inactive_selection_bg_color_;
