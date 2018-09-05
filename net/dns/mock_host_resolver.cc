@@ -19,6 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -323,7 +325,8 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
       ondemand_mode_(false),
       next_request_id_(1),
       num_resolve_(0),
-      num_resolve_from_cache_(0) {
+      num_resolve_from_cache_(0),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   rules_map_[HostResolverSource::ANY] = CreateCatchAllHostResolverProc();
   rules_map_[HostResolverSource::SYSTEM] = CreateCatchAllHostResolverProc();
   rules_map_[HostResolverSource::DNS] = CreateCatchAllHostResolverProc();
@@ -405,9 +408,9 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     HostCache::Key key(host.host(), requested_address_family, flags, source);
     const HostCache::Entry* entry;
     if (stale_info)
-      entry = cache_->LookupStale(key, base::TimeTicks::Now(), stale_info);
+      entry = cache_->LookupStale(key, tick_clock_->NowTicks(), stale_info);
     else
-      entry = cache_->Lookup(key, base::TimeTicks::Now());
+      entry = cache_->Lookup(key, tick_clock_->NowTicks());
     if (entry) {
       rv = entry->error();
       if (rv == OK)
@@ -435,7 +438,7 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
       ttl = base::TimeDelta::FromSeconds(kCacheEntryTTLSeconds);
     cache_->Set(key,
                 HostCache::Entry(rv, addr, HostCache::Entry::SOURCE_UNKNOWN),
-                base::TimeTicks::Now(), ttl);
+                tick_clock_->NowTicks(), ttl);
   }
   if (rv == OK)
     *addresses = AddressList::CopyWithPort(addr, host.port());
@@ -462,14 +465,13 @@ void MockHostResolverBase::ResolveNow(size_t id) {
 
 //-----------------------------------------------------------------------------
 
-RuleBasedHostResolverProc::Rule::Rule(
-    ResolverType resolver_type,
-    const std::string& host_pattern,
-    AddressFamily address_family,
-    HostResolverFlags host_resolver_flags,
-    const std::string& replacement,
-    const std::string& canonical_name,
-    int latency_ms)
+RuleBasedHostResolverProc::Rule::Rule(ResolverType resolver_type,
+                                      const std::string& host_pattern,
+                                      AddressFamily address_family,
+                                      HostResolverFlags host_resolver_flags,
+                                      const std::string& replacement,
+                                      const std::string& canonical_name,
+                                      int latency_ms)
     : resolver_type(resolver_type),
       host_pattern(host_pattern),
       address_family(address_family),
@@ -495,14 +497,9 @@ void RuleBasedHostResolverProc::AddRuleForAddressFamily(
     const std::string& replacement) {
   DCHECK(!replacement.empty());
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            address_family,
-            flags,
-            replacement,
-            std::string(),
-            0);
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, address_family, flags,
+            replacement, std::string(), 0);
   AddRuleInternal(rule);
 }
 
@@ -526,7 +523,7 @@ void RuleBasedHostResolverProc::AddIPLiteralRule(
   IPAddress ip_address;
   DCHECK(!ip_address.AssignFromIPLiteral(host_pattern));
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
   if (!canonical_name.empty())
     flags |= HOST_RESOLVER_CANONNAME;
 
@@ -541,42 +538,27 @@ void RuleBasedHostResolverProc::AddRuleWithLatency(
     int latency_ms) {
   DCHECK(!replacement.empty());
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            replacement,
-            std::string(),
-            latency_ms);
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, replacement, std::string(), latency_ms);
   AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AllowDirectLookup(
     const std::string& host_pattern) {
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeSystem,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            std::string(),
-            std::string(),
-            0);
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+  Rule rule(Rule::kResolverTypeSystem, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, std::string(), std::string(), 0);
   AddRuleInternal(rule);
 }
 
 void RuleBasedHostResolverProc::AddSimulatedFailure(
     const std::string& host_pattern) {
   HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
-      HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
-  Rule rule(Rule::kResolverTypeFail,
-            host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED,
-            flags,
-            std::string(),
-            std::string(),
-            0);
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+  Rule rule(Rule::kResolverTypeFail, host_pattern, ADDRESS_FAMILY_UNSPECIFIED,
+            flags, std::string(), std::string(), 0);
   AddRuleInternal(rule);
 }
 
@@ -637,10 +619,9 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
 #if defined(OS_WIN)
           EnsureWinsockInit();
 #endif
-          return SystemHostResolverCall(effective_host,
-                                        address_family,
-                                        host_resolver_flags,
-                                        addrlist, os_error);
+          return SystemHostResolverCall(effective_host, address_family,
+                                        host_resolver_flags, addrlist,
+                                        os_error);
         case Rule::kResolverTypeIPLiteral: {
           AddressList raw_addr_list;
           int result = ParseAddressList(
@@ -667,8 +648,8 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
       }
     }
   }
-  return ResolveUsingPrevious(host, address_family,
-                              host_resolver_flags, addrlist, os_error);
+  return ResolveUsingPrevious(host, address_family, host_resolver_flags,
+                              addrlist, os_error);
 }
 
 RuleBasedHostResolverProc::~RuleBasedHostResolverProc() = default;

@@ -41,4 +41,35 @@ bool EnumTraits<ResolveHostParameters::DnsQueryType,
   }
 }
 
+// static
+ResolveHostParameters::Source
+EnumTraits<ResolveHostParameters::Source, net::HostResolverSource>::ToMojom(
+    net::HostResolverSource input) {
+  switch (input) {
+    case net::HostResolverSource::ANY:
+      return ResolveHostParameters::Source::ANY;
+    case net::HostResolverSource::SYSTEM:
+      return ResolveHostParameters::Source::SYSTEM;
+    case net::HostResolverSource::DNS:
+      return ResolveHostParameters::Source::DNS;
+  }
+}
+
+// static
+bool EnumTraits<ResolveHostParameters::Source, net::HostResolverSource>::
+    FromMojom(ResolveHostParameters::Source input,
+              net::HostResolverSource* output) {
+  switch (input) {
+    case ResolveHostParameters::Source::ANY:
+      *output = net::HostResolverSource::ANY;
+      return true;
+    case ResolveHostParameters::Source::SYSTEM:
+      *output = net::HostResolverSource::SYSTEM;
+      return true;
+    case ResolveHostParameters::Source::DNS:
+      *output = net::HostResolverSource::DNS;
+      return true;
+  }
+}
+
 }  // namespace mojo

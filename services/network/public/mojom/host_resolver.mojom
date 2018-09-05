@@ -33,7 +33,7 @@ interface ResolveHostClient {
 };
 
 // Parameter-grouping struct for additional optional parameters for
-// HostResolver::CreateRequest() calls. All fields are optional and have a
+// HostResolver::ResolveHost() calls. All fields are optional and have a
 // reasonable default.
 struct ResolveHostParameters {
   // DNS query type for a ResolveHostRequest.
@@ -51,6 +51,32 @@ struct ResolveHostParameters {
 
   // The initial net priority for the host resolution request.
   RequestPriority initial_priority = RequestPriority.kLowest;
+
+  // Enumeration to specify the allowed results source for requests.
+  enum Source {
+    // Resolver will pick an appropriate source. Results could come from DNS,
+    // MulticastDNS, HOSTS file, etc.
+    ANY,
+
+    // Results will only be retrieved from the system or OS, e.g. via the
+    // getaddrinfo() system call.
+    SYSTEM,
+
+    // Results will only come from DNS queries.
+    DNS,
+
+    // TODO(crbug.com/846423): Add MDNS support.
+  };
+
+  // The source to use for resolved addresses. Default allows the resolver to
+  // pick an appropriate source. Only affects use of big external sources (eg
+  // calling the system for resolution or using DNS). Even if a source is
+  // specified, results can still come from cache, resolving "localhost" or IP
+  // literals, etc.
+  Source source = Source.ANY;
+
+  // If |false|, results will not come from the host cache.
+  bool allow_cached_response = true;
 
   // If set, the outstanding request can be controlled, eg cancelled, via the
   // handle.

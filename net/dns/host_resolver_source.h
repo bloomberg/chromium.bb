@@ -5,6 +5,8 @@
 #ifndef NET_DNS_HOST_RESOLVER_SOURCE_H_
 #define NET_DNS_HOST_RESOLVER_SOURCE_H_
 
+namespace net {
+
 // Enumeration to specify the allowed results source for HostResolver
 // requests.
 enum class HostResolverSource {
@@ -21,5 +23,7 @@ enum class HostResolverSource {
 
   // TODO(crbug.com/846423): Add MDNS support.
 };
+
+}  // namespace net
 
 #endif  // NET_DNS_HOST_RESOLVER_SOURCE_H_
