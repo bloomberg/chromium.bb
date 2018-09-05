@@ -108,8 +108,8 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SimulatePreviouslyInstalledPolicyApp(
       PendingAppManager::AppInfo app_info) {
-    SimulatePreviouslyInstalledApp(std::move(app_info),
-                                   extensions::Manifest::EXTERNAL_POLICY);
+    SimulatePreviouslyInstalledApp(
+        std::move(app_info), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
   }
 
  private:

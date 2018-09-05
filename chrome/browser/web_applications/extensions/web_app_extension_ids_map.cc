@@ -63,7 +63,7 @@ std::vector<GURL> ExtensionIdsMap::GetPolicyInstalledAppUrls(Profile* profile) {
             extension_id, extensions::ExtensionRegistry::EVERYTHING);
     if (!extension)
       continue;
-    if (extension->location() != extensions::Manifest::EXTERNAL_POLICY)
+    if (!extensions::Manifest::IsPolicyLocation(extension->location()))
       continue;
 
     policy_installed_app_urls.emplace_back(url_to_id.first);
