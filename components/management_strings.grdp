@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment" translateable="false">
+    Management
+  </message>
+  <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed" translateable="false">
+    Your device is not managed by an administrator
+  </message>
+  <message name="IDS_MANAGEMENT_DEVICE_MANAGED_BY" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator, from a specific domain" translateable="false">
+    Your device is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
+  </message>
+  <message name="IDS_MANAGEMENT_DEVICE_MANAGED" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator" translateable="false">
+    Your device is managed by an administrator
+  </message>
+</grit-part>

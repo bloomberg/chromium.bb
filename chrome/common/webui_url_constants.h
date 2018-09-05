@@ -92,6 +92,8 @@ extern const char kChromeUIInterventionsInternalsHost[];
 extern const char kChromeUIInvalidationsHost[];
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILocalStateHost[];
+extern const char kChromeUIManagementHost[];
+extern const char kChromeUIManagementURL[];
 extern const char kChromeUIMdUserManagerHost[];
 extern const char kChromeUIMdUserManagerUrl[];
 extern const char kChromeUIMediaEngagementHost[];

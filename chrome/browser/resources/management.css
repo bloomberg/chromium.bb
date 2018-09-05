@@ -1,0 +1,29 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  margin-inline-start: 23px;
+}
+
+body > .page {
+  margin-inline-end: 0;
+  padding-inline-end: 24px;
+}
+
+body header {
+  left: 23px;
+  max-width: none;
+}
+
+html[dir='rtl'] body header {
+  right: 23px;
+}
+
+body section {
+  max-width: none;
+}
+
+#main-section {
+  padding-inline-start: 0;
+}
