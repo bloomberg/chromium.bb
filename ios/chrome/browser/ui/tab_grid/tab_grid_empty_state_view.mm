@@ -76,16 +76,15 @@
   bottomLabel.textAlignment = NSTextAlignmentCenter;
   [self addSubview:bottomLabel];
   [NSLayoutConstraint activateConstraints:@[
+    [topLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
     [topLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [topLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
     [topLabel.bottomAnchor
-        constraintEqualToAnchor:self.centerYAnchor
-                       constant:-kTabGridEmptyStateVerticalMargin / 2.0f],
-    [bottomLabel.topAnchor
-        constraintEqualToAnchor:self.centerYAnchor
-                       constant:kTabGridEmptyStateVerticalMargin / 2.0f],
+        constraintEqualToAnchor:bottomLabel.topAnchor
+                       constant:-kTabGridEmptyStateVerticalMargin],
     [bottomLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [bottomLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [bottomLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 }
 
