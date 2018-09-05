@@ -353,12 +353,13 @@ class TestVolume {
   bool CreateRootDirectory(const Profile* profile) {
     if (root_initialized_)
       return true;
-    root_initialized_ = root_.Set(profile->GetPath().Append(name_));
+    root_ = profile->GetPath().Append(name_);
+    root_initialized_ = base::CreateDirectory(root_);
     return root_initialized_;
   }
 
   const std::string& name() const { return name_; }
-  const base::FilePath& root_path() const { return root_.GetPath(); }
+  const base::FilePath& root_path() const { return root_; }
 
   static base::FilePath GetTestDataFilePath(const std::string& file_name) {
     // Get the path to file manager's test data directory.
@@ -374,7 +375,7 @@ class TestVolume {
   }
 
  private:
-  base::ScopedTempDir root_;
+  base::FilePath root_;
   bool root_initialized_ = false;
   std::string name_;
 
