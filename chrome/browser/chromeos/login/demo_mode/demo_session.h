@@ -12,11 +12,14 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace session_manager {
 class SessionManager;
@@ -26,7 +29,8 @@ namespace chromeos {
 
 // Tracks global demo session state. For example, whether the demo session has
 // started, and whether the demo session offline resources have been loaded.
-class DemoSession : public session_manager::SessionManagerObserver {
+class DemoSession : public session_manager::SessionManagerObserver,
+                    extensions::ExtensionRegistryObserver {
  public:
   // Type of demo mode configuration.
   // Warning: DemoModeConfig is stored in local state. Existing entries should
@@ -119,6 +123,11 @@ class DemoSession : public session_manager::SessionManagerObserver {
 
   bool offline_resources_loaded() const { return offline_resources_loaded_; }
 
+  void set_extensions_external_loader(
+      scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
+    extensions_external_loader_ = extensions_external_loader;
+  }
+
  private:
   DemoSession();
   ~DemoSession() override;
@@ -139,11 +148,21 @@ class DemoSession : public session_manager::SessionManagerObserver {
   // as apps and media.
   void InstallDemoResources();
 
-  // Loads and launches the highlights app.
+  // Loads the highlights app from offline resources and launches it upon
+  // success.
   void LoadAndLaunchHighlightsApp();
+
+  // Installs the CRX file from an update URL. Observes |ExtensionRegistry| to
+  // launch the highlights app upon installation.
+  void InstallHighlightsAppFromUpdateUrl();
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
 
   // Whether the device was offline-enrolled into demo mode, i.e. enrolled using
   // pre-built policies. Offline enrolled demo sessions do not have working
@@ -168,6 +187,12 @@ class DemoSession : public session_manager::SessionManagerObserver {
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
       session_manager_observer_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
+  scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader_;
 
   base::WeakPtrFactory<DemoSession> weak_ptr_factory_;
 

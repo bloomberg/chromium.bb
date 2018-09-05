@@ -4,21 +4,25 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/external_cache_impl.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "extensions/browser/extension_file_task_runner.h"
+#include "extensions/common/extension_urls.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -67,17 +71,55 @@ bool DemoExtensionsExternalLoader::SupportedForProfile(Profile* profile) {
   return demo_session && demo_session->started();
 }
 
-DemoExtensionsExternalLoader::DemoExtensionsExternalLoader()
-    : weak_ptr_factory_(this) {
+DemoExtensionsExternalLoader::DemoExtensionsExternalLoader(
+    const base::FilePath& cache_dir)
+    : cache_dir_(cache_dir), weak_ptr_factory_(this) {
   DCHECK(DemoSession::Get() && DemoSession::Get()->started());
 }
 
 DemoExtensionsExternalLoader::~DemoExtensionsExternalLoader() = default;
 
+void DemoExtensionsExternalLoader::LoadApp(const std::string& app_id) {
+  base::DictionaryValue prefs;
+  base::DictionaryValue app_dict;
+  app_dict.SetKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                  base::Value(extension_urls::kChromeWebstoreUpdateURL));
+  prefs.SetKey(app_id, std::move(app_dict));
+
+  if (!external_cache_) {
+    external_cache_ = std::make_unique<ExternalCacheImpl>(
+        cache_dir_, g_browser_process->shared_url_loader_factory(),
+        extensions::GetExtensionFileTaskRunner(), this,
+        true /* always_check_updates */,
+        false /* wait_for_cache_initialization */);
+  }
+  external_cache_->UpdateExtensionsList(base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(prefs))));
+}
+
 void DemoExtensionsExternalLoader::StartLoading() {
   DemoSession::Get()->EnsureOfflineResourcesLoaded(base::BindOnce(
       &DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources,
       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoExtensionsExternalLoader::OnExtensionListsUpdated(
+    const base::DictionaryValue* prefs) {
+  DCHECK(external_cache_);
+  // Notifies the provider that the extensions have either been downloaded or
+  // found in cache, and are ready to be installed.
+  LoadFinished(prefs->CreateDeepCopy());
+}
+
+void DemoExtensionsExternalLoader::OnExtensionLoadedInCache(
+    const std::string& id) {}
+
+void DemoExtensionsExternalLoader::OnExtensionDownloadFailed(
+    const std::string& id) {}
+
+std::string DemoExtensionsExternalLoader::GetInstalledExtensionVersion(
+    const std::string& id) {
+  return std::string();
 }
 
 void DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources() {

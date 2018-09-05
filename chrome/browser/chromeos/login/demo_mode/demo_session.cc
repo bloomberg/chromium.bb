@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
@@ -22,7 +23,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/base/network_change_notifier.h"
 
@@ -61,6 +66,10 @@ constexpr char kHighlightsAppPath[] = "chrome_apps/highlights";
 // Path relative to the path at which offline demo resources are loaded that
 // contains sample photos.
 constexpr char kPhotosPath[] = "media/photos";
+
+constexpr char kDefaultHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
+
+constexpr char kEveHighlightsAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
 
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
@@ -94,6 +103,19 @@ void InstallDemoMedia(base::FilePath offline_resources_path) {
 
   if (!base::CopyDirectory(src_path, dest_path, false /* recursive */))
     LOG(ERROR) << "Failed to install demo mode media.";
+}
+
+std::string GetBoardName() {
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return board[0];
+}
+
+std::string GetHighlightsAppId() {
+  if (GetBoardName() == "eve")
+    return kEveHighlightsAppId;
+  return kDefaultHighlightsAppId;
 }
 
 }  // namespace
@@ -303,6 +325,7 @@ DemoSession::DemoSession()
     : offline_enrolled_(IsDemoModeOfflineEnrolled()),
       ignore_pin_policy_offline_apps_(GetIgnorePinPolicyApps()),
       session_manager_observer_(this),
+      extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   session_manager_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
@@ -351,6 +374,7 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
   DCHECK(offline_resources_loaded_);
   if (offline_resources_path_.empty()) {
     LOG(ERROR) << "Offline resources not loaded - no highlights app available.";
+    InstallHighlightsAppFromUpdateUrl();
     return;
   }
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
@@ -360,8 +384,18 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
   if (!apps::AppLoadService::Get(profile)->LoadAndLaunch(
           resources_path, base::CommandLine(base::CommandLine::NO_PROGRAM),
           base::FilePath() /* cur_dir */)) {
-    LOG(WARNING) << "Failed to launch highlights app!";
+    LOG(WARNING) << "Failed to launch highlights app from offline resources.";
+    InstallHighlightsAppFromUpdateUrl();
   }
+}
+
+void DemoSession::InstallHighlightsAppFromUpdateUrl() {
+  if (!extensions_external_loader_)
+    return;
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
+  extensions_external_loader_->LoadApp(GetHighlightsAppId());
 }
 
 void DemoSession::OnSessionStateChanged() {
@@ -372,6 +406,18 @@ void DemoSession::OnSessionStateChanged() {
   }
   EnsureOfflineResourcesLoaded(base::BindOnce(
       &DemoSession::InstallDemoResources, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
+                                       const extensions::Extension* extension,
+                                       bool is_update) {
+  if (extension->id() != GetHighlightsAppId())
+    return;
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+  OpenApplication(AppLaunchParams(
+      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 }  // namespace chromeos
