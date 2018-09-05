@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.CallSuper;
 import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
@@ -183,9 +182,10 @@ public class SelectableListToolbar<E>
         mDrawerLayout = drawerLayout;
         mNormalGroupResId = normalGroupResId;
         mSelectedGroupResId = selectedGroupResId;
-        mUpdateStatusBarColor = updateStatusBarColor
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && !UiUtils.isSystemUiThemingDisabled();
+        // TODO(twellington): Setting the status bar color crashes on Nokia devices. Re-enable
+        // after a Nokia test device is procured and the crash can be debugged.
+        // See https://crbug.com/880694.
+        mUpdateStatusBarColor = false;
 
         mSelectionDelegate = delegate;
         mSelectionDelegate.addObserver(this);
