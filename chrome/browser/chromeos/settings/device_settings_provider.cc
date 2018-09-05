@@ -675,6 +675,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetBoolean(kVirtualMachinesAllowed, false);
     }
   }
+
+  if (policy.has_device_unaffiliated_crostini_allowed()) {
+    const em::DeviceUnaffiliatedCrostiniAllowedProto& container(
+        policy.device_unaffiliated_crostini_allowed());
+    if (container.has_device_unaffiliated_crostini_allowed()) {
+      new_values_cache->SetValue(
+          kDeviceUnaffiliatedCrostiniAllowed,
+          std::make_unique<base::Value>(
+              container.device_unaffiliated_crostini_allowed()));
+    }
+  }
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

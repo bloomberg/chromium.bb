@@ -12100,9 +12100,49 @@
 
       If the policy is set to True, the device is allowed to run virtual machines.
       If the policy is set to False, the device will not be allowed to run virtual machines.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed, and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
       When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
       When this policy is not set on a managed device, the device is not allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.''',
+    },
+    {
+      'name': 'CrostiniAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 481,
+      'caption': '''User is enabled to run Crostini''',
+      'tags': ['system-security'],
+      'desc': '''Enable this user to run Crostini.
+
+      If the policy is set to false, Crostini is not enabled for the user.
+      If set to true or left unset, Crostini is enabled for the user as long as other settings also allow it.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed, and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
+      When this policy is changed to false, it applies to starting new Crostini containers but does not shut down containers which are already running.''',
+    },
+    {
+      'name': 'DeviceUnaffiliatedCrostiniAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 482,
+      'caption': '''Allow unaffiliated users to use Crostini''',
+      'tags': ['system-security'],
+      'desc': '''If the policy is set to false, unaffiliated users will not be allowed to use Crostini.
+
+      If the policy is unset or set to true, all users are allowed to use Crostini as long as other settings also allow it.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed, and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
+      When this policy is changed to false, it applies to starting new Crostini containers but does not shut down containers which are already running.''',
     },
     {
       'name': 'SafeBrowsingWhitelistDomains',
@@ -13371,5 +13411,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 480
+  'highest_id_currently_used': 482
 }
