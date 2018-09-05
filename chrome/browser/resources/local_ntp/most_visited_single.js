@@ -300,6 +300,12 @@ var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('using-theme', info.isUsingTheme);
+
+  // Reduce font weight on the default(white) background for Mac and CrOS.
+  document.body.classList.toggle('mac-chromeos',
+      !info.isThemeDark && !info.isUsingTheme &&
+      (navigator.userAgent.indexOf('Mac') > -1 ||
+      navigator.userAgent.indexOf('CrOS') > -1));
 };
 
 
@@ -803,11 +809,6 @@ function renderMaterialDesignTile(data) {
   mdTitle.className = CLASSES.MD_TITLE;
   mdTitle.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
-  // Font weight on Mac and ChromeOS is heavier and needs to be reduced.
-  if (navigator.userAgent.indexOf('Mac') > -1 ||
-      navigator.userAgent.indexOf('CrOS') > -1) {
-    mdTitle.style.fontWeight = 400;
-  }
   // Windows font family fallback to Segoe
   if (navigator.userAgent.indexOf('Windows') > -1) {
     mdTitle.style.fontFamily = 'Segoe UI';

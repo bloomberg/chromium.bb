@@ -496,6 +496,12 @@ body.dark-theme .md-tile-container:active + .md-menu::after {
   word-wrap: break-word;
 }
 
+/* Font weight on Mac and ChromeOS looks heavier on default background and
+ * needs to be reduced. */
+body.mac-chromeos .md-title {
+  font-weight: 400;
+}
+
 /* Apply when a custom background is set */
 body.dark-theme .md-title {
   color: rgb(248, 249, 250);
