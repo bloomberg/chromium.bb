@@ -236,18 +236,24 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
   }
 }
 
-void FirstLetterPseudoElement::SetRemainingTextLayoutObject(
-    LayoutTextFragment* fragment) {
-  // The text fragment we get our content from is being destroyed. We need
-  // to tell our parent element to recalcStyle so we can get cleaned up
-  // as well.
-  if (!fragment) {
-    SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kPseudoClass));
+void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
+  DCHECK(remaining_text_layout_object_);
+  remaining_text_layout_object_ = nullptr;
+
+  if (GetDocument().ChildNeedsReattachLayoutTree()) {
+    // We are in the layout tree rebuild phase. We will do UpdateFirstLetter()
+    // as part of RebuildFirstLetterLayoutTree() or AttachLayoutTree(). Marking
+    // us style-dirty during layout tree rebuild is not allowed.
+    return;
   }
 
-  remaining_text_layout_object_ = fragment;
+  // When we remove nodes from the tree, we do not mark ancestry for
+  // ChildNeedsStyleRecalc(). When removing the text node which contains the
+  // first letter, we need to UpdateFirstLetter to render the new first letter
+  // or remove the ::first-letter pseudo if there is no text left. Do that as
+  // part of a style recalc for this ::first-letter.
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             StyleChangeReason::kPseudoClass));
 }
 
 void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {

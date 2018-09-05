@@ -47,7 +47,7 @@ class CORE_EXPORT FirstLetterPseudoElement final : public PseudoElement {
   static LayoutText* FirstLetterTextLayoutObject(const Element&);
   static unsigned FirstLetterLength(const String&);
 
-  void SetRemainingTextLayoutObject(LayoutTextFragment*);
+  void ClearRemainingTextLayoutObject();
   LayoutTextFragment* RemainingTextLayoutObject() const {
     return remaining_text_layout_object_;
   }

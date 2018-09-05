@@ -70,7 +70,7 @@ LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
 
 void LayoutTextFragment::WillBeDestroyed() {
   if (is_remaining_text_layout_object_ && first_letter_pseudo_element_)
-    first_letter_pseudo_element_->SetRemainingTextLayoutObject(nullptr);
+    first_letter_pseudo_element_->ClearRemainingTextLayoutObject();
   first_letter_pseudo_element_ = nullptr;
   LayoutText::WillBeDestroyed();
 }
