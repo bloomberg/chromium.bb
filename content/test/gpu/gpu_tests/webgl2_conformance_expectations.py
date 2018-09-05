@@ -321,8 +321,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
-    self.Fail('conformance2/glsl3/short-circuiting-in-loop-condition.html',
-        ['win', 'intel'], bug=843369)
 
     # Seems to cause the harness to fail immediately afterward
     self.Skip('conformance2/textures/video/tex-2d-rgba16f-rgba-half_float.html',

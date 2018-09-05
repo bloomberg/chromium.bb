@@ -1269,18 +1269,6 @@
       'linux-chromeos-dbg',  # https://crbug.com/859307
     ],
   },
-  'webgl_conformance_d3d9_passthrough_tests': {
-    'remove_from': [
-      # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
-      'Win10 FYI Exp Release (Intel HD 630)',
-    ],
-  },
-  'webgl_conformance_d3d9_tests': {
-    'remove_from': [
-      # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
-      'Win10 FYI Exp Release (Intel HD 630)',
-    ],
-  },
   'webgl_conformance_tests': {
     'modifications': {
       # On desktop platforms these don't take very long (~7 minutes),
