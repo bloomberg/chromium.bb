@@ -25,9 +25,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <zircon/process.h>
-#include <zircon/status.h>
-#include <zircon/syscalls.h>
+#include <lib/zx/vmar.h>
+#include "base/fuchsia/fuchsia_logging.h"
 #endif
 
 namespace base {
@@ -75,9 +74,9 @@ void SharedMemoryMapping::Unmap() {
     DPLOG(ERROR) << "UnmapViewOfFile";
 #elif defined(OS_FUCHSIA)
   uintptr_t addr = reinterpret_cast<uintptr_t>(memory_);
-  zx_status_t status = zx_vmar_unmap(zx_vmar_root_self(), addr, size_);
-  DLOG_IF(ERROR, status != ZX_OK)
-      << "zx_vmar_unmap failed: " << zx_status_get_string(status);
+  zx_status_t status = zx::vmar::root_self()->unmap(addr, size_);
+  if (status != ZX_OK)
+    ZX_DLOG(ERROR, status) << "zx_vmar_unmap";
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   kern_return_t kr = mach_vm_deallocate(
       mach_task_self(), reinterpret_cast<mach_vm_address_t>(memory_), size_);

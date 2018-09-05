@@ -20,9 +20,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <zircon/process.h>
+#include <lib/zx/vmar.h>
 #include <zircon/rights.h>
-#include <zircon/syscalls.h>
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -67,19 +66,18 @@ static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
   }
   return true;
 }
-#endif  // OS_POSIX && !OS_FUCHSIA
+#endif  // OS_POSIX
 
 #if defined(OS_FUCHSIA)
 // Fuchsia specific implementation.
-bool CheckReadOnlySharedMemoryFuchsiaHandle(zx_handle_t handle) {
+bool CheckReadOnlySharedMemoryFuchsiaHandle(zx::unowned_vmo handle) {
   const uint32_t flags = ZX_VM_FLAG_PERM_READ | ZX_VM_FLAG_PERM_WRITE;
   uintptr_t addr;
-  const zx_handle_t root = zx_vmar_root_self();
   const zx_status_t status =
-      zx_vmar_map_old(root, 0, handle, 0U, kDataSize, flags, &addr);
+      zx::vmar::root_self()->map(0, *handle, 0U, kDataSize, flags, &addr);
   if (status == ZX_OK) {
     LOG(ERROR) << "zx_vmar_map() should have failed!";
-    zx_vmar_unmap(root, addr, kDataSize);
+    zx::vmar::root_self()->unmap(addr, kDataSize);
     return false;
   }
   if (status != ZX_ERR_ACCESS_DENIED) {
@@ -126,7 +124,8 @@ bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
   else
     return CheckReadOnlySharedMemoryMachPort(handle.memory_object_);
 #elif defined(OS_FUCHSIA)
-  return CheckReadOnlySharedMemoryFuchsiaHandle(handle.GetHandle());
+  return CheckReadOnlySharedMemoryFuchsiaHandle(
+      zx::unowned_vmo(handle.GetHandle()));
 #elif defined(OS_WIN)
   return CheckReadOnlySharedMemoryWindowsHandle(handle.GetHandle());
 #else

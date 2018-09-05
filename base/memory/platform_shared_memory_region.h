@@ -97,7 +97,7 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
   using PlatformHandle = mach_port_t;
   using ScopedPlatformHandle = mac::ScopedMachSendRight;
 #elif defined(OS_FUCHSIA)
-  using PlatformHandle = zx_handle_t;
+  using PlatformHandle = zx::unowned_vmo;
   using ScopedPlatformHandle = zx::vmo;
 #elif defined(OS_WIN)
   using PlatformHandle = HANDLE;
