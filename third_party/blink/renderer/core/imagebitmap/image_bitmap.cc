@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"

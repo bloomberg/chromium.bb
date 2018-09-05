@@ -31,7 +31,6 @@
 #include "media/renderers/video_resource_updater.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
