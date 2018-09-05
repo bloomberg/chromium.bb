@@ -762,6 +762,9 @@ extern const char kNotificationIndicatorDescription[];
 extern const char kNotificationsNativeFlagName[];
 extern const char kNotificationsNativeFlagDescription[];
 
+extern const char kUseMultiloginEndpointName[];
+extern const char kUseMultiloginEndpointDescription[];
+
 #if defined(OS_POSIX)
 extern const char kNtlmV2EnabledName[];
 extern const char kNtlmV2EnabledDescription[];
