@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
@@ -228,7 +229,7 @@ void JpegClient::CreateJpegDecoder() {
 
   auto jda_factories =
       GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories();
-  if (jda_factories.size() == 0) {
+  if (jda_factories.empty()) {
     LOG(ERROR) << "JpegDecodeAccelerator not supported on this platform.";
     SetState(CS_ERROR);
     return;
@@ -328,7 +329,7 @@ void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
       VideoPixelFormat::PIXEL_FORMAT_ARGB, image_file->visible_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
       base::TimeDelta());
-  LOG_ASSERT(argb_out_frame.get());
+  LOG_ASSERT(argb_out_frame);
   LOG_ASSERT(in_frame->visible_rect() == argb_out_frame->visible_rect());
 
   // Note that we use J420ToARGB instead of I420ToARGB so that the
@@ -380,9 +381,8 @@ double JpegClient::GetMeanAbsoluteDifference() {
     LOG_ASSERT(hw_out_frame_->stride(plane) == sw_out_frame_->stride(plane));
     const int stride = hw_out_frame_->stride(plane);
     for (size_t row = 0; row < rows; ++row) {
-      for (size_t col = 0; col < columns; ++col) {
+      for (size_t col = 0; col < columns; ++col)
         mean_abs_difference += std::abs(hw_data[col] - sw_data[col]);
-      }
       hw_data += stride;
       sw_data += stride;
     }
@@ -398,9 +398,8 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   DCHECK_LT(static_cast<size_t>(bitstream_buffer_id), test_image_files_.size());
   ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
-  if (do_prepare_memory) {
+  if (do_prepare_memory)
     PrepareMemory(bitstream_buffer_id);
-  }
 
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
@@ -615,6 +614,7 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(int decode_times) {
 
   const int32_t bitstream_buffer_id = 0;
   scoped_client->client()->PrepareMemory(bitstream_buffer_id);
+  const base::ElapsedTimer timer;
   for (int index = 0; index < decode_times; index++) {
     decoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::StartDecode,
@@ -622,6 +622,12 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(int decode_times) {
                                   bitstream_buffer_id, false));
     ASSERT_EQ(scoped_client->client()->note()->Wait(), CS_DECODE_PASS);
   }
+  const base::TimeDelta elapsed_time = timer.Elapsed();
+  LOG(INFO) << elapsed_time << " for " << decode_times
+            << " iterations (avg: " << elapsed_time / decode_times << ") -- "
+            << test_image_files_[0]->visible_size.ToString() << ", ("
+            << test_image_files_[0]->visible_size.GetArea() << " pixels) "
+            << test_image_files_[0]->filename();
 }
 
 void JpegDecodeAcceleratorTest::PerfDecodeBySW(int decode_times) {
@@ -634,12 +640,18 @@ void JpegDecodeAcceleratorTest::PerfDecodeBySW(int decode_times) {
 
   const int32_t bitstream_buffer_id = 0;
   client->PrepareMemory(bitstream_buffer_id);
-  for (int index = 0; index < decode_times; index++) {
+  const base::ElapsedTimer timer;
+  for (int index = 0; index < decode_times; index++)
     client->GetSoftwareDecodeResult(bitstream_buffer_id);
-  }
+  const base::TimeDelta elapsed_time = timer.Elapsed();
+  LOG(INFO) << elapsed_time << " for " << decode_times
+            << " iterations (avg: " << elapsed_time / decode_times << ") -- "
+            << test_image_files_[0]->visible_size.ToString() << ", ("
+            << test_image_files_[0]->visible_size.GetArea() << " pixels) "
+            << test_image_files_[0]->filename();
 }
 
-// Return a VideoFrame that contains YUV data using 4:2:0 subsampling. The
+// Returns a VideoFrame that contains YUV data using 4:2:0 subsampling. The
 // visible size is 3x3, and the coded size is 4x4 which is 3x3 rounded up to the
 // next even dimensions.
 scoped_refptr<VideoFrame> GetTestDecodedData() {
@@ -694,12 +706,16 @@ TEST(JpegClientTest, GetMeanAbsoluteDifference) {
   v_data[v_stride + 1] = 0x54;  // Previously 0x11.
   expected_abs_mean_diff += 0x54 - 0x11;
   expected_abs_mean_diff /= 3 * 3 + 2 * 2 * 2;
-  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(), 1e-7);
+
+  constexpr double kMaxAllowedDifference = 1e-7;
+  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(),
+              kMaxAllowedDifference);
 
   // Change some non-visible data in the software decoding result, i.e., part of
   // the stride padding. This should not affect the absolute mean difference.
   y_data[3] = 0xAB;
-  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(), 1e-7);
+  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(),
+              kMaxAllowedDifference);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, SimpleDecode) {
@@ -779,17 +795,15 @@ TEST_F(JpegDecodeAcceleratorTest, Abort) {
 
 TEST_F(JpegDecodeAcceleratorTest, PerfJDA) {
   // Only the first image will be used for perf testing.
-  for (auto& image : g_env->image_data_user_) {
+  for (auto& image : g_env->image_data_user_)
     test_image_files_.push_back(image.get());
-  }
   PerfDecodeByJDA(g_env->perf_decode_times_);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, PerfSW) {
   // Only the first image will be used for perf testing.
-  for (auto& image : g_env->image_data_user_) {
+  for (auto& image : g_env->image_data_user_)
     test_image_files_.push_back(image.get());
-  }
   PerfDecodeBySW(g_env->perf_decode_times_);
 }
 
