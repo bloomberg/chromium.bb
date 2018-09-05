@@ -118,6 +118,13 @@ class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
   std::vector<MediaSinkInternal> GetSinksByIds(
       const base::flat_set<MediaSink::Id>& sink_ids) const;
 
+  // Returns true if an app availability request should be issued for |sink_id|
+  // and |app_id|. |now| is used for checking whether previously cached results
+  // should be refreshed.
+  bool ShouldRefreshAppAvailability(const MediaSink::Id& sink_id,
+                                    const std::string& app_id,
+                                    base::TimeTicks now) const;
+
   // Registered sink queries and their associated callbacks.
   base::flat_map<MediaSource::Id, std::unique_ptr<SinkQueryCallbackList>>
       sink_queries_;
