@@ -122,17 +122,14 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   // extended bounds.
   virtual bool ShouldUseExtendedBounds(const aura::Window* w) const;
 
-  // Called after the hit-test area has been extended with SetInsets(). The
-  // supplied insets are the values before the call to SetInsets().
-  virtual void OnSetInsets(const gfx::Insets& last_mouse_extend,
-                           const gfx::Insets& last_touch_extend);
-
   const gfx::Insets& mouse_extend() const { return mouse_extend_; }
   const gfx::Insets& touch_extend() const { return touch_extend_; }
 
  private:
   // To call OnInstalled().
   friend class Window;
+
+  void UpdateMusIfNecessary();
 
   Window* FindTargetForKeyEvent(Window* root_window, const ui::KeyEvent& event);
   Window* FindTargetForNonKeyEvent(Window* root_window, ui::Event* event);

@@ -482,11 +482,9 @@ void ServerWindow::SetClientArea(
   client_area_ = insets;
 }
 
-void ServerWindow::SetHitTestMask(const base::Optional<gfx::Rect>& mask) {
-  gfx::Insets insets;
-  if (mask)
-    insets = gfx::Rect(window_->bounds().size()).InsetsFrom(mask.value());
-  window_targeter_->SetInsets(insets);
+void ServerWindow::SetHitTestInsets(const gfx::Insets& mouse,
+                                    const gfx::Insets& touch) {
+  window_targeter_->SetInsets(mouse, touch);
 }
 
 void ServerWindow::SetCaptureOwner(WindowTree* owner) {

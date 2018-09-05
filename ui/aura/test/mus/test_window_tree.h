@@ -101,8 +101,12 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   const gfx::Insets& last_client_area() const { return last_client_area_; }
 
-  const base::Optional<gfx::Rect>& last_hit_test_mask() const {
-    return last_hit_test_mask_;
+  const gfx::Insets& last_mouse_hit_test_insets() const {
+    return last_mouse_hit_test_insets_;
+  }
+
+  const gfx::Insets& last_touch_hit_test_insets() const {
+    return last_touch_hit_test_insets_;
   }
 
   const base::Optional<viz::LocalSurfaceId>& last_local_surface_id() const {
@@ -149,8 +153,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
                          additional_client_areas) override;
-  void SetHitTestMask(ws::Id window_id,
-                      const base::Optional<gfx::Rect>& mask) override;
+  void SetHitTestInsets(ws::Id window_id,
+                        const gfx::Insets& mouse,
+                        const gfx::Insets& touch) override;
   void SetCanAcceptDrops(ws::Id window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
                            ws::Id window_id,
@@ -260,7 +265,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   gfx::Insets last_client_area_;
 
-  base::Optional<gfx::Rect> last_hit_test_mask_;
+  gfx::Insets last_mouse_hit_test_insets_;
+  gfx::Insets last_touch_hit_test_insets_;
 
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 

@@ -23,22 +23,6 @@ TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
   EXPECT_EQ(new_insets, window_tree()->last_client_area());
 }
 
-TEST_F(WindowTreeHostMusTest, SetHitTestMask) {
-  std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      std::make_unique<WindowTreeHostMus>(
-          CreateInitParamsForTopLevel(window_tree_client_impl()));
-
-  EXPECT_FALSE(window_tree()->last_hit_test_mask().has_value());
-  gfx::Rect mask(10, 10, 10, 10);
-  WindowPortMus::Get(window_tree_host_mus->window())->SetHitTestMask(mask);
-  ASSERT_TRUE(window_tree()->last_hit_test_mask().has_value());
-  EXPECT_EQ(mask, window_tree()->last_hit_test_mask());
-
-  WindowPortMus::Get(window_tree_host_mus->window())
-      ->SetHitTestMask(base::nullopt);
-  ASSERT_FALSE(window_tree()->last_hit_test_mask().has_value());
-}
-
 TEST_F(WindowTreeHostMusTest, PerformWmAction) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
       std::make_unique<WindowTreeHostMus>(

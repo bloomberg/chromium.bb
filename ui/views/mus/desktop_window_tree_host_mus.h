@@ -49,7 +49,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
  private:
   void SendClientAreaToServer();
-  void SendHitTestMaskToServer();
 
   // Returns true if the FocusClient associated with our window is installed on
   // the FocusSynchronizer.

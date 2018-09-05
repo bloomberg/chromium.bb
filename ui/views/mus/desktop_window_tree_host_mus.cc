@@ -275,20 +275,6 @@ void DesktopWindowTreeHostMus::SendClientAreaToServer() {
       std::vector<gfx::Rect>());
 }
 
-void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
-  if (!native_widget_delegate_->HasHitTestMask()) {
-    aura::WindowPortMus::Get(window())->SetHitTestMask(base::nullopt);
-    return;
-  }
-
-  gfx::Path mask_path;
-  native_widget_delegate_->GetHitTestMask(&mask_path);
-  // TODO(jamescook): Use the full path for the mask.
-  gfx::Rect mask_rect =
-      gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
-  aura::WindowPortMus::Get(window())->SetHitTestMask(mask_rect);
-}
-
 bool DesktopWindowTreeHostMus::IsFocusClientInstalledOnFocusSynchronizer()
     const {
   return MusClient::Get()
@@ -417,7 +403,6 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
   // the NonClientView was created, which means we may not have sent the
   // client-area and hit-test-mask.
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 
   MusClient::Get()->OnCaptureClientSet(
       aura::client::GetCaptureClient(window()));
@@ -860,7 +845,6 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   }
 
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 }
 
 void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
@@ -935,7 +919,6 @@ void DesktopWindowTreeHostMus::OnViewBoundsChanged(views::View* observed_view) {
       native_widget_delegate_->AsWidget()->non_client_view()->frame_view());
 
   SendClientAreaToServer();
-  SendHitTestMaskToServer();
 }
 
 void DesktopWindowTreeHostMus::OnViewIsDeleting(View* observed_view) {

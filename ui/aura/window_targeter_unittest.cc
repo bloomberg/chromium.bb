@@ -8,7 +8,9 @@
 
 #include "base/macros.h"
 #include "ui/aura/scoped_window_targeter.h"
+#include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -331,5 +333,34 @@ TEST_P(WindowTargeterTest, TargeterChecksOwningEventTarget) {
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTargeterTest,
                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+
+using WindowTargeterMus = aura::test::AuraMusClientTestBase;
+
+TEST_F(WindowTargeterMus, SetInsets) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<WindowTargeter> window_targeter_ptr =
+      std::make_unique<WindowTargeter>();
+  WindowTargeter* window_targeter = window_targeter_ptr.get();
+  window.SetEventTargeter(std::move(window_targeter_ptr));
+  const gfx::Insets insets1(1, 2, 3, 4);
+  const gfx::Insets insets2(11, 12, 13, 14);
+  window_targeter->SetInsets(insets1, insets2);
+  EXPECT_EQ(insets1, window_tree()->last_mouse_hit_test_insets());
+  EXPECT_EQ(insets2, window_tree()->last_touch_hit_test_insets());
+}
+
+TEST_F(WindowTargeterMus, SetInsetsBeforeInstall) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<WindowTargeter> window_targeter =
+      std::make_unique<WindowTargeter>();
+  const gfx::Insets insets1(1, 2, 3, 4);
+  const gfx::Insets insets2(11, 12, 13, 14);
+  window_targeter->SetInsets(insets1, insets2);
+  window.SetEventTargeter(std::move(window_targeter));
+  EXPECT_EQ(insets1, window_tree()->last_mouse_hit_test_insets());
+  EXPECT_EQ(insets2, window_tree()->last_touch_hit_test_insets());
+}
 
 }  // namespace aura

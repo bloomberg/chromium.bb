@@ -273,11 +273,11 @@ void WindowTreeClient::SetImeVisibility(WindowMus* window,
   tree_->SetImeVisibility(window->server_id(), visible, std::move(state));
 }
 
-void WindowTreeClient::SetHitTestMask(
-    WindowMus* window,
-    const base::Optional<gfx::Rect>& mask_rect) {
+void WindowTreeClient::SetHitTestInsets(WindowMus* window,
+                                        const gfx::Insets& mouse,
+                                        const gfx::Insets& touch) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(window->server_id(), mask_rect);
+  tree_->SetHitTestInsets(window->server_id(), mouse, touch);
 }
 
 void WindowTreeClient::Embed(Window* window,

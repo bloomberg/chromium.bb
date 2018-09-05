@@ -130,7 +130,6 @@ test("wm_unittests") {
     "core/compound_event_filter_unittest.cc",
     "core/coordinate_conversion_unittest.cc",
     "core/cursor_manager_unittest.cc",
-    "core/easy_resize_window_targeter_unittest.cc",
     "core/focus_controller_unittest.cc",
     "core/shadow_controller_unittest.cc",
     "core/transient_window_manager_unittest.cc",

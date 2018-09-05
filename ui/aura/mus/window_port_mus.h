@@ -87,7 +87,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetCanAcceptDrops(bool can_accept_drops);
 
   // See description in mojom for details on this.
-  void SetHitTestMask(const base::Optional<gfx::Rect>& mask);
+  void SetHitTestInsets(const gfx::Insets& mouse, const gfx::Insets& touch);
 
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
