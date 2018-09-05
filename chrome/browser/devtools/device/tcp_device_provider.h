@@ -39,8 +39,12 @@ class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  private:
   ~TCPDeviceProvider() override;
 
+  void InitializeHostResolver();
+  void InitializeHostResolverOnUI(network::mojom::HostResolverRequest request);
+
   HostPortSet targets_;
   base::Closure release_callback_;
+  network::mojom::HostResolverPtr host_resolver_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_
