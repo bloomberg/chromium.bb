@@ -238,9 +238,8 @@ SelectToSpeak.prototype = {
     }
     if (lastPosition.node.role != RoleType.STATIC_TEXT &&
         lastPosition.node.role != RoleType.INLINE_TEXT_BOX) {
-      lastPosition.offset = lastPosition.node.name ?
-          lastPosition.node.name.length :
-          lastPosition.node.value ? lastPosition.node.value.length : 0;
+      lastPosition.offset =
+          ParagraphUtils.getNodeName(lastPosition.node).length;
     }
     this.readNodesInSelection_(firstPosition, lastPosition, focusedNode);
   },
@@ -303,12 +302,17 @@ SelectToSpeak.prototype = {
         this.startSpeechQueue_(
             nodes, firstPosition.offset, lastPosition.offset);
       }
+      this.initializeScrollingToOffscreenNodes_(focusedNode.root);
+      MetricsUtils.recordStartEvent(
+          MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
     } else {
       let driveAppRootNode = getDriveAppRoot(focusedNode);
       if (!driveAppRootNode)
         return;
       chrome.tabs.query({active: true}, (tabs) => {
-        if (tabs.length == 0) {
+        // Closure doesn't realize that we did a !driveAppRootNode earlier
+        // so we check again here.
+        if (tabs.length == 0 || !driveAppRootNode) {
           return;
         }
         let tab = tabs[0];
@@ -320,12 +324,10 @@ SelectToSpeak.prototype = {
           matchAboutBlank: true,
           code: 'document.execCommand("copy");'
         });
+        MetricsUtils.recordStartEvent(
+            MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
       });
-      return;
     }
-    this.initializeScrollingToOffscreenNodes_(focusedNode.root);
-    MetricsUtils.recordStartEvent(
-        MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
   },
 
   /**
@@ -516,7 +518,6 @@ SelectToSpeak.prototype = {
   startSpeechQueue_: function(nodes, opt_startIndex, opt_endIndex) {
     this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
-      let node = nodes[i];
       let nodeGroup = ParagraphUtils.buildNodeGroup(nodes, i);
       if (i == 0) {
         // We need to start in the middle of a node. Remove all text before

@@ -64,15 +64,7 @@ NodeUtils.shouldIgnoreNode = function(node, includeOffscreen) {
   if (NodeUtils.isNodeInvisible(node, includeOffscreen)) {
     return true;
   }
-  if (!node.name || ParagraphUtils.isWhitespace(node.name)) {
-    if (NodeUtils.isTextField(node)) {
-      // Text fields may also be marked by value.
-      return !node.value || ParagraphUtils.isWhitespace(node.value);
-    }
-    return true;
-  }
-  // The node should not be ignored.
-  return false;
+  return ParagraphUtils.isWhitespace(ParagraphUtils.getNodeName(node));
 };
 
 /**

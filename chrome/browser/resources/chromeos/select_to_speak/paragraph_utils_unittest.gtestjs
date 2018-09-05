@@ -68,8 +68,37 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'IsWhitespace', function() {
   assertTrue(ParagraphUtils.isWhitespace(''));
   assertTrue(ParagraphUtils.isWhitespace(' '));
   assertTrue(ParagraphUtils.isWhitespace(' \n \t '));
+  assertTrue(ParagraphUtils.isWhitespace());
   assertFalse(ParagraphUtils.isWhitespace('cats'));
   assertFalse(ParagraphUtils.isWhitespace(' cats '));
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'GetNodeName', function() {
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'staticText', name: 'cat'}), 'cat');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'inlineTextBox', name: 'cat'}), 'cat');
+  assertEquals(ParagraphUtils.getNodeName({name: 'cat'}), 'cat');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'radioButton', name: 'cat'}), 'cat unselected');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'checkBox', name: 'cat'}), 'cat unchecked');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'checkBox', checked: 'true', name: 'cat'}), 'cat checked');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'radioButton'}), 'unselected');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'checkBox'}), 'unchecked');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'radioButton', checked: 'true'}), 'selected');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'checkBox', checked: 'true'}), 'checked');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'radioButton', checked: 'true', name: 'cat'}), 'cat selected');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'checkBox', checked: 'mixed'}), 'partially checked');
+  assertEquals(ParagraphUtils.getNodeName(
+      {role: 'radioButton', checked: 'mixed'}), 'partially selected');
 });
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'GetStartCharIndexInParent',

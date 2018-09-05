@@ -18,12 +18,16 @@ chrome.automation.getDesktop = function() {};
  * Set necessary constants.
  */
 chrome.automation.RoleType = {
-  WINDOW: 'window',
+  CHECK_BOX: 'checkBox',
+  INLINE_TEXT_BOX: 'inlineTextBox',
+  MENU_ITEM_CHECK_BOX: 'menuItemCheckBox',
+  MENU_ITEM_RADIO: 'menuItemRadio',
+  PARAGRAPH: 'paragraph',
+  RADIO_BUTTON: 'radioButton',
   ROOT_WEB_AREA: 'rootWebArea',
   STATIC_TEXT: 'staticText',
-  INLINE_TEXT_BOX: 'inlineTextBox',
-  PARAGRAPH: 'paragraph',
   TEXT_FIELD: 'textField',
+  WINDOW: 'window'
 };
 
 chrome.automation.StateType = {
@@ -46,4 +50,22 @@ chrome.accessibilityPrivate.SelectToSpeakState = {
   INACTIVE: 'inactive',
   SELECTING: 'selecting',
   SPEAKING: 'speaking'
+};
+
+chrome.i18n = {
+  getMessage: function(key) {
+    if (key == 'select_to_speak_checkbox_checked')
+      return 'checked';
+    if (key == 'select_to_speak_checkbox_unchecked')
+      return 'unchecked';
+    if (key == 'select_to_speak_checkbox_mixed')
+      return 'partially checked';
+    if (key == 'select_to_speak_radiobutton_selected')
+      return 'selected';
+    if (key == 'select_to_speak_radiobutton_unselected')
+      return 'unselected';
+    if (key == 'select_to_speak_radiobutton_mixed')
+      return 'partially selected';
+    return '';
+  }
 };
