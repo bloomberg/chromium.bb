@@ -96,9 +96,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // Returns whether DriveFS is mounted.
   bool IsMounted() const;
 
-  // Returns the path where DriveFS is mounted. It is only valid to call when
-  // |IsMounted()| returns true.
-  const base::FilePath& GetMountPath() const;
+  // Returns the path where DriveFS is mounted.
+  base::FilePath GetMountPath() const;
 
   // Returns the path where DriveFS keeps its data and caches.
   base::FilePath GetDataPath() const;

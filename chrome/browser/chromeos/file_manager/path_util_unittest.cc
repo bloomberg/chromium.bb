@@ -7,9 +7,12 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
@@ -17,13 +20,16 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,20 +45,15 @@ const char kLsbRelease[] =
 
 TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
   content::TestBrowserThreadBundle thread_bundle;
+  content::TestServiceManagerContext service_manager_context;
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
   EXPECT_EQ("Downloads",
             GetDownloadLocationText(&profile, "/home/chronos/user/Downloads"));
   EXPECT_EQ("Downloads",
             GetDownloadLocationText(
                 &profile, "/home/chronos/u-0123456789abcdef/Downloads"));
-  EXPECT_EQ("Google Drive \u203a foo",
-            GetDownloadLocationText(
-                &profile, "/special/drive-0123456789abcdef/root/foo"));
-  EXPECT_EQ(
-      "Team Drives \u203a A Team Drive \u203a foo",
-      GetDownloadLocationText(
-          &profile,
-          "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
   EXPECT_EQ("Play files \u203a foo \u203a bar",
             GetDownloadLocationText(
                 &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));
@@ -60,6 +61,50 @@ TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
             GetDownloadLocationText(
                 &profile,
                 "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
+
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(chromeos::features::kDriveFs);
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
+    EXPECT_EQ("Google Drive \u203a foo",
+              GetDownloadLocationText(
+                  &profile, "/special/drive-0123456789abcdef/root/foo"));
+    EXPECT_EQ(
+        "Team Drives \u203a A Team Drive \u203a foo",
+        GetDownloadLocationText(
+            &profile,
+            "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
+  }
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(chromeos::features::kDriveFs);
+    chromeos::disks::DiskMountManager::InitializeForTesting(
+        new FakeDiskMountManager);
+    TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
+    chromeos::FakeChromeUserManager user_manager;
+    AccountId account_id =
+        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345");
+    const auto* user = user_manager.AddUser(account_id);
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        user, &profile2);
+    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        const_cast<user_manager::User*>(user));
+    PrefService* prefs = profile2.GetPrefs();
+    prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
+    EXPECT_EQ(
+        "Google Drive \u203a foo",
+        GetDownloadLocationText(
+            &profile2,
+            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
+    EXPECT_EQ("Team Drives \u203a A Team Drive \u203a foo",
+              GetDownloadLocationText(
+                  &profile2,
+                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                  "team_drives/A Team Drive/foo"));
+  }
+  chromeos::disks::DiskMountManager::Shutdown();
 }
 
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {

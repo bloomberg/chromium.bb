@@ -385,6 +385,11 @@ TEST_F(DriveFsHostTest, Basic) {
             host_->GetMountPath());
 }
 
+TEST_F(DriveFsHostTest, GetMountPathWhileUnmounted) {
+  EXPECT_EQ(base::FilePath("/media/fuse/drivefs-salt-g-ID"),
+            host_->GetMountPath());
+}
+
 TEST_F(DriveFsHostTest, OnMountedBeforeMountEvent) {
   auto token = StartMount();
   ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));

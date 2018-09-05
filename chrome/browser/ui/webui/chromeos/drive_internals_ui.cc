@@ -912,7 +912,7 @@ void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
       &paths, "Downloads",
       file_manager::util::GetDownloadsFolderForProfile(profile).AsUTF8Unsafe());
   const auto* integration_service = GetIntegrationService();
-  if (integration_service && integration_service->IsMounted()) {
+  if (integration_service) {
     AppendKeyValue(&paths, "Drive",
                    integration_service->GetMountPointPath().AsUTF8Unsafe());
   }
