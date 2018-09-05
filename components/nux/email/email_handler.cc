@@ -154,6 +154,18 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_EMAIL_CHOOSER_JS);
 
   // Add icons
+  html_source->AddResourcePath("email/aol_1x.png", IDR_NUX_EMAIL_AOL_1X);
+  html_source->AddResourcePath("email/aol_2x.png", IDR_NUX_EMAIL_AOL_2X);
+  html_source->AddResourcePath("email/gmail_1x.png", IDR_NUX_EMAIL_GMAIL_1X);
+  html_source->AddResourcePath("email/gmail_2x.png", IDR_NUX_EMAIL_GMAIL_2X);
+  html_source->AddResourcePath("email/icloud_1x.png", IDR_NUX_EMAIL_ICLOUD_1X);
+  html_source->AddResourcePath("email/icloud_2x.png", IDR_NUX_EMAIL_ICLOUD_2X);
+  html_source->AddResourcePath("email/outlook_1x.png",
+                               IDR_NUX_EMAIL_OUTLOOK_1X);
+  html_source->AddResourcePath("email/outlook_2x.png",
+                               IDR_NUX_EMAIL_OUTLOOK_2X);
+  html_source->AddResourcePath("email/yahoo_1x.png", IDR_NUX_EMAIL_YAHOO_1X);
+  html_source->AddResourcePath("email/yahoo_2x.png", IDR_NUX_EMAIL_YAHOO_2X);
 
   // Add constants to loadtime data
   for (size_t i = 0; i < (size_t)EmailProviders::kCount; ++i) {
