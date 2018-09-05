@@ -377,7 +377,7 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 
 // Save the scroll anchor and use it to restore scroll position.
 const base::Feature kScrollAnchorSerialization{
-    "ScrollAnchorSerialization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ScrollAnchorSerialization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Make sendBeacon throw for a Blob with a non simple type.
 const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
