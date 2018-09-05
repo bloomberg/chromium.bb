@@ -20,13 +20,13 @@ namespace network {
 TCPConnectedSocket::TCPConnectedSocket(
     mojom::SocketObserverPtr observer,
     net::NetLog* net_log,
-    Delegate* delegate,
+    TLSSocketFactory* tls_socket_factory,
     net::ClientSocketFactory* client_socket_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)),
       net_log_(net_log),
-      delegate_(delegate),
       client_socket_factory_(client_socket_factory),
+      tls_socket_factory_(tls_socket_factory),
       traffic_annotation_(traffic_annotation) {}
 
 TCPConnectedSocket::TCPConnectedSocket(
@@ -37,8 +37,8 @@ TCPConnectedSocket::TCPConnectedSocket(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)),
       net_log_(nullptr),
-      delegate_(nullptr),
       client_socket_factory_(nullptr),
+      tls_socket_factory_(nullptr),
       socket_(std::move(socket)),
       traffic_annotation_(traffic_annotation) {
   socket_data_pump_ = std::make_unique<SocketDataPump>(
@@ -87,7 +87,7 @@ void TCPConnectedSocket::UpgradeToTLS(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TLSClientSocketRequest request,
     mojom::SocketObserverPtr observer,
-    UpgradeToTLSCallback callback) {
+    mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
   // Wait for data pipes to be closed by the client before doing the upgrade.
   if (socket_data_pump_) {
     pending_upgrade_to_tls_callback_ = base::BindOnce(
@@ -96,19 +96,9 @@ void TCPConnectedSocket::UpgradeToTLS(
         std::move(request), std::move(observer), std::move(callback));
     return;
   }
-  if (!socket_ || !socket_->IsConnected()) {
-    std::move(callback).Run(
-        net::ERR_SOCKET_NOT_CONNECTED, mojo::ScopedDataPipeConsumerHandle(),
-        mojo::ScopedDataPipeProducerHandle(), base::nullopt);
-    return;
-  }
-  auto socket_handle = std::make_unique<net::ClientSocketHandle>();
-  socket_handle->SetSocket(std::move(socket_));
-  delegate_->CreateTLSClientSocket(
-      host_port_pair, std::move(socket_options), std::move(request),
-      std::move(socket_handle), std::move(observer),
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(callback));
+  tls_socket_factory_->UpgradeToTLS(
+      this, host_port_pair, std::move(socket_options), traffic_annotation,
+      std::move(request), std::move(observer), std::move(callback));
 }
 
 void TCPConnectedSocket::SetNoDelay(bool no_delay,
@@ -174,6 +164,14 @@ void TCPConnectedSocket::OnShutdown() {
   socket_data_pump_ = nullptr;
   if (!pending_upgrade_to_tls_callback_.is_null())
     std::move(pending_upgrade_to_tls_callback_).Run();
+}
+
+const net::StreamSocket* TCPConnectedSocket::BorrowSocket() {
+  return socket_.get();
+}
+
+std::unique_ptr<net::StreamSocket> TCPConnectedSocket::TakeSocket() {
+  return std::move(socket_);
 }
 
 }  // namespace network
