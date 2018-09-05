@@ -194,6 +194,8 @@ jumbo_source_set("filters") {
     sources += [
       "android/media_codec_audio_decoder.cc",
       "android/media_codec_audio_decoder.h",
+      "android/video_frame_extractor.cc",
+      "android/video_frame_extractor.h",
     ]
     deps += [ "//media/base/android" ]
   }
@@ -278,6 +280,10 @@ source_set("unit_tests") {
     "vp9_parser_unittest.cc",
     "vp9_raw_bits_reader_unittest.cc",
   ]
+
+  if (is_android) {
+    sources += [ "android/video_frame_extractor_unittest.cc" ]
+  }
 
   deps = [
     "//base/test:test_support",

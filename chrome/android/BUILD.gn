@@ -369,9 +369,7 @@ android_library("chrome_java") {
   # can provide their own implementations.
   jar_excluded_patterns = [ "*/AppHooksImpl.class" ]
 
-  annotation_processor_deps = [
-    "//third_party/android_deps:dagger_processor"
-  ]
+  annotation_processor_deps = [ "//third_party/android_deps:dagger_processor" ]
 }
 
 action("chrome_android_java_google_api_keys_srcjar") {
@@ -705,6 +703,8 @@ android_library("chrome_test_java") {
     "//content/test/data/media/session/",
     "//content/test/data/media/video-player.html",
     "//content/test/data/media/webrtc_test_utilities.js",
+    "//media/test/data/bear.mp4",
+    "//media/test/data/sfx.mp3",
   ]
 }
 
