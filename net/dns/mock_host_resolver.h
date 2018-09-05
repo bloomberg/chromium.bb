@@ -22,6 +22,10 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/host_resolver_source.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace net {
 
 class HostCache;
@@ -153,6 +157,10 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
  protected:
   explicit MockHostResolverBase(bool use_caching);
 
@@ -193,6 +201,8 @@ class MockHostResolverBase
 
   size_t num_resolve_;
   size_t num_resolve_from_cache_;
+
+  const base::TickClock* tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
 
