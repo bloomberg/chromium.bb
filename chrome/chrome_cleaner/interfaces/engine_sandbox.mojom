@@ -31,9 +31,8 @@ interface EngineCleanupResults {
   Done(uint32 result_code);
 };
 
-// This interface connects the sandbox broker process to the sandbox target
-// process, which implements the interface using functions declared in
-// third_party/eset_lib/src/api/eset_cleaner.h.
+// This interface sends commands from the sandbox broker process to the sandbox
+// target process.
 interface EngineCommands {
   // Runs the engine's initialization routine.
   Initialize(associated EngineFileRequests file_requests,
