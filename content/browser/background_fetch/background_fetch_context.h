@@ -271,8 +271,11 @@ class CONTENT_EXPORT BackgroundFetchContext
                               GetPermissionCallback callback);
 
   // Callback for GetPermissionForOrigin.
-  void DidGetPermission(base::OnceClosure permission_closure,
-                        const BackgroundFetchRegistrationId& registration_id,
+  void DidGetPermission(const BackgroundFetchRegistrationId& registration_id,
+                        const std::vector<ServiceWorkerFetchRequest>& requests,
+                        const BackgroundFetchOptions& options,
+                        const SkBitmap& icon,
+                        int frame_tree_node_id,
                         bool has_permission);
 
   // |this| is owned, indirectly, by the BrowserContext.
