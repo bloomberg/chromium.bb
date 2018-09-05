@@ -143,7 +143,9 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
 
 void CastDialogView::OnControllerInvalidated() {
   controller_ = nullptr;
-  MaybeSizeToContents();
+  // We don't call HideDialog() here because if the invalidation was caused by
+  // activating the toolbar icon in order to close the dialog, then it would
+  // cause the dialog to immediately open again.
 }
 
 void CastDialogView::ButtonPressed(views::Button* sender,
@@ -313,6 +315,9 @@ void CastDialogView::ShowSourcesMenu() {
 }
 
 void CastDialogView::SinkPressed(size_t index) {
+  if (!controller_)
+    return;
+
   const UIMediaSink& sink = sink_buttons_.at(index)->sink();
   if (sink.route_id.empty()) {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
