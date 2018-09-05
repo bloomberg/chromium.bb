@@ -914,6 +914,10 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
   this.runMochaTest(header_test.TestNames.HeaderChangesForState);
 });
 
+TEST_F('PrintPreviewHeaderTest', 'ButtonOrder', function() {
+  this.runMochaTest(header_test.TestNames.ButtonOrder);
+});
+
 PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
