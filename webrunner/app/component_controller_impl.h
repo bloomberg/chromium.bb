@@ -6,6 +6,7 @@
 #define WEBRUNNER_APP_COMPONENT_CONTROLLER_IMPL_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/ui/viewsv1/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
