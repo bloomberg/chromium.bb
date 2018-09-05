@@ -1787,10 +1787,12 @@ config("no_shorten_64_warnings") {
     if (is_clang) {
       cflags = [ "-Wno-shorten-64-to-32" ]
     } else {
-      # MSVC does not have an explicit warning equivalent to
-      # -Wshorten-64-to-32 but 4267 warns for size_t -> int
-      # on 64-bit builds, so is the closest.
-      cflags = [ "/wd4267" ]
+      if (is_win) {
+        # MSVC does not have an explicit warning equivalent to
+        # -Wshorten-64-to-32 but 4267 warns for size_t -> int
+        # on 64-bit builds, so is the closest.
+        cflags = [ "/wd4267" ]
+      }
     }
   }
 }
