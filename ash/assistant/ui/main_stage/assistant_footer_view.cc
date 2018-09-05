@@ -75,14 +75,30 @@ void AssistantFooterView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+void AssistantFooterView::SetFocusBehavior(FocusBehavior focus_behavior) {
+  switch (focus_behavior) {
+    case FocusBehavior::NEVER:
+      // When focus behavior is NEVER, we update both views.
+      suggestion_container_->SetFocusBehavior(FocusBehavior::NEVER);
+      opt_in_view_->SetFocusBehavior(FocusBehavior::NEVER);
+      break;
+    case FocusBehavior::ALWAYS:
+      // When focus behavior is ALWAYS, we need to respect opt in state.
+      UpdateFocusBehavior();
+      break;
+    case FocusBehavior::ACCESSIBLE_ONLY:
+      // We don't currently use ACCESSIBLE_ONLY focus behavior.
+      NOTREACHED();
+      break;
+  }
+}
+
 void AssistantFooterView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Initial view state is based on user consent state.
   const bool setup_completed =
       Shell::Get()->voice_interaction_controller()->setup_completed();
-
-  LOG(ERROR) << "eyor: setup_completed: " << setup_completed;
 
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(assistant_controller_);
@@ -92,7 +108,6 @@ void AssistantFooterView::InitLayout() {
   suggestion_container_->SetPaintToLayer();
   suggestion_container_->layer()->SetFillsBoundsOpaquely(false);
   suggestion_container_->layer()->SetOpacity(setup_completed ? 1.f : 0.f);
-  suggestion_container_->SetVisible(setup_completed);
 
   AddChildView(suggestion_container_);
 
@@ -105,17 +120,17 @@ void AssistantFooterView::InitLayout() {
   opt_in_view_->SetPaintToLayer();
   opt_in_view_->layer()->SetFillsBoundsOpaquely(false);
   opt_in_view_->layer()->SetOpacity(setup_completed ? 0.f : 1.f);
-  opt_in_view_->SetVisible(!setup_completed);
 
   AddChildView(opt_in_view_);
+
+  // Initialize focus behavior.
+  UpdateFocusBehavior(setup_completed);
 }
 
 void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
   using assistant::util::StartLayerAnimationSequence;
-
-  LOG(ERROR) << "eyor: completed: " << completed;
 
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
@@ -126,14 +141,15 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
       completed ? static_cast<views::View*>(suggestion_container_)
                 : static_cast<views::View*>(opt_in_view_);
 
-  // Reset visibility to enable animation.
-  hide_view->SetVisible(true);
-  show_view->SetVisible(true);
+  // Views should not be focusable while they're animating.
+  suggestion_container_->SetFocusBehavior(FocusBehavior::NEVER);
+  opt_in_view_->SetFocusBehavior(FocusBehavior::NEVER);
 
   // Hide the view for the previous consent state by fading to 0% opacity.
   StartLayerAnimationSequence(hide_view->layer()->GetAnimator(),
                               CreateLayerAnimationSequence(CreateOpacityElement(
                                   0.f, kAnimationFadeOutDuration)),
+                              // Observe the animation.
                               animation_observer_.get());
 
   // Show the view for the next consent state by fading to 100% opacity with
@@ -166,12 +182,25 @@ bool AssistantFooterView::OnAnimationEnded(
 
   // Only the view relevant to our consent state should process events.
   suggestion_container_->set_can_process_events_within_subtree(setup_completed);
-  suggestion_container_->SetVisible(setup_completed);
   opt_in_view_->set_can_process_events_within_subtree(!setup_completed);
-  opt_in_view_->SetVisible(!setup_completed);
+
+  UpdateFocusBehavior(setup_completed);
 
   // Return false to prevent the observer from destroying itself.
   return false;
+}
+
+void AssistantFooterView::UpdateFocusBehavior(
+    base::Optional<bool> setup_completed) {
+  if (!setup_completed.has_value()) {
+    setup_completed =
+        Shell::Get()->voice_interaction_controller()->setup_completed();
+  }
+
+  suggestion_container_->SetFocusBehavior(
+      setup_completed.value() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+  opt_in_view_->SetFocusBehavior(
+      setup_completed.value() ? FocusBehavior::NEVER : FocusBehavior::ALWAYS);
 }
 
 }  // namespace ash

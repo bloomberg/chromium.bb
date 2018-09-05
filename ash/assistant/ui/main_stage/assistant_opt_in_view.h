@@ -41,9 +41,12 @@ class AssistantOptInView : public views::View, public views::ButtonListener {
 
   void set_delegate(AssistantOptInDelegate* delegate) { delegate_ = delegate; }
 
+  void SetFocusBehavior(FocusBehavior focus_behavior);
+
  private:
   void InitLayout();
 
+  views::Button* container_;   // Owned by view hierarchy.
   views::StyledLabel* label_;  // Owned by view hierarchy.
 
   AssistantOptInDelegate* delegate_ = nullptr;

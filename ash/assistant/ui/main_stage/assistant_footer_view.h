@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/views/view.h"
 
@@ -45,11 +46,16 @@ class AssistantFooterView : public views::View,
       mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
 
+  void SetFocusBehavior(FocusBehavior focus_behavior);
+
  private:
   void InitLayout();
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
+
+  void UpdateFocusBehavior(
+      base::Optional<bool> setup_completed = base::nullopt);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

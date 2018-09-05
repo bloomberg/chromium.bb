@@ -137,6 +137,7 @@ void SuggestionContainerView::OnSuggestionsChanged(
     app_list::SuggestionChipView* suggestion_chip_view =
         new app_list::SuggestionChipView(params, /*listener=*/this);
     suggestion_chip_view->SetAccessibleName(params.text);
+    suggestion_chip_view->SetFocusBehavior(focus_behavior_);
 
     // Given a suggestion chip view, we need to be able to look up the id of
     // the underlying suggestion. This is used for handling press events.
@@ -187,6 +188,12 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
   // TODO(dmblack): Use a delegate pattern here similar to CaptionBar.
   assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
       suggestion);
+}
+
+void SuggestionContainerView::SetFocusBehavior(FocusBehavior focus_behavior) {
+  focus_behavior_ = focus_behavior;
+  for (int i = 0; i < content_view()->child_count(); ++i)
+    content_view()->child_at(i)->SetFocusBehavior(focus_behavior);
 }
 
 void SuggestionContainerView::OnUiVisibilityChanged(
