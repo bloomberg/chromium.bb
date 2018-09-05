@@ -84,10 +84,10 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       continue;
     }
 
-    app_infos.push_back(
-        web_app::PendingAppManager::AppInfo::CreateForDefaultApp(
-            std::move(start_url),
-            web_app::PendingAppManager::LaunchContainer::kWindow));
+    app_infos.emplace_back(
+        std::move(start_url),
+        web_app::PendingAppManager::LaunchContainer::kWindow,
+        web_app::PendingAppManager::InstallSource::kDefaultInstalled);
   }
 
   return app_infos;

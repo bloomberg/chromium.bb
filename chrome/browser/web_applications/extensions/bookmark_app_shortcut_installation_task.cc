@@ -26,9 +26,10 @@ BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask(
           // right now.
           // TODO(crbug.com/864904): Take an AppInfo object once the installer
           // can use the information.
-          web_app::PendingAppManager::AppInfo::Create(
+          web_app::PendingAppManager::AppInfo(
               GURL(),
-              web_app::PendingAppManager::LaunchContainer::kTab)) {}
+              web_app::PendingAppManager::LaunchContainer::kTab,
+              web_app::PendingAppManager::InstallSource::kDefaultInstalled)) {}
 
 BookmarkAppShortcutInstallationTask::~BookmarkAppShortcutInstallationTask() =
     default;

@@ -300,8 +300,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(),
-      web_app::PendingAppManager::AppInfo::Create(
-          app_url, web_app::PendingAppManager::LaunchContainer::kDefault));
+      web_app::PendingAppManager::AppInfo(
+          app_url, web_app::PendingAppManager::LaunchContainer::kDefault,
+          web_app::PendingAppManager::InstallSource::kDefaultInstalled));
 
   SetTestingFactories(task.get(), app_url);
 
@@ -320,7 +321,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
   EXPECT_TRUE(app_installed());
   EXPECT_TRUE(test_helper().create_shortcuts());
   EXPECT_FALSE(test_helper().forced_launch_type().has_value());
-  EXPECT_FALSE(test_helper().is_default_app());
+  EXPECT_TRUE(test_helper().is_default_app());
   EXPECT_FALSE(test_helper().is_policy_installed_app());
 }
 
@@ -330,8 +331,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(),
-      web_app::PendingAppManager::AppInfo::Create(
-          app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
+      web_app::PendingAppManager::AppInfo(
+          app_url, web_app::PendingAppManager::LaunchContainer::kWindow,
+          web_app::PendingAppManager::InstallSource::kDefaultInstalled));
 
   SetTestingFactories(task.get(), app_url);
 
@@ -354,8 +356,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoShortcuts) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo::Create(
+  auto app_info = web_app::PendingAppManager::AppInfo(
       app_url, web_app::PendingAppManager::LaunchContainer::kWindow,
+      web_app::PendingAppManager::InstallSource::kDefaultInstalled,
       false /* create_shortcuts */);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
@@ -379,8 +382,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo::Create(
-      app_url, web_app::PendingAppManager::LaunchContainer::kWindow);
+  auto app_info = web_app::PendingAppManager::AppInfo(
+      app_url, web_app::PendingAppManager::LaunchContainer::kWindow,
+      web_app::PendingAppManager::InstallSource::kDefaultInstalled);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
@@ -401,8 +405,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo::Create(
-      app_url, web_app::PendingAppManager::LaunchContainer::kTab);
+  auto app_info = web_app::PendingAppManager::AppInfo(
+      app_url, web_app::PendingAppManager::LaunchContainer::kTab,
+      web_app::PendingAppManager::InstallSource::kDefaultInstalled);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
@@ -423,8 +428,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_DefaultApp) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo::CreateForDefaultApp(
-      app_url, web_app::PendingAppManager::LaunchContainer::kDefault);
+  auto app_info = web_app::PendingAppManager::AppInfo(
+      app_url, web_app::PendingAppManager::LaunchContainer::kDefault,
+      web_app::PendingAppManager::InstallSource::kDefaultInstalled);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
@@ -445,8 +451,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_AppFromPolicy) {
   const GURL app_url(kWebAppUrl);
 
-  auto app_info = web_app::PendingAppManager::AppInfo::CreateForPolicy(
-      app_url, web_app::PendingAppManager::LaunchContainer::kDefault);
+  auto app_info = web_app::PendingAppManager::AppInfo(
+      app_url, web_app::PendingAppManager::LaunchContainer::kDefault,
+      web_app::PendingAppManager::InstallSource::kPolicyInstalled);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);

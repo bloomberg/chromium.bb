@@ -29,10 +29,11 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   std::string app_id;
   web_app::WebAppProvider::Get(browser()->profile())
       ->pending_app_manager()
-      .Install(web_app::PendingAppManager::AppInfo::Create(
+      .Install(web_app::PendingAppManager::AppInfo(
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
                    web_app::PendingAppManager::LaunchContainer::kWindow,
+                   web_app::PendingAppManager::InstallSource::kDefaultInstalled,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::BindLambdaForTesting(
@@ -59,10 +60,11 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   // Start an installation but don't wait for it to finish.
   web_app::WebAppProvider::Get(browser()->profile())
       ->pending_app_manager()
-      .Install(web_app::PendingAppManager::AppInfo::Create(
+      .Install(web_app::PendingAppManager::AppInfo(
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
                    web_app::PendingAppManager::LaunchContainer::kWindow,
+                   web_app::PendingAppManager::InstallSource::kDefaultInstalled,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::DoNothing());

@@ -117,13 +117,11 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
       break;
   }
 
-  switch (app_info_.installation_flag) {
-    case web_app::PendingAppManager::InstallationFlag::kNone:
-      break;
-    case web_app::PendingAppManager::InstallationFlag::kDefaultApp:
+  switch (app_info_.install_source) {
+    case web_app::PendingAppManager::InstallSource::kDefaultInstalled:
       helper_->set_is_default_app();
       break;
-    case web_app::PendingAppManager::InstallationFlag::kFromPolicy:
+    case web_app::PendingAppManager::InstallSource::kPolicyInstalled:
       helper_->set_is_policy_installed_app();
       break;
   }

@@ -45,8 +45,9 @@ base::Value GetWindowedItem() {
 }
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
-  return PendingAppManager::AppInfo::CreateForPolicy(
+  return PendingAppManager::AppInfo(
       GURL(kWindowedUrl), PendingAppManager::LaunchContainer::kWindow,
+      PendingAppManager::InstallSource::kPolicyInstalled,
       false /* create_shortcuts */);
 }
 
@@ -58,8 +59,9 @@ base::Value GetTabbedItem() {
 }
 
 PendingAppManager::AppInfo GetTabbedAppInfo() {
-  return PendingAppManager::AppInfo::CreateForPolicy(
+  return PendingAppManager::AppInfo(
       GURL(kTabbedUrl), PendingAppManager::LaunchContainer::kTab,
+      PendingAppManager::InstallSource::kPolicyInstalled,
       false /* create_shortcuts */);
 }
 
@@ -70,8 +72,9 @@ base::Value GetDefaultContainerItem() {
 }
 
 PendingAppManager::AppInfo GetDefaultContainerAppInfo() {
-  return PendingAppManager::AppInfo::CreateForPolicy(
+  return PendingAppManager::AppInfo(
       GURL(kDefaultContainerUrl), PendingAppManager::LaunchContainer::kDefault,
+      PendingAppManager::InstallSource::kPolicyInstalled,
       false /* create_shortcuts */);
 }
 
@@ -89,6 +92,8 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     web_app::WebAppProvider::Get(profile())->Reset();
   }
 
+  // TODO(nigeltao): replace the N SimulateEtc methods with 1 method, that
+  // derives the extensions::Manifest::Location from app_info.install_source.
   void SimulatePreviouslyInstalledApp(PendingAppManager::AppInfo app_info,
                                       extensions::Manifest::Location location =
                                           extensions::Manifest::INTERNAL) {
@@ -115,7 +120,6 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppPolicyManagerTest);
 };
-
 
 TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
