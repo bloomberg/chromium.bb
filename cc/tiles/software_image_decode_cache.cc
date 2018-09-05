@@ -657,8 +657,8 @@ bool SoftwareImageDecodeCache::OnMemoryDump(
       int image_id = static_cast<int>(image_pair.first.frame_key().hash());
       CacheEntry* entry = image_pair.second.get();
       DCHECK(entry);
-      // We might not have memory for this cache entry, depending on where int
-      // he CacheEntry lifecycle we are. If we don't have memory, then we don't
+      // We might not have memory for this cache entry, depending on where in
+      // the CacheEntry lifecycle we are. If we don't have memory, then we don't
       // have to record it in the dump.
       if (!entry->memory)
         continue;
