@@ -96,7 +96,6 @@ void IncreaseChildProcessRefCount() {
     return;
   }
   Platform::Current()->SuddenTerminationChanged(false);
-  Platform::Current()->AddRefProcess();
 }
 
 void DecreaseChildProcessRefCount() {
@@ -107,7 +106,6 @@ void DecreaseChildProcessRefCount() {
     return;
   }
   Platform::Current()->SuddenTerminationChanged(true);
-  Platform::Current()->ReleaseRefProcess();
 }
 
 }  // namespace

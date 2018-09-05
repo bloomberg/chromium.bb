@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
@@ -126,7 +125,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   std::vector<PendingChannel> pending_channels_;
 
-  ScopedChildProcessReference process_ref_;
   const int appcache_host_id_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
 
