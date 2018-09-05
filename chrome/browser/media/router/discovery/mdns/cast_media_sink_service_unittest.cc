@@ -16,8 +16,10 @@
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_address.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,13 +120,18 @@ class CastMediaSinkServiceTest : public ::testing::Test {
  public:
   CastMediaSinkServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        test_network_connection_tracker_(
+            true,
+            network::mojom::ConnectionType::CONNECTION_UNKNOWN),
         mock_cast_socket_service_(
             new cast_channel::MockCastSocketService(task_runner_)),
         media_sink_service_(new TestCastMediaSinkService(
             mock_cast_socket_service_.get(),
             DiscoveryNetworkMonitor::GetInstance())),
-        test_dns_sd_registry_(media_sink_service_.get()) {}
+        test_dns_sd_registry_(media_sink_service_.get()) {
+    content::SetNetworkConnectionTrackerForTesting(
+        &test_network_connection_tracker_);
+  }
 
   void SetUp() override {
     EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
@@ -146,12 +153,13 @@ class CastMediaSinkServiceTest : public ::testing::Test {
     EXPECT_CALL(test_dns_sd_registry_, UnregisterDnsSdListener(_));
     media_sink_service_.reset();
     task_runner_->RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  network::TestNetworkConnectionTracker test_network_connection_tracker_;
 
   base::MockCallback<OnSinksDiscoveredCallback> mock_sink_discovered_ui_cb_;
   TestMediaSinkService dial_media_sink_service_;

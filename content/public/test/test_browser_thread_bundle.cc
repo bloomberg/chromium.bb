@@ -21,6 +21,19 @@
 
 namespace content {
 
+namespace {
+
+base::test::ScopedTaskEnvironment::MainThreadType GetThreadTypeFromOptions(
+    int options) {
+  if (options & TestBrowserThreadBundle::PLAIN_MAINLOOP)
+    return base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT;
+  if (options & TestBrowserThreadBundle::IO_MAINLOOP)
+    return base::test::ScopedTaskEnvironment::MainThreadType::IO;
+  return base::test::ScopedTaskEnvironment::MainThreadType::UI;
+}
+
+}  // namespace
+
 TestBrowserThreadBundle::TestBrowserThreadBundle()
     : TestBrowserThreadBundle(DEFAULT) {}
 
@@ -81,6 +94,8 @@ void TestBrowserThreadBundle::Init() {
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
   // There must be a thread to start to use DONT_CREATE_BROWSER_THREADS
   CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_BROWSER_THREADS);
+  // Check for conflicting main loop options.
+  CHECK(!(options_ & IO_MAINLOOP) || !(options_ & PLAIN_MAINLOOP));
 
 #if defined(OS_WIN)
   // Similar to Chrome's UI thread, we need to initialize COM separately for
@@ -96,15 +111,15 @@ void TestBrowserThreadBundle::Init() {
   // ScopedTaskEnvironment may already exist if this TestBrowserThreadBundle is
   // instantiated in a test whose parent fixture provides a
   // ScopedTaskEnvironment.
-  if (!base::MessageLoopCurrent::IsSet()) {
+  if (!base::ThreadTaskRunnerHandle::IsSet()) {
     scoped_task_environment_ =
         std::make_unique<base::test::ScopedTaskEnvironment>(
-            options_ & IO_MAINLOOP
-                ? base::test::ScopedTaskEnvironment::MainThreadType::IO
-                : base::test::ScopedTaskEnvironment::MainThreadType::UI);
+            GetThreadTypeFromOptions(options_));
   }
-  CHECK(options_ & IO_MAINLOOP ? base::MessageLoopCurrentForIO::IsSet()
-                               : base::MessageLoopCurrentForUI::IsSet());
+  if (options_ & IO_MAINLOOP)
+    CHECK(base::MessageLoopCurrentForIO::IsSet());
+  else if (!(options_ & PLAIN_MAINLOOP))
+    CHECK(base::MessageLoopCurrentForUI::IsSet());
 
   // Set the current thread as the UI thread.
   ui_thread_ = std::make_unique<TestBrowserThread>(

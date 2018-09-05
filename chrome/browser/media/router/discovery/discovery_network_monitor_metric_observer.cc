@@ -5,6 +5,9 @@
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
 #include "net/base/network_change_notifier.h"
 
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
+
 namespace media_router {
 namespace {
 
@@ -12,9 +15,9 @@ namespace {
 // network ID of kNetworkIdDisconnected in a change event and checking that we
 // are actually disconnected and reporting it.
 //
-// net::NetworkChangeNotifier, and therefore DiscoveryNetworkMonitor, reports a
-// disconnected state between any other network change.  In order to avoid
-// reporting these spurious kNetworkIdDisconnected events as real
+// network::NetworkConnectionTracker, and therefore DiscoveryNetworkMonitor,
+// reports a disconnected state between any other network change.  In order to
+// avoid reporting these spurious kNetworkIdDisconnected events as real
 // disconnections, we wait for this timeout and then check the network status
 // again.  If any other network change notification comes while we are waiting,
 // this state check is cancelled.
@@ -23,31 +26,38 @@ constexpr base::TimeDelta kConfirmDisconnectTimeout =
 
 DiscoveryNetworkMonitorConnectionType ConnectionTypeFromIdAndType(
     const std::string& network_id,
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
+    network::mojom::ConnectionType connection_type) {
   if (network_id == DiscoveryNetworkMonitor::kNetworkIdDisconnected) {
     return DiscoveryNetworkMonitorConnectionType::kDisconnected;
   } else if (network_id == DiscoveryNetworkMonitor::kNetworkIdUnknown) {
     switch (connection_type) {
-      case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      case network::mojom::ConnectionType::CONNECTION_WIFI:
         return DiscoveryNetworkMonitorConnectionType::kUnknownReportedAsWifi;
-      case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      case network::mojom::ConnectionType::CONNECTION_ETHERNET:
         return DiscoveryNetworkMonitorConnectionType::
             kUnknownReportedAsEthernet;
-      case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+      case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
         return DiscoveryNetworkMonitorConnectionType::kUnknown;
       default:
         return DiscoveryNetworkMonitorConnectionType::kUnknownReportedAsOther;
     }
   } else {
     switch (connection_type) {
-      case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      case network::mojom::ConnectionType::CONNECTION_WIFI:
         return DiscoveryNetworkMonitorConnectionType::kWifi;
-      case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      case network::mojom::ConnectionType::CONNECTION_ETHERNET:
         return DiscoveryNetworkMonitorConnectionType::kEthernet;
       default:
         return DiscoveryNetworkMonitorConnectionType::kUnknown;
     }
   }
+}
+
+network::mojom::ConnectionType GetConnectionType() {
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  content::GetNetworkConnectionTracker()->GetConnectionType(&connection_type,
+                                                            base::DoNothing());
+  return connection_type;
 }
 
 }  // namespace
@@ -80,8 +90,7 @@ void DiscoveryNetworkMonitorMetricObserver::OnNetworksChanged(
   last_event_time_ = now;
   disconnect_timer_.Stop();
   DiscoveryNetworkMonitorConnectionType connection_type =
-      ConnectionTypeFromIdAndType(
-          network_id, net::NetworkChangeNotifier::GetConnectionType());
+      ConnectionTypeFromIdAndType(network_id, GetConnectionType());
   metrics_->RecordConnectionType(connection_type);
 }
 

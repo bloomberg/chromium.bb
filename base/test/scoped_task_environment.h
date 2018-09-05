@@ -126,6 +126,10 @@ class ScopedTaskEnvironment {
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock();
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Returns the current virtual tick time (initially starting at 0).
+  base::TimeTicks NowTicks() const;
+
+  // Only valid for instances with a MOCK_TIME MainThreadType.
   // Returns the number of pending tasks of the main thread's TaskRunner.
   size_t GetPendingMainThreadTaskCount() const;
 
