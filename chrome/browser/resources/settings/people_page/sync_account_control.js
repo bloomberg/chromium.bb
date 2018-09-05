@@ -162,25 +162,6 @@ Polymer({
   },
 
   /**
-   * @param {string} syncErrorLabel
-   * @param {string} authErrorLabel
-   * @return {string}
-   * @private
-   */
-  getErrorLabel_: function(syncErrorLabel, authErrorLabel) {
-    if (this.syncStatus.hasError) {
-      // Most of the time re-authenticate states are caused by intentional user
-      // action, so they will be displayed differently as other errors.
-      return this.syncStatus.statusAction ==
-              settings.StatusAction.REAUTHENTICATE ?
-          authErrorLabel :
-          syncErrorLabel;
-    }
-
-    return '';
-  },
-
-  /**
    * @param {string} label
    * @param {string} account
    * @return {string}
@@ -209,7 +190,9 @@ Polymer({
    * @private
    */
   getSyncIconStyle_: function() {
-    if (this.syncStatus.hasError) {
+    if (!!this.syncStatus.hasUnrecoverableError)
+      return 'sync-problem';
+    if (!!this.syncStatus.hasError) {
       return this.syncStatus.statusAction ==
               settings.StatusAction.REAUTHENTICATE ?
           'sync-paused' :
@@ -242,13 +225,16 @@ Polymer({
    */
   getAvatarRowTitle_: function(
       accountName, syncErrorLabel, authErrorLabel, disabledLabel) {
-    if (!!this.syncStatus.disabled)
-      return disabledLabel;
-
-    if (this.syncStatus.hasError)
-      return this.getErrorLabel_(syncErrorLabel, authErrorLabel);
-
-    return accountName;
+    switch (this.getSyncIconStyle_()) {
+      case 'sync-problem':
+        return syncErrorLabel;
+      case 'sync-paused':
+        return authErrorLabel;
+      case 'sync-disabled':
+        return disabledLabel;
+      default:
+        return accountName;
+    }
   },
 
   /**

@@ -202,6 +202,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        hasUnrecoverableError: false,
         disabled: false,
       };
       sync_test_util.simulateStoredAccounts([
@@ -243,6 +244,7 @@ cr.define('settings_sync_account_control', function() {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
+        hasUnrecoverableError: false,
         statusAction: settings.StatusAction.CONFIRM_SYNC_SETTINGS,
         disabled: false,
       };
@@ -259,6 +261,7 @@ cr.define('settings_sync_account_control', function() {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
+        hasUnrecoverableError: false,
         statusAction: settings.StatusAction.REAUTHENTICATE,
         disabled: false,
       };
@@ -277,6 +280,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        hasUnrecoverableError: false,
         disabled: true,
       };
 
@@ -287,6 +291,22 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync disabled'));
+
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.REAUTHENTICATE,
+        hasError: false,
+        hasUnrecoverableError: true,
+        disabled: false,
+      };
+      assertTrue(testElement.$$('#sync-icon-container')
+                     .classList.contains('sync-problem'));
+      assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
+      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertTrue(displayedText.includes('Sync isn\'t working'));
     });
 
     test('embedded in another page', function() {
@@ -300,6 +320,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        hasUnrecoverableError: false,
         disabled: false,
       };
 
@@ -311,11 +332,36 @@ cr.define('settings_sync_account_control', function() {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         hasError: true,
+        hasUnrecoverableError: false,
         statusAction: settings.StatusAction.REAUTHENTICATE,
         disabled: false,
       };
       assertVisible(testElement.$$('#turn-off'), false);
       assertVisible(testElement.$$('#sync-paused-button'), true);
+
+      testElement.embeddedInSubpage = true;
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true,
+        hasUnrecoverableError: true,
+        statusAction: settings.StatusAction.REAUTHENTICATE,
+        disabled: false,
+      };
+      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#sync-paused-button'), true);
+
+      testElement.embeddedInSubpage = true;
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true,
+        hasUnrecoverableError: true,
+        statusAction: settings.StatusAction.NO_ACTION,
+        disabled: false,
+      };
+      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#sync-paused-button'), false);
     });
   });
 });
