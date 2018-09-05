@@ -7,7 +7,7 @@ cr.define('settings_payments_section', function() {
     test('testAutofillExtensionIndicator', function() {
       // Initializing with fake prefs
       const section = document.createElement('settings-payments-section');
-      section.prefs = {autofill: {enabled: {}, credit_card_enabled: {}}};
+      section.prefs = {autofill: {credit_card_enabled: {}}};
       document.body.appendChild(section);
 
       assertFalse(!!section.$$('#autofillExtensionIndicator'));
@@ -63,8 +63,8 @@ cr.define('settings_payments_section', function() {
     }
 
     test('verifyCreditCardCount', function() {
-      const section = createPaymentsSection(
-          [], {enabled: {value: true}, credit_card_enabled: {value: true}});
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: true}});
 
       const creditCardList = section.$$('#creditCardList');
       assertTrue(!!creditCardList);
@@ -77,9 +77,8 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardsDisabled', function() {
-      const section = createPaymentsSection(
-          [],
-          {enabled: {value: true}, credit_card_enabled: {value: false}});
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: false}});
 
       assertFalse(section.$$('#autofillCreditCardToggle').disabled);
       assertTrue(section.$$('#addCreditCard').disabled);
@@ -96,8 +95,7 @@ cr.define('settings_payments_section', function() {
       ];
 
       const section = createPaymentsSection(
-          creditCards,
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          creditCards, {credit_card_enabled: {value: true}});
       const creditCardList = section.$$('#creditCardList');
       assertTrue(!!creditCardList);
       assertEquals(
@@ -405,8 +403,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate Signed-in and Synced status.
       sync_test_util.simulateSyncStatus({
@@ -429,8 +426,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate not Signed-in status. Won't show migration button.
       sync_test_util.simulateSyncStatus({
@@ -453,8 +449,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate not Synced status. Won't show migration button.
       sync_test_util.simulateSyncStatus({
@@ -477,8 +472,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = false;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate Signed-in and Synced status.
       sync_test_util.simulateSyncStatus({
@@ -501,32 +495,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: false}});
-
-      // Simulate Signed-in and Synced status.
-      sync_test_util.simulateSyncStatus({
-        signedIn: true,
-        syncSystemEnabled: true,
-      });
-
-      // All migration requirements are met but credit card is disable, verify
-      // migration button is hidden.
-      assertTrue(section.$$('#migrateCreditCards').hidden);
-    });
-
-    test('verifyMigrationButtonNotShownWhenAutofillDisabled', function() {
-      // Enable the migration experimental flag and mock Google payments
-      // account.
-      loadTimeData.overrideValues(
-          {migrationEnabled: true, hasGooglePaymentsAccount: true});
-
-      // Add one migratable credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
-      creditCard.metadata.isMigratable = true;
-      const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: false}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: false}});
 
       // Simulate Signed-in and Synced status.
       sync_test_util.simulateSyncStatus({
@@ -549,8 +518,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate Signed-in and Synced status.
       sync_test_util.simulateSyncStatus({
@@ -573,8 +541,7 @@ cr.define('settings_payments_section', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
-          [creditCard],
-          {enabled: {value: true}, credit_card_enabled: {value: true}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
       // Simulate Signed-in and Synced status.
       sync_test_util.simulateSyncStatus({
