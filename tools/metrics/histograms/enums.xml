@@ -10331,6 +10331,7 @@ Called by update_net_error_codes.py.-->
   <int value="29" label="Audits started"/>
   <int value="30" label="Audits finished"/>
   <int value="31" label="Showed third party badges"/>
+  <int value="32" label="Audits' view trace clicked"/>
 </enum>
 
 <enum name="DevToolsPanel">
