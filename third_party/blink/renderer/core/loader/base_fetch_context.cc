@@ -392,8 +392,6 @@ BaseFetchContext::CanRequestInternal(
   if (GetPreviewsResourceLoadingHints() &&
       !GetPreviewsResourceLoadingHints()->AllowLoad(
           url, resource_request.Priority())) {
-    // TODO (tbansal): https://crbug.com/864253. Add a specific reason for why
-    // the resource fetch was blocked.
     return ResourceRequestBlockedReason::kOther;
   }
 
