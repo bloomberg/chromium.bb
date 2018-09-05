@@ -2950,6 +2950,73 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(3u, browser_list->size());
 }
 
+namespace {
+
+void SecondFingerPressTestStep3(DetachToBrowserTabDragControllerTest* test) {
+  ASSERT_TRUE(test->ReleaseInput());
+}
+
+void SecondFingerPressTestStep2(DetachToBrowserTabDragControllerTest* test,
+                                TabStrip* not_attached_tab_strip,
+                                TabStrip* target_tab_strip) {
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // And there should be three browser windows, including the newly created one
+  // for the dragged tab.
+  EXPECT_EQ(3u, test->browser_list->size());
+
+  // Put the window that accociated with |target_tab_strip| in overview.
+  target_tab_strip->GetWidget()->GetNativeWindow()->SetProperty(
+      ash::kIsShowingInOverviewKey, true);
+
+  // Drag to |target_tab_strip|.
+  gfx::Point target_point(target_tab_strip->width() / 2,
+                          target_tab_strip->height() / 2);
+  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
+  ASSERT_TRUE(test->DragInputTo(target_point));
+
+  // Now add a second finger to tap on it.
+  not_attached_tab_strip->GetWidget()->GetNativeWindow()->env()->set_touch_down(
+      true);
+  ASSERT_TRUE(test->PressInput2());
+  ASSERT_TRUE(test->ReleaseInput2());
+
+  ASSERT_TRUE(test->DragInputToNotifyWhenDone(
+      target_point.x(), target_point.y(),
+      base::BindOnce(&SecondFingerPressTestStep3, test)));
+}
+
+}  // namespace
+
+// Tests that when drgging a tab to a browser window that's currently in
+// overview, press the second finger should not cause chrome crash.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       SecondFingerPressTest) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::BindOnce(&SecondFingerPressTestStep2, this, tab_strip,
+                     tab_strip2)));
+  QuitWhenNotDragging();
+
+  // Test that after dragging there is no crash and the dragged tab should now
+  // be merged into the target tabstrip.
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(2u, browser_list->size());
+}
+
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
