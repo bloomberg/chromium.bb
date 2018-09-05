@@ -1897,8 +1897,6 @@ crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/in
 
 crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
 
-crbug.com/813098 external/wpt/editing/run/removeformat.html [ Timeout Pass ]
-
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
@@ -2789,7 +2787,6 @@ crbug.com/626703 external/wpt/quirks/text-decoration-doesnt-propagate-into-table
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow-hidden.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getDevicePose.https.html [ Failure Timeout ]
-crbug.com/877300 external/wpt/editing/run/delete.html?2001-3000 [ Timeout Pass ]
 crbug.com/626703 external/wpt/payment-request/payment-response/onpayerdetailchange-attribute.manual.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
@@ -4854,9 +4851,6 @@ crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-im
 crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
 crbug.com/867982 [ Linux Mac Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
 
-crbug.com/698165 [ Mac ] external/wpt/editing/run/justifycenter.html [ Timeout Pass ]
-crbug.com/698165 [ Mac ] external/wpt/editing/run/multitest.html [ Timeout Pass ]
-
 # Sheriff 2018-07-27
 crbug.com/868317 [ Mac ] external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Pass ]
 
@@ -5105,6 +5099,3 @@ crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 # Sheriff 2018-08-31
 crbug.com/879728 external/wpt/payment-handler/idlharness.https.any.serviceworker.html [ Pass Failure ]
 crbug.com/879728 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Pass Failure ]
-
-# Sheriff 2018-09-03
-crbug.com/698165 external/wpt/editing/run/justifyright.html [ Timeout Pass ]
