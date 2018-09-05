@@ -12,6 +12,7 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -400,12 +401,10 @@ void ViewAXPlatformNodeDelegate::PopulateChildWidgetVector(
     if (widget->GetNativeWindowProperty(kWidgetNativeViewHostKey))
       continue;
 
-    // Focused tab-modal dialogs should take the place of the web page they
-    // cover in the accessibility tree.
-    if (child_widget->widget_delegate()->GetModalType() ==
-            ui::MODAL_TYPE_CHILD &&
-        focused_view &&
-        child_widget->GetContentsView()->Contains(focused_view)) {
+    // Focused child widgets should take the place of the web page they cover in
+    // the accessibility tree.
+    if (ViewAccessibilityUtils::IsFocusedChildWidget(child_widget,
+                                                     focused_view)) {
       result_child_widgets->clear();
       result_child_widgets->push_back(child_widget);
       *is_tab_modal_showing = true;

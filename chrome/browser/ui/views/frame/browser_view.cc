@@ -146,6 +146,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
+#include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
@@ -1752,27 +1753,11 @@ base::string16 BrowserView::GetWindowTitle() const {
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
   // If there is a focused and visible tab-modal dialog, report the dialog's
   // title instead of the page title.
-  const views::FocusManager* focus_manager = GetFocusManager();
-  const views::View* focused_view =
-      focus_manager ? focus_manager->GetFocusedView() : nullptr;
-
-  if (focused_view) {
-    std::set<views::Widget*> child_widgets;
-    views::Widget::GetAllOwnedWidgets(GetWidget()->GetNativeView(),
-                                      &child_widgets);
-
-    for (auto iter = child_widgets.begin(); iter != child_widgets.end();
-         ++iter) {
-      views::Widget* child_widget = *iter;
-      DCHECK_NE(GetWidget(), child_widget);
-
-      WidgetDelegate* child_delegate = child_widget->widget_delegate();
-      if (child_delegate->GetModalType() == ui::MODAL_TYPE_CHILD &&
-          child_widget->IsVisible() &&
-          child_widget->GetContentsView()->Contains(focused_view))
-        return child_delegate->GetAccessibleWindowTitle();
-    }
-  }
+  views::Widget* tab_modal =
+      views::ViewAccessibilityUtils::GetFocusedChildWidgetForAccessibility(
+          this);
+  if (tab_modal)
+    return tab_modal->widget_delegate()->GetAccessibleWindowTitle();
 
   return GetAccessibleWindowTitleForChannelAndProfile(chrome::GetChannel(),
                                                       browser_->profile());
