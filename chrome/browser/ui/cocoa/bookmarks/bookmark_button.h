@@ -114,7 +114,7 @@ class BookmarkNode;
 - (BOOL)dragBookmarkData:(id<NSDraggingInfo>)info;
 
 // Determine if the drag pasteboard has any drag data of type
-// kBookmarkDictionaryListPboardType and, if so, return those elements
+// kUTTypeChromiumBookmarkDictionaryList and, if so, return those elements
 // otherwise return an empty vector.
 - (std::vector<const bookmarks::BookmarkNode*>)retrieveBookmarkNodeData;
 

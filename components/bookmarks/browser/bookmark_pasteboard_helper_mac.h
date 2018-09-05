@@ -22,7 +22,8 @@ namespace bookmarks {
 // dragging methods.
 
 #if defined(__OBJC__)
-// Creates a NSPasteboardItem that contains all the data for the bookmarks.
+// Creates an autoreleased NSPasteboardItem that contains all the data for the
+// bookmarks.
 NSPasteboardItem* PasteboardItemFromBookmarks(
     const std::vector<BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path);
@@ -37,7 +38,7 @@ void WriteBookmarksToPasteboard(
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadBookmarksFromPasteboard(
     ui::ClipboardType type,
-    std::vector<BookmarkNodeData::Element>& elements,
+    std::vector<BookmarkNodeData::Element>* elements,
     base::FilePath* profile_path);
 
 // Returns true if the specified pasteboard contains any sort of bookmark
@@ -47,9 +48,9 @@ bool PasteboardContainsBookmarks(ui::ClipboardType type);
 }  // namespace bookmarks
 
 #if defined(__OBJC__)
-// Pasteboard type for dictionary containing bookmark structure consisting
-// of individual bookmark nodes and/or bookmark folders.
-extern "C" NSString* const kBookmarkDictionaryListPboardType;
+// UTI for dictionary containing bookmark structure consisting of individual
+// bookmark nodes and/or bookmark folders.
+extern NSString* const kUTTypeChromiumBookmarkDictionaryList;
 #endif  // __OBJC__
 
 #endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_PASTEBOARD_HELPER_MAC_H_

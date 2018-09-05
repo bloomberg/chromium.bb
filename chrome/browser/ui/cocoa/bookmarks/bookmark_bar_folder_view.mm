@@ -34,7 +34,7 @@ using bookmarks::BookmarkNode;
   NSArray* types = @[
     NSStringPboardType, NSHTMLPboardType, NSURLPboardType,
     ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType),
-    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkDictionaryListPboardType)
+    kUTTypeChromiumBookmarkDictionaryList
   ];
   [self registerForDraggedTypes:types];
 }
