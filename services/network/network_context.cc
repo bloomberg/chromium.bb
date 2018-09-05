@@ -521,7 +521,7 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CORSURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request)));
+      std::move(request), nullptr));
 }
 
 void NetworkContext::CreateURLLoaderFactory(

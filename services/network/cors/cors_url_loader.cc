@@ -8,6 +8,7 @@
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "url/url_util.h"
 
 namespace network {
@@ -15,25 +16,6 @@ namespace network {
 namespace cors {
 
 namespace {
-
-// This should be identical to CalculateCORSFlag defined in
-// //third_party/blink/renderer/platform/loader/cors/cors.cc.
-bool CalculateCORSFlag(const ResourceRequest& request) {
-  if (request.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
-      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
-    return false;
-  }
-  // CORS needs a proper origin (including a unique opaque origin). If the
-  // request doesn't have one, CORS should not work.
-  DCHECK(request.request_initiator);
-
-  if (request.url.SchemeIs(url::kDataScheme))
-    return false;
-
-  url::Origin url_origin = url::Origin::Create(request.url);
-  url::Origin security_origin(request.request_initiator.value());
-  return !security_origin.IsSameOriginWith(url_origin);
-}
 
 base::Optional<std::string> GetHeaderString(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
@@ -85,7 +67,8 @@ CORSURLLoader::CORSURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
-    const base::RepeatingCallback<void(int)>& request_finalizer)
+    const base::RepeatingCallback<void(int)>& request_finalizer,
+    const OriginAccessList* origin_access_list)
     : binding_(this, std::move(loader_request)),
       routing_id_(routing_id),
       request_id_(request_id),
@@ -95,13 +78,14 @@ CORSURLLoader::CORSURLLoader(
       network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
-      fetch_cors_flag_(CalculateCORSFlag(resource_request)),
       request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
+      origin_access_list_(origin_access_list),
       weak_factory_(this) {
   binding_.set_connection_error_handler(base::BindOnce(
       &CORSURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);
+  SetCORSFlagIfNeeded();
 }
 
 CORSURLLoader::~CORSURLLoader() = default;
@@ -149,7 +133,7 @@ void CORSURLLoader::FollowRedirect(
   request_.referrer = GURL(redirect_info_.new_referrer);
   request_.referrer_policy = redirect_info_.new_referrer_policy;
   const bool original_fetch_cors_flag = fetch_cors_flag_;
-  fetch_cors_flag_ = fetch_cors_flag_ || CalculateCORSFlag(request_);
+  SetCORSFlagIfNeeded();
 
   // We cannot use FollowRedirect for a request with preflight (i.e., when both
   // |fetch_cors_flag_| and |NeedsPreflight(request_)| are true).
@@ -455,6 +439,38 @@ void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
 
 void CORSURLLoader::OnConnectionError() {
   HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
+}
+
+// This should be identical to CalculateCORSFlag defined in
+// //third_party/blink/renderer/platform/loader/cors/cors.cc.
+void CORSURLLoader::SetCORSFlagIfNeeded() {
+  if (fetch_cors_flag_)
+    return;
+
+  if (request_.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
+      request_.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
+    return;
+  }
+
+  if (request_.url.SchemeIs(url::kDataScheme))
+    return;
+
+  // CORS needs a proper origin (including a unique opaque origin). If the
+  // request doesn't have one, CORS should not work.
+  DCHECK(request_.request_initiator);
+
+  // The source origin and destination URL pair may be in the allow list.
+  if (origin_access_list_ && origin_access_list_->IsAllowed(
+                                 *request_.request_initiator, request_.url)) {
+    return;
+  }
+
+  if (request_.request_initiator->IsSameOriginWith(
+          url::Origin::Create(request_.url))) {
+    return;
+  }
+
+  fetch_cors_flag_ = true;
 }
 
 }  // namespace cors
