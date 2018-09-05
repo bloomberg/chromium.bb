@@ -1265,7 +1265,6 @@
     },
     {
       name: "VisibilityCollapseColumn",
-      status: "experimental",
     },
     {
       name: "WakeLock",
