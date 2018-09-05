@@ -2998,26 +2998,20 @@ static int drmParseSubsystemType(int maj, int min)
 #endif
 }
 
-static char *
+static void
 get_real_pci_path(int maj, int min, char *real_path)
 {
     char path[PATH_MAX + 1], *term;
 
     snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
-    if (!realpath(path, real_path))
-        return NULL;
+    if (!realpath(path, real_path)) {
+        strcpy(real_path, path);
+        return;
+    }
 
     term = strrchr(real_path, '/');
     if (term && strncmp(term, "/virtio", 7) == 0)
         *term = 0;
-
-    return real_path;
-}
-
-static void
-get_normal_pci_path(int maj, int min, char *normal_path)
-{
-    snprintf(normal_path, PATH_MAX, "/sys/dev/char/%d:%d/device", maj, min);
 }
 
 static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
@@ -3027,8 +3021,7 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     char real_path[PATH_MAX + 1], *value;
     int num;
 
-    if (get_real_pci_path(maj, min, real_path) == NULL)
-        get_normal_pci_path(maj, min, real_path);
+    get_real_pci_path(maj, min, real_path);
 
     value = sysfs_uevent_get(real_path, "PCI_SLOT_NAME");
     if (!value)
@@ -3148,8 +3141,7 @@ static int parse_separate_sysfs_files(int maj, int min,
     FILE *fp;
     int ret;
 
-    if (get_real_pci_path(maj, min, real_path) == NULL)
-        get_normal_pci_path(maj, min, real_path);
+    get_real_pci_path(maj, min, real_path);
 
     for (unsigned i = ignore_revision ? 1 : 0; i < ARRAY_SIZE(attrs); i++) {
         snprintf(path, PATH_MAX, "%s/%s", real_path, attrs[i]);
@@ -3180,8 +3172,7 @@ static int parse_config_sysfs_file(int maj, int min,
     unsigned char config[64];
     int fd, ret;
 
-    if (get_real_pci_path(maj, min, real_path) == NULL)
-        get_normal_pci_path(maj, min, real_path);
+    get_real_pci_path(maj, min, real_path);
 
     snprintf(path, PATH_MAX, "%s/config", real_path);
     fd = open(path, O_RDONLY);
