@@ -10,8 +10,8 @@
     /* TODO: This should return (undefined or CSSStyleValue),
        but IDL doesn't have anything like that yet. See:
        https://github.com/heycam/webidl/issues/60 */
-    [RaisesException] CSSStyleValue? get(CSSOMString property);
-    [RaisesException] sequence<CSSStyleValue> getAll(CSSOMString property);
-    [RaisesException] boolean has(CSSOMString property);
+    [RaisesException, CallWith=ExecutionContext] CSSStyleValue? get(CSSOMString property);
+    [RaisesException, CallWith=ExecutionContext] sequence<CSSStyleValue> getAll(CSSOMString property);
+    [RaisesException, CallWith=ExecutionContext] boolean has(CSSOMString property);
     readonly attribute unsigned long size;
 };
