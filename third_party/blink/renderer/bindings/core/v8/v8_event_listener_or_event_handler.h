@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_OR_EVENT_HANDLER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -42,7 +42,7 @@ class Event;
 // V8EventListenerOrEventHandler is a wrapper of a JS object implements
 // EventListener interface (has handleEvent(event) method), or a JS function
 // that can handle the event.
-class V8EventListenerOrEventHandler : public V8AbstractEventListener {
+class V8EventListenerOrEventHandler : public V8AbstractEventHandler {
  public:
   static V8EventListenerOrEventHandler* Create(
       v8::Local<v8::Object> listener,
