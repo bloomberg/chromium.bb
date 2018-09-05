@@ -44,6 +44,7 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -66,6 +67,11 @@ uint32_t GenerateEventAckId() {
   // leak some information to the client. So instead, manufacture the id
   // randomly.
   return 0x1000000 | (rand() & 0xffffff);
+}
+
+gfx::Insets MakeInsetsPositive(const gfx::Insets& insets) {
+  return gfx::Insets(std::max(0, insets.top()), std::max(0, insets.left()),
+                     std::max(0, insets.bottom()), std::max(0, insets.right()));
 }
 
 }  // namespace
@@ -197,6 +203,9 @@ void WindowTree::SendEventToClient(aura::Window* window,
       event_to_send->AsLocatedEvent()->set_root_location_f(root_location);
     }
   }
+  DVLOG(4) << "SendEventToClient window="
+           << ServerWindow::GetMayBeNull(window)->GetIdForDebugging()
+           << " event_type=" << ui::EventTypeName(event.type());
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
       std::move(event_to_send), matches_pointer_watcher);
@@ -1412,29 +1421,26 @@ void WindowTree::SetClientArea(
       insets, additional_client_areas.value_or(std::vector<gfx::Rect>()));
 }
 
-void WindowTree::SetHitTestMask(Id transport_window_id,
-                                const base::Optional<gfx::Rect>& mask) {
+void WindowTree::SetHitTestInsets(Id transport_window_id,
+                                  const gfx::Insets& mouse,
+                                  const gfx::Insets& touch) {
   const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
   aura::Window* window = GetWindowByClientId(window_id);
-  DVLOG(3) << "SetHitTestMask client window_id=" << window_id.ToString()
-           << " mask=" << (mask ? mask.value().ToString() : "null");
+  DVLOG(3) << "SetHitTestInsets client window_id=" << window_id.ToString()
+           << " mouse=" << mouse.ToString() << " touch=" << touch.ToString();
   if (!window) {
-    DVLOG(1) << "SetHitTestMask failed (invalid window id)";
+    DVLOG(1) << "SetHitTestInsets failed (invalid window id)";
     return;
   }
   if (!IsClientCreatedWindow(window)) {
-    DVLOG(1) << "SetHitTestMask failed (access denied)";
-    return;
-  }
-  const gfx::Rect window_local_bounds(window->bounds().size());
-  if (mask && !window_local_bounds.Contains(mask.value())) {
-    DVLOG(1) << "SetHitTestMask failed (mask extends beyond window bounds)";
+    DVLOG(1) << "SetHitTestInsets failed (access denied)";
     return;
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   DCHECK(server_window);  // Must exist because of preceding conditionals.
-  server_window->SetHitTestMask(mask);
+  server_window->SetHitTestInsets(MakeInsetsPositive(mouse),
+                                  MakeInsetsPositive(touch));
 }
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {

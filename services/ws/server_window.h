@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
-  void SetHitTestMask(const base::Optional<gfx::Rect>& mask);
+  void SetHitTestInsets(const gfx::Insets& mouse, const gfx::Insets& touch);
 
   void SetCaptureOwner(WindowTree* owner);
   WindowTree* capture_owner() const { return capture_owner_; }

@@ -136,7 +136,9 @@ class AURA_EXPORT WindowTreeClient
   void SetImeVisibility(WindowMus* window,
                         bool visible,
                         ui::mojom::TextInputStatePtr state);
-  void SetHitTestMask(WindowMus* window, const base::Optional<gfx::Rect>& rect);
+  void SetHitTestInsets(WindowMus* window,
+                        const gfx::Insets& mouse,
+                        const gfx::Insets& touch);
 
   // Embeds a new client in |window|. |flags| is a bitmask of the values defined
   // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate

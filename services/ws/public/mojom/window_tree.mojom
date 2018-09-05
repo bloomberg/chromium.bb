@@ -126,10 +126,12 @@ interface WindowTree {
                 gfx.mojom.Insets insets,
                 array<gfx.mojom.Rect>? additional_client_areas);
 
-  // Mouse events outside a hit test mask do not hit the window. The |mask| is
-  // in window local coordinates. Pass null to clear the mask.
-  // TODO(jamescook): Convert |mask| to a path. http://crbug.com/613210
-  SetHitTestMask(uint64 window_id, gfx.mojom.Rect? mask);
+  // Insets the hit test of a window by the specified values. The insets must be
+  // positive (or zero). |mouse| applies to events originating from the mouse,
+  // and |touch| from a non-mouse pointer device (such as tap).
+  SetHitTestInsets(uint64 window_id,
+                   gfx.mojom.Insets mouse,
+                   gfx.mojom.Insets touch);
 
   // Called by clients that want to accept drag and drops. Windows default to
   // this being disabled; a window must actively opt-in to receiving OnDrag*()

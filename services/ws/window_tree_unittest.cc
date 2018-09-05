@@ -750,7 +750,7 @@ TEST(WindowTreeTest, MouseDownInNonClientDragToClientWithChildWindow) {
   EXPECT_TRUE(window_tree_client->input_events().empty());
 }
 
-TEST(WindowTreeTest, SetHitTestMask) {
+TEST(WindowTreeTest, SetHitTestInsets) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
@@ -764,17 +764,17 @@ TEST(WindowTreeTest, SetHitTestMask) {
   window_tree_client->ClearInputEvents();
   window_delegate.ClearEvents();
 
-  // Set a hit test mask in the window's bounds that excludes the top half.
-  setup.window_tree_test_helper()->SetHitTestMask(top_level,
-                                                  gfx::Rect(0, 50, 100, 50));
+  // Set the hit test insets in the window's bounds that excludes the top half.
+  setup.window_tree_test_helper()->SetHitTestInsets(
+      top_level, gfx::Insets(50, 0, 0, 0), gfx::Insets(50, 0, 0, 0));
 
-  // Events outside the hit test mask are not seen by the delegate or client.
+  // Events outside the hit test insets are not seen by the delegate or client.
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 30);
   EXPECT_TRUE(window_tree_client->input_events().empty());
   EXPECT_TRUE(window_delegate.events().empty());
 
-  // Events in the hit test mask are seen by the delegate and client.
+  // Events in the hit test insets are seen by the delegate and client.
   event_generator.MoveMouseTo(50, 80);
   EXPECT_EQ("POINTER_MOVED 40,70",
             LocatedEventToEventTypeAndLocation(

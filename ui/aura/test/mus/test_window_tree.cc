@@ -185,9 +185,11 @@ void TestWindowTree::SetClientArea(
   last_client_area_ = insets;
 }
 
-void TestWindowTree::SetHitTestMask(ws::Id window_id,
-                                    const base::Optional<gfx::Rect>& mask) {
-  last_hit_test_mask_ = mask;
+void TestWindowTree::SetHitTestInsets(ws::Id window_id,
+                                      const gfx::Insets& mouse,
+                                      const gfx::Insets& touch) {
+  last_mouse_hit_test_insets_ = mouse;
+  last_touch_hit_test_insets_ = touch;
 }
 
 void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {}
