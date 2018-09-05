@@ -13,6 +13,7 @@ per-file crash_strings.grdp=file://components/crash/OWNERS
 per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 per-file error_page_strings.grdp=file://components/error_page/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
+per-file nux_email_strings.grdp=file://components/nux/OWNERS
 per-file nux_google_apps_strings.grdp=file://components/nux/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS
 per-file page_info_strings.grdp=file://chrome/browser/ui/page_info/OWNERS

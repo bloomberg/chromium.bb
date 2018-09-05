@@ -134,6 +134,10 @@ void EmailHandler::HandleAddEmails(const base::ListValue* args) {
 
 void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
   // Localized strings.
+  html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
+  html_source->AddLocalizedString("getStarted", IDS_NUX_EMAIL_GET_STARTED);
+  html_source->AddLocalizedString("welcomeTitle", IDS_NUX_EMAIL_WELCOME_TITLE);
+  html_source->AddLocalizedString("emailPrompt", IDS_NUX_EMAIL_PROMPT);
 
   // Add required resources.
   html_source->AddResourcePath("email", IDR_NUX_EMAIL_HTML);
