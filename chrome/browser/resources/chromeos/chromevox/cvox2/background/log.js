@@ -120,12 +120,30 @@ LogPage.updateLog = function(log, div) {
     var timeStamp = document.createElement('span');
     timeStamp.textContent = LogPage.formatTimeStamp(log[i].date);
     timeStamp.className = 'log-time-tag';
-    var textWrapper = document.createElement('pre');
+    /** textWrapper should be in block scope, not function scope. */
+    let textWrapper = document.createElement('pre');
     textWrapper.textContent = log[i].toString();
     textWrapper.className = 'log-text';
 
     p.appendChild(typeName);
     p.appendChild(timeStamp);
+
+    /** Add hide tree button when logType is tree. */
+    if (log[i].logType == TreeLog.LogType.TREE) {
+      var toggle = document.createElement('label');
+      var toggleCheckbox = document.createElement('input');
+      toggleCheckbox.type = 'checkbox';
+      toggleCheckbox.checked = true;
+      toggleCheckbox.onclick = function(event) {
+        textWrapper.hidden = !event.target.checked;
+      };
+      var toggleText = document.createElement('span');
+      toggleText.textContent = 'show tree';
+      toggle.appendChild(toggleCheckbox);
+      toggle.appendChild(toggleText);
+      p.appendChild(toggle);
+    }
+
     p.appendChild(textWrapper);
     div.appendChild(p);
   }
