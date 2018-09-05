@@ -582,8 +582,8 @@ void NGBlockNode::PlaceChildrenInFlowThread(
 // Copies data back to the legacy layout tree for a given child fragment.
 void NGBlockNode::CopyChildFragmentPosition(
     const NGPhysicalFragment& fragment,
-    const NGPhysicalOffset& fragment_offset,
-    const NGPhysicalOffset& additional_offset) {
+    const NGPhysicalOffset fragment_offset,
+    const NGPhysicalOffset additional_offset) {
   LayoutBox* layout_box = ToLayoutBox(fragment.GetLayoutObject());
   if (!layout_box)
     return;

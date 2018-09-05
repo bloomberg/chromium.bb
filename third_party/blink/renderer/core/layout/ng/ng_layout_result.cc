@@ -62,7 +62,7 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
     exclusion_space = std::make_unique<NGExclusionSpace>(*exclusion_space_);
   }
   return base::AdoptRef(new NGLayoutResult(
-      PhysicalFragment(), oof_positioned_descendants, positioned_floats,
+      root_fragment_.fragment_, oof_positioned_descendants, positioned_floats,
       unpositioned_list_marker_, std::move(exclusion_space), bfc_line_offset_,
       bfc_block_offset_, end_margin_strut_, intrinsic_block_size_,
       minimal_space_shortage_, initial_break_before_, final_break_after_,
