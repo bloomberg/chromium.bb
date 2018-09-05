@@ -41,8 +41,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     // overlay scrollbars which is only used for hit testing.
     bool EqualIgnoringHitTestRects(const State& o) const {
       return local_transform_space == o.local_transform_space &&
-             clip_rect == o.clip_rect &&
-             clip_path == o.clip_path &&
+             clip_rect == o.clip_rect && clip_path == o.clip_path &&
              direct_compositing_reasons == o.direct_compositing_reasons;
     }
 

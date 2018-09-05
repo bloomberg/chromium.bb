@@ -71,8 +71,13 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   static scoped_refptr<TransformPaintPropertyNode> Create(
       const TransformPaintPropertyNode& parent,
       State&& state) {
-    return base::AdoptRef(
-        new TransformPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(new TransformPaintPropertyNode(
+        &parent, std::move(state), false /* is_parent_alias */));
+  }
+  static scoped_refptr<TransformPaintPropertyNode> CreateAlias(
+      const TransformPaintPropertyNode& parent) {
+    return base::AdoptRef(new TransformPaintPropertyNode(
+        &parent, State{}, true /* is_parent_alias */));
   }
 
   bool Update(const TransformPaintPropertyNode& parent, State&& state) {
@@ -80,6 +85,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     if (state == state_)
       return parent_changed;
 
+    DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
     SetChanged();
     state_ = std::move(state);
     Validate();
@@ -145,14 +151,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a transform node before it has been updated, to later detect changes.
   scoped_refptr<TransformPaintPropertyNode> Clone() const {
-    return base::AdoptRef(
-        new TransformPaintPropertyNode(Parent(), State(state_)));
+    return base::AdoptRef(new TransformPaintPropertyNode(
+        Parent(), State(state_), IsParentAlias()));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a transform node has changed.
   bool operator==(const TransformPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_;
+    return Parent() == o.Parent() && state_ == o.state_ &&
+           IsParentAlias() == o.IsParentAlias();
   }
 #endif
 
@@ -163,8 +170,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
  private:
   TransformPaintPropertyNode(const TransformPaintPropertyNode* parent,
-                             State&& state)
-      : PaintPropertyNode(parent), state_(std::move(state)) {
+                             State&& state,
+                             bool is_parent_alias)
+      : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {
     Validate();
   }
 

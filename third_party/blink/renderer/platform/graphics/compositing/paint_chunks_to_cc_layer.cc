@@ -377,11 +377,13 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
 void ConversionContext::StartClip(
     const FloatRoundedRect& combined_clip_rect,
     const ClipPaintPropertyNode* lowest_combined_clip_node) {
-  if (lowest_combined_clip_node->LocalTransformSpace() != current_transform_)
+  auto* local_transform =
+      lowest_combined_clip_node->LocalTransformSpace()->Unalias();
+  if (local_transform != current_transform_)
     EndTransform();
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
-  ApplyTransform(lowest_combined_clip_node->LocalTransformSpace());
+  ApplyTransform(local_transform);
   const bool antialias = true;
   if (combined_clip_rect.IsRounded()) {
     cc_list_.push<cc::ClipRRectOp>(combined_clip_rect, SkClipOp::kIntersect,
@@ -399,7 +401,7 @@ void ConversionContext::StartClip(
 
   PushState(StateEntry::kClip, 1);
   current_clip_ = lowest_combined_clip_node;
-  current_transform_ = lowest_combined_clip_node->LocalTransformSpace();
+  current_transform_ = local_transform;
 }
 
 void ConversionContext::SwitchToEffect(
@@ -608,6 +610,7 @@ void ConversionContext::PopState() {
 
 void ConversionContext::SwitchToTransform(
     const TransformPaintPropertyNode* target_transform) {
+  target_transform = target_transform->Unalias();
   if (target_transform == current_transform_)
     return;
 

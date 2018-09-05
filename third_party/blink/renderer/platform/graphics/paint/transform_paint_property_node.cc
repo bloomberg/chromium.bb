@@ -15,7 +15,8 @@ const TransformPaintPropertyNode& TransformPaintPropertyNode::Root() {
           nullptr,
           State{TransformationMatrix(), FloatPoint3D(), false,
                 BackfaceVisibility::kVisible, 0, CompositingReason::kNone,
-                CompositorElementId(), &ScrollPaintPropertyNode::Root()})));
+                CompositorElementId(), &ScrollPaintPropertyNode::Root()},
+          true /* is_parent_alias */)));
   return *root;
 }
 

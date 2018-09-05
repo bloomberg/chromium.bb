@@ -74,6 +74,21 @@ class PaintPropertyNode : public RefCounted<NodeType> {
       n->changed_ = false;
   }
 
+  // Returns true if this node is an alias for its parent. A parent alias is a
+  // node which on its own does not contribute to the rendering output, and only
+  // exists to enforce a particular structure of the paint property tree. Its
+  // value is ignored during display item list generation, instead the parent
+  // value is used. See Unalias().
+  bool IsParentAlias() const { return is_parent_alias_; }
+  // Returns the first node up the parent chain that is not an alias; return the
+  // root node if every node is an alias.
+  const NodeType* Unalias() const {
+    const auto* node = static_cast<const NodeType*>(this);
+    while (node->Parent() && node->IsParentAlias())
+      node = node->Parent();
+    return node;
+  }
+
   String ToString() const {
     auto s = static_cast<const NodeType*>(this)->ToJSON()->ToJSONString();
 #if DCHECK_IS_ON()
@@ -91,8 +106,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 #endif
 
  protected:
-  PaintPropertyNode(const NodeType* parent)
-      : parent_(parent), changed_(!!parent) {}
+  PaintPropertyNode(const NodeType* parent, bool is_parent_alias = false)
+      : parent_(parent),
+        is_parent_alias_(is_parent_alias),
+        changed_(!!parent) {}
 
   bool SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
@@ -115,7 +132,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   friend class PaintPropertyNodeTest;
 
   scoped_refptr<const NodeType> parent_;
-  mutable bool changed_;
+  // Indicates whether this node is an alias for its parent. Parent aliases are
+  // nodes that do not affect rendering and are ignored for the purposes of
+  // display item list generation.
+  bool is_parent_alias_ = false;
+  mutable bool changed_ = true;
 
 #if DCHECK_IS_ON()
   String debug_name_;
