@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.chrome.browser.toolbar.ToolbarLayout;
+import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -280,7 +280,7 @@ public class FeatureUtilities {
                 ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, isNTPButtonEnabled);
         if (isNTPButtonEnabled) {
             String iconVariant = getNTPButtonVariant();
-            if (TextUtils.isEmpty(iconVariant)) iconVariant = ToolbarLayout.NTP_BUTTON_HOME_VARIANT;
+            if (TextUtils.isEmpty(iconVariant)) iconVariant = ToolbarModel.NTP_BUTTON_HOME_VARIANT;
             ChromePreferenceManager.getInstance().setNewTabPageButtonVariant(iconVariant);
         }
     }

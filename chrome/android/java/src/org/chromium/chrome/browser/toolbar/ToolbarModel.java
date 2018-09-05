@@ -27,10 +27,12 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
@@ -45,6 +47,10 @@ import java.net.URISyntaxException;
  * Provides a way of accessing toolbar data and state.
  */
 public class ToolbarModel implements ToolbarDataProvider {
+    public static final String NTP_BUTTON_NEWS_FEED_VARIANT = "news_feed";
+    public static final String NTP_BUTTON_HOME_VARIANT = "home";
+    public static final String NTP_BUTTON_CHROME_VARIANT = "chrome";
+
     private final Context mContext;
     private final BottomSheet mBottomSheet;
     private final boolean mUseModernDesign;
@@ -60,6 +66,7 @@ public class ToolbarModel implements ToolbarDataProvider {
     private int mPreviousSecurityLevel;
     private String mCachedSearchTerms;
     private boolean mIgnoreSecurityLevelForSearchTerms;
+    private boolean mIsNativeLibraryReady;
 
     private long mNativeToolbarModelAndroid;
 
@@ -85,6 +92,7 @@ public class ToolbarModel implements ToolbarDataProvider {
     public void initializeWithNative() {
         mNativeToolbarModelAndroid = nativeInit();
         mQueryInOmniboxEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_IN_OMNIBOX);
+        mIsNativeLibraryReady = true;
     }
 
     /**
@@ -94,6 +102,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         if (mNativeToolbarModelAndroid == 0) return;
         nativeDestroy(mNativeToolbarModelAndroid);
         mNativeToolbarModelAndroid = 0;
+        mIsNativeLibraryReady = false;
     }
 
     /**
@@ -532,6 +541,39 @@ public class ToolbarModel implements ToolbarDataProvider {
     public String getUrlForDisplay() {
         if (mNativeToolbarModelAndroid == 0) return "";
         return nativeGetURLForDisplay(mNativeToolbarModelAndroid);
+    }
+
+    @Override
+    public int getHomeButtonIcon() {
+        int iconResId = R.drawable.btn_toolbar_home;
+        if (!FeatureUtilities.isNewTabPageButtonEnabled()) return iconResId;
+        // Check for a cached icon variant in shared preferences.
+        String iconVariant = ChromePreferenceManager.getInstance().getNewTabPageButtonVariant();
+
+        // If there is no cached icon variant and the native library is ready, try to retrieve the
+        // icon variant from variations associated data.
+        if (TextUtils.isEmpty(iconVariant) && mIsNativeLibraryReady) {
+            iconVariant = FeatureUtilities.getNTPButtonVariant();
+        }
+
+        // Return if no icon variant is found.
+        if (TextUtils.isEmpty(iconVariant)) return iconResId;
+
+        switch (iconVariant) {
+            case NTP_BUTTON_HOME_VARIANT:
+                iconResId = R.drawable.ic_home;
+                break;
+            case NTP_BUTTON_NEWS_FEED_VARIANT:
+                iconResId = R.drawable.ic_library_news_feed;
+                break;
+            case NTP_BUTTON_CHROME_VARIANT:
+                iconResId = R.drawable.ic_chrome;
+                break;
+            default:
+                break;
+        }
+
+        return iconResId;
     }
 
     private native long nativeInit();
