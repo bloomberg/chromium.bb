@@ -20,11 +20,11 @@ from chromite.lib import path_util
 def ParseArgs(args):
   """Return parsed commandline arguments."""
 
-  parser = commandline.ArgumentParser()
+  parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--test_results_root', type='path',
                       help='Directory to store test results')
   parser.add_argument('--board', type=str, help='Board (wolf, beaglebone...)')
-  parser.add_argument('image_dir', type='path',
+  parser.add_argument('image', type='path',
                       help='Image directory (or file) with mount_image.sh and '
                            'umount_image.sh')
 
@@ -100,7 +100,7 @@ def main(args):
   runner = image_test_lib.ImageTestRunner()
   runner.SetBoard(opts.board)
   runner.SetResultDir(opts.test_results_root)
-  image_file = FindImage(opts.image_dir)
+  image_file = FindImage(opts.image)
   tmp_in_chroot = path_util.FromChrootPath('/tmp')
   with osutils.TempDir(base_dir=tmp_in_chroot) as temp_dir:
     with osutils.MountImageContext(image_file, temp_dir):
