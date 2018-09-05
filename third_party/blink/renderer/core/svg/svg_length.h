@@ -41,6 +41,23 @@ class SVGLength final : public SVGPropertyBase {
     return new SVGLength(mode);
   }
 
+  // Initial values for SVGLength properties. If adding a new initial value,
+  // keep the list sorted within the same unit. The table containing the actual
+  // values are in the .cc file.
+  enum class Initial {
+    kUnitlessZero,
+    kPercentMinus10,
+    kPercent0,
+    kPercent50,
+    kPercent100,
+    kPercent120,
+    kNumber3,
+    kNumValues
+  };
+  static constexpr int kInitialValueBits = 3;
+  static SVGLength* Create(Initial, SVGLengthMode);
+  void SetInitial(unsigned);
+
   void Trace(blink::Visitor*) override;
 
   SVGLength* Clone() const;
@@ -116,7 +133,8 @@ class SVGLength final : public SVGPropertyBase {
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
-  SVGLength(SVGLengthMode);
+  explicit SVGLength(SVGLengthMode);
+  SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
   SVGLength(const SVGLength&);
 
   Member<const CSSPrimitiveValue> value_;

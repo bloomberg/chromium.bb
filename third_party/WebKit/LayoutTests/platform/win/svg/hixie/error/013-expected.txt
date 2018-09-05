@@ -5,7 +5,7 @@ layer at (0,0) size 800x105
   LayoutBlockFlow {html} at (0,0) size 800x105
     LayoutBlockFlow {body} at (8,8) size 784x81
       LayoutBlockFlow (anonymous) at (0,0) size 784x25
-        LayoutSVGRoot {svg} at (0,0) size 784x20
+        LayoutSVGRoot {svg} at (0,0) size 0x20
           LayoutSVGText {text} at (10,20) size 124x12 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (10,20) size 124x12
               chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 30 width 124.00: "FAIL (This should not render.)"

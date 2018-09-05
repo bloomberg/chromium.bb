@@ -55,6 +55,12 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
 
   virtual String ValueAsString() const = 0;
 
+  // Set the initial value based on a per-type defined (encoded) value. Overload
+  // this in the specific subclass to handle initial values, and set
+  // kInitialValueBits appropriately.
+  static constexpr int kInitialValueBits = 0;
+  void SetInitial(unsigned) {}
+
   // FIXME: remove below and just have this inherit AnimatableValue in
   // WebAnimations transition.
   virtual void Add(SVGPropertyBase*, SVGElement*) = 0;

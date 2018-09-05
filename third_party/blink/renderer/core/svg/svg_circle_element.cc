@@ -29,15 +29,18 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document),
       cx_(SVGAnimatedLength::Create(this,
                                     SVGNames::cxAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kUnitlessZero,
                                     CSSPropertyCx)),
       cy_(SVGAnimatedLength::Create(this,
                                     SVGNames::cyAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight),
+                                    SVGLengthMode::kHeight,
+                                    SVGLength::Initial::kUnitlessZero,
                                     CSSPropertyCy)),
       r_(SVGAnimatedLength::Create(this,
                                    SVGNames::rAttr,
-                                   SVGLength::Create(SVGLengthMode::kOther),
+                                   SVGLengthMode::kOther,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyR)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
