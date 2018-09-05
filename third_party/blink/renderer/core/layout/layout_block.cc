@@ -1336,9 +1336,14 @@ void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
+  int scrollbar_width = ScrollbarLogicalWidth();
+
   // Size-contained elements don't consider their contents for preferred sizing.
-  if (ShouldApplySizeContainment())
+  if (ShouldApplySizeContainment()) {
+    max_logical_width = LayoutUnit(scrollbar_width);
+    min_logical_width = LayoutUnit(scrollbar_width);
     return;
+  }
 
   if (ChildrenInline()) {
     // FIXME: Remove this const_cast.
@@ -1363,7 +1368,6 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
                                        LayoutUnit(table_cell_width.Value())));
   }
 
-  int scrollbar_width = ScrollbarLogicalWidth();
   max_logical_width += scrollbar_width;
   min_logical_width += scrollbar_width;
 }
