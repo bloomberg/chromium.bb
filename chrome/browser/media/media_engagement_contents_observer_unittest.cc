@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/web_contents_tester.h"
+#include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,9 +40,6 @@ class MediaEngagementContentsObserverTest
       : task_runner_(new base::TestMockTimeTaskRunner()) {}
 
   void SetUp() override {
-    scoped_feature_list_.InitFromCommandLine("RecordMediaEngagementScores",
-                                             std::string());
-
     ChromeRenderViewHostTestHarness::SetUp();
 
     test_service_manager_context_ =
@@ -448,8 +446,6 @@ class MediaEngagementContentsObserverTest
   MediaEngagementContentsObserver* contents_observer_;
 
   std::unique_ptr<MediaEngagementService> service_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
@@ -1372,4 +1368,20 @@ TEST_F(MediaEngagementContentsObserverTest, GetOrCreateSession_WithOpener) {
   content::WebContentsTester::For(opener.get())->NavigateAndCommit(url);
   EXPECT_EQ(GetSessionFor(other_observer),
             GetOrCreateSession(url::Origin::Create(url), opener.get()));
+}
+
+TEST_F(MediaEngagementContentsObserverTest, IgnoreAudioContextIfDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(media::kRecordWebAudioEngagement);
+
+  Navigate(GURL("https://www.example.com"));
+  SimulateAudioContextStarted(0);
+  SimulateAudible();
+
+  EXPECT_FALSE(AreAudioContextConditionsMet());
+  EXPECT_FALSE(IsAudioContextTimerRunning());
+  EXPECT_FALSE(WasSignificantAudioContextPlaybackRecorded());
+
+  SimulateAudioContextPlaybackTimerFired();
+  EXPECT_FALSE(WasSignificantAudioContextPlaybackRecorded());
 }
