@@ -94,8 +94,13 @@ bool SubresourceFilterContentSettingsManager::ShouldShowUIForSite(
 
 void SubresourceFilterContentSettingsManager::
     ResetSiteMetadataBasedOnActivation(const GURL& url, bool is_activated) {
-  SetSiteMetadata(
-      url, is_activated ? std::make_unique<base::DictionaryValue>() : nullptr);
+  // Do not reset the metadata if it exists already, it could clobber an
+  // existing timestamp.
+  if (!is_activated) {
+    SetSiteMetadata(url, nullptr);
+  } else if (!GetSiteMetadata(url)) {
+    SetSiteMetadata(url, std::make_unique<base::DictionaryValue>());
+  }
 }
 
 std::unique_ptr<base::DictionaryValue>
