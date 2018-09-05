@@ -33,7 +33,6 @@ CWV_EXPORT
 
 // Provides a method for receiving commands from JavaScript running in a web
 // page.
-CWV_EXPORT
 @protocol CWVScriptCommandHandler<NSObject>
 
 - (BOOL)webView:(CWVWebView*)webView

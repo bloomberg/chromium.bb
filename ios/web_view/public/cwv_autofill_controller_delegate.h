@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "cwv_export.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
@@ -22,7 +20,6 @@ typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
   CWVStoragePolicyAllow,       // Allow storage.
 };
 
-CWV_EXPORT
 // Protocol to receive callbacks related to autofill.
 // |fieldName| is the 'name' attribute of a html field.
 // |formName| is the 'name' attribute of a html <form>.
