@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter.SubsectionHeader;
 import org.chromium.chrome.browser.download.ui.DownloadItemSelectionDelegate.SubsectionHeaderSelectionObserver;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
+import org.chromium.chrome.download.R;
 
 import java.util.Set;
 

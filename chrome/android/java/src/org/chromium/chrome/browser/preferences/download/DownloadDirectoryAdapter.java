@@ -15,12 +15,12 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.TintedImageView;
+import org.chromium.chrome.download.R;
 
 import java.util.ArrayList;
 import java.util.List;

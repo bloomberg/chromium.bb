@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.Offlin
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.chrome.download.R;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;

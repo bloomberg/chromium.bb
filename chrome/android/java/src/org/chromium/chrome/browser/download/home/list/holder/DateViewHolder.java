@@ -9,10 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.download.R;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display a date header. */
 public class DateViewHolder extends ListItemViewHolder {

@@ -21,9 +21,9 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
+import org.chromium.chrome.download.R;
 
 import java.io.File;
 import java.util.concurrent.RejectedExecutionException;

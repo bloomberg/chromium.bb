@@ -9,12 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModel.ObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.download.R;
 
 /**
  * The coordinator responsible for creating the storage summary view in download home.

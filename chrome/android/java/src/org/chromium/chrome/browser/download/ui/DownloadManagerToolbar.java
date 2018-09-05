@@ -12,8 +12,8 @@ import android.widget.Spinner;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.chrome.download.R;
 
 import java.util.List;
 

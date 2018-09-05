@@ -8,9 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.download.R;
 
 /**
  * A {@link ViewHolder} specifically meant to display a separator.

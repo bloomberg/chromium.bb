@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.download.home.list.holder;
 import android.support.annotation.CallSuper;
 import android.view.View;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.download.R;
 
 /**
  * Helper {@link RecyclerView.ViewHolder} that handles showing a 3-dot menu with preset actions.
