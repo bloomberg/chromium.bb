@@ -105,6 +105,22 @@ TEST(FocusHandlerTest, FocusChild) {
   EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(window));
 }
 
+// Regression test for https://crbug.com/880533
+TEST(FocusHandlerTest, FocusChildOfActiveWindow) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  top_level->Show();
+  setup.focus_controller()->ActivateWindow(top_level);
+  EXPECT_EQ(top_level, setup.focus_controller()->GetActiveWindow());
+
+  aura::Window* child = setup.window_tree_test_helper()->NewWindow();
+  top_level->AddChild(child);
+  child->Show();
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(child));
+  EXPECT_TRUE(child->HasFocus());
+}
+
 TEST(FocusHandlerTest, NotifyOnFocusChange) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
