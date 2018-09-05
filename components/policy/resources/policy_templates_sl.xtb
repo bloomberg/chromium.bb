@@ -521,7 +521,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
       </translation>
 <translation id="2294382669900758280">Predvajanje videoposnetkov v aplikacijah za Android se ne upošteva, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
-<translation id="2298647742290373702">Konfiguriranje privzete strani »Nov zavihek« v brskalniku <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2298647742290373702">Konfiguriranje privzetega novega zavihka s povezavami v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
 <translation id="2303795211377219696">Omogočanje samodejnega izpolnjevanja za kreditne kartice</translation>
 <translation id="2309390639296060546">Privzeta nastavitev geolokacije</translation>
@@ -688,7 +688,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="268577405881275241">Omogoči funkcijo stiskanja podatkov v strežniku proxy</translation>
 <translation id="2693108589792503178">Konfigurirajte URL za spremembo gesla.</translation>
 <translation id="2731627323327011390">Onemogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
-<translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na strani »Nov zavihek« in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
+<translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na novem zavihku s povezavami in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »True«, so ikone skrite.
 
@@ -749,7 +749,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če onemogočite to nastavitev ali ne nastavite vrednosti, predogled tiskanja kot privzeti cilj uporabi nazadnje uporabljeni tiskalnik.
 
       Če omogočite to nastavitev, predogled tiskanja kot privzeti cilj uporabi privzeti tiskalnik operacijskega sistema.</translation>
-<translation id="2867699958489427143">Povrnite in ostanite na ciljni različici, če je različica operacijskega sistema novejša kot ciljna. Med postopkom izvede popoln Powerwash.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
@@ -994,7 +993,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3711895659073496551">Prekinitev</translation>
 <translation id="3715569262675717862">Preverjanje pristnosti glede na potrdila odjemalca</translation>
 <translation id="3736879847913515635">Omogočanje dodajanja oseb v upravitelju uporabnikov</translation>
-<translation id="3737544779868348650">Ime gostitelja omrežja naprave</translation>
 <translation id="3746590506846867985">
       Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
       Če je pravilnik omogočen, se bo vsak naveden izvor
@@ -1198,7 +1196,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ta pravilnik ni konfiguriran, <ph name="PRODUCT_NAME" /> uporablja privzeto najvišjo različico.
 
       Sicer bo nastavljen na eno od teh vrednosti: »tls1.2« ali »tls1.3«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, višjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
-<translation id="4121350739760194865">Onemogoči prikaz oglasov za programe na strani »Nov zavihek«.</translation>
+<translation id="4121350739760194865">Onemogoči prikaz oglasov za aplikacije na novem zavihku s povezavami.</translation>
 <translation id="412697421478384751">Omogoči uporabnikom nastavitev šibkih kod PIN za kodo PIN za zaklenjen zaslon.</translation>
 <translation id="4138655880188755661">Časovna omejitev</translation>
 <translation id="4157003184375321727">Pošiljanje podatkov o različici operacijskega sistema in vdelane programske opreme</translation>
@@ -1322,7 +1320,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere, ali bo gumb za domačo stran prikazan.</translation>
 <translation id="4483649828988077221">Onemogoči samodejno posodabljanje</translation>
-<translation id="4485425108474077672">Konfiguriranje URL-ja strani »Nov zavihek«</translation>
+<translation id="4485425108474077672">Konfiguriranje URL-ja novega zavihka s povezavami</translation>
 <translation id="4492287494009043413">Onemogoči ustvarjanje posnetkov zaslona</translation>
 <translation id="450537894712826981">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih predstavnostnih datotek na disku.
 
@@ -2135,7 +2133,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Podatki o pomnilniku se vseeno pošiljajo strani, ne glede na vrednost možnosti, vendar se poslane vrednosti
       kvantizirajo in je hitrost posodobitev iz varnostnih razlogov omejena. Če želite sprotne natančne podatke,
       uporabite orodja, kot je Telemetry.</translation>
-<translation id="6894178810167845842">URL strani »Nov zavihek«</translation>
+<translation id="6894178810167845842">URL novega zavihka s povezavami</translation>
 <translation id="6899705656741990703">Samodejno zaznavanje nastavitev proxyja</translation>
 <translation id="6903814433019432303">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
@@ -2358,9 +2356,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="7302043767260300182">Časovni zamik zaklepa zaslona, če se napaja iz električnega omrežja</translation>
-<translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na strani »Nov zavihek« morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
+<translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na novem zavihku s povezavami morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
 
-      Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine ne bodo prikazani na strani »Nov zavihek«.</translation>
+      Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine na novem zavihku s povezavami ne bodo prikazani.</translation>
 <translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Podobno Wipe (vrednost 2), vendar poskuša ohraniti žetone za prijavo, da se uporabniku ni treba prijaviti znova.</translation>
 <translation id="7329842439428490522">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon izklopi, če se napaja iz akumulatorja.
@@ -2375,9 +2373,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7329968046053403405">Določa vrsto računov, ki jih ponuja aplikacija za preverjanje pristnosti za Android, ki podpira preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" /> (npr. preverjanje pristnosti Kerberos). Ti podatki bi morali biti na voljo od ponudnika aplikacije za preverjanje pristnosti. Več informacij je na voljo na https://goo.gl/hajyfN.
 
           Če ni določena nobena nastavitev, je v Androidu onemogočeno preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" />.</translation>
-<translation id="7331962793961469250">Ko je pravilnik nastavljen na »True«, se promocije za programe iz Spletne trgovine Chrome ne bodo prikazale na strani novega zavihka.
+<translation id="7331962793961469250">Ko je pravilnik nastavljen na »True«, se promocije za aplikacije iz Spletne trgovine Chrome ne bodo prikazale na novem zavihku s povezavami.
 
-      Če to možnost nastavite na »False« ali je ne nastavite, se bodo promocije za programe iz Spletne trgovine Chrome prikazovale na strani novega zavihka</translation>
+      Če to možnost nastavite na »False« ali je ne nastavite, se bodo promocije za aplikacije iz Spletne trgovine Chrome prikazovale na novem zavihku s povezavami.</translation>
 <translation id="7332963785317884918">Ta pravilnik je zastarel. Sistem <ph name="PRODUCT_OS_NAME" /> bo vedno uporabljal strategijo čiščenja »RemoveLRU«.
 
       Nadzira delovanje samodejnega čiščenja v napravah s sistemom <ph name="PRODUCT_OS_NAME" />. Samodejno čiščenje sprosti prostor na disku in se sproži, ko količina nezasedenega prostora na disku doseže kritično raven.
@@ -2532,7 +2530,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je ta nastavitev omogočena, mora uporabnik pri dostopu do gostitelja navesti veljavno kodo v dveh korakih.
 
           Če je ta nastavitev onemogočena ali ni nastavljena, koda v dveh korakih ne bo omogočena in uporabljeno bo privzeto vedenje z uporabo uporabniško določenega PIN-a.</translation>
-<translation id="7750991880413385988">Odpri stran »Nov zavihek«</translation>
+<translation id="7750991880413385988">Odpri nov zavihek s povezavami</translation>
 <translation id="7754704193130578113">Pred prenosom vprašaj, kam želim shraniti vsako datoteko</translation>
 <translation id="7761446981238915769">Konfiguriranje seznama nameščenih aplikacij na zaslonu za prijavo</translation>
 <translation id="7761526206824804472">Nastavi enega ali več priporočenih jezikov za javne seje, kar uporabnikom omogoča preprosto izbiro enega od teh jezikov.
@@ -2554,7 +2552,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7763479091692861127"> Vrste povezav, ki so dovoljene za uporabo za posodobitve operacijskega sistema. Posodobitve operacijskega sistema lahko zaradi svoje velikosti zelo obremenijo povezavo in lahko prinesejo dodatne stroške. Zato trenutno niso omogočene za vrste povezave, ki štejejo za drage; trenutno so to WiMax, Bluetooth in prenos podatkov v mobilnem omrežju.
 
       Prepoznani identifikatorji vrste povezav so »ethernet«, »wifi«, »wimax«, »bluetooth« in »cellular«.</translation>
-<translation id="7763614521440615342">Prikaz predlogov vsebine na strani »Nov zavihek«</translation>
+<translation id="7763614521440615342">Prikaz predlogov vsebine na novem zavihku s povezavami</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
 <translation id="7775831859772431793">Tu lahko določite URL strežnika proxy.
 
@@ -2564,7 +2562,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Več o drugih možnostih in podrobnejše primere najdete na:
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="7781069478569868053">Stran »Nov zavihek«</translation>
+<translation id="7781069478569868053">Nov zavihek s povezavami</translation>
 <translation id="7788511847830146438">Za profil</translation>
 <translation id="7788872453000173219">
       Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti obeh funkcij, osamitve in omejenega vpliva za uporabnike, tako, da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev, SitePerProcess, osami vsa spletna mesta.
@@ -2812,7 +2810,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8424255554404582727">Nastavitev privzetega sukanja zaslona, ki se znova uveljavi pri vsakem vnovičnem zagonu</translation>
 <translation id="8426231401662877819">Sukanje zaslona v smeri urnega kazalca za 90 stopinj</translation>
 <translation id="8433423491036718210">Konfigurirajte seznam URL-jev prijave za poslovna okolja, pri katerih naj zaščitna storitev zajame prstni odtis gesla.</translation>
-<translation id="8451988835943702790">Uporabi stran za nov zavihek kot domačo stran</translation>
+<translation id="8451988835943702790">Uporabi nov zavihek s povezavami kot domačo stran</translation>
 <translation id="8459216513698220096">Določa, ali in kako je obdelan uporabniški pravilnik iz predmeta pravilnika skupine računalnika.
 
       Če je pravilnik nastavljen na »Default« ali ni nastavljen, je uporabniški pravilnik prebran samo iz predmetov pravilnika skupine uporabnika (predmeti pravilnika skupine računalnika so prezrti).
@@ -2857,7 +2855,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Dovolitev sinhroniziranja sporočil SMS med telefonom in Chromebookom.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
-<translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
+<translation id="8566842294717252664">Skrivanje spletne trgovine na novem zavihku s povezavami in v zaganjalniku aplikacij</translation>
 <translation id="8586528890725660268">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_BLACKLIST" />.
@@ -2958,7 +2956,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="8825782996899863372">Opozorilo zaščite z geslom sproži vnovična uporaba gesla na spletnem mestu z lažnim predstavljanjem</translation>
 <translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME" /> in prepreči, da bi jo uporabniki spreminjali.
 
-      Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
+      Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je domača stran nov zavihek s povezavami oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran nov zavihek s povezavami.</translation>
 <translation id="8833109046074170275">Preverjanje pristnosti prek običajne prijave GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> predpomni aplikacije in razširitve za namestitev za več uporabnikov posamezne naprave, tako jih ni treba prenašati znova za posameznega uporabnika.
       Če ta pravilnik ni nastavljen ali je vrednost nižja od 1 MB, bo sistem <ph name="PRODUCT_OS_NAME" /> uporabil privzeto velikost predpomnilnika.</translation>

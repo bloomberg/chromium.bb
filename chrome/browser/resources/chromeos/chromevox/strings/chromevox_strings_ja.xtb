@@ -139,6 +139,7 @@
 <translation id="2267945578749931355">次の文字</translation>
 <translation id="2281234842553884450">前のスライダ</translation>
 <translation id="2294136146931447363">斜体の先頭</translation>
+<translation id="2311237334957139798">前の詳細レベルに移動します</translation>
 <translation id="2318372665160196757">本文</translation>
 <translation id="2329324941084714723">タブ パネル</translation>
 <translation id="2344193891939537199">日時の設定</translation>
@@ -520,6 +521,7 @@
 <translation id="5106547198195128110">この新しいリリースでの変更内容は以下のとおりです。</translation>
 <translation id="5110983769041734144">前のフォーム フィールドはありません。</translation>
 <translation id="5111640677200759579">列見出し</translation>
+<translation id="5115892389597951922">ChromeVox ログ</translation>
 <translation id="5136967254288895616">前のリンクはありません。</translation>
 <translation id="513774504516943387">リンク</translation>
 <translation id="5158275234811857234">表紙</translation>
@@ -687,6 +689,7 @@
 <translation id="6540201937398578274">ChromeVox では、検索キーは修飾キーとなります。ChromeVox のショートカットのほとんどは検索キーで始まります。また、移動には矢印キーを使用します。</translation>
 <translation id="6550720799683018100">下のリストからオプションを選択して、現在のキーマップを変更できます。</translation>
 <translation id="6561818612645211875">現在の行の先頭に移動</translation>
+<translation id="6583174818554398774">次の詳細レベルに移動します</translation>
 <translation id="6587021927234520429">次のレベル 4 見出しはありません。</translation>
 <translation id="6601344353291556895">詳細な説明を有効にする。</translation>
 <translation id="6615602925644411249">ページ内検索です。</translation>

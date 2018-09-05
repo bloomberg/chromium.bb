@@ -1001,7 +1001,6 @@
 <translation id="2508428939232952663">Cuenta de Google Play Store</translation>
 <translation id="2509495747794740764">El valor de la escala debe ser un número entre 10 y 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2512222046227390255">Autocompletar formularios</translation>
 <translation id="2513403576141822879">Para obtener más opciones de configuración relacionadas con la privacidad, la seguridad y la recopilación de datos, visita <ph name="BEGIN_LINK" />Sincronización y servicios<ph name="END_LINK" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Buscar</translation>
@@ -1945,7 +1944,6 @@
 <translation id="3920504717067627103">Directivas del certificado</translation>
 <translation id="392089482157167418">Habilitar ChromeVox (comentarios por voz)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">No capturaste ningún registro de WebRTC recientemente.</translation>
 <translation id="3925573269917483990">Cámara:</translation>
 <translation id="3925842537050977900">No fijar en la biblioteca</translation>
 <translation id="3926002189479431949">Cambió el teléfono con Smart Lock</translation>
@@ -4265,7 +4263,6 @@
     <ph name="BEGIN_PARAGRAPH2" />El servicio de ubicación de Google usa fuentes como Wi-Fi, redes móviles y sensores para calcular la ubicación de tu dispositivo. Este servicio se activa cuando está activada la configuración de la ubicación de tu dispositivo.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Para desactivar la ubicación, desactiva la opción principal de configuración de la ubicación en tu dispositivo. También, puedes desactivar el uso de redes Wi-Fi, redes móviles y sensores para obtener la ubicación en la configuración de la ubicación.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">Crear una contraseña:</translation>
-<translation id="7518150891539970662">Registros de WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Crear</translation>
 <translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, intenta salir de tu cuenta y acceder de nuevo.</translation>

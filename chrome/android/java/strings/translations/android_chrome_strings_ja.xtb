@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">予定を作成</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合:</translation>
+<translation id="2910701580606108292">保護されたコンテンツの再生をサイトに許可する前に確認します</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ストレージ</translation>
 <translation id="2943166482989655199">システムと使用状況に関するデータが Google に送信され、Chrome とそのセキュリティの向上に役立てられます</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3452612588551937789">Google アカウントでログインすると、どの端末からでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{%1$d 個のファイルがダウンロードされました}other{%1$d 個のファイルがダウンロードされました}}</translation>
-<translation id="3487093336331957349">検索とサイトの候補を表示</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">同期、カスタマイズ、その他の管理</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
-<translation id="4445444302979002552">予測サービスを使用して検索キーワードやウェブサイトの候補を表示します</translation>
 <translation id="4452411734226507615">「<ph name="TAB_TITLE" />」タブを閉じます</translation>
 <translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> を <ph name="PRODUCT_NAME" /> でダウンロードしました</translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="629730747756840877">アカウント</translation>
+<translation id="6303969859164067831">ログアウトして同期をオフにする</translation>
 <translation id="6320088164292336938">バイブレーション</translation>
 <translation id="6324034347079777476">Android システムの同期が無効です</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> で共有します</translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">候補を取得できません</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
+<translation id="757524316907819857">サイトでの保護されたコンテンツの再生をブロックします</translation>
 <translation id="7589445247086920869">現在の検索エンジンをブロックする</translation>
 <translation id="7593557518625677601">Chrome の同期を開始するには、Android の設定で Android システムの同期を再度有効にします</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8993760627012879038">新しいタブをシークレット モードで開く</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこの端末から削除されますが、Google アカウントには残ります。</translation>
-<translation id="9018881455348618200">検索ボタン</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報が端末でオフになっています。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>

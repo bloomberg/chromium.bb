@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Na-update ang item</translation>
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1049743911850919806">Incognito</translation>
+<translation id="1063454504051558093">Gumamit ng Ibang Password...</translation>
 <translation id="1076421457278169141">Na-scan na ang code</translation>
 <translation id="1084365883616172403">Kumpleto na ang pag-post sa Facebook.</translation>
 <translation id="1104948393051856124">Tanggapin at Magpatuloy</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Magpadala ng Data</translation>
 <translation id="1886928167269928266">Mula sa Umpisa</translation>
 <translation id="1911619930368729126">I-upload sa Google Drive</translation>
+<translation id="191179954310195971">Iba Pang Serbisyo ng Google</translation>
 <translation id="1941314575388338491">I-double tap upang kopyahin.</translation>
 <translation id="1952728750904661634">Mag-sign in gamit ang isang pinamamahalaang account</translation>
 <translation id="1974060860693918893">Advanced</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Available offline ang iyong listahan ng babasahin. Upang magdagdag ng page sa listahan ng babasahin mo, i-tap ang <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Mag-preload ng Mga Webpage</translation>
 <translation id="3691593122358196899">Na-bookmark sa <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Gumamit ng Ibang Password</translation>
 <translation id="3771033907050503522">Mga Tab na Incognito</translation>
 <translation id="3779810277399252432">Walang koneksyon sa internet.</translation>
 <translation id="3783017676699494206">I-save ang Larawan</translation>
@@ -315,6 +318,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6344783595350022745">I-clear ang Teksto</translation>
 <translation id="6346549652287021269">Magsimula ng Bagong Download?</translation>
 <translation id="6362362396625799311">Walang Mga Tab na Incognito</translation>
+<translation id="6363526231572697780">Walang Username</translation>
 <translation id="6374469231428023295">Subukang Muli</translation>
 <translation id="6380866119319257197">Kung makalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Pangalan sa Card</translation>

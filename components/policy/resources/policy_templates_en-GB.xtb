@@ -749,7 +749,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
-<translation id="2867699958489427143">Roll back and stay on target version if OS version is newer than target. Do a full Powerwash during the process.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
@@ -994,7 +993,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3715569262675717862">Authentication based on client certificates</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
-<translation id="3737544779868348650">Device network hostname</translation>
 <translation id="3746590506846867985">
       This policy applies to the sign-in screen. Please also see the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended that both policies are set to the same value. If the values don't match, a delay may be incurred when entering a user session due to the value specified by user policy being applied.
       If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.

@@ -344,6 +344,7 @@
 <translation id="199764499252435679"><ph name="PRODUCT_NAME" /> ürününde bileşen güncellemelerini etkinleştir</translation>
 <translation id="2006530844219044261">Güç yönetimi</translation>
 <translation id="201557587962247231">Cihaz durumu raporlarının yüklenme sıklığı</translation>
+<translation id="2017301949684549118">Web Uygulamalarının URL'leri sessizce yüklenir.</translation>
 <translation id="2018836497795982119">Cihaz yönetim hizmetinin, kullanıcı politikası bilgileri için sorgulanma süresini milisaniye olarak belirtir.
 
       Bu politika ayarlandığında varsayılan değer (3 saat) geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir. Politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlaması beklendiğinden, platform politika bildirimlerini destekliyorsa yenileme gecikmesi 24 saate ayarlanır.
@@ -654,6 +655,11 @@
             Google'ın arama URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_SEARCH_URL" />
 
           , "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde bu seçenek ayarlanmalıdır ve yalnızca bu durumda uygulanır.</translation>
+<translation id="2659019163577049044">Bu ayar etkinleştirilirse kullanıcıların cihazlarını kurarak telefonları ve Chromebook'ları arasında SMS mesajlarını senkronize etmelerine izin verilir. Bu politikaya izin verilirse kullanıcıların bir kurulum akışını tamamlayarak bu özelliği açık bir şekilde etkinleştirmeleri gerekeceğini unutmayın. Kurulum akışı tamamlandıktan sonra, kullanıcılar kendi Chromebook'larından SMS mesajları gönderip alabilirler.
+
+      Bu ayar devre dışı bırakılırsa kullanıcıların SMS senkronizasyonunu kurmasına izin verilmez.
+
+      Bu politika ayarlanmadan bırakılırsa varsayılan değer, yönetilen kullanıcılara izin verilmemesi ve yönetilmeyen kullanıcılara izin verilmesi şeklindedir.</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
 <translation id="267596348720209223">Arama sağlayıcısı tarafından desteklenen karakter kodlamalarını belirtir. Kodlamalar, UTF-8, GB2312 ve ISO-8859-1 gibi kod sayfası adlarıdır. Bunlar, sağlandıkları sırada denenirler.
 
@@ -724,7 +730,6 @@
       Bu ayarı devre dışı bırakır veya bir değer ayarlamazsanız Baskı Önizleme, varsayılan seçenek olarak en son kullanılan yazıcıyı kullanır.
 
       Bu ayarı etkinleştirirseniz Baskı Önizleme, varsayılan hedef seçenek olarak işletim sisteminin varsayılan yazıcısını kullanır.</translation>
-<translation id="2867699958489427143">OS sürümü hedeften daha yeniyse sürümü geri alıp hedef sürümde kalır. Bu süreçte tam bir powerwash işlemi gerçekleştirir.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2874209944580848064">Android uygulamalarını destekleyen <ph name="PRODUCT_OS_NAME" /> cihazlarına ilişkin not:</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
@@ -966,7 +971,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3715569262675717862">İstemci sertifikalarına dayalı kimlik doğrulama</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
-<translation id="3737544779868348650">Cihaz ağı ana makine adı</translation>
 <translation id="3746590506846867985">
       Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
       Bu politika etkinleştirilirse virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
@@ -1072,6 +1076,7 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
 <translation id="3874773863217952418">Dokun ve Ara'yı Etkinleştir</translation>
 <translation id="3877517141460819966">Entegre iki etmenli kimlik doğrulama modu</translation>
+<translation id="3879208481373875102">Zorunlu yüklenmiş Web Uygulamaları listesini yapılandır</translation>
 <translation id="388237772682176890">SPDY/3.1 desteği kaldırıldığı için bu politika M53 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
  
       <ph name="PRODUCT_NAME" /> ürününde SPDY protokolünün kullanımını devre dışı bırakır.
@@ -1316,6 +1321,10 @@ politikayı geçersiz kılamaz.
           Bu politikanın mümkün olan tüm ayarları ve yapısıyla ilgili tam açıklama için lütfen https://www.chromium.org/administrators/policy-list-3/extension-settings-full adresini ziyaret edin.
           </translation>
 <translation id="4554651132977135445">Kullanıcı politikası geri döngü işleme modu</translation>
+<translation id="4554841826517980623">Bu politika, <ph name="PRODUCT_NAME" /> için Ağ Üzerinde Dosya Paylaşımı özelliğinin ağdaki paylaşımları keşfetmek için <ph name="NETBIOS_PROTOCOL" /> protokolünü kullanıp kullanamayacağını kontrol eder.
+      Bu politika True (Doğru) değerine ayarlandığında, paylaşım keşfi işlevi ağdaki paylaşımları keşfetmek için <ph name="NETBIOS_PROTOCOL" /> protokolünü kullanır.
+      Bu politika False (Yanlış) değerine ayarlandığında, paylaşım keşfi işlevi paylaşımları keşfetmek için <ph name="NETBIOS_PROTOCOL" /> protokolünü kullanmaz.
+      Politika ayarlanmadan bırakılırsa varsayılan değer, kurumsal olarak yönetilen kullanıcılar için politikanın devre dışı bırakılması ve yönetilmeyen kullanıcılar için etkinleştirilmesi şeklinde olur.</translation>
 <translation id="4555850956567117258">Kullanıcı için uzaktan doğrulamayı etkinleştir</translation>
 <translation id="4557134566541205630">Varsayılan arama sağlayıcısı yeni sekme sayfası URL'si</translation>
 <translation id="4567137030726189378">Geliştirici Araçları'nın kullanımına izin verir</translation>
@@ -1736,6 +1745,7 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde sesli geri bildirim devre dışıdır. Kullanıcılar sesli geri bildirimi her zaman etkinleştirebilir veya devre dışı bırakabilir ve sesli geri bildirimin giriş ekranındaki durumu kullanıcılar arasında kalıcıdır.</translation>
 <translation id="5868414965372171132">Kullanıcı düzeyi ağ yapılandırması</translation>
+<translation id="5879014913445067283"><ph name="NETBIOS_NAME" /> aracılığıyla Ağ Üzerinde Dosya Paylaşımı keşfini kontrol et</translation>
 <translation id="5883015257301027298">Varsayılan çerezler ayarı</translation>
 <translation id="5887414688706570295">Uzaktan erişim ana makineleri tarafından kullanılacak olan TalkGadget önekini yapılandırır ve kullanıcıların bunu değiştirmesini önler.
 
@@ -2197,6 +2207,17 @@ politikayı geçersiz kılamaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="7063895219334505671">Bu sitelerde pop-up'lara izin ver</translation>
+<translation id="706568410943497889">
+      Bu politika doğru (true) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürünün Google hizmetlerinden (ör. Google Meet) WebRTC etkinlik günlüklerini toplamasına ve bu günlükleri Google'a yüklemesine izin verilir.
+
+     Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME" /> ürünü bu tür günlükleri toplayamaz veya yükleyemez.
+
+      Bu günlükler, Chrome'daki sesli veya görüntülü çağrılarla ilgili, gönderilen ve alınan RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim ve ses ve video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi sorunların ayıklanmasında yararlı olacak teşhis bilgilerini içerir.
+
+      Chrome'un gerçekleştirdiği bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi bir Google web hizmeti tarafından tetiklenebilir.
+
+      Google bu günlükleri bir oturum kimliği aracılığıyla, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirebilir; bu özellikle, hata ayıklamayı kolaylaştırmak amaçlanmıştır.
+      </translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7072208053150563108">Makine şifresi değişim hızı</translation>
 <translation id="7074513465313721551">Güvenli Tarama'nın güveneceği alanların listesini yapılandırın. Bunun anlamı şudur:
@@ -2328,6 +2349,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
 <translation id="7343497214039883642">Cihazlar için kurumsal yazıcı yapılandırma dosyası</translation>
+<translation id="7349338075015720646">Kullanıcı etkileşimi olmadan, sessizce yüklenen ve kullanıcı tarafından yüklemesi kaldırılamayan veya devre dışı bırakılamayan web sitelerinin bir listesini belirtir.
+
+      Politikanın her liste öğesi, iki üyeli bir nesnedir: "url" ve "launch_container". "url", yüklenecek web uygulamasının URL'si olmalı ve "launch_container", Web Uygulamasının yüklendikten sonra nasıl açılacağını belirtmek için "window" veya "tab" değerini almalıdır. "launch_container" değeri ihmal edilirse ve Chrome, uygulamayı bir Progresif Web Uygulaması olarak değerlendirirse uygulama bir pencerede; aksi halde, bir sekmede başlar.</translation>
 <translation id="7367028210010532881">Güvenli Tarama hizmeti, kullanıcıların, kötü amaçlı kod yükleme potansiyeli olduğu işaretlenmiş sitelere gitmesi durumunda bir uyarı sayfası görüntüler. Bu ayar etkinleştirildiğinde kullanıcılar uyarı sayfasından zararlı siteye geçemezler.
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa uyarı görüntülendikten sonra kullanıcılar devam ederek işaretli siteyi ziyaret edebilirler.
@@ -2789,6 +2813,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
       Buradaki "Sürüm" değeri, "61.0.3163.120" gibi kesin bir sürüm düzeyi veya "61.0" gibi bir sürüm öneki olabilir.  </translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
+<translation id="8544465954173828789">SMS Mesajlarının telefondan Chromebook'a senkronize edilmesine izin ver</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8586528890725660268">Bir kullanıcının kullanamayacağı yazıcıları belirtir.
@@ -2838,6 +2863,11 @@ olan sanal makineleri kapatmaz.
       Bu politikanın ayarlanmadan bırakılması halinde şifre koruma hizmeti yalnızca Google şifrelerini korur ancak kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
 <translation id="867410340948518937">U2F (Evrensel İkinci Faktör)</translation>
+<translation id="8682611302223077049">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu dönem boyunca, kullanıcı güncelleme gereksinimi konusunda tekrarlanan bir şekilde bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazlarda, yeni sürüme geçme olanağı tespit edildiğinde sistem tepsisinde bir yeniden başlatma bildirimi görüntülenir. <ph name="PRODUCT_NAME" /> tarayıcılarda, yeniden başlatmanın gerektiğini belirtmek için bildirim döneminin üçte biri geçtikten sonra uygulama menüsü değişir. Bu bildirimin rengi, bildirim döneminin üçte ikisi ve tam bildirim dönemi sona erdikten sonra değişir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasıyla etkinleştirilen ek bildirimler bu programa uyar.
+
+      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan dönem için 345600000 milisaniye (dört gün) ve <ph name="PRODUCT_NAME" /> için 604800000 milisaniye (bir hafta) değerleri kullanılır.</translation>
 <translation id="8685024486845674965">Şifre koruma uyarısı, şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="8693243869659262736">Dahili DNS istemcisini kullan</translation>
 <translation id="8704831857353097849">Devre dışı bırakılmış eklentilerin listesi</translation>
@@ -2882,6 +2912,7 @@ olan sanal makineleri kapatmaz.
 
           Ölçekleme faktörü %100 veya daha fazla olmalıdır. Sunum modunda ekran kararma gecikmesini normal ekran kararma gecikmesine göre daha da kısaltacak değerlere izin verilmez.</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
+<translation id="8801680448782904838">Kullanıcıya tarayıcının veya cihazın yeniden başlatılmasının önerildiğini ya da gerektiğini bildir</translation>
 <translation id="8818173863808665831">Cihazın coğrafi konumunu bildirin.
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa konum bildirilmez.</translation>
@@ -3029,6 +3060,11 @@ olan sanal makineleri kapatmaz.
       Bu politika doğru seçeneğine ayarlanırsa, kullanıcı cihazı kapattığında <ph name="PRODUCT_OS_NAME" />, yeniden başlatma işlemi tetikler. <ph name="PRODUCT_OS_NAME" />, kullanıcı arayüzündeki tüm kapatma düğmelerini yeniden başlatma düğmeleriyle değiştirir. Kullanıcı güç düğmesini kullanarak cihazı kapatırsa, politika etkinleştirilmiş olsa dahi cihaz otomatik olarak yeniden başlatılmaz.</translation>
 <translation id="9152473318295429890">İlişkili web sayfalarının bağlam önerilerini etkinleştir</translation>
 <translation id="9158929520101169054">Tarayıcıda Çoklu Oturum Açmaya İzin Ver</translation>
+<translation id="9159126470527871268">Kullanıcılara, bekleyen bir güncellemeyi uygulamak için <ph name="PRODUCT_NAME" /> uygulamasının veya <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiğini bildirin.
+
+      Bu politika ayarı, kullanıcıya tarayıcının veya cihazın yeniden başlatılmasının önerildiği ya da gerektiği bilgisini verecek bildirimleri etkinleştirir. Bir değer ayarlanmazsa <ph name="PRODUCT_NAME" />, menüsündeki küçük değişiklikler aracılığıyla kullanıcıya uygulamanın yeniden başlatılması gerektiğini belirtir. Diğer yandan <ph name="PRODUCT_OS_NAME" />, sistem tepsisinde bir bildirim aracılığıyla böyle bir gerekliliği bildirir. "Önerilen" seçeneği ayarlanırsa, kullanıcıya uygulamayı yeniden başlatmasının önerildiği yinelenen bir uyarı ile bildirilir. Kullanıcı, yeniden başlatmayı ertelemek için bu uyarıyı kapatabilir. "Zorunlu" değeri ayarlanırsa kullanıcıya, bildirim dönemi geçtikten sonra tarayıcının yeniden başlatılmasının zorlanacağını belirten yinelenen bir uyarı gösterilir. Varsayılan dönem <ph name="PRODUCT_NAME" /> için yedi gün, <ph name="PRODUCT_OS_NAME" /> için dört gündür ve <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politika ayarı aracılığıyla yapılandırılabilir.
+
+      Yeniden başlatmanın ardından kullanıcı oturumu yeniden açılır.</translation>
 <translation id="9165792353046089850">Web sitelerinin bağlı USB cihazlarına erişim sağlamalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Erişim tamamıyla engellenebilir veya bir web sitesinin bağlı USB cihazlarına erişim sağlamak istediği her defasında, kullanıcıya onay verip vermediği sorulabilir.
 
           Bu politika "WebUsbAskForUrls" ve "WebUsbBlockedForUrls" politikaları kullanılarak belirli URL kalıpları için geçersiz kılınabilir.

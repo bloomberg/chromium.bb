@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">إنشاء حدث</translation>
 <translation id="2902702728133930130">‏تعذّر Chrome أثناء بدء التشغيل بسبب خطأ غير متوقع.</translation>
 <translation id="290376772003165898">أليست الصفحة باللغة <ph name="LANGUAGE" />؟</translation>
+<translation id="2910701580606108292">السؤال قبل السماح لمواقع الويب بتشغيل المحتوى المحمي</translation>
 <translation id="2913331724188855103">السماح للمواقع بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2932150158123903946">‏سعة تخزين <ph name="APP_NAME" /> Google</translation>
 <translation id="2943166482989655199">‏تحسين Chrome وإعدادات الأمان فيه عن طريق إرسال بيانات النظام والاستخدام إلى Google</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{‏تم تنزيل ملف واحد (%1$d)}zero{‏تم تنزيل %1$d ملف}two{‏تم تنزيل ملفين (%1$d)}few{‏تم تنزيل %1$d ملفات}many{‏تم تنزيل %1$d ملفًا}other{‏تم تنزيل %1$d ملف}}</translation>
-<translation id="3487093336331957349">اقتراحات البحث والمواقع</translation>
 <translation id="3492207499832628349">علامة تبويب جديدة للتصفح المتخفي </translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">التحكُّم في المزامنة والتخصيص والمزيد</translation>
 <translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
-<translation id="4445444302979002552">الاستفادة من خدمات التنبؤ في اقتراح عبارات البحث ومواقع الويب</translation>
 <translation id="4452411734226507615">إغلاق علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">تم تنزيل <ph name="FILE_NAME" /> في <ph name="PRODUCT_NAME" /></translation>
@@ -670,6 +669,7 @@
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. يُرجى إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="629730747756840877">الحساب</translation>
+<translation id="6303969859164067831">تسجيل الخروج وإيقاف المزامنة</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
 <translation id="6324034347079777476">‏تمّ إيقاف مزامنة نظام Android</translation>
 <translation id="6333140779060797560">مشاركة عن طريق <ph name="APPLICATION" /></translation>
@@ -832,6 +832,7 @@
 <translation id="7542481630195938534">يتعذر الحصول على الاقتراحات</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
+<translation id="757524316907819857">منع مواقع الويب من تشغيل المحتوى المحمي</translation>
 <translation id="7589445247086920869">حظر محرك البحث الحالي</translation>
 <translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تفعيل مزامنة نظام Android لبدء مزامنة Chrome</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
-<translation id="9018881455348618200">زر البحث</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>

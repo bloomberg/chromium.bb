@@ -356,6 +356,7 @@
 <translation id="199764499252435679">Ativar as atualizações de componentes no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gestão de energia</translation>
 <translation id="201557587962247231">Frequência de carregamentos de relatórios de estado do dispositivo</translation>
+<translation id="2017301949684549118">URLs para a instalação silenciosa de aplicações Web.</translation>
 <translation id="2018836497795982119">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da Política do Utilizador.
 
       A definição desta política substitui o valor predefinido de 3 horas. Os valores válidos para esta política encontram-se no intervalo de 1 800 000 (30 minutos) a 86 400 000 (1 dia). Quaisquer valores que não se encontrem neste intervalo são ajustados para o respetivo limite. Se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações.
@@ -665,6 +666,11 @@
           O URL de pesquisa do Google pode ser especificado como <ph name="GOOGLE_SEARCH_URL" />.
 
           Esta opção tem de estar definida quando a política "DefaultSearchProviderEnabled" estiver ativada e apenas é aplicada nestas condições.</translation>
+<translation id="2659019163577049044">Se esta definição for ativada, os utilizadores podem configurar os respetivos dispositivos para sincronizarem mensagens SMS entre o telemóvel e o Chromebook. Tenha em conta que, caso esta política seja permitida, os utilizadores têm de ativar a funcionalidade explicitamente mediante a conclusão de um fluxo de configuração. Após a conclusão desse fluxo, os utilizadores podem enviar e receber mensagens SMS nos respetivos Chromebooks.
+
+      Se esta definição for desativada, os utilizadores não podem configurar a sincronização de SMS.
+
+      Se esta política não for definida, a predefinição é não permitida para os utilizadores geridos e permitida para os utilizadores não geridos.</translation>
 <translation id="2660846099862559570">Nunca utilizar proxy</translation>
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
@@ -730,7 +736,6 @@
       Se desativar esta definição ou não definir um valor, a Pré-visualização de impressão utiliza a impressora utilizada mais recentemente como a escolha de destino predefinida.
 
       Se ativar esta definição, a Pré-visualização de impressão utiliza a impressora predefinida do SO como a escolha de destino predefinida.</translation>
-<translation id="2867699958489427143">Reverta e continue a utilizar a versão de destino se a versão do SO for mais recente do que a de destino. Efetue um Powerwash completo durante o processo.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações para Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
@@ -969,7 +974,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3715569262675717862">Autenticação baseada em certificados de cliente</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
-<translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3746590506846867985">
       Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
       Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios: por exemplo, ao especificar https://example.com/, também fará com que https://foo.example.com/ seja isolado como parte integrante do site https://example.com/.
@@ -1076,6 +1080,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Cada entrada da lista contém um dicionário que tem de incluir o ID da extensão no campo "extension-id" e o respetivo URL de atualização no campo "update-url".</translation>
 <translation id="3874773863217952418">Ativar Tocar para pesquisar</translation>
 <translation id="3877517141460819966">Modo de autenticação do fator duplo integrado</translation>
+<translation id="3879208481373875102">Configurar lista de aplicações Web de instalação forçada</translation>
 <translation id="388237772682176890">Esta política foi descontinuada no M53 e removida no M54, uma vez que a compatibilidade com o SPDY/3.1 foi removida.
 
       Desativa a utilização do protocolo SPDY no <ph name="PRODUCT_NAME" />.
@@ -1309,6 +1314,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Para obter uma descrição completa das definições possíveis e da estrutura desta política, aceda a https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
           </translation>
 <translation id="4554651132977135445">Modo de processamento de loopback da Política do Utilizador.</translation>
+<translation id="4554841826517980623">Esta política controla se a funcionalidade Partilhas de ficheiros na rede do <ph name="PRODUCT_NAME" /> devem utilizar o <ph name="NETBIOS_PROTOCOL" /> para detetar partilhas na rede.
+      Se esta política estiver definida como Verdadeira, a deteção de partilhas utiliza o protocolo <ph name="NETBIOS_PROTOCOL" /> para detetar partilhas na rede.
+      Se esta política estiver definida como Falsa, a deteção de partilhas não vai utilizar o protocolo <ph name="NETBIOS_PROTOCOL" /> para detetar partilhas.
+      Se a política não for definida, a predefinição é desativada para utilizadores geridos pela empresa e ativada para utilizadores não geridos.</translation>
 <translation id="4555850956567117258">Permitir a comprovação remota para o utilizador</translation>
 <translation id="4557134566541205630">URL da página Novo separador do motor de pesquisa predefinido</translation>
 <translation id="4567137030726189378">Permite a utilização das Ferramentas para programadores.</translation>
@@ -1703,6 +1712,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, as respostas faladas são desativadas quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar as respostas faladas a qualquer momento e o estado desta funcionalidade no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5868414965372171132">Configuração de rede ao nível do utilizador</translation>
+<translation id="5879014913445067283">Controla a deteção de Partilha de ficheiros na rede através de <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Definição de cookies predefinida</translation>
 <translation id="5887414688706570295">Configura o prefixo do TalkGadget a ser utilizado por anfitriões de acesso remoto e evita que os utilizadores o alterem.
 
@@ -2144,6 +2154,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7049373494483449255">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para o <ph name="CLOUD_PRINT_NAME" /> para impressão. NOTA: isto apenas afeta o suporte do <ph name="CLOUD_PRINT_NAME" /> no <ph name="PRODUCT_NAME" />. Não impede que os utilizadores enviem tarefas de impressão a partir de Web sites. Se esta definição estiver ativada ou não estiver configurada, os utilizadores poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />. Se esta definição estiver desativada, os utilizadores não poderão imprimir para o <ph name="CLOUD_PRINT_NAME" /> a partir da caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Se esta política estiver ativada, força a importação de marcadores a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, não serão importados quaisquer marcadores. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-los ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
+<translation id="706568410943497889">
+      Se a definição for definida como verdadeira, o <ph name="PRODUCT_NAME" /> tem autorização para recolher registos de eventos WebRTC dos serviços Google (por exemplo, do Google Meet) e carregar esses registos para o Google.
+
+      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não pode recolher nem carregar esses registos.
+
+      Estes registos contêm informações de diagnóstico que são úteis para depurar problemas em chamadas de áudio ou videochamadas no Chrome, como, por exemplo, a hora e o tamanho dos pacotes RTP enviados e recebidos, feedback sobre congestionamentos na rede e metadados sobre a hora e a qualidade dos frames de áudio e vídeo. Estes registos não incluem conteúdos de áudio ou vídeo das chamadas.
+
+      Esta recolha de dados por parte do Chrome só pode ser acionada pelos serviços Google na Web, como o Google Hangouts ou o Google Meet.
+
+      O Google poderá associar estes registos, mediante um ID de sessão, a outros registos que o próprio serviço Google recolha, o que tem como objetivo facilitar a depuração.
+      </translation>
 <translation id="706669471845501145">Permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="7072208053150563108">Taxa de alteração da palavra-passe da máquina</translation>
 <translation id="7074513465313721551">Configure a lista de domínios em que a Navegação segura irá confiar. Isto significa que:
@@ -2275,6 +2296,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7343497214039883642">Ficheiro de configuração de impressoras empresariais para dispositivos</translation>
+<translation id="7349338075015720646">Especifica uma lista de Websites que são instalados silenciosamente, sem interação do utilizador, e que não podem ser desinstalados nem desativados pelo utilizador.
+
+      Cada item de lista da política é um objeto com dois membros: "url" e "launch_container". "url" deve ser o URL da aplicação Web que vai ser instalada e "launch_container" deve ser "window" ("janela") ou "tab" ("separador") para indicar de que forma é que a aplicação Web vai ser aberta depois da instalação. Se "launch_container" for omitido, a aplicação é aberta numa janela se o Chrome a considerar uma Progressive Web App; caso contrário, é aberta num separador.</translation>
 <translation id="7367028210010532881">O serviço de Navegação segura apresenta uma página de aviso quando os utilizadores navegam para sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo malicioso.
 
       Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
@@ -2729,6 +2753,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Aqui, "Versão" pode ser uma versão exata, como "61.0.3163.120" ou um prefixo de versão, como "61.0".  </translation>
 <translation id="8544375438507658205">Processador de HTML predefinido para <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Permitir a sincronização de mensagens SMS do telemóvel com o Chromebook.</translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
 <translation id="8586528890725660268">Especifica as impressoras que não estão disponíveis para um utilizador.
@@ -2773,6 +2798,11 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se esta política não for definida, o serviço de proteção por palavra-passe apenas protege as palavras-passe Google, mas o utilizador pode alterar esta definição.</translation>
 <translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Permite-lhe definir o período de tempo, em milissegundos, ao longo do qual os utilizadores são notificados de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que um dispositivo <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
+
+      Ao longo deste período de tempo, o utilizador é informado, repetidamente, de que é necessária uma atualização. Relativamente aos dispositivos <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema quando é detetada uma atualização. Quanto aos navegadores do <ph name="PRODUCT_NAME" />, o menu da aplicação muda e passa a indicar que é necessário reiniciar assim que for ultrapassado um terço do período de notificação. A cor da notificação muda quando forem ultrapassados dois terços do período de notificação e volta a mudar quando o período terminar. As outras notificações que a política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ativa seguem este mesmo horário.
+
+      Se não for definida, é utilizado o período predefinido de 345600000 milissegundos (quatro dias) para os dispositivos <ph name="PRODUCT_OS_NAME" /> e de 604800000 milissegundos (uma semana) para <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">O aviso de proteção por palavra-passe é acionado pela reutilização da palavra-passe.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
@@ -2809,6 +2839,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
           O fator de escala deve ser de 100% ou mais. Não são permitidos valores que façam com que o atraso de esbatimento do ecrã no modo de apresentação seja mais curto do que o atraso de esbatimento do ecrã normal.</translation>
 <translation id="8798099450830957504">Predefinição</translation>
+<translation id="8801680448782904838">Notificar um utilizador de que é recomendado ou necessário reiniciar o navegador ou o dispositivo</translation>
 <translation id="8818173863808665831">Comunique a localização geográfica do dispositivo.
 
       Se a política não estiver definida, ou estiver definida como falsa, a localização não será comunicada.</translation>
@@ -2968,6 +2999,11 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
 <translation id="9152473318295429890">Ativar sugestões contextuais de páginas Web relacionadas</translation>
 <translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
+<translation id="9159126470527871268">Notifique os utilizadores de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado ou que o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado para aplicar uma atualização pendente.
+
+      A definição desta política ativa notificações para informar o utilizador de que é recomendado ou necessário reiniciar um navegador ou um dispositivo. Se não for definida, o <ph name="PRODUCT_NAME" /> indica ao utilizador que é necessário reiniciar através de subtis mudanças nos respetivos menus, ao passo que o <ph name="PRODUCT_OS_NAME" /> indica essa mesma necessidade através de uma notificação no tabuleiro do sistema. Se for definida como "Recomendada", é mostrado um aviso recorrente ao utilizador, a dizer que o reinício é necessário. O utilizador pode ignorar esse aviso para adiar o reinício. Se for definida como "Obrigatória", é mostrado um aviso recorrente ao utilizador a indicar que o reinício do navegador vai ser forçado quando o período de notificação for ultrapassado. O período predefinido são sete dias para o <ph name="PRODUCT_NAME" /> e quatro dias para o <ph name="PRODUCT_OS_NAME" />, o qual pode ser configurado através de definição da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      A sessão do utilizador é reiniciada após o reinício.</translation>
 <translation id="9165792353046089850">Permite definir se os Websites podem aceder a dispositivos USB ligados. O acesso pode ser totalmente bloqueado ou pode ser efetuado um pedido ao utilizador sempre que um Website pretender aceder a dispositivos USB ligados.
 
           Esta política pode ser substituída para padrões de URL específicos ao utilizar as políticas "WebUsbAskForUrls" e "WebUsbBlockedForUrls".

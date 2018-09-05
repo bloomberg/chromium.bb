@@ -353,6 +353,7 @@
 <translation id="199764499252435679">Componentupdates in <ph name="PRODUCT_NAME" /> inschakelen</translation>
 <translation id="2006530844219044261">Energiebeheer</translation>
 <translation id="201557587962247231">De frequentie van uploads van rapporten over de apparaatstatus</translation>
+<translation id="2017301949684549118">URL's voor web-apps die op de achtergrond worden geïnstalleerd.</translation>
 <translation id="2018836497795982119">Hiermee wordt de periode in milliseconden gespecificeerd waarna de apparaatbeheerservice wordt gevraagd om informatie over het gebruikersbeleid.
 
       Als je dit beleid instelt, wordt de standaardwaarde van 3 uur overschreven. Geldige waarden voor dit beleid liggen tussen 1800000 (30 minuten) en 86400000 (1 dag). Alle waarden die niet binnen dit bereik vallen, worden afgerond tot de betreffende minimum- of maximumgrens. Als het platform beleidsmeldingen ondersteunt, wordt de vernieuwingsvertraging ingesteld op 24 uur omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd.
@@ -660,6 +661,11 @@
           De zoek-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SEARCH_URL" />.
 
           Deze optie moet worden ingesteld wanneer het beleid 'DefaultSearchProviderEnabled' is ingeschakeld en wordt alleen gerespecteerd als dit het geval is.</translation>
+<translation id="2659019163577049044">Als deze instelling is ingeschakeld, mogen gebruikers instellen dat sms-berichten worden gesynchroniseerd tussen hun telefoons en Chromebooks. Als dit beleid wordt toegestaan, moeten gebruikers zich expliciet aanmelden voor deze functie door een instelprocedure te voltooien. Zodra deze procedure is doorlopen, kunnen gebruikers sms-berichten verzenden en ontvangen via hun Chromebooks.
+
+      Als deze instelling is uitgeschakeld, mogen gebruikers geen sms-synchronisatie instellen.
+
+      Als dit beleid niet wordt ingesteld, is sms-synchronisatie standaard toegestaan voor beheerde gebruikers en niet toegestaan voor niet-beheerde gebruikers.</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
 <translation id="267596348720209223">Hiermee worden de tekencoderingen gespecificeerd die door de zoekprovider worden ondersteund. Deze coderingen zijn codepaginanamen zoals UTF-8, GB2312 en ISO-8859-1. Ze worden getest in de volgorde waarin ze worden opgegeven.
 
@@ -730,7 +736,6 @@
       Als je deze instelling uitschakelt of geen waarde instelt, gebruikt Afdrukvoorbeeld de laatst gebruikte printer als standaardbestemming.
 
       Als je deze instelling inschakelt, gebruikt Afdrukvoorbeeld de standaardprinter van het besturingssysteem als standaardbestemming.</translation>
-<translation id="2867699958489427143">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Doe een volledige powerwash tijdens het proces.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
@@ -975,7 +980,6 @@
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
-<translation id="3737544779868348650">Hostnaam van apparaat in netwerk</translation>
 <translation id="3746590506846867985">
       Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
       Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten (origins) in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
@@ -1090,6 +1094,7 @@
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
 <translation id="3874773863217952418">'Tikken om te zoeken' inschakelen</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
+<translation id="3879208481373875102">Lijst met afgedwongen geïnstalleerde web-apps instellen</translation>
 <translation id="388237772682176890">Dit beleid is beëindigd in M53 en is verwijderd in M54, omdat de ondersteuning voor SPDY/3.1 is verwijderd.
 
       Hiermee wordt het gebruik van het SPDY-protocol in <ph name="PRODUCT_NAME" /> uitgeschakeld.
@@ -1332,6 +1337,10 @@
           Ga naar https://www.chromium.org/administrators/policy-list-3/extension-settings-full voor een volledige beschrijving van de mogelijke instellingen en de structuur van dit beleid.
           </translation>
 <translation id="4554651132977135445">Loopback-verwerkingsmodus voor gebruikersbeleid</translation>
+<translation id="4554841826517980623">Dit beleid bepaalt of de functie 'Network File Shares' voor <ph name="PRODUCT_NAME" /> het <ph name="NETBIOS_PROTOCOL" />-protocol moet gebruiken om shares te detecteren in het netwerk.
+      Als dit beleid is ingesteld op 'True' (Waar), wordt voor de detectie van shares in het netwerk gebruikgemaakt van het <ph name="NETBIOS_PROTOCOL" />-protocol.
+      Als dit beleid is ingesteld op 'False' (Onwaar), wordt voor de detectie van shares geen gebruik gemaakt van het <ph name="NETBIOS_PROTOCOL" />-protocol.
+      Als het beleid niet wordt ingesteld, is de functie standaard uitgeschakeld voor gebruikers die op ondernemingsniveau worden beheerd en ingeschakeld voor niet-beheerde gebruikers.</translation>
 <translation id="4555850956567117258">Externe bevestiging van gebruiker inschakelen</translation>
 <translation id="4557134566541205630">URL van standaard zoekprovider voor nieuwe tabbladpagina</translation>
 <translation id="4567137030726189378">Het gebruik van de hulpprogramma's voor ontwikkelaars toestaan</translation>
@@ -1752,6 +1761,7 @@
 
           Als je het beleid niet instelt, wordt gesproken feedback uitgeschakeld wanneer het inlogscherm voor het eerst wordt weergegeven. Gebruikers kunnen gesproken feedback op elk moment in- of uitschakelen en de status op het inlogscherm is permanent tussen gebruikers.</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
+<translation id="5879014913445067283">Bepaalt de detectiemethode van 'Network File Shares' via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Standaardinstelling voor cookies</translation>
 <translation id="5887414688706570295">Hiermee configureer je het voorvoegsel voor het TalkGadget dat wordt gebruikt door hosts voor externe toegang en voorkom je dat gebruikers dit wijzigen.
 
@@ -2203,6 +2213,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
+<translation id="706568410943497889">
+      Als het beleid is ingesteld op 'True' (Waar), mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken verzamelen van Google-services (zoals Google Meet) en deze logboeken uploaden naar Google.
+
+      Als het beleid is ingesteld op 'False' (Onwaar) of niet wordt ingesteld, mag <ph name="PRODUCT_NAME" /> deze logboeken niet verzamelen of uploaden.
+
+      Deze logboeken bevatten diagnostische informatie die handig is voor het oplossen van problemen met audio- of videogesprekken in Chrome. Deze informatie betreft bijvoorbeeld het tijdstip en de grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata over de duur en kwaliteit van audio- en videoframes. Deze logboeken bevatten geen audio of video van het gesprek.
+
+      Chrome verzamelt deze gegevens alleen als Chrome wordt getriggerd door webservices van Google, zoals Google Hangouts of Google Meet.
+
+      Google mag deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgelost.
+      </translation>
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7072208053150563108">Wijzigingsfrequentie van computerwachtwoord</translation>
 <translation id="7074513465313721551">Stel de lijst met domeinen in die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
@@ -2336,6 +2357,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="7343497214039883642">Configuratiebestand voor zakelijke printers voor apparaten</translation>
+<translation id="7349338075015720646">Specificeert een lijst met websites die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
+
+      Elk item op de lijst van het beleid is een tweeledig object, bestaande uit 'url' en 'launch_container'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. Als 'launch_container' wordt weggelaten, wordt de app geopend in een venster indien Chrome de app als progressieve web-app beschouwt en op een tabblad indien de app niet als progressieve web-app wordt beschouwd.</translation>
 <translation id="7367028210010532881">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die als potentieel schadelijk zijn gemarkeerd. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers ervoor kiezen door te gaan naar de gemarkeerde site nadat de waarschuwing is weergegeven.
@@ -2793,6 +2817,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
 'Versie' kan hier een exacte versie zijn, zoals '61.0.3163.120', of een versievoorvoegsel, zoals '61.0'.  </translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Toestaan dat sms-berichten worden gesynchroniseerd tussen telefoon en Chromebook.</translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8586528890725660268">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
@@ -2837,6 +2862,11 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid niet is ingesteld, beschermt de wachtwoordbeveiligingsservice alleen Google-wachtwoorden, maar kan de gebruiker deze instelling wijzigen.</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Hiermee kun je een periode in milliseconden instellen waarin aan gebruikers wordt gemeld dat <ph name="PRODUCT_NAME" /> of een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een beschikbare update toe te passen.
+
+      Gedurende deze periode wordt de gebruiker herhaaldelijk geïnformeerd over het belang van de update. Op <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding dat opnieuw moet worden opgestart, weergegeven in het systeemvak zodra er een upgrade wordt gedetecteerd. In <ph name="PRODUCT_NAME" />-browsers wordt nadat een derde van de meldingstijd is verstreken, in het app-menu aangegeven dat opnieuw moet worden opgestart. Deze melding verandert van kleur zodra twee derde van de meldingsperiode is verstreken en nogmaals wanneer de volledige meldingsperiode is verstreken. De extra meldingen die worden geactiveerd door het beleid <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, volgen dezelfde planning.
+
+      Als dit beleid niet is ingesteld, wordt een standaardperiode van 345.600.000 milliseconden (vier dagen) gebruikt voor <ph name="PRODUCT_OS_NAME" />-apparaten en 604.800.000 milliseconden (één week) voor <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
@@ -2881,6 +2911,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
           De schaalfactor moet 100% of meer zijn. Waarden waarmee de inactieve vertraging in presentatiemodus korter wordt dan de normale inactieve vertraging, zijn niet toegestaan.</translation>
 <translation id="8798099450830957504">Standaard</translation>
+<translation id="8801680448782904838">Een gebruiker laten weten dat het aanbevolen of vereist is om de browser of het apparaat opnieuw op te starten</translation>
 <translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
@@ -3046,6 +3077,11 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid wordt ingesteld op 'waar', activeert <ph name="PRODUCT_OS_NAME" /> een herstart wanneer de gebruiker het apparaat afsluit. <ph name="PRODUCT_OS_NAME" /> vervangt alle instanties van afsluitknoppen in de gebruikersinterface door herstartknoppen. Als de gebruiker het apparaat afsluit met de aan/uit-knop, wordt het apparaat niet automatisch opnieuw opgestart, ook niet wanneer het beleid is ingeschakeld.</translation>
 <translation id="9152473318295429890">Contextuele suggesties van gerelateerde webpagina's inschakelen</translation>
 <translation id="9158929520101169054">Toegang tot meerdere accounts toestaan in de browser</translation>
+<translation id="9159126470527871268">Hiermee laat je gebruikers weten dat <ph name="PRODUCT_NAME" /> of <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden opgestart om een beschikbare update toe te passen.
+
+      Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser of het apparaat opnieuw op te starten. Als dit beleid niet is ingesteld, laat <ph name="PRODUCT_NAME" /> de gebruiker via kleine wijzigingen in het menu weten dat opnieuw moet worden opgestart. Voor <ph name="PRODUCT_OS_NAME" /> wordt deze melding weergegeven in het systeemvak. Als dit beleid is ingesteld op Aanbevolen, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat opnieuw opstarten wordt aanbevolen. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op Vereist, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. De standaardperiode is zeven dagen voor <ph name="PRODUCT_NAME" /> en vier dagen voor <ph name="PRODUCT_OS_NAME" /> en kan worden aangepast via de beleidsinstelling <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      De sessie van de gebruiker wordt hersteld zodra opnieuw is opgestart.</translation>
 <translation id="9165792353046089850">Hiermee kun je instellen of websites toegang mogen krijgen tot aangesloten USB-apparaten. De toegang kan volledig worden geblokkeerd of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot aangesloten USB-apparaten.
 
           Dit beleid kan worden overschreven voor bepaalde URL-patronen door gebruik te maken van de beleidsregels WebUsbAskForUrls en WebUsbBlockedForUrls.

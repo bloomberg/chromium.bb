@@ -139,6 +139,7 @@
 <translation id="2267945578749931355">Перейти к следующему символу</translation>
 <translation id="2281234842553884450">Перейти к предыдущему ползунку</translation>
 <translation id="2294136146931447363">Начало курсива</translation>
+<translation id="2311237334957139798">Перейти к предыдущему уровню детализации</translation>
 <translation id="2318372665160196757">Основное</translation>
 <translation id="2329324941084714723">Панель вкладок</translation>
 <translation id="2344193891939537199">Выбор даты и времени</translation>
@@ -520,6 +521,7 @@
 <translation id="5106547198195128110">В новой версии вас ждут интересные изменения:</translation>
 <translation id="5110983769041734144">Предыдущего поля формы нет.</translation>
 <translation id="5111640677200759579">Заголовок столбца</translation>
+<translation id="5115892389597951922">Журнал ChromeVox</translation>
 <translation id="5136967254288895616">Предыдущей ссылки нет.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="5158275234811857234">Обложка</translation>
@@ -687,6 +689,7 @@
 <translation id="6540201937398578274">Поиск – это клавиша-модификатор в ChromeVox. С нее начинаются многие сочетания клавиш. Для навигации используются клавиши со стрелками.</translation>
 <translation id="6550720799683018100">Выберите комбинацию клавиш из списка ниже</translation>
 <translation id="6561818612645211875">Перейти к началу текущей строки</translation>
+<translation id="6583174818554398774">Перейти к следующему уровню детализации</translation>
 <translation id="6587021927234520429">Следующего заголовка четвертого уровня нет.</translation>
 <translation id="6601344353291556895">Озвучивать подробно</translation>
 <translation id="6615602925644411249">Поиск на странице.</translation>

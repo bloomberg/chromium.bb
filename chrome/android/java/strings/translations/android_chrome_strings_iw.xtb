@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">צור אירוע</translation>
 <translation id="2902702728133930130">‏שגיאה בלתי צפויה גרמה לכשל של Chrome בעת ההפעלה.</translation>
 <translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">הצגת שאלה לפני מתן הרשאה לאתרים להפעיל תוכן מוגן</translation>
 <translation id="2913331724188855103">‏התר לאתרים לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
 <translation id="2932150158123903946">‏נפח אחסון של <ph name="APP_NAME" />‏ Google</translation>
 <translation id="2943166482989655199">‏שליחה של פרטי המערכת ונתוני שימוש אל Google תשפר את Chrome ואת האבטחה שלו</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
 <translation id="3452612588551937789">‏היכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{‏הושלמה ההורדה של קובץ %1$d}two{‏הושלמה ההורדה של %1$d קבצים}many{‏הושלמה ההורדה של %1$d קבצים}other{‏הושלמה ההורדה של %1$d קבצים}}</translation>
-<translation id="3487093336331957349">הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> על הצעות לתוכן</translation>
 <translation id="3518985090088779359">קבל והמשך</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">שליטה בסינכרון, התאמה אישית ועוד</translation>
 <translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
-<translation id="4445444302979002552">בעזרת שירותי חיזוי ניתן להציג הצעות למונחי חיפוש ולאתרים</translation>
 <translation id="4452411734226507615">סגירת הכרטיסייה <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">התווסף לסימניות ב-<ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416">הורדה של <ph name="FILE_NAME" /> בוצעה ב-<ph name="PRODUCT_NAME" /></translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="629730747756840877">חשבון</translation>
+<translation id="6303969859164067831">יציאה וכיבוי הסנכרון</translation>
 <translation id="6320088164292336938">רטט</translation>
 <translation id="6324034347079777476">‏סנכרון מערכת Android מושבת</translation>
 <translation id="6333140779060797560">שתף באמצעות <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">לא ניתן לקבל הצעות</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
+<translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
 <translation id="7589445247086920869">חסום למנוע החיפוש הנוכחי</translation>
 <translation id="7593557518625677601">‏פתח את הגדרות Android והפעל מחדש את הסנכרון של מערכת Android כדי להתחיל בסנכרון של Chrome</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
@@ -999,7 +1000,6 @@
 <translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
-<translation id="9018881455348618200">לחצן חיפוש</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>

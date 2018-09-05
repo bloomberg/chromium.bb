@@ -23,6 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">कमज़ोर सिग्नल</translation>
 <translation id="1293264513303784526">USB-C डिवाइस (बायां पोर्ट)</translation>
+<translation id="1294929383540927798">लॉक स्क्रीन नोटिफ़िकेशन सेटिंग बदलें</translation>
 <translation id="1302880136325416935">ब्लूटूथ सेटिंग दिखाएं. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
@@ -40,6 +41,7 @@
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
+<translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अभी भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1698760176351776263">IPv6 पता: <ph name="ADDRESS" /></translation>
@@ -53,7 +55,7 @@
 <translation id="1836215606488044471">Assistant (सेवा लोड हो रही है...)</translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
-<translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
+<translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर स्क्रीन शेयर कर रहा है</translation>
 <translation id="1885785240814121742">फ़िंगरप्रिंट से अनलॉक करें</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="1923539912171292317">स्वत: क्‍लिक</translation>
@@ -135,6 +137,7 @@
 <translation id="3081696990447829002">मेन्यू बड़ा करें</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ब्लूटूथ)</translation>
+<translation id="3124698051292518391">आइकॉन हमेशा दिखाएं</translation>
 <translation id="3126069444801937830">अपडेट करने के लिए पुनरारंभ करें</translation>
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
@@ -178,6 +181,7 @@
 <translation id="385051799172605136">वापस</translation>
 <translation id="3891340733213178823">साइन आउट करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
 <translation id="3893630138897523026">ChromeVox (बोला गया फ़ीडबैक)</translation>
+<translation id="3897533311200664389">एक टेक्स्ट क्वेरी शुरू करें</translation>
 <translation id="3899995891769452915">ध्‍वनि इनपुट</translation>
 <translation id="3900355044994618856">आपका सत्र <ph name="SESSION_TIME_REMAINING" /> में खत्म होने वाला है</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
@@ -192,7 +196,7 @@
 <translation id="4217571870635786043">लिखवाना</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4274921305979314545">अपने Chromebook को अपने फ़ोन से कनेक्ट करें</translation>
-<translation id="4279490309300973883">मिरर करना</translation>
+<translation id="4279490309300973883">स्क्रीन शेयर करने की सुविधा चालू है</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> चालू हो रहा है</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -444,7 +448,7 @@
 <translation id="875593634123171288">VPN सेटिंग दिखाएं</translation>
 <translation id="8809737090443522491">किसी ऐप्लिकेशन या दस्तावेज़ का नाम लिखें</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>
-<translation id="8825534185036233643">दो से अधिक प्रदर्शनों की मिररिंग समर्थित नहीं है.</translation>
+<translation id="8825534185036233643">दो से ज़्यादा डिसप्ले की स्क्रीन नहीं शेयर की जा सकती है.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">वापस जाएं बटन</translation>
 <translation id="8843682306134542540">रोटेशन लॉक को टॉगल करें. <ph name="STATE_TEXT" /></translation>
@@ -461,6 +465,7 @@
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारा प्रबंधित</translation>
 <translation id="9029474291399787231">Adobe Flash Player का अपडेट मौजूद है</translation>
 <translation id="9056839673611986238">डिवाइस बहाल कर दिया जाएगा</translation>
+<translation id="9070640332319875144">Assistant की सेटिंग</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>
 <translation id="9079731690316798640">वाई-फ़ाई: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">माइक्रोफ़ोन का उपयोग हो रहा है.</translation>

@@ -749,7 +749,6 @@
       Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, Pratonton Cetakan akan menggunakan pencetak yang paling baru digunakan sebagai pilihan destinasi lalai.
 
       Jika anda mendayakan tetapan ini, Pratonton Cetakan akan menggunakan pencetak lalai sistem OS sebagai pilihan destinasi lalai.</translation>
-<translation id="2867699958489427143">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada sasaran. Lakukan powerwash lengkap semasa proses.</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874209944580848064">Nota untuk peranti <ph name="PRODUCT_OS_NAME" /> yang menyokong apl Android:</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>
@@ -994,7 +993,6 @@
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3715569262675717862">Pengesahan berdasarkan sijil klien</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
-<translation id="3737544779868348650">Nama hos rangkaian peranti</translation>
 <translation id="3746590506846867985">
       Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain, mis. menyatakan https://example.com/ turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/.

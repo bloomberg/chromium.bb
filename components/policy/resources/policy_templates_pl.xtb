@@ -350,6 +350,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="199764499252435679">Włącz aktualizacje komponentów w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
+<translation id="2017301949684549118">Adresy URL aplikacji internetowych do zainstalowania po cichu.</translation>
 <translation id="2018836497795982119">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące użytkowników.
 
       Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej. Jeśli platforma obsługuje powiadomienia o naruszeniu zasad, czas odświeżania będzie ustawiony na 24 godziny, ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad.
@@ -653,6 +654,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           URL wyszukiwania Google to: <ph name="GOOGLE_SEARCH_URL" />.
 
           Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie egzekwowana.</translation>
+<translation id="2659019163577049044">Jeśli to ustawienie jest włączone, użytkownicy będą mogli włączyć synchronizację SMS-ów między telefonem a Chromebookiem. Jeśli jest to dozwolone, użytkownicy muszą włączyć ją samodzielnie, wykonując proces konfiguracji. Po ukończeniu procesu konfiguracji użytkownicy mogą wysyłać i odbierać SMS-y na swoich Chromebookach.
+
+      Jeśli to ustawienie jest wyłączone, użytkownicy nie będą mogli skonfigurować synchronizacji SMS-ów.
+
+      Jeśli ta zasada pozostanie nieskonfigurowana, synchronizacja SMS-ów będzie domyślnie niedozwolona dla użytkowników zarządzanych i dozwolona dla niezarządzanych.</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
@@ -719,7 +725,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli wyłączysz to ustawienie lub pozostawisz je puste, w podglądzie wydruku zostanie wybrana ostatnio użyta drukarka.
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
-<translation id="2867699958489427143">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana pełna procedura Powerwash.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
@@ -957,7 +962,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3711895659073496551">Wstrzymaj</translation>
 <translation id="3715569262675717862">Uwierzytelnianie na podstawie certyfikatów klienta</translation>
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
-<translation id="3737544779868348650">Sieciowa nazwa hosta urządzenia</translation>
 <translation id="3746590506846867985">
       Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
       Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje, że także adres https://foo.example.com/ będzie izolowany jako część witryny https://example.com/
@@ -1061,6 +1065,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
        Każda pozycja listy zawiera słownik, w którym obowiązkowe pola „extension-id” i „update-url” muszą zawierać odpowiednio identyfikator rozszerzenia i adres URL aktualizacji.</translation>
 <translation id="3874773863217952418">Włącz funkcję Kliknij, by wyszukać</translation>
 <translation id="3877517141460819966">Tryb zintegrowanego uwierzytelniania dwuskładnikowego</translation>
+<translation id="3879208481373875102">Skonfiguruj listę aplikacji internetowych, których instalacja jest wymuszana</translation>
 <translation id="388237772682176890">Ta zasada jest wycofywana w wersji M53 i usunięta w wersji M54 z powodu usunięcia obsługi SPDY/3.1.
 
       Wyłącza protokół SPDY w <ph name="PRODUCT_NAME" />.
@@ -1304,6 +1309,10 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Pełny opis dostępnych ustawień i struktury tej zasady można znaleźć na stronie https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Tryb przetwarzania w pętli zasad dotyczących użytkowników</translation>
+<translation id="4554841826517980623">Ta zasada określa, czy funkcja sieciowych magazynów plików w <ph name="PRODUCT_NAME" /> ma używać <ph name="NETBIOS_PROTOCOL" /> do wykrywania udziałów w sieci.
+      Gdy zasada ma wartość prawda, udziały w sieci będą wykrywane przy użyciu protokołu <ph name="NETBIOS_PROTOCOL" />.
+      Gdy zasada ma wartość fałsz, udziały w sieci nie będą wykrywane przy użyciu protokołu <ph name="NETBIOS_PROTOCOL" />.
+      Jeśli zasada pozostanie nieskonfigurowana, będzie domyślnie wyłączona dla użytkowników zarządzanych przez firmę i włączona dla użytkowników niezarządzanych.</translation>
 <translation id="4555850956567117258">Włącz zaświadczanie zdalne dla użytkownika</translation>
 <translation id="4557134566541205630">URL strony nowej karty domyślnego dostawcy wyszukiwania</translation>
 <translation id="4567137030726189378">Zezwól na używanie narzędzi dla programistów</translation>
@@ -1693,6 +1702,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania potwierdzenia głosowe są wyłączone. Użytkownicy mogą je w każdej chwili włączyć lub wyłączyć i ich stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="5868414965372171132">Konfiguracja sieci na poziomie użytkownika</translation>
+<translation id="5879014913445067283">Kontroluje wykrywanie sieciowych magazynów plików za pomocą <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Domyślne ustawienie plików cookie</translation>
 <translation id="5887414688706570295">Konfiguruje przedrostek gadżetu TalkGadget, który będzie używany przez hosty zdalnego dostępu, i uniemożliwia użytkownikom jego zmianę.
 
@@ -2124,6 +2134,17 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="7049373494483449255">Pozwala <ph name="PRODUCT_NAME" /> przesyłać dokumenty do <ph name="CLOUD_PRINT_NAME" /> w celu wydrukowania. UWAGA: to ustawienie wpływa tylko na obsługę <ph name="CLOUD_PRINT_NAME" /> w <ph name="PRODUCT_NAME" />. Nie uniemożliwia użytkownikom drukowania za pośrednictwem innych witryn. W przypadku włączenia lub nieskonfigurowania tego ustawienia, użytkownicy będą mogli drukować w <ph name="CLOUD_PRINT_NAME" /> z okna drukowania w <ph name="PRODUCT_NAME" />. Jeśli to ustawienie zostanie wyłączone, użytkownicy nie będą mogli drukować za pomocą <ph name="CLOUD_PRINT_NAME" /> w oknie drukowania przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Po włączeniu tej zasady wymuszany jest import zakładek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zakładki nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zakładki mają zostać zaimportowane lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7063895219334505671">Zezwalaj na wyskakujące okienka w tych witrynach</translation>
+<translation id="706568410943497889">
+      Jeśli zasada ma wartość prawda, <ph name="PRODUCT_NAME" /> może zbierać dzienniki zdarzeń WebRTC z usług Google (np. Google Meet) i przesyłać je do Google.
+
+      Jeśli zasada ma wartość fałsz lub jest nieskonfigurowana, <ph name="PRODUCT_NAME" /> nie może zbierać ani przesyłać takich dzienników.
+
+      Te dzienniki zawierają informacje diagnostyczne przydatne podczas debugowania problemów z rozmowami audio i wideo w Chrome, między innymi czas i wielkość wysłanych i odebranych pakietów RTP, informacje zwrotne o obciążeniu sieci oraz metadane o czasie i jakości ramek audio i wideo. Dzienniki nie zawierają treści audio ani wideo rozmów.
+
+      Zbieranie tych danych przez Chrome może być uruchomione tylko przez usługi internetowe Google, takie jak Google Hangouts czy Google Meet.
+
+      Google może powiązać te dzienniki za pomocą identyfikatora sesji z innymi dziennikami zebranymi przez same usługi Google – ma to na celu ułatwienie debugowania.
+      </translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7072208053150563108">Częstotliwość zmieniania hasła komputera</translation>
 <translation id="7074513465313721551">Pozwala skonfigurować listę domen, którym będzie ufać Bezpieczne przeglądanie. Działanie zasady:
@@ -2258,6 +2279,9 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>
+<translation id="7349338075015720646">Określa listę witryn internetowych instalowanych po cichu, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
+
+      Każda pozycja na liście jest obiektem o dwóch składowych: „url” i „launch_container”. „url” to URL aplikacji internetowej do zainstalowania, a „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Jeśli element „launch_container” zostanie pominięty, aplikacja będzie otwierana w oknie, o ile Chrome uzna ją za progresywną aplikację internetową, a w przeciwnym razie na karcie.</translation>
 <translation id="7367028210010532881">Funkcja Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
 
       Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
@@ -2715,6 +2739,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 
       „Wersja” może być określona dokładnym numerem wersji, np. „61.0.3163.120”, lub prefiksem, np. „61.0”.  </translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Zezwól na synchronizację SMS-ów między telefonem a Chromebookiem.</translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8586528890725660268">Określa drukarki, z których użytkownik nie może korzystać.
@@ -2760,6 +2785,11 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
       Jeśli zasada nie jest skonfigurowana, usługa ochrony haseł będzie chronić tylko hasła do kont Google, a użytkownik może zmienić to ustawienie.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="867410340948518937">U2F (Uniwersalne uwierzytelnianie dwuskładnikowe)</translation>
+<translation id="8682611302223077049">Umożliwia określenie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
+
+      Przez ten czas użytkownik będzie wciąż informowany o konieczności aktualizacji. Na urządzeniach z <ph name="PRODUCT_OS_NAME" /> po wykryciu aktualizacji powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmieni się menu aplikacji. Powiadomienie zmieni kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po upływie całego tego okresu. Dodatkowe powiadomienia, które włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, mają ten sam harmonogram.
+
+      Jeśli zasada nie jest skonfigurowana, na urządzeniach z <ph name="PRODUCT_OS_NAME" /> stosowany jest domyślny czas 345 600 000 milisekund (cztery dni), a w <ph name="PRODUCT_NAME" /> – 604 800 000 milisekund (tydzień).</translation>
 <translation id="8685024486845674965">Ostrzeżenie dotyczące ochrony hasłem jest wyzwalane przez użycie tego samego hasła w innym miejscu</translation>
 <translation id="8693243869659262736">Użyj wbudowanego klienta DNS</translation>
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
@@ -2796,6 +2826,7 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
 
           Współczynnik skalowania musi wynosić co najmniej 100%. Wartości, przy których opóźnienie przyciemnienia ekranu w trybie prezentacji byłoby krótsze od standardowego opóźnienia tego rodzaju, są niedozwolone.</translation>
 <translation id="8798099450830957504">Domyślny</translation>
+<translation id="8801680448782904838">Powiadamiaj użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki lub urządzenia</translation>
 <translation id="8818173863808665831">Zgłoś lokalizację geograficzną urządzenia.
 
       Jeśli ta zasada nie jest ustawiona lub jest ustawiona na wartość nieprawdziwą, lokalizacja nie będzie zgłaszana.</translation>
@@ -2945,6 +2976,11 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Jeśli zasada będzie włączona, <ph name="PRODUCT_OS_NAME" /> wymusi ponowne uruchomienie urządzenia, gdy użytkownik spróbuje je wyłączyć. <ph name="PRODUCT_OS_NAME" /> zastąpi wszystkie wystąpienia przycisku wyłączania w interfejsie użytkownika przyciskami ponownego uruchomienia. Urządzenie nie uruchomi się ponownie niezależnie od ustawienia tej zasady, jeśli użytkownik wyłączy je za pomocą przycisku zasilania.</translation>
 <translation id="9152473318295429890">Włącz kontekstowe proponowanie powiązanych stron</translation>
 <translation id="9158929520101169054">Zezwól na wielokrotne logowanie w przeglądarce</translation>
+<translation id="9159126470527871268">Powiadamiaj użytkowników, że konieczne jest ponowne uruchomienie <ph name="PRODUCT_NAME" /> lub urządzenia z <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
+
+      Ta zasada włącza powiadomienia informujące użytkownika, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki lub urządzenia. Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> informuje użytkownika o potrzebie ponownego uruchomienia za pomocą subtelnych zmian w swoim menu, a <ph name="PRODUCT_OS_NAME" /> informuje o tym za pomocą powiadomienia w obszarze powiadomień. Jeśli wybrano ustawienie „Zalecane”, użytkownikowi będzie pokazywane powtarzające się ostrzeżenie o tym, że zalecane jest ponowne uruchomienie przeglądarki. Użytkownik może zamknąć to powiadomienie, by odłożyć ponownie uruchomienie na później. Jeśli wybrano ustawienie „Wymagane”, użytkownikowi będzie pokazywane powtarzające się ostrzeżenie o tym, że po upływie okresu powiadamiania zostanie wymuszone ponowne uruchomienie przeglądarki. Okres domyślny to siedem dni w przypadku <ph name="PRODUCT_NAME" /> i cztery dni w przypadku <ph name="PRODUCT_OS_NAME" />. Okres można skonfigurować za pomocą zasady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Po ponownym uruchomieniu zostanie przywrócona sesja użytkownika.</translation>
 <translation id="9165792353046089850">Pozwala określić, czy witryny mogą uzyskać dostęp do podłączonych urządzeń USB. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
 
           Ta zasada może zostać zastąpiona dla określonych wzorców adresów URL za pomocą zasad „WebUsbAskForUrls” i „WebUsbBlockedForUrls”.

@@ -139,6 +139,7 @@
 <translation id="2267945578749931355">下一個字元</translation>
 <translation id="2281234842553884450">上一個滑桿</translation>
 <translation id="2294136146931447363">斜體開頭</translation>
+<translation id="2311237334957139798">移至較低的精細度等級</translation>
 <translation id="2318372665160196757">主要元素</translation>
 <translation id="2329324941084714723">分頁面板</translation>
 <translation id="2344193891939537199">日期時間控制項</translation>
@@ -520,6 +521,7 @@
 <translation id="5106547198195128110">這個新版本有一些很棒的變更，說明如下：</translation>
 <translation id="5110983769041734144">沒有上一個表單欄位。</translation>
 <translation id="5111640677200759579">欄標題</translation>
+<translation id="5115892389597951922">ChromeVox 記錄</translation>
 <translation id="5136967254288895616">沒有上一個連結。</translation>
 <translation id="513774504516943387">連結</translation>
 <translation id="5158275234811857234">封面</translation>
@@ -687,6 +689,7 @@
 <translation id="6540201937398578274">使用 ChromeVox 時，搜尋鍵的功用是輔助鍵。大多數 ChromeVox 快速鍵都是使用搜尋鍵搭配其他按鍵。此外，瀏覽時也會用到方向鍵。</translation>
 <translation id="6550720799683018100">選取下方清單中的選項，即可變更目前的按鍵對應配置。</translation>
 <translation id="6561818612645211875">前往目前列的開頭</translation>
+<translation id="6583174818554398774">移至較高的精細度等級</translation>
 <translation id="6587021927234520429">沒有下一個第 4 階標題。</translation>
 <translation id="6601344353291556895">啟用詳細說明。</translation>
 <translation id="6615602925644411249">在網頁中尋找。</translation>

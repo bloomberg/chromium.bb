@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">อัปเดตรายการแล้ว</translation>
 <translation id="1047726139967079566">บุ๊กมาร์กหน้านี้...</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
+<translation id="1063454504051558093">ใช้รหัสผ่านอื่น...</translation>
 <translation id="1076421457278169141">สแกนโค้ดแล้ว</translation>
 <translation id="1084365883616172403">โพสต์ใน Facebook แล้ว</translation>
 <translation id="1104948393051856124">ยอมรับและดำเนินการต่อ</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">ส่งข้อมูลการใช้งาน</translation>
 <translation id="1886928167269928266">ตั้งแต่ต้น</translation>
 <translation id="1911619930368729126">อัปโหลดไปยัง Google ไดรฟ์</translation>
+<translation id="191179954310195971">บริการอื่นๆ ของ Google</translation>
 <translation id="1941314575388338491">แตะสองครั้งเพื่อคัดลอก</translation>
 <translation id="1952728750904661634">ลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">เรื่องรออ่านของคุณพร้อมใช้งานในแบบออฟไลน์ หากต้องการเพิ่มหน้าลงในเรื่องรออ่าน ให้แตะ<ph name="SHARE_OPENING_ICON" /></translation>
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
+<translation id="3765471630796399471">ใช้รหัสผ่านอื่น</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3779810277399252432">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">ข้อความที่ชัดเจน</translation>
 <translation id="6346549652287021269">เริ่มดาวน์โหลดใหม่ใช่ไหม</translation>
 <translation id="6362362396625799311">ไม่มีแท็บที่ไม่ระบุตัวตน</translation>
+<translation id="6363526231572697780">ไม่มีชื่อผู้ใช้</translation>
 <translation id="6374469231428023295">ลองอีกครั้ง</translation>
 <translation id="6380866119319257197">หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">ชื่อบนบัตร</translation>

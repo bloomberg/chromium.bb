@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">书签已更新</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1049743911850919806">隐身</translation>
+<translation id="1063454504051558093">使用其他密码…</translation>
 <translation id="1076421457278169141">已扫描代码</translation>
 <translation id="1084365883616172403">Facebook 信息发布已完成。</translation>
 <translation id="1104948393051856124">接受并继续</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">发送使用情况数据</translation>
 <translation id="1886928167269928266">全部</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
+<translation id="191179954310195971">其他 Google 服务</translation>
 <translation id="1941314575388338491">点按两次即可复制。</translation>
 <translation id="1952728750904661634">登录受管理的帐号</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">您的阅读清单可供离线访问。要将某个网页添加到该清单中，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
+<translation id="3765471630796399471">使用其他密码</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3779810277399252432">无互联网连接。</translation>
 <translation id="3783017676699494206">保存图片</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">明文</translation>
 <translation id="6346549652287021269">开始执行新的下载任务？</translation>
 <translation id="6362362396625799311">没有隐身标签页</translation>
+<translation id="6363526231572697780">无用户名</translation>
 <translation id="6374469231428023295">重试</translation>
 <translation id="6380866119319257197">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">持卡人姓名</translation>

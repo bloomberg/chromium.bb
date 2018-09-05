@@ -329,6 +329,7 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="199764499252435679">Povolit aktualizace komponent v prohlížeči <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Správa možností napájení</translation>
 <translation id="201557587962247231">Frekvence nahrávání hlášení o stavu zařízení</translation>
+<translation id="2017301949684549118">Adresy URL webových aplikací, které mají být instalovány na pozadí.</translation>
 <translation id="2018836497795982119">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro uživatele.
 
       Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu jsou v rozsahu od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota. Pokud platforma podporuje oznámení o zásadách, bude interval aktualizací nastaven na 24 hodin, protože se očekává, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.
@@ -628,6 +629,11 @@ Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na j
           Adresu URL Googlu pro vyhledávání lze zadat takto: <ph name="GOOGLE_SEARCH_URL" />.
 
           Tato možnost bude respektována, pouze pokud je aktivována zásada DefaultSearchProviderEnabled, a v tomto případě musí být nastavena.</translation>
+<translation id="2659019163577049044">Je-li toto nastavení aktivováno, uživatelé budou moci ve svých zařízeních nastavit synchronizaci zpráv SMS mezi telefonem a Chromebookem. Upozorňujeme, že pokud je tato zásada povolena, uživatelé se k této funkci musejí výslovně přihlásit dokončením procesu nastavení. Po dokončení nastavení budou moci uživatelé odesílat a přijímat zprávy SMS v Chromebooku.
+
+      Je-li toto nastavení deaktivováno, uživatelé nebudou moci nastavit synchronizaci SMS.
+
+      Pokud tato zásada není nastavena, ve výchozím nastavení je pro spravované uživatele zakázána a pro nespravované uživatele povolena.</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat proxy server</translation>
 <translation id="267596348720209223">Určuje kódování znaků podporovaná poskytovatelem vyhledávání. Kódování jsou názvy stránek kódů, například UTF-8, GB2312 nebo ISO-8859-1. Budou vyzkoušena v uvedeném pořadí.
 
@@ -698,7 +704,6 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
       Pokud toto nastavení zakážete nebo nenastavíte žádnou hodnotu, bude Náhled tisku jako výchozí cíl používat naposledy použitou tiskárnu.
 
       Pokud aktivujete toto nastavení, bude Náhled tisku jako výchozí cíl používat výchozí tiskárnu systému.</translation>
-<translation id="2867699958489427143">Pokud je verze operačního systému novější než cílová verze, vrátit se zpět k cílové verzi a zachovat ji. Během tohoto procesu provést úplné vyčištění Powerwash.</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="2874209944580848064">Poznámka ohledně zařízení se systémem <ph name="PRODUCT_OS_NAME" />, která podporují aplikace pro Android:</translation>
 <translation id="2877225735001246144">Deaktivovat vyhledání záznamů CNAME při vyjednávání ověření protokolu Kerberos</translation>
@@ -938,7 +943,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3715569262675717862">Ověřování založené na certifikátech klientů</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
-<translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
 <translation id="3746590506846867985">
       Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
       Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
@@ -1050,6 +1054,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
 <translation id="3874773863217952418">Aktivovat funkci Vyhledání klepnutím</translation>
 <translation id="3877517141460819966">Režim integrovaného dvoufaktorového ověření</translation>
+<translation id="3879208481373875102">Konfigurace seznamu webových aplikací s vynucenou instalací</translation>
 <translation id="388237772682176890">Ve verzi M53 byla podpora této zásady ukončena a ve verzi M54 byla tato zásada zcela odstraněna, protože byla odstraněna podpora protokolu SPDY/3.1.
 
       Zakáže v prohlížeči <ph name="PRODUCT_NAME" /> použití protokolu SPDY.
@@ -1291,6 +1296,10 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
           Úplný popis možných nastavení a struktury této zásady najdete na stránce https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
           </translation>
 <translation id="4554651132977135445">Režim zpracování zásad pro uživatele (loopback)</translation>
+<translation id="4554841826517980623">Tato zásada určuje, zda smí funkce sdílení síťových položek prohlížeče <ph name="PRODUCT_NAME" /> rozpoznávat sdílení v síti pomocí protokolu <ph name="NETBIOS_PROTOCOL" />.
+      Je-li tato zásada nastavena na hodnotu true, při rozpoznávání sdílení v síti bude používán protokol <ph name="NETBIOS_PROTOCOL" />.
+      Je-li tato zásada nastavena na hodnotu false, při rozpoznávání sdílení nebude protokol <ph name="NETBIOS_PROTOCOL" /> používán.
+      Pokud tato zásada není nastavena, ve výchozím nastavení je pro spravované uživatele zakázána a pro nespravované uživatele povolena.</translation>
 <translation id="4555850956567117258">Aktivuje vzdálené ověření identity uživatele</translation>
 <translation id="4557134566541205630">Výchozí adresa URL stránky nové karty poskytovatele vyhledávání</translation>
 <translation id="4567137030726189378">Povolit použití Nástrojů pro vývojáře</translation>
@@ -1710,6 +1719,7 @@ Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat akti
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky hlasová odezva deaktivována. Uživatelé budou moci hlasovou odezvu kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
 <translation id="5868414965372171132">Konfigurace sítě na úrovni uživatele</translation>
+<translation id="5879014913445067283">Ovládání rozpoznávání sdílení síťových položek prostřednictvím rozhraní <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Výchozí nastavení souborů cookie</translation>
 <translation id="5887414688706570295">Slouží ke konfiguraci předpony TalkGadget, kterou budou používat hostitelé vzdáleného přístupu, a brání uživatelům, aby ji změnili.
 
@@ -2159,6 +2169,17 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 
       Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí záložky importovat, nebo může import probíhat automaticky.</translation>
 <translation id="7063895219334505671">Povolit na těchto stránkách vyskakovací okna</translation>
+<translation id="706568410943497889">
+      Je-li zásada nastavena na hodnotu true, má <ph name="PRODUCT_NAME" /> povoleno shromažďovat protokoly událostí WebRTC ze služeb Google (např. Google Meet) a nahrávat je do Googlu.
+
+      Je-li zásada nastavena na hodnotu false nebo je ponechána nenastavená, prohlížeč <ph name="PRODUCT_NAME" /> takové protokoly shromažďovat ani nahrávat nesmí.
+
+      Tyto protokoly obsahují diagnostické údaje, které jsou užitečné při odstraňování problémů s audio nebo videohovory v Chromu, jako je čas a velikost odeslaných a přijatých paketů RTP, zpětná vazba ohledně zahlcení sítě a metadata ohledně času a kvality snímků zvuku a videa. Protokoly neobsahují zvukový ani obrazový obsah z hovoru.
+
+      Toto shromažďování dat Chromem mohou spustit pouze webové služby Googlu, například Google Hangouts nebo Google Meet.
+
+      Kvůli snazšímu ladění může Google tyto protokoly prostřednictvím ID relace přidružit k jiným protokolům shromažďovaným samotnou službou Google.
+      </translation>
 <translation id="706669471845501145">Povolit webovým stránkám zobrazovat oznámení na ploše</translation>
 <translation id="7072208053150563108">Frekvence změny hesla počítače</translation>
 <translation id="7074513465313721551">Konfiguruje seznam domén, kterým bude Bezpečné prohlížení důvěřovat:
@@ -2292,6 +2313,9 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání relace</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
 <translation id="7343497214039883642">Konfigurační soubor podnikových tiskáren pro zařízení</translation>
+<translation id="7349338075015720646">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
+
+      Každá položka v seznamu zásady je objekt se dvěma členy: „url“ a „launch_container“. „url“ má být adresa URL webové aplikace k instalaci a „launch_container“ má být buď „window“ (okno) nebo „tab“ (karta), aby bylo zadáno, jak bude webová aplikace po nainstalování otevřena. Pokud člen „launch_container“ vynecháte, aplikace se spustí v okně, jestliže Chrome vyhodnotí, že se jedná o progresivní webovou aplikaci, a v ostatních případech se spustí na kartě.</translation>
 <translation id="7367028210010532881">Když uživatel přejde na web, který je označen jako potenciálně škodlivý, zobrazí služba Bezpečné prohlížení stránku s upozorněním. Aktivace tohoto nastavení zabrání uživatelům pokračovat ze stránky s upozorněním na škodlivý web.
 
       Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, uživatelé mohou po zobrazení upozornění pokračovat na nahlášený web.
@@ -2736,6 +2760,7 @@ Pokud tato zásada není nastavena, žádná omezení neplatí a uživatel se m
 
 Verzí v tomto případě může být přesná verze, například „61.0.3163.120“, nebo předpona verze, například „61.0“  </translation>
 <translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Povolení synchronizace zpráv SMS z telefonu do Chromebooku.</translation>
 <translation id="8549772397068118889">Při návštěvě webů mimo obsahové balíčky zobrazit upozornění</translation>
 <translation id="8566842294717252664">Skrýt internetový obchod z karty Nová stránka a ze spouštěče aplikací</translation>
 <translation id="8586528890725660268">Určuje, které tiskárny uživatel nesmí používat.
@@ -2780,6 +2805,11 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
       Pokud tuto zásadu ponecháte nenastavenou, bude služba pro ochranu hesel chránit pouze hesla Google, ale uživatel toto nastavení bude moci změnit.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Umožňuje nastavit dobu v milisekundách, po kterou se uživatelům bude zobrazovat oznámení, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo zařízení se systémem <ph name="PRODUCT_OS_NAME" /> restartovat, aby bylo možné nainstalovat čekající aktualizaci.
+
+      Během této doby bude uživatel opakovaně informován, že je potřeba nainstalovat aktualizaci. Na zařízeních se systémem <ph name="PRODUCT_OS_NAME" /> se oznámení o restartu zobrazuje na hlavním panelu systému, když je zjištěn upgrade. V prohlížečích <ph name="PRODUCT_NAME" /> se po uplynutí jedné třetiny lhůty pro oznámení změní nabídka aplikace na znamení, že je prohlížeč potřeba aktualizovat. Barva tohoto oznámení se změní po uplynutí dvou třetin lhůty a poté znovu po uplynutí celé lhůty. Další oznámení aktivovaná pomocí zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> se řídí stejným časovým plánem.
+
+      Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
 <translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
@@ -2824,6 +2854,7 @@ Není-li tato zásada nastavena, bude použita výchozí hodnota prodloužení.
 
 Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu ztmavení obrazovky oproti výchozí hodnotě zkrátily, nejsou povoleny.</translation>
 <translation id="8798099450830957504">Výchozí</translation>
+<translation id="8801680448782904838">Oznamovat uživateli, že je doporučen nebo vyžadován restart prohlížeče nebo zařízení</translation>
 <translation id="8818173863808665831">Oznámí zeměpisnou polohu zařízení.
 
       Pokud tato zásada není nastavena, nebo je nastavena na hodnotu false, poloha oznamována nebude.</translation>
@@ -2970,6 +3001,11 @@ Pokud je zásada nastavena na hodnotu true, systémové protokoly budou odesíl�
 Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, spustí systém <ph name="PRODUCT_OS_NAME" /> restart. Systém <ph name="PRODUCT_OS_NAME" /> nahradí všechna tlačítka pro vypnutí v uživatelském rozhraní tlačítky pro restart. Pokud uživatel zařízení vypne pomocí vypínače, zařízení se automaticky restartovat nebude, a to ani v případě, že je tato zásada aktivována.</translation>
 <translation id="9152473318295429890">Povolit kontextové návrhy souvisejících webových stránek</translation>
 <translation id="9158929520101169054">Povolit v prohlížeči vícenásobné přihlášení</translation>
+<translation id="9159126470527871268">Oznamuje uživateli, že je třeba restartovat prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" />, aby bylo možné nainstalovat čekající aktualizaci.
+
+      Toto nastavení zásady umožňuje, aby byl uživatel prostřednictvím oznámení informován, že je doporučeno nebo nutno restartovat prohlížeč nebo zařízení. Pokud zásada nebude nastavena, prohlížeč <ph name="PRODUCT_NAME" /> o potřebném restartování informuje uživatele pomocí drobných změn v nabídce, zatímco systém <ph name="PRODUCT_OS_NAME" /> o něm informuje prostřednictvím oznámení v hlavním panel systému. Pokud je nastavena na hodnotu Doporučeno, bude se uživateli opakovaně zobrazovat upozornění, že je doporučen restart. Uživatel upozornění může odmítnout a tím restart odložit. Pokud je nastavena na hodnotu Povinné, bude se uživateli opakovaně zobrazovat upozornění, že po uplynutí lhůty pro oznámení bude vynucen restart prohlížeče. Výchozí lhůta je u prohlížeče <ph name="PRODUCT_NAME" /> sedm dní, u systému <ph name="PRODUCT_OS_NAME" /> čtyři dny a lze ji nakonfigurovat nastavením zásady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Relace uživatele bude po restartování obnovena.</translation>
 <translation id="9165792353046089850">Umožňuje nastavit, zda weby mají povoleno získat přístup k připojeným zařízením USB. Přístup lze zcela zablokovat, nebo je možné uživatele požádat pokaždé, když chce web k připojeným zařízením USB získat přístup.
 
           Tuto zásadu lze pro konkrétní vzory adres URL přepsat pomocí zásad WebUsbAskForUrls a WebUsbBlockedForUrls.

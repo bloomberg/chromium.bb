@@ -994,7 +994,6 @@
 <translation id="2508428939232952663">Google Play স্টোর অ্যাকাউন্ট</translation>
 <translation id="2509495747794740764">স্কেলের মাপকে অবশ্যই ১০ থেকে ১০০ এর মধ্যের একটি সংখ্যা হতে হবে।</translation>
 <translation id="2509566264613697683">৮x</translation>
-<translation id="2512222046227390255">ফর্মগুলি স্বতঃপূর্ণ করুন</translation>
 <translation id="2513403576141822879">আপনার গোপনীয়তা, নিরাপত্তা এবং ডেটা সংগ্রহের সাথে সম্পর্কযুক্ত আরও সেটিংসের জন্য <ph name="BEGIN_LINK" />সিঙ্ক এবং Google পরিষেবাগুলি<ph name="END_LINK" /> দেখুন</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">স্ক্যান করুন</translation>
@@ -1926,7 +1925,6 @@
 <translation id="3920504717067627103">শংসাপত্রের নীতিসমূহ</translation>
 <translation id="392089482157167418">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম করুন</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3925247638945319984">আপনার কোনো সাম্প্রতিক ক্যাপচার করা WebRTC লগ নেই।</translation>
 <translation id="3925573269917483990">ক্যামেরা:</translation>
 <translation id="3925842537050977900">তাক থেকে আনপিন করুন</translation>
 <translation id="3926002189479431949">Smart Lock ফোন পরিবর্তিত হয়েছে</translation>
@@ -4211,7 +4209,6 @@
     <ph name="BEGIN_PARAGRAPH2" />Google-এর লোকেশন পরিষেবা আপনার ডিভাইসের লোকেশন অনুমান করতে সহায়তা করার জন্য ওয়াই-ফাই, মোবাইল নেটওয়ার্ক এবং সেন্সরগুলির মতো উৎসগুলি ব্যবহার করে। আপনার ডিভাইসের লোকেশন সেটিংস চালু হলে এই পরিষেবাটি সক্রিয় হয়।<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />আপনি আপনার ডিভাইসের প্রধান লোকেশন সেটিংস বন্ধ করে লোকেশনটি বন্ধ করতে পারেন। আপনি লোকেশন সেটিংসে অবস্থানের জন্য ওয়াই-ফাই, মোবাইল নেটওয়ার্ক এবং সেন্সর ব্যবহার বন্ধ করতে পারেন।<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517786267097410259">একটি পাসওয়ার্ড তৈরি করুন -</translation>
-<translation id="7518150891539970662">WebRTC লগগুলি (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">তৈরি করুন</translation>
 <translation id="7529411698175791732">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন। সমস্যাটি থেকে গেলে, সাইন আউট করে আবার প্রবেশ করার চেষ্টা করুন।</translation>

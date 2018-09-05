@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Item atualizado</translation>
 <translation id="1047726139967079566">Marcar esta página...</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
+<translation id="1063454504051558093">Utilizar outra palavra-passe…</translation>
 <translation id="1076421457278169141">Código digitalizado</translation>
 <translation id="1084365883616172403">Publicação no Facebook concluída.</translation>
 <translation id="1104948393051856124">Aceitar e Continuar</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1886928167269928266">Desde sempre</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
+<translation id="191179954310195971">Outros serviços Google</translation>
 <translation id="1941314575388338491">Toque duas vezes para copiar.</translation>
 <translation id="1952728750904661634">Iniciar sessão com uma conta gerida</translation>
 <translation id="1974060860693918893">Avançadas</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Utilizar outra palavra-passe</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3779810277399252432">Sem ligação à Internet.</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
@@ -315,6 +318,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6344783595350022745">Limpar Texto</translation>
 <translation id="6346549652287021269">Iniciar nova transferência?</translation>
 <translation id="6362362396625799311">Sem separadores de navegação anónima</translation>
+<translation id="6363526231572697780">Sem nome de utilizador</translation>
 <translation id="6374469231428023295">Tentar novamente</translation>
 <translation id="6380866119319257197">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>

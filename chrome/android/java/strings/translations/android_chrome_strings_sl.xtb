@@ -308,7 +308,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="3443221991560634068">Vnovično nalaganje trenutne strani</translation>
 <translation id="3452612588551937789">Prijavite se z Google Računom, da boste zaznamke, zgodovino, gesla in druge nastavitve imeli na voljo v vseh napravah.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{Prenesena je %1$d datoteka}one{Prenesena je %1$d datoteka}two{Preneseni sta %1$d datoteki}few{Prenesene so %1$d datoteke}other{Prenesenih je %1$d datotek}}</translation>
-<translation id="3487093336331957349">Predlogi za iskanje in spletna mesta</translation>
 <translation id="3492207499832628349">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o predlagani vsebini</translation>
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
@@ -418,7 +417,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="4419556793104466535">Nadziranje sinhronizacije, prilagajanja in drugega</translation>
 <translation id="4432792777822557199">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo od zdaj naprej prevedene v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
-<translation id="4445444302979002552">Uporaba storitev predvidevanja za predlaganje iskalnih poizvedb in spletnih mest</translation>
 <translation id="4452411734226507615">Zapiranje zavihka <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Zaznamek ustvarjen v mapi <ph name="FOLDER_NAME" /></translation>
 <translation id="4453340223357552416"><ph name="FILE_NAME" /> – preneseno v izdelku <ph name="PRODUCT_NAME" /></translation>
@@ -1004,7 +1002,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8986494364107987395">Samodejno pošlji statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="8993760627012879038">Odpiranje novega zavihka brez beleženja zgodovine</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
-<translation id="9018881455348618200">Gumb za iskanje</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
 <translation id="9040142327097499898">Obvestila so dovoljena. Lokacija je izklopljena za to napravo.</translation>
 <translation id="9050666287014529139">Geslo</translation>

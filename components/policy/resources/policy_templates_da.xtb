@@ -339,6 +339,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="199764499252435679">Aktivér komponentopdateringer i <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="201557587962247231">Hyppighed for upload af rapporter om enhedsstatus</translation>
+<translation id="2017301949684549118">Webadresser til webapps skal installeres lydløst.</translation>
 <translation id="2018836497795982119">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten anmodes om brugerpolitikoplysninger.
 
       Angivelse af denne politik tilsidesætter standardværdien på tre timer. Gyldige værdier for denne politik ligger i intervallet fra 1800000 (30 minutter) til 86400000 (ét døgn). Alle værdier, der ikke ligger inden for dette interval, fastgøres til den respektive grænse. Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer, da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres.
@@ -641,6 +642,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Googles søgewebadresse kan angives som: <ph name="GOOGLE_SEARCH_URL" />.
 
           Denne indstilling skal aktiveres, når politikken "DefaultSearchProviderEnabled" er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
+<translation id="2659019163577049044">Hvis denne indstilling aktiveres, kan brugerne konfigurere deres enheder for at synkronisere sms-beskeder mellem deres telefoner og Chromebooks. Bemærk! Hvis denne politik tillades, skal brugerne udtrykkeligt tilmelde sig denne funktion ved at gennemføre en konfiguration. Når konfigurationen er gennemført, kan brugerne sende og modtage sms-beskeder på deres Chromebooks.
+
+      Hvis denne indstilling deaktiveres, kan brugerne ikke konfigurere synkronisering af sms-beskeder.
+
+      Hvis politikken ikke konfigureres, tillades den som standard ikke for administrerede brugere, mens den som standard tillades for ikke-administrerede brugere.</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
@@ -707,7 +713,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du deaktiverer denne indstilling eller ikke angiver en værdi, benytter Vis udskrift den senest brugte printer som standarddestination.
 
       Hvis du aktiverer denne indstilling, benytter Vis udskrift operativsystemets standardprinter som standarddestination.</translation>
-<translation id="2867699958489427143">Gå tilbage til og behold målversionen, hvis OS-versionen er nyere end målversionen. Foretag en fuldstændig powerwash under processen.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>
@@ -946,7 +951,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Godkendelse på baggrund af klientcertifikater</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
-<translation id="3737544779868348650">Enhedens hostname på netværket</translation>
 <translation id="3746590506846867985">
       Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
       Hvis politikken er aktiveret, kører hvert af de angivne websites på en kommasepareret liste sin egen proces. Dette isolerer også websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives, isoleres https://foo.eksempel.dk/ også som en del af websitet https://eksempel.dk/.
@@ -1059,6 +1063,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Alle poster på listen indeholder en ordbog, der skal indeholde udvidelses-id'et i feltet "udvidelses-id" samt webadressen til opdatering i feltet "opdateringswebadresse".</translation>
 <translation id="3874773863217952418">Aktivér "Tryk for at søge"</translation>
 <translation id="3877517141460819966">Integreret godkendelsestilstand med sekundær faktor</translation>
+<translation id="3879208481373875102">Konfigurer en liste over fjerninstallerede webapps</translation>
 <translation id="388237772682176890">Denne politik er udfaset i M53 og fjernet i M54, da understøttelse af SPDY/3.1 er fjernet.
 
       Deaktiverer brug af SPDY-protokollen i <ph name="PRODUCT_NAME" />.
@@ -1292,6 +1297,10 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Du kan få en komplet beskrivelse af mulige indstillinger og mulig struktur for denne politik på https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Brugerpolitik for tilstand til behandling via loopback</translation>
+<translation id="4554841826517980623">Denne politik bestemmer, om funktionen Fildeling via netværk for <ph name="PRODUCT_NAME" /> anvender <ph name="NETBIOS_PROTOCOL" /> til at registrere deling på netværket.
+      Når politikken er angivet som Sand, anvendes protokollen <ph name="NETBIOS_PROTOCOL" /> til at registrere deling på netværket.
+      Når politikken er angivet som Falsk, anvendes protokollen <ph name="NETBIOS_PROTOCOL" /> ikke til at registrere deling.
+      Hvis politikken ikke konfigureres, er den som standard deaktiveret for virksomhedsadministrerede brugere, mens den som standard er aktiveret for ikke-administrerede brugere.</translation>
 <translation id="4555850956567117258">Aktivér fjernattestering for brugeren</translation>
 <translation id="4557134566541205630">Webadresse for siden Ny fane i standardsøgemaskinen</translation>
 <translation id="4567137030726189378">Tillad brug af Udviklerværktøjer</translation>
@@ -1685,6 +1694,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
           Hvis denne politik ikke angives, deaktiveres talefeedback, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere talefeedback, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="5868414965372171132">Netværkskonfiguration på brugerniveau</translation>
+<translation id="5879014913445067283">Kontrollerer registrering for Fildeling via netværk via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Standardindstilling for cookies</translation>
 <translation id="5887414688706570295">Konfigurerer det TalkGadget-præfiks, der anvendes af værter med fjernadgang, og forhindrer brugere i at ændre det.
 
@@ -2119,6 +2129,17 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7049373494483449255">Gør det muligt for <ph name="PRODUCT_NAME" /> at sende dokumenter til <ph name="CLOUD_PRINT_NAME" /> til udskrivning. BEMÆRK! Dette påvirker kun understøttelse af <ph name="CLOUD_PRINT_NAME" /> i <ph name="PRODUCT_NAME" />. Det forhindrer ikke brugerne i at sende udskriftsjob på websites. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne udskrive til <ph name="CLOUD_PRINT_NAME" /> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME" />. Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive til <ph name="CLOUD_PRINT_NAME" /> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7053678646221257043">Denne politik påtvinger import af bogmærker fra den nuværende standardbrowser, hvis det er aktiveret. Hvis det er aktiveret, påvirker denne politik også importdialogboksen. Hvis det er deaktiveret, importeres der ingen bogmærker. Hvis den ikke er angivet, kan brugeren blive bedt om at importere, eller importen kan ske automatisk.</translation>
 <translation id="7063895219334505671">Tillad pop op-vinduer på disse websites</translation>
+<translation id="706568410943497889">
+      Hvis politikken er angivet som sand, har <ph name="PRODUCT_NAME" /> tilladelse til at indsamle WebRTC-hændelseslogfiler fra Google-tjenester (f.eks. Google Meet) og uploade de pågældende logfiler til Google.
+
+      Hvis politikken er angivet som falsk eller ikke er angivet, må <ph name="PRODUCT_NAME" /> ikke indsamle eller uploade sådanne logfiler.
+
+      Disse logfiler indeholder diagnosticeringsoplysninger, som er nyttige i forbindelse med fejlretning af problemer med lyd- og videoopkald i Chrome, f.eks. tidspunkt for og størrelsen på sendte og modtagne RTP-pakker, feedback om belastning af netværket samt metadata om varigheden og kvaliteten af lyd- og videorammer. Logfilerne omfatter ikke lyd- eller videoindhold fra opkald.
+
+      Denne dataindsamling af Chrome kan kun aktiveres af Google-webtjenester såsom Google Hangouts eller Google Meet.
+
+      Google kan ved hjælp af et sessions-id knytte disse logfiler til andre logfiler, der er indsamlet af selve Google-tjenesten. Dette kan gøre fejlretningen nemmere.
+      </translation>
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
 <translation id="7072208053150563108">Hvor ofte computeradgangskoden skiftes</translation>
 <translation id="7074513465313721551">Konfigurer listen over domæner, som Beskyttet browsing skal have tillid til. Dette betyder følgende:
@@ -2252,6 +2273,9 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7343497214039883642">Fil til konfiguration af virksomhedsprintere for enheder</translation>
+<translation id="7349338075015720646">Angiver en liste over websites, som installeres lydløst uden brugerinteraktion, og som ikke kan afinstalleres af brugeren.
+
+      Hvert listepunkt i politikken er et objekt med to medlemmer: "url" og "launch_container". "url" bør være webadressen til den webapp, der skal installeres, og "launch_container" bør enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret. Hvis "launch_container" udelades, åbnes appen i et vindue, hvis Chrome betragter den som en progressiv webapp, og ellers åbnes den på en fane.</translation>
 <translation id="7367028210010532881">Tjenesten Beskyttet browsing viser en advarselsside, når brugerne går til websites, der er rapporteret som potentielt skadelige. Denne indstilling forhindrer brugerne i at fortsætte fra advarselssiden til det skadelige website.
 
       Hvis denne indstilling er deaktiveret eller ikke er angivet, kan brugerne vælge at gå til det rapporterede website, efter advarslen er blevet vist.
@@ -2696,6 +2720,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       Her kan "Version" være enten en eksakt version såsom "61.0.3163.120" eller et præfiks for versionen, f.eks. "61.0"  </translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="8544465954173828789">Tillad, at sms-beskeder synkroniseres mellem telefon og Chromebook.</translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
 <translation id="8586528890725660268">Angiver, hvilke printere en bruger ikke kan anvende.
@@ -2740,6 +2765,11 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       Hvis politikken ikke er indstillet, beskytter adgangskodebeskyttelse kun Google-adgangskoder, men brugeren kan ændre denne indstilling.</translation>
 <translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8682611302223077049">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne underrettes om, at <ph name="PRODUCT_NAME" /> eller en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for at anvende en afventende opdatering.
+
+      I dette tidsrum informeres brugeren gentagne gange om nødvendigheden af en opdatering. Når der registreres en opdatering til <ph name="PRODUCT_OS_NAME" />-enheder, vises en underretning om genstart i systembakken. For <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at vise, at genstart er nødvendig, når en tredjedel af underretningsperioden er gået. Underretningen skifter farve, når to tredjedele af underretningsperioden er gået, og igen når hele underretningsperioden er udløbet. De yderligere underretninger, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
+
+      Hvis politikken ikke konfigureres, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" /> -enheder og 604800000 millisekunder (én uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Advarsler via adgangskodebeskyttelse udløses ved genbrug af adgangskoder</translation>
 <translation id="8693243869659262736">Brug den indbyggede DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
@@ -2776,6 +2806,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
           Skaleringsfaktoren skal være 100 % eller mere. Værdier, der forkorter nedtoningsforsinkelsen på skærmen i præsentationstilstand i forhold til den normale nedtoningsforsinkelse, er ikke tilladt.</translation>
 <translation id="8798099450830957504">Standard</translation>
+<translation id="8801680448782904838">Underret en bruger om, at genstart af browseren eller enheden anbefales eller påkræves</translation>
 <translation id="8818173863808665831">Rapportér enhedens geografiske placering.
 
       Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>
@@ -2917,6 +2948,11 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis denne politik er angivet til Sand, aktiverer <ph name="PRODUCT_OS_NAME" /> en genstart, når brugeren lukker enheden ned. <ph name="PRODUCT_OS_NAME" /> erstatter alle forekomster af Luk-knapper i grænsefladen med genstartsknapper. Hvis brugeren lukker enheden ved hjælp af afbryderknappen, genstartes den ikke automatisk, selvom politikken er aktiveret.</translation>
 <translation id="9152473318295429890">Aktivér indholdsbestemte forslag for relaterede websider</translation>
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
+<translation id="9159126470527871268">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> skal genstartes for at anvende en afventende opdatering.
+
+      Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren eller enheden. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig, mens <ph name="PRODUCT_OS_NAME" /> indikerer det samme via en underretning i systembakken. Hvis "Anbefales" angives for politikken, får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis "Påkrævet" angives for politikken, får brugeren vist en fast advarsel, som indikerer, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage for <ph name="PRODUCT_NAME" /> og fire dage for <ph name="PRODUCT_OS_NAME" />, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Brugerens session genoprettes efter genstarten.</translation>
 <translation id="9165792353046089850">Giver dig mulighed for at angive, om websites må få adgang til tilsluttede USB-enheder. Adgangen kan være fuldstændig blokeret, eller brugeren kan blive spurgt, hver gang et website vil have adgang til tilsluttede USB-enheder.
 
           Denne politik kan tilsidesættes for bestemte webadressemønstre ved hjælp af politikkerne "WebUsbAskForUrls" og "WebUsbBlockedForUrls".

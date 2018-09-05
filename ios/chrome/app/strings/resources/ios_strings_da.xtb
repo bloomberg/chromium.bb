@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Elementet blev opdateret</translation>
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
+<translation id="1063454504051558093">Brug en anden adgangskode...</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
 <translation id="1084365883616172403">Indlæg delt på Facebook.</translation>
 <translation id="1104948393051856124">Acceptér og fortsæt</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Send anvendelsesdata</translation>
 <translation id="1886928167269928266">Altid</translation>
 <translation id="1911619930368729126">Upload til Google Drev</translation>
+<translation id="191179954310195971">Andre Google-tjenester</translation>
 <translation id="1941314575388338491">Tryk to gange for at kopiere.</translation>
 <translation id="1952728750904661634">Log ind med en administreret konto</translation>
 <translation id="1974060860693918893">Avanceret</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
+<translation id="3765471630796399471">Brug en anden adgangskode</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3779810277399252432">Ingen internetforbindelse.</translation>
 <translation id="3783017676699494206">Gem billede</translation>
@@ -315,6 +318,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6346549652287021269">Vil du starte en ny download?</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
+<translation id="6363526231572697780">Der er intet brugernavn</translation>
 <translation id="6374469231428023295">Prøv igen</translation>
 <translation id="6380866119319257197">Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Navn på kort</translation>

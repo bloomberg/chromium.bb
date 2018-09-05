@@ -249,6 +249,7 @@
 <translation id="2900528713135656174">Создать мероприятие</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Запрашивать разрешение на воспроизведение защищенного контента</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2932150158123903946">Хранилище Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Отправляйте системную и диагностическую информацию в Google, чтобы сделать Chrome ещё лучше и безопаснее.</translation>
@@ -307,7 +308,6 @@
 <translation id="3443221991560634068">Обновить страницу</translation>
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
 <translation id="3485359633434254965">{FILES,plural, =1{Загружен %1$d файл.}one{Загружен %1$d файл.}few{Загружено %1$d файла.}many{Загружено %1$d файлов.}other{Загружено %1$d файла.}}</translation>
-<translation id="3487093336331957349">Подсказки запросов и сайтов</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Подробнее<ph name="END_LINK" /> о рекомендованном контенте…</translation>
 <translation id="3518985090088779359">Продолжить</translation>
@@ -417,7 +417,6 @@
 <translation id="4419556793104466535">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
-<translation id="4445444302979002552">Включить рекомендации поисковых запросов и веб-сайтов.</translation>
 <translation id="4452411734226507615">Закрыть вкладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4453340223357552416"><ph name="PRODUCT_NAME" />: скачан файл <ph name="FILE_NAME" /></translation>
@@ -669,6 +668,7 @@
 <translation id="6277522088822131679">Не удалось распечатать страницу. Повторите попытку.</translation>
 <translation id="6295158916970320988">Все сайты</translation>
 <translation id="629730747756840877">Аккаунт</translation>
+<translation id="6303969859164067831">Выйти из аккаунта и отключить синхронизацию</translation>
 <translation id="6320088164292336938">Вибросигнал</translation>
 <translation id="6324034347079777476">Синхронизация системы Android отключена</translation>
 <translation id="6333140779060797560">Отправить с помощью <ph name="APPLICATION" /></translation>
@@ -831,6 +831,7 @@
 <translation id="7542481630195938534">Не удалось получить рекомендации</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
+<translation id="757524316907819857">Запретить сайтам воспроизводить защищенный контент</translation>
 <translation id="7589445247086920869">Закрыть доступ текущей поисковой системе</translation>
 <translation id="7593557518625677601">Откройте настройки Android и снова включите синхронизацию системы</translation>
 <translation id="7596558890252710462">Операционная система</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
-<translation id="9018881455348618200">Кнопка поиска</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>

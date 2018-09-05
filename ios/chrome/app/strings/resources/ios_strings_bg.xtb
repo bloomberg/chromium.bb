@@ -4,6 +4,7 @@
 <translation id="1016495303386450659">Елементът е актуализиран</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
+<translation id="1063454504051558093">Използване на друга парола...</translation>
 <translation id="1076421457278169141">Кодът бе сканиран</translation>
 <translation id="1084365883616172403">Публикацията във Facebook е завършена.</translation>
 <translation id="1104948393051856124">Приемам! Напред</translation>
@@ -62,6 +63,7 @@
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
+<translation id="191179954310195971">Други услуги на Google</translation>
 <translation id="1941314575388338491">Докоснете двукратно, за да копирате.</translation>
 <translation id="1952728750904661634">Влизане с управляван профил</translation>
 <translation id="1974060860693918893">Разширени</translation>
@@ -167,6 +169,7 @@
 <translation id="3628119975092896051">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
+<translation id="3765471630796399471">Използване на друга парола</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3779810277399252432">Няма връзка с интернет.</translation>
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
@@ -315,6 +318,7 @@
 <translation id="6344783595350022745">Изчистване на текста</translation>
 <translation id="6346549652287021269">Да се стартира ли ново изтегляне?</translation>
 <translation id="6362362396625799311">Няма раздели в режим „инкогнито“</translation>
+<translation id="6363526231572697780">Няма потребителско име</translation>
 <translation id="6374469231428023295">Нов опит</translation>
 <translation id="6380866119319257197">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Име върху картата</translation>
