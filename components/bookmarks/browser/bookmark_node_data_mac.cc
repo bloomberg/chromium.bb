@@ -19,7 +19,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   base::FilePath file_path;
-  if (ReadBookmarksFromPasteboard(type, elements, &file_path)) {
+  if (ReadBookmarksFromPasteboard(type, &elements, &file_path)) {
     profile_path_ = file_path;
     return true;
   }
