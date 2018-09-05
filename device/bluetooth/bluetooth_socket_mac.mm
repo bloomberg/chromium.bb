@@ -687,8 +687,7 @@ void BluetoothSocketMac::OnChannelDataReceived(void* data, size_t length) {
   DCHECK(!is_connecting());
 
   int data_size = base::checked_cast<int>(length);
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(data_size));
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(data_size);
   memcpy(buffer->data(), data, buffer->size());
 
   // If there is a pending read callback, call it now.
@@ -728,8 +727,8 @@ void BluetoothSocketMac::Send(scoped_refptr<net::IOBuffer> buffer,
   // |writeAsync| accepts buffers of max. mtu bytes per call, so we need to emit
   // multiple write operations if buffer_size > mtu.
   uint16_t mtu = channel_->GetOutgoingMTU();
-  scoped_refptr<net::DrainableIOBuffer> send_buffer(
-      new net::DrainableIOBuffer(buffer.get(), buffer_size));
+  auto send_buffer =
+      base::MakeRefCounted<net::DrainableIOBuffer>(buffer.get(), buffer_size);
   while (send_buffer->BytesRemaining() > 0) {
     int byte_count = send_buffer->BytesRemaining();
     if (byte_count > mtu)

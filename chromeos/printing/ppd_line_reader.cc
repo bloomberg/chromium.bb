@@ -65,7 +65,7 @@ class PpdLineReaderImpl : public PpdLineReader {
  public:
   PpdLineReaderImpl(const std::string& ppd_contents, size_t max_line_length)
       : max_line_length_(max_line_length),
-        read_buf_(new net::IOBuffer(kReadBufCapacity)) {
+        read_buf_(base::MakeRefCounted<net::IOBuffer>(kReadBufCapacity)) {
     input_ = std::make_unique<StringSourceStream>(ppd_contents);
     if (IsGZipped(ppd_contents)) {
       input_ = net::GzipSourceStream::Create(std::move(input_),
@@ -168,6 +168,8 @@ class PpdLineReaderImpl : public PpdLineReader {
   // stream or string source stream depending on the source data.
   std::unique_ptr<net::SourceStream> input_;
 };
+
+constexpr int PpdLineReaderImpl::kReadBufCapacity;
 
 }  // namespace
 

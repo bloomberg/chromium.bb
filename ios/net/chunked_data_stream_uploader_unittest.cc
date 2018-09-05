@@ -82,7 +82,7 @@ TEST_F(ChunkedDataStreamUploaderTest, ExternalDataReadyFirst) {
 
   // Network layer callback is called next, and the application data is expected
   // to be read to the |buffer|.
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kDefaultIOBufferSize);
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(kDefaultIOBufferSize);
   int bytes_read = uploader_->Read(
       buffer.get(), kDefaultIOBufferSize,
       base::BindRepeating(&ChunkedDataStreamUploaderTest::CompletionCallback,
@@ -111,7 +111,7 @@ TEST_F(ChunkedDataStreamUploaderTest, ExternalDataReadyFirst) {
 // layer data available.
 TEST_F(ChunkedDataStreamUploaderTest, InternalReadReadyFirst) {
   // Network layer callback is called and the request is pending.
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kDefaultIOBufferSize);
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(kDefaultIOBufferSize);
   int ret = uploader_->Read(
       buffer.get(), kDefaultIOBufferSize,
       base::BindRepeating(&ChunkedDataStreamUploaderTest::CompletionCallback,
@@ -141,7 +141,7 @@ TEST_F(ChunkedDataStreamUploaderTest, InternalReadReadyFirst) {
 
 // Tests that null data is correctly handled when the callback comes first.
 TEST_F(ChunkedDataStreamUploaderTest, NullContentWithReadFirst) {
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kDefaultIOBufferSize);
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(kDefaultIOBufferSize);
   int ret = uploader_->Read(
       buffer.get(), kDefaultIOBufferSize,
       base::BindRepeating(&ChunkedDataStreamUploaderTest::CompletionCallback,
@@ -160,7 +160,7 @@ TEST_F(ChunkedDataStreamUploaderTest, NullContentWithDataFirst) {
   delegate_->SetReadData("", 0);
   uploader_->UploadWhenReady(true);
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kDefaultIOBufferSize);
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(kDefaultIOBufferSize);
   int bytes_read = uploader_->Read(
       buffer.get(), kDefaultIOBufferSize,
       base::BindRepeating(&ChunkedDataStreamUploaderTest::CompletionCallback,
@@ -179,7 +179,7 @@ TEST_F(ChunkedDataStreamUploaderTest, MixedScenarioTest) {
   delegate_->SetReadData(kTestData, sizeof(kTestData));
   uploader_->UploadWhenReady(false);
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kDefaultIOBufferSize);
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(kDefaultIOBufferSize);
   int bytes_read = uploader_->Read(
       buffer.get(), kDefaultIOBufferSize,
       base::BindRepeating(&ChunkedDataStreamUploaderTest::CompletionCallback,

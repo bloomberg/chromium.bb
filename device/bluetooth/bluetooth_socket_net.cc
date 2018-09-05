@@ -168,8 +168,7 @@ void BluetoothSocketNet::DoReceive(
     return;
   }
 
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(buffer_size));
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(buffer_size);
   int read_result =
       tcp_socket_->Read(buffer.get(),
                         buffer->size(),
