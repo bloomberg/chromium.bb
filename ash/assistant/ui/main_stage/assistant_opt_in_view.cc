@@ -91,6 +91,16 @@ void AssistantOptInView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   label_->SizeToFit(width());
 }
 
+void AssistantOptInView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  if (delegate_)
+    delegate_->OnOptInButtonPressed();
+}
+
+void AssistantOptInView::SetFocusBehavior(FocusBehavior focus_behavior) {
+  container_->SetFocusBehavior(focus_behavior);
+}
+
 void AssistantOptInView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -103,18 +113,17 @@ void AssistantOptInView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
   // Container.
-  AssistantOptInContainer* container =
-      new AssistantOptInContainer(/*listener=*/this);
+  container_ = new AssistantOptInContainer(/*listener=*/this);
 
   layout_manager =
-      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  AddChildView(container);
+  AddChildView(container_);
 
   // Label.
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
@@ -146,16 +155,10 @@ void AssistantOptInView::InitLayout() {
       gfx::Range(offsets.at(1), offsets.at(1) + get_started.length()),
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
-  container->AddChildView(label_);
+  container_->AddChildView(label_);
 
-  container->SetFocusForPlatform();
-  container->SetAccessibleName(label_text);
-}
-
-void AssistantOptInView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  if (delegate_)
-    delegate_->OnOptInButtonPressed();
+  container_->SetFocusForPlatform();
+  container_->SetAccessibleName(label_text);
 }
 
 }  // namespace ash

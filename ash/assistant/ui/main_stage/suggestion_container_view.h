@@ -62,6 +62,8 @@ class SuggestionContainerView : public AssistantScrollView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void SetFocusBehavior(FocusBehavior focus_behavior);
+
  private:
   void InitLayout();
 
@@ -73,6 +75,8 @@ class SuggestionContainerView : public AssistantScrollView,
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  FocusBehavior focus_behavior_ = FocusBehavior::NEVER;
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 

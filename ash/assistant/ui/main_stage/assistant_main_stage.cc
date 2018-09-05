@@ -648,8 +648,8 @@ void AssistantMainStage::UpdateFooter() {
   // When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;
 
-  // Reset visibility to enable animation.
-  footer_->SetVisible(true);
+  // The footer should not be focusable while it's animating.
+  footer_->SetFocusBehavior(FocusBehavior::NEVER);
 
   if (visible) {
     // The footer will animate up into position so we need to set an initial
@@ -704,7 +704,8 @@ bool AssistantMainStage::OnFooterAnimationEnded(
   // there is no committed or pending query view.
   bool visible = !committed_query_view_ && !pending_query_view_;
   footer_->set_can_process_events_within_subtree(visible);
-  footer_->SetVisible(visible);
+  footer_->SetFocusBehavior(visible ? FocusBehavior::ALWAYS
+                                    : FocusBehavior::NEVER);
 
   // Return false so that the observer does not destroy itself.
   return false;
