@@ -108,4 +108,8 @@ constexpr char kCrostiniDefaultImageServerUrl[] =
     "https://storage.googleapis.com/cros-containers";
 constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 
+// Whether running Crostini is allowed for unaffiliated users per enterprise
+// policy.
+bool IsUnaffiliatedCrostiniAllowedByPolicy();
+
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_

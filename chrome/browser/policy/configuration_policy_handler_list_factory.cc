@@ -77,6 +77,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/accessibility/magnifier_type.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
@@ -675,6 +676,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kNetBiosShareDiscoveryEnabled,
     prefs::kNetBiosShareDiscoveryEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kCrostiniAllowed,
+    crostini::prefs::kUserCrostiniAllowedByPolicy,
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 

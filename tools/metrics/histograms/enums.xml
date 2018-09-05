@@ -14319,6 +14319,8 @@ Called by update_net_error_codes.py.-->
   <int value="478" label="PrintingDuplexDefault"/>
   <int value="479" label="PrintingSizeDefault"/>
   <int value="480" label="PrintHeaderFooter"/>
+  <int value="481" label="CrostiniAllowed"/>
+  <int value="482" label="DeviceUnaffiliatedCrostiniAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

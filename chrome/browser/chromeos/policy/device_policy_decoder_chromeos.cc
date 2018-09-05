@@ -1049,6 +1049,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     DecodeIntegerValue(container.rate_days()), nullptr);
     }
   }
+
+  if (policy.has_device_unaffiliated_crostini_allowed()) {
+    const em::DeviceUnaffiliatedCrostiniAllowedProto& container(
+        policy.device_unaffiliated_crostini_allowed());
+    if (container.has_device_unaffiliated_crostini_allowed()) {
+      policies->Set(key::kDeviceUnaffiliatedCrostiniAllowed,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(
+                        container.device_unaffiliated_crostini_allowed()),
+                    nullptr);
+    }
+  }
 }
 
 }  // namespace
