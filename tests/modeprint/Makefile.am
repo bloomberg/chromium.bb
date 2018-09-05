@@ -16,4 +16,5 @@ endif
 modeprint_SOURCES = \
 	modeprint.c
 modeprint_LDADD = \
+	$(top_builddir)/tests/util/libutil.la \
 	$(top_builddir)/libdrm.la
