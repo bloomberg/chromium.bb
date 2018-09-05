@@ -175,6 +175,9 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
     {
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
+      // Trace-parsing tools (Lighthouse, etc) consume this event to determine
+      // long tasks. See https://crbug.com/874982
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("lighthouse"), "RunTask");
       task_annotator_.RunTask("ThreadControllerImpl::RunTask", &*task);
     }
 
