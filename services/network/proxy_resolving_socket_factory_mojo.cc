@@ -16,8 +16,9 @@ namespace network {
 
 ProxyResolvingSocketFactoryMojo::ProxyResolvingSocketFactoryMojo(
     net::URLRequestContext* request_context)
-    : factory_impl_(std::make_unique<ProxyResolvingClientSocketFactory>(
-          request_context)) {}
+    : factory_impl_(request_context),
+      tls_socket_factory_(request_context,
+                          &factory_impl_.network_session()->context()) {}
 
 ProxyResolvingSocketFactoryMojo::~ProxyResolvingSocketFactoryMojo() {}
 
@@ -28,8 +29,9 @@ void ProxyResolvingSocketFactoryMojo::CreateProxyResolvingSocket(
     mojom::ProxyResolvingSocketRequest request,
     CreateProxyResolvingSocketCallback callback) {
   auto socket = std::make_unique<ProxyResolvingSocketMojo>(
-      factory_impl_->CreateSocket(url, use_tls),
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
+      factory_impl_.CreateSocket(url, use_tls),
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
+      &tls_socket_factory_);
   ProxyResolvingSocketMojo* socket_raw = socket.get();
   proxy_resolving_socket_bindings_.AddBinding(std::move(socket),
                                               std::move(request));

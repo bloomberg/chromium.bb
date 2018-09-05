@@ -16,17 +16,15 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
-#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/tcp_bound_socket.h"
 #include "services/network/tcp_connected_socket.h"
 #include "services/network/tcp_server_socket.h"
+#include "services/network/tls_socket_factory.h"
 
 namespace net {
-class ClientSocketHandle;
 class ClientSocketFactory;
 class NetLog;
-class SSLConfigService;
 }  // namespace net
 
 namespace network {
@@ -34,8 +32,7 @@ namespace network {
 // Helper class that handles socket requests. It takes care of destroying
 // socket implementation instances when mojo  pipes are broken.
 class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
-    : public TCPConnectedSocket::Delegate,
-      public TCPServerSocket::Delegate {
+    : public TCPServerSocket::Delegate {
  public:
   // Constructs a SocketFactory. If |net_log| is non-null, it is used to
   // log NetLog events when logging is enabled. |net_log| used to must outlive
@@ -90,35 +87,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   void OnAccept(std::unique_ptr<TCPConnectedSocket> socket,
                 mojom::TCPConnectedSocketRequest request) override;
 
-  // TCPConnectedSocket::Delegate implementation:
-  void CreateTLSClientSocket(
-      const net::HostPortPair& host_port_pair,
-      mojom::TLSClientSocketOptionsPtr socket_options,
-      mojom::TLSClientSocketRequest request,
-      std::unique_ptr<net::ClientSocketHandle> tcp_socket,
-      mojom::SocketObserverPtr observer,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) override;
-
   net::NetLog* const net_log_;
 
-  // The following are used when |skip_cert_verification| is specified in
-  // upgrade options.
-  net::SSLClientSocketContext no_verification_ssl_client_socket_context_;
-  std::unique_ptr<net::CertVerifier> no_verification_cert_verifier_;
-  std::unique_ptr<net::TransportSecurityState>
-      no_verification_transport_security_state_;
-  std::unique_ptr<net::CTVerifier> no_verification_cert_transparency_verifier_;
-  std::unique_ptr<net::CTPolicyEnforcer> no_verification_ct_policy_enforcer_;
-
-  net::SSLClientSocketContext ssl_client_socket_context_;
   net::ClientSocketFactory* client_socket_factory_;
-  net::SSLConfigService* const ssl_config_service_;
+  TLSSocketFactory tls_socket_factory_;
   mojo::StrongBindingSet<mojom::UDPSocket> udp_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
       tcp_connected_socket_bindings_;
-  mojo::StrongBindingSet<mojom::TLSClientSocket> tls_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPBoundSocket> tcp_bound_socket_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketFactory);

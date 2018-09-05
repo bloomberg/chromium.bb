@@ -21,11 +21,11 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/socket_data_pump.h"
+#include "services/network/tls_socket_factory.h"
 
 namespace net {
 class NetLog;
 class ClientSocketFactory;
-class ClientSocketHandle;
 class TransportClientSocket;
 }  // namespace net
 
@@ -33,25 +33,13 @@ namespace network {
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
     : public mojom::TCPConnectedSocket,
-      public SocketDataPump::Delegate {
+      public SocketDataPump::Delegate,
+      public TLSSocketFactory::Delegate {
  public:
-  // Interface to handle a mojom::TLSClientSocketRequest.
-  class Delegate {
-   public:
-    // Handles a mojom::TLSClientSocketRequest.
-    virtual void CreateTLSClientSocket(
-        const net::HostPortPair& host_port_pair,
-        mojom::TLSClientSocketOptionsPtr socket_options,
-        mojom::TLSClientSocketRequest request,
-        std::unique_ptr<net::ClientSocketHandle> tcp_socket,
-        mojom::SocketObserverPtr observer,
-        const net::NetworkTrafficAnnotationTag& traffic_annotation,
-        mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) = 0;
-  };
   TCPConnectedSocket(
       mojom::SocketObserverPtr observer,
       net::NetLog* net_log,
-      Delegate* delegate,
+      TLSSocketFactory* tls_socket_factory,
       net::ClientSocketFactory* client_socket_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   TCPConnectedSocket(
@@ -73,7 +61,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TLSClientSocketRequest request,
       mojom::SocketObserverPtr observer,
-      UpgradeToTLSCallback callback) override;
+      mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) override;
   void SetNoDelay(bool no_delay, SetNoDelayCallback callback) override;
   void SetKeepAlive(bool enable,
                     int32_t delay_secs,
@@ -88,11 +76,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
   void OnNetworkWriteError(int net_error) override;
   void OnShutdown() override;
 
+  // TLSSocketFactory::Delegate implementation.
+  const net::StreamSocket* BorrowSocket() override;
+  std::unique_ptr<net::StreamSocket> TakeSocket() override;
+
   const mojom::SocketObserverPtr observer_;
 
   net::NetLog* const net_log_;
-  Delegate* const delegate_;
   net::ClientSocketFactory* const client_socket_factory_;
+  TLSSocketFactory* tls_socket_factory_;
 
   std::unique_ptr<net::TransportClientSocket> socket_;
 

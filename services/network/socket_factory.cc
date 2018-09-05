@@ -26,38 +26,12 @@
 #include "services/network/udp_socket.h"
 
 namespace network {
-namespace {
-// Cert verifier which blindly accepts all certificates, regardless of validity.
-class FakeCertVerifier : public net::CertVerifier {
- public:
-  FakeCertVerifier() {}
-  ~FakeCertVerifier() override {}
-
-  int Verify(const RequestParams& params,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback,
-             std::unique_ptr<Request>*,
-             const net::NetLogWithSource&) override {
-    verify_result->Reset();
-    verify_result->verified_cert = params.certificate();
-    return net::OK;
-  }
-  void SetConfig(const Config& config) override {}
-};
-}  // namespace
 
 SocketFactory::SocketFactory(net::NetLog* net_log,
                              net::URLRequestContext* url_request_context)
     : net_log_(net_log),
-      ssl_client_socket_context_(
-          url_request_context->cert_verifier(),
-          nullptr, /* TODO(rkn): ChannelIDService is not thread safe. */
-          url_request_context->transport_security_state(),
-          url_request_context->cert_transparency_verifier(),
-          url_request_context->ct_policy_enforcer(),
-          std::string() /* TODO(rsleevi): Ensure a proper unique shard. */),
       client_socket_factory_(nullptr),
-      ssl_config_service_(url_request_context->ssl_config_service()) {
+      tls_socket_factory_(url_request_context, nullptr /*http_context*/) {
   if (url_request_context->GetNetworkSessionContext()) {
     client_socket_factory_ =
         url_request_context->GetNetworkSessionContext()->client_socket_factory;
@@ -101,8 +75,8 @@ void SocketFactory::CreateTCPConnectedSocket(
     mojom::SocketObserverPtr observer,
     mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   auto socket = std::make_unique<TCPConnectedSocket>(
-      std::move(observer), net_log_, this, client_socket_factory_,
-      traffic_annotation);
+      std::move(observer), net_log_, &tls_socket_factory_,
+      client_socket_factory_, traffic_annotation);
   TCPConnectedSocket* socket_raw = socket.get();
   tcp_connected_socket_bindings_.AddBinding(std::move(socket),
                                             std::move(request));
@@ -147,59 +121,6 @@ void SocketFactory::OnBoundSocketConnected(
   tcp_connected_socket_bindings_.AddBinding(
       std::move(connected_socket), std::move(connected_socket_request));
   tcp_bound_socket_bindings_.RemoveBinding(bound_socket_id);
-}
-
-void SocketFactory::CreateTLSClientSocket(
-    const net::HostPortPair& host_port_pair,
-    mojom::TLSClientSocketOptionsPtr socket_options,
-    mojom::TLSClientSocketRequest request,
-    std::unique_ptr<net::ClientSocketHandle> tcp_socket,
-    mojom::SocketObserverPtr observer,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
-  auto socket = std::make_unique<TLSClientSocket>(
-      std::move(request), std::move(observer),
-      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
-  TLSClientSocket* socket_raw = socket.get();
-  tls_socket_bindings_.AddBinding(std::move(socket), std::move(request));
-
-  net::SSLConfig ssl_config;
-  ssl_config_service_->GetSSLConfig(&ssl_config);
-  net::SSLClientSocketContext& ssl_client_socket_context =
-      ssl_client_socket_context_;
-
-  bool send_ssl_info = false;
-  if (socket_options) {
-    ssl_config.version_min =
-        mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_min);
-    ssl_config.version_max =
-        mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_max);
-
-    if (socket_options->skip_cert_verification) {
-      if (!no_verification_cert_verifier_) {
-        no_verification_cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
-        no_verification_transport_security_state_.reset(
-            new net::TransportSecurityState);
-        no_verification_cert_transparency_verifier_.reset(
-            new net::MultiLogCTVerifier());
-        no_verification_ct_policy_enforcer_.reset(
-            new net::DefaultCTPolicyEnforcer());
-        no_verification_ssl_client_socket_context_.cert_verifier =
-            no_verification_cert_verifier_.get();
-        no_verification_ssl_client_socket_context_.transport_security_state =
-            no_verification_transport_security_state_.get();
-        no_verification_ssl_client_socket_context_.cert_transparency_verifier =
-            no_verification_cert_transparency_verifier_.get();
-        no_verification_ssl_client_socket_context_.ct_policy_enforcer =
-            no_verification_ct_policy_enforcer_.get();
-      }
-      ssl_client_socket_context = no_verification_ssl_client_socket_context_;
-      send_ssl_info = true;
-    }
-  }
-  socket_raw->Connect(host_port_pair, ssl_config, std::move(tcp_socket),
-                      ssl_client_socket_context, client_socket_factory_,
-                      std::move(callback), send_ssl_info);
 }
 
 void SocketFactory::OnAccept(std::unique_ptr<TCPConnectedSocket> socket,
