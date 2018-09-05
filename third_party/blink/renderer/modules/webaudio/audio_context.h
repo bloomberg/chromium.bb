@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 
+#include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
@@ -105,6 +106,11 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   void DidClose();
 
+  // Send notification to browser that an AudioContext has started or stopped
+  // playing audible audio.
+  void NotifyAudibleAudioStarted() final;
+  void NotifyAudibleAudioStopped() final;
+
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;
 
@@ -123,6 +129,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   // Records if start() was ever called for any source node in this context.
   bool source_node_started_ = false;
+
+  // AudioContextManager for reporting audibility.
+  mojom::blink::AudioContextManagerPtr audio_context_manager_;
 };
 
 }  // namespace blink

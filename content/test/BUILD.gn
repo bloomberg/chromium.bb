@@ -802,6 +802,7 @@ test("content_browsertests") {
     "../browser/media/session/media_session_service_impl_browsertest.cc",
     "../browser/media/session/mock_media_session_player_observer.cc",
     "../browser/media/session/mock_media_session_player_observer.h",
+    "../browser/media/webaudio/audio_context_manager_browsertest.cc",
     "../browser/memory/memory_coordinator_impl_browsertest.cc",
     "../browser/message_port_provider_browsertest.cc",
     "../browser/mojo_sandbox_browsertest.cc",

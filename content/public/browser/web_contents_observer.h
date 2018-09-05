@@ -542,6 +542,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // tab.
   virtual void DidCommitAndDrawCompositorFrame() {}
 
+  // Called when "audible" playback starts or stops on a WebAudio AudioContext.
+  using AudioContextId = std::pair<RenderFrameHost*, int>;
+  virtual void AudioContextPlaybackStarted(
+      const AudioContextId& audio_context_id) {}
+  virtual void AudioContextPlaybackStopped(
+      const AudioContextId& audio_context_id) {}
+
   // IPC::Listener implementation.
   // DEPRECATED: Use (i.e. override) the other overload instead:
   //     virtual bool OnMessageReceived(const IPC::Message& message,
