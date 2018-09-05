@@ -237,7 +237,7 @@ void P2PSocketTcpBase::DoRead() {
   int result;
   do {
     if (!read_buffer_.get()) {
-      read_buffer_ = new net::GrowableIOBuffer();
+      read_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
       read_buffer_->SetCapacity(kTcpReadBufferSize);
     } else if (read_buffer_->RemainingCapacity() < kTcpReadBufferSize) {
       // Make sure that we always have at least kTcpReadBufferSize of

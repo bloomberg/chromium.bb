@@ -385,7 +385,7 @@ void WebSocket::SendFrame(bool fin,
   DCHECK(IsKnownEnumValue(type));
 
   // TODO(darin): Avoid this copy.
-  scoped_refptr<net::IOBuffer> data_to_pass(new net::IOBuffer(data.size()));
+  auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(data.size());
   std::copy(data.begin(), data.end(), data_to_pass->data());
 
   channel_->SendFrame(fin, MessageTypeToOpCode(type), std::move(data_to_pass),

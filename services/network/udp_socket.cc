@@ -332,7 +332,8 @@ void UDPSocket::DoRecvFrom(uint32_t buffer_size) {
   DCHECK_GT(remaining_recv_slots_, 0u);
   DCHECK_GE(kMaxReadSize, buffer_size);
 
-  recvfrom_buffer_ = new net::IOBuffer(static_cast<size_t>(buffer_size));
+  recvfrom_buffer_ =
+      base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(buffer_size));
 
   // base::Unretained(this) is safe because socket is owned by |this|.
   int net_result = wrapped_socket_->RecvFrom(
@@ -360,8 +361,7 @@ void UDPSocket::DoSendToOrWrite(
 
   // |data| points to a range of bytes in the received message and will be
   // freed when this method returns, so copy out the bytes now.
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      new net::IOBufferWithSize(data.size());
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(data.size());
   memcpy(buffer.get()->data(), data.begin(), data.size());
 
   if (send_buffer_.get()) {
