@@ -27871,6 +27871,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
 </enum>
 
+<enum name="LocalCardMigrationPrompt">
+  <int value="0" label="Intermediate bubble shown"/>
+  <int value="1" label="Intermediate bubble accepted"/>
+  <int value="2" label="Main dialog shown"/>
+  <int value="3" label="Main dialog accepted"/>
+</enum>
+
 <enum name="LocalRendererSinkStates">
   <int value="0" label="SinkStarted"/>
   <int value="1" label="SinkNeverStarted"/>

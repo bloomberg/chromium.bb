@@ -45,11 +45,17 @@ LocalCardMigrationManager::~LocalCardMigrationManager() {}
 bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
     int imported_credit_card_record_type) {
   // Must be an existing card. New cards always get Upstream or local save.
-  if (imported_credit_card_record_type !=
-          FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
-      imported_credit_card_record_type !=
-          FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD) {
-    return false;
+  switch (imported_credit_card_record_type) {
+    case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
+      local_card_migration_origin_ =
+          AutofillMetrics::LocalCardMigrationOrigin::UseOfLocalCard;
+      break;
+    case FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD:
+      local_card_migration_origin_ =
+          AutofillMetrics::LocalCardMigrationOrigin::UseOfServerCard;
+      break;
+    default:
+      return false;
   }
 
   if (!IsCreditCardMigrationEnabled())
@@ -89,12 +95,17 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
 // Call ShowMainMigrationDialog() to pop up a larger, modal dialog showing the
 // local cards to be uploaded.
 void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
+  AutofillMetrics::LogLocalCardMigrationPromptMetric(
+      local_card_migration_origin_,
+      AutofillMetrics::INTERMEDIATE_BUBBLE_ACCEPTED);
   ShowMainMigrationDialog();
 }
 
 // Send the migration request once risk data is available.
 void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
   user_accepted_main_migration_dialog_ = true;
+  AutofillMetrics::LogLocalCardMigrationPromptMetric(
+      local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
   // Populating risk data and offering migration two-round pop-ups occur
   // asynchronously. If |migration_risk_data_| has already been loaded, send the
   // migrate local cards request. Otherwise, continue to wait and let
@@ -132,12 +143,18 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     // dialog. If triggered from settings page, we pop-up the main prompt
     // directly. If not, we pop up the intermediate bubble.
     if (is_from_settings_page) {
+      // Set the origin to SettingsPage.
+      local_card_migration_origin_ =
+          AutofillMetrics::LocalCardMigrationOrigin::SettingsPage;
       // Pops up a larger, modal dialog showing the local cards to be uploaded.
       ShowMainMigrationDialog();
     } else {
       client_->ShowLocalCardMigrationDialog(base::BindOnce(
           &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
           weak_ptr_factory_.GetWeakPtr()));
+      AutofillMetrics::LogLocalCardMigrationPromptMetric(
+          local_card_migration_origin_,
+          AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN);
     }
     // TODO(crbug.com/876895): Clean up the LoadRiskData Bind/BindRepeating
     // usages
@@ -208,6 +225,8 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
 // migration on the intermediate dialog or directly from settings page.
 void LocalCardMigrationManager::ShowMainMigrationDialog() {
   user_accepted_main_migration_dialog_ = false;
+  AutofillMetrics::LogLocalCardMigrationPromptMetric(
+      local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_SHOWN);
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   client_->ConfirmMigrateLocalCardToCloud(
       std::move(legal_message_), migratable_credit_cards_,

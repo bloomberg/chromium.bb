@@ -848,6 +848,31 @@ void AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationPromptMetric(
+    LocalCardMigrationOrigin local_card_migration_origin,
+    LocalCardMigrationPromptMetric metric) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_PROMPT_METRICS);
+  std::string histogram_name = "Autofill.LocalCardMigrationOrigin.";
+  // Switch to different sub-histogram depending on local card migration origin.
+  switch (local_card_migration_origin) {
+    case LocalCardMigrationOrigin::UseOfLocalCard:
+      histogram_name += "UseOfLocalCard";
+      break;
+    case LocalCardMigrationOrigin::UseOfServerCard:
+      histogram_name += "UseOfServerCard";
+      break;
+    case LocalCardMigrationOrigin::SettingsPage:
+      histogram_name += "SettingsPage";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramEnumeration(histogram_name, metric,
+                                NUM_LOCAL_CARD_MIGRATION_PROMPT_METRICS);
+}
+
+// static
 void AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(bool is_local) {
   std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameOffered.";
   histogram_name += is_local ? "Local" : "Server";
