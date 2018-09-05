@@ -63,6 +63,14 @@ double GeneratePermutedEntropy(uint16_t entropy_source,
   return permuted_provider.GetEntropyForTrial(trial_name, 0);
 }
 
+// Make a vector of consecutive integers for shuffling.
+std::vector<uint16_t> MakeRange(size_t vector_size) {
+  std::vector<uint16_t> range(vector_size);
+  for (size_t i = 0; i < vector_size; ++i)
+    range[i] = i;
+  return range;
+}
+
 // Helper interface for testing used to generate entropy values for a given
 // field trial. Unlike EntropyProvider, which keeps the low/high entropy source
 // value constant and generates entropy for different trial names, instances
@@ -355,6 +363,23 @@ TEST(EntropyProviderTest, PermutedEntropyIsUniform) {
     PermutedEntropyGenerator entropy_generator(kTestTrialNames[i]);
     PerformEntropyUniformityTest(kTestTrialNames[i], entropy_generator);
   }
+}
+
+TEST(EntropyProviderTest, PermutedEntropyConsistency) {
+  std::vector<uint16_t> to_shuffle = MakeRange(10);
+  std::vector<uint16_t> expected = {7, 6, 8, 3, 2, 0, 1, 4, 9, 5};
+  internal::PermuteMappingUsingRandomizationSeed(5, &to_shuffle);
+  EXPECT_EQ(expected, to_shuffle);
+}
+
+TEST(EntropyProviderTest, PermutedEntropyConsistencyWithReroll) {
+  // Test that the permuted entropy provider is consistent with previously
+  // shipped versions, with a case that requires rerolls.
+  std::vector<uint16_t> to_shuffle = MakeRange(1000);
+  std::vector<uint16_t> expected = {776, 561, 72, 966, 500};
+  internal::PermuteMappingUsingRandomizationSeed(10694, &to_shuffle);
+  std::vector<uint16_t> slice(to_shuffle.begin(), to_shuffle.begin() + 5);
+  EXPECT_EQ(expected, slice);
 }
 
 TEST(EntropyProviderTest, SeededRandGeneratorIsUniform) {
