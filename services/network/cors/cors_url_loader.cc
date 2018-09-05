@@ -132,6 +132,12 @@ void CORSURLLoader::FollowRedirect(
   request_.method = redirect_info_.new_method;
   request_.referrer = GURL(redirect_info_.new_referrer);
   request_.referrer_policy = redirect_info_.new_referrer_policy;
+
+  // The request method can be changed to "GET". In this case we need to
+  // reset the request body manually.
+  if (request_.method == net::HttpRequestHeaders::kGetMethod)
+    request_.request_body = nullptr;
+
   const bool original_fetch_cors_flag = fetch_cors_flag_;
   SetCORSFlagIfNeeded();
 
