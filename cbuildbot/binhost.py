@@ -159,7 +159,7 @@ class PrebuiltMapping(_PrebuiltMapping):
         output.append({'key': key.__dict__, 'compat_id': compat_id.__dict__})
 
     with open(filename, 'w') as f:
-      json.dump(output, f, sort_keys=True, indent=2)
+      json.dump(output, f, sort_keys=True, indent=2, separators=(',', ': '))
 
   @classmethod
   def Load(cls, filename):
