@@ -97,39 +97,6 @@ class PLATFORM_EXPORT ParkableString final {
   scoped_refptr<ParkableStringImpl> impl_;
 };
 
-// Per-thread registry of all ParkableString instances. NOT thread-safe.
-class PLATFORM_EXPORT ParkableStringTable final {
- public:
-  ParkableStringTable();
-  ~ParkableStringTable();
-
-  static ParkableStringTable& Instance();
-
-  scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
-
-  // This is for ~ParkableStringImpl to unregister a string before
-  // destruction since the table is holding raw pointers. It should not be used
-  // directly.
-  void Remove(StringImpl*);
-
-  void SetRendererBackgrounded(bool backgrounded);
-  bool IsRendererBackgrounded() const;
-
-  // Parks all the strings in the table if currently in background.
-  void MaybeParkAll();
-
- private:
-  bool backgrounded_;
-  // Could bet a set where the hashing function is
-  // ParkableStringImpl::string_.Impl(), but clearer this way.
-  std::map<StringImpl*, ParkableStringImpl*> table_;
-
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableSimple);
-  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, TableMultiple);
-
-  DISALLOW_COPY_AND_ASSIGN(ParkableStringTable);
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
