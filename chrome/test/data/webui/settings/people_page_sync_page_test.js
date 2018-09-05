@@ -530,6 +530,11 @@ cr.define('settings_people_page_sync_page', function() {
       prefs.encryptAllData = true;
       openDatatypeConfigurationWithUnifiedConsent(prefs);
 
+      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
+      // The unified consent toggle is disabled when the data types are
+      // encrypted.
+      assertTrue(unifiedConsentToggle.disabled);
+
       assertTrue(prefs.userEventsSynced);
       // History.
       historyToggle = syncPage.$$('#historyToggle');
@@ -546,6 +551,11 @@ cr.define('settings_people_page_sync_page', function() {
     test('UserEvents_UnifiedConsent_NotEncrypted', function() {
       const prefs = getSyncAllPrefs();
       openDatatypeConfigurationWithUnifiedConsent(prefs);
+
+      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
+      // The unified consent toggle is enabled when the data types are not
+      // encrypted.
+      assertFalse(unifiedConsentToggle.disabled);
 
       assertTrue(prefs.userEventsSynced);
       // Check history toggle.
