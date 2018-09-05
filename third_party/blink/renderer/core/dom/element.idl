@@ -48,7 +48,7 @@ interface Element : Node {
     [Affects=Nothing] sequence<DOMString> getAttributeNames();
     [Affects=Nothing] DOMString? getAttribute(DOMString name);
     [Affects=Nothing] DOMString? getAttributeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
+    [RaisesException, CEReactions, CustomElementCallbacks] void setAttribute(DOMString name, TrustedString value);
     [RaisesException, CEReactions, CustomElementCallbacks] void setAttributeNS(DOMString? namespaceURI, DOMString name, DOMString value);
     [CEReactions, CustomElementCallbacks] void removeAttribute(DOMString name);
     [CEReactions, CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);

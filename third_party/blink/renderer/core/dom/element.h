@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -78,6 +79,8 @@ class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
+class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL;
+class StringOrTrustedScript;
 class StringOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
@@ -208,14 +211,28 @@ class CORE_EXPORT Element : public ContainerNode {
                     ExceptionState&);
   void setAttribute(const AtomicString& name, const AtomicString& value);
 
-  // Trusted Type ScriptURL variant of the above.
-  void setAttribute(const QualifiedName&,
-                    const StringOrTrustedScriptURL&,
-                    ExceptionState&);
+  // Trusted Types variant for explicit setAttribute() use.
+  void setAttribute(
+      const AtomicString&,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+      ExceptionState&);
+
+  // Returns attributes that should be checked against Trusted Types
+  virtual const HashSet<AtomicString>& GetCheckedAttributeNames() const;
 
   // Trusted Type HTML variant
   void setAttribute(const QualifiedName&,
                     const StringOrTrustedHTML&,
+                    ExceptionState&);
+
+  // Trusted Type Script variant
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedScript&,
+                    ExceptionState&);
+
+  // Trusted Type ScriptURL variant
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedScriptURL&,
                     ExceptionState&);
 
   // Trusted Type URL variant

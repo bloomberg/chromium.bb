@@ -60,6 +60,12 @@ DEFINE_NODE_FACTORY(HTMLTrackElement)
 
 HTMLTrackElement::~HTMLTrackElement() = default;
 
+const HashSet<AtomicString>& HTMLTrackElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
     ContainerNode& insertion_point) {
   DVLOG(TRACK_LOG_LEVEL) << "insertedInto";

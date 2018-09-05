@@ -44,6 +44,9 @@ class HTMLSourceElement final : public HTMLElement {
   DECLARE_NODE_FACTORY(HTMLSourceElement);
   ~HTMLSourceElement() override;
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   const AtomicString& type() const;
   void SetSrc(const String&);
   void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);

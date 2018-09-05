@@ -402,6 +402,12 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
 
 URLRegistry* HTMLMediaElement::media_stream_registry_ = nullptr;
 
+const HashSet<AtomicString>& HTMLMediaElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
+  return attribute_set;
+}
+
 void HTMLMediaElement::SetMediaStreamRegistry(URLRegistry* registry) {
   DCHECK(!media_stream_registry_);
   media_stream_registry_ = registry;

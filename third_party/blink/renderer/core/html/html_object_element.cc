@@ -69,6 +69,13 @@ void HTMLObjectElement::Trace(blink::Visitor* visitor) {
   HTMLPlugInElement::Trace(visitor);
 }
 
+const HashSet<AtomicString>& HTMLObjectElement::GetCheckedAttributeNames()
+    const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set,
+                      ({"data", "codeBase"}));
+  return attribute_set;
+}
+
 LayoutEmbeddedContent* HTMLObjectElement::ExistingLayoutEmbeddedContent()
     const {
   // This will return 0 if the layoutObject is not a LayoutEmbeddedContent.

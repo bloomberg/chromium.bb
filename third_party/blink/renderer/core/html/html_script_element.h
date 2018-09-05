@@ -41,6 +41,9 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
  public:
   static HTMLScriptElement* Create(Document&, const CreateElementFlags);
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   String text() { return TextFromChildren(); }
   void setText(const String&);
 

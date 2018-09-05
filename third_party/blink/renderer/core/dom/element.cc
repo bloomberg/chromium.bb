@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
@@ -1632,11 +1634,43 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
   SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
 }
 
+void Element::setAttribute(
+    const AtomicString& name,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+        string_or_TT,
+    ExceptionState& exception_state) {
+  if (GetCheckedAttributeNames().Contains(name)) {
+    String attr_value =
+        GetStringFromTrustedType(string_or_TT, &GetDocument(), exception_state);
+    if (!exception_state.HadException())
+      setAttribute(name, AtomicString(attr_value), exception_state);
+    return;
+  }
+  AtomicString value_string =
+      AtomicString(GetStringFromTrustedTypeWithoutCheck(string_or_TT));
+  setAttribute(name, value_string, exception_state);
+}
+
+const HashSet<AtomicString>& Element::GetCheckedAttributeNames() const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({}));
+  return attribute_set;
+}
+
 void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedHTML& stringOrHTML,
                            ExceptionState& exception_state) {
   String valueString =
       GetStringFromTrustedHTML(stringOrHTML, &GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    setAttribute(name, AtomicString(valueString));
+  }
+}
+
+void Element::setAttribute(const QualifiedName& name,
+                           const StringOrTrustedScript& stringOrScript,
+                           ExceptionState& exception_state) {
+  String valueString = GetStringFromTrustedScript(
+      stringOrScript, &GetDocument(), exception_state);
   if (!exception_state.HadException()) {
     setAttribute(name, AtomicString(valueString));
   }
