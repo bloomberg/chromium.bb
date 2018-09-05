@@ -135,6 +135,32 @@ CWV_EXPORT
 
 // Evaluates a JavaScript string.
 // The completion handler is invoked when script evaluation completes.
+//
+// Note that |javaScriptString| is wrapped with:
+//   if (<implementation defined>) { ... }
+// before evaluation, which causes some tricky side effect when you use |let| or
+// |const| in the script.
+//
+//   1. Variables defined with |let| or |const| at the top level of the script
+//      do NOT become a global variable. i.e., It is accessible neither from
+//      scripts in the page nor another call to
+//      -evaluateJavaScript:completionHandler:. Variables defined with |var|
+//      DOES become a global variable.
+//
+//   2. Variables defined with |let| or |const| at the top level are not
+//      accessible from top level functions, even in the same script. Variable
+//      defined with |var| doesn't have this issue either. e.g., evaluation of
+//      this script causes an error:
+//
+//        let a =  3;
+//        function f() {
+//          console.log(a);  // ReferenceError: Can't find variable: a
+//        }
+//        f();
+//
+// To workaround the issue, you can use |var| instead, or an explicit reference
+// to window.xxx. This is because |let| and |const| are scoped by braces while
+// |var| isn't, and due to tricky behavior of WebKit in non-strict mode.
 - (void)evaluateJavaScript:(NSString*)javaScriptString
          completionHandler:(void (^)(id, NSError*))completionHandler;
 
