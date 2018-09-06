@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -u
+
 # The following symbols (past the first five) are taken from the public headers.
 # A list of the latter should be available Makefile.sources/LIBDRM_INTEL_H_FILES
 
