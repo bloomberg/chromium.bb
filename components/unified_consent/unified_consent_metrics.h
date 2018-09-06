@@ -21,6 +21,10 @@ enum class UnifiedConsentBumpAction : int {
 // Records histogram action for the unified consent bump.
 void RecordConsentBumpMetric(UnifiedConsentBumpAction action);
 
+// Records whether the user is eligible for the consent bump. This method should
+// be called at startup.
+void RecordConsentBumpEligibility(bool eligible);
+
 }  // namespace metrics
 
 }  // namespace unified_consent
