@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/assistant/buildflags.h"
 
 namespace chromeos {
 namespace {
@@ -35,7 +37,15 @@ void AssistantOptInFlowScreen::Show() {
   if (!view_)
     return;
 
-  view_->Show();
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  if (arc::IsAssistantAllowedForProfile(
+          ProfileManager::GetActiveUserProfile()) ==
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    view_->Show();
+    return;
+  }
+#endif
+  Finish(ScreenExitCode::ASSISTANT_OPTIN_FLOW_FINISHED);
 }
 
 void AssistantOptInFlowScreen::Hide() {
