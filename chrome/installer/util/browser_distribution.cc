@@ -15,8 +15,7 @@
 #include "base/logging.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
-#include "chrome/installer/util/installer_util_strings.h"
-#include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 
 namespace {
@@ -82,28 +81,5 @@ base::string16 BrowserDistribution::GetVersionKey() const {
 }
 
 base::string16 BrowserDistribution::GetDisplayName() {
-  return GetShortcutName();
-}
-
-base::string16 BrowserDistribution::GetShortcutName() {
-  // IDS_PRODUCT_NAME is automatically mapped to the mode-specific shortcut
-  // name.
-  return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
-}
-
-base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
-    Subfolder subfolder_type) {
-  switch (subfolder_type) {
-    case SUBFOLDER_APPS:
-      return installer::GetLocalizedString(IDS_APP_SHORTCUTS_SUBDIR_NAME_BASE);
-    default:
-      DCHECK_EQ(SUBFOLDER_CHROME, subfolder_type);
-      return GetShortcutName();
-  }
-}
-
-base::string16 BrowserDistribution::GetLongAppDescription() {
-  const base::string16& app_description =
-      installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
-  return app_description;
+  return InstallUtil::GetShortcutName();
 }

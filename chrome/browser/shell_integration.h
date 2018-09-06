@@ -122,9 +122,6 @@ void AppendProfileArgs(const base::FilePath& profile_path,
                        base::CommandLine* command_line);
 
 #if !defined(OS_WIN)
-// TODO(calamity): replace with
-// BrowserDistribution::GetStartMenuShortcutSubfolder() once
-// BrowserDistribution is cross-platform.
 // Gets the name of the Chrome Apps menu folder in which to place app
 // shortcuts. This is needed for Mac and Linux.
 base::string16 GetAppShortcutsSubdirName();

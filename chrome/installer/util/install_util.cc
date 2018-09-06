@@ -323,8 +323,7 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
     return false;
   }
 
-  shortcut_path =
-      shortcut_path.Append(dist->GetShortcutName() + installer::kLnkExt);
+  shortcut_path = shortcut_path.Append(GetShortcutName() + installer::kLnkExt);
   if (!base::PathExists(shortcut_path)) {
     LogStartMenuShortcutStatus(StartMenuShortcutStatus::kShortcutMissing);
     return false;
@@ -696,6 +695,30 @@ base::string16 InstallUtil::GetAppDescription() {
 // static
 base::string16 InstallUtil::GetPublisherName() {
   return installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
+}
+
+// static
+base::string16 InstallUtil::GetShortcutName() {
+  // IDS_PRODUCT_NAME is automatically mapped to the mode-specific shortcut
+  // name; see MODE_SPECIFIC_STRINGS in prebuild/create_string_rc.py.
+  return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
+}
+
+// static
+base::string16 InstallUtil::GetChromeShortcutDirNameDeprecated() {
+  return GetShortcutName();
+}
+
+// static
+base::string16 InstallUtil::GetChromeAppsShortcutDirName() {
+  // IDS_APP_SHORTCUTS_SUBDIR_NAME is automatically mapped to the mode-specific
+  // dir name; see MODE_SPECIFIC_STRINGS in prebuild/create_string_rc.py.
+  return installer::GetLocalizedString(IDS_APP_SHORTCUTS_SUBDIR_NAME_BASE);
+}
+
+// static
+base::string16 InstallUtil::GetLongAppDescription() {
+  return installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
 }
 
 InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)

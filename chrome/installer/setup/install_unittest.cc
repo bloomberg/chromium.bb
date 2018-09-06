@@ -210,9 +210,9 @@ class InstallShortcutTest : public testing::Test {
   void SetUp() override {
     EXPECT_EQ(S_OK, CoInitialize(NULL));
 
-    dist_ = BrowserDistribution::GetDistribution();
-    ASSERT_TRUE(dist_ != NULL);
-    product_.reset(new installer::Product(dist_));
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    ASSERT_TRUE(dist);
+    product_.reset(new installer::Product(dist));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     chrome_exe_ = temp_dir_.GetPath().Append(installer::kChromeExe);
@@ -248,7 +248,8 @@ class InstallShortcutTest : public testing::Test {
     common_start_menu_override_.reset(new base::ScopedPathOverride(
         base::DIR_COMMON_START_MENU, fake_common_start_menu_.GetPath()));
 
-    base::string16 shortcut_name(dist_->GetShortcutName() + installer::kLnkExt);
+    base::string16 shortcut_name(InstallUtil::GetShortcutName() +
+                                 installer::kLnkExt);
 
     user_desktop_shortcut_ = fake_user_desktop_.GetPath().Append(shortcut_name);
     user_quick_launch_shortcut_ =
@@ -257,8 +258,7 @@ class InstallShortcutTest : public testing::Test {
         fake_start_menu_.GetPath().Append(shortcut_name);
     user_start_menu_subdir_shortcut_ =
         fake_start_menu_.GetPath()
-            .Append(dist_->GetStartMenuShortcutSubfolder(
-                BrowserDistribution::SUBFOLDER_CHROME))
+            .Append(InstallUtil::GetChromeShortcutDirNameDeprecated())
             .Append(shortcut_name);
     system_desktop_shortcut_ =
         fake_common_desktop_.GetPath().Append(shortcut_name);
@@ -266,8 +266,7 @@ class InstallShortcutTest : public testing::Test {
         fake_common_start_menu_.GetPath().Append(shortcut_name);
     system_start_menu_subdir_shortcut_ =
         fake_common_start_menu_.GetPath()
-            .Append(dist_->GetStartMenuShortcutSubfolder(
-                BrowserDistribution::SUBFOLDER_CHROME))
+            .Append(InstallUtil::GetChromeShortcutDirNameDeprecated())
             .Append(shortcut_name);
   }
 
@@ -309,7 +308,6 @@ class InstallShortcutTest : public testing::Test {
   base::win::ShortcutProperties expected_properties_;
   base::win::ShortcutProperties expected_start_menu_properties_;
 
-  BrowserDistribution* dist_;
   base::FilePath chrome_exe_;
   std::unique_ptr<installer::Product> product_;
   std::unique_ptr<installer::MasterPreferences> prefs_;

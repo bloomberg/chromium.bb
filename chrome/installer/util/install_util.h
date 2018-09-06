@@ -199,6 +199,23 @@ class InstallUtil {
   // Returns the name of the browser's publisher.
   static base::string16 GetPublisherName();
 
+  // Returns the name of Chrome's shortcut in the Start Menu (among other
+  // places).
+  static base::string16 GetShortcutName();
+
+  // Returns the name of the subdirectory in which Chrome's Start Menu shortcut
+  // was once placed. This remains purely to migrate old installs to the new
+  // style.
+  static base::string16 GetChromeShortcutDirNameDeprecated();
+
+  // Returns the name of the subdirectory in the Start Menu in which Chrome
+  // apps' shortcuts are placed.
+  static base::string16 GetChromeAppsShortcutDirName();
+
+  // Returns the long description of Chrome used when registering as a browser
+  // with Windows.
+  static base::string16 GetLongAppDescription();
+
   // A predicate that compares the program portion of a command line with a
   // given file path.  First, the file paths are compared directly.  If they do
   // not match, the filesystem is consulted to determine if the paths reference

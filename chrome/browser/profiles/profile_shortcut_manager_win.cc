@@ -41,6 +41,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -174,7 +175,7 @@ void OnProfileIconCreateSuccess(base::FilePath profile_path) {
 }
 
 // Creates a desktop shortcut icon file (.ico) on the disk for a given profile,
-// badging the browser distribution icon with the profile avatar.
+// badging the icon with the profile avatar.
 // Returns a path to the shortcut icon file on disk, which is empty if this
 // fails. Use index 0 when assigning the resulting file as the icon. If both
 // given bitmaps are empty, an unbadged icon is created.
@@ -394,19 +395,16 @@ void RenameChromeDesktopShortcutForProfile(
     return;
   }
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-
   // Get a new unique shortcut name.
   const base::string16 new_shortcut_filename =
       profiles::internal::GetUniqueShortcutFilenameForProfile(
-          new_profile_name, *desktop_contents, distribution);
+          new_profile_name, *desktop_contents);
   const base::FilePath new_shortcut_path =
       user_shortcuts_directory.Append(new_shortcut_filename);
 
   if (!profile_shortcuts->empty()) {
     // From all profile_shortcuts choose the one with a known (canonical) name.
-    profiles::internal::ShortcutFilenameMatcher matcher(old_profile_name,
-                                                        distribution);
+    profiles::internal::ShortcutFilenameMatcher matcher(old_profile_name);
     auto it = std::find_if(profile_shortcuts->begin(), profile_shortcuts->end(),
                            [&matcher](const base::FilePath& p) {
                              return matcher.IsCanonical(p.BaseName().value());
@@ -446,8 +444,7 @@ void RenameChromeDesktopShortcutForProfile(
     // properties updated by
     // |CreateOrUpdateDesktopShortcutsAndIconForProfile()|.
     const auto old_shortcut_filename =
-        profiles::internal::GetShortcutFilenameForProfile(old_profile_name,
-                                                          distribution);
+        profiles::internal::GetShortcutFilenameForProfile(old_profile_name);
     const base::FilePath possible_old_system_shortcut =
         system_shortcuts_directory.Append(old_shortcut_filename);
     if (base::PathExists(possible_old_system_shortcut)) {
@@ -528,7 +525,6 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   }
 
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
 
   // Only set the profile-specific properties when |profile_name| is non empty.
@@ -553,11 +549,12 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
       shortcuts.empty()) {
     const base::string16 shortcut_name =
         profiles::internal::GetUniqueShortcutFilenameForProfile(
-            params.profile_name, desktop_contents, distribution);
+            params.profile_name, desktop_contents);
     shortcuts.insert(base::FilePath(shortcut_name));
     operation = ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL;
   }
 
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   for (const auto& shortcut : shortcuts) {
     const base::FilePath shortcut_name = shortcut.BaseName().RemoveExtension();
     properties.set_shortcut_name(shortcut_name.value());
@@ -624,8 +621,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
-        profiles::internal::GetShortcutFilenameForProfile(base::string16(),
-                                                          distribution));
+        profiles::internal::GetShortcutFilenameForProfile(base::string16()));
     ShellUtil::CreateOrUpdateShortcut(
         ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution, properties,
         ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
@@ -703,30 +699,27 @@ base::FilePath GetProfileIconPath(const base::FilePath& profile_path) {
 }
 
 base::string16 GetShortcutFilenameForProfile(
-    const base::string16& profile_name,
-    BrowserDistribution* distribution) {
+    const base::string16& profile_name) {
   base::string16 shortcut_name;
   if (!profile_name.empty()) {
     shortcut_name.append(SanitizeShortcutProfileNameString(profile_name));
     shortcut_name.append(L" - ");
     shortcut_name.append(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   } else {
-    shortcut_name.append(distribution->GetShortcutName());
+    shortcut_name.append(InstallUtil::GetShortcutName());
   }
   return shortcut_name + installer::kLnkExt;
 }
 
 base::string16 GetUniqueShortcutFilenameForProfile(
     const base::string16& profile_name,
-    const std::set<base::FilePath>& excludes,
-    BrowserDistribution* distribution) {
+    const std::set<base::FilePath>& excludes) {
   std::set<base::string16> excludes_names;
   std::transform(excludes.begin(), excludes.end(),
                  std::inserter(excludes_names, excludes_names.begin()),
                  [](const base::FilePath& e) { return e.BaseName().value(); });
 
-  const auto base_name =
-      GetShortcutFilenameForProfile(profile_name, distribution);
+  const auto base_name = GetShortcutFilenameForProfile(profile_name);
   auto name = base_name;
   const base::FilePath base_path(base_name);
   for (int uniquifier = 1; excludes_names.count(name) > 0; ++uniquifier) {
@@ -738,10 +731,8 @@ base::string16 GetUniqueShortcutFilenameForProfile(
 
 // Corresponds to GetUniqueShortcutFilenameForProfile.
 ShortcutFilenameMatcher::ShortcutFilenameMatcher(
-    const base::string16& profile_name,
-    BrowserDistribution* distribution)
-    : profile_shortcut_filename_(
-          GetShortcutFilenameForProfile(profile_name, distribution)),
+    const base::string16& profile_name)
+    : profile_shortcut_filename_(GetShortcutFilenameForProfile(profile_name)),
       lnk_ext_(installer::kLnkExt),
       profile_shortcut_name_(profile_shortcut_filename_) {
   DCHECK(profile_shortcut_name_.ends_with(lnk_ext_));
@@ -876,8 +867,7 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
     shortcut_profile_name = entry->GetName();
 
   *name = base::FilePath(profiles::internal::GetShortcutFilenameForProfile(
-                             shortcut_profile_name,
-                             BrowserDistribution::GetDistribution()))
+                             shortcut_profile_name))
               .RemoveExtension()
               .value();
 
