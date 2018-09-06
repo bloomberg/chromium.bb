@@ -50,7 +50,7 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
-  if (data && data->used_data_reduction_proxy() && data->lite_page_received()) {
+  if (data && data->lite_page_received()) {
     lite_page_seen_ = true;
   }
   content::PreviewsState previews_state =

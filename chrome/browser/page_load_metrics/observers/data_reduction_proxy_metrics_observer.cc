@@ -145,8 +145,10 @@ DataReductionProxyMetricsObserver::OnCommit(
     return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
-  if (!data || !data->used_data_reduction_proxy())
+  if (!data || !(data->used_data_reduction_proxy() ||
+                 data->was_cached_data_reduction_proxy_response())) {
     return STOP_OBSERVING;
+  }
   data_ = data->DeepCopy();
 
   previews::PreviewsUserData* previews_data =

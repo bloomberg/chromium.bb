@@ -514,6 +514,14 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
       original_response_headers->IsRedirect(nullptr))
     return;
 
+  if (request->was_cached() && request->url().SchemeIsHTTPOrHTTPS() &&
+      !request->url().SchemeIsCryptographic() &&
+      original_response_headers->HasHeader(chrome_proxy_header())) {
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_was_cached_data_reduction_proxy_response(true);
+  }
+
   switch (ParseResponseTransform(*original_response_headers)) {
     case TRANSFORM_LITE_PAGE:
       DataReductionProxyData::GetDataAndCreateIfNecessary(request)
