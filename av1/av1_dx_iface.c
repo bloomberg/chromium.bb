@@ -104,6 +104,8 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
       priv->cfg.cfg.ext_partition = 1;
     }
     av1_zero(priv->image_with_grain);
+    // Turn row_mt on by default.
+    priv->row_mt = 1;
   }
 
   return AOM_CODEC_OK;

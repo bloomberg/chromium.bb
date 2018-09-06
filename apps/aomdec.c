@@ -84,8 +84,6 @@ static const arg_def_t outputfile =
     ARG_DEF("o", "output", 1, "Output file name pattern (see below)");
 static const arg_def_t threadsarg =
     ARG_DEF("t", "threads", 1, "Max threads to use");
-static const arg_def_t rowmtarg =
-    ARG_DEF(NULL, "row-mt", 1, "Enable row based multi-threading");
 static const arg_def_t verbosearg =
     ARG_DEF("v", "verbose", 0, "Show version string");
 static const arg_def_t scalearg =
@@ -118,12 +116,12 @@ static const arg_def_t outallarg = ARG_DEF(
     NULL, "all-layers", 0, "Output all decoded frames of a scalable bitstream");
 
 static const arg_def_t *all_args[] = {
-  &help,        &codecarg,       &use_yv12,    &use_i420,   &flipuvarg,
-  &rawvideo,    &noblitarg,      &progressarg, &limitarg,   &skiparg,
-  &postprocarg, &summaryarg,     &outputfile,  &threadsarg, &rowmtarg,
-  &verbosearg,  &scalearg,       &fb_arg,      &md5arg,     &framestatsarg,
-  &continuearg, &outbitdeptharg, &tilem,       &tiler,      &tilec,
-  &isannexb,    &oppointarg,     &outallarg,   NULL
+  &help,           &codecarg,   &use_yv12,    &use_i420,      &flipuvarg,
+  &rawvideo,       &noblitarg,  &progressarg, &limitarg,      &skiparg,
+  &postprocarg,    &summaryarg, &outputfile,  &threadsarg,    &verbosearg,
+  &scalearg,       &fb_arg,     &md5arg,      &framestatsarg, &continuearg,
+  &outbitdeptharg, &tilem,      &tiler,       &tilec,         &isannexb,
+  &oppointarg,     &outallarg,  NULL
 };
 
 #if CONFIG_LIBYUV
@@ -478,7 +476,6 @@ static int main_loop(int argc, const char **argv_) {
   int do_scale = 0;
   int operating_point = 0;
   int output_all_layers = 0;
-  unsigned int row_mt = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -575,8 +572,6 @@ static int main_loop(int argc, const char **argv_) {
             cfg.threads);
       }
 #endif
-    } else if (arg_match(&arg, &rowmtarg, argi)) {
-      row_mt = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &verbosearg, argi)) {
       quiet = 0;
     } else if (arg_match(&arg, &scalearg, argi)) {
@@ -703,7 +698,6 @@ static int main_loop(int argc, const char **argv_) {
 
   if (!quiet) fprintf(stderr, "%s\n", decoder.name);
 
-#if CONFIG_AV1_DECODER
   if (aom_codec_control(&decoder, AV1_SET_TILE_MODE, tile_mode)) {
     fprintf(stderr, "Failed to set decode_tile_mode: %s\n",
             aom_codec_error(&decoder));
@@ -739,12 +733,6 @@ static int main_loop(int argc, const char **argv_) {
             aom_codec_error(&decoder));
     goto fail;
   }
-
-  if (aom_codec_control(&decoder, AV1D_SET_ROW_MT, row_mt)) {
-    fprintf(stderr, "Failed to set row_mt: %s\n", aom_codec_error(&decoder));
-    goto fail;
-  }
-#endif
 
   if (arg_skip) fprintf(stderr, "Skipping first %d frames.\n", arg_skip);
   while (arg_skip) {
