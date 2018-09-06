@@ -102,6 +102,10 @@ filesystem::mojom::FsFileType MapEntryType(bool is_directory) {
 
 constexpr size_t kTaskQueueCapacity = 2;
 
+std::unique_ptr<TempFileManager> CreateTempFileManager() {
+  return std::make_unique<TempFileManager>();
+}
+
 }  // namespace
 
 using file_system_provider::AbortCallback;
@@ -375,7 +379,7 @@ AbortCallback SmbFileSystem::WriteFile(
     SmbTask task = base::BindOnce(
         base::IgnoreResult(&SmbFileSystem::CallWriteFile), AsWeakPtr(),
         file_handle, std::move(data), offset, length, std::move(callback));
-    InitTempFileManagerAndExecuteTask(std::move(task));
+    CreateTempFileManagerAndExecuteTask(std::move(task));
     // The call to init temp_file_manager_ will not be abortable since it is
     // asynchronous.
     return CreateAbortCallback();
@@ -384,17 +388,27 @@ AbortCallback SmbFileSystem::WriteFile(
   return CallWriteFile(file_handle, data, offset, length, std::move(callback));
 }
 
-void SmbFileSystem::InitTempFileManagerAndExecuteTask(SmbTask task) {
-  // InitTempFileManager() has to be called on a separate thread since it
+void SmbFileSystem::CreateTempFileManagerAndExecuteTask(SmbTask task) {
+  // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
   base::TaskTraits task_traits = {base::MayBlock(),
                                   base::TaskPriority::USER_BLOCKING,
                                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  base::OnceClosure init_task = base::BindOnce(
-      &SmbFileSystem::InitTempFileManager, base::Unretained(this));
+  auto init_task = base::BindOnce(&CreateTempFileManager);
+  auto reply = base::BindOnce(&SmbFileSystem::InitTempFileManagerAndExecuteTask,
+                              AsWeakPtr(), std::move(task));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, task_traits, std::move(init_task), std::move(reply));
+}
 
-  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(init_task),
-                                   std::move(task));
+void SmbFileSystem::InitTempFileManagerAndExecuteTask(
+    SmbTask task,
+    std::unique_ptr<TempFileManager> temp_file_manager) {
+  DCHECK(!temp_file_manager_);
+  DCHECK(temp_file_manager);
+
+  temp_file_manager_ = std::move(temp_file_manager);
+  std::move(task).Run();
 }
 
 AbortCallback SmbFileSystem::CallWriteFile(
@@ -713,11 +727,6 @@ void SmbFileSystem::HandleStatusCallback(
   task_queue_.TaskFinished();
 
   std::move(callback).Run(TranslateToFileError(error));
-}
-
-void SmbFileSystem::InitTempFileManager() {
-  DCHECK(!temp_file_manager_);
-  temp_file_manager_ = std::make_unique<TempFileManager>();
 }
 
 base::WeakPtr<file_system_provider::ProvidedFileSystemInterface>
