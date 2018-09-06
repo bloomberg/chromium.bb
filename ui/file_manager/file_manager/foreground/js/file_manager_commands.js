@@ -1644,7 +1644,8 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
 
 
 /**
- * Shares the selected (single only) folder with crostini container.
+ * Shares the selected (single only) Downloads subfolder with crostini
+ * container.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
@@ -1669,9 +1670,13 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
+    // Must be single directory subfolder of Downloads.
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = CommandHandler.IS_CROSTINI_FILES_ENABLED_ &&
-        entries.length === 1 && entries[0].isDirectory;
+        entries.length === 1 && entries[0].isDirectory &&
+        entries[0].fullPath !== '/' &&
+        fileManager.volumeManager.getLocationInfo(entries[0]).rootType ===
+            VolumeManagerCommon.RootType.DOWNLOADS;
     event.command.setHidden(!event.canExecute);
   }
 });

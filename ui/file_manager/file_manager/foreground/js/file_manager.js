@@ -1231,8 +1231,11 @@ FileManager.prototype = /** @struct */ {
                 isDirectory: true,
                 rootType: VolumeManagerCommon.RootType.CROSTINI,
                 name: str('LINUX_FILES_ROOT_LABEL'),
-                toURL: function() {
+                toURL: () => {
                   return 'fake-entry://linux-files';
+                },
+                getMetadata: (onSuccess) => {
+                  onSuccess({});
                 },
                 iconName: VolumeManagerCommon.VolumeType.CROSTINI,
               }) :
