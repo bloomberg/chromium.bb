@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace gfx {
@@ -16,24 +17,30 @@ class Transform;
 
 namespace vr {
 
+class SchedulerRenderLoopInterface;
+
+// The SchedulerDelegate is responsible for starting the draw calls of the
+// RenderLoop, given different signals, such as WebXR frames submitted or VSync
+// events. It also provides head poses, obtained from the underlaying platform.
+// TODO(acondor): Move head pose logic to the ControllerDelegate.
 class VR_EXPORT SchedulerDelegate {
  public:
-  using DrawCallback = base::RepeatingCallback<void(base::TimeTicks)>;
-  using WebXrInputCallback =
-      base::RepeatingCallback<void(const gfx::Transform&, base::TimeTicks)>;
   virtual ~SchedulerDelegate() {}
 
   virtual void OnPause() = 0;
   virtual void OnResume() = 0;
 
+  virtual gfx::Transform GetHeadPose() = 0;
   virtual void OnExitPresent() = 0;
   virtual void OnTriggerEvent(bool pressed) = 0;
   virtual void SetWebXrMode(bool enabled) = 0;
-  virtual void SetDrawWebXrCallback(DrawCallback callback) = 0;
-  virtual void SetDrawBrowserCallback(DrawCallback callback) = 0;
-  virtual void SetWebXrInputCallback(WebXrInputCallback callback) = 0;
+  virtual void SetShowingVrDialog(bool showing) = 0;
+  virtual void SetRenderLoop(SchedulerRenderLoopInterface* render_loop) = 0;
   virtual void AddInputSourceState(
       device::mojom::XRInputSourceStatePtr state) = 0;
+  virtual void ConnectPresentingService(
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::XRRuntimeSessionOptionsPtr transport_options) = 0;
 };
 
 }  // namespace vr

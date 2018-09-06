@@ -32,7 +32,7 @@ class VR_EXPORT RenderLoopFactory {
     Params(gvr::GvrApi* gvr_api,
            const UiInitialState& ui_initial_state,
            bool reprojected_rendering,
-           bool daydream_support,
+           bool cardboard_gamepad,
            bool pause_content,
            bool low_density,
            base::WaitableEvent* gl_surface_created_event,
@@ -41,7 +41,7 @@ class VR_EXPORT RenderLoopFactory {
     gvr::GvrApi* gvr_api;
     UiInitialState ui_initial_state;
     bool reprojected_rendering;
-    bool daydream_support;
+    bool cardboard_gamepad;
     bool pause_content;
     bool low_density;
     base::WaitableEvent* gl_surface_created_event;

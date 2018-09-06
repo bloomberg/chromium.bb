@@ -11,8 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
+#include "chrome/browser/vr/scheduler_render_loop_interface.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace base {
 class TimeDelta;
@@ -34,23 +37,19 @@ struct RenderInfo;
 struct UiTestActivityExpectation;
 struct UiTestState;
 
-// This abstract class handles all input/output activities during a frame.
+// The RenderLoop handles all input/output activities during a frame.
 // This includes head movement, controller movement and input, audio output and
 // rendering of the frame.
-// TODO(acondor): Move more functionality cross platform functionality from
-// VrShellGl and make this class concrete (http://crbug.com/767282).
-class VR_EXPORT RenderLoop {
+// TODO(acondor): Rename to BrowserRenderer.
+class VR_EXPORT RenderLoop : public SchedulerRenderLoopInterface {
  public:
   RenderLoop(std::unique_ptr<UiInterface> ui,
+             std::unique_ptr<SchedulerDelegate> scheduler_delegate,
              std::unique_ptr<CompositorDelegate> compositor_delegate,
-             SchedulerDelegate* scheduler_delegate,
              std::unique_ptr<ControllerDelegate> controller_delegate,
              RenderLoopBrowserInterface* browser,
              size_t sliding_time_size);
-  virtual ~RenderLoop();
-
-  void Draw(CompositorDelegate::FrameType frame_type,
-            base::TimeTicks current_time);
+  ~RenderLoop() override;
 
   void OnPause();
   void OnResume();
@@ -80,13 +79,19 @@ class VR_EXPORT RenderLoop {
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
   void AcceptDoffPromptForTesting();
-  void ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
-                                      base::TimeTicks current_time);
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
 
+  // SchedulerRenderLoopInterface implementation.
+  void DrawBrowserFrame(base::TimeTicks current_time) override;
+  void DrawWebXrFrame(base::TimeTicks current_time) override;
+  void ProcessControllerInputForWebXr(base::TimeTicks current_time) override;
+
  private:
+  void Draw(CompositorDelegate::FrameType frame_type,
+            base::TimeTicks current_time);
+
   // Position, hide and/or show UI elements, process input and update textures.
   // Returns true if the scene changed.
   void UpdateUi(const RenderInfo& render_info,
@@ -104,8 +109,8 @@ class VR_EXPORT RenderLoop {
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
   std::unique_ptr<UiInterface> ui_;
+  std::unique_ptr<SchedulerDelegate> scheduler_delegate_;
   std::unique_ptr<CompositorDelegate> compositor_delegate_;
-  SchedulerDelegate* scheduler_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
   bool using_controller_delegate_for_testing_ = false;

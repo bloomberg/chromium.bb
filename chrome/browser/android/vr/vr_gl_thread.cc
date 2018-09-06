@@ -8,18 +8,20 @@
 
 #include "base/strings/string16.h"
 #include "base/version.h"
+#include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell.h"
-#include "chrome/browser/android/vr/vr_shell_gl.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr {
@@ -43,11 +45,14 @@ VrGLThread::VrGLThread(
           gvr_api_.get(),
           ui_initial_state,
           reprojected_rendering,
-          daydream_support,
+          gvr_api_->GetViewerType() ==
+              gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD,
           pause_content,
           low_density,
           gl_surface_created_event,
-          std::move(surface_callback))) {}
+          std::move(surface_callback))) {
+  MetricsUtilAndroid::LogVrViewerType(gvr_api_->GetViewerType());
+}
 
 VrGLThread::~VrGLThread() {
   Stop();

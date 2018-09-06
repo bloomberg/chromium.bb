@@ -119,6 +119,10 @@ class VR_UI_EXPORT Ui : public UiInterface {
   void RemoveAllTabs() override;
 
   // UiInterface
+  void OnGlInitialized(GlTextureLocation textures_location,
+                       unsigned int content_texture_id,
+                       unsigned int content_overlay_texture_id,
+                       unsigned int platform_ui_texture_id) override;
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;
   void SetAlertDialogEnabled(bool enabled,
                              PlatformUiInputDelegate* delegate,
@@ -177,12 +181,7 @@ class VR_UI_EXPORT Ui : public UiInterface {
       const FovRectangle& fov_recommended_right,
       float z_near) override;
 
-  // CompositorUiInterface
-  void OnGlInitialized(unsigned int content_texture_id,
-                       GlTextureLocation content_location,
-                       unsigned int content_overlay_texture_id,
-                       GlTextureLocation content_overlay_location,
-                       unsigned int ui_texture_id) override;
+  // SchedulerUiInterface
   void OnWebXrFrameAvailable() override;
   void OnWebXrTimedOut() override;
   void OnWebXrTimeoutImminent() override;

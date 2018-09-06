@@ -12,9 +12,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
-#include "chrome/browser/vr/compositor_ui_interface.h"
+#include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
+#include "chrome/browser/vr/scheduler_ui_interface.h"
 
 namespace gfx {
 class Point3F;
@@ -38,12 +39,22 @@ using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 // also serves to make all such methods virtual for the sake of separating a UI
 // feature module.
 class UiInterface : public BrowserUiInterface,
-                    public CompositorUiInterface,
+                    public SchedulerUiInterface,
                     public KeyboardUiInterface {
  public:
   ~UiInterface() override {}
 
   virtual base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() = 0;
+
+  // Textures from 2D UI that are positioned in the 3D scene.
+  // Content refers to the web contents, as coming from the Chrome compositor.
+  // Content Overlay refers to UI drawn in the same view hierarchy as the
+  // contents.
+  // Platform UI refers to popups, which are rendered in a different window.
+  virtual void OnGlInitialized(GlTextureLocation textures_location,
+                               unsigned int content_texture_id,
+                               unsigned int content_overlay_texture_id,
+                               unsigned int platform_ui_texture_id) = 0;
 
   virtual void SetAlertDialogEnabled(bool enabled,
                                      PlatformUiInputDelegate* delegate,

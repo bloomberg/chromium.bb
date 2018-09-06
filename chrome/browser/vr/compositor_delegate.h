@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
 
 #include "base/callback.h"
-#include "chrome/browser/vr/compositor_ui_interface.h"
+#include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace gfx {
+class Size;
 class Transform;
 }
 
@@ -24,16 +23,24 @@ namespace vr {
 
 struct RenderInfo;
 
+// The CompositorDelegate manages surfaces, buffers and viewports, preparing
+// them for drawing browser UI. It provides projection and view matrices for the
+// viewports.
 class VR_EXPORT CompositorDelegate {
  public:
   using Transform = float[16];
   enum FrameType { kUiFrame, kWebXrFrame };
   using SkiaContextCallback = base::OnceCallback<void()>;
+  using TexturesInitializedCallback = base::OnceCallback<
+      void(GlTextureLocation, unsigned int, unsigned int, unsigned int)>;
   virtual ~CompositorDelegate() {}
+
+  virtual void OnResume() = 0;
 
   virtual FovRectangles GetRecommendedFovs() = 0;
   virtual float GetZNear() = 0;
-  virtual RenderInfo GetRenderInfo(FrameType frame_type) = 0;
+  virtual RenderInfo GetRenderInfo(FrameType frame_type,
+                                   const gfx::Transform& head_pose) = 0;
   virtual RenderInfo GetOptimizedRenderInfoForFovs(
       const FovRectangles& fovs) = 0;
   virtual void InitializeBuffers() = 0;
@@ -51,15 +58,7 @@ class VR_EXPORT CompositorDelegate {
   virtual void GetContentQuadDrawParams(Transform* uv_transform,
                                         float* border_x,
                                         float* border_y) = 0;
-  virtual void SubmitFrame(FrameType frame_type) = 0;
-
-  virtual void SetUiInterface(CompositorUiInterface* ui) = 0;
-  virtual void SetShowingVrDialog(bool showing) = 0;
   virtual int GetContentBufferWidth() = 0;
-
-  virtual void ConnectPresentingService(
-      device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRRuntimeSessionOptionsPtr options) = 0;
 
   // These methods return true when succeeded.
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface) = 0;

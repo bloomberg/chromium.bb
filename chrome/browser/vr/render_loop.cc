@@ -23,28 +23,37 @@
 namespace vr {
 
 RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
+                       std::unique_ptr<SchedulerDelegate> scheduler_delegate,
                        std::unique_ptr<CompositorDelegate> compositor_delegate,
-                       SchedulerDelegate* scheduler_delegate,
                        std::unique_ptr<ControllerDelegate> controller_delegate,
                        RenderLoopBrowserInterface* browser,
                        size_t sliding_time_size)
     : ui_(std::move(ui)),
+      scheduler_delegate_(std::move(scheduler_delegate)),
       compositor_delegate_(std::move(compositor_delegate)),
-      scheduler_delegate_(scheduler_delegate),
       controller_delegate_(std::move(controller_delegate)),
       browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size),
       weak_ptr_factory_(this) {
-  compositor_delegate_->SetUiInterface(ui_.get());
+  scheduler_delegate_->SetRenderLoop(this);
 }
 
 RenderLoop::~RenderLoop() = default;
 
+void RenderLoop::DrawBrowserFrame(base::TimeTicks current_time) {
+  Draw(CompositorDelegate::kUiFrame, current_time);
+}
+
+void RenderLoop::DrawWebXrFrame(base::TimeTicks current_time) {
+  Draw(CompositorDelegate::kWebXrFrame, current_time);
+}
+
 void RenderLoop::Draw(CompositorDelegate::FrameType frame_type,
                       base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", __func__, "frame_type", frame_type);
-  const auto& render_info = compositor_delegate_->GetRenderInfo(frame_type);
+  const auto& render_info = compositor_delegate_->GetRenderInfo(
+      frame_type, scheduler_delegate_->GetHeadPose());
   UpdateUi(render_info, current_time, frame_type);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   bool use_quad_layer = ui_->IsContentVisibleAndOpaque() &&
@@ -67,7 +76,6 @@ void RenderLoop::Draw(CompositorDelegate::FrameType frame_type,
                  ui_processing_time_.GetAverage().InMicroseconds(),
                  "controller",
                  ui_controller_update_time_.GetAverage().InMicroseconds());
-  compositor_delegate_->SubmitFrame(frame_type);
 }
 
 void RenderLoop::DrawWebXr() {
@@ -150,12 +158,13 @@ void RenderLoop::OnSwapContents(int new_content_id) {
 void RenderLoop::EnableAlertDialog(PlatformInputHandler* input_handler,
                                    float width,
                                    float height) {
-  compositor_delegate_->SetShowingVrDialog(true);
+  scheduler_delegate_->SetShowingVrDialog(true);
   vr_dialog_input_delegate_ =
       std::make_unique<PlatformUiInputDelegate>(input_handler);
   vr_dialog_input_delegate_->SetSize(width, height);
-  auto content_width = compositor_delegate_->GetContentBufferWidth();
-  if (content_width) {
+  if (ui_->IsContentVisibleAndOpaque()) {
+    auto content_width = compositor_delegate_->GetContentBufferWidth();
+    DCHECK(content_width);
     ui_->SetContentOverlayAlertDialogEnabled(
         true, vr_dialog_input_delegate_.get(), width / content_width,
         height / content_width);
@@ -168,7 +177,7 @@ void RenderLoop::EnableAlertDialog(PlatformInputHandler* input_handler,
 void RenderLoop::DisableAlertDialog() {
   ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
   vr_dialog_input_delegate_ = nullptr;
-  compositor_delegate_->SetShowingVrDialog(false);
+  scheduler_delegate_->SetShowingVrDialog(false);
 }
 
 void RenderLoop::SetAlertDialogSize(float width, float height) {
@@ -178,8 +187,9 @@ void RenderLoop::SetAlertDialogSize(float width, float height) {
   // ratio matters. But, if they are floating, its size should be relative to
   // the contents. During a WebXR presentation, the contents are not present
   // but, in this case, the dialogs are never floating.
-  auto content_width = compositor_delegate_->GetContentBufferWidth();
-  if (content_width) {
+  if (ui_->IsContentVisibleAndOpaque()) {
+    auto content_width = compositor_delegate_->GetContentBufferWidth();
+    DCHECK(content_width);
     ui_->SetContentOverlayAlertDialogEnabled(
         true, vr_dialog_input_delegate_.get(), width / content_width,
         height / content_width);
@@ -266,14 +276,14 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   ui_processing_time_.AddSample(scene_time - controller_time);
 }
 
-void RenderLoop::ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
-                                                base::TimeTicks current_time) {
+void RenderLoop::ProcessControllerInputForWebXr(base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(controller_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(head_pose, current_time, true);
+  controller_delegate_->UpdateController(scheduler_delegate_->GetHeadPose(),
+                                         current_time, true);
   auto input_event_list = controller_delegate_->GetGestures(current_time);
   ui_->HandleMenuButtonEvents(&input_event_list);
 
@@ -286,8 +296,8 @@ void RenderLoop::ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
 void RenderLoop::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRRuntimeSessionOptionsPtr options) {
-  compositor_delegate_->ConnectPresentingService(std::move(display_info),
-                                                 std::move(options));
+  scheduler_delegate_->ConnectPresentingService(std::move(display_info),
+                                                std::move(options));
 }
 
 base::TimeDelta RenderLoop::ProcessControllerInput(
