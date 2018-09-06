@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
+#include "chrome/browser/ui/omnibox/query_in_omnibox_factory.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -220,6 +221,10 @@ const AutocompleteSchemeClassifier&
 
 AutocompleteClassifier* ChromeOmniboxClient::GetAutocompleteClassifier() {
   return AutocompleteClassifierFactory::GetForProfile(profile_);
+}
+
+QueryInOmnibox* ChromeOmniboxClient::GetQueryInOmnibox() {
+  return QueryInOmniboxFactory::GetForProfile(profile_);
 }
 
 gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
