@@ -591,4 +591,8 @@ interface MediaRouter {
       int32 initiator_tab_id,  // The tab used to register the stream.
       string desktop_stream_id,
       mirroring.mojom.MirroringServiceHost& request);
+  GetMirroringServiceHostForOffscreenTab(
+      url.mojom.Url presentation_url,
+      string presentation_id,
+      mirroring.mojom.MirroringServiceHost& request);
 };

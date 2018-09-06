@@ -1020,6 +1020,17 @@ MediaRouter.prototype.getMirroringServiceHostForDesktop = function(
 }
 
 /**
+ * @param {!url.mojom.Url} presentation_url
+ * @param {!string} presentation_id
+ * @param {!mojo.InterfaceRequest} request
+ */
+MediaRouter.prototype.getMirroringServiceHostForOffscreenTab = function(
+    presentation_url, presentation_id, request) {
+  this.service_.getMirroringServiceHostForOffscreenTab(presentation_url,
+      presentation_id, request);
+}
+
+/**
  * Object containing callbacks set by the provider manager.
  *
  * @constructor
