@@ -12768,4 +12768,59 @@ TEST_F(WebFrameTest, GetCanonicalUrlForSharingMultiple) {
             frame->GetDocument().CanonicalUrlForSharing());
 }
 
+TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
+  UseAndroidSettings();
+  WebView().Resize(WebSize(490, 500));
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+  WebView().GetSettings()->SetTextAutosizingEnabled(false);
+  WebView().SetDefaultPageScaleLimits(0.5f, 4);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body {
+          margin: 0px;
+          width: 10000px;
+          height: 10000px;
+        }
+      </style>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  // Make the page scale and scroll with the given parameters.
+  EXPECT_EQ(0.5f, WebView().PageScaleFactor());
+  WebView().SetPageScaleFactor(2.0f);
+  WebView().MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
+  WebView().SetVisualViewportOffset(WebFloatPoint(12, 20));
+  EXPECT_EQ(2.0f, WebView().PageScaleFactor());
+  EXPECT_EQ(94, WebView().MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(111, WebView().MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(12, WebView().VisualViewportOffset().x);
+  EXPECT_EQ(20, WebView().VisualViewportOffset().y);
+
+  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  Element* element = frame->GetDocument()->body();
+  std::unique_ptr<UserGestureIndicator> gesture =
+      Frame::NotifyUserActivation(frame);
+  Fullscreen::RequestFullscreen(*element);
+  WebView().DidEnterFullscreen();
+
+  // Page scale factor must be 1.0 during fullscreen for elements to be sized
+  // properly.
+  EXPECT_EQ(1.0f, WebView().PageScaleFactor());
+
+  // Confirm that exiting fullscreen restores back to default values.
+  WebView().DidExitFullscreen();
+  WebView().UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(0.5f, WebView().PageScaleFactor());
+  EXPECT_EQ(94, WebView().MainFrameImpl()->GetScrollOffset().width);
+  EXPECT_EQ(111, WebView().MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(0, WebView().VisualViewportOffset().x);
+  EXPECT_EQ(0, WebView().VisualViewportOffset().y);
+}
+
 }  // namespace blink

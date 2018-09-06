@@ -3002,7 +3002,6 @@ void WebViewImpl::MainFrameLayoutUpdated() {
   if (!client_)
     return;
 
-  fullscreen_controller_->DidUpdateMainFrameLayout();
   client_->DidUpdateMainFrameLayout();
 }
 

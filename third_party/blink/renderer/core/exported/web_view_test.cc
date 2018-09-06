@@ -2330,9 +2330,9 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }
 
-// Tests that we restore scroll and scale *after* the fullscreen styles are
-// removed and the page is laid out. http://crbug.com/625683.
-TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
+// Tests that scroll offset modified during fullscreen is preserved when
+// exiting fullscreen.
+TEST_F(WebViewTest, FullscreenNoResetScroll) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
@@ -2345,128 +2345,22 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  Element* element = frame->GetDocument()->documentElement();
   std::unique_ptr<UserGestureIndicator> gesture =
       Frame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
-
-  // Confirm that after exiting and doing a layout, the scroll and scale
-  // parameters are reset. The page sets display: none on overflowing elements
-  // while in fullscreen so if we try to restore before the style and layout
-  // is applied the offsets will be clamped.
-  web_view_impl->DidExitFullscreen();
-  EXPECT_TRUE(web_view_impl->MainFrameImpl()->GetFrameView()->NeedsLayout());
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-}
-
-// Tests that exiting and immediately reentering fullscreen doesn't cause the
-// scroll and scale restoration to occur when we enter fullscreen again.
-TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
-  RegisterMockedHttpURLLoad("fullscreen_style.html");
-  WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
-  web_view_impl->Resize(WebSize(800, 600));
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  // Scroll the page down.
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
+  // Assert the scroll position on the document element doesn't change.
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
-  // Enter fullscreen.
-  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
-  std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
-  Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
 
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
-
-  // Exit and, without performing a layout, reenter fullscreen again. We
-  // shouldn't try to restore the scroll and scale values when we layout to
-  // enter fullscreen.
-  web_view_impl->DidExitFullscreen();
-  Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
-
-  // When we exit now, we should restore the original scroll value.
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-}
-
-TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
-  RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-
-  // Make the page scale and scroll with the given paremeters.
-  web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
-  web_view_impl->SetVisualViewportOffset(WebFloatPoint(12, 20));
-  EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
-  EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
-
-  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  Element* element = frame->GetDocument()->body();
-  std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
-  Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
-
-  // Page scale factor must be 1.0 during fullscreen for elements to be sized
-  // properly.
-  EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
-
-  // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-  Element* other_element = frame->GetDocument()->getElementById("content");
-  Fullscreen::RequestFullscreen(*other_element);
-
-  // Confirm that exiting fullscreen restores the parameters.
-  web_view_impl->DidExitFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
-  EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
+  EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
 
 class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {
