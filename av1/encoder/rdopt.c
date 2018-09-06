@@ -64,6 +64,11 @@ typedef void (*model_rd_for_sb_type)(
     int plane_from, int plane_to, int mi_row, int mi_col, int *out_rate_sum,
     int64_t *out_dist_sum, int *skip_txfm_sb, int64_t *skip_sse_sb,
     int *plane_rate, int64_t *plane_sse, int64_t *plane_dist);
+typedef void (*model_rd_from_sse_type)(const AV1_COMP *const cpi,
+                                       const MACROBLOCK *const x,
+                                       BLOCK_SIZE plane_bsize, int plane,
+                                       int64_t sse, int num_samples, int *rate,
+                                       int64_t *dist);
 
 static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                             MACROBLOCK *x, MACROBLOCKD *xd, int plane_from,
@@ -92,6 +97,10 @@ static void model_rd_for_sb_with_fullrdy(
     int plane_from, int plane_to, int mi_row, int mi_col, int *out_rate_sum,
     int64_t *out_dist_sum, int *skip_txfm_sb, int64_t *skip_sse_sb,
     int *plane_rate, int64_t *plane_sse, int64_t *plane_dist);
+static void model_rd_from_sse(const AV1_COMP *const cpi,
+                              const MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
+                              int plane, int64_t sse, int num_samples,
+                              int *rate, int64_t *dist);
 static void model_rd_with_dnn(const AV1_COMP *const cpi,
                               const MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
                               int plane, int64_t sse, int num_samples,
@@ -116,9 +125,14 @@ typedef enum {
   MODELRD_TYPES
 } ModelRdType;
 
-static model_rd_for_sb_type model_rd_fn[MODELRD_TYPES] = {
+static model_rd_for_sb_type model_rd_sb_fn[MODELRD_TYPES] = {
   model_rd_for_sb, model_rd_for_sb_with_curvfit, model_rd_for_sb_with_surffit,
   model_rd_for_sb_with_dnn, model_rd_for_sb_with_fullrdy
+};
+
+static model_rd_from_sse_type model_rd_sse_fn[MODELRD_TYPES] = {
+  model_rd_from_sse, model_rd_with_curvfit, model_rd_with_surffit,
+  model_rd_with_dnn, NULL
 };
 
 // 0: Legacy model
@@ -128,6 +142,10 @@ static model_rd_for_sb_type model_rd_fn[MODELRD_TYPES] = {
 // 4: Full rd model
 #define MODELRD_TYPE_INTERP_FILTER 1
 #define MODELRD_TYPE_TX_SEARCH_PRUNE 2
+#define MODELRD_TYPE_MASKED_COMPOUND 1
+#define MODELRD_TYPE_INTERINTRA 1
+#define MODELRD_TYPE_INTRA 1
+#define MODELRD_TYPE_JNT_COMPOUND 1
 
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
@@ -1804,8 +1822,9 @@ static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
 
 static void model_rd_from_sse(const AV1_COMP *const cpi,
                               const MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
-                              int plane, int64_t sse, int *rate,
-                              int64_t *dist) {
+                              int plane, int64_t sse, int num_samples,
+                              int *rate, int64_t *dist) {
+  (void)num_samples;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int dequant_shift =
@@ -1897,7 +1916,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     }
     sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
 
-    model_rd_from_sse(cpi, x, plane_bsize, plane, sse, &rate, &dist);
+    model_rd_from_sse(cpi, x, plane_bsize, plane, sse, bw * bh, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
@@ -2400,7 +2419,8 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   int model_rate;
   int64_t model_dist;
-  model_rd_from_sse(cpi, x, tx_bsize, plane, sse, &model_rate, &model_dist);
+  model_rd_sse_fn[MODELRD_CURVFIT](cpi, x, tx_bsize, plane, sse, num_samples,
+                                   &model_rate, &model_dist);
   const double model_rate_norm = (double)model_rate / num_samples;
   const double model_dist_norm = (double)model_dist / num_samples;
   fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
@@ -2496,7 +2516,8 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   int model_rate;
   int64_t model_dist;
-  model_rd_from_sse(cpi, x, plane_bsize, plane, sse, &model_rate, &model_dist);
+  model_rd_sse_fn[MODELRD_CURVFIT](cpi, x, plane_bsize, plane, sse, num_samples,
+                                   &model_rate, &model_dist);
   const double model_rdcost_norm =
       (double)RDCOST(x->rdmult, model_rate, model_dist) / num_samples;
   const double model_rate_norm = (double)model_rate / num_samples;
@@ -3705,9 +3726,9 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
   }
   // RD estimation.
-  model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
-                              &this_rd_stats.rate, &this_rd_stats.dist,
-                              &this_rd_stats.skip, &temp_sse, NULL, NULL, NULL);
+  model_rd_sb_fn[MODELRD_TYPE_INTRA](
+      cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &this_rd_stats.rate,
+      &this_rd_stats.dist, &this_rd_stats.skip, &temp_sse, NULL, NULL, NULL);
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
     mode_cost +=
         x->angle_delta_cost[mbmi->mode - V_PRED]
@@ -5599,7 +5620,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     int model_rate;
     int64_t model_dist;
     int model_skip;
-    model_rd_fn[MODELRD_TYPE_TX_SEARCH_PRUNE](
+    model_rd_sb_fn[MODELRD_TYPE_TX_SEARCH_PRUNE](
         cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &model_rate, &model_dist,
         &model_skip, NULL, NULL, NULL, NULL);
     const int64_t model_rd = RDCOST(x->rdmult, model_rate, model_dist);
@@ -7326,6 +7347,7 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int N = bw * bh;
+  assert(N >= 64);
   int rate;
   int64_t dist;
   int64_t rd, best_rd = INT64_MAX;
@@ -7349,29 +7371,27 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
                         (int64_t)aom_sum_squares_i16(residual1, N)) *
                        (1 << WEDGE_WEIGHT_BITS) / 2;
   int16_t *ds = residual0;
-  if (N < 64)
-    av1_wedge_compute_delta_squares_c(ds, residual0, residual1, N);
-  else
-    av1_wedge_compute_delta_squares(ds, residual0, residual1, N);
+
+  av1_wedge_compute_delta_squares(ds, residual0, residual1, N);
 
   for (wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     mask = av1_get_contiguous_soft_mask(wedge_index, 0, bsize);
 
-    // TODO(jingning): Make sse2 functions support N = 16 case
-    if (N < 64)
-      wedge_sign = av1_wedge_sign_from_residuals_c(ds, mask, N, sign_limit);
-    else
-      wedge_sign = av1_wedge_sign_from_residuals(ds, mask, N, sign_limit);
+    wedge_sign = av1_wedge_sign_from_residuals(ds, mask, N, sign_limit);
 
     mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-    if (N < 64)
-      sse = av1_wedge_sse_from_residuals_c(residual1, diff10, mask, N);
-    else
-      sse = av1_wedge_sse_from_residuals(residual1, diff10, mask, N);
+    sse = av1_wedge_sse_from_residuals(residual1, diff10, mask, N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
-    model_rd_from_sse(cpi, x, bsize, 0, sse, &rate, &dist);
-    // model_rd_with_curvfit(cpi, x, bsize, 0, sse, N, &rate, &dist);
+    model_rd_sse_fn[MODELRD_TYPE_MASKED_COMPOUND](cpi, x, bsize, 0, sse, N,
+                                                  &rate, &dist);
+    // int rate2;
+    // int64_t dist2;
+    // model_rd_with_curvfit(cpi, x, bsize, 0, sse, N, &rate2, &dist2);
+    // printf("sse %"PRId64": leagacy: %d %"PRId64", curvfit %d %"PRId64"\n",
+    // sse, rate, dist, rate2, dist2); dist = dist2;
+    // rate = rate2;
+
     rate += x->wedge_idx_cost[bsize][wedge_index];
     rd = RDCOST(x->rdmult, rate, dist);
 
@@ -7399,6 +7419,7 @@ static int64_t pick_wedge_fixed_sign(const AV1_COMP *const cpi,
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int N = bw * bh;
+  assert(N >= 64);
   int rate;
   int64_t dist;
   int64_t rd, best_rd = INT64_MAX;
@@ -7410,14 +7431,11 @@ static int64_t pick_wedge_fixed_sign(const AV1_COMP *const cpi,
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
   for (wedge_index = 0; wedge_index < wedge_types; ++wedge_index) {
     mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-    if (N < 64)
-      sse = av1_wedge_sse_from_residuals_c(residual1, diff10, mask, N);
-    else
-      sse = av1_wedge_sse_from_residuals(residual1, diff10, mask, N);
+    sse = av1_wedge_sse_from_residuals(residual1, diff10, mask, N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
-    model_rd_from_sse(cpi, x, bsize, 0, sse, &rate, &dist);
-    // model_rd_with_curvfit(cpi, x, bsize, 0, sse, N, &rate, &dist);
+    model_rd_sse_fn[MODELRD_TYPE_MASKED_COMPOUND](cpi, x, bsize, 0, sse, N,
+                                                  &rate, &dist);
     rate += x->wedge_idx_cost[bsize][wedge_index];
     rd = RDCOST(x->rdmult, rate, dist);
 
@@ -7495,8 +7513,8 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
                                                 tmp_mask[cur_mask_type], N);
     sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
-    model_rd_from_sse(cpi, x, bsize, 0, sse, &rate, &dist);
-    // model_rd_with_curvfit(cpi, x, bsize, 0, sse, N, &rate, &dist);
+    model_rd_sse_fn[MODELRD_TYPE_MASKED_COMPOUND](cpi, x, bsize, 0, sse, N,
+                                                  &rate, &dist);
     const int64_t rd0 = RDCOST(x->rdmult, rate, dist);
 
     if (rd0 < best_rd) {
@@ -7657,9 +7675,9 @@ static int64_t build_and_cost_compound_type(
                                                      this_mode, mi_row, mi_col);
     av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col, ctx,
                                    bsize);
-    model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
-                                &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-                                &tmp_skip_sse_sb, NULL, NULL, NULL);
+    model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
+        cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
+        &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
     rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
     if (rd >= best_rd_cur) {
       mbmi->mv[0].as_int = cur_mv[0].as_int;
@@ -7919,7 +7937,7 @@ static INLINE int64_t interpolation_filter_rd(
       select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
       PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-      model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
+      model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
           cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
           &tmp_skip_sb[0], &tmp_skip_sse[0], NULL, NULL, NULL);
       tmp_rate[1] = tmp_rate[0];
@@ -7940,7 +7958,7 @@ static INLINE int64_t interpolation_filter_rd(
         }
         av1_build_inter_predictors_sbp(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
                                        orig_dst, bsize, plane);
-        model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
+        model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
             cpi, bsize, x, xd, plane, plane, mi_row, mi_col, &tmp_rate_uv,
             &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL, NULL, NULL);
         tmp_rate[1] =
@@ -8149,11 +8167,11 @@ static int64_t interpolation_filter_search(
   select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-  model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
+  model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
       cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
       &best_skip_txfm_sb[0], &best_skip_sse_sb[0], NULL, NULL, NULL);
   if (num_planes > 1)
-    model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
+    model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
         cpi, bsize, x, xd, 1, num_planes - 1, mi_row, mi_col, &tmp_rate[1],
         &tmp_dist[1], &best_skip_txfm_sb[1], &best_skip_sse_sb[1], NULL, NULL,
         NULL);
@@ -8481,9 +8499,9 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                 intrapred, bw);
       av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
-      model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
-                                  &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-                                  &tmp_skip_sse_sb, NULL, NULL, NULL);
+      model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](
+          cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
+          &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
       rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
       if (rd < best_interintra_rd) {
         best_interintra_rd = rd;
@@ -8537,9 +8555,9 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
           mbmi->mv[0].as_int = tmp_mv.as_int;
           av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row,
                                          mi_col, orig_dst, bsize);
-          model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
-                                      &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-                                      &tmp_skip_sse_sb, NULL, NULL, NULL);
+          model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
+              cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
+              &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
           rd = RDCOST(x->rdmult, tmp_rate_mv + rmode + rate_sum + rwedge,
                       dist_sum);
         }
@@ -9443,7 +9461,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (search_jnt_comp) {
         // if 1/2 model rd is larger than best_rd in jnt_comp mode,
         // use jnt_comp mode, save additional search
-        if ((rd >> 3) * 5 > best_rd) {
+        if ((rd >> 3) * 4 > best_rd) {
           restore_dst_buf(xd, orig_dst, num_planes);
           continue;
         }
@@ -9460,7 +9478,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           const int64_t mrd =
               AOMMIN(args->modelled_rd[mode0][ref_mv_idx][refs[0]],
                      args->modelled_rd[mode1][ref_mv_idx][refs[1]]);
-          if (rd / 4 * 3 > mrd && ref_best_rd < INT64_MAX) {
+          if ((rd >> 3) * 6 > mrd && ref_best_rd < INT64_MAX) {
             restore_dst_buf(xd, orig_dst, num_planes);
             continue;
           }
@@ -9477,10 +9495,10 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         int64_t plane_sse[MAX_MB_PLANE] = { 0 };
         int64_t plane_dist[MAX_MB_PLANE] = { 0 };
 
-        model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, num_planes - 1,
-                                    mi_row, mi_col, &dummy_rate, &dummy_dist,
-                                    &skip_txfm_sb, &skip_sse_sb, plane_rate,
-                                    plane_sse, plane_dist);
+        model_rd_sb_fn[MODELRD_TYPE_JNT_COMPOUND](
+            cpi, bsize, x, xd, 0, num_planes - 1, mi_row, mi_col, &dummy_rate,
+            &dummy_dist, &skip_txfm_sb, &skip_sse_sb, plane_rate, plane_sse,
+            plane_dist);
 
         rd_stats->rate += rs;
         rd_stats->rate += plane_rate[0] + plane_rate[1] + plane_rate[2];
