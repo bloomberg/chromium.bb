@@ -128,6 +128,13 @@ void FetchHeaderList::ClearList() {
   header_list_.clear();
 }
 
+bool FetchHeaderList::ContainsNonCORSSafelistedHeader() const {
+  return std::any_of(
+      header_list_.cbegin(), header_list_.cend(), [](const Header& header) {
+        return !CORS::IsCORSSafelistedHeader(header.first, header.second);
+      });
+}
+
 Vector<FetchHeaderList::Header> FetchHeaderList::SortAndCombine() const {
   // https://fetch.spec.whatwg.org/#concept-header-list-sort-and-combine
   // "To sort and combine a header list (|list|), run these steps:

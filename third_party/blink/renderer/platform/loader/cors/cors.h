@@ -11,7 +11,6 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -90,10 +89,6 @@ PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);
 PLATFORM_EXPORT bool IsCORSSafelistedContentType(const String&);
 PLATFORM_EXPORT bool IsCORSSafelistedHeader(const String& name,
                                             const String& value);
-PLATFORM_EXPORT bool IsNoCORSSafelistedHeader(const String& name,
-                                              const String& value);
-PLATFORM_EXPORT Vector<String> CORSUnsafeRequestHeaderNames(
-    const HTTPHeaderMap& headers);
 PLATFORM_EXPORT bool IsForbiddenHeaderName(const String& name);
 PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedHeaders(const HTTPHeaderMap&);
 PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(

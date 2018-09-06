@@ -98,9 +98,9 @@ void Headers::append(const String& name,
   if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
-  //     no-CORS-safelisted header, return."
+  //     CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, normalized_value)) {
+      !CORS::IsCORSSafelistedHeader(name, normalized_value)) {
     return;
   }
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response
@@ -130,9 +130,9 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
   if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
-  //     a no-CORS-safelisted header, return."
+  //     a CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, "invalid")) {
+      !CORS::IsCORSSafelistedHeader(name, "invalid")) {
     return;
   }
   // "5. Otherwise, if guard is |response| and |name| is a forbidden response
@@ -198,9 +198,9 @@ void Headers::set(const String& name,
   if (guard_ == kRequestGuard && CORS::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
-  //     no-CORS-safelisted header, return."
+  //     CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !CORS::IsNoCORSSafelistedHeader(name, normalized_value)) {
+      !CORS::IsCORSSafelistedHeader(name, normalized_value)) {
     return;
   }
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response

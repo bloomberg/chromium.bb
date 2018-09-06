@@ -136,17 +136,20 @@ PreflightResult::EnsureAllowedCrossOriginHeaders(
   if (!credentials_ && headers_.find("*") != headers_.end())
     return base::nullopt;
 
-  // Forbidden headers are forbidden to be used by JavaScript, and checked
-  // beforehand. But user-agents may add these headers internally, and it's
-  // fine.
-  for (const auto& name :
-       CORSUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector())) {
+  for (const auto& header : headers.GetHeaderVector()) {
     // Header list check is performed in case-insensitive way. Here, we have a
     // parsed header list set in lower case, and search each header in lower
     // case.
-    if (headers_.find(name) == headers_.end()) {
+    const std::string key = base::ToLowerASCII(header.key);
+    if (headers_.find(key) == headers_.end() &&
+        !IsCORSSafelistedHeader(key, header.value)) {
+      // Forbidden headers are forbidden to be used by JavaScript, and checked
+      // beforehand. But user-agents may add these headers internally, and it's
+      // fine.
+      if (IsForbiddenHeader(key))
+        continue;
       return CORSErrorStatus(
-          mojom::CORSError::kHeaderDisallowedByPreflightResponse, name);
+          mojom::CORSError::kHeaderDisallowedByPreflightResponse, header.key);
     }
   }
   return base::nullopt;
