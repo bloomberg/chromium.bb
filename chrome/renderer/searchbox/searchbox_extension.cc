@@ -44,6 +44,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 #include "v8/include/v8.h"
@@ -88,6 +90,9 @@ const char kThemeAttributionFormat[] = "-webkit-image-set("
 
 const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
+
+// Max character limit for custom link titles.
+const size_t kMaxCustomLinkTitleLength = 150;
 
 void Dispatch(blink::WebLocalFrame* frame, const blink::WebString& script) {
   if (!frame)
@@ -858,20 +863,26 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
 
+  // Limit the title to |kMaxCustomLinkTitleLength| characters. If truncated,
+  // adds an ellipsis.
+  base::string16 truncated_title =
+      gfx::TruncateString(base::UTF8ToUTF16(title), kMaxCustomLinkTitleLength,
+                          gfx::CHARACTER_BREAK);
+
   const GURL gurl(url);
   // If rid is -1, adds a new link. Otherwise, updates the existing link
   // indicated by the rid (empty fields will passed as empty strings). This will
   // initialize custom links if they have not already been initialized.
   if (rid == -1) {
-    if (!gurl.is_valid() || title.empty())
+    if (!gurl.is_valid() || truncated_title.empty())
       return;
-    search_box->AddCustomLink(gurl, title);
+    search_box->AddCustomLink(gurl, base::UTF16ToUTF8(truncated_title));
     search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_ADD);
   } else {
     // Check that the URL, if provided, is valid.
     if (!url.empty() && !gurl.is_valid())
       return;
-    search_box->UpdateCustomLink(rid, gurl, title);
+    search_box->UpdateCustomLink(rid, gurl, base::UTF16ToUTF8(truncated_title));
     search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_UPDATE);
   }
 }
