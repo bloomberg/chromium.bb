@@ -141,10 +141,7 @@ bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
 }
 
 const base::Value* VideoFrameMetadata::GetValue(Key key) const {
-  const base::Value* result = nullptr;
-  if (!dictionary_.GetWithoutPathExpansion(ToInternalKey(key), &result))
-    return nullptr;
-  return result;
+  return dictionary_.FindKey(ToInternalKey(key));
 }
 
 bool VideoFrameMetadata::IsTrue(Key key) const {
@@ -172,12 +169,9 @@ void VideoFrameMetadata::MergeMetadataFrom(
 }
 
 const base::Value* VideoFrameMetadata::GetBinaryValue(Key key) const {
-  const base::Value* internal_value = nullptr;
-  if (dictionary_.GetWithoutPathExpansion(ToInternalKey(key),
-                                          &internal_value) &&
-      internal_value->type() == base::Value::Type::BINARY) {
+  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
+  if (internal_value && (internal_value->type() == base::Value::Type::BINARY))
     return internal_value;
-  }
   return nullptr;
 }
 
