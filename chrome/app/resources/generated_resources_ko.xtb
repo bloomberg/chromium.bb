@@ -1007,7 +1007,6 @@
 <translation id="2508428939232952663">Google Play 스토어 계정</translation>
 <translation id="2509495747794740764">배율 값은 10에서 200 사이의 숫자여야 합니다.</translation>
 <translation id="2509566264613697683">8배</translation>
-<translation id="2512222046227390255">양식 자동 완성</translation>
 <translation id="2513403576141822879">개인정보 보호, 보안, 데이터 수집에 관한 설정을 더 보려면 <ph name="BEGIN_LINK" />동기화 및 Google 서비스<ph name="END_LINK" />를 참조하세요.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">검색</translation>
@@ -2226,7 +2225,7 @@
 <translation id="438503109373656455">말</translation>
 <translation id="4387004326333427325">인증서가 원격으로 거부됨</translation>
 <translation id="4389091756366370506">사용자 <ph name="VALUE" /></translation>
-<translation id="439266289085815679">네트워크 구성은 <ph name="USER_EMAIL" />님이 관리합니다.</translation>
+<translation id="439266289085815679">블루투스 구성은 <ph name="USER_EMAIL" />님이 관리합니다.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="4400367121200150367">비밀번호를 저장하지 않는 사이트가 표시됩니다.</translation>
 <translation id="4400632832271803360">맨 윗 줄 키의 동작을 전환하려면 런처 키를 길게 누르세요.</translation>
@@ -4866,7 +4865,7 @@
 <translation id="8413385045638830869">우선 확인(권장)</translation>
 <translation id="8418445294933751433">탭으로 표시(&amp;S)</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />'에 대한 검색결과</translation>
-<translation id="8419368276599091549"><ph name="DEVICE_TYPE" /> 시작</translation>
+<translation id="8419368276599091549"><ph name="DEVICE_TYPE" /> 시작하기</translation>
 <translation id="8420060421540670057">Google 문서도구 파일 표시</translation>
 <translation id="8424039430705546751">아래</translation>
 <translation id="8425213833346101688">변경</translation>
@@ -5292,7 +5291,7 @@
 <translation id="9050666287014529139">암호</translation>
 <translation id="9052208328806230490"><ph name="EMAIL" /> 계정을 사용하여 프린터를 <ph name="CLOUD_PRINT_NAME" />에 등록했습니다.</translation>
 <translation id="9052404922357793350">차단 계속</translation>
-<translation id="9053091947372579468">기기에 Chrome 라이선스가 포함되어 있지만 사용자 이름이 관리 콘솔과 연결되어 있지 않습니다. 등록을 계속하려면 관리 콘솔 계정을 만드세요. 참고: 내 도메인을 사용해 새로운 관리 콘솔 계정을 만들려면 가입 후 도메인을 확인해야 합니다. https://g.co/ChromeEnterpriseAccount</translation>
+<translation id="9053091947372579468">기기에 Chrome 라이선스가 포함되어 있지만 사용자 이름이 관리 콘솔과 연결되어 있지 않습니다. 등록을 계속하려면 관리 콘솔 계정을 만드세요. 참고: 내 도메인을 사용해 새로운 관리 콘솔 계정을 만들려면 가입 후 도메인 확인 절차를 완료해야 합니다. https://g.co/ChromeEnterpriseAccount</translation>
 <translation id="9053893665344928494">내 선택 기억하기</translation>
 <translation id="9055636786322918818">RC4 암호화를 적용합니다. RC4 암호화는 안전하지 않으므로 이 옵션을 사용하면 보안 위험도가 높아집니다.</translation>
 <translation id="9056034633062863292">Chromebox 업데이트 중</translation>

@@ -147,7 +147,7 @@
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
 <translation id="3393920035788932672">Pop-ups Permitidos</translation>
-<translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
+<translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
 <translation id="3469166899695866866">Pretende parar a transferência?</translation>
 <translation id="3470502288861289375">A copiar...</translation>
@@ -401,7 +401,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
-<translation id="7840771868269352570">Os itens selec. são removidos.</translation>
+<translation id="7840771868269352570">Os itens selecionados serão removidos.</translation>
 <translation id="7856733331829174190">Impossível transferir</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7918293828610777738">A sua lista de leitura está disponível offline. Para adicionar uma página à mesma, toque em <ph name="SHARE_OPENING_ICON" /> e, em seguida, em <ph name="READ_LATER_TEXT" />.</translation>

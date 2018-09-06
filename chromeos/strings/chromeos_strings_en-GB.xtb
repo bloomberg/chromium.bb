@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="2083960536266308407">Nothing found on screen</translation>
+<translation id="5212543919916444558">I can't find anything on your screen that I can help with.
+Try tapping the mic to ask me anything.</translation>
 <translation id="6674412557034343536">stop timer</translation>
 <translation id="8626219642120025691">Timer finished</translation>
+<translation id="8898978413391960553">00:00s</translation>
 </translationbundle>

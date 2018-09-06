@@ -663,7 +663,7 @@
           Google meklēšanas vietrādi URL var norādīt šādi: <ph name="GOOGLE_SEARCH_URL" />.
 
           Šī opcija ir jāiestata tikai tad, kad ir iespējota politika DefaultSearchProviderEnabled (tikai tad tā tiks ievērota).</translation>
-<translation id="2659019163577049044">Ja šis iestatījums tiks iespējots, lietotāji varēs iestatīt, lai viņu ierīcēs tiktu sinhronizētas tālrunī un Chromebook ierīcēs glabātās īsziņas. Ņemiet vērā — ja šī politika tiek atļauta, lietotājiem ir tieši jāpiesakās šim līdzeklim, veicot iestatīšanas procedūru. Pēc iestatīšanas lietotāji varēs sūtīt īsziņas no savām Chromebook ierīcēm un saņemt īsziņas šajās ierīcēs.
+<translation id="2659019163577049044">Ja šis iestatījums tiks iespējots, lietotāji varēs iestatīt, lai viņu ierīcēs tiktu sinhronizētas tālrunī un Chromebook ierīcēs glabātās īsziņas. Ņemiet vērā — ja šī politika tiek atļauta, lietotājiem ir tieši jāizvēlas šī funkcija, iestatot ierīci. Pēc iestatīšanas lietotāji varēs sūtīt īsziņas no savām Chromebook ierīcēm un saņemt īsziņas šajās ierīcēs.
 
       Ja šis iestatījums tiks atspējots, lietotāji nevarēs iestatīt īsziņu sinhronizēšanu.
 
@@ -2226,13 +2226,13 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="706568410943497889">
       Ja šai politikai tiks iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> tiks atļauts vākt WebRTC notikumu žurnālus no Google pakalpojumiem (piemēram, Google Meet) un augšupielādēt šos žurnālus Google sistēmā.
 
-      Ja šai politikai tiks iestatīta vērtība “False” vai neviena vērtība netiks iestatīta, <ph name="PRODUCT_NAME" /> var netiks atļauts vākt un augšupielādēt šos žurnālus.
+      Ja šai politikai tiks iestatīta vērtība “False” vai neviena vērtība netiks iestatīta, <ph name="PRODUCT_NAME" /> var netikt atļauts vākt un augšupielādēt šos žurnālus.
 
       Šajos žurnālos tiek iekļauta diagnostikas informācija, kas var būt noderīga, pārlūkā Chrome novēršot ar audio vai video zvaniem saistītas kļūdas. Žurnālos ir pieejami tādi dati kā nosūtīto un saņemto RTP pakotņu laiks un lielums, dati par pārslodzi tīklā un audio un video laika un kvalitātes metadati. Žurnālos netiek iekļauts zvanu audio vai video saturs.
 
-      To, lai pārlūks Chrome vāc datus, var ieslēgt tikai Google tīmekļa pakalpojumi, piemēram, Google Hangouts vai Google Meet.
+      Tikai Google tīmekļa pakalpojumi, piemēram, Google Hangouts vai Google Meet, var uzsākt datu vākšanu.
 
-      Izmantojot sesijas ID Google šos žurnālus var saistīt ar citiem žurnāliem, ko vāc Google pakalpojums. Tas tiek darīts, lai atvieglotu atkļūdošanas procesu.
+      Izmantojot sesijas ID, Google šos žurnālus var saistīt ar citiem žurnāliem, ko vāc Google pakalpojums. Tas tiek darīts, lai atvieglotu atkļūdošanas procesu.
       </translation>
 <translation id="706669471845501145">Atļaut vietnēm rādīt paziņojumus darbvirsmā</translation>
 <translation id="7072208053150563108">Ierīces paroles nomaiņas biežums</translation>

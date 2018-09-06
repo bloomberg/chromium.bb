@@ -46,7 +46,7 @@
 <translation id="1321576897702511272">ChromeVox सहायता छिपाएं</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">वर्ण तथा शब्द इको</translation>
-<translation id="1339428534620983148">पिछला तालिका स्तंभ</translation>
+<translation id="1339428534620983148">पिछला तालिका कॉलम</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="135978014023467274">आपको ChromeVox 63 में अपडेट किया गया है!</translation>
@@ -120,7 +120,7 @@
 <translation id="207477615537953741">शब्दार्थ विज्ञान बंद</translation>
 <translation id="2086961585857038472">अगला शब्‍द</translation>
 <translation id="2089387485033699258">hi</translation>
-<translation id="2091933974477985526">पिछला संपादन-योग्‍य लेख क्षेत्र</translation>
+<translation id="2091933974477985526">बदलाव करने लायक पिछला टेक्स्ट एरिया</translation>
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
 <translation id="2110480898214777136">किसी पेज, संवाद या अन्य कंटेनर के भीतर शुरुआत से अंत तक ले जाएं या अंत से शुरुआत तक ले जाएं</translation>
 <translation id="2119965627982867824">spnbtn</translation>
@@ -259,7 +259,7 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">देखा गया लिंक</translation>
 <translation id="3232388865800379423">पॉप-अप बटन</translation>
-<translation id="3241052487511142956">पहले देखा गया लिंक</translation>
+<translation id="3241052487511142956">देखा गया पिछला लिंक</translation>
 <translation id="3241638166094654466">हर एक पंक्ति में सेल:</translation>
 <translation id="3286372614333682499">पोर्ट्रेट</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
@@ -271,7 +271,7 @@
 <translation id="3313245066383501820">ChromeVox बदलने वाली की</translation>
 <translation id="3317212938060708859">स्लाइडर</translation>
 <translation id="3321460131042519426">शब्द लपेटना सक्षम करें</translation>
-<translation id="3322936298410871309">पिछले स्‍तर 1 का शीर्षक</translation>
+<translation id="3322936298410871309">पिछला लेवल 1 शीर्षक</translation>
 <translation id="3323447499041942178">टेक्स्ट बॉक्‍स</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> स्‍लाइडर</translation>
 <translation id="3353420241558113817">{"ar": "अरबी",
@@ -378,7 +378,7 @@
 <translation id="4038349100599457191">माह नियंत्रण</translation>
 <translation id="4039983576244166038">खाली पंक्ति शीर्षलेख</translation>
 <translation id="4042843249978639960">कोई अगला स्तर 2 शीर्षक नहीं.</translation>
-<translation id="4043348641337972076">कोई पिछला ARIA स्थानचिह्न नहीं.</translation>
+<translation id="4043348641337972076">कोई पिछला ARIA लैंडमार्क नहीं.</translation>
 <translation id="4045764028670444336">गलत वर्तनी शुरू</translation>
 <translation id="4047216625641135770">मार्क</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
@@ -480,7 +480,7 @@
 <translation id="4846428657345567687">ChromeVox में आपका स्वागत है!</translation>
 <translation id="4846487886195635104">स्ट्राइक-थ्रू समाप्त</translation>
 <translation id="4848993367330139335">tmr</translation>
-<translation id="4850023505158945298">पिछला समान तत्व.</translation>
+<translation id="4850023505158945298">पिछली एलिमेंट कमांड</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करें</translation>
 <translation id="4877261390094455813">खोज क्वेरी डालें.</translation>
@@ -489,7 +489,7 @@
 <translation id="492295894462528572">भूमिका</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4953585991029886728">लेख संपादित करें</translation>
-<translation id="4954534434583049121">पिछला ब्‍लॉक कोट</translation>
+<translation id="4954534434583049121">पिछला ब्‍लॉक क्वोट</translation>
 <translation id="4973717656530883744">न्‍यूनतम <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> पर स्विच किया गया.</translation>
 <translation id="4975416682604111799">मिलीसेकंड</translation>
@@ -509,7 +509,7 @@
 <translation id="5020651427400641814">'बोलकर लॉग करना' चालू करें</translation>
 <translation id="5041394372352067729">ब्रेल प्रदर्शन को पेज के शीर्ष पर ले जाएं</translation>
 <translation id="5042770794184672516">बोली वॉल्‍यूम बढ़ाएं</translation>
-<translation id="5050015258024679800">पिछले स्‍तर 4 का शीर्षक</translation>
+<translation id="5050015258024679800">पिछला लेवल 4 का शीर्षक</translation>
 <translation id="5054047268577924192">पिछला सूची आइटम</translation>
 <translation id="5075936896689244141">अगला कीमैप</translation>
 <translation id="5078661581131202757">फ़ाइल चयन</translation>
@@ -565,7 +565,7 @@
 <translation id="5485036206801896268">कोई पिछला ग्राफ़िक नहीं.</translation>
 <translation id="5486947920110100234">कोई अगला जंप बिंदु नहीं.</translation>
 <translation id="549602578321198708">शब्‍द</translation>
-<translation id="5500932716852106146">कोई पिछला संपादन-योग्य लेख फ़ील्ड नहीं.</translation>
+<translation id="5500932716852106146">बदलाव करने लायक कोई पिछला टेक्स्ट एरिया नहीं</translation>
 <translation id="5502713021410870035">सितंबर</translation>
 <translation id="5507663321906818013">बेंचमार्क को डीबग करें</translation>
 <translation id="5518443085409638729">लेख (जैसे Mac OS X) को संपादित करते समय कर्सर को वर्णों के बीच रखें.</translation>
@@ -606,7 +606,7 @@
 <translation id="5728409797179002635">कोई तालिका नहीं मिली.</translation>
 <translation id="5729047866208036762">गणित के बारे में और जानने के लिए ऊपर, नीचे, बाएं या दाएं वाले तीर दबाएं.</translation>
 <translation id="5732189279857692565">यह दूसरा शीर्षक है. आगे बढ़ते रहें; Search+H या Search+Shift+H दबाएं</translation>
-<translation id="5748623122140342504">पिछले स्‍तर 5 का शीर्षक</translation>
+<translation id="5748623122140342504">पिछला लेवल 5 का शीर्षक</translation>
 <translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या अधिक संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5788275253279308023">गुप्‍त विंडो, <ph name="TITLE" />, टैब</translation>

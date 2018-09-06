@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Your browsing data and activity, synced to your Google account</translation>
 <translation id="116280672541001035">Used</translation>
 <translation id="1172593791219290334">Startup Page</translation>
+<translation id="1175310183703641346">Your bookmarks, history, passwords and more will no longer be synced to your Google account</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1197267115302279827">Move bookmarks</translation>
@@ -48,6 +49,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1332501820983677155">Google Chrome feature shortcuts</translation>
+<translation id="1360432990279830238">Sign out and turn off sync?</translation>
 <translation id="136248372334525878">Preload pages for faster loading and offline reading</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
@@ -159,6 +161,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2131665479022868825"><ph name="DATA" /> saved</translation>
 <translation id="213279576345780926">Closed <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Add to Home screen</translation>
+<translation id="2142289305367051020">Your favourite pages are here</translation>
 <translation id="2146738493024040262">Open Instant App</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2154484045852737596">Edit card</translation>
@@ -350,6 +353,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>
+<translation id="3868004864571585162">Cookies, media licences and site data</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -909,6 +913,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8109613176066109935">To get your bookmarks on all your devices, turn on sync</translation>
 <translation id="8116925261070264013">Muted</translation>
 <translation id="813082847718468539">View site information</translation>
+<translation id="8156139159503939589">What languages do you read?</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
 <translation id="8190358571722158785">1 day left</translation>
@@ -921,6 +926,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8260126382462817229">Try signing in again</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8266862848225348053">Download location</translation>
+<translation id="8274165955039650276">See downloads</translation>
 <translation id="8283853025636624853">Syncing to <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard tabs</translation>
 <translation id="8313455859591948645">Edit startup page</translation>
@@ -937,6 +943,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8441146129660941386">Seek backward</translation>
 <translation id="8445448999790540984">Can’t export passwords</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
+<translation id="8477071352266846533">Sync off for <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8489271220582375723">Open the history page</translation>
 <translation id="8493948351860045254">Free up space</translation>
@@ -974,6 +981,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
+<translation id="8751914237388039244">Select an image</translation>
 <translation id="8788968922598763114">Reopen the last closed tab</translation>
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
