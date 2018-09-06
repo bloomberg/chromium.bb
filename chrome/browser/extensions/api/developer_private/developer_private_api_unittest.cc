@@ -96,6 +96,34 @@ bool HasPrefsPermission(bool (*has_pref)(const std::string&,
   return has_pref(id, context);
 }
 
+bool WasPermissionsUpdatedEventDispatched(
+    const TestEventRouterObserver& observer,
+    const ExtensionId& extension_id) {
+  const std::string kEventName =
+      api::developer_private::OnItemStateChanged::kEventName;
+  const auto& event_map = observer.events();
+  auto iter = event_map.find(kEventName);
+  if (iter == event_map.end())
+    return false;
+
+  const Event& event = *iter->second;
+  CHECK(event.event_args);
+  CHECK_GE(1u, event.event_args->GetList().size());
+  std::unique_ptr<api::developer_private::EventData> event_data =
+      api::developer_private::EventData::FromValue(
+          event.event_args->GetList()[0]);
+  if (!event_data)
+    return false;
+
+  if (event_data->item_id != extension_id ||
+      event_data->event_type !=
+          api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
@@ -1605,11 +1633,65 @@ TEST_F(DeveloperPrivateApiUnitTest,
             *extension_prefs->GetRuntimeGrantedPermissions(extension->id()));
 }
 
-TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
+TEST_F(DeveloperPrivateApiUnitTest,
+       UpdateHostAccess_UnrequestedHostsDispatchUpdateEvents) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("http://google.com/*").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  modifier.SetWithholdHostPermissions(true);
+
+  // We need to call DeveloperPrivateAPI::Get() in order to instantiate the
+  // keyed service, since it's not created by default in unit tests.
   DeveloperPrivateAPI::Get(profile());
   const ExtensionId listener_id = crx_file::id_util::GenerateId("listener");
   EventRouter* event_router = EventRouter::Get(profile());
 
+  // The DeveloperPrivateEventRouter will only dispatch events if there's at
+  // least one listener to dispatch to. Create one.
+  content::RenderProcessHost* process = nullptr;
+  const char* kEventName =
+      api::developer_private::OnItemStateChanged::kEventName;
+  event_router->AddEventListener(kEventName, process, listener_id);
+
+  TestEventRouterObserver test_observer(event_router);
+  EXPECT_FALSE(
+      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+
+  URLPatternSet hosts({URLPattern(Extension::kValidHostPermissionSchemes,
+                                  "https://example.com/*")});
+  PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(), hosts,
+                            hosts);
+  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
+                                                        permissions);
+  // The event router fetches icons from a blocking thread when sending the
+  // update event; allow it to finish before verifying the event was dispatched.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+
+  test_observer.ClearEvents();
+
+  PermissionsUpdater(profile()).RevokeRuntimePermissions(*extension,
+                                                         permissions);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
+  // We need to call DeveloperPrivateAPI::Get() in order to instantiate the
+  // keyed service, since it's not created by default in unit tests.
+  DeveloperPrivateAPI::Get(profile());
+  const ExtensionId listener_id = crx_file::id_util::GenerateId("listener");
+  EventRouter* event_router = EventRouter::Get(profile());
+
+  // The DeveloperPrivateEventRouter will only dispatch events if there's at
+  // least one listener to dispatch to. Create one.
   content::RenderProcessHost* process = nullptr;
   const char* kEventName =
       api::developer_private::OnItemStateChanged::kEventName;
@@ -1622,31 +1704,8 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
           .Build();
 
   TestEventRouterObserver test_observer(event_router);
-  auto dispatched_updated_event = [&test_observer, kEventName,
-                                   &dummy_extension]() {
-    const auto& event_map = test_observer.events();
-    auto iter = event_map.find(kEventName);
-    if (iter == event_map.end())
-      return false;
-
-    const Event& event = *iter->second;
-    CHECK(event.event_args);
-    CHECK_GE(1u, event.event_args->GetList().size());
-    std::unique_ptr<api::developer_private::EventData> event_data =
-        api::developer_private::EventData::FromValue(
-            event.event_args->GetList()[0]);
-    if (!event_data)
-      return false;
-
-    if (event_data->item_id != dummy_extension->id() ||
-        event_data->event_type !=
-            api::developer_private::EVENT_TYPE_PERMISSIONS_CHANGED) {
-      return false;
-    }
-
-    return true;
-  };
-  EXPECT_FALSE(dispatched_updated_event());
+  EXPECT_FALSE(WasPermissionsUpdatedEventDispatched(test_observer,
+                                                    dummy_extension->id()));
 
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
@@ -1654,15 +1713,19 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
                             URLPatternSet());
   PermissionsUpdater(profile()).GrantOptionalPermissions(*dummy_extension,
                                                          permissions);
+  // The event router fetches icons from a blocking thread when sending the
+  // update event; allow it to finish before verifying the event was dispatched.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(dispatched_updated_event());
+  EXPECT_TRUE(WasPermissionsUpdatedEventDispatched(test_observer,
+                                                   dummy_extension->id()));
 
   test_observer.ClearEvents();
 
   PermissionsUpdater(profile()).RevokeOptionalPermissions(
       *dummy_extension, permissions, PermissionsUpdater::REMOVE_HARD);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(dispatched_updated_event());
+  EXPECT_TRUE(WasPermissionsUpdatedEventDispatched(test_observer,
+                                                   dummy_extension->id()));
 }
 
 class DeveloperPrivateZipInstallerUnitTest

@@ -493,6 +493,12 @@ void DeveloperPrivateEventRouter::OnExtensionDisableReasonsChanged(
   BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
 }
 
+void DeveloperPrivateEventRouter::OnExtensionRuntimePermissionsChanged(
+    const std::string& extension_id) {
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PERMISSIONS_CHANGED,
+                            extension_id);
+}
+
 void DeveloperPrivateEventRouter::OnExtensionManagementSettingsChanged() {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(CreateProfileInfo(profile_)->ToValue());

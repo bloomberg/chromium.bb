@@ -23,8 +23,8 @@ class TestEventRouterObserver : public EventRouter::TestObserver {
   // Clears all recorded events.
   void ClearEvents();
 
-  const EventMap& events() { return events_; }
-  const EventMap& dispatched_events() { return dispatched_events_; }
+  const EventMap& events() const { return events_; }
+  const EventMap& dispatched_events() const { return dispatched_events_; }
 
  private:
   // EventRouter::TestObserver:

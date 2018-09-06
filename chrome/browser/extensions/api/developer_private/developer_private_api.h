@@ -110,6 +110,8 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   // ExtensionPrefsObserver:
   void OnExtensionDisableReasonsChanged(const std::string& extension_id,
                                         int disable_reasons) override;
+  void OnExtensionRuntimePermissionsChanged(
+      const std::string& extension_id) override;
 
   // ExtensionManagement::Observer:
   void OnExtensionManagementSettingsChanged() override;
