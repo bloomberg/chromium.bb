@@ -3602,6 +3602,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         <message name="IDS_VR_SERVICES_CHECK_INFOBAR_UPDATE_BUTTON" desc="Text to be displayed in the VR Services check infobar confirm button for updating.">
           Update
         </message>
+        <message name="IDS_VR_MODULE_TITLE" desc="Title of the Virtual Reality (VR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
+          VR
+        </message>
       </if>
 
       <!-- ARCore check infobar -->
@@ -3611,6 +3614,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         </message>
         <message name="IDS_AR_CORE_CHECK_INFOBAR_UPDATE_TEXT" desc="Text to be displayed in the ARCore check infobar. When a WebXR page is loaded, if ARCore is needed to display AR content and the installed ARCore is not up to date to the version needed by the implementation, an infobar will be shown to the user prompting them to update ARCore.">
           To view augmented reality content, update ARCore
+        </message>
+        <message name="IDS_AR_MODULE_TITLE" desc="Title of the Augmented Reality (AR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
+          AR
         </message>
       </if>
 

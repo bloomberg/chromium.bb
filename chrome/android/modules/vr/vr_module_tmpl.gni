@@ -24,6 +24,14 @@ template("vr_module_tmpl") {
   }
 
   android_app_bundle_module(target_name) {
+    if (defined(invoker.base_module_target)) {
+      _base_module_target = invoker.base_module_target
+    } else {
+      # TODO(tiborg): This is here to not break the downstream bots. Remove once
+      # we have set the flag for downstream as well.
+      _base_module_target = "//clank/java:chrome_modern_base_module"
+    }
+
     forward_variables_from(invoker,
                            [
                              "module_name",
@@ -31,6 +39,7 @@ template("vr_module_tmpl") {
                            ])
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
+    base_module_target = _base_module_target
     deps = [
       "//chrome/browser/android/vr:java",
     ]

@@ -16,7 +16,7 @@ import org.chromium.chrome.R;
             R.string.vr_services_check_infobar_update_text,
             R.string.vr_services_check_infobar_install_button,
             R.string.vr_services_check_infobar_update_button, R.anim.stay_hidden,
-            R.drawable.vr_services,
+            R.drawable.vr_services, R.string.ar_module_title, R.string.vr_module_title,
     };
 
     private SilenceLintErrors() {}

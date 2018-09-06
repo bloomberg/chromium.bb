@@ -449,8 +449,9 @@ def ResourceArgsParser():
 
   build_utils.AddDepfileOption(output_opts)
 
-  input_opts.add_argument('--android-sdk-jars', required=True,
-                        help='Path to the android.jar file.')
+  input_opts.add_argument('--include-resources', required=True, action="append",
+                        help='Paths to arsc resource files used to link '
+                             'against. Can be specified multiple times.')
 
   input_opts.add_argument('--aapt-path', required=True,
                          help='Path to the Android aapt tool')
@@ -489,7 +490,11 @@ def HandleCommonOptions(options):
     options: the result of parse_args() on the parser returned by
         ResourceArgsParser(). This function updates a few common fields.
   """
-  options.android_sdk_jars = build_utils.ParseGnList(options.android_sdk_jars)
+  options.include_resources = [build_utils.ParseGnList(r) for r in
+                               options.include_resources]
+  # Flatten list of include resources list to make it easier to use.
+  options.include_resources = [r for resources in options.include_resources
+                               for r in resources]
 
   options.dependencies_res_zips = (
       build_utils.ParseGnList(options.dependencies_res_zips))
