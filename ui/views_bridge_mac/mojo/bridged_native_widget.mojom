@@ -114,6 +114,9 @@ interface BridgedNativeWidget {
   // Clear the touchbar.
   ClearTouchBar();
 
+  // Update the tooltip text at the current mouse location.
+  UpdateTooltip();
+
   // Acquiring mouse capture first steals capture from any existing
   // CocoaMouseCaptureDelegate, then captures all mouse events until released.
   AcquireCapture();
