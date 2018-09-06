@@ -865,7 +865,7 @@ void V8TestInterfaceCheckSecurity::InstallConditionalFeatures(
           {"secureContextRuntimeEnabledMethod", V8TestInterfaceCheckSecurity::secureContextRuntimeEnabledMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& methodConfig : secureContextRuntimeEnabledMethodMethodConfiguration)
-          V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+          V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
       }
     }
   }

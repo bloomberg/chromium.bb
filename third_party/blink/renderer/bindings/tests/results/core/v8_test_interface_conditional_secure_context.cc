@@ -529,7 +529,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
         {"secureContextMethod", V8TestInterfaceConditionalSecureContext::secureContextMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
       };
       for (const auto& methodConfig : secureContextMethodMethodConfiguration)
-        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+        V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
     }
     if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
       if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
@@ -537,7 +537,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
           {"secureContextRuntimeEnabledMethod", V8TestInterfaceConditionalSecureContext::secureContextRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& methodConfig : secureContextRuntimeEnabledMethodMethodConfiguration)
-          V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+          V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
       }
     }
     if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
@@ -546,7 +546,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
           {"secureContextWindowExposedMethod", V8TestInterfaceConditionalSecureContext::secureContextWindowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& methodConfig : secureContextWindowExposedMethodMethodConfiguration)
-          V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+          V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
       }
     }
     if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
@@ -555,7 +555,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
           {"secureContextWorkerExposedMethod", V8TestInterfaceConditionalSecureContext::secureContextWorkerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& methodConfig : secureContextWorkerExposedMethodMethodConfiguration)
-          V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+          V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
       }
     }
     if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
@@ -565,7 +565,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
             {"secureContextWindowExposedRuntimeEnabledMethod", V8TestInterfaceConditionalSecureContext::secureContextWindowExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
           };
           for (const auto& methodConfig : secureContextWindowExposedRuntimeEnabledMethodMethodConfiguration)
-            V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+            V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
         }
       }
     }
@@ -576,7 +576,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
             {"secureContextWorkerExposedRuntimeEnabledMethod", V8TestInterfaceConditionalSecureContext::secureContextWorkerExposedRuntimeEnabledMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
           };
           for (const auto& methodConfig : secureContextWorkerExposedRuntimeEnabledMethodMethodConfiguration)
-            V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+            V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
         }
       }
     }
