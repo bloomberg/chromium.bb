@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 
@@ -121,8 +122,10 @@ void NGInlineItem::ComputeBoxProperties() {
       is_empty_item_ = true;
       should_create_box_fragment_ =
           ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
-          style_->HasOutline() || style_->CanContainAbsolutePositionObjects() ||
+          style_->CanContainAbsolutePositionObjects() ||
           style_->CanContainFixedPositionObjects(false) ||
+          NGOutlineUtils::HasPaintedOutline(*style_,
+                                            layout_object_->GetNode()) ||
           ToLayoutBoxModelObject(layout_object_)
               ->ShouldApplyPaintContainment() ||
           ToLayoutBoxModelObject(layout_object_)

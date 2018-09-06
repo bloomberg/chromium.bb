@@ -13,6 +13,16 @@ namespace blink {
 
 class LayoutObject;
 
+bool NGOutlineUtils::HasPaintedOutline(const ComputedStyle& style,
+                                       const Node* node) {
+  if (!style.HasOutline() || style.Visibility() != EVisibility::kVisible)
+    return false;
+  if (style.OutlineStyleIsAuto() &&
+      !LayoutTheme::GetTheme().ShouldDrawDefaultFocusRing(node, style))
+    return false;
+  return true;
+}
+
 void NGOutlineUtils::CollectDescendantOutlines(
     const NGPhysicalBoxFragment& container,
     const NGPhysicalOffset& paint_offset,
@@ -26,13 +36,8 @@ void NGOutlineUtils::CollectDescendantOutlines(
     if (!descendant.fragment->IsBox() || descendant.fragment->IsAtomicInline())
       continue;
 
-    const ComputedStyle& descendant_style = descendant.fragment->Style();
-    if (!descendant_style.HasOutline() ||
-        descendant_style.Visibility() != EVisibility::kVisible)
-      continue;
-    if (descendant_style.OutlineStyleIsAuto() &&
-        !LayoutTheme::GetTheme().ShouldDrawDefaultFocusRing(
-            descendant.fragment->GetNode(), descendant_style))
+    if (!HasPaintedOutline(descendant.fragment->Style(),
+                           descendant.fragment->GetNode()))
       continue;
 
     const LayoutObject* layout_object = descendant.fragment->GetLayoutObject();
