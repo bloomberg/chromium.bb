@@ -23,6 +23,25 @@ def GenTests(api):
       git_repo='https://chromium.googlesource.com/v8/v8',
       revision='2d72510e447ab60a9728aeea2362d8be2cbd7789')
 
+  yield api.test('ci with invalid repo') + api.buildbucket.ci_build(
+      'v8', 'ci', 'builder',
+      git_repo='https://chromium.googlesource.com/trash',
+      revision='2d72510e447ab60a9728aeea2362d8be2cbd7789')
+
+  yield api.test('ci without repo') + api.buildbucket.build(
+      api.buildbucket.build_pb2.Build(
+          builder=api.buildbucket.build_pb2.BuilderID(
+              project='v8',
+              bucket='ci',
+              builder='builder',
+          ),
+          input=api.buildbucket.build_pb2.Build.Input(
+            gitiles_commit=api.buildbucket.common_pb2.GitilesCommit(
+                id='2d72510e447ab60a9728aeea2362d8be2cbd7789',
+            ),
+          ),
+      ))
+
   yield api.test('try') + api.buildbucket.try_build(
       'v8', 'try', 'builder',
       gerrit_host='chromium-review.googlesource.com')

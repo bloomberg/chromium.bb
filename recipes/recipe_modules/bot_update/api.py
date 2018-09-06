@@ -11,9 +11,8 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, properties, patch_issue, patch_set,
-               repository, patch_repository_url, patch_ref,
-               patch_gerrit_url, revision, parent_got_revision,
+  def __init__(self, properties, patch_issue, patch_set, repository,
+               patch_repository_url, patch_ref, patch_gerrit_url,
                deps_revision_overrides, fail_patch, *args, **kwargs):
     self._apply_patch_on_gclient = properties.get(
         'apply_patch_on_gclient', True)
@@ -22,8 +21,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._repository = repository or patch_repository_url
     self._gerrit_ref = patch_ref
     self._gerrit = patch_gerrit_url
-    self._revision = revision
-    self._parent_got_revision = parent_got_revision
     self._deps_revision_overrides = deps_revision_overrides
     self._fail_patch = fail_patch
 
@@ -31,12 +28,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     super(BotUpdateApi, self).__init__(*args, **kwargs)
 
   def initialize(self):
-    build_input = self.m.buildbucket.build.input
-    if (self._revision is None and build_input.HasField('gitiles_commit')):
-      self._revision = build_input.gitiles_commit.id
-
-    if self._repository is None and len(build_input.gerrit_changes) == 1:
-      cl = build_input.gerrit_changes[0]
+    changes = self.m.buildbucket.build.input.gerrit_changes
+    if self._repository is None and len(changes) == 1:
+      cl = changes[0]
       host = re.sub(r'([^\.]+)-review(\.googlesource\.com)', r'\1\2', cl.host)
       self._repository = 'https://%s/%s' % (host, cl.project)
 
@@ -52,6 +46,34 @@ class BotUpdateApi(recipe_api.RecipeApi):
   @property
   def last_returned_properties(self):
       return self._last_returned_properties
+
+  def _get_commit_repo_path(self, commit, gclient_config):
+    """Returns local path to the repo that the commit is associated with.
+
+    The commit must be a self.m.buildbucket.common_pb2.GitilesCommit.
+    If commit does not specify any repo, returns name of the first solution.
+
+    Raises an InfraFailure if the commit specifies a repo unexpected by gclient.
+    """
+    assert gclient_config.solutions, 'gclient_config.solutions is empty'
+
+    # if repo is not specified, choose the first solution.
+    if not (commit.host and commit.project):
+      return gclient_config.solutions[0].name
+    assert commit.host and commit.project
+
+    repo_url = self.m.gitiles.unparse_repo_url(commit.host, commit.project)
+    repo_path = self.m.gclient.get_repo_path(
+        repo_url, gclient_config=gclient_config)
+    if not repo_path:
+      raise self.m.step.InfraFailure(
+          'invalid (host, project) pair in '
+          'buildbucket.build.input.gitiles_commit: '
+          '(%r, %r) does not match any of configured gclient solutions '
+          'and not present in gclient.c.repo_path_map' % (
+              commit.host, commit.project))
+
+    return repo_path
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
@@ -133,20 +155,32 @@ class BotUpdateApi(recipe_api.RecipeApi):
     for solution in cfg.solutions:
       if solution.revision:
         revisions[solution.name] = solution.revision
-      elif solution == cfg.solutions[0]:
-        # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
-        # that don't specify anything else.
-        revisions[solution.name] = (
-            self._parent_got_revision or
-            self._revision or
-            'HEAD')
+
+    # Apply input gitiles_commit, if any.
+    input_commit = self.m.buildbucket.build.input.gitiles_commit
+    if input_commit.id or input_commit.ref:
+      repo_path = self._get_commit_repo_path(input_commit, cfg)
+      # Note: this is not entirely correct. build.input.gitiles_commit
+      # definition says "The Gitiles commit to run against.".
+      # However, here we ignore it if the config specified a revision.
+      # This is necessary because existing builders rely on this behavior, e.g.
+      # they want to force refs/heads/master at the config level.
+      revisions[repo_path] = (
+          revisions.get(repo_path) or input_commit.id or input_commit.ref)
+
+    # Guarantee that first solution has a revision.
+    # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
+    # that don't specify anything else.
+    first_sol = cfg.solutions[0].name
+    revisions[first_sol] = revisions.get(first_sol) or 'HEAD'
+
     if cfg.revisions:
       # Only update with non-empty values. Some recipe might otherwise
       # overwrite the HEAD default with an empty string.
       revisions.update(
           (k, v) for k, v in cfg.revisions.iteritems() if v)
     if cfg.solutions and root_solution_revision:
-      revisions[cfg.solutions[0].name] = root_solution_revision
+      revisions[first_sol] = root_solution_revision
     # Allow for overrides required to bisect into rolls.
     revisions.update(self._deps_revision_overrides)
 
