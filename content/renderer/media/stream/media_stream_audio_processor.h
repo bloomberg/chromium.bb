@@ -213,6 +213,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // Counters to avoid excessively logging errors in OnPlayoutData.
   size_t unsupported_buffer_size_log_count_ = 0;
   size_t apm_playout_error_code_log_count_ = 0;
+  size_t large_delay_log_count_ = 0;
 
   // Object for logging UMA stats for echo information when the AEC is enabled.
   // Accessed on the main render thread.
