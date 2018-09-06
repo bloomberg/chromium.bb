@@ -237,9 +237,14 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     }
   }
 
-  if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
-    AddChromecastArmGpuWhitelist(&permissions);
-    return permissions;
+  if (UseChromecastSandboxWhitelist()) {
+    if (UseV4L2Codec())
+      AddV4L2GpuWhitelist(&permissions, options);
+
+    if (IsArchitectureArm()) {
+      AddChromecastArmGpuWhitelist(&permissions);
+      return permissions;
+    }
   }
 
   AddStandardGpuWhiteList(&permissions);
