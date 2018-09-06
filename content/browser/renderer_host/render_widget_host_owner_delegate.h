@@ -57,9 +57,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // priority to the RenderProcessHost.
   virtual bool ShouldContributePriorityToProcess() = 0;
 
-  // Called when the RenderWidgetHost has shutdown.
-  virtual void RenderWidgetDidShutdown() = 0;
-
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}
 };

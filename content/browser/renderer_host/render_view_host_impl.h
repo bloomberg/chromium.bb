@@ -239,7 +239,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) override;
   bool ShouldContributePriorityToProcess() override;
-  void RenderWidgetDidShutdown() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

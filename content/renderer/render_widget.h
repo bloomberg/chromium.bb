@@ -575,12 +575,6 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidget IPC message handler that can be overridden by subclasses.
   virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
 
-#if defined(OS_MACOSX)
-  // On MacOSX this message arrives on RenderViewImpl instead of here, and it
-  // needs to be able to call back to the normal message handler here.
-  void OnClose();
-#endif
-
  private:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -623,9 +617,7 @@ class CONTENT_EXPORT RenderWidget
       const std::vector<const blink::WebInputEvent*>& coalesced_events,
       const ui::LatencyInfo& latency_info,
       InputEventDispatchType dispatch_type);
-#if !defined(OS_MACOSX)
   void OnClose();
-#endif
   void OnCreatingNewAck();
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();

@@ -809,9 +809,8 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
   // in the renderer has wound down.
   if (GetProcess()->IsInitializedAndNotDead()) {
     RenderProcessHostImpl::ReleaseOnCloseACK(
-        GetProcess(),
-        delegate_->GetSessionStorageNamespaceMap(),
-        GetRoutingID());
+        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
+        GetWidget()->GetRoutingID());
   }
 
   GetWidget()->ShutdownAndDestroyWidget(false);
@@ -931,11 +930,6 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
 
 bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
   return is_active_;
-}
-
-void RenderViewHostImpl::RenderWidgetDidShutdown() {
-  bool rv = Send(new ViewMsg_Close(GetRoutingID()));
-  DCHECK(rv);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
