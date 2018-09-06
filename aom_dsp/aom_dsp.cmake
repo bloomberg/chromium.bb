@@ -199,6 +199,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_avx2.c"
+              "${AOM_ROOT}/aom_dsp/x86/highbd_variance_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sse_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_sad_avx2.c"
