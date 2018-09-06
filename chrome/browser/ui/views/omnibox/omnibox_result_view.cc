@@ -335,8 +335,11 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // The positional info is provided via
   // ax::mojom::IntAttribute::kPosInSet/SET_SIZE and providing it via text as
   // well would result in duplicate announcements.
-  node_data->SetName(
-      AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents));
+  // Pass false for is_tab_switch_button_focused, because the button will
+  // receive its own label in the case that a screen reader is listening to
+  // selection events on items rather than announcements or value change events.
+  node_data->SetName(AutocompleteMatchType::ToAccessibilityLabel(
+      match_, match_.contents, false));
 
   node_data->role = ax::mojom::Role::kListBoxOption;
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,

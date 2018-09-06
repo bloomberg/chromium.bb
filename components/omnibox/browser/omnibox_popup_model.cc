@@ -187,19 +187,28 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   DCHECK(!result().empty());
   DCHECK_NE(kNoMatch, selected_line_);
 
+  const AutocompleteResult& result = this->result();
+  if (result.empty())
+    return;
+
+  const AutocompleteMatch& match = result.match_at(selected_line_);
+  GURL current_destination(match.destination_url);
+
   if (state == KEYWORD) {
-    const AutocompleteMatch& match = result().match_at(selected_line_);
     DCHECK(match.associated_keyword.get());
   }
 
   if (state == TAB_SWITCH) {
-    const AutocompleteMatch& match = result().match_at(selected_line_);
     DCHECK(match.has_tab_match);
-    old_focused_url_ = result().match_at(selected_line_).destination_url;
+    old_focused_url_ = current_destination;
   }
 
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
+
+  // Ensures update of accessibility data.
+  edit_model_->view()->OnTemporaryTextMaybeChanged(
+    edit_model_->view()->GetText(), match, false, false);
 }
 
 void OmniboxPopupModel::TryDeletingCurrentItem() {

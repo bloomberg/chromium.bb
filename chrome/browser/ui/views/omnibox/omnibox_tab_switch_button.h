@@ -42,6 +42,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // Called to indicate button has been focused.
   void ProvideFocusHint();
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Consults the parent views to see if the button is selected.

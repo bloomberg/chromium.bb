@@ -578,10 +578,13 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     saved_temporary_selection_ = GetSelectedRange();
 
   // Get friendly accessibility label.
+  bool is_tab_switch_button_focused =
+      model()->popup_model()->selected_line_state() ==
+      OmniboxPopupModel::TAB_SWITCH;
   friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
       match, display_text, model()->popup_model()->selected_line(),
-      model()->result().size(), &friendly_suggestion_text_prefix_length_);
-
+      model()->result().size(), is_tab_switch_button_focused,
+      &friendly_suggestion_text_prefix_length_);
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
 #if defined(OS_MACOSX)
