@@ -7,4 +7,5 @@
 dictionary PaymentDetailsUpdate : PaymentDetailsBase {
     DOMString error;
     PaymentItem total;
+    AddressErrors shippingAddressErrors;
 };

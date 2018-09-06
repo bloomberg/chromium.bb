@@ -207,8 +207,7 @@ void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
     return;
   }
 
-  spec()->UpdateShippingAddressErrors(std::move(errors->shipping_address));
-  spec()->UpdatePayerErrors(std::move(errors->payer));
+  spec()->Retry(std::move(errors));
   display_handle_->Retry();
 }
 
@@ -246,6 +245,14 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   std::string error;
   if (!ValidatePaymentDetails(ConvertPaymentDetails(details), &error)) {
     LOG(ERROR) << error;
+    OnConnectionTerminated();
+    return;
+  }
+
+  if (details->shipping_address_errors &&
+      !PaymentsValidators::IsValidAddressErrorsFormat(
+          details->shipping_address_errors, &error)) {
+    DLOG(ERROR) << error;
     OnConnectionTerminated();
     return;
   }

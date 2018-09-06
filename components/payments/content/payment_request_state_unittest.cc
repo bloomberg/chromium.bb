@@ -402,7 +402,7 @@ TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
   EXPECT_EQ("+81363849000", selected_shipping_address()->phone);
 }
 
-TEST_F(PaymentRequestStateTest, UpdateShippingAddressErrors) {
+TEST_F(PaymentRequestStateTest, RetryWithShippingAddressErrors) {
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_shipping = true;
   RecreateStateWithOptions(std::move(options));
@@ -435,7 +435,11 @@ TEST_F(PaymentRequestStateTest, UpdateShippingAddressErrors) {
   mojom::AddressErrorsPtr shipping_address_errors = mojom::AddressErrors::New();
   shipping_address_errors->address_line = "Invalid address line";
   shipping_address_errors->city = "Invalid city";
-  spec()->UpdateShippingAddressErrors(std::move(shipping_address_errors));
+
+  mojom::PaymentValidationErrorsPtr errors =
+      mojom::PaymentValidationErrors::New();
+  errors->shipping_address = std::move(shipping_address_errors);
+  spec()->Retry(std::move(errors));
   EXPECT_EQ(3, num_on_selected_information_changed_called());
   EXPECT_FALSE(state()->is_ready_to_pay());
 
@@ -443,7 +447,7 @@ TEST_F(PaymentRequestStateTest, UpdateShippingAddressErrors) {
   EXPECT_TRUE(state()->invalid_shipping_profile());
 }
 
-TEST_F(PaymentRequestStateTest, UpdatePayerErrors) {
+TEST_F(PaymentRequestStateTest, RetryWithPayerErrors) {
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_payer_name = true;
   options->request_payer_phone = true;
@@ -461,7 +465,11 @@ TEST_F(PaymentRequestStateTest, UpdatePayerErrors) {
   payer_errors->email = "Invalid email";
   payer_errors->name = "Invalid name";
   payer_errors->phone = "Invalid phone";
-  spec()->UpdatePayerErrors(std::move(payer_errors));
+
+  mojom::PaymentValidationErrorsPtr errors =
+      mojom::PaymentValidationErrors::New();
+  errors->payer = std::move(payer_errors);
+  spec()->Retry(std::move(errors));
   EXPECT_EQ(2, num_on_selected_information_changed_called());
   EXPECT_FALSE(state()->is_ready_to_pay());
 

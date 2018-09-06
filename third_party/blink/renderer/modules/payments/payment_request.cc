@@ -686,6 +686,18 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
   } else {
     output->error = "";
   }
+
+  if (input.hasShippingAddressErrors()) {
+    String error_message;
+    if (!PaymentsValidators::IsValidAddressErrorsFormat(
+            input.shippingAddressErrors(), &error_message)) {
+      exception_state.ThrowTypeError(error_message);
+      return;
+    }
+    output->shipping_address_errors =
+        payments::mojom::blink::AddressErrors::From(
+            input.shippingAddressErrors());
+  }
 }
 
 void ValidateAndConvertPaymentMethodData(
