@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
@@ -58,6 +57,8 @@ class DragController;
 class FocusController;
 class Frame;
 class LinkHighlights;
+class LocalFrame;
+class LocalFrameView;
 class OverscrollController;
 class PageOverlay;
 struct PageScaleConstraints;
@@ -68,6 +69,7 @@ class PointerLockController;
 class ScopedPagePauser;
 class ScrollingCoordinator;
 class ScrollbarTheme;
+class SecurityOrigin;
 class Settings;
 class ConsoleMessageStorage;
 class TopDocumentRootScrollerController;
@@ -150,9 +152,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // depends on this will generally have to be rewritten to propagate any
   // necessary state through all renderer processes for that page and/or
   // coordinate/rely on the browser process to help dispatch/coordinate work.
-  LocalFrame* DeprecatedLocalMainFrame() const {
-    return ToLocalFrame(main_frame_);
-  }
+  LocalFrame* DeprecatedLocalMainFrame() const;
 
   void DocumentDetached(Document*);
 

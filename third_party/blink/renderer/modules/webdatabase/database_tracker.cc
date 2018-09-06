@@ -216,7 +216,7 @@ void DatabaseTracker::ForEachOpenDatabaseInPage(Page* page,
       for (Database* database : *name_database_set.value) {
         ExecutionContext* context = database->GetExecutionContext();
         DCHECK(context->IsDocument());
-        if (ToDocument(context)->GetFrame()->GetPage() == page)
+        if (ToDocument(context)->GetPage() == page)
           callback.Run(database);
       }
     }

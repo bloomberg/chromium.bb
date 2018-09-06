@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
@@ -275,6 +276,10 @@ void Page::SetMainFrame(Frame* main_frame) {
   // is fixed, also call  page_scheduler_->SetIsMainFrameLocal() from here
   // instead of from the callers of this method.
   main_frame_ = main_frame;
+}
+
+LocalFrame* Page::DeprecatedLocalMainFrame() const {
+  return ToLocalFrame(main_frame_);
 }
 
 void Page::DocumentDetached(Document* document) {
