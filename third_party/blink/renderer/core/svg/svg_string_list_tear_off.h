@@ -36,12 +36,12 @@
 
 namespace blink {
 
-class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
+class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringListBase> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static SVGStringListTearOff* Create(
-      SVGStringList* target,
+      SVGStringListBase* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
     return new SVGStringListTearOff(target, binding, property_is_anim_val);
@@ -127,7 +127,7 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
   }
 
  protected:
-  SVGStringListTearOff(SVGStringList*,
+  SVGStringListTearOff(SVGStringListBase*,
                        SVGAnimatedPropertyBase* binding,
                        PropertyIsAnimValType);
 };

@@ -48,9 +48,11 @@ class SVGStaticStringList final
   USING_GARBAGE_COLLECTED_MIXIN(SVGStaticStringList);
 
  public:
+  template <char list_delimiter>
   static SVGStaticStringList* Create(SVGElement* context_element,
                                      const QualifiedName& attribute_name) {
-    return new SVGStaticStringList(context_element, attribute_name);
+    return new SVGStaticStringList(context_element, attribute_name,
+                                   SVGStringList<list_delimiter>::Create());
   }
 
   ~SVGStaticStringList() override;
@@ -65,15 +67,17 @@ class SVGStaticStringList final
 
   SVGParsingError AttributeChanged(const String&) override;
 
-  SVGStringList* Value() { return value_.Get(); }
+  SVGStringListBase* Value() { return value_.Get(); }
   SVGStringListTearOff* TearOff();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  SVGStaticStringList(SVGElement*, const QualifiedName&);
+  SVGStaticStringList(SVGElement*,
+                      const QualifiedName&,
+                      SVGStringListBase* initial_value);
 
-  Member<SVGStringList> value_;
+  Member<SVGStringListBase> value_;
   Member<SVGStringListTearOff> tear_off_;
 };
 
