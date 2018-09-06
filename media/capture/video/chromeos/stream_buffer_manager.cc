@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/posix/safe_strerror.h"
+#include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -579,6 +580,7 @@ void StreamBufferManager::ProcessCaptureResult(
   }
 
   for (const auto& iter : stream_context_) {
+    TRACE_EVENT1("camera", "Capture Result", "frame_number", frame_number);
     SubmitCaptureResultIfComplete(frame_number, iter.first);
   }
 }
