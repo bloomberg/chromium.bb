@@ -32,6 +32,7 @@
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/test_matchers.h"
@@ -604,6 +605,36 @@ TEST_F(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
                                     /*state=*/HasInitialSyncDone(),
                                     /*entities=*/SizeIs(1))));
   ResetBridge();
+}
+
+TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
+  // Create one profile and one card on the client.
+  AutofillProfile local_profile = test::GetServerProfile();
+  table()->SetServerProfiles({local_profile});
+  CreditCard local_card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({local_card});
+
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  // Passing in a non-null metadata change list indicates to the bridge that
+  // sync is stopping because it was disabled.
+  bridge()->ApplyStopSyncChanges(
+      std::make_unique<syncer::InMemoryMetadataChangeList>());
+
+  EXPECT_TRUE(GetAllLocalData().empty());
+}
+
+TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
+  // Create one profile and one card on the client.
+  AutofillProfile local_profile = test::GetServerProfile();
+  table()->SetServerProfiles({local_profile});
+  CreditCard local_card = test::GetMaskedServerCard();
+  table()->SetServerCreditCards({local_card});
+
+  // Passing in a non-null metadata change list indicates to the bridge that
+  // sync is stopping but the data type is not disabled.
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
+
+  EXPECT_FALSE(GetAllLocalData().empty());
 }
 
 class AutofillWalletEphemeralSyncBridgeTest

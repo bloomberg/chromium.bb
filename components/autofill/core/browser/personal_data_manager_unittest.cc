@@ -179,8 +179,8 @@ class PersonalDataManagerTestBase {
             : nullptr,
         prefs_.get(), identity_test_env_.identity_manager(), is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
-    personal_data_->OnSyncServiceInitialized(&sync_service_);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
+    personal_data_->OnSyncServiceInitialized(&sync_service_);
     personal_data_->OnStateChanged(&sync_service_);
 
     // Verify that the web database has been updated and the notification sent.
@@ -6206,6 +6206,8 @@ TEST_F(PersonalDataManagerTest,
 
   // Call OnSyncServiceInitialized with a sync service in auth error.
   TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(
+      /*is_authenticated_account_primary=*/false);
   sync_service.SetInAuthError(true);
   personal_data_->OnSyncServiceInitialized(&sync_service);
   WaitForOnPersonalDataChanged();
