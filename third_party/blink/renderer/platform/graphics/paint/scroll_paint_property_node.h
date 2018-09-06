@@ -39,7 +39,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // a struct with default values is used to represent the state.
   struct State {
     IntRect container_rect;
-    IntRect contents_rect;
+    IntSize contents_size;
     bool user_scrollable_horizontal = false;
     bool user_scrollable_vertical = false;
     bool scrolls_inner_viewport = false;
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
     bool operator==(const State& o) const {
       return container_rect == o.container_rect &&
-             contents_rect == o.contents_rect &&
+             contents_size == o.contents_size &&
              user_scrollable_horizontal == o.user_scrollable_horizontal &&
              user_scrollable_vertical == o.user_scrollable_vertical &&
              scrolls_inner_viewport == o.scrolls_inner_viewport &&
@@ -109,9 +109,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // the rect.
   const IntRect& ContainerRect() const { return state_.container_rect; }
 
-  // Rect of the contents that is scrolled within the container rect, in the
-  // space of the associated transform node (ScrollTranslation).
-  const IntRect& ContentsRect() const { return state_.contents_rect; }
+  // Size of the contents that is scrolled within the container rect.
+  const IntSize& ContentsSize() const { return state_.contents_size; }
 
   bool UserScrollableHorizontal() const {
     return state_.user_scrollable_horizontal;

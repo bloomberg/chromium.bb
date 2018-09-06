@@ -120,12 +120,16 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
                                       ScrollbarOrCorner::kScrollbarCorner);
 
   if (mapping->ScrollingContentsLayer()) {
-    auto SetContentsLayerState = [&fragment_data, &snapped_paint_offset](
+    // See comments for ScrollTranslation in object_paint_properties.h for the
+    // reason of adding ScrollOrigin().
+    auto contents_paint_offset =
+        snapped_paint_offset + ToLayoutBox(object).ScrollOrigin();
+    auto SetContentsLayerState = [&fragment_data, &contents_paint_offset](
                                      GraphicsLayer* graphics_layer) {
       if (graphics_layer) {
         graphics_layer->SetLayerState(
             fragment_data.ContentsProperties(),
-            snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
+            contents_paint_offset + graphics_layer->OffsetFromLayoutObject());
       }
     };
     SetContentsLayerState(mapping->ScrollingContentsLayer());

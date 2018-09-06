@@ -226,6 +226,7 @@ void NGBoxFragmentPainter::PaintObject(
     const auto& layout_object = *box_fragment_.GetLayoutObject();
     base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     base::Optional<PaintInfo> scrolled_paint_info;
+    auto contents_paint_offset = paint_offset;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_object)) {
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
@@ -244,6 +245,9 @@ void NGBoxFragmentPainter::PaintObject(
           scrolled_paint_info->UpdateCullRect(
               scroll_translation->Matrix().ToAffineTransform());
         }
+        // See comments for ScrollTranslation in object_paint_properties.h for
+        // the reason of adding ScrollOrigin().
+        contents_paint_offset += ToLayoutBox(layout_object).ScrollOrigin();
       }
     }
 
@@ -252,14 +256,14 @@ void NGBoxFragmentPainter::PaintObject(
 
     if (PhysicalFragment().ChildrenInline()) {
       if (PhysicalFragment().IsBlockFlow()) {
-        PaintBlockFlowContents(contents_paint_info, paint_offset);
+        PaintBlockFlowContents(contents_paint_info, contents_paint_offset);
         if (paint_phase == PaintPhase::kFloat ||
             paint_phase == PaintPhase::kSelection ||
             paint_phase == PaintPhase::kTextClip)
           PaintFloats(contents_paint_info);
       } else {
         PaintInlineChildren(box_fragment_.Children(), contents_paint_info,
-                            paint_offset);
+                            contents_paint_offset);
       }
     } else {
       PaintBlockChildren(contents_paint_info);

@@ -240,6 +240,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
       paint_phase != PaintPhase::kMask) {
     // Handle scrolling translation.
     base::Optional<PaintInfo> scrolled_paint_info;
+    auto contents_paint_offset = paint_offset;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
       const auto* object_properties = fragment->PaintProperties();
       auto* scroll_translation =
@@ -254,6 +255,13 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
           scrolled_paint_info->UpdateCullRect(
               scroll_translation->Matrix().ToAffineTransform());
         }
+        // See comments for ScrollTranslation in object_paint_properties.h
+        // for the reason of adding ScrollOrigin(). contents_paint_offset will
+        // be used only for the scrolling contents that are not painted through
+        // descendant objects' Paint() method, e.g. inline boxes.
+        // TODO(wangxianzhu): Encapsulate such logic at various places into
+        // one class.
+        contents_paint_offset += layout_block_.ScrollOrigin();
       }
     }
     const PaintInfo& contents_paint_info =
@@ -263,9 +271,9 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     if (layout_block_.IsLayoutBlockFlow()) {
       // All floating descendants will be LayoutBlockFlow objects, and will get
       // painted here. That is step #5 of the CSS spec (see above).
-      PaintBlockFlowContents(contents_paint_info, paint_offset);
+      PaintBlockFlowContents(contents_paint_info, contents_paint_offset);
     } else {
-      PaintContents(contents_paint_info, paint_offset);
+      PaintContents(contents_paint_info, contents_paint_offset);
     }
   }
 

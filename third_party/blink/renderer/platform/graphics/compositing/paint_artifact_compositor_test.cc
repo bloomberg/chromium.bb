@@ -794,7 +794,7 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversion) {
 static ScrollPaintPropertyNode::State ScrollState1() {
   ScrollPaintPropertyNode::State state;
   state.container_rect = IntRect(3, 5, 11, 13);
-  state.contents_rect = IntRect(-3, -5, 27, 31);
+  state.contents_size = IntSize(27, 31);
   state.user_scrollable_horizontal = true;
   return state;
 }
@@ -803,7 +803,7 @@ static ScrollPaintPropertyNode::State ScrollState1() {
 static ScrollPaintPropertyNode::State ScrollState2() {
   ScrollPaintPropertyNode::State state;
   state.container_rect = IntRect(0, 0, 19, 23);
-  state.contents_rect = IntRect(0, 0, 29, 31);
+  state.contents_size = IntSize(29, 31);
   state.user_scrollable_horizontal = true;
   return state;
 }
@@ -824,7 +824,7 @@ static void CheckCcScrollNode(const ScrollPaintPropertyNode& blink_scroll,
                               const cc::ScrollNode& cc_scroll) {
   EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContainerRect().Size()),
             cc_scroll.container_bounds);
-  EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContentsRect().Size()),
+  EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContentsSize()),
             cc_scroll.bounds);
   EXPECT_EQ(blink_scroll.UserScrollableHorizontal(),
             cc_scroll.user_scrollable_horizontal);
@@ -870,10 +870,10 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
   EXPECT_EQ(scroll_node_index, scroll_node.id);
 
   // The scrolling contents layer is clipped to the scrolling range.
-  EXPECT_EQ(gfx::Size(27, 14), layer->bounds());
-  EXPECT_EQ(gfx::Vector2dF(-3, 12), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(27, 19), layer->bounds());
+  EXPECT_EQ(gfx::Vector2dF(0, 12), layer->offset_to_transform_parent());
   EXPECT_THAT(layer->GetPicture(),
-              Pointee(DrawsRectangle(FloatRect(0, 0, 63, 19), Color::kWhite)));
+              Pointee(DrawsRectangle(FloatRect(0, 0, 60, 19), Color::kWhite)));
 
   auto* scroll_layer = ScrollableLayerAt(0);
   EXPECT_TRUE(scroll_layer->scrollable());
@@ -917,10 +917,10 @@ TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {
   EXPECT_EQ(scroll_node.id, layer1->scroll_tree_index());
 
   // The scrolling layer is clipped to the scrollable range.
-  EXPECT_EQ(gfx::Vector2dF(-3, 4), layer0->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Vector2dF(0, 4), layer0->offset_to_transform_parent());
   EXPECT_EQ(gfx::Size(27, 8), layer0->bounds());
   EXPECT_THAT(layer0->GetPicture(),
-              Pointee(DrawsRectangle(FloatRect(0, 0, 43, 8), Color::kBlack)));
+              Pointee(DrawsRectangle(FloatRect(0, 0, 40, 8), Color::kBlack)));
 
   // The layer under the transform without a scroll node is not clipped.
   EXPECT_EQ(gfx::Vector2dF(1, -30), layer1->offset_to_transform_parent());

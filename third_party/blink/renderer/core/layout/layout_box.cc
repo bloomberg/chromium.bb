@@ -1169,6 +1169,10 @@ IntSize LayoutBox::OriginAdjustmentForScrollbars() const {
   return IntSize(LeftScrollbarWidth().ToInt(), 0);
 }
 
+IntPoint LayoutBox::ScrollOrigin() const {
+  return GetScrollableArea() ? GetScrollableArea()->ScrollOrigin() : IntPoint();
+}
+
 IntSize LayoutBox::ScrolledContentOffset() const {
   DCHECK(HasOverflowClip());
   DCHECK(GetScrollableArea());

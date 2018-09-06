@@ -751,7 +751,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   EXPECT_EQ(IntSize(320, 240), visual_viewport.ScrollLayer()->Size());
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     EXPECT_EQ(IntSize(320, 240),
-              visual_viewport.GetScrollNode()->ContentsRect().Size());
+              visual_viewport.GetScrollNode()->ContentsSize());
   }
 
   // Ensure the location and scale were reset.
@@ -1554,8 +1554,7 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                                        ->FirstFragment()
                                        .PaintProperties()
                                        ->Scroll()
-                                       ->ContentsRect()
-                                       .Size());
+                                       ->ContentsSize());
   }
 }
 
@@ -2384,7 +2383,7 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
     EXPECT_EQ(IntSize(400, 600),
               visual_viewport.GetScrollNode()->ContainerRect().Size());
     EXPECT_EQ(IntSize(320, 480),
-              visual_viewport.GetScrollNode()->ContentsRect().Size());
+              visual_viewport.GetScrollNode()->ContentsSize());
   }
 
   WebView().ApplyViewportDeltas(WebFloatSize(1, 1), WebFloatSize(),
@@ -2400,7 +2399,7 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
     EXPECT_EQ(IntSize(400, 600),
               visual_viewport.GetScrollNode()->ContainerRect().Size());
     EXPECT_EQ(IntSize(320, 480),
-              visual_viewport.GetScrollNode()->ContentsRect().Size());
+              visual_viewport.GetScrollNode()->ContentsSize());
   }
 }
 

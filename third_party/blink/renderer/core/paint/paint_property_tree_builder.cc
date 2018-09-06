@@ -1377,10 +1377,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       // integer offsets used in CompositedLayerMapping.
       state.container_rect = PixelSnappedIntRect(
           box.OverflowClipRect(context_.current.paint_offset));
-      state.contents_rect = IntRect(
-          -scrollable_area->ScrollOrigin() + state.container_rect.Location(),
-          scrollable_area->PixelSnappedContentsSize(
-              context_.current.paint_offset));
+      state.contents_size = scrollable_area->PixelSnappedContentsSize(
+          context_.current.paint_offset);
+
       state.user_scrollable_horizontal =
           scrollable_area->UserInputScrollable(kHorizontalScrollbar);
       state.user_scrollable_vertical =
@@ -1453,10 +1452,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
     // A scroll translation node is created for static offset (e.g., overflow
     // hidden with scroll offset) or cases that scroll and have a scroll node.
     if (NeedsScrollOrScrollTranslation(object_)) {
-      const LayoutBox& box = ToLayoutBox(object_);
+      const auto& box = ToLayoutBox(object_);
       TransformPaintPropertyNode::State state;
-      IntSize scroll_offset = box.ScrolledContentOffset();
-      state.matrix.Translate(-scroll_offset.Width(), -scroll_offset.Height());
+      // Bake ScrollOrigin into ScrollTranslation. See comments for
+      // ScrollTranslation in object_paint_properties.h for details.
+      auto scroll_position = box.ScrollOrigin() + box.ScrolledContentOffset();
+      state.matrix.Translate(-scroll_position.X(), -scroll_position.Y());
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
@@ -1474,8 +1475,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
   if (properties_->Scroll())
     context_.current.scroll = properties_->Scroll();
-  if (properties_->ScrollTranslation())
+
+  if (properties_->ScrollTranslation()) {
     context_.current.transform = properties_->ScrollTranslation();
+    // See comments for ScrollTranslation in object_paint_properties.h for the
+    // reason of adding ScrollOrigin().
+    context_.current.paint_offset += ToLayoutBox(object_).ScrollOrigin();
+  }
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
@@ -1498,6 +1504,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
     // Fixed position transform and scroll nodes should not be affected.
     context_.fixed_position.transform = initial_fixed_transform;
     context_.fixed_position.scroll = initial_fixed_scroll;
+    if (properties_->ScrollTranslation()) {
+      // Also undo the ScrollOrigin part in paint offset that was added when
+      // ScrollTranslation was updated.
+      context_.fixed_position.paint_offset -=
+          ToLayoutBox(object_).ScrollOrigin();
+    }
   } else if (object_.CanContainFixedPositionObjects()) {
     context_.fixed_position = context_.current;
     context_.fixed_position.fixed_position_children_fixed_to_root = false;
@@ -1673,8 +1685,16 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
 
     // The paint offset root can have a subpixel paint offset adjustment.
     // The paint offset root always has one fragment.
-    paint_offset.MoveBy(
-        context_.current.paint_offset_root->FirstFragment().PaintOffset());
+    const auto& paint_offset_root_fragment =
+        context_.current.paint_offset_root->FirstFragment();
+    paint_offset.MoveBy(paint_offset_root_fragment.PaintOffset());
+    if (paint_offset_root_fragment.PaintProperties() &&
+        paint_offset_root_fragment.PaintProperties()->ScrollTranslation()) {
+      // This duplicates the logic of the additional paint offset for scrolling
+      // contents in UpdateScrollTranslation().
+      paint_offset.MoveBy(
+          ToLayoutBox(context_.current.paint_offset_root)->ScrollOrigin());
+    }
 
     context_.current.paint_offset = paint_offset;
 

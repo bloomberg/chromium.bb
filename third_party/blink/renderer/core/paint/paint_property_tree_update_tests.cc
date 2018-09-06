@@ -777,7 +777,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                           ->ScrollTranslation()
                           ->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(200, 200), scroll_node->ContentsSize());
 
   GetDocument().getElementById("content")->setAttribute(
       HTMLNames::styleAttr, "width: 200px; height: 300px");
@@ -787,7 +787,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                              ->ScrollTranslation()
                              ->ScrollNode());
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 200, 300), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(200, 300), scroll_node->ContentsSize());
 }
 
 // The scrollbars are attached to the visual viewport but created by (and have
@@ -809,8 +809,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
   EXPECT_EQ(IntRect(0, 0, 800, 600),
             visual_viewport.GetScrollNode()->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 800, 600),
-            visual_viewport.GetScrollNode()->ContentsRect());
+  EXPECT_EQ(IntSize(800, 600), visual_viewport.GetScrollNode()->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {

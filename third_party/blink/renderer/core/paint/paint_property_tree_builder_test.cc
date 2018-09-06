@@ -226,7 +226,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   const auto* scroll = scroller_properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(DocScroll(), scroll->Parent());
   EXPECT_EQ(IntRect(0, 0, 413, 317), scroll->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 660, 10200), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(660, 10200), scroll->ContentsSize());
   EXPECT_FALSE(scroll->UserScrollableHorizontal());
   EXPECT_TRUE(scroll->UserScrollableVertical());
   EXPECT_EQ(FloatSize(120, 340), scroller_properties->PaintOffsetTranslation()
@@ -314,7 +314,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   )HTML");
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = GetLayoutObjectByElementId("scroller");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
@@ -322,9 +323,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
             overflow_clip->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(10, 10, 101, 100), overflow_clip->ClipRect());
 
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
-  EXPECT_TRUE(paint_layer->GetScrollableArea()
+  EXPECT_TRUE(ToLayoutBox(scroller)
+                  ->GetScrollableArea()
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
@@ -338,22 +338,46 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
     <div id='scroller'
          style='width: 100px; height: 100px; overflow: scroll;
                 writing-mode: vertical-rl; border: 10px solid blue'>
-      <div style='width: 400px; height: 400px'></div>
+      <div id="content" style='width: 400px; height: 400px'></div>
     </div>
   )HTML");
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  const auto* content = GetLayoutObjectByElementId("content");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
-  EXPECT_EQ(TransformationMatrix(), scroll_translation->Matrix());
+  // -315: container_width (100) - contents_width (400) - scrollber_width
+  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
+            scroll_translation->Matrix());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 10: border width. 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
-  // The content is placed at (-305, 10) so that its right edge aligns with the
-  // right edge of the container's client box.
-  EXPECT_EQ(IntRect(-305, 10, 400, 400), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(10, 10), content->FirstFragment().PaintOffset());
+
+  EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
+  EXPECT_EQ(properties->PaintOffsetTranslation(),
+            overflow_clip->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(10, 10, 85, 85), overflow_clip->ClipRect());
+
+  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Only scroll_translation is affected by scrolling.
+  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
+            scroll_translation->Matrix());
+  // Other properties are the same as before.
+  EXPECT_EQ(scroll, scroll_translation->ScrollNode());
+  EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(10, 10), content->FirstFragment().PaintOffset());
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -367,21 +391,47 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
     <div id='scroller'
          style='width: 100px; height: 100px; overflow: scroll;
                 direction: rtl; border: 10px solid blue'>
-      <div style='width: 400px; height: 400px'></div>
+      <div id='content' style='width: 400px; height: 400px'></div>
     </div>
   )HTML");
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  const auto* content = GetLayoutObjectByElementId("content");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
-  EXPECT_EQ(TransformationMatrix(), scroll_translation->Matrix());
+  // -315: container_width (100) - contents_width (400) - scrollbar width (15).
+  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
+            scroll_translation->Matrix());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 25: border width (10) + scrollbar (on the left) width (15).
   // 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(25, 10, 85, 85), scroll->ContainerRect());
-  EXPECT_EQ(IntRect(-290, 10, 400, 400), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(25, 10), content->FirstFragment().PaintOffset());
+
+  EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
+  EXPECT_EQ(properties->PaintOffsetTranslation(),
+            overflow_clip->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
+
+  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Only scroll_translation is affected by scrolling.
+  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
+            scroll_translation->Matrix());
+  // Other properties are the same as before.
+  EXPECT_EQ(scroll, scroll_translation->ScrollNode());
+  EXPECT_EQ(IntRect(25, 10, 85, 85), scroll->ContainerRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(25, 10), content->FirstFragment().PaintOffset());
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -3529,7 +3579,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_a_scroll_node->ContainerRect());
   // 107 is the forceScroll element plus the height of the overflow scroll child
   // (overflowB).
-  EXPECT_EQ(IntRect(0, 0, 9, 107), overflow_a_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 107), overflow_a_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableVertical());
 
@@ -3544,7 +3594,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 9, 7), overflow_b_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 9, 100), overflow_b_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());
 }
@@ -3617,7 +3667,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   // The height should be 4000px because the (dom-order) overflow children are
   // positioned and do not contribute to the height. Only the 4000px
   // "forceScroll" height is present.
-  EXPECT_EQ(IntRect(0, 0, 5, 4000), overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(5, 4000), overflow_scroll_node->ContentsSize());
 
   const ObjectPaintProperties* abspos_overflow_scroll_properties =
       abspos_overflow->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3630,8 +3680,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             abspos_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 9, 7), abspos_overflow_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 9, 4000),
-            abspos_overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 4000), abspos_overflow_scroll_node->ContentsSize());
 
   const ObjectPaintProperties* fixed_overflow_scroll_properties =
       fixed_overflow->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3649,8 +3698,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 13, 4000),
-            fixed_overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
@@ -3718,7 +3766,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_EQ(IntRect(0, 0, 20, 20), overflow_a_scroll_node->ContainerRect());
   // 100 is the forceScroll element's height because the overflow child does not
   // contribute to the height.
-  EXPECT_EQ(IntRect(0, 0, 20, 100), overflow_a_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(20, 100), overflow_a_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableVertical());
 
@@ -3733,7 +3781,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_b_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 5, 100), overflow_b_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(5, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());
 }
@@ -3818,8 +3866,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   )HTML");
 
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
-  ToLayoutBoxModelObject(scroller)->Layer()->GetScrollableArea()->ScrollBy(
-      ScrollOffset(0, 300), kUserScroll);
+  ToLayoutBox(scroller)->GetScrollableArea()->ScrollBy(ScrollOffset(0, 300),
+                                                       kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
@@ -5855,10 +5903,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(LayoutPoint(85, 100), paint_offset("float-right"));
   EXPECT_EQ(LayoutPoint(15, 0), paint_offset("float-left-rtl"));
   EXPECT_EQ(LayoutPoint(100, 100), paint_offset("float-right-rtl"));
-  EXPECT_EQ(LayoutPoint(85, 0), paint_offset("float-left-vrl"));
-  EXPECT_EQ(LayoutPoint(-15, 85), paint_offset("float-right-vrl"));
-  EXPECT_EQ(LayoutPoint(85, 0), paint_offset("float-left-rtl-vrl"));
-  EXPECT_EQ(LayoutPoint(-15, 85), paint_offset("float-right-rtl-vrl"));
+  EXPECT_EQ(LayoutPoint(100, 0), paint_offset("float-left-vrl"));
+  EXPECT_EQ(LayoutPoint(0, 85), paint_offset("float-right-vrl"));
+  EXPECT_EQ(LayoutPoint(100, 0), paint_offset("float-left-rtl-vrl"));
+  EXPECT_EQ(LayoutPoint(0, 85), paint_offset("float-right-rtl-vrl"));
   EXPECT_EQ(LayoutPoint(0, 0), paint_offset("float-left-vlr"));
   EXPECT_EQ(LayoutPoint(100, 85), paint_offset("float-right-vlr"));
   EXPECT_EQ(LayoutPoint(0, 0), paint_offset("float-left-rtl-vlr"));
@@ -5935,7 +5983,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
   const auto* properties = PaintPropertiesForElement("scroller");
   const auto* scroll_node = properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 1000, 200), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(1000, 200), scroll_node->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
