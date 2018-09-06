@@ -462,13 +462,6 @@ void DataReductionProxyIOData::SetDataUseAscriber(
   }
 }
 
-void DataReductionProxyIOData::SetPreviewsDecider(
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(previews_decider);
-  previews_decider_ = previews_decider;
-}
-
 void DataReductionProxyIOData::UpdateProxyRequestHeaders(
     net::HttpRequestHeaders headers) {
   ui_task_runner_->PostTask(
