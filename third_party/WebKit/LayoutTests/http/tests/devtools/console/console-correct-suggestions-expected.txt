@@ -258,4 +258,9 @@ Checking 'thePrefix'
 Found: thePrefix
 Found: thePrefixAndTheSuffix
 
+Checking 'objWithMethod.method'
+Found: method
+Found: methodWithSuffix
+Default suggestion: method
+
 
