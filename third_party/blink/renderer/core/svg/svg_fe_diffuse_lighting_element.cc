@@ -31,15 +31,14 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag,
                                            document),
-      diffuse_constant_(SVGAnimatedNumber::Create(this,
-                                                  SVGNames::diffuseConstantAttr,
-                                                  SVGNumber::Create(1))),
-      surface_scale_(SVGAnimatedNumber::Create(this,
-                                               SVGNames::surfaceScaleAttr,
-                                               SVGNumber::Create(1))),
+      diffuse_constant_(
+          SVGAnimatedNumber::Create(this, SVGNames::diffuseConstantAttr, 1)),
+      surface_scale_(
+          SVGAnimatedNumber::Create(this, SVGNames::surfaceScaleAttr, 1)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr)),
+          SVGNames::kernelUnitLengthAttr,
+          0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
   AddToPropertyMap(diffuse_constant_);
   AddToPropertyMap(surface_scale_);

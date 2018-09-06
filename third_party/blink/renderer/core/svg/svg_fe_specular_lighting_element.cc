@@ -34,19 +34,15 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feSpecularLightingTag,
                                            document),
       specular_constant_(
-          SVGAnimatedNumber::Create(this,
-                                    SVGNames::specularConstantAttr,
-                                    SVGNumber::Create(1))),
+          SVGAnimatedNumber::Create(this, SVGNames::specularConstantAttr, 1)),
       specular_exponent_(
-          SVGAnimatedNumber::Create(this,
-                                    SVGNames::specularExponentAttr,
-                                    SVGNumber::Create(1))),
-      surface_scale_(SVGAnimatedNumber::Create(this,
-                                               SVGNames::surfaceScaleAttr,
-                                               SVGNumber::Create(1))),
+          SVGAnimatedNumber::Create(this, SVGNames::specularExponentAttr, 1)),
+      surface_scale_(
+          SVGAnimatedNumber::Create(this, SVGNames::surfaceScaleAttr, 1)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr)),
+          SVGNames::kernelUnitLengthAttr,
+          0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
   AddToPropertyMap(specular_constant_);
   AddToPropertyMap(specular_exponent_);

@@ -30,16 +30,11 @@ namespace blink {
 
 inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document),
-      dx_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::dxAttr,
-                                    SVGNumber::Create(2))),
-      dy_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::dyAttr,
-                                    SVGNumber::Create(2))),
+      dx_(SVGAnimatedNumber::Create(this, SVGNames::dxAttr, 2)),
+      dy_(SVGAnimatedNumber::Create(this, SVGNames::dyAttr, 2)),
       std_deviation_(
           SVGAnimatedNumberOptionalNumber::Create(this,
                                                   SVGNames::stdDeviationAttr,
-                                                  2,
                                                   2)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
   AddToPropertyMap(dx_);

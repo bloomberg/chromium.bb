@@ -67,6 +67,7 @@ class SVGFEConvolveMatrixElement final
 
   IntSize MatrixOrder() const;
   IntPoint TargetPoint() const;
+  float ComputeDivisor() const;
 
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;

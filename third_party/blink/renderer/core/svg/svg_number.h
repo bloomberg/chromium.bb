@@ -67,6 +67,9 @@ class SVGNumber : public SVGPropertyHelper<SVGNumber> {
 
   static AnimatedPropertyType ClassType() { return kAnimatedNumber; }
 
+  void SetInitial(unsigned value) { SetValue(value); }
+  static constexpr int kInitialValueBits = 2;
+
  protected:
   explicit SVGNumber(float);
 

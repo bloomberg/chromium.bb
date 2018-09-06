@@ -50,10 +50,9 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feTurbulenceTag, document),
       base_frequency_(
           SVGAnimatedNumberOptionalNumber::Create(this,
-                                                  SVGNames::baseFrequencyAttr)),
-      seed_(SVGAnimatedNumber::Create(this,
-                                      SVGNames::seedAttr,
-                                      SVGNumber::Create(0))),
+                                                  SVGNames::baseFrequencyAttr,
+                                                  0.0f)),
+      seed_(SVGAnimatedNumber::Create(this, SVGNames::seedAttr, 0.0f)),
       stitch_tiles_(SVGAnimatedEnumeration<SVGStitchOptions>::Create(
           this,
           SVGNames::stitchTilesAttr,
