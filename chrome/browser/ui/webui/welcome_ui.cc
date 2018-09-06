@@ -130,7 +130,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
             profile, ServiceAccessType::EXPLICIT_ACCESS),
         BookmarkModelFactory::GetForBrowserContext(browser_context)));
 
-    nux::EmailHandler::AddSources(html_source);
+    nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
   }
 
   if (base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {

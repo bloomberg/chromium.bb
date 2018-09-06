@@ -77,6 +77,11 @@ void EmailHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "addEmails", base::BindRepeating(&EmailHandler::HandleAddEmails,
                                        base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "toggleBookmarkBar",
+      base::BindRepeating(&EmailHandler::HandleToggleBookmarkBar,
+                          base::Unretained(this)));
 }
 
 void EmailHandler::HandleRejectEmails(const base::ListValue* args) {
@@ -115,16 +120,6 @@ void EmailHandler::HandleAddEmails(const base::ListValue* args) {
     }
   }
 
-  // Enable bookmark bar.
-  prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
-
-  // Show bookmark bubble.
-  /* TODO(hcarmona): Show promo bubble.
-  ShowPromoDelegate::CreatePromoDelegate(
-      IDS_NUX_EMAIL_DESCRIPTION_PROMO_BUBBLE)
-      ->ShowForNode(bookmark_model_->bookmark_bar_node()->GetChild(0));
-  */
-
   /* TODO(hcarmona): Add histograms and uncomment this code.
   UMA_HISTOGRAM_ENUMERATION(kEmailInteractionHistogram,
                             EmailInteraction::kGetStarted,
@@ -132,7 +127,14 @@ void EmailHandler::HandleAddEmails(const base::ListValue* args) {
   */
 }
 
-void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
+void EmailHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
+  bool show = false;
+  CHECK(args->GetBoolean(0, &show));
+  prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, show);
+}
+
+void EmailHandler::AddSources(content::WebUIDataSource* html_source,
+                              PrefService* prefs) {
   // Localized strings.
   html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
   html_source->AddLocalizedString("getStarted", IDS_NUX_EMAIL_GET_STARTED);
@@ -173,6 +175,9 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
     html_source->AddString("email_url_" + std::to_string(i), kEmail[i].url);
   }
   html_source->AddInteger("email_count", (int)EmailProviders::kCount);
+  html_source->AddBoolean(
+      "bookmark_bar_shown",
+      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   html_source->SetJsonPath("strings.js");
 }
 
