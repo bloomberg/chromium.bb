@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -264,9 +265,7 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
 }
 
 bool IsFeatureEnabled(const base::Feature& feature) {
-  DCHECK(std::find(GetFeatures().begin(), GetFeatures().end(), &feature) !=
-         GetFeatures().end())
-      << feature.name;
+  DCHECK(base::ContainsValue(GetFeatures(), &feature)) << feature.name;
   return base::FeatureList::IsEnabled(feature);
 }
 
