@@ -10,6 +10,8 @@
 <translation id="2714180132046334502">深色背景</translation>
 <translation id="27349076983469322">淺色背景</translation>
 <translation id="335581015389089642">語音</translation>
+<translation id="4004802134384979325">已勾選</translation>
+<translation id="4827410568042294688">已取消選取</translation>
 <translation id="5901630391730855834">黃色</translation>
 <translation id="6017514345406065928">綠色</translation>
 <translation id="6475604559827479857">文字醒目顯示顏色：</translation>
@@ -17,6 +19,7 @@
 <translation id="7261612856573623172">系統預設文字轉語音聲音</translation>
 <translation id="7768784765476638775">隨選朗讀</translation>
 <translation id="7914870167134465181">醒目顯示</translation>
+<translation id="8033827949643255796">已選取</translation>
 <translation id="8324974933005349667">個人化文字轉語音設定</translation>
 <translation id="992256792861109788">粉紅色</translation>
 </translationbundle>

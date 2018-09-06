@@ -2728,13 +2728,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
           Separeu els diversos noms de servidor amb comes. Es permet l'ús de comodins (*).
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
-<translation id="8667812577403206506">Et permet controlar si es poden executar màquines virtuals a Chrome OS.
-
-      Si la política es defineix en "true", el dispositiu podrà executar màquines virtuals.
-      Si la política es defineix en "false", el dispositiu no podrà executar màquines virtuals.
-      Si la política es canvia a "false", afectarà l'execució de màquines virtuals noves, però no desactivarà les que ja s'estan executant.
-      Si la política no es defineix en un dispositiu gestionat, el dispositiu no tindrà permís per executar màquines virtuals.
-      Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
 <translation id="8669669491594628013">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
 
       Pots utilitzar les polítiques PasswordProtectionLoginURLs i PasswordProtectionChangePasswordURL per configurar quina contrasenya vols protegir.

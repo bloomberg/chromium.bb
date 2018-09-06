@@ -347,7 +347,7 @@
 <translation id="199764499252435679">Ativar atualizações de componentes no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gerenciamento de energia</translation>
 <translation id="201557587962247231">Frequência de uploads de relatórios de status do dispositivo</translation>
-<translation id="2017301949684549118">URLs para instalar apps da Web silenciosamente.</translation>
+<translation id="2017301949684549118">URLs para apps da Web serem instalados silenciosamente.</translation>
 <translation id="2018836497795982119">Especifica o período em milissegundos em que o serviço de gerenciamento de dispositivos é consultado para o recebimento de informações sobre a política do usuário.
 
       A definição dessa política modifica o valor padrão de três horas. Os valores válidos para essa política compreendem o período entre 1.800.000 (30 minutos) e 86.400.000 (1 dia). Todos os valores que não estiverem nesse período serão fixados no respectivo limite. Se a plataforma for compatível com as notificações sobre políticas, o atraso de atualização será definido para 24 horas, pois espera-se que as notificações sobre políticas forcem uma atualização automaticamente sempre que política for alterada.
@@ -1954,7 +1954,7 @@
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar sites de nível superior (exceto iframes incorporados) com conteúdo adulto</translation>
-<translation id="6734521799274931721">Controla o Compartilhamento de arquivos de rede para disponibilidade do ChromeOS</translation>
+<translation id="6734521799274931721">Controla o compartilhamento de arquivos de rede para disponibilidade do Chrome OS</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
 <translation id="673699536430961464">Essa definição permite que os usuários alternem entre Contas do Google na área de conteúdo da janela do navegador depois de fazer login no dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -2130,15 +2130,15 @@
 <translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="706568410943497889">
-      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC dos serviços do Google (por exemplo, Google Meet) e fazer upload desses registros para o Google.
+      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC dos serviços do Google (por exemplo, Google Meet) e fazer upload desses logs para o Google.
 
-      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não poderá coletar nem fazer upload desses registros.
+      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não poderá coletar nem fazer upload desses logs.
 
-      Esses registros contêm informações de diagnóstico importantes ao depurar problemas com chamadas de áudio ou videochamadas no Chrome, como o horário e o tamanho de pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o horário e a qualidade de frames de áudio e vídeo. Esses registros não possuem conteúdo de áudio ou vídeo da chamada.
+      Esses logs contêm informações de diagnóstico importantes ao depurar problemas com chamadas de áudio ou videochamadas no Chrome, como o horário e o tamanho de pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o horário e a qualidade de frames de áudio e vídeo. Esses registros não possuem conteúdo de áudio ou vídeo da chamada.
 
       Essa coleta de dados feita pelo Chrome só pode ser acionada pelos serviços da Web do Google, como o Hangouts ou o Google Meet.
 
-      Por meio de um código de sessão, o Google pode associar esses registros com outros coletados pelo próprio serviço do Google, com a finalidade de facilitar a depuração.
+      Por meio de um código de sessão, o Google pode associar esses logs com outros coletados pelo próprio serviço do Google, com a finalidade de facilitar a depuração.
       </translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7072208053150563108">Taxa de alteração da senha da máquina</translation>
@@ -2273,7 +2273,7 @@
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
 <translation id="7349338075015720646">Especifica uma lista de sites instalados silenciosamente sem a interação do usuário e que não podem ser desinstalados nem desativados pelo usuário.
 
-      Cada item da lista da política é um objeto com dois membros: "url" e "launch_container". "url" é o URL do app da Web a ser instalado, e "launch_container" é a "janela" ou "guia" para indicar como o app da Web será aberto depois de instalado. Se "launch_container" for omitido, o app será aberto em uma janela se o Chrome o considerar um Progressive Web App. Caso contrário, será aberto em uma guia.</translation>
+      Cada item da lista da política é um objeto com dois membros: "url" e "launch_container". "url" é o URL do app da Web a ser instalado, e "launch_container" é a "janela" ou "guia" para indicar como o app da Web será aberto depois de instalado. Se "launch_container" for omitido, o app será aberto em uma janela se o Chrome o considerar app da Web progressivo. Caso contrário, será aberto em uma guia.</translation>
 <translation id="7367028210010532881">O serviço Navegação segura mostra uma página de aviso quando os usuários navegam em sites que são sinalizados como potencialmente mal-intencionados. A ativação desta configuração impede que os usuários prossigam de qualquer forma da página de aviso para esse site.
 
       Se esta configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após o aviso ser exibido.
@@ -2749,13 +2749,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Separe vários nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos.
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> tenta detectar se um servidor está na Intranet e, só então, responde às solicitações IWA. Se um servidor é detectado como Internet, as solicitações IWA que partem dele são ignoradas pelo <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Permite que você controle se máquinas virtuais podem ser executadas no Chrome OS.
-
-      Se a política for definida como verdadeira, o dispositivo poderá executar máquinas virtuais.
-      Se a política for definida como falsa, o dispositivo não poderá executar máquinas virtuais.
-      Quando esta política é alterada para falsa, ela é aplicada à inicialização de novas máquinas virtuais, mas não ao encerramento das máquinas virtuais que já estejam em execução.
-      Quando esta política não é definida em um dispositivo gerenciado, o dispositivo não pode executar máquinas virtuais.
-      Dispositivos não gerenciados podem executar máquinas virtuais.</translation>
 <translation id="8669669491594628013">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta o usuário quando ele reutiliza a senha protegida dele em sites possivelmente suspeitos.
 
       Você pode usar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar quais senhas quer proteger.

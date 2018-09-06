@@ -330,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Full screen</translation>
 <translation id="8548209692293300397">You have previously signed in as <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). To access your computers in that account, <ph name="LINK_BEGIN" />sign in to Google Chrome<ph name="LINK_END" /> with that account and re-install Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">Fair</translation>
+<translation id="8705151241155781642">• Added support for Android 9.0 Pie.
+• Support for resizing remote desktop resolution to match your Android device's screen.</translation>
 <translation id="8712909229180978490">I can't see my saved files online in Google Drive.</translation>
 <translation id="8743328882720071828">Would you like to allow <ph name="CLIENT_USERNAME" /> to see and control your computer?</translation>
 <translation id="8747048596626351634">Session crashed or failed to start. If ~/.chrome-remote-desktop-session exists on the remote computer, make sure that it starts a long-running foreground process such as a desktop environment or window manager.</translation>

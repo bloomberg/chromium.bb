@@ -2179,7 +2179,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4296575653627536209">Přidat dozorovaného uživatele</translation>
 <translation id="4297219207642690536">Restartovat a resetovat</translation>
 <translation id="4297322094678649474">Změnit jazyky</translation>
-<translation id="4300305918532693141">Chcete-li toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">dlouhá (2 s)</translation>
 <translation id="4306119971288449206">Aplikace musí být poskytovány s typem obsahu <ph name="CONTENT_TYPE" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB aktivních)</translation>
@@ -5148,7 +5147,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8834164572807951958">Členové týmu <ph name="DESTINATION_NAME" /> získají přístup ke kopii těchto položek.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Přidat k obrázku poznámku</translation>
-<translation id="8844690305858050198">Hotovo! Škodlivý software byl odstraněn. Budete-li chtít rozšíření znovu zapnout, přejděte na stránku &lt;a href="chrome://extensions"&gt;Rozšíření&lt;/a&gt;.</translation>
 <translation id="8845001906332463065">Nápověda</translation>
 <translation id="8846141544112579928">Vyhledávání klávesnice...</translation>
 <translation id="8847988622838149491">USB</translation>

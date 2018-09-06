@@ -2179,7 +2179,6 @@
 <translation id="4296575653627536209">הוסף משתמש בפיקוח</translation>
 <translation id="4297219207642690536">הפעלה מחדש ואתחול</translation>
 <translation id="4297322094678649474">החלפת שפות</translation>
-<translation id="4300305918532693141"><ph name="BEGIN_LINK" />אפס את הסנכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו.</translation>
 <translation id="4305227814872083840">ארוכה (שתי שניות)</translation>
 <translation id="4306119971288449206">הפעלת אפליקציות חייבת להתבצע עם סוג תוכן "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243">‏‎<ph name="NUM_KILOBYTES" />K ‏‎(<ph name="NUM_KILOBYTES_LIVE" />K בשימוש)‎‎</translation>
@@ -2749,7 +2748,7 @@
 <translation id="5227808808023563348">חפש את הטקסט הקודם</translation>
 <translation id="5228076606934445476">משהו השתבש במכשיר.  כדי להתאושש משגיאה זו יהיה עליך לאתחל את המכשיר ולנסות שוב.</translation>
 <translation id="5229189185761556138">נהל שיטות קלט</translation>
-<translation id="5230516054153933099">חלון חשמלי</translation>
+<translation id="5230516054153933099">חלון</translation>
 <translation id="5233019165164992427">‏יציאת ניפוי באגים של NaCl</translation>
 <translation id="5233231016133573565">זיהוי תהליך</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
@@ -5149,7 +5148,6 @@
 <translation id="8834164572807951958">חברים באחסון השיתופי '<ph name="DESTINATION_NAME" />' יקבלו גישה ויוכלו להעתיק את הפריטים האלה.</translation>
 <translation id="8838770651474809439">המבורגר</translation>
 <translation id="883911313571074303">רשום הערה לתמונה</translation>
-<translation id="8844690305858050198">‏סיימנו! התוכנות המזיקות הוסרו. כדי להפעיל מחדש את התוספים, צריך לעבור אל &lt;a href="chrome://extensions"&gt;תוספים.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">קבל עזרה</translation>
 <translation id="8846141544112579928">מחפש מקלדת...</translation>
 <translation id="8847988622838149491">USB</translation>

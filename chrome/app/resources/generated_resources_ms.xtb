@@ -2183,7 +2183,6 @@
 <translation id="4296575653627536209">Tambahkan Pengguna di Bawah Seliaan</translation>
 <translation id="4297219207642690536">Mulakan semula dan tetapkan semula</translation>
 <translation id="4297322094678649474">Tukar Bahasa</translation>
-<translation id="4300305918532693141">Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">panjang (2s)</translation>
 <translation id="4306119971288449206">Apl mesti disampaikan dengan jenis kandungan "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K langsung)</translation>
@@ -2532,7 +2531,7 @@
 <translation id="4880520557730313061">Autobaiki</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
 <translation id="4881695831933465202">Buka</translation>
-<translation id="4882312758060467256">Mempunyai akses ke tapak ini</translation>
+<translation id="4882312758060467256">Boleh mengakses tapak ini</translation>
 <translation id="4882473678324857464">Tumpukan penanda halaman</translation>
 <translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
 <translation id="4883178195103750615">Eksport penanda halaman ke fail HTML...</translation>
@@ -5156,7 +5155,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8834164572807951958">Ahli '<ph name="DESTINATION_NAME" />' akan mendapat akses ke salinan item ini.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Anotasikan imej</translation>
-<translation id="8844690305858050198">Selesai! Perisian berbahaya telah dialih keluar. Untuk menghidupkan semula sambungan, lawati &lt;a href="chrome://extensions"&gt;Sambungan.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Dapatkan bantuan</translation>
 <translation id="8846141544112579928">Mencari papan kekunci...</translation>
 <translation id="8847988622838149491">USB</translation>

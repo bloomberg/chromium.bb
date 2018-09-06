@@ -374,6 +374,7 @@
 
 หากต้องการปรับเปลี่ยนข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับแต่งการค้นหา ให้เลื่อนแผงควบคุมขึ้นจนสุดแล้วแตะช่องค้นหา</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>
+<translation id="4060598801229743805">ตัวเลือกอยู่ตรงบริเวณด้านบนของหน้าจอ</translation>
 <translation id="4062305924942672200">ข้อมูลทางกฎหมาย</translation>
 <translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="4084712963632273211">จาก <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />แสดงโดย Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">เปิด <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ใช้รหัสผ่าน</translation>
 <translation id="4645575059429386691">มีการจัดการโดยผู้ปกครอง</translation>
+<translation id="4660011489602794167">แสดงแป้นพิมพ์</translation>
 <translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS" /> รายการแล้ว</translation>
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">แตะเพื่อคัดลอก URL สำหรับแอปนี้</translation>
 <translation id="5765780083710877561">คำอธิบาย:</translation>
 <translation id="5777170031995031090">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
-<translation id="5779929835642192302">มีคำแนะนำ</translation>
 <translation id="5793665092639000975">ใช้ไป <ph name="SPACE_USED" /> จาก <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">การอนุญาต</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ชั่วโมงที่ผ่านมา}other{# ชั่วโมงที่ผ่านมา}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">บล็อกจากบางไซต์</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
-<translation id="72867290065237936">แตะเพื่อสลับระหว่างคำแนะนำรหัสผ่านกับแป้นพิมพ์</translation>
 <translation id="729975465115245577">อุปกรณ์ของคุณไม่มีแอปไว้จัดเก็บไฟล์รหัสผ่าน</translation>
 <translation id="7302081693174882195">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>

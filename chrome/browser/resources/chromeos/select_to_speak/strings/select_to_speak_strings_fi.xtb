@@ -10,6 +10,8 @@
 <translation id="2714180132046334502">Tumma tausta</translation>
 <translation id="27349076983469322">Vaalea tausta</translation>
 <translation id="335581015389089642">Puhe</translation>
+<translation id="4004802134384979325">valittu</translation>
+<translation id="4827410568042294688">ei valittu</translation>
 <translation id="5901630391730855834">Keltainen</translation>
 <translation id="6017514345406065928">Vihreä</translation>
 <translation id="6475604559827479857">Sanojen korostusväri:</translation>
@@ -17,6 +19,7 @@
 <translation id="7261612856573623172">Järjestelmän Tekstistä puheeksi ‑ääni</translation>
 <translation id="7768784765476638775">Teksti puhuttuna</translation>
 <translation id="7914870167134465181">Korostus</translation>
+<translation id="8033827949643255796">valittu</translation>
 <translation id="8324974933005349667">Personoi Tekstistä puheeksi ‑asetukset</translation>
 <translation id="992256792861109788">Vaaleanpunainen</translation>
 </translationbundle>

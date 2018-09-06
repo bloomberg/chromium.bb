@@ -2181,7 +2181,6 @@
 <translation id="4296575653627536209">新增受監管的使用者</translation>
 <translation id="4297219207642690536">重新啟動並重設</translation>
 <translation id="4297322094678649474">變更語言</translation>
-<translation id="4300305918532693141">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="4305227814872083840">長 (2 秒)</translation>
 <translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K 作用中)</translation>
@@ -5150,7 +5149,6 @@
 <translation id="8834164572807951958">「<ph name="DESTINATION_NAME" />」的成員將可存取這些項目的複本。</translation>
 <translation id="8838770651474809439">漢堡</translation>
 <translation id="883911313571074303">為圖片加註</translation>
-<translation id="8844690305858050198">大功告成！有害軟體已移除。如要重新啟用擴充功能，請造訪&lt;a href="chrome://extensions"&gt;擴充功能&lt;/a&gt;。</translation>
 <translation id="8845001906332463065">尋求協助</translation>
 <translation id="8846141544112579928">正在搜尋鍵盤...</translation>
 <translation id="8847988622838149491">USB</translation>

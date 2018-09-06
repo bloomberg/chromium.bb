@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Unknown product <ph name="PRODUCT_ID" /> from <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Manifest file is invalid</translation>
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME" /> to be installed. It cannot be removed or modified.</translation>
+<translation id="7612608473764576263">Input value for private key must be a valid format (PKCS#8-format PEM-encoded RSA key).</translation>
 <translation id="7939686037314084444">The extension failed to load properly. It might not be able to intercept network requests.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">User-facing</translation>

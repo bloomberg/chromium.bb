@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">Thêm người dùng được giám sát</translation>
 <translation id="4297219207642690536">Khởi động lại và đặt lại</translation>
 <translation id="4297322094678649474">Thay đổi ngôn ngữ</translation>
-<translation id="4300305918532693141">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lâu (2 giây)</translation>
 <translation id="4306119971288449206">Ứng dụng phải được cung cấp loại nội dung "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K hiện có)</translation>
@@ -5154,7 +5153,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8834164572807951958">Thành viên của '<ph name="DESTINATION_NAME" />' sẽ có quyền truy cập vào bản sao của các tệp này.</translation>
 <translation id="8838770651474809439">Bánh hamburger</translation>
 <translation id="883911313571074303">Chú thích hình ảnh</translation>
-<translation id="8844690305858050198">Xong! Đã xóa phần mềm độc hại. Để bật lại tiện ích, hãy truy cập vào mục &lt;a href="chrome://extensions"&gt;Tiện ích.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Nhận trợ giúp</translation>
 <translation id="8846141544112579928">Đang tìm kiếm bàn phím...</translation>
 <translation id="8847988622838149491">USB</translation>

@@ -374,6 +374,7 @@
 
 За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="4056223980640387499">Сепия</translation>
+<translation id="4060598801229743805">Опциите са в горната част на екрана</translation>
 <translation id="4062305924942672200">Правна информация</translation>
 <translation id="4084682180776658562">Отметка</translation>
 <translation id="4084712963632273211">От <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />показва се от Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">Отваряне на <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Използване на паролата</translation>
 <translation id="4645575059429386691">Управлява се от ваш родител</translation>
+<translation id="4660011489602794167">Показване на клавиатурата</translation>
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
@@ -604,7 +606,6 @@
 <translation id="5763514718066511291">Докоснете, за да копирате URL адреса за това приложение</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
-<translation id="5779929835642192302">Налице са предложения</translation>
 <translation id="5793665092639000975">Използвано място: <ph name="SPACE_USED" /> от <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
@@ -796,7 +797,6 @@
 <translation id="7251326866581677552">Блокиране за някои сайтове</translation>
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
-<translation id="72867290065237936">Докоснете, за да превключите между предложенията за парола и клавиатурата</translation>
 <translation id="729975465115245577">На устройството ви няма приложение за съхраняване на файла с паролите.</translation>
 <translation id="7302081693174882195">Подробности: сортирани по количество спестени данни</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>

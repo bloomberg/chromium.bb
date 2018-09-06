@@ -203,6 +203,7 @@
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="1541170838458414064">Restrict printing page size</translation>
 <translation id="1553684822621013552">When this policy is set to true, ARC will be enabled for the user
       (subject to additional policy settings checks – ARC will still be
       unavailable if either ephemeral mode or multiple sign-in is enabled
@@ -384,6 +385,12 @@
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
+<translation id="2098916259427011890">This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME" /> version and <ph name="PRODUCT_NAME" /> channel.
+
+      When this policy is left unset or set to True, version information is gathered.
+      When this policy is set to False, version information is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
@@ -417,6 +424,8 @@
       If the policy is not set, the default value is 0 degrees and the user is
       free to change it. In this case, the default value is not reapplied at
       restart.</translation>
+<translation id="214901426630414675">Restrict printing duplex mode</translation>
+<translation id="2149330464730004005">Enable colour printing</translation>
 <translation id="2156132677421487971">Configure policies for <ph name="PRODUCT_NAME" />, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
 <translation id="2166472654199325139">Do not filter sites for adult content</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
@@ -616,6 +625,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2536525645274582300">User decides whether to enable Google Location services</translation>
+<translation id="2550593661567988768">Simplex printing only</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
@@ -749,9 +759,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
+<translation id="2856674246949497058">Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="2873651257716068683">Overrides default printing page size. If the page size is unavailable, this policy is ignored.</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
+<translation id="2892414556511568464">Restricts printing duplex mode. Unset policy and empty set are treated as no restriction.</translation>
 <translation id="2893546967669465276">Send system logs to the management server</translation>
 <translation id="2899002520262095963">Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.</translation>
 <translation id="290002216614278247">Allows you to lock the user's session based on the client time or the usage quota of the day.
@@ -841,6 +854,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       Servers are encouraged to migrate to ECDHE cipher suites. If these are unavailable, ensure a cipher suite using RSA key exchange is enabled.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
+<translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
 <translation id="3201273385265130876">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -953,6 +967,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
         The value of this policy is an Enrolment token that can be retrieved from the Google Admin console.</translation>
 <translation id="3496296378755072552">Password manager</translation>
+<translation id="3502555714327823858">Allow all duplex modes</translation>
 <translation id="350443680860256679">Configure ARC</translation>
 <translation id="3504791027627803580">Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
 
@@ -962,6 +977,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3524204464536655762">Do not allow any site to request access to USB devices via the WebUSB API</translation>
+<translation id="3526752951628474302">Monochrome printing only</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3545457887306538845">Allows you to control where Developer Tools can be used.
 
@@ -985,6 +1001,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
+<translation id="3628480121685794414">Enable simplex printing</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
@@ -1086,6 +1103,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the policy is set to false, the kiosk session information will not be
       reported. If set to true or left unset, kiosk session information will be
       reported.</translation>
+<translation id="3858658082795336534">Default printing duplex mode</translation>
 <translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME" />.
 
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
@@ -1194,6 +1212,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
+<translation id="4129183564590133854">This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME" /> Profile login, <ph name="PRODUCT_NAME" /> Profile name, <ph name="PRODUCT_NAME" /> Profile path and <ph name="PRODUCT_NAME" /> executable path.
+
+      When this policy is left unset or set to True, information that can be used to identify users is gathered.
+      When this policy is set to False, information that can be used to identify users is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="4138655880188755661">Time Limit</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4157594634940419685">Allow access to native CUPS printers</translation>
@@ -1505,6 +1529,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
+<translation id="5058771123777243130">This policy controls whether to report policy data and time of policy fetch.
+
+      When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
+      When this policy is set to False, policy data and time of policy fetch are not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
@@ -1621,6 +1651,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
           If set to true or not configured, supervised users can be created and managed by this user.</translation>
+<translation id="5369937289900051171">Colour printing only</translation>
 <translation id="5370279767682621504">Enable HTTP/0.9 support on non-default ports</translation>
 <translation id="5378985487213287085">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
 
@@ -1647,6 +1678,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5423197884968724595">Android WebView restriction name:</translation>
+<translation id="5424147596523390018">Allow all colour modes</translation>
 <translation id="5442026853063570579">This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="5447306928176905178">Enable reporting memory info (JS heap size) to page (deprecated)</translation>
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
@@ -1714,6 +1746,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
+<translation id="5689430183304951538">Default printing page size</translation>
 <translation id="5693469654327063861">Allow data migration</translation>
 <translation id="5694594914843889579">When this policy is set to true, external storage will not be available in the file browser.
 
@@ -1743,6 +1776,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="5783009211970309878">Print headers and footers</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
 <translation id="5815129011704381141">Automatically reboot after update</translation>
@@ -1760,6 +1794,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
       If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
+<translation id="582857022372205358">Enable short-edge duplex printing</translation>
 <translation id="583091600226586337">
       If the policy is enabled, the user will be asked where to save each file before downloading.
       If the policy is disabled, downloads will start immediately, and the user will not be asked where to save the file.
@@ -1795,6 +1830,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
 <translation id="5898486742390981550">When multiple users are logged in, only the primary user can use Android apps.</translation>
+<translation id="5901427587865226597">Duplex printing only</translation>
 <translation id="5906199912611534122">Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
       the throttling persists until the policy is changed to disable it.
@@ -1902,6 +1938,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="6097601282776163274">Enable URL-keyed anonymised data collection</translation>
+<translation id="6099853574908182288">Default printing colour mode</translation>
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
@@ -1916,6 +1953,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="6190022522129724693"> setting</translation>
+<translation id="6190367314942602985">Report user identification information</translation>
 <translation id="6197453924249895891">Grants access to corporate keys to extensions.
 
       Keys are designated for corporate usage if they're generated using the chrome.enterprise.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
@@ -1925,6 +1963,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       By default an extension cannot use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to false for that extension.
 
       Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.</translation>
+<translation id="6208896993204286313">Report <ph name="PRODUCT_NAME" /> policy information</translation>
+<translation id="6210259502936598222">Report OS and <ph name="PRODUCT_NAME" /> version information</translation>
 <translation id="6211428344788340116">Report device activity times.
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.</translation>
@@ -1938,6 +1978,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6233173491898450179">Set download directory</translation>
 <translation id="6244210204546589761">URLs to open on start-up</translation>
 <translation id="6258193603492867656">Specifies whether the generated Kerberos SPN should include a non-standard port. If you enable this setting, and a non-standard port (i.e. a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN. If you disable this setting, the generated Kerberos SPN will not include a port in any case.</translation>
+<translation id="6261643884958898336">Report machine identification information</translation>
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1968,6 +2009,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you choose to auto detect the proxy server, the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
 
           If you choose to use a .pac proxy script, the script URL is provided to Android apps.</translation>
+<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Allow sites to simultaneously navigate and open pop-ups</translation>
 <translation id="6447948611083700881">Backup and restore disabled</translation>
 <translation id="645425387487868471">Enable force sign-in for <ph name="PRODUCT_NAME" /></translation>
@@ -2014,6 +2056,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6628646143828354685">Allows you to set whether websites are allowed to get access to nearby Bluetooth devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to nearby Bluetooth devices.
 
           If this policy is left not set, '3' will be used, and the user will be able to change it.</translation>
+<translation id="663685822663765995">Restrict printing colour mode</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
 <translation id="6647965994887675196">If set to true, supervised users can be created and used.
 
@@ -2041,6 +2084,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           URL patterns in this policy should not clash with ones configured via WebUsbAskForUrls. It is unspecified which of the two policies takes precedence if a URL matches with both.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
+<translation id="6698632841807204978">Enable monochrome printing</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 
@@ -2080,6 +2124,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       This setting controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME" />, choose it as their default browser or otherwise inform them of product features.</translation>
 <translation id="6766216162565713893">Allow sites to ask the user to grant access to a nearby Bluetooth device</translation>
 <translation id="6770454900105963262">Report information about active kiosk sessions</translation>
+<translation id="6773056206551814546">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
+
+      When this policy is left unset or set to True, information that can be used to identify machines is gathered.
+      When this policy is set to False, information that can be used to identify machines is not gathered.
+
+      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
@@ -2183,6 +2233,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 
           This policy is only considered if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="6926703471186170050">Enable long-edge duplex printing</translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
 <translation id="6936894225179401731">Specifies the maximal number of simultaneous connections to the proxy server.
 
@@ -2390,6 +2441,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
+<translation id="737655323154569539">Restricts printing page size. Unset policy and empty set are treated as no restriction.</translation>
 <translation id="7417728346887499628">If disabled, prevents Chrome Cleanup from scanning the system for unwanted software and performing cleanups. Manually triggering Chrome Cleanup from chrome://settings/cleanup is disabled.
 
       If enabled or unset, Chrome Cleanup periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Cleanup from chrome://settings is enabled.
@@ -2460,6 +2512,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7617319494457709698">This policy specifies the allowed extensions to use the <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> function <ph name="CHALLENGE_USER_KEY_FUNCTION" /> for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
+<translation id="7618907117929117943">Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
+          Supported on <ph name="PRODUCT_OS_NAME" /> version 70 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="7635471475589566552">Configures the application locale in <ph name="PRODUCT_NAME" /> and prevents users from changing the locale.
@@ -2662,6 +2716,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting or do not set a value, Auto-Fill will remain under the control of the user. This will allow them to configure Auto-Fill profiles and to switch Auto-Fill on or off at their own discretion.</translation>
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8050080920415773384">Native Printing</translation>
+<translation id="8053580360728293758">Overrides default printing colour mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
 <translation id="8078366200175825572">Allows you to set a list of URL patterns that specify sites which are not allowed to set cookies.
 
@@ -2848,6 +2903,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       Here 'Version' can be either an exact version such as '61.0.3163.120' or a version prefix, such as '61.0'  </translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Allow SMS messages to be synced from phone to Chromebook.</translation>
+<translation id="8548832052135586762">Sets printing to colour only, monochrome only or no colour mode restriction. Unset policy is treated as no restriction.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8586528890725660268">Specifies the printers which a user cannot use.
@@ -2875,13 +2931,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Allows you to control whether virtual machines are allowed to run on Chrome OS.
-
-      If the policy is set to True, the device is allowed to run virtual machines.
-      If the policy is set to False, the device will not be allowed to run virtual machines.
-      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
-      When this policy is not set on a managed device, the device is not allowed to run virtual machines.
-      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="8669669491594628013">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
 
       You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
@@ -2967,6 +3016,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If this setting is left not set the user can decide to use this function or not.</translation>
 <translation id="8870318296973696995">Homepage</translation>
+<translation id="8876188741456358123">Overrides default printing duplex mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8882006618241293596">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
 <translation id="890403179930035128">Force-enables spellcheck languages. Unrecognised languages in that list will be ignored.
 
@@ -3063,6 +3113,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>
 <translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
+<translation id="9094064873808699479">Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
+          Supported on <ph name="PRODUCT_OS_NAME" /> version 70 and higher. For older clients, this value means that rollback is disabled.</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
@@ -3121,6 +3173,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
+<translation id="920209539000507585">Force 'headers and footers' to be on or off in the printing dialogue.
+
+      If the policy is unset, the user can decide whether to print headers and footers.
+
+      If the policy is set to false, 'Headers and footers' is not selected in the print preview dialogue and the user cannot change it.
+
+      If the policy is set to true, 'Headers and footers' is selected in the print preview dialogue and the user cannot change it.</translation>
 <translation id="9210953373038593554">Configures the type of authentication for SAML logins.
 
       When this policy is unset or set to Default (value 0), the behaviour of SAML logins is determined by the browser depending on other factors. In the most basic scenario, the user authentication and the protection of the cached user data are based on passwords manually entered by users.
@@ -3128,6 +3187,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy only affects users who authenticate using SAML.</translation>
+<translation id="9211439035693857287">Configure Chrome Reporting Extension-related policies.
+
+      These policies are only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,

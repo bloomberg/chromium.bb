@@ -2175,7 +2175,6 @@
 <translation id="4296575653627536209">添加受监管用户</translation>
 <translation id="4297219207642690536">重启并重置</translation>
 <translation id="4297322094678649474">更改语言</translation>
-<translation id="4300305918532693141">要更改此设置，请<ph name="BEGIN_LINK" />重置同步<ph name="END_LINK" />。</translation>
 <translation id="4305227814872083840">长（2 秒）</translation>
 <translation id="4306119971288449206">应用必须以“<ph name="CONTENT_TYPE" />”这种内容类型提供</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（实际大小为 <ph name="NUM_KILOBYTES_LIVE" /> K）</translation>
@@ -2744,7 +2743,7 @@
 <translation id="5227808808023563348">查找上一文字</translation>
 <translation id="5228076606934445476">设备出现问题。要从此错误下恢复，您需要重启设备，然后重试。</translation>
 <translation id="5229189185761556138">管理输入法</translation>
-<translation id="5230516054153933099">电动窗</translation>
+<translation id="5230516054153933099">窗</translation>
 <translation id="5233019165164992427">NaCl调试端口</translation>
 <translation id="5233231016133573565">进程 ID</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
@@ -5138,7 +5137,6 @@
 <translation id="8834164572807951958">“<ph name="DESTINATION_NAME" />”的成员将会有权访问这些内容的副本。</translation>
 <translation id="8838770651474809439">汉堡</translation>
 <translation id="883911313571074303">为图片添加注释</translation>
-<translation id="8844690305858050198">好了！有害软件已被移除。要重新开启扩展程序，请前往&lt;a href="chrome://extensions"&gt;扩展程序&lt;/a&gt;部分。</translation>
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8846141544112579928">正在搜索键盘…</translation>
 <translation id="8847988622838149491">USB</translation>

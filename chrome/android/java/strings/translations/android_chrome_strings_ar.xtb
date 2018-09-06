@@ -374,6 +374,7 @@
 
 لضبط عبارة البحث، يُرجى الضغط مع الاستمرار للتحديد. لتحسين البحث، يُرجى تمرير اللوحة للأعلى والنقر على مربّع البحث.</translation>
 <translation id="4056223980640387499">بني داكن</translation>
+<translation id="4060598801229743805">الخيارات متاحة بالقرب من أعلى الشاشة</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="4084712963632273211">‏من <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />تعرضه Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -447,6 +448,7 @@
 <translation id="4616150815774728855">فتح <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">استخدام كلمة المرور</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
+<translation id="4660011489602794167">عرض لوحة المفاتيح</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
@@ -604,7 +606,6 @@
 <translation id="5763514718066511291">‏النقر لنسخ عنوان URL لهذا التطبيق</translation>
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5777170031995031090">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى.</translation>
-<translation id="5779929835642192302">الاقتراحات المتاحة</translation>
 <translation id="5793665092639000975">استخدام <ph name="SPACE_USED" /> من <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
@@ -796,7 +797,6 @@
 <translation id="7251326866581677552">تم الحظر من بعض المواقع</translation>
 <translation id="7253272406652746122">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
-<translation id="72867290065237936">انقر للتبديل بين اقتراحات كلمة المرور ولوحة المفاتيح</translation>
 <translation id="729975465115245577">لا يتضمن جهازك تطبيقًا لتخزين ملف كلمات المرور.</translation>
 <translation id="7302081693174882195">التفاصيل: تم الترتيب بحسب مقدار البيانات المحفوظة</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>

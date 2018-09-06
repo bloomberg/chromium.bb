@@ -2178,7 +2178,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4296575653627536209">Betreuten Nutzer hinzufügen</translation>
 <translation id="4297219207642690536">Neu starten und zurücksetzen</translation>
 <translation id="4297322094678649474">Sprachen ändern</translation>
-<translation id="4300305918532693141">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lang (2 s)</translation>
 <translation id="4306119971288449206">Für Apps muss der Inhaltstyp "<ph name="CONTENT_TYPE" />" bereitgestellt werden</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB live)</translation>
@@ -5151,7 +5150,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8834164572807951958">Mitglieder von "<ph name="DESTINATION_NAME" />" erhalten Zugriff auf die Kopie dieser Elemente.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Bild mit Anmerkung versehen</translation>
-<translation id="8844690305858050198">Fertig! Die schädliche Software wurde entfernt. Sie können Ihre Erweiterungen jetzt wieder aktivieren, indem Sie die &lt;a href="chrome://extensions"&gt;Erweiterungen&lt;/a&gt; aufrufen.</translation>
 <translation id="8845001906332463065">Hilfe aufrufen</translation>
 <translation id="8846141544112579928">Suche nach Tastatur läuft...</translation>
 <translation id="8847988622838149491">USB</translation>

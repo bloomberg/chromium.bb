@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">Magdagdag ng Pinapangasiwaang User</translation>
 <translation id="4297219207642690536">I-restart at i-reset</translation>
 <translation id="4297322094678649474">Palitan ang Mga Wika</translation>
-<translation id="4300305918532693141">Upang baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">mahaba (2s)</translation>
 <translation id="4306119971288449206">Dapat maihatid ang mga app gamit ang uri ng content na "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -2752,7 +2751,7 @@
 <translation id="5227808808023563348">Hanapin ang nakaraang teksto</translation>
 <translation id="5228076606934445476">Nagkaroon ng problema sa device. Upang makabawi mula sa error na ito kakailanganin mong i-reboot ang device at subukang muli.</translation>
 <translation id="5229189185761556138">Pamahalaan ang mga paraan ng pag-input</translation>
-<translation id="5230516054153933099">Power window</translation>
+<translation id="5230516054153933099">Window</translation>
 <translation id="5233019165164992427">NaCl debug port</translation>
 <translation id="5233231016133573565">ID ng proseso</translation>
 <translation id="5233638681132016545">Bagong tab</translation>
@@ -5155,7 +5154,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8834164572807951958">Magkakaroon ng access ang mga miyembro ng '<ph name="DESTINATION_NAME" />' sa mga kopya ng mga item na ito.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">I-annotate ang larawan</translation>
-<translation id="8844690305858050198">Tapos na! Naalis na ang mapanganib na software. Para i-on muli ang mga extension, bisitahin ang &lt;a href="chrome://extensions"&gt;Mga Extension.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Humingi ng tulong</translation>
 <translation id="8846141544112579928">Naghahanap ng keyboard...</translation>
 <translation id="8847988622838149491">USB</translation>

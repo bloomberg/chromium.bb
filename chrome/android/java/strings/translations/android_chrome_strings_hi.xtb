@@ -374,6 +374,7 @@
 
 अपने खोज के शब्द को एडजस्‍ट करने के लिए उसे चुनें. चुनने के लिए उसे देर तक दबाकर रखें. अपनी खोज को बेहतर बनाने के लिए, पैनल को सीधे ऊपर स्‍लाइड करें और 'खोज बॉक्‍स' पर टैप करें.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">स्क्रीन के शीर्ष भाग में मौजूद विकल्प</translation>
 <translation id="4062305924942672200">कानूनी जानकारी</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084712963632273211">प्रकाशक: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google की ओर से डिलीवर किया गया<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> को खोलें</translation>
 <translation id="4634124774493850572">पासवर्ड का इस्तेमाल करें</translation>
 <translation id="4645575059429386691">आपके अभिभावक द्वारा प्रबंधित</translation>
+<translation id="4660011489602794167">कीबोर्ड दिखाएं</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
 <translation id="4684427112815847243">सब कुछ समन्‍वयित करें</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">इस ऐप्लिकेशन का यूआरएल कॉपी करने के लिए टैप करें</translation>
 <translation id="5765780083710877561">वर्णन:</translation>
 <translation id="5777170031995031090">नियंत्रित करें कि खोज, विज्ञापन और अन्य Google सेवाओं को वैयक्तिकृत करने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कैसे करता है.</translation>
-<translation id="5779929835642192302">सुझाव उपलब्ध हैं</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> में से <ph name="SPACE_USED" /> का इस्तेमाल किया जा रहा है</translation>
 <translation id="5804241973901381774">अनुमतियां</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">कुछ साइटों से ब्लॉक है</translation>
 <translation id="7253272406652746122">अपने डिवाइस के सेटिंग ऐप्लिकेशन में खाते पेज से कोई Google खाता जोड़ें.</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
-<translation id="72867290065237936">पासवर्ड सुझावों और कीबोर्ड के बीच टॉगल करने के लिए टैप करें</translation>
 <translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को संग्रहित करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7302081693174882195">जानकारी: बचाए गए डेटा की मात्रा के अनुसार क्रम से लगाया गया</translation>
 <translation id="7333031090786104871">पिछली साइट अभी भी जोड़ी जा रही है</translation>

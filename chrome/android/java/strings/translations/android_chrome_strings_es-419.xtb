@@ -249,6 +249,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2902702728133930130">Se produjo un error inesperado durante el inicio de Chrome.</translation>
 <translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
+<translation id="2910701580606108292">Preguntar antes de permitir que los sitios reproduzcan contenido protegido</translation>
 <translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2932150158123903946">Almacenamiento de Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Para mejorar Chrome y su seguridad, envía información a Google sobre el sistema y el uso</translation>
@@ -373,6 +374,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 
 Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y presiona el cuadro de búsqueda.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opciones disponibles cerca de la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />publicado por Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -445,6 +447,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Usar contraseña</translation>
 <translation id="4645575059429386691">Administrado por tus padres</translation>
+<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos eliminados</translation>
 <translation id="4665282149850138822">Se agregó <ph name="NAME" /> a la pantalla principal</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
@@ -602,7 +605,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5763514718066511291">Presiona para copiar la URL para esta app</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5777170031995031090">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
-<translation id="5779929835642192302">Sugerencias disponibles</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /> en uso</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
@@ -667,6 +669,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
+<translation id="6303969859164067831">Salir y desactivar la sincronización</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION" /></translation>
@@ -793,7 +796,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7251326866581677552">Bloqueados de algunos sitios</translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
-<translation id="72867290065237936">Presiona este botón para cambiar entre las sugerencias de contraseña y el teclado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene una app que pueda almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: Ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>
@@ -829,6 +831,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7542481630195938534">No se pueden obtener sugerencias</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
 <translation id="756809126120519699">Datos de Chrome borrados</translation>
+<translation id="757524316907819857">Impedir que los sitios reproduzcan contenido protegido</translation>
 <translation id="7589445247086920869">Bloquear el motor de búsqueda actual</translation>
 <translation id="7593557518625677601">Para iniciar la Sincronización de Chrome, abre la configuración de Android y vuelve a habilitar la sincronización del sistema Android</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>

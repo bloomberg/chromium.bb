@@ -2881,13 +2881,6 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
           Imena strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> poskuša zaznati, ali je strežnik v intranetu, in se šele potem odzove na zahteve IWA. Če je strežnik zaznan kot internet, <ph name="PRODUCT_NAME" /> prezre zahteve IWA, poslane iz tega strežnika.</translation>
-<translation id="8667812577403206506">Omogoči nadziranje, ali je v sistemu OS Chrome dovoljeno izvajanje navideznih računalnikov.
-
-      Če je pravilnik nastavljen na »True«, je v napravi dovoljeno izvajanje navideznih računalnikov.
-      Če je pravilnik nastavljen na »False«, v napravi ni dovoljeno izvajanje navideznih računalnikov.
-      Če je nastavitev tega pravilnika spremenjena na »False«, se uporabi pri zagonu novih navideznih računalnikov, navideznih računalnikov, ki se že izvajajo, pa ne zaustavi.
-      Če ta pravilnik ni nastavljen v upravljani napravi, v napravi ni dovoljeno izvajanje navideznih računalnikov.
-      V napravah, ki niso upravljane, je dovoljeno izvajanje navideznih računalnikov.</translation>
 <translation id="8669669491594628013">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
 
       Pravilnika »PasswordProtectionLoginURLs« in »PasswordProtectionChangePasswordURL« lahko uporabite za konfiguriranje, katero geslo naj bo zaščiteno.

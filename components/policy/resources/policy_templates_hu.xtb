@@ -2763,13 +2763,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
           Több szervernév megadása esetén azokat vesszővel kell elválasztani. A helyettesítő karakterek (*) engedélyezettek.
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> megpróbálja érzékelni, hogy egy szerver az intraneten van-e, és csak akkor válaszol az IWA-kérésekre. Ha a szervert az interneten lévőnek észleli, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja annak IWA-kéréseit.</translation>
-<translation id="8667812577403206506">Segítségével szabályozhatja, hogy futhatnak-e virtuális gépek a Chrome OS rendszeren.
-
-      Ha a házirend értéke igaz, az eszközön futhatnak virtuális gépek.
-      Ha a házirend értéke hamis, az eszközön nem futhatnak virtuális gépek.
-      Amikor hamis értékre állítja ezt a házirendet, a módosítás az új virtuális gépek indítására vonatkozik, de nem kapcsolja ki a már futó virtuális gépeket.
-      Ha a házirend nincs beállítva kezelt eszközön, az eszköz számára nem lesz engedélyezve a virtuális gépek futtatása.
-      A nem kezelt eszközök számára engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="8669669491594628013">Lehetővé teszi a jelszóvédelmi figyelmeztetés aktiválásának szabályozását. A jelszóvédelem figyelmezteti a felhasználót, ha potenciálisan gyanús webhelyen próbálja újra felhasználni védett jelszavát.
 
       A „PasswordProtectionLoginURLs” és a „PasswordProtectionChangePasswordURL” házirendeket használhatja a védendő jelszavak beállítására.

@@ -374,6 +374,7 @@
 
 כדי לשנות את מונח החיפוש שלך, צריך לגעת נגיעה ממושכת במונח כדי לבחור בו. כדי לצמצם את החיפוש, מסיטים את החלונית עד למעלה ומקישים על תיבת החיפוש.</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
+<translation id="4060598801229743805">האפשרויות זמינות בחלק העליון של המסך</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4084682180776658562">סימניה</translation>
 <translation id="4084712963632273211">‏מאת <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />מוגש על-ידי Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">פתיחה של <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">שימוש בסיסמה</translation>
 <translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
+<translation id="4660011489602794167">הצגת מקלדת</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> סימניות נמחקו</translation>
 <translation id="4665282149850138822">האתר <ph name="NAME" /> נוסף למסך דף הבית שלך</translation>
 <translation id="4684427112815847243">סנכרן הכל</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">הקשה מעתיקה את כתובת האתר של האפליקציה הזו</translation>
 <translation id="5765780083710877561">תיאור:</translation>
 <translation id="5777170031995031090">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים.</translation>
-<translation id="5779929835642192302">הצעות זמינות</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> מתוך <ph name="SPACE_AVAILABLE" /> נמצאים בשימוש</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{לפני שעה}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">חסומות באתרים מסוימים</translation>
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
 <translation id="7274013316676448362">אתר חסום</translation>
-<translation id="72867290065237936">הקשה מעבירה אותך בין ההצעות לסיסמה לבין המקלדת</translation>
 <translation id="729975465115245577">אין במכשיר אפליקציה לאחסון קובץ הסיסמאות.</translation>
 <translation id="7302081693174882195">פרטים: מיון לפי נפח הנתונים שנחסכו</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>

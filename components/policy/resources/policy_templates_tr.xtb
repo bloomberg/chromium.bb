@@ -2841,18 +2841,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (*) izin verilir.
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
-<translation id="8667812577403206506">Chrome OS'te sanal makinelerin çalıştırılmasına izin verilip verilmediğini kontrol etmenize olanak tanır.
-
-      Politika Doğru (True) değerine ayarlanırsa cihazın sanal makineler
-      çalıştırmasına izin verilir.
-      Politika Yanlış (False) değerine ayarlanırsa cihazın sanal makineler
-      çalıştırmasına izin verilmez.
-      Bu politika Yanlış (False) olarak değiştirildiğinde, ayar yeni sanal
-makinelerin başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta
-olan sanal makineleri kapatmaz.
-      Yönetilen bir cihazda bu politika ayarlanmadığında, cihazın sanal makine
-çalıştırmasına izin verilmez.
-      Yönetilmeyen cihazların sanal makineler çalıştırmasına izin verilir.</translation>
 <translation id="8669669491594628013">Şifre koruma uyarısının tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma, korunan şifrelerini şüpheli olabilecek sitelerde yeniden kullandıklarında kullanıcıları uyarır.
 
       Korunacak şifreyi yapılandırmak için "PasswordProtectionLoginURLs" ve "PasswordProtectionChangePasswordURL" politikalarını kullanabilirsiniz.

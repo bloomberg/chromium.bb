@@ -374,6 +374,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 
 Để điều chỉnh cụm từ tìm kiếm của bạn, hãy nhấn và giữ để chọn cụm từ đó. Để tinh chỉnh cụm từ tìm kiếm của bạn, hãy trượt bảng điều khiển lên hết cỡ và nhấn vào hộp tìm kiếm.</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
+<translation id="4060598801229743805">Có các tùy chọn ở gần đầu màn hình</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
 <translation id="4084682180776658562">Dấu trang</translation>
 <translation id="4084712963632273211">Từ <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Do Google phân phối<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4616150815774728855">Mở <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Sử dụng mật khẩu</translation>
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
+<translation id="4660011489602794167">Hiển thị bàn phím</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
 <translation id="4684427112815847243">Đồng bộ hóa mọi thứ</translation>
@@ -603,7 +605,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5763514718066511291">Nhấn để sao chép URL cho ứng dụng này</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5777170031995031090">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google.</translation>
-<translation id="5779929835642192302">Có đề xuất</translation>
 <translation id="5793665092639000975">Sử dụng <ph name="SPACE_USED" />/<ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# giờ trước}other{# giờ trước}}</translation>
@@ -795,7 +796,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7251326866581677552">Đã chặn khỏi một số trang web</translation>
 <translation id="7253272406652746122">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
-<translation id="72867290065237936">Nhấn để chuyển đổi giữa các mục đề xuất mật khẩu và bàn phím</translation>
 <translation id="729975465115245577">Thiết bị của bạn không có ứng dụng để lưu trữ tệp mật khẩu.</translation>
 <translation id="7302081693174882195">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã tiết kiệm được</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>

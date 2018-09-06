@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">கண்காணிக்கப்படும் பயனரைச் சேர்</translation>
 <translation id="4297219207642690536">மீண்டும் தொடங்கி, மீட்டமை</translation>
 <translation id="4297322094678649474">மொழிகளை மாற்று</translation>
-<translation id="4300305918532693141">இந்த அமைப்பை மாற்ற,<ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">நீண்டது (2வி)</translation>
 <translation id="4306119971288449206">பயன்பாடுகள் "<ph name="CONTENT_TYPE" />" எனும் உள்ளடக்க வகையுடனேயே வழங்கப்பட வேண்டும்</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K பயன்பாட்டில்)</translation>
@@ -2752,7 +2751,7 @@
 <translation id="5227808808023563348">முந்தைய உரையைக் கண்டறி</translation>
 <translation id="5228076606934445476">சாதனத்தில் ஏதோ தவறு உள்ளது. இந்தப் பிழையிலிருந்து மீட்டமைக்க நீங்கள் சாதனத்தை மறுதொடக்கம் செய்து மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="5229189185761556138">உள்ளீட்டு முறைகளை நிர்வகி</translation>
-<translation id="5230516054153933099">ஜன்னல்</translation>
+<translation id="5230516054153933099">விண்டோ</translation>
 <translation id="5233019165164992427">NaCl பிழைத்திருத்தப் போர்ட்</translation>
 <translation id="5233231016133573565">செயலாக்க ID</translation>
 <translation id="5233638681132016545">புதிய தாவல்</translation>
@@ -5157,7 +5156,6 @@
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' இன் உறுப்பினர்கள், இந்தக் கோப்புகளின் நகலுக்கான அணுகலைப் பெறுவார்கள்.</translation>
 <translation id="8838770651474809439">ஹம்பர்கர்</translation>
 <translation id="883911313571074303">படத்தைக் குறிப்பிடு</translation>
-<translation id="8844690305858050198">முடிந்தது! தீங்கிழைக்கும் மென்பொருள் அகற்றப்பட்டது. நீட்டிப்புகளை மீண்டும் இயக்க, &lt;a href="chrome://extensions"&gt;நீட்டிப்புகள் பிரிவுக்குச் செல்லவும்.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">உதவி பெறுக</translation>
 <translation id="8846141544112579928">விசைப்பலகையைத் தேடுகிறது...</translation>
 <translation id="8847988622838149491">USB</translation>

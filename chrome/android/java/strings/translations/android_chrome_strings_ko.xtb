@@ -374,6 +374,7 @@
 
 검색어를 조정하려면 길게 눌러 선택하세요. 더욱 상세히 검색하려면 패널을 위로 끝까지 슬라이드한 다음 검색창을 탭하세요.</translation>
 <translation id="4056223980640387499">세피아</translation>
+<translation id="4060598801229743805">화면 상단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4084682180776658562">북마크</translation>
 <translation id="4084712963632273211">발신자: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google 제공<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> 열기</translation>
 <translation id="4634124774493850572">비밀번호 사용</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
+<translation id="4660011489602794167">키보드 표시</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">탭하여 이 앱의 URL 복사하기</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5777170031995031090">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
-<translation id="5779929835642192302">제안 사용 가능</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> 중 <ph name="SPACE_USED" /> 사용 중</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">일부 사이트에서 차단됨</translation>
 <translation id="7253272406652746122">기기 설정 앱의 계정 페이지에서 Google 계정을 추가하세요.</translation>
 <translation id="7274013316676448362">차단된 사이트</translation>
-<translation id="72867290065237936">탭하여 비밀번호 추천과 키보드 간에 전환하세요.</translation>
 <translation id="729975465115245577">기기에 비밀번호 파일을 저장할 수 있는 앱이 없습니다.</translation>
 <translation id="7302081693174882195">세부정보: 저장된 데이터 양에 따라 정렬</translation>
 <translation id="7333031090786104871">아직 이전 사이트 추가 중</translation>

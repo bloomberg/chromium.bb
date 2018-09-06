@@ -374,6 +374,7 @@
 
 Για να τροποποιήσετε τον όρο αναζήτησης, πατήστε παρατεταμένα για να τον επιλέξετε. Για να κάνετε την αναζήτησή σας πιο συγκεκριμένη, σύρετε το παράθυρο εντελώς προς τα επάνω και πατήστε το πλαίσιο αναζήτησης.</translation>
 <translation id="4056223980640387499">Σέπια</translation>
+<translation id="4060598801229743805">Διαθέσιμες επιλογές κοντά στην κορυφή της οθόνης</translation>
 <translation id="4062305924942672200">Νομικές πληροφορίες</translation>
 <translation id="4084682180776658562">Σελιδοδείκτης</translation>
 <translation id="4084712963632273211">Από <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />παρέχεται από την Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">Ανοίξτε <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Χρήση κωδικού πρόσβασης</translation>
 <translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
+<translation id="4660011489602794167">Εμφάνιση πληκτρολογίου</translation>
 <translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS" /> σελιδοδείκτες</translation>
 <translation id="4665282149850138822">Ο ιστότοπος <ph name="NAME" /> προστέθηκε στην αρχική οθόνη σας</translation>
 <translation id="4684427112815847243">Συγχρονισμός όλων</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">Πατήστε για αντιγραφή του URL για αυτήν την εφαρμογή</translation>
 <translation id="5765780083710877561">Περιγραφή:</translation>
 <translation id="5777170031995031090">Ελέγξτε τον τρόπο με τον οποίο η Google χρησιμοποιεί το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων υπηρεσιών Google.</translation>
-<translation id="5779929835642192302">Διαθέσιμες προτάσεις</translation>
 <translation id="5793665092639000975">Χρήση <ph name="SPACE_USED" /> από <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Άδειες</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Πριν από # ώρα}other{Πριν από # ώρες}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">Αποκλεισμός από ορισμένους ιστοτόπους</translation>
 <translation id="7253272406652746122">Προσθέστε έναν Λογαριασμό Google από τη σελίδα "Λογαριασμοί" της εφαρμογής Ρυθμίσεις της συσκευής σας.</translation>
 <translation id="7274013316676448362">Αποκλεισμένος ιστότοπος</translation>
-<translation id="72867290065237936">Πατήστε για εναλλαγή μεταξύ προτάσεων για κωδικούς πρόσβασης και πληκτρολογίου</translation>
 <translation id="729975465115245577">Η συσκευή σας δεν διαθέτει κάποια εφαρμογή για την αποθήκευση του αρχείου κωδικών πρόσβασης.</translation>
 <translation id="7302081693174882195">Λεπτομέρειες: Ταξινομήθηκαν βάσει του όγκου των δεδομένων που αποθηκεύτηκαν</translation>
 <translation id="7333031090786104871">Η προσθήκη του προηγούμενου ιστοτόπου δεν έχει ολοκληρωθεί</translation>

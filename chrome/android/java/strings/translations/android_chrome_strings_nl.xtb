@@ -374,6 +374,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 
 Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecteren. Als je je zoekopdracht wilt verfijnen, veeg je het deelvenster helemaal naar boven en tik je op het zoekvak.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opties beschikbaar boven aan het scherm</translation>
 <translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="4084682180776658562">Bladwijzer maken</translation>
 <translation id="4084712963632273211">Van <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />geleverd door Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> openen</translation>
 <translation id="4634124774493850572">Wachtwoord gebruiken</translation>
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
+<translation id="4660011489602794167">Toetsenbord weergeven</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
@@ -603,7 +605,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5763514718066511291">Tik om de URL voor deze app te kopiëren</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5777170031995031090">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken, advertenties en andere Google-services te personaliseren.</translation>
-<translation id="5779929835642192302">Beschikbare suggesties</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> van <ph name="SPACE_AVAILABLE" /> wordt gebruikt</translation>
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# uur geleden}other{# uur geleden}}</translation>
@@ -795,7 +796,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7251326866581677552">Geblokkeerd voor bepaalde sites</translation>
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
-<translation id="72867290065237936">Tik om te schakelen tussen wachtwoordsuggesties en het toetsenbord</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>

@@ -1788,7 +1788,7 @@
 <translation id="3691231116639905343">कीबोर्ड ऐप्लिकेशन</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> आपकी स्क्रीन शेयर करना चाहता है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
-<translation id="3694027410380121301">पिछला टैब को चुनें</translation>
+<translation id="3694027410380121301">'पिछला टैब' चुनें</translation>
 <translation id="369489984217678710">पासवर्ड और दूसरे साइन-इन डेटा</translation>
 <translation id="3699624789011381381">ईमेल पता</translation>
 <translation id="3699920817649120894">सिंक करना और मनमुताबिक बनाना बंद करें?</translation>
@@ -2181,7 +2181,6 @@
 <translation id="4296575653627536209">'निगरानी में रखा गया उपयोगकर्ता' जोड़ें</translation>
 <translation id="4297219207642690536">रीस्टार्ट करें और रीसेट करें</translation>
 <translation id="4297322094678649474">भाषाएं बदलें</translation>
-<translation id="4300305918532693141">यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">लंबा (2 सेकंड)</translation>
 <translation id="4306119971288449206">एप्लिकेशन को सामग्री-प्रकार "<ph name="CONTENT_TYPE" />" के साथ दिया जाना चाहिए</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K लाइव)</translation>
@@ -2987,7 +2986,7 @@
 <translation id="5534520101572674276">आकार की गणना कर रहा है</translation>
 <translation id="5535941515421698170">इस डिवाइस से अपना मौजूदा डेटा भी निकालें</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
-<translation id="5539221284352502426">आपने जो पासवर्ड डाला है उसे सर्वर ने अस्वीकार कर दिया है. संभावित कारण ये हो सकते हैं: पासवर्ड बहुत छोटा है. पासवर्ड में संख्याएं या चिह्न होने चाहिए. पासवर्ड, पिछले पासवर्ड से अलग होना चाहिए.</translation>
+<translation id="5539221284352502426">आपने जो पासवर्ड डाला है, उसे सर्वर ने अस्वीकार कर दिया है. संभावित कारण ये हो सकते हैं: पासवर्ड बहुत छोटा है. पासवर्ड में संख्याएं या चिह्न होने चाहिए. पासवर्ड, पिछले पासवर्ड से अलग होना चाहिए.</translation>
 <translation id="5541687815721799001">ऐप्लिकेशन का उपयोग करें</translation>
 <translation id="5542132724887566711">प्रोफ़ाइल</translation>
 <translation id="5542750926112347543"><ph name="DOMAIN" /> की कुकी ब्लॉक की गई हैं</translation>
@@ -3296,7 +3295,7 @@
 <translation id="6011193465932186973">फ़िंगरप्रिंट</translation>
 <translation id="6011449291337289699">साइट डेटा साफ़ करें</translation>
 <translation id="6015796118275082299">वर्ष</translation>
-<translation id="6016551720757758985">पिछले वर्ज़न पर वापस लौटने के साथ ही पावरवॉश की पुष्‍टि करें</translation>
+<translation id="6016551720757758985">पिछले वर्शन पर वापस लौटने के साथ ही पावरवॉश की पुष्‍टि करें</translation>
 <translation id="6016972670657536680">भाषा और कीबोर्ड बटन चुनें. इस समय चुनी गई भाषा <ph name="LANGUAGE" /> है.</translation>
 <translation id="6019169947004469866">काटें</translation>
 <translation id="6020431688553761150">सर्वर ने इस स्रोत को एक्सेस करने के लिए आपको प्राधिकृत नहीं किया था.</translation>
@@ -4184,7 +4183,7 @@
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="7366415735885268578">साइट जोड़ें</translation>
 <translation id="7366909168761621528">ब्राउज़िंग डेटा</translation>
-<translation id="7371006317849674875">प्रारंभ समय</translation>
+<translation id="7371006317849674875">शुरू करने का समय</translation>
 <translation id="737439367876257440">Google को सिस्टम और इस्तेमाल से जुड़ी जानकारी भेजकर Chrome और उसकी सुरक्षा को बेहतर बनाएं</translation>
 <translation id="7374989181012106167">आपका Chromebook आपके फ़ोन के साथ और भी बेहतर काम करता है. <ph name="LINK_BEGIN" />ज़्यादा जानें.<ph name="LINK_END" /></translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4490,7 +4489,7 @@
 <translation id="7829298379596169484">ऑडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="7831491651892296503">नेटवर्क कॉन्फ़िगर करने में गड़बड़ी</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
-<translation id="7832084384634357321">समाप्ति समय</translation>
+<translation id="7832084384634357321">खत्म होने का समय</translation>
 <translation id="7832327313660264358">Google में सिंक किए गए डेटा और आपके इस्तेमाल किए जा रहे फ़ीचर में कोई बदलाव नहीं होगा</translation>
 <translation id="7833720883933317473">सहेजे गए कस्टम शब्द यहां दिखाई देंगे</translation>
 <translation id="7837307963048806839">•  $1</translation>
@@ -5153,7 +5152,6 @@
 <translation id="8834164572807951958">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम की कॉपी का एक्सेस मिल जाएगा.</translation>
 <translation id="8838770651474809439">हैमबर्गर</translation>
 <translation id="883911313571074303">व्याख्या चित्र</translation>
-<translation id="8844690305858050198">हो गया! नुकसान पहुंचाने वाला सॉफ़्टवेयर हटा दिया गया है. एक्सटेंशन वापस चालू करने के लिए, &lt;a href="chrome://extensions"&gt;एक्सटेंशन&lt;/a&gt; पर जाएं.</translation>
 <translation id="8845001906332463065">सहायता प्राप्त करें</translation>
 <translation id="8846141544112579928">कीबोर्ड खोजा जा रहा है...</translation>
 <translation id="8847988622838149491">USB</translation>

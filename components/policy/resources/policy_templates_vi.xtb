@@ -2859,13 +2859,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Phân tách tên của nhiều máy chủ bằng dấu phẩy. Cho phép ký tự đại diện (*).
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
-<translation id="8667812577403206506">Cho phép bạn kiểm soát xem máy ảo có được phép chạy trên Chrome OS hay không.
-
-      Nếu bạn đặt chính sách thành True, thiết bị sẽ được phép chạy máy ảo.
-      Nếu bạn đặt chính sách thành False, thiết bị sẽ không được phép chạy máy ảo.
-      Khi bạn đổi chính sách này thành False, chính sách này sẽ áp dụng cho thao tác khởi động các máy ảo mới nhưng không tắt các máy ảo đang chạy.
-      Khi bạn chưa đặt chính sách này trên một thiết bị được quản lý, thì thiết bị đó sẽ được phép chạy máy ảo.
-       Thiết bị không được quản lý sẽ được phép chạy máy ảo.</translation>
 <translation id="8669669491594628013">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Dịch vụ bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
 
       Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.

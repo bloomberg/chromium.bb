@@ -2865,13 +2865,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na i-detect kung nasa Intranet ang server, at kung oo ay doon lang ito tutugon sa mga kahilingan ng IWA.  Kung na-detect ang server bilang Internet, babalewalain ng <ph name="PRODUCT_NAME" /> ang mga kahilingan ng IWA mula dito.</translation>
-<translation id="8667812577403206506">Magbibigay-daan sa iyong kontrolin kung papayagan ang pagtakbo ng mga virtual machine sa Chrome OS.
-
-      Kung nakatakda ang patakaran sa True, pinapayagan ang device na magpatakbo ng mga virtual machine.
-      Kung nakatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
-      Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi magsa-shut down sa mga virtual machine na tumatakbo na.
-      Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
-      Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="8669669491594628013">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Aalertuhan ng pagprotekta ng password ang mga user kapag muli nilang ginamit ang kanilang pinoprotektahang password sa mga potensyal na kahina-hinalang site.
 
       Maaari mong gamitin ang patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure ang poprotektahang password.

@@ -2870,13 +2870,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Eraldage serveri nimed komadega. Metamärgid (*) on lubatud.
 
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
-<translation id="8667812577403206506">Võimaldab juhtida, kas virtuaalsete masinate käitamine Chrome OS-is on lubatud.
-
-      Kui reegel on määratud väärtusele Tõene, lubatakse seadmes käitada virtuaalseid masinaid.
-      Kui reegel on määratud väärtusele Väär, ei lubata seadmes käitada virtuaalseid masinaid.
-      Kui reegli seade muudetakse väärtusele Väär, kehtib see uute virtuaalsete masinate käivitamisel, ent juba töötavaid virtuaalseid masinaid välja ei lülitata.
-      Kui reegel jäetakse hallatavas seadmes määramata, on seadmes virtuaalsete masinate käitamine keelatud.
-      Haldamata seadmetes on virtuaalsete masinate käitamine lubatud.</translation>
 <translation id="8669669491594628013">Võimaldab teil juhtida paroolikaitse hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt kahtlastel saitidel.
 
       Kaitstava parooli määramiseks võite kasutada reegleid „PasswordProtectionLoginURLs” ja „PasswordProtectionChangePasswordURL”.
