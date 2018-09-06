@@ -33,6 +33,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/url_request/url_request_context.h"
@@ -49,7 +50,6 @@ class HashValue;
 class HostPortPair;
 class NetLogWithSource;
 class SpdySessionKey;
-class SpdySessionPool;
 class SpdyStream;
 class SpdyStreamRequest;
 class TransportSecurityState;
@@ -215,6 +215,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool enable_http2_alternative_service;
   bool enable_websocket_over_http2;
+  base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
   NetLog* net_log;
   bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;

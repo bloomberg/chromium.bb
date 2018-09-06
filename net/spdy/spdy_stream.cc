@@ -586,6 +586,12 @@ void SpdyStream::OnFrameWriteComplete(spdy::SpdyFrameType frame_type,
     return;
   }
 
+  // Frame types reserved in
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00 ought to be
+  // ignored.
+  if (static_cast<uint8_t>(frame_type) % 0x1f == 0x0b)
+    return;
+
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK(frame_type == spdy::SpdyFrameType::HEADERS ||
         frame_type == spdy::SpdyFrameType::DATA)

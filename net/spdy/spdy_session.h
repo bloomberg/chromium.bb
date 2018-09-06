@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -303,6 +304,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               const spdy::SettingsMap& initial_settings,
+              const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
+                  greased_http2_frame,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
               NetLog* net_log);
@@ -1029,6 +1032,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // and also control SpdySession parameters like initial receive window size
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
+
+  // If set, an HTTP/2 frame with a reserved frame type will be sent after every
+  // valid HTTP/2 frame.  See
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+  const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
 
   // Limits
   size_t max_concurrent_streams_;

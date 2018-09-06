@@ -152,6 +152,42 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   return kVaryHasNoAcceptEncoding;
 }
 
+// A SpdyBufferProducer implementation that creates an HTTP/2 frame by adding
+// stream ID to greased frame parameters.
+class GreasedBufferProducer : public SpdyBufferProducer {
+ public:
+  GreasedBufferProducer() = delete;
+  GreasedBufferProducer(
+      base::WeakPtr<SpdyStream> stream,
+      const SpdySessionPool::GreasedHttp2Frame* greased_http2_frame,
+      BufferedSpdyFramer* buffered_spdy_framer)
+      : stream_(stream),
+        greased_http2_frame_(greased_http2_frame),
+        buffered_spdy_framer_(buffered_spdy_framer) {}
+
+  ~GreasedBufferProducer() override = default;
+
+  std::unique_ptr<SpdyBuffer> ProduceBuffer() override {
+    const spdy::SpdyStreamId stream_id = stream_ ? stream_->stream_id() : 0;
+    spdy::SpdyUnknownIR frame(stream_id, greased_http2_frame_->type,
+                              greased_http2_frame_->flags,
+                              greased_http2_frame_->payload);
+    auto serialized_frame = std::make_unique<spdy::SpdySerializedFrame>(
+        buffered_spdy_framer_->SerializeFrame(frame));
+    return std::make_unique<SpdyBuffer>(std::move(serialized_frame));
+  }
+
+  size_t EstimateMemoryUsage() const override {
+    return base::trace_event::EstimateMemoryUsage(
+        greased_http2_frame_->payload);
+  }
+
+ private:
+  base::WeakPtr<SpdyStream> stream_;
+  const SpdySessionPool::GreasedHttp2Frame* const greased_http2_frame_;
+  BufferedSpdyFramer* buffered_spdy_framer_;
+};
+
 bool IsSpdySettingAtDefaultInitialValue(spdy::SpdySettingsId setting_id,
                                         uint32_t value) {
   switch (setting_id) {
@@ -784,6 +820,8 @@ SpdySession::SpdySession(
     bool is_trusted_proxy,
     size_t session_max_recv_window_size,
     const spdy::SettingsMap& initial_settings,
+    const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
+        greased_http2_frame,
     TimeFunc time_func,
     ServerPushDelegate* push_delegate,
     NetLog* net_log)
@@ -807,6 +845,7 @@ SpdySession::SpdySession(
       write_state_(WRITE_STATE_IDLE),
       error_on_close_(OK),
       initial_settings_(initial_settings),
+      greased_http2_frame_(greased_http2_frame),
       max_concurrent_streams_(kInitialMaxConcurrentStreams),
       max_concurrent_pushed_streams_(
           initial_settings.at(spdy::SETTINGS_MAX_CONCURRENT_STREAMS)),
@@ -853,6 +892,12 @@ SpdySession::SpdySession(
                            spdy::SETTINGS_MAX_CONCURRENT_STREAMS));
   DCHECK(
       base::ContainsKey(initial_settings_, spdy::SETTINGS_INITIAL_WINDOW_SIZE));
+
+  if (greased_http2_frame_) {
+    // See https://tools.ietf.org/html/draft-bishop-httpbis-grease-00
+    // for reserved frame types.
+    DCHECK_EQ(0x0b, greased_http2_frame_.value().type % 0x1f);
+  }
 
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 }
@@ -2558,6 +2603,15 @@ void SpdySession::EnqueueWrite(
 
   write_queue_.Enqueue(priority, frame_type, std::move(producer), stream,
                        traffic_annotation);
+  if (greased_http2_frame_ && (frame_type == spdy::SpdyFrameType::SETTINGS ||
+                               frame_type == spdy::SpdyFrameType::HEADERS)) {
+    write_queue_.Enqueue(
+        priority,
+        static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),
+        std::make_unique<GreasedBufferProducer>(
+            stream, &greased_http2_frame_.value(), buffered_spdy_framer_.get()),
+        stream, traffic_annotation);
+  }
   MaybePostWriteLoop();
 }
 

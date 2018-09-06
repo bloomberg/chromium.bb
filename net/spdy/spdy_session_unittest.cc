@@ -12,9 +12,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "net/base/hex_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -5888,6 +5890,96 @@ TEST_F(SpdySessionTest, EnableWebSocketThenDisableIsProtocolError) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
   EXPECT_TRUE(data.AllReadDataConsumed());
   EXPECT_FALSE(session_);
+}
+
+TEST_F(SpdySessionTest, GreaseFrameType) {
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps_.greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+
+  // Connection preface.
+  spdy::SpdySerializedFrame preface(
+      const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
+      spdy::kHttp2ConnectionHeaderPrefixSize,
+      /* owns_buffer = */ false);
+
+  // Initial SETTINGS frame.
+  spdy::SettingsMap expected_settings;
+  expected_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
+  expected_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
+      kSpdyMaxConcurrentPushedStreams;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(expected_settings));
+
+  spdy::SpdySerializedFrame combined_frame =
+      CombineFrames({&preface, &settings_frame});
+
+  // Greased frame sent on stream 0 after initial SETTINGS frame.
+  const char kRawFrameData0[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x00,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease0(const_cast<char*>(kRawFrameData0),
+                                    base::size(kRawFrameData0),
+                                    /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+
+  // Greased frame sent on stream 1 after request.
+  const char kRawFrameData1[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x01,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease1(const_cast<char*>(kRawFrameData1),
+                                    base::size(kRawFrameData1),
+                                    /* owns_buffer = */ false);
+
+  MockWrite writes[] = {CreateMockWrite(combined_frame, 0),
+                        CreateMockWrite(grease0, 1), CreateMockWrite(req, 2),
+                        CreateMockWrite(grease1, 3)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockRead reads[] = {CreateMockRead(resp, 4), CreateMockRead(body, 5),
+                      MockRead(ASYNC, 0, 6)};
+
+  SequencedSocketData data(reads, writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+
+  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
+  pool_peer.SetEnableSendingInitialData(true);
+
+  CreateSpdySession();
+
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, DEFAULT_PRIORITY,
+      NetLogWithSource());
+  test::StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  stream->SendRequestHeaders(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl),
+                             NO_MORE_DATA_TO_SEND);
+
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
 enum ReadIfReadySupport {
