@@ -27,7 +27,7 @@ ClientPolicyController::ClientPolicyController() {
                                      kUnlimitedPages, kUnlimitedPages)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .SetIsSupportedByRecentTabs(true)
-          .SetIsOnlyShownInOriginalTab(true)
+          .SetIsRestrictedToTabFromClientId(true)
           .Build()));
   policies_.insert(std::make_pair(
       kAsyncNamespace,
@@ -89,7 +89,7 @@ ClientPolicyController::ClientPolicyController() {
                                                     kUnlimitedPages, 1)
                          .SetIsRemovedOnCacheReset(true)
                          .SetExpirePeriod(base::TimeDelta::FromHours(1))
-                         .SetIsOnlyShownInOriginalTab(true)
+                         .SetIsRestrictedToTabFromClientId(true)
                          .Build()));
 
   // Fallback policy.
@@ -204,23 +204,25 @@ ClientPolicyController::GetNamespacesShownAsRecentlyVisitedSite() const {
   return *recent_tab_namespace_cache_;
 }
 
-bool ClientPolicyController::IsRestrictedToOriginalTab(
+bool ClientPolicyController::IsRestrictedToTabFromClientId(
     const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.only_shown_in_original_tab;
+  return GetPolicy(name_space)
+      .feature_policy.is_restricted_to_tab_from_client_id;
 }
 
 const std::vector<std::string>&
-ClientPolicyController::GetNamespacesRestrictedToOriginalTab() const {
-  if (show_in_original_tab_cache_)
-    return *show_in_original_tab_cache_;
+ClientPolicyController::GetNamespacesRestrictedToTabFromClientId() const {
+  if (restricted_to_tab_from_client_id_cache_)
+    return *restricted_to_tab_from_client_id_cache_;
 
-  show_in_original_tab_cache_ = std::make_unique<std::vector<std::string>>();
+  restricted_to_tab_from_client_id_cache_ =
+      std::make_unique<std::vector<std::string>>();
   for (const auto& policy_item : policies_) {
-    if (policy_item.second.feature_policy.only_shown_in_original_tab)
-      show_in_original_tab_cache_->emplace_back(policy_item.first);
+    if (policy_item.second.feature_policy.is_restricted_to_tab_from_client_id)
+      restricted_to_tab_from_client_id_cache_->emplace_back(policy_item.first);
   }
 
-  return *show_in_original_tab_cache_;
+  return *restricted_to_tab_from_client_id_cache_;
 }
 
 bool ClientPolicyController::IsDisabledWhenPrefetchDisabled(

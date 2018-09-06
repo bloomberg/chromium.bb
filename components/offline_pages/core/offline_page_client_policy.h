@@ -53,8 +53,10 @@ struct FeaturePolicy {
   bool is_user_requested_download;
   // Whether pages are shown in recent tabs ui.
   bool is_supported_by_recent_tabs;
-  // Whether pages should only be viewed in the tab they were generated in.
-  bool only_shown_in_original_tab;
+  // Whether pages can only be viewed in a specific tab. Pages controlled by
+  // this policy must have their ClientId::id field set to their assigned tab's
+  // id.
+  bool is_restricted_to_tab_from_client_id;
   // Whether pages are removed on user-initiated cache reset. Defaults to true.
   bool is_removed_on_cache_reset;
   // Whether the namespace should be disabled if prefetching-related preferences
@@ -69,7 +71,7 @@ struct FeaturePolicy {
       : is_supported_by_download(false),
         is_user_requested_download(false),
         is_supported_by_recent_tabs(false),
-        only_shown_in_original_tab(false),
+        is_restricted_to_tab_from_client_id(false),
         is_removed_on_cache_reset(true),
         disabled_when_prefetch_disabled(false),
         is_suggested(false),
@@ -157,10 +159,10 @@ class OfflinePageClientPolicyBuilder {
     return *this;
   }
 
-  OfflinePageClientPolicyBuilder& SetIsOnlyShownInOriginalTab(
-      const bool only_shown_in_original_tab) {
-    policy_.feature_policy.only_shown_in_original_tab =
-        only_shown_in_original_tab;
+  OfflinePageClientPolicyBuilder& SetIsRestrictedToTabFromClientId(
+      const bool is_restricted_to_tab_from_client_id) {
+    policy_.feature_policy.is_restricted_to_tab_from_client_id =
+        is_restricted_to_tab_from_client_id;
     return *this;
   }
 

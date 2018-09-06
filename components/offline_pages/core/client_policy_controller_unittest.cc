@@ -35,7 +35,8 @@ class ClientPolicyControllerTest : public testing::Test {
   void ExpectUserRequestedDownloadSupport(std::string name_space,
                                           bool expectation);
   void ExpectRecentTab(std::string name_space, bool expectation);
-  void ExpectOnlyOriginalTab(std::string name_space, bool expectation);
+  void ExpectRestrictedToTabFromClientId(std::string name_space,
+                                         bool expectation);
   void ExpectDisabledWhenPrefetchDisabled(std::string name_space,
                                           bool expectation);
 
@@ -106,19 +107,21 @@ void ClientPolicyControllerTest::ExpectRecentTab(std::string name_space,
          " a recently visited site.";
 }
 
-void ClientPolicyControllerTest::ExpectOnlyOriginalTab(std::string name_space,
-                                                       bool expectation) {
+void ClientPolicyControllerTest::ExpectRestrictedToTabFromClientId(
+    std::string name_space,
+    bool expectation) {
   std::vector<std::string> cache =
-      controller()->GetNamespacesRestrictedToOriginalTab();
+      controller()->GetNamespacesRestrictedToTabFromClientId();
   auto result = std::find(cache.begin(), cache.end(), name_space);
   EXPECT_EQ(expectation, result != cache.end())
       << "Namespace " << name_space
       << " had incorrect restriction when getting namespaces restricted to"
-         " the original tab";
-  EXPECT_EQ(expectation, controller()->IsRestrictedToOriginalTab(name_space))
+         " the tab from the client id field";
+  EXPECT_EQ(expectation,
+            controller()->IsRestrictedToTabFromClientId(name_space))
       << "Namespace " << name_space
       << " had incorrect restriction when directly checking if the namespace"
-         " is restricted to the original tab";
+         " is restricted to the tab from the client id field";
 }
 
 void ClientPolicyControllerTest::ExpectDisabledWhenPrefetchDisabled(
@@ -147,7 +150,7 @@ TEST_F(ClientPolicyControllerTest, FallbackTest) {
   ExpectDownloadSupport(kUndefinedNamespace, false);
   ExpectUserRequestedDownloadSupport(kUndefinedNamespace, false);
   ExpectRecentTab(kUndefinedNamespace, false);
-  ExpectOnlyOriginalTab(kUndefinedNamespace, false);
+  ExpectRestrictedToTabFromClientId(kUndefinedNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kUndefinedNamespace, false);
 }
 
@@ -160,7 +163,7 @@ TEST_F(ClientPolicyControllerTest, CheckBookmarkDefined) {
   ExpectDownloadSupport(kBookmarkNamespace, false);
   ExpectUserRequestedDownloadSupport(kBookmarkNamespace, false);
   ExpectRecentTab(kBookmarkNamespace, false);
-  ExpectOnlyOriginalTab(kBookmarkNamespace, false);
+  ExpectRestrictedToTabFromClientId(kBookmarkNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kBookmarkNamespace, false);
 }
 
@@ -173,7 +176,7 @@ TEST_F(ClientPolicyControllerTest, CheckLastNDefined) {
   ExpectDownloadSupport(kLastNNamespace, false);
   ExpectUserRequestedDownloadSupport(kLastNNamespace, false);
   ExpectRecentTab(kLastNNamespace, true);
-  ExpectOnlyOriginalTab(kLastNNamespace, true);
+  ExpectRestrictedToTabFromClientId(kLastNNamespace, true);
   ExpectDisabledWhenPrefetchDisabled(kLastNNamespace, false);
 }
 
@@ -186,7 +189,7 @@ TEST_F(ClientPolicyControllerTest, CheckAsyncDefined) {
   ExpectDownloadSupport(kAsyncNamespace, true);
   ExpectUserRequestedDownloadSupport(kAsyncNamespace, true);
   ExpectRecentTab(kAsyncNamespace, false);
-  ExpectOnlyOriginalTab(kAsyncNamespace, false);
+  ExpectRestrictedToTabFromClientId(kAsyncNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kAsyncNamespace, false);
 }
 
@@ -199,7 +202,7 @@ TEST_F(ClientPolicyControllerTest, CheckCCTDefined) {
   ExpectDownloadSupport(kCCTNamespace, false);
   ExpectUserRequestedDownloadSupport(kCCTNamespace, false);
   ExpectRecentTab(kCCTNamespace, false);
-  ExpectOnlyOriginalTab(kCCTNamespace, false);
+  ExpectRestrictedToTabFromClientId(kCCTNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kCCTNamespace, true);
 }
 
@@ -212,7 +215,7 @@ TEST_F(ClientPolicyControllerTest, CheckDownloadDefined) {
   ExpectDownloadSupport(kDownloadNamespace, true);
   ExpectUserRequestedDownloadSupport(kDownloadNamespace, true);
   ExpectRecentTab(kDownloadNamespace, false);
-  ExpectOnlyOriginalTab(kDownloadNamespace, false);
+  ExpectRestrictedToTabFromClientId(kDownloadNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kDownloadNamespace, false);
 }
 
@@ -226,7 +229,7 @@ TEST_F(ClientPolicyControllerTest, CheckNTPSuggestionsDefined) {
   ExpectDownloadSupport(kNTPSuggestionsNamespace, true);
   ExpectUserRequestedDownloadSupport(kNTPSuggestionsNamespace, true);
   ExpectRecentTab(kNTPSuggestionsNamespace, false);
-  ExpectOnlyOriginalTab(kNTPSuggestionsNamespace, false);
+  ExpectRestrictedToTabFromClientId(kNTPSuggestionsNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kNTPSuggestionsNamespace, false);
 }
 
@@ -240,7 +243,7 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   ExpectDownloadSupport(kSuggestedArticlesNamespace, false);
   ExpectUserRequestedDownloadSupport(kSuggestedArticlesNamespace, false);
   ExpectRecentTab(kSuggestedArticlesNamespace, false);
-  ExpectOnlyOriginalTab(kSuggestedArticlesNamespace, false);
+  ExpectRestrictedToTabFromClientId(kSuggestedArticlesNamespace, false);
   ExpectDisabledWhenPrefetchDisabled(kSuggestedArticlesNamespace, true);
 }
 
@@ -254,7 +257,7 @@ TEST_F(ClientPolicyControllerTest, CheckLivePageSharingDefined) {
   ExpectDownloadSupport(kLivePageSharingNamespace, false);
   ExpectUserRequestedDownloadSupport(kLivePageSharingNamespace, false);
   ExpectRecentTab(kLivePageSharingNamespace, false);
-  ExpectOnlyOriginalTab(kLivePageSharingNamespace, true);
+  ExpectRestrictedToTabFromClientId(kLivePageSharingNamespace, true);
   ExpectDisabledWhenPrefetchDisabled(kLivePageSharingNamespace, false);
 }
 
