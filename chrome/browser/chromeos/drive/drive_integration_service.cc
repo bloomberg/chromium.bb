@@ -325,6 +325,16 @@ class DriveIntegrationService::PreferenceWatcher
   // net::NetworkChangeNotifier::NetworkChangeObserver
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
+    // Check for a pending remount first. In this case, DriveFS will not be
+    // mounted and thus its interface will be null.
+    if (integration_service_->drivefs_holder_ &&
+        integration_service_->remount_when_online_ &&
+        !net::NetworkChangeNotifier::IsOffline()) {
+      integration_service_->remount_when_online_ = false;
+      integration_service_->AddDriveMountPoint();
+      return;
+    }
+
     if (!integration_service_->GetDriveFsInterface())
       return;
 
@@ -345,12 +355,13 @@ class DriveIntegrationService::PreferenceWatcher
 class DriveIntegrationService::DriveFsHolder
     : public drivefs::DriveFsHost::Delegate {
  public:
-  DriveFsHolder(Profile* profile,
-                base::RepeatingClosure on_drivefs_mounted,
-                base::RepeatingCallback<void(base::Optional<base::TimeDelta>)>
-                    on_drivefs_unmounted,
-                DriveFsMojoConnectionDelegateFactory
-                    test_drivefs_mojo_connection_delegate_factory)
+  DriveFsHolder(
+      Profile* profile,
+      base::RepeatingClosure on_drivefs_mounted,
+      base::RepeatingCallback<void(base::Optional<base::TimeDelta>,
+                                   bool failed_to_mount)> on_drivefs_unmounted,
+      DriveFsMojoConnectionDelegateFactory
+          test_drivefs_mojo_connection_delegate_factory)
       : profile_(profile),
         on_drivefs_mounted_(std::move(on_drivefs_mounted)),
         on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
@@ -385,7 +396,7 @@ class DriveIntegrationService::DriveFsHolder
   }
 
   void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
-    on_drivefs_unmounted_.Run(std::move(remount_delay));
+    on_drivefs_unmounted_.Run(std::move(remount_delay), true);
   }
 
   void OnMounted(const base::FilePath& path) override {
@@ -393,7 +404,7 @@ class DriveIntegrationService::DriveFsHolder
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
-    on_drivefs_unmounted_.Run(std::move(remount_delay));
+    on_drivefs_unmounted_.Run(std::move(remount_delay), false);
   }
 
   const std::string& GetProfileSalt() {
@@ -420,7 +431,8 @@ class DriveIntegrationService::DriveFsHolder
 
   // Invoked when DriveFS mounting is completed.
   const base::RepeatingClosure on_drivefs_mounted_;
-  const base::RepeatingCallback<void(base::Optional<base::TimeDelta>)>
+  const base::RepeatingCallback<void(base::Optional<base::TimeDelta>,
+                                     bool failed_to_mount)>
       on_drivefs_unmounted_;
 
   const DriveFsMojoConnectionDelegateFactory
@@ -820,6 +832,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   weak_ptr_factory_.InvalidateWeakPtrs();
+  remount_when_online_ = false;
 
   if (!mount_point_name_.empty()) {
     if (!drivefs_holder_)
@@ -838,12 +851,19 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 }
 
 void DriveIntegrationService::MaybeRemountFileSystem(
-    base::Optional<base::TimeDelta> remount_delay) {
+    base::Optional<base::TimeDelta> remount_delay,
+    bool failed_to_mount) {
   DCHECK_EQ(INITIALIZED, state_);
 
   RemoveDriveMountPoint();
 
   if (!remount_delay) {
+    if (failed_to_mount && net::NetworkChangeNotifier::IsOffline()) {
+      logger_->Log(logging::LOG_WARNING,
+                   "DriveFs failed to start, will retry when online.");
+      remount_when_online_ = true;
+      return;
+    }
     // If DriveFs didn't specify retry time it's likely unexpected error, e.g.
     // crash. Use limited exponential backoff for retry.
     ++drivefs_consecutive_failures_count_;
