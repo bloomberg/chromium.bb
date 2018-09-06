@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
 
-  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
       /*skip_passphrase_verification=*/false));
   ASSERT_TRUE(AwaitQuiescence());

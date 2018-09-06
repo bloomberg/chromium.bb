@@ -120,7 +120,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
 
 ProfileSyncServiceHarness::~ProfileSyncServiceHarness() { }
 
-bool ProfileSyncServiceHarness::SignIn() {
+bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
   // TODO(crbug.com/871221): This function should distinguish primary account
   // (aka sync account) from secondary accounts (content area signin). Let's
   // migrate tests that exercise transport-only sync to secondary accounts.
@@ -171,6 +171,16 @@ bool ProfileSyncServiceHarness::SignIn() {
   return false;
 }
 
+#if !defined(OS_CHROMEOS)
+void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
+  DCHECK(!username_.empty());
+  identity::ClearPrimaryAccount(
+      SigninManagerFactory::GetForProfile(profile_),
+      IdentityManagerFactory::GetForProfile(profile_),
+      identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+}
+#endif  // !OS_CHROMEOS
+
 bool ProfileSyncServiceHarness::SetupSync() {
   bool result = SetupSync(syncer::UserSelectableTypes(), false);
   if (!result) {
@@ -208,7 +218,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
   // until we've finished configuration.
   sync_blocker_ = service()->GetSetupInProgressHandle();
 
-  if (!SignIn()) {
+  if (!SignInPrimaryAccount()) {
     return false;
   }
 
@@ -325,16 +335,6 @@ bool ProfileSyncServiceHarness::StartSyncService() {
 
   return true;
 }
-
-#if !defined(OS_CHROMEOS)
-void ProfileSyncServiceHarness::SignoutSyncService() {
-  DCHECK(!username_.empty());
-  identity::ClearPrimaryAccount(
-      SigninManagerFactory::GetForProfile(profile_),
-      IdentityManagerFactory::GetForProfile(profile_),
-      identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
-}
-#endif  // !OS_CHROMEOS
 
 bool ProfileSyncServiceHarness::HasUnsyncedItems() {
   base::RunLoop loop;

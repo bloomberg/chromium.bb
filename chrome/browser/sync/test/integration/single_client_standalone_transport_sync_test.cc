@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 
   // Since standalone transport is disabled, signing in should *not* start the
   // Sync machinery.
-  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST,
             GetSyncService(0)->GetTransportState());
 }
@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // Signing in (without explicitly setting up Sync) should trigger starting the
   // Sync machinery. Because IsFirstSetupComplete gets set automatically, this
   // will actually start the full Sync feature, not just the transport.
-  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
             GetSyncService(0)->GetTransportState());
 
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 
   // Signing in (without explicitly setting up Sync) should trigger starting the
   // Sync machinery in standalone transport mode.
-  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   EXPECT_EQ(syncer::SyncService::TransportState::START_DEFERRED,
             GetSyncService(0)->GetTransportState());
 
