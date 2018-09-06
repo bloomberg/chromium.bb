@@ -2625,6 +2625,7 @@ TEST_F(PasswordManagerTest, ProcessingOtherSubmissionTypes) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
+  EXPECT_TRUE(manager()->form_managers().empty());
 }
 
 TEST_F(PasswordManagerTest, SubmittedGaiaFormWithoutVisiblePasswordField) {

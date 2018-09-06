@@ -1169,10 +1169,16 @@ PasswordManager::MoveOwnedSubmittedManager() {
   if (owned_submitted_form_manager_)
     return std::move(owned_submitted_form_manager_);
 
-  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
-    if (manager->is_submitted())
-      return std::move(manager);
+  for (auto iter = form_managers_.begin(); iter != form_managers_.end();
+       ++iter) {
+    if ((*iter)->is_submitted()) {
+      std::unique_ptr<NewPasswordFormManager> submitted_manager =
+          std::move(*iter);
+      form_managers_.erase(iter);
+      return std::move(submitted_manager);
+    }
   }
+
   NOTREACHED();
   return nullptr;
 }
