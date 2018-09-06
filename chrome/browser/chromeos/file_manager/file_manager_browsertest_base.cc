@@ -1051,6 +1051,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   test::AddDefaultComponentExtensionsOnMainThread(profile());
 }
 
+bool FileManagerBrowserTestBase::GetTabletMode() const {
+  return false;
+}
+
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
   return false;
 }

@@ -38,11 +38,14 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
-  // Overrides for each FileManagerBrowserTest test extension type.
+  // Mandatory overrides for each File Manager test extension type.
   virtual GuestMode GetGuestMode() const = 0;
   virtual const char* GetTestCaseName() const = 0;
   virtual std::string GetFullTestCaseName() const = 0;
   virtual const char* GetTestExtensionManifestName() const = 0;
+
+  // Optional overrides for each File Manager test extension type.
+  virtual bool GetTabletMode() const;
   virtual bool GetEnableDriveFs() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
@@ -59,6 +62,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires in guest mode.
   bool IsGuestModeTest() const { return GetGuestMode() == IN_GUEST_MODE; }
+
+  // Returns true if the test runs in tablet mode (aka Ash immersive mode).
+  bool IsTabletModeTest() const { return GetTabletMode(); }
 
   // Returns true if the test requires DriveFS.
   bool IsDriveFsTest() const { return GetEnableDriveFs(); }
