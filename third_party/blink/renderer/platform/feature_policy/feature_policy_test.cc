@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -289,6 +290,45 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_b_));
+}
+
+// Test histogram counting the use of feature policies in header.
+TEST_F(FeaturePolicyParserTest, HeaderHistogram) {
+  const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Header";
+  HistogramTester tester;
+  Vector<String> messages;
+
+  ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), nullptr, &messages,
+                     test_feature_name_map);
+  tester.ExpectTotalCount(histogram_name, 2);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
+}
+
+// Test counting the use of each feature policy only once per header.
+TEST_F(FeaturePolicyParserTest, HistogramMultiple) {
+  const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Header";
+  HistogramTester tester;
+  Vector<String> messages;
+
+  // If the same feature is listed multiple times, it should only be counted
+  // once.
+  ParseFeaturePolicy("geolocation 'self'; payment; geolocation *",
+                     origin_a_.get(), nullptr, &messages,
+                     test_feature_name_map);
+  ParseFeaturePolicy("fullscreen 'self', fullscreen *", origin_a_.get(),
+                     nullptr, &messages, test_feature_name_map);
+  tester.ExpectTotalCount(histogram_name, 3);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
 }
 
 // Test policy mutation methods

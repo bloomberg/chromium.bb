@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -73,6 +74,12 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       // the new policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
         continue;
+
+      // Count the use of this feature policy.
+      if (!src_origin) {
+        UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header",
+                                  feature);
+      }
 
       ParsedFeaturePolicyDeclaration allowlist;
       allowlist.feature = feature;
