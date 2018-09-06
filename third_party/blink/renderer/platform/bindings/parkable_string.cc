@@ -18,14 +18,31 @@ void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
 
 }  // namespace
 
-ParkableStringImpl::ParkableStringImpl() = default;
+ParkableStringImpl::ParkableStringImpl()
+    : ParkableStringImpl({nullptr}, ParkableState::kNotParkable) {}
 
-ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl)
-    : string_(std::move(impl)), is_parked_(false) {}
+ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
+                                       ParkableState parkable)
+    : mutex_(),
+      lock_depth_(0),
+      string_(std::move(impl)),
+      is_parked_(false),
+      is_parkable_(parkable == ParkableState::kParkable) {}
 
 ParkableStringImpl::~ParkableStringImpl() {
-  if (ParkableStringManager::ShouldPark(string_.Impl()))
+  if (is_parkable_)
     ParkableStringManager::Instance().Remove(string_.Impl());
+}
+
+void ParkableStringImpl::Lock() {
+  MutexLocker locker(mutex_);
+  lock_depth_ += 1;
+}
+
+void ParkableStringImpl::Unlock() {
+  MutexLocker locker(mutex_);
+  DCHECK_GT(lock_depth_, 0);
+  lock_depth_ -= 1;
 }
 
 bool ParkableStringImpl::Is8Bit() const {
@@ -37,6 +54,7 @@ bool ParkableStringImpl::IsNull() const {
 }
 
 const String& ParkableStringImpl::ToString() {
+  MutexLocker locker(mutex_);
   Unpark();
   return string_;
 }
@@ -46,6 +64,12 @@ unsigned ParkableStringImpl::CharactersSizeInBytes() const {
 }
 
 bool ParkableStringImpl::Park() {
+  MutexLocker locker(mutex_);
+  DCHECK(is_parkable_);
+
+  if (lock_depth_ != 0)
+    return false;
+
   // Cannot park strings with several references.
   if (string_.Impl()->HasOneRef()) {
     RecordParkingAction(ParkingAction::kParkedInBackground);
@@ -55,6 +79,7 @@ bool ParkableStringImpl::Park() {
 }
 
 void ParkableStringImpl::Unpark() {
+  mutex_.AssertAcquired();
   if (!is_parked_)
     return;
 
@@ -66,14 +91,26 @@ void ParkableStringImpl::Unpark() {
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {
-  if (ParkableStringManager::ShouldPark(impl.get())) {
+  bool is_parkable = ParkableStringManager::ShouldPark(impl.get());
+  if (is_parkable) {
     impl_ = ParkableStringManager::Instance().Add(std::move(impl));
   } else {
-    impl_ = base::MakeRefCounted<ParkableStringImpl>(std::move(impl));
+    impl_ = base::MakeRefCounted<ParkableStringImpl>(
+        std::move(impl), ParkableStringImpl::ParkableState::kNotParkable);
   }
 }
 
 ParkableString::~ParkableString() = default;
+
+void ParkableString::Lock() const {
+  if (impl_)
+    impl_->Lock();
+}
+
+void ParkableString::Unlock() const {
+  if (impl_)
+    impl_->Unlock();
+}
 
 bool ParkableString::Is8Bit() const {
   return impl_->Is8Bit();
