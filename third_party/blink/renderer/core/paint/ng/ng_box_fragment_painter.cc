@@ -762,8 +762,8 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
                                              bool object_has_multiple_boxes) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
-  LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
   if (object_has_multiple_boxes) {
+    LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
     NGInlineBoxFragmentPainter inline_box_painter(box_fragment_);
     if (box_fragment_.Style().BoxDecorationBreak() ==
         EBoxDecorationBreak::kSlice) {
@@ -778,7 +778,7 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
     }
     inline_box_painter.Paint(paint_info, paint_offset - local_offset);
   } else {
-    PaintObject(paint_info, paint_offset - local_offset);
+    PaintObject(paint_info, paint_offset);
   }
 }
 
