@@ -1790,6 +1790,15 @@ void ShelfView::ViewHierarchyChanged(
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
+  // Do not forward events to |shelf_| (which forwards events to the shelf
+  // layout manager) as we do not want gestures on the overflow to open the app
+  // list for example.
+  if (is_overflow_mode()) {
+    main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(*event);
+    event->StopPropagation();
+    return;
+  }
+
   // Convert the event location from current view to screen, since swiping up on
   // the shelf can open the fullscreen app list. Updating the bounds of the app
   // list during dragging is based on screen coordinate space.
