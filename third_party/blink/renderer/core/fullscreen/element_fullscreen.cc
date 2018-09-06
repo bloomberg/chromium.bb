@@ -18,7 +18,9 @@ ScriptPromise ElementFullscreen::requestFullscreen(
 }
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element) {
-  webkitRequestFullscreen(element, FullscreenOptions());
+  FullscreenOptions options;
+  options.setNavigationUI("hide");
+  webkitRequestFullscreen(element, options);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(

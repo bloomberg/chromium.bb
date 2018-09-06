@@ -511,12 +511,12 @@
     },
     {
       name: "FullscreenOptions",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "GamepadButtonAxisEvents",

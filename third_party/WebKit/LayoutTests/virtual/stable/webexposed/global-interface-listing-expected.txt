@@ -1174,6 +1174,9 @@ interface Document : Node
     getter firstElementChild
     getter fonts
     getter forms
+    getter fullscreen
+    getter fullscreenElement
+    getter fullscreenEnabled
     getter head
     getter hidden
     getter images
@@ -1213,6 +1216,8 @@ interface Document : Node
     getter onerror
     getter onfocus
     getter onfreeze
+    getter onfullscreenchange
+    getter onfullscreenerror
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -1324,6 +1329,7 @@ interface Document : Node
     method elementsFromPoint
     method evaluate
     method execCommand
+    method exitFullscreen
     method exitPictureInPicture
     method exitPointerLock
     method getElementById
@@ -1357,6 +1363,9 @@ interface Document : Node
     setter dir
     setter domain
     setter fgColor
+    setter fullscreen
+    setter fullscreenElement
+    setter fullscreenEnabled
     setter linkColor
     setter onabort
     setter onauxclick
@@ -1388,6 +1397,8 @@ interface Document : Node
     setter onerror
     setter onfocus
     setter onfreeze
+    setter onfullscreenchange
+    setter onfullscreenerror
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -1516,6 +1527,8 @@ interface Element : Node
     getter onbeforepaste
     getter oncopy
     getter oncut
+    getter onfullscreenchange
+    getter onfullscreenerror
     getter onpaste
     getter onsearch
     getter onselectstart
@@ -1568,6 +1581,7 @@ interface Element : Node
     method removeAttributeNS
     method removeAttributeNode
     method replaceWith
+    method requestFullscreen
     method requestPointerLock
     method scroll
     method scrollBy
@@ -1592,6 +1606,8 @@ interface Element : Node
     setter onbeforepaste
     setter oncopy
     setter oncut
+    setter onfullscreenchange
+    setter onfullscreenerror
     setter onpaste
     setter onsearch
     setter onselectstart
@@ -6261,6 +6277,7 @@ interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
     getter delegatesFocus
+    getter fullscreenElement
     getter host
     getter innerHTML
     getter mode
@@ -6271,6 +6288,7 @@ interface ShadowRoot : DocumentFragment
     method elementFromPoint
     method elementsFromPoint
     method getSelection
+    setter fullscreenElement
     setter innerHTML
 interface SharedWorker : EventTarget
     attribute @@toStringTag

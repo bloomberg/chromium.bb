@@ -459,7 +459,9 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
 
 void HTMLVideoElement::webkitEnterFullscreen() {
   if (!IsFullscreen()) {
-    Fullscreen::RequestFullscreen(*this, FullscreenOptions(),
+    FullscreenOptions options;
+    options.setNavigationUI("hide");
+    Fullscreen::RequestFullscreen(*this, options,
                                   Fullscreen::RequestType::kPrefixed);
   }
 }
