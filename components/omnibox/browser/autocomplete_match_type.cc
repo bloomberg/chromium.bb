@@ -60,9 +60,34 @@ static int AccessibilityLabelPrefixLength(base::string16 accessibility_label) {
 }
 
 // static
+base::string16 AddTabSwitchLabelTextIfNecessary(
+    base::string16 base_message,
+    bool has_tab_match,
+    bool is_tab_switch_button_focused,
+    int* label_prefix_length) {
+  if (!has_tab_match) {
+    return base_message;
+  }
+
+  if (is_tab_switch_button_focused) {
+    const int kButtonMessage = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
+    if (label_prefix_length) {
+      const base::string16 sentinal =
+          base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
+      *label_prefix_length += AccessibilityLabelPrefixLength(
+          l10n_util::GetStringFUTF16(kButtonMessage, sentinal));
+    }
+    return l10n_util::GetStringFUTF16(kButtonMessage, base_message);
+  }
+
+  return l10n_util::GetStringFUTF16(IDS_ACC_TAB_SWITCH_SUFFIX, base_message);
+}
+
+// static
 base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     const AutocompleteMatch& match,
     const base::string16& match_text,
+    bool is_tab_switch_button_focused,
     int* label_prefix_length) {
   // Types with a message ID of zero get |text| returned as-is.
   static constexpr int message_ids[] = {
@@ -109,10 +134,9 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
 
   int message = message_ids[match.type];
   if (!message) {
-    if (!match.has_tab_match)
-      return match_text;
-    else
-      return l10n_util::GetStringFUTF16(IDS_ACC_TAB_SWITCH_SUFFIX, match_text);
+    return AddTabSwitchLabelTextIfNecessary(match_text, match.has_tab_match,
+                                            is_tab_switch_button_focused,
+                                            label_prefix_length);
   }
 
   const base::string16 sentinal =
@@ -169,10 +193,10 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       has_description
           ? l10n_util::GetStringFUTF16(message, match_text, description)
           : l10n_util::GetStringFUTF16(message, match_text);
-  if (!match.has_tab_match)
-    return base_message;
-  else
-    return l10n_util::GetStringFUTF16(IDS_ACC_TAB_SWITCH_SUFFIX, base_message);
+
+  return AddTabSwitchLabelTextIfNecessary(base_message, match.has_tab_match,
+                                          is_tab_switch_button_focused,
+                                          label_prefix_length);
 }
 
 // static
@@ -181,9 +205,13 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     const base::string16& match_text,
     size_t match_index,
     size_t total_matches,
+    bool is_tab_switch_button_focused,
     int* label_prefix_length) {
-  base::string16 result =
-      ToAccessibilityLabel(match, match_text, label_prefix_length);
+  base::string16 result = ToAccessibilityLabel(
+      match, match_text, is_tab_switch_button_focused, label_prefix_length);
+
+  if (is_tab_switch_button_focused)
+    return result;  // Don't add "n of m" positional info when button focused.
 
   return l10n_util::GetStringFUTF16(IDS_ACC_AUTOCOMPLETE_N_OF_M, result,
                                     base::IntToString16(match_index + 1),

@@ -367,6 +367,8 @@ class OmniboxEditModel {
   // Name of the histogram tracking cut or copy omnibox commands.
   static const char kCutOrCopyAllTextHistogram[];
 
+  OmniboxView* view() { return view_; }
+
  private:
   friend class OmniboxControllerTest;
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);

@@ -608,7 +608,7 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(
   AnnounceAutocompleteForScreenReader(
       AutocompleteMatchType::ToAccessibilityLabel(
           match, display_text, model()->popup_model()->selected_line(),
-          model()->result().size()));
+          model()->result().size(), false));
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(

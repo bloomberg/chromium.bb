@@ -12,11 +12,13 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_mask.h"
 
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
@@ -144,7 +146,16 @@ void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
 }
 
 void OmniboxTabSwitchButton::ProvideFocusHint() {
-  NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+}
+
+void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
+  // Although this appears visually as a button, expose as a list box option so
+  // that it matches the other options within its list box container.
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              IsSelected());
 }
 
 bool OmniboxTabSwitchButton::IsSelected() const {
