@@ -354,10 +354,6 @@ bool IsCORSSafelistedContentType(const std::string& media_type) {
 }
 
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
-  // If |value|’s length is greater than 128, then return false.
-  if (value.size() > 128)
-    return false;
-
   // https://fetch.spec.whatwg.org/#cors-safelisted-request-header
   // "A CORS-safelisted header is a header whose name is either one of `Accept`,
   // `Accept-Language`, and `Content-Language`, or whose name is
@@ -399,87 +395,10 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   if (lower_name == "save-data")
     return lower_value == "on";
 
-  if (lower_name == "accept") {
-    return (value.end() == std::find_if(value.begin(), value.end(), [](char c) {
-              return (c < 0x20 && c != 0x09) || c == 0x22 || c == 0x28 ||
-                     c == 0x29 || c == 0x3a || c == 0x3c || c == 0x3e ||
-                     c == 0x3f || c == 0x40 || c == 0x5b || c == 0x5c ||
-                     c == 0x5d || c == 0x7b || c == 0x7d || c >= 0x7f;
-            }));
-  }
-
-  if (lower_name == "accept-language" || lower_name == "content-language") {
-    return (value.end() == std::find_if(value.begin(), value.end(), [](char c) {
-              return !isalnum(c) && c != 0x20 && c != 0x2a && c != 0x2c &&
-                     c != 0x2d && c != 0x2e && c != 0x3b && c != 0x3d;
-            }));
-  }
-
   if (lower_name == "content-type")
     return IsCORSSafelistedLowerCaseContentType(lower_value);
 
   return true;
-}
-
-bool IsNoCORSSafelistedHeader(const std::string& name,
-                              const std::string& value) {
-  const std::string lower_name = base::ToLowerASCII(name);
-
-  if (lower_name != "accept" && lower_name != "accept-language" &&
-      lower_name != "content-language" && lower_name != "content-type") {
-    return false;
-  }
-
-  return IsCORSSafelistedHeader(lower_name, value);
-}
-
-std::vector<std::string> CORSUnsafeRequestHeaderNames(
-    const net::HttpRequestHeaders::HeaderVector& headers) {
-  std::vector<std::string> potentially_unsafe_names;
-  std::vector<std::string> header_names;
-
-  constexpr size_t kSafeListValueSizeMax = 1024;
-  size_t safe_list_value_size = 0;
-
-  for (const auto& header : headers) {
-    if (!IsCORSSafelistedHeader(header.key, header.value)) {
-      header_names.push_back(base::ToLowerASCII(header.key));
-    } else {
-      potentially_unsafe_names.push_back(base::ToLowerASCII(header.key));
-      safe_list_value_size += header.value.size();
-    }
-  }
-  if (safe_list_value_size > kSafeListValueSizeMax) {
-    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
-                        potentially_unsafe_names.end());
-  }
-  return header_names;
-}
-
-std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
-    const net::HttpRequestHeaders::HeaderVector& headers) {
-  std::vector<std::string> header_names;
-  std::vector<std::string> potentially_unsafe_names;
-
-  constexpr size_t kSafeListValueSizeMax = 1024;
-  size_t safe_list_value_size = 0;
-
-  for (const auto& header : headers) {
-    if (IsForbiddenHeader(header.key))
-      continue;
-
-    if (!IsCORSSafelistedHeader(header.key, header.value)) {
-      header_names.push_back(base::ToLowerASCII(header.key));
-    } else {
-      potentially_unsafe_names.push_back(base::ToLowerASCII(header.key));
-      safe_list_value_size += header.value.size();
-    }
-  }
-  if (safe_list_value_size > kSafeListValueSizeMax) {
-    header_names.insert(header_names.end(), potentially_unsafe_names.begin(),
-                        potentially_unsafe_names.end());
-  }
-  return header_names;
 }
 
 bool IsForbiddenMethod(const std::string& method) {

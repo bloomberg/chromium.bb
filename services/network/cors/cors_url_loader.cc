@@ -46,9 +46,13 @@ bool NeedsPreflight(const ResourceRequest& request) {
   if (!IsCORSSafelistedMethod(request.method))
     return true;
 
-  return !CORSUnsafeNotForbiddenRequestHeaderNames(
-              request.headers.GetHeaderVector())
-              .empty();
+  for (const auto& header : request.headers.GetHeaderVector()) {
+    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+        !IsForbiddenHeader(header.key)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace

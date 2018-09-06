@@ -232,26 +232,6 @@ bool IsCORSSafelistedHeader(const String& name, const String& value) {
       std::string(utf8_value.data(), utf8_value.length()));
 }
 
-bool IsNoCORSSafelistedHeader(const String& name, const String& value) {
-  DCHECK(!name.IsNull());
-  DCHECK(!value.IsNull());
-  return network::cors::IsNoCORSSafelistedHeader(WebString(name).Latin1(),
-                                                 WebString(value).Latin1());
-}
-
-Vector<String> CORSUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
-  net::HttpRequestHeaders::HeaderVector in;
-  for (const auto& entry : headers) {
-    in.push_back(net::HttpRequestHeaders::HeaderKeyValuePair(
-        WebString(entry.key).Latin1(), WebString(entry.value).Latin1()));
-  }
-
-  Vector<String> header_names;
-  for (const auto& name : network::cors::CORSUnsafeRequestHeaderNames(in))
-    header_names.push_back(WebString::FromLatin1(name));
-  return header_names;
-}
-
 bool IsForbiddenHeaderName(const String& name) {
   CString utf8_name = name.Utf8();
   return network::cors::IsForbiddenHeader(
@@ -259,20 +239,21 @@ bool IsForbiddenHeaderName(const String& name) {
 }
 
 bool ContainsOnlyCORSSafelistedHeaders(const HTTPHeaderMap& header_map) {
-  Vector<String> header_names = CORSUnsafeRequestHeaderNames(header_map);
-  return header_names.IsEmpty();
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value))
+      return false;
+  }
+  return true;
 }
 
 bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
-    const HTTPHeaderMap& headers) {
-  Vector<String> header_names;
-
-  net::HttpRequestHeaders::HeaderVector in;
-  for (const auto& entry : headers) {
-    in.push_back(net::HttpRequestHeaders::HeaderKeyValuePair(
-        WebString(entry.key).Latin1(), WebString(entry.value).Latin1()));
+    const HTTPHeaderMap& header_map) {
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+        !IsForbiddenHeaderName(header.key))
+      return false;
   }
-  return network::cors::CORSUnsafeNotForbiddenRequestHeaderNames(in).empty();
+  return true;
 }
 
 bool IsOkStatus(int status) {
