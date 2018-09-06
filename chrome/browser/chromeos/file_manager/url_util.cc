@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chromeos/chromeos_features.h"
 #include "net/base/escape.h"
 
 namespace file_manager {
@@ -116,7 +117,10 @@ GURL GetFileManagerMainPageUrlWithParams(
   if (file_types) {
     switch (file_types->allowed_paths) {
       case ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH:
-        arg_value.SetString(kAllowedPaths, kNativePath);
+        if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs))
+          arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
+        else
+          arg_value.SetString(kAllowedPaths, kNativePath);
         break;
       case ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH:
         arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
@@ -125,6 +129,8 @@ GURL GetFileManagerMainPageUrlWithParams(
         arg_value.SetString(kAllowedPaths, kAnyPath);
         break;
     }
+  } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+    arg_value.SetString(kAllowedPaths, kNativeOrDrivePath);
   } else {
     arg_value.SetString(kAllowedPaths, kNativePath);
   }
