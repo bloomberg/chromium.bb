@@ -835,6 +835,16 @@
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
+      # Only run network service tests on Mac 10.12 for capacity reasons.
+      'Chromium Mac 10.13',
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',
+      'mac-views-rel',
+      'ToTMacASan',
     ],
     'modifications': {
       # chromium.win
@@ -854,6 +864,16 @@
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches components_browsertests.
+      # Only run network service tests on Mac 10.12 for capacity reasons.
+      'Chromium Mac 10.13',
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',
+      'mac-views-rel',
+      'ToTMacASan',
     ],
   },
   'network_service_content_browsertests': {
@@ -864,6 +884,16 @@
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # flaky: https://crbug.com/852786
+      # Only run network service tests on Mac 10.12 for capacity reasons.
+      'Chromium Mac 10.13',
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',
+      'mac-views-rel',
+      'ToTMacASan',
     ],
   },
   'network_service_extensions_browsertests': {
@@ -874,6 +904,16 @@
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
       'Win10 Tests x64 (dbg)',  # Matches extensions_browsertests.
+      # Only run network service tests on Mac 10.12 for capacity reasons.
+      'Chromium Mac 10.13',
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',
+      'mac-views-rel',
+      'ToTMacASan',
     ],
   },
   'network_service_interactive_ui_tests': {
@@ -883,6 +923,16 @@
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
+      # Only run network service tests on Mac 10.12 for capacity reasons.
+      'Chromium Mac 10.13',
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',
+      'mac-views-rel',
+      'ToTMacASan',
     ],
     'modifications': {
       # chromium.win

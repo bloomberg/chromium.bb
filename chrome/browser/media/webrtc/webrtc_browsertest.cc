@@ -18,6 +18,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
@@ -138,6 +143,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
         "(test \"OK\")";
     return;
   }
+
+#if defined(OS_MACOSX)
+  // TODO(jam): this test fails with network service only on 10.12.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      base::mac::IsOS10_12()) {
+    return;
+  }
+#endif
+
   RunsAudioVideoWebRTCCallInTwoTabs("H264", true /* prefer_hw_video_codec */);
 }
 
