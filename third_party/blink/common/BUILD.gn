@@ -38,14 +38,14 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_struct_traits.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",
-    "message_port/cloneable_message.cc",
-    "message_port/cloneable_message_struct_traits.cc",
-    "message_port/cloneable_message_struct_traits.h",
-    "message_port/message_port_channel.cc",
-    "message_port/string_message_codec.cc",
-    "message_port/transferable_message.cc",
-    "message_port/transferable_message_struct_traits.cc",
-    "message_port/transferable_message_struct_traits.h",
+    "messaging/cloneable_message.cc",
+    "messaging/cloneable_message_struct_traits.cc",
+    "messaging/cloneable_message_struct_traits.h",
+    "messaging/message_port_channel.cc",
+    "messaging/string_message_codec.cc",
+    "messaging/transferable_message.cc",
+    "messaging/transferable_message_struct_traits.cc",
+    "messaging/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
     "origin_policy/origin_policy.cc",
     "origin_policy/origin_policy_parser.cc",
@@ -129,7 +129,7 @@ jumbo_source_set("common_unittests_sources") {
     # TODO(crbug.com/845384): Enable these tests also on Android. Currently
     # they are excluded as they require V8 environment but V8 snapshot is
     # not available in the current minimum test setting.
-    sources += [ "message_port/string_message_codec_unittest.cc" ]
+    sources += [ "messaging/string_message_codec_unittest.cc" ]
   } else {
     # is_android
     sources += [

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 
 namespace blink {
 

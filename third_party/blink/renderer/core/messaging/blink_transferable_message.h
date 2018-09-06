@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
-#include "third_party/blink/public/common/message_port/transferable_message.h"
-#include "third_party/blink/public/mojom/message_port/user_activation_snapshot.mojom-blink.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"

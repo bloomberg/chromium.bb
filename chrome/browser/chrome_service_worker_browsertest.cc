@@ -34,7 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace {
 

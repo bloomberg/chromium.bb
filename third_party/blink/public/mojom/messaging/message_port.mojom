@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
-import "third_party/blink/public/mojom/message_port/user_activation_snapshot.mojom";
+import "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
 // A MessagePort is represented as a raw mojo message pipe, as such no interface

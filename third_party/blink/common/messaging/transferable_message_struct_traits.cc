@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/common/message_port/transferable_message_struct_traits.h"
+#include "third_party/blink/common/messaging/transferable_message_struct_traits.h"
 
 #include "base/containers/span.h"
-#include "third_party/blink/common/message_port/cloneable_message_struct_traits.h"
+#include "third_party/blink/common/messaging/cloneable_message_struct_traits.h"
 
 namespace mojo {
 

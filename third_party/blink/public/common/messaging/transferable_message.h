@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_TRANSFERABLE_MESSAGE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_TRANSFERABLE_MESSAGE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_H_
 
 #include <vector>
 
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "third_party/blink/common/common_export.h"
-#include "third_party/blink/public/common/message_port/cloneable_message.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/cloneable_message.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom.h"
-#include "third_party/blink/public/mojom/message_port/user_activation_snapshot.mojom.h"
+#include "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -47,4 +47,4 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGE_PORT_TRANSFERABLE_MESSAGE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_H_

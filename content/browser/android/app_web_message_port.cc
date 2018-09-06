@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/AppWebMessagePort_jni.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 using blink::MessagePortChannel;
 

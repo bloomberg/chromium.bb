@@ -7,8 +7,8 @@
 
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
-#include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/messaging/message_port.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message_struct_traits.h"
