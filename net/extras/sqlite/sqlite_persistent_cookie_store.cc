@@ -11,6 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -181,6 +183,7 @@ class SQLitePersistentCookieStore::Backend
         initialized_(false),
         corruption_detected_(false),
         restore_old_session_cookies_(restore_old_session_cookies),
+        reported_giant_queue_(false),
         num_cookies_read_(0),
         client_task_runner_(client_task_runner),
         background_task_runner_(background_task_runner),
@@ -310,6 +313,9 @@ class SQLitePersistentCookieStore::Backend
   // Batch a cookie operation (add or delete)
   void BatchOperation(PendingOperation::OperationType op,
                       const CanonicalCookie& cc);
+
+  void ReportGiantQueue(size_t size);
+
   // Commit our pending operations to the database.
   void Commit();
   // Close() executed on the background runner.
@@ -356,6 +362,10 @@ class SQLitePersistentCookieStore::Backend
 
   // If false, we should filter out session cookies when reading the DB.
   bool restore_old_session_cookies_;
+
+  // If true, we already reported a failure due to seemingly wedged
+  // operations queue, so don't do it again.
+  bool reported_giant_queue_;
 
   // The cumulative time spent loading the cookies on the background runner.
   // Incremented and reported from the background runner.
@@ -1257,6 +1267,10 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
+
+  // Threshold after which we report a problem.
+  static const size_t kReportGiantQueueSizeThreshold = 50 * 1024;
+
   DCHECK(!background_task_runner_->RunsTasksInCurrentSequence());
 
   // We do a full copy of the cookie here, and hopefully just here.
@@ -1279,7 +1293,17 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
     PostBackgroundTask(FROM_HERE, base::Bind(&Backend::Commit, this));
+  } else if (num_pending >= kReportGiantQueueSizeThreshold &&
+             !reported_giant_queue_) {
+    ReportGiantQueue(num_pending);
+    reported_giant_queue_ = true;
   }
+}
+
+void SQLitePersistentCookieStore::Backend::ReportGiantQueue(
+    size_t num_pending) {
+  base::debug::Alias(&num_pending);
+  base::debug::DumpWithoutCrashing();
 }
 
 void SQLitePersistentCookieStore::Backend::Commit() {
