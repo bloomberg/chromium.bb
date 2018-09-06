@@ -16,6 +16,7 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -36,6 +37,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
     private HistoryManager mHistoryManager;
     private final RoundedIconGenerator mIconGenerator;
+    private DefaultFaviconHelper mFaviconHelper;
 
     private final int mMinIconSize;
     private final int mDisplayedIconSize;
@@ -94,7 +96,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
                     ApiCompatibilityUtils.getColor(getResources(), R.color.google_red_700));
         } else {
             setIconDrawable(
-                    ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.default_favicon));
+                    mFaviconHelper.getDefaultFaviconDrawable(getContext(), item.getUrl(), true));
             if (mHistoryManager != null) requestIcon();
 
             mTitleView.setTextColor(
@@ -111,6 +113,13 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mHistoryManager = manager;
         if (!getItem().wasBlockedVisit()) requestIcon();
+    }
+
+    /**
+     * @param helper The helper for fetching default favicons.
+     */
+    public void setFaviconHelper(DefaultFaviconHelper helper) {
+        mFaviconHelper = helper;
     }
 
     /**

@@ -15,6 +15,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TitleBitmapFactory;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -41,6 +42,7 @@ public class LayerTitleCache implements TitleCache {
     private ResourceManager mResourceManager;
 
     private FaviconHelper mFaviconHelper;
+    private DefaultFaviconHelper mDefaultFaviconHelper;
 
     /** Responsible for building titles on light themes or standard tabs. */
     protected TitleBitmapFactory mStandardTitleBitmapFactory;
@@ -61,10 +63,9 @@ public class LayerTitleCache implements TitleCache {
         mNativeLayerTitleCache = nativeInit(fadeWidthPx, faviconStartPaddingPx, faviconEndPaddingPx,
                 R.drawable.spinner, R.drawable.spinner_white);
         mFaviconSize = res.getDimensionPixelSize(R.dimen.compositor_tab_title_favicon_size);
-        mStandardTitleBitmapFactory =
-                new TitleBitmapFactory(context, false, R.drawable.default_favicon);
-        mDarkTitleBitmapFactory =
-                new TitleBitmapFactory(context, true, R.drawable.default_favicon_white);
+        mStandardTitleBitmapFactory = new TitleBitmapFactory(context, false);
+        mDarkTitleBitmapFactory = new TitleBitmapFactory(context, true);
+        mDefaultFaviconHelper = new DefaultFaviconHelper();
     }
 
     /**
@@ -119,9 +120,12 @@ public class LayerTitleCache implements TitleCache {
     private String getUpdatedTitleInternal(Tab tab, String titleString,
             boolean fetchFaviconFromHistory) {
         final int tabId = tab.getId();
-        Bitmap originalFavicon = tab.getFavicon();
-
         boolean isDarkTheme = tab.isIncognito();
+        Bitmap originalFavicon = tab.getFavicon();
+        if (originalFavicon == null) {
+            originalFavicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(
+                    mContext, tab.getUrl(), !isDarkTheme);
+        }
 
         boolean isRtl = tab.isTitleDirectionRtl();
         TitleBitmapFactory titleBitmapFactory =
@@ -135,8 +139,7 @@ public class LayerTitleCache implements TitleCache {
         }
 
         title.set(titleBitmapFactory.getTitleBitmap(mContext, titleString),
-                titleBitmapFactory.getFaviconBitmap(mContext, originalFavicon),
-                fetchFaviconFromHistory);
+                titleBitmapFactory.getFaviconBitmap(originalFavicon), fetchFaviconFromHistory);
 
         if (mNativeLayerTitleCache != 0) {
             nativeUpdateLayer(mNativeLayerTitleCache, tabId, title.getTitleResId(),
@@ -216,6 +219,7 @@ public class LayerTitleCache implements TitleCache {
             toDelete.unregister();
         }
         mTitles.clear();
+        mDefaultFaviconHelper.clearCache();
 
         if (title != null) mTitles.put(exceptId, title);
 

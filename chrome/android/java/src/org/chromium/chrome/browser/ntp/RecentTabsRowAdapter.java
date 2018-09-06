@@ -22,9 +22,9 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
@@ -100,7 +100,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
     private final Activity mActivity;
     private final List<Group> mGroups;
-    private final Drawable mDefaultFavicon;
+    private final DefaultFaviconHelper mDefaultFaviconHelper;
     private final RecentTabsManager mRecentTabsManager;
     private final RecentlyClosedTabsGroup mRecentlyClosedTabsGroup = new RecentlyClosedTabsGroup();
     private final SeparatorGroup mVisibleSeparatorGroup = new SeparatorGroup(true);
@@ -678,7 +678,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mFaviconCache = new FaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
 
         Resources resources = activity.getResources();
-        mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
+        mDefaultFaviconHelper = new DefaultFaviconHelper();
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
         mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(
@@ -723,7 +723,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         Drawable image = mFaviconCache.getSyncedFaviconImage(url);
         if (image == null) {
             image = faviconDrawable(mRecentTabsManager.getSyncedFaviconImageForURL(url), url);
-            image = (image == null) ? mDefaultFavicon : image;
+            image = (image == null)
+                    ? mDefaultFaviconHelper.getDefaultFaviconDrawable(mActivity, url, true)
+                    : image;
             mFaviconCache.putSyncedFaviconImage(url, image);
         }
         viewHolder.imageView.setImageDrawable(image);
@@ -733,7 +735,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         Drawable image;
         if (url == null) {
             // URL is null for print jobs, for example.
-            image = mDefaultFavicon;
+            image = mDefaultFaviconHelper.getDefaultFaviconDrawable(mActivity, url, true);
         } else {
             image = mFaviconCache.getLocalFaviconImage(url);
             if (image == null) {
@@ -742,14 +744,16 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                     public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
                         if (this != viewHolder.imageCallback) return;
                         Drawable image = faviconDrawable(bitmap, url);
-                        image = (image == null) ? mDefaultFavicon : image;
+                        image = image == null ? mDefaultFaviconHelper.getDefaultFaviconDrawable(
+                                                        mActivity, url, true)
+                                              : image;
                         mFaviconCache.putLocalFaviconImage(url, image);
                         viewHolder.imageView.setImageDrawable(image);
                     }
                 };
                 viewHolder.imageCallback = imageCallback;
                 mRecentTabsManager.getLocalFaviconForUrl(url, mFaviconSize, imageCallback);
-                image = mDefaultFavicon;
+                image = mDefaultFaviconHelper.getDefaultFaviconDrawable(mActivity, url, true);
             }
         }
         viewHolder.imageView.setImageDrawable(image);

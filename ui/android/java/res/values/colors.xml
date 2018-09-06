@@ -17,6 +17,9 @@
     <color name="default_icon_color_blue" tools:ignore="UnusedResources">
         @color/modern_blue_600
     </color>
+    <color name="default_icon_color_white" tools:ignore="UnusedResources">
+        @android:color/white
+    </color>
 
     <!-- Modern color palette -->
     <color name="modern_blue_300">#8AB4F8</color>
