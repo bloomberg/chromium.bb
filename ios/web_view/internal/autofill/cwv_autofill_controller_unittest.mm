@@ -15,13 +15,13 @@
 #import "components/autofill/ios/browser/fake_js_autofill_manager.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #import "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
@@ -208,7 +208,7 @@ TEST_F(CWVAutofillControllerTest, FocusCallback) {
                                    formName:kTestFormName
                                       value:kTestFieldValue];
 
-      web::FormActivityParams params;
+      autofill::FormActivityParams params;
       params.form_name = base::SysNSStringToUTF8(kTestFormName);
       params.field_name = base::SysNSStringToUTF8(kTestFieldName);
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
@@ -235,7 +235,7 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
                                    formName:kTestFormName
                                       value:kTestFieldValue];
 
-      web::FormActivityParams params;
+      autofill::FormActivityParams params;
       params.form_name = base::SysNSStringToUTF8(kTestFormName);
       params.field_name = base::SysNSStringToUTF8(kTestFieldName);
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
@@ -261,7 +261,7 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
                                  formName:kTestFormName
                                     value:kTestFieldValue];
 
-    web::FormActivityParams params;
+    autofill::FormActivityParams params;
     params.form_name = base::SysNSStringToUTF8(kTestFormName);
     params.field_name = base::SysNSStringToUTF8(kTestFieldName);
     params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);

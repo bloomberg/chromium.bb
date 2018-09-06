@@ -6,7 +6,7 @@
 #define COMPONENTS_AUTOFILL_IOS_FORM_UTIL_TEST_FORM_ACTIVITY_OBSERVER_H_
 
 #include "components/autofill/ios/form_util/form_activity_observer.h"
-#include "ios/web/public/web_state/form_activity_params.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 
 namespace web {
 class WebState;
@@ -24,7 +24,7 @@ struct TestSubmitDocumentInfo {
 // Arguments passed to |FormActivityRegistered|.
 struct TestFormActivityInfo {
   web::WebState* web_state;
-  web::FormActivityParams form_activity;
+  FormActivityParams form_activity;
 };
 
 class TestFormActivityObserver : public autofill::FormActivityObserver {
@@ -44,7 +44,7 @@ class TestFormActivityObserver : public autofill::FormActivityObserver {
                          bool form_in_main_frame) override;
 
   void FormActivityRegistered(web::WebState* web_state,
-                              const web::FormActivityParams& params) override;
+                              const FormActivityParams& params) override;
 
  private:
   web::WebState* web_state_ = nullptr;

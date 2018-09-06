@@ -9,6 +9,7 @@
 #include "base/mac/scoped_block.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
@@ -17,7 +18,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_state.h"
 
@@ -143,7 +143,7 @@
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
@@ -238,7 +238,7 @@
 
 // Asynchronously queries the providers for an accessory view. Sends it to
 // the consumer if found.
-- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
+- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
                             webState:(web::WebState*)webState {
   DCHECK_EQ(webState, self.webState);
   // Build a block for each provider that will invoke its completion with YES
@@ -267,7 +267,7 @@
 // params.
 - (passwords::PipelineBlock)
 queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
-                   params:(web::FormActivityParams)params {
+                   params:(autofill::FormActivityParams)params {
   __weak __typeof(self) weakSelf = self;
   return ^(void (^completion)(BOOL success)) {
     FormInputAccessoryMediator* strongSelf = weakSelf;

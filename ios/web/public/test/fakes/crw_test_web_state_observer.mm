@@ -16,8 +16,6 @@
 #endif
 
 namespace web {
-TestFormActivityInfo::TestFormActivityInfo() {}
-TestFormActivityInfo::~TestFormActivityInfo() = default;
 TestUpdateFaviconUrlCandidatesInfo::TestUpdateFaviconUrlCandidatesInfo() {}
 TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
     default;

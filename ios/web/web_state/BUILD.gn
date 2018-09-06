@@ -158,7 +158,6 @@ source_set("context_menu") {
     "context_menu_params.mm",
     "context_menu_params_utils.h",
     "context_menu_params_utils.mm",
-    "form_activity_params.cc",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

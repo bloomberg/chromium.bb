@@ -8,7 +8,7 @@
 
 #include "base/values.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
-#include "ios/web/public/web_state/form_activity_params.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -83,7 +83,7 @@ bool FormActivityTabHelper::HandleFormActivity(
     const base::DictionaryValue& message,
     bool has_user_gesture,
     bool form_in_main_frame) {
-  web::FormActivityParams params;
+  FormActivityParams params;
   if (!message.GetString("formName", &params.form_name) ||
       !message.GetString("fieldName", &params.field_name) ||
       !message.GetString("fieldIdentifier", &params.field_identifier) ||

@@ -38,7 +38,7 @@ void TestFormActivityObserver::DocumentSubmitted(web::WebState* web_state,
 
 void TestFormActivityObserver::FormActivityRegistered(
     web::WebState* web_state,
-    const web::FormActivityParams& params) {
+    const FormActivityParams& params) {
   ASSERT_EQ(web_state_, web_state);
   form_activity_info_ = std::make_unique<TestFormActivityInfo>();
   form_activity_info_->web_state = web_state;

@@ -6,8 +6,8 @@
 
 #include "base/observer_list.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/form_activity_tab_helper.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,7 +21,7 @@ TestFormActivityTabHelper::TestFormActivityTabHelper(web::WebState* web_state)
 TestFormActivityTabHelper::~TestFormActivityTabHelper() {}
 
 void TestFormActivityTabHelper::FormActivityRegistered(
-    web::FormActivityParams const& params) {
+    FormActivityParams const& params) {
   autofill::FormActivityTabHelper* form_activity_tab_helper =
       autofill::FormActivityTabHelper::GetOrCreateForWebState(web_state_);
   for (auto& observer : form_activity_tab_helper->observers_) {

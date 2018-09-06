@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_state/form_activity_params.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 
-namespace web {
+namespace autofill {
 
 FormActivityParams::FormActivityParams() = default;
 FormActivityParams::FormActivityParams(const FormActivityParams& other) =
     default;
 FormActivityParams::~FormActivityParams() = default;
 
-}  // namespace web
+}  // namespace autofill

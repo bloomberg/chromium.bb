@@ -9,7 +9,6 @@
 
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/load_committed_details.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -85,22 +84,6 @@ struct TestDidChangeVisibleSecurityStateInfo {
 // Arguments passed to |DidSuppressDialog|.
 struct TestDidSuppressDialogInfo {
   WebState* web_state;
-};
-
-// Arguments passed to |DocumentSubmitted|.
-struct TestSubmitDocumentInfo {
-  WebState* web_state;
-  std::string form_name;
-  bool user_initiated;
-  bool is_main_frame;
-};
-
-// Arguments passed to |FormActivityRegistered|.
-struct TestFormActivityInfo {
-  TestFormActivityInfo();
-  ~TestFormActivityInfo();
-  WebState* web_state;
-  FormActivityParams form_activity;
 };
 
 // Arguments passed to |FaviconUrlUpdated|.

@@ -11,10 +11,11 @@
 
 namespace web {
 class WebState;
-struct FormActivityParams;
 }  // namespace web
 
 namespace autofill {
+
+struct FormActivityParams;
 
 // Interface for observing form activity.
 // It is the responsibility of the observer to unregister if the web_state
@@ -27,8 +28,9 @@ class FormActivityObserver {
   // Called when the user is typing on a form field in the main frame or in a
   // same-origin iframe. |params.input_missing| is indicating if there is any
   // error when parsing the form field information.
-  virtual void FormActivityRegistered(web::WebState* web_state,
-                                      const web::FormActivityParams& params) {}
+  virtual void FormActivityRegistered(
+      web::WebState* web_state,
+      const FormActivityParams& params) {}
 
   // Called on form submission in the main frame or in a same-origin iframe.
   // |has_user_gesture| is true if the user interacted with the page.

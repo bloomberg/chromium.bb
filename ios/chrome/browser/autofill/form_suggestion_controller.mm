@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -186,7 +186,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   _webViewProxy = webViewProxy;
 }
 
-- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState {
   __weak FormSuggestionController* weakSelf = self;
   NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
@@ -370,7 +370,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   _delegate = delegate;
 }
 
-- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
+- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
                             webState:(web::WebState*)webState
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {

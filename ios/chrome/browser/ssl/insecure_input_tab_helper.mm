@@ -9,12 +9,12 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/origin_util.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -122,7 +122,7 @@ InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
 
 void InsecureInputTabHelper::FormActivityRegistered(
     web::WebState* web_state,
-    const web::FormActivityParams& params) {
+    const autofill::FormActivityParams& params) {
   DCHECK_EQ(web_state_, web_state);
   if (params.type == "input" &&
       !web::IsOriginSecure(web_state->GetLastCommittedURL())) {

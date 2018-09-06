@@ -17,9 +17,9 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -345,7 +345,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
 
   [_JSSuggestionManager inject];
