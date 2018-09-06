@@ -5,7 +5,7 @@
 // https://github.com/wicg/trusted-types
 
 [
-    Exposed=(Window),
+    Exposed=Window,
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
     [RaisesException] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
