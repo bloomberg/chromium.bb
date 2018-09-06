@@ -2,31 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_ASSISTANT_OPTIN_ASSISTANT_OPTIN_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_ASSISTANT_OPTIN_ASSISTANT_OPTIN_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ASSISTANT_OPTIN_FLOW_SCREEN_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ASSISTANT_OPTIN_FLOW_SCREEN_HANDLER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
-#include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
+#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 
 namespace chromeos {
 
-class AssistantOptInHandler
-    : public BaseWebUIHandler,
+// TODO(updowndota): Refactor to reuse AssistantOptInHandler methods.
+class AssistantOptInFlowScreenHandler
+    : public BaseScreenHandler,
+      public AssistantOptInFlowScreenView,
       public arc::VoiceInteractionControllerClient::Observer {
  public:
-  explicit AssistantOptInHandler(JSCallsContainer* js_calls_container);
-  ~AssistantOptInHandler() override;
+  AssistantOptInFlowScreenHandler();
+  ~AssistantOptInFlowScreenHandler() override;
 
-  // BaseWebUIHandler:
+  // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void RegisterMessages() override;
-  void Initialize() override;
+
+  // AssistantOptInFlowScreenView:
+  void Bind(AssistantOptInFlowScreen* screen) override;
+  void Unbind() override;
+  void Show() override;
+  void Hide() override;
 
   // Send messages to the page.
   void ShowNextScreen();
@@ -36,6 +44,9 @@ class AssistantOptInHandler
   void OnEmailOptInResult(bool opted_in);
 
  private:
+  // BaseScreenHandler:
+  void Initialize() override;
+
   // arc::VoiceInteractionControllerClient::Observer overrides
   void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
 
@@ -54,9 +65,24 @@ class AssistantOptInHandler
   void OnUpdateSettingsResponse(const std::string& settings);
 
   // Handler for JS WebUI message.
-  void HandleInitialized();
+  void HandleLoadingScreenUserAction(const std::string& action);
+  void HandleValuePropScreenUserAction(const std::string& action);
+  void HandleThirdPartyScreenUserAction(const std::string& action);
+  void HandleGetMoreScreenUserAction(const bool screen_context,
+                                     const bool email_opted_in);
+  void HandleReadyScreenUserAction(const std::string& action);
+  void HandleValuePropScreenShown();
+  void HandleThirdPartyScreenShown();
+  void HandleGetMoreScreenShown();
+  void HandleReadyScreenShown();
   void HandleHotwordResult(bool enable_hotword);
   void HandleFlowFinished();
+  void HandleFlowInitialized();
+
+  AssistantOptInFlowScreen* screen_ = nullptr;
+
+  // Whether the screen should be shown right after initialization.
+  bool show_on_init_ = false;
 
   // Consent token used to complete the opt-in.
   std::string consent_token_;
@@ -74,11 +100,11 @@ class AssistantOptInHandler
   bool enable_hotword_ = true;
 
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
-  base::WeakPtrFactory<AssistantOptInHandler> weak_factory_;
+  base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssistantOptInHandler);
+  DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_ASSISTANT_OPTIN_ASSISTANT_OPTIN_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ASSISTANT_OPTIN_FLOW_SCREEN_HANDLER_H_

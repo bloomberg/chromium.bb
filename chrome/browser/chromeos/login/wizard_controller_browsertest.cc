@@ -2666,7 +2666,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(fukino): Add tests for encryption migration UI.
 // http://crbug.com/706017
 
-// TODO(updowndota): Add tests for Voice Interaction OptIn flow.
+// TODO(updowndota): Add tests for Voice Interaction/Assistant OptIn flow.
 
 // TODO(alemate): Add tests for Sync Consent UI.
 
@@ -2677,7 +2677,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(xiaoyinh): Add tests for Fingerprint Setup UI.
 
 // TODO(alemate): Add tests for Marketing Opt-In.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 47,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 48,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

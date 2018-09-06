@@ -29,6 +29,7 @@ class AppDownloadingScreenView;
 class AppLaunchSplashScreenView;
 class ArcKioskSplashScreenView;
 class ArcTermsOfServiceScreenView;
+class AssistantOptInFlowScreenView;
 class AutoEnrollmentCheckScreenView;
 class BaseScreenHandler;
 class ControllerPairingScreenView;
@@ -137,6 +138,7 @@ class OobeUI : public content::WebUIController,
   VoiceInteractionValuePropScreenView* GetVoiceInteractionValuePropScreenView();
   WaitForContainerReadyScreenView* GetWaitForContainerReadyScreenView();
   UpdateRequiredView* GetUpdateRequiredScreenView();
+  AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
   DiscoverScreenView* GetDiscoverScreenView();

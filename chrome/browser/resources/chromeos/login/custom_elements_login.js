@@ -40,3 +40,4 @@
 // <include src="app_downloading.js">
 // <include src="discover/discover_components.js">
 // <include src="marketing_opt_in.js">
+// <include src="../assistant_optin/assistant_optin_flow.js">
