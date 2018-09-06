@@ -24,14 +24,14 @@ namespace blink {
 SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(
     SVGElement* context_element,
     const QualifiedName& attribute_name,
-    float initial_first_value,
-    float initial_second_value)
+    float initial_value)
     : SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>(
           context_element,
           attribute_name,
-          SVGNumberOptionalNumber::Create(
-              SVGNumber::Create(initial_first_value),
-              SVGNumber::Create(initial_second_value))),
+          SVGNumberOptionalNumber::Create(SVGNumber::Create(initial_value),
+                                          SVGNumber::Create(initial_value)),
+          CSSPropertyInvalid,
+          static_cast<unsigned>(initial_value)),
       first_number_(SVGAnimatedNumber::Create(context_element,
                                               attribute_name,
                                               BaseValue()->FirstNumber())),

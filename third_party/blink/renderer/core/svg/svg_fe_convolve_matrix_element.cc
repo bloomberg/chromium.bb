@@ -78,12 +78,8 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag,
                                            document),
-      bias_(SVGAnimatedNumber::Create(this,
-                                      SVGNames::biasAttr,
-                                      SVGNumber::Create())),
-      divisor_(SVGAnimatedNumber::Create(this,
-                                         SVGNames::divisorAttr,
-                                         SVGNumber::Create())),
+      bias_(SVGAnimatedNumber::Create(this, SVGNames::biasAttr, 0.0f)),
+      divisor_(SVGAnimatedNumber::Create(this, SVGNames::divisorAttr, 1)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
       edge_mode_(
           SVGAnimatedEnumeration<EdgeModeType>::Create(this,
@@ -93,7 +89,8 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
           SVGAnimatedNumberList::Create(this, SVGNames::kernelMatrixAttr)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr)),
+          SVGNames::kernelUnitLengthAttr,
+          0.0f)),
       order_(SVGAnimatedOrder::Create(this)),
       preserve_alpha_(
           SVGAnimatedBoolean::Create(this, SVGNames::preserveAlphaAttr)),
@@ -151,6 +148,17 @@ IntPoint SVGFEConvolveMatrixElement::TargetPoint() const {
   return target;
 }
 
+float SVGFEConvolveMatrixElement::ComputeDivisor() const {
+  if (divisor_->IsSpecified())
+    return divisor_->CurrentValue()->Value();
+  float divisor_value = 0;
+  SVGNumberList* kernel_matrix = kernel_matrix_->CurrentValue();
+  size_t kernel_matrix_size = kernel_matrix->length();
+  for (size_t i = 0; i < kernel_matrix_size; ++i)
+    divisor_value += kernel_matrix->at(i)->Value();
+  return divisor_value ? divisor_value : 1;
+}
+
 bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
@@ -159,7 +167,7 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
     return convolve_matrix->SetEdgeMode(
         edge_mode_->CurrentValue()->EnumValue());
   if (attr_name == SVGNames::divisorAttr)
-    return convolve_matrix->SetDivisor(divisor_->CurrentValue()->Value());
+    return convolve_matrix->SetDivisor(ComputeDivisor());
   if (attr_name == SVGNames::biasAttr)
     return convolve_matrix->SetBias(bias_->CurrentValue()->Value());
   if (attr_name == SVGNames::targetXAttr || attr_name == SVGNames::targetYAttr)
@@ -200,18 +208,8 @@ FilterEffect* SVGFEConvolveMatrixElement::Build(
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  float divisor_value = divisor_->CurrentValue()->Value();
-  if (!divisor_->IsSpecified()) {
-    SVGNumberList* kernel_matrix = kernel_matrix_->CurrentValue();
-    size_t kernel_matrix_size = kernel_matrix->length();
-    for (size_t i = 0; i < kernel_matrix_size; ++i)
-      divisor_value += kernel_matrix->at(i)->Value();
-    if (!divisor_value)
-      divisor_value = 1;
-  }
-
   FilterEffect* effect = FEConvolveMatrix::Create(
-      filter, MatrixOrder(), divisor_value, bias_->CurrentValue()->Value(),
+      filter, MatrixOrder(), ComputeDivisor(), bias_->CurrentValue()->Value(),
       TargetPoint(), edge_mode_->CurrentValue()->EnumValue(),
       preserve_alpha_->CurrentValue()->Value(),
       kernel_matrix_->CurrentValue()->ToFloatVector());

@@ -49,18 +49,10 @@ unsigned short GetMaxExposedEnumValue<CompositeOperationType>() {
 
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feCompositeTag, document),
-      k1_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::k1Attr,
-                                    SVGNumber::Create())),
-      k2_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::k2Attr,
-                                    SVGNumber::Create())),
-      k3_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::k3Attr,
-                                    SVGNumber::Create())),
-      k4_(SVGAnimatedNumber::Create(this,
-                                    SVGNames::k4Attr,
-                                    SVGNumber::Create())),
+      k1_(SVGAnimatedNumber::Create(this, SVGNames::k1Attr, 0.0f)),
+      k2_(SVGAnimatedNumber::Create(this, SVGNames::k2Attr, 0.0f)),
+      k3_(SVGAnimatedNumber::Create(this, SVGNames::k3Attr, 0.0f)),
+      k4_(SVGAnimatedNumber::Create(this, SVGNames::k4Attr, 0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
       in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
       svg_operator_(SVGAnimatedEnumeration<CompositeOperationType>::Create(
