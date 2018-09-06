@@ -4608,9 +4608,20 @@ def CMDissue(parser, args):
                        '--format=%(refname)']).splitlines()
     # Reverse issue lookup.
     issue_branch_map = {}
+
+    git_config = {}
+    for config in RunGit(['config', '--get-regexp',
+                          r'branch\..*issue']).splitlines():
+      name, _space, val = config.partition(' ')
+      git_config[name] = val
+
     for branch in branches:
-      cl = Changelist(branchref=branch)
-      issue_branch_map.setdefault(cl.GetIssue(), []).append(branch)
+      for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
+        config_key = _git_branch_config_key(ShortBranchName(branch),
+                                            cls.IssueConfigKey())
+        issue = git_config.get(config_key)
+        if issue:
+          issue_branch_map.setdefault(int(issue), []).append(branch)
     if not args:
       args = sorted(issue_branch_map.iterkeys())
     result = {}
