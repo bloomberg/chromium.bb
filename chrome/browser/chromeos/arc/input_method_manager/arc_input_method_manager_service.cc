@@ -301,6 +301,19 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
         return chromeos::extension_ime_util::IsArcIME(id);
       });
 
+  // TODO(yhanada|yusukes): Instead of observing ImeMenuListChanged(), it's
+  // probably better to just observe the pref (and not disabling ones still
+  // in the prefs.) See also the comment below in the second for-loop.
+  std::set<std::string> active_ime_ids_on_prefs;
+  {
+    const std::string active_ime_ids =
+        profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+    std::vector<base::StringPiece> active_ime_list = base::SplitStringPiece(
+        active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& id : active_ime_list)
+      active_ime_ids_on_prefs.insert(id.as_string());
+  }
+
   for (const auto& id : new_arc_active_ime_ids) {
     // Enable the IME which is not currently enabled.
     if (!active_arc_ime_ids_.count(id))
@@ -308,9 +321,22 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
   }
 
   for (const auto& id : active_arc_ime_ids_) {
-    // Disable the IME which is currently enabled.
-    if (!new_arc_active_ime_ids.count(id))
+    if (!new_arc_active_ime_ids.count(id) &&
+        !active_ime_ids_on_prefs.count(id)) {
+      // This path is taken in the following two cases:
+      // 1) The device is in tablet mode, and the user disabled the IME via
+      //    chrome://settings.
+      // 2) The device was just switched to laptop mode, and this service
+      //    disallowed Android IMEs.
+      // In the former case, |active_ime_ids_on_prefs| doesn't have the IME,
+      // but in the latter case, the set still has it. Here, disable the IME
+      // only for the former case so that the temporary deactivation of the
+      // IME on laptop mode wouldn't be propagated to the container. Otherwise,
+      // the IME confirmation dialog will be shown again next time when you
+      // use the IME in tablet mode.
+      // TODO(yhanada|yusukes): Only observe the prefs and remove the hack.
       EnableIme(id, false /* enable */);
+    }
   }
   active_arc_ime_ids_.swap(new_arc_active_ime_ids);
 }
