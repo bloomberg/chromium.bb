@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
@@ -116,6 +117,14 @@ class TestEnvironment {
         stream_factory_binding_(&stream_factory_,
                                 mojo::MakeRequest(&stream_factory_ptr_)) {
     mojo::core::SetDefaultProcessErrorCallback(bad_message_callback_.Get());
+
+    // TODO(https://crbug.com/867827) remove histogram allocator creation when
+    // removing output controller checks.
+    if (!base::GlobalHistogramAllocator::Get()) {
+      const int32_t kAllocatorMemorySize = 8 << 20;
+      base::GlobalHistogramAllocator::CreateWithLocalMemory(
+          kAllocatorMemorySize, 0, "HistogramAllocatorTest");
+    }
   }
 
   ~TestEnvironment() {
