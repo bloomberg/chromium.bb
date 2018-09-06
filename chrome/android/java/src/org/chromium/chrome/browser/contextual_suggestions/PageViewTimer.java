@@ -192,9 +192,7 @@ public class PageViewTimer {
     private void maybeReportViewTime() {
         if (mLastUrl != null && mStartTimeMs != 0 && mPageDidPaint) {
             long durationMs = SystemClock.uptimeMillis() - mStartTimeMs - mPauseDuration;
-            RecordHistogram.recordLongTimesHistogram100(
-                    "ContextualSuggestions.PageViewTime", durationMs, TimeUnit.MILLISECONDS);
-
+            reportDurationRaw(durationMs);
             reportDurationBucket(calculateDurationBucket(durationMs));
         }
 
@@ -207,6 +205,20 @@ public class PageViewTimer {
         mNavigationSource = NavigationSource.OTHER;
         mPauseDuration = 0;
         mPauseStartTimeMs = 0;
+    }
+
+    private void reportDurationRaw(long durationMs) {
+        RecordHistogram.recordLongTimesHistogram100(
+                "ContextualSuggestions.PageViewTime", durationMs, TimeUnit.MILLISECONDS);
+        if (mNavigationSource == NavigationSource.CONTEXTUAL_SUGGESTIONS) {
+            RecordHistogram.recordLongTimesHistogram100(
+                    "ContextualSuggestions.PageViewTime.ContextualSuggestions", durationMs,
+                    TimeUnit.MILLISECONDS);
+            return;
+        }
+
+        RecordHistogram.recordLongTimesHistogram100(
+                "ContextualSuggestions.PageViewTime.Other", durationMs, TimeUnit.MILLISECONDS);
     }
 
     private void reportDurationBucket(@DurationBucket int durationBucket) {
