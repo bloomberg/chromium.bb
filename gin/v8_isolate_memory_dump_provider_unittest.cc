@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gin/public/isolate_holder.h"
@@ -14,6 +15,15 @@
 namespace gin {
 
 typedef V8Test V8MemoryDumpProviderTest;
+
+class V8MemoryDumpProviderWorkerTest : public V8MemoryDumpProviderTest {
+ protected:
+  std::unique_ptr<IsolateHolder> CreateIsolateHolder() const override {
+    return std::make_unique<gin::IsolateHolder>(
+        base::ThreadTaskRunnerHandle::Get(),
+        gin::IsolateHolder::IsolateType::kBlinkWorkerThread);
+  }
+};
 
 // Checks if the dump provider runs without crashing and dumps root objects.
 TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
@@ -68,10 +78,38 @@ TEST_F(V8MemoryDumpProviderTest, DumpContextStatistics) {
   bool did_dump_native_contexts = false;
   for (const auto& name_dump : allocator_dumps) {
     const std::string& name = name_dump.first;
-    if (name.find("contexts/detached_context") != std::string::npos) {
+    if (name.find("main/contexts/detached_context") != std::string::npos) {
       did_dump_detached_contexts = true;
     }
-    if (name.find("contexts/native_context") != std::string::npos) {
+    if (name.find("main/contexts/native_context") != std::string::npos) {
+      did_dump_native_contexts = true;
+    }
+  }
+
+  ASSERT_TRUE(did_dump_detached_contexts);
+  ASSERT_TRUE(did_dump_native_contexts);
+}
+
+TEST_F(V8MemoryDumpProviderWorkerTest, DumpContextStatistics) {
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpLevelOfDetail::LIGHT};
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
+      new base::trace_event::ProcessMemoryDump(dump_args));
+  instance_->isolate_memory_dump_provider_for_testing()->OnMemoryDump(
+      dump_args, process_memory_dump.get());
+  const base::trace_event::ProcessMemoryDump::AllocatorDumpsMap&
+      allocator_dumps = process_memory_dump->allocator_dumps();
+
+  bool did_dump_detached_contexts = false;
+  bool did_dump_native_contexts = false;
+  for (const auto& name_dump : allocator_dumps) {
+    const std::string& name = name_dump.first;
+    if (name.find("workers/contexts/detached_context/isolate_0x") !=
+        std::string::npos) {
+      did_dump_detached_contexts = true;
+    }
+    if (name.find("workers/contexts/native_context/isolate_0x") !=
+        std::string::npos) {
       did_dump_native_contexts = true;
     }
   }
