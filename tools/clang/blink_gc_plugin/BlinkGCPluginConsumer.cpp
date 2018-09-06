@@ -570,7 +570,7 @@ void BlinkGCPluginConsumer::DumpClass(RecordInfo* info) {
 
   json_->OpenObject();
   json_->Write("name", info->record()->getQualifiedNameAsString());
-  json_->Write("loc", GetLocString(info->record()->getLocStart()));
+  json_->Write("loc", GetLocString(info->record()->getBeginLoc()));
   json_->CloseObject();
 
   class DumpEdgeVisitor : public RecursiveEdgeVisitor {
@@ -637,16 +637,12 @@ void BlinkGCPluginConsumer::DumpClass(RecordInfo* info) {
   DumpEdgeVisitor visitor(json_);
 
   for (auto& base : info->GetBases())
-    visitor.DumpEdge(info,
-                     base.second.info(),
-                     "<super>",
-                     Edge::kStrong,
-                     GetLocString(base.second.spec().getLocStart()));
+    visitor.DumpEdge(info, base.second.info(), "<super>", Edge::kStrong,
+                     GetLocString(base.second.spec().getBeginLoc()));
 
   for (auto& field : info->GetFields())
-    visitor.DumpField(info,
-                      &field.second,
-                      GetLocString(field.second.field()->getLocStart()));
+    visitor.DumpField(info, &field.second,
+                      GetLocString(field.second.field()->getBeginLoc()));
 }
 
 std::string BlinkGCPluginConsumer::GetLocString(SourceLocation loc) {
@@ -681,7 +677,7 @@ bool BlinkGCPluginConsumer::IsIgnoredClass(RecordInfo* info) {
 
 bool BlinkGCPluginConsumer::InIgnoredDirectory(RecordInfo* info) {
   std::string filename;
-  if (!GetFilename(info->record()->getLocStart(), &filename))
+  if (!GetFilename(info->record()->getBeginLoc(), &filename))
     return false;  // TODO: should we ignore non-existing file locations?
 #if defined(_WIN32)
   std::replace(filename.begin(), filename.end(), '\\', '/');
