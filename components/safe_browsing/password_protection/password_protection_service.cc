@@ -22,7 +22,6 @@
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -836,7 +835,7 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
     case PasswordReuseEvent::OTHER_GAIA_PASSWORD:
       return false;
     case PasswordReuseEvent::ENTERPRISE_PASSWORD:
-      return base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1);
+      return true;
     case PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN:
       break;
   }

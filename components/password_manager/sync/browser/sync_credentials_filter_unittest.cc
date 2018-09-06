@@ -429,9 +429,6 @@ TEST_F(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
   PasswordForm other_form = SimpleNonGaiaForm("user@example.org");
   EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(other_form));
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   PasswordForm enterprise_form =
       SimpleNonGaiaForm("user@enterprise.test", kEnterpriseURL);
   EXPECT_TRUE(filter_.ShouldSaveEnterprisePasswordHash(enterprise_form));

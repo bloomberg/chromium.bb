@@ -16,9 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_IOS)
-#include "base/test/scoped_feature_list.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #endif  // !OS_IOS
 
 using autofill::PasswordForm;
@@ -133,13 +131,10 @@ class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
     prefs_.registry()->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
     prefs_.registry()->RegisterStringPref(
         prefs::kPasswordProtectionChangePasswordURL, "");
-    feature_list_.InitAndEnableFeature(
-        safe_browsing::kEnterprisePasswordProtectionV1);
   }
 
  protected:
   TestingPrefServiceSimple prefs_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(PasswordSyncUtilEnterpriseTest, ShouldSavePasswordHash) {

@@ -39,9 +39,6 @@ const base::Feature kCheckByURLLoaderThrottle{
     "S13nSafeBrowsingCheckByURLLoaderThrottle",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnterprisePasswordProtectionV1{
-    "EnterprisePasswordProtectionV1", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
