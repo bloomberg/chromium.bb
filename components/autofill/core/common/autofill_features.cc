@@ -100,7 +100,7 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillExpandedPopupViews{
-    "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillExpandedPopupViews", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, gets payment identity from sync service instead of
 // identity manager.
