@@ -48,10 +48,6 @@ class AccountTrackerService : public KeyedService {
   // Child account service flag name.
   static const char kChildAccountServiceFlag[];
 
-  // Account folders used for storing account related data at disk.
-  static const char kAccountsFolder[];
-  static const char kAvatarImagesFolder[];
-
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
   class Observer {
