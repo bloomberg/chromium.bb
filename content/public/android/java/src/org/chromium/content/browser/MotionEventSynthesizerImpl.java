@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
@@ -179,7 +180,8 @@ public class MotionEventSynthesizerImpl implements MotionEventSynthesizer {
         if (MotionEventAction.HOVER_EXIT == action) androidAction = MotionEvent.ACTION_HOVER_EXIT;
         if (MotionEventAction.HOVER_MOVE == action) androidAction = MotionEvent.ACTION_HOVER_MOVE;
         MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs, androidAction, pointerCount,
-                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0, 0, 0);
+                mPointerProperties, mPointerCoords, 0, 0, 1, 1, 0, 0,
+                InputDevice.SOURCE_CLASS_POINTER, 0);
         mTarget.dispatchGenericMotionEvent(event);
         event.recycle();
     }
