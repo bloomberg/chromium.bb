@@ -56,6 +56,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "net/base/data_url.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -659,11 +660,13 @@ class DownloadExtensionTest : public ExtensionApiTest {
  private:
   void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
     if (extension_) {
+      const GURL url = current_browser_ == incognito_browser_ &&
+                               !IncognitoInfo::IsSplitMode(extension_)
+                           ? GURL(url::kAboutBlankURL)
+                           : extension_->GetResourceURL("empty.html");
       // Recreate the tab each time for insulation.
       content::WebContents* tab = chrome::AddSelectedTabWithURL(
-          current_browser(),
-          extension_->GetResourceURL("empty.html"),
-          ui::PAGE_TRANSITION_LINK);
+          current_browser(), url, ui::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
       function->SetRenderFrameHost(tab->GetMainFrame());
     }
