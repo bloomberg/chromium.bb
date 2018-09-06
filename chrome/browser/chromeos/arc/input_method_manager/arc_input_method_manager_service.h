@@ -84,6 +84,9 @@ class ArcInputMethodManagerService
   // Calls InputMethodManager.SetAllowedInputMethods according to the argument.
   void SetArcIMEAllowed(bool allowed);
 
+  // Notifies InputMethodManager's observers of possible ARC IME state changes.
+  void NotifyInputMethodManagerObservers(bool is_tablet_mode);
+
   Profile* const profile_;
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;

@@ -131,6 +131,7 @@ class ArcInputMethodManagerService::TabletModeObserver
 
   void OnTabletModeToggled(bool enabled) override {
     owner_->SetArcIMEAllowed(enabled);
+    owner_->NotifyInputMethodManagerObservers(enabled);
   }
 
  private:
@@ -458,6 +459,25 @@ void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
       std::vector<std::string>(allowed_method_ids_set.begin(),
                                allowed_method_ids_set.end()),
       false /* enable_allowed_input_methods */);
+}
+
+void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
+    bool is_tablet_mode) {
+  // Togging the mode may enable or disable all the ARC IMEs. To dynamically
+  // reflect the potential state changes to chrome://settings, notify the
+  // manager's observers here.
+  // TODO(yusukes): This is a temporary workaround for supporting ARC IMEs
+  // and supports neither Chrome OS extensions nor state changes enforced by
+  // the policy. The better way to do this is to add a dedicated event to
+  // language_settings_private.idl and send the new event to the JS side
+  // instead.
+  auto* manager = chromeos::input_method::InputMethodManager::Get();
+  if (!manager)
+    return;
+  if (is_tablet_mode)
+    manager->NotifyInputMethodExtensionRemoved(proxy_ime_extension_id_);
+  else
+    manager->NotifyInputMethodExtensionAdded(proxy_ime_extension_id_);
 }
 
 }  // namespace arc
