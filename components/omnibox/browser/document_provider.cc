@@ -11,12 +11,14 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -281,6 +283,36 @@ void DocumentProvider::OnDocumentSuggestionsLoaderAvailable(
   LogOmniboxDocumentRequest(DOCUMENT_REQUEST_SENT);
 }
 
+// static
+base::string16 DocumentProvider::GenerateLastModifiedString(
+    const std::string& modified_timestamp_string,
+    base::Time now) {
+  if (modified_timestamp_string.empty())
+    return base::string16();
+  base::Time modified_time;
+  if (!base::Time::FromString(modified_timestamp_string.c_str(),
+                              &modified_time))
+    return base::string16();
+
+  // Use shorthand if the times fall on the same day or in the same year.
+  base::Time::Exploded exploded_modified_time;
+  base::Time::Exploded exploded_now;
+  modified_time.LocalExplode(&exploded_modified_time);
+  now.LocalExplode(&exploded_now);
+  if (exploded_modified_time.year == exploded_now.year) {
+    if (exploded_modified_time.month == exploded_now.month &&
+        exploded_modified_time.day_of_month == exploded_now.day_of_month) {
+      // Same local calendar day - use localized time.
+      return base::TimeFormatTimeOfDay(modified_time);
+    }
+    // Same year but not the same day: use abbreviated month/day ("Jan 1").
+    return base::TimeFormatWithPattern(modified_time, "MMMd");
+  }
+
+  // No shorthand; display full MM/DD/YYYY.
+  return base::TimeFormatShortDateNumeric(modified_time);
+}
+
 bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
                                                   ACMatches* matches) {
   const base::DictionaryValue* root_dict = nullptr;
@@ -374,6 +406,16 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
         } else {
           match.document_type = AutocompleteMatch::DocumentType::DRIVE_OTHER;
         }
+      }
+      // Try to parse date.
+      std::string update_time;
+      metadata->GetString("updateTime", &update_time);
+      if (!update_time.empty()) {
+        base::string16 timestamp_display_string =
+            GenerateLastModifiedString(update_time, base::Time::Now());
+        match.description = timestamp_display_string;
+        AutocompleteMatch::AddLastClassificationIfNecessary(
+            &match.description_class, 0, ACMatchClassification::NONE);
       }
     }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
