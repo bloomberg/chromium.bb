@@ -98,16 +98,6 @@ static const arg_def_t framestatsarg =
     ARG_DEF(NULL, "framestats", 1, "Output per-frame stats (.csv format)");
 static const arg_def_t outbitdeptharg =
     ARG_DEF(NULL, "output-bit-depth", 1, "Output bit-depth for decoded frames");
-static const arg_def_t tilem =
-    ARG_DEF(NULL, "tile-mode", 1,
-            "Tile coding mode "
-            "(1 for large scale tile mode, refer to lightfield example)");
-static const arg_def_t tiler = ARG_DEF(NULL, "tile-row", 1,
-                                       "(debug) Row index of tile to decode "
-                                       "(-1 for all rows)");
-static const arg_def_t tilec = ARG_DEF(NULL, "tile-column", 1,
-                                       "(debug) Column index of tile to decode "
-                                       "(-1 for all columns)");
 static const arg_def_t isannexb =
     ARG_DEF(NULL, "annexb", 0, "Bitstream is in Annex-B format");
 static const arg_def_t oppointarg = ARG_DEF(
@@ -120,8 +110,7 @@ static const arg_def_t *all_args[] = {
   &rawvideo,       &noblitarg,  &progressarg, &limitarg,      &skiparg,
   &postprocarg,    &summaryarg, &outputfile,  &threadsarg,    &verbosearg,
   &scalearg,       &fb_arg,     &md5arg,      &framestatsarg, &continuearg,
-  &outbitdeptharg, &tilem,      &tiler,       &tilec,         &isannexb,
-  &oppointarg,     &outallarg,  NULL
+  &outbitdeptharg, &isannexb,   &oppointarg,  &outallarg,     NULL
 };
 
 #if CONFIG_LIBYUV
@@ -467,10 +456,7 @@ static int main_loop(int argc, const char **argv_) {
   int opt_raw = 0;
   aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
   unsigned int output_bit_depth = 0;
-  unsigned int tile_mode = 0;
   unsigned int is_annexb = 0;
-  int tile_row = -1;
-  int tile_col = -1;
   int frames_corrupted = 0;
   int dec_flags = 0;
   int do_scale = 0;
@@ -582,15 +568,9 @@ static int main_loop(int argc, const char **argv_) {
       keep_going = 1;
     } else if (arg_match(&arg, &outbitdeptharg, argi)) {
       output_bit_depth = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &tilem, argi)) {
-      tile_mode = arg_parse_int(&arg);
     } else if (arg_match(&arg, &isannexb, argi)) {
       is_annexb = 1;
       input.obu_ctx->is_annexb = 1;
-    } else if (arg_match(&arg, &tiler, argi)) {
-      tile_row = arg_parse_int(&arg);
-    } else if (arg_match(&arg, &tilec, argi)) {
-      tile_col = arg_parse_int(&arg);
     } else if (arg_match(&arg, &oppointarg, argi)) {
       operating_point = arg_parse_int(&arg);
     } else if (arg_match(&arg, &outallarg, argi)) {
@@ -698,26 +678,8 @@ static int main_loop(int argc, const char **argv_) {
 
   if (!quiet) fprintf(stderr, "%s\n", decoder.name);
 
-  if (aom_codec_control(&decoder, AV1_SET_TILE_MODE, tile_mode)) {
-    fprintf(stderr, "Failed to set decode_tile_mode: %s\n",
-            aom_codec_error(&decoder));
-    goto fail;
-  }
-
   if (aom_codec_control(&decoder, AV1D_SET_IS_ANNEXB, is_annexb)) {
     fprintf(stderr, "Failed to set is_annexb: %s\n", aom_codec_error(&decoder));
-    goto fail;
-  }
-
-  if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_ROW, tile_row)) {
-    fprintf(stderr, "Failed to set decode_tile_row: %s\n",
-            aom_codec_error(&decoder));
-    goto fail;
-  }
-
-  if (aom_codec_control(&decoder, AV1_SET_DECODE_TILE_COL, tile_col)) {
-    fprintf(stderr, "Failed to set decode_tile_col: %s\n",
-            aom_codec_error(&decoder));
     goto fail;
   }
 

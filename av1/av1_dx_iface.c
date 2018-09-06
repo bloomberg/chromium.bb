@@ -106,6 +106,13 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
     av1_zero(priv->image_with_grain);
     // Turn row_mt on by default.
     priv->row_mt = 1;
+
+    // Turn on normal tile coding mode by default.
+    // 0 is for normal tile coding mode, and 1 is for large scale tile coding
+    // mode(refer to lightfield example).
+    priv->tile_mode = 0;
+    priv->decode_tile_row = -1;
+    priv->decode_tile_col = -1;
   }
 
   return AOM_CODEC_OK;
