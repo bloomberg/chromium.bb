@@ -54,6 +54,12 @@ login.createScreen('UpdateScreen', 'update', function() {
       this.context.addObserver(
           CONTEXT_KEY_CANCEL_UPDATE_SHORTCUT_ENABLED, function(enabled) {
             $('oobe-update-md').cancelAllowed = enabled;
+            var configuration = Oobe.getInstance().getOobeConfiguration();
+            if (!configuration)
+              return;
+            if (configuration.updateSkipNonCritical && enabled) {
+              self.cancel();
+            }
           });
     },
 
