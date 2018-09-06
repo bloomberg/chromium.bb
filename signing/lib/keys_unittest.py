@@ -18,11 +18,13 @@ class KeysetMock(keys.Keyset):
   """Mock Keyset that mimics common loem key directory."""
   KEYS = ('ec_data_key',
           'ec_root_key',
+          'key_ec_efs',
           'firmware_data_key',
           'installer_kernel_data_key',
           'kernel_data_key',
-          'kernel_subkey'
+          'kernel_subkey',
           'recovery_kernel_data_key',
+          'recovery_key',
           'root_key')
 
   KEYS_WITH_SUBKEYS = ('firmware_data_key', 'root_key')
@@ -66,7 +68,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     """Test init with minimal arguments."""
     k1 = keys.KeyPair('key1', self.tempdir)
     self.assertEqual(k1.name, 'key1')
-    self.assertEqual(k1.version, 1)
+    self.assertEqual(k1.version, '1')
     self.assertEqual(k1.keydir, self.tempdir)
 
   def testPrivateKey(self):

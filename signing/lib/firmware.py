@@ -7,11 +7,14 @@
 
 from __future__ import print_function
 
+import csv
+import glob
 import os
 import re
 import shutil
 import tempfile
 
+from chromite.lib import cgpt
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -21,9 +24,9 @@ from chromite.signing.lib import signer
 class BiosSigner(signer.FutilitySigner):
   """Sign bios.bin file using futility."""
 
-  _required_keys_private = ('firmware_data_key',)
-  _required_keys_public = ('kernel_subkey',)
-  _required_keyblocks = ('firmware_data_key',)
+  required_keys_private = ('firmware_data_key',)
+  required_keys_public = ('kernel_subkey',)
+  required_keyblocks = ('firmware_data_key',)
 
   def __init__(self, sig_id='', sig_dir=''):
     """Init BiosSigner
@@ -70,7 +73,7 @@ class BiosSigner(signer.FutilitySigner):
 class ECSigner(signer.BaseSigner):
   """Sign EC bin file."""
 
-  _required_keys_private = ('key_ec_efs',)
+  required_keys_private = ('key_ec_efs',)
 
   def IsROSigned(self, firmware_image):
     """Returns True if the given firmware has RO signed ec."""
@@ -88,6 +91,9 @@ class ECSigner(signer.BaseSigner):
       keyset: keyset used for this signing step
       input_name: ec image path to be signed (i.e. to ec.bin)
       output_name: bios image path to be updated with new hashes
+
+    Raises:
+      SigningFailedError: if a signing fails
     """
     # Use absolute paths since we use a temp directory
     ec_path = os.path.abspath(input_name)
@@ -95,7 +101,7 @@ class ECSigner(signer.BaseSigner):
 
     if self.IsROSigned(bios_path):
       # Only sign if not read-only, nothing to do
-      return True
+      return
 
     logging.info('Signing EC %s', ec_path)
 
@@ -124,15 +130,13 @@ class ECSigner(signer.BaseSigner):
 
       except cros_build_lib.RunCommandError as err:
         logging.warning('Signing EC failed: %s', str(err))
-        return False
-
-    return True
+        raise signer.SigningFailedError('Signing EC failed')
 
 
 class GBBSigner(signer.FutilitySigner):
   """Sign GBB"""
-  _required_keys_public = ('recovery_key',)
-  _required_keys_private = ('root_key',)
+  required_keys_public = ('recovery_key',)
+  required_keys_private = ('root_key',)
 
   def GetFutilityArgs(self, keyset, input_name, output_name):
     """Return args for signing GBB
@@ -147,6 +151,100 @@ class GBBSigner(signer.FutilitySigner):
             '--recoverykey=' + keyset.keys['recovery_key'].public,
             input_name,
             output_name]
+
+
+class FirmwareSigner(signer.BaseSigner):
+  """Signs all firmware related to the given configuration."""
+
+  required_keys_private = (BiosSigner.required_keys_private +
+                           GBBSigner.required_keys_private)
+
+  required_keys_public = (BiosSigner.required_keys_public +
+                          GBBSigner.required_keys_public)
+
+  required_keyblocks = (BiosSigner.required_keyblocks +
+                        GBBSigner.required_keyblocks)
+
+  def SignOne(self, keyset, shellball_dir, bios_image, ec_image='',
+              model_name='', key_id='', keyset_out_dir='keyset'):
+    """Perform one signing based on the given args.
+
+    Args:
+      keyset: master keyset used for signing,
+      shellball_dir: location of extracted shellball
+      bios_image: relitive path of bios.bin in shellball
+      ec_image: relative path of ec.bin in shellball
+      model_name: name of target's model_name as define in signer_config.csv
+      key_id: subkey id to be used for signing
+      keyset_out_dir: relative path of keyset output dir in shellball
+
+    Raises:
+      SigningFailedError: if a signing fails
+    """
+
+    if key_id:
+      keyset = keyset.GetSubKeyset(key_id)
+
+    shellball_keydir = os.path.join(shellball_dir, keyset_out_dir)
+    osutils.SafeMakedirs(shellball_keydir)
+
+    if model_name:
+      shutil.copy(keyset.keys['root_key'].public,
+                  os.path.join(shellball_dir, 'rootkey.' + model_name))
+
+    bios_path = os.path.join(shellball_dir, bios_image)
+
+    if ec_image:
+      ec_path = os.path.join(shellball_dir, ec_image)
+      logging.info('Signing EC: %s', ec_path)
+      ECSigner().Sign(keyset, ec_path, bios_path)
+
+    logging.info('Signing BIOS: %s', bios_path)
+    with tempfile.NamedTemporaryFile() as temp_fw:
+      bios_signer = BiosSigner(sig_id=model_name, sig_dir=shellball_keydir)
+      bios_signer.Sign(keyset, bios_path, temp_fw.name)
+
+      GBBSigner().Sign(keyset, temp_fw.name, bios_path)
+
+  def Sign(self, keyset, input_name, output_name):
+    """Sign Firmware shellball.
+
+    Signing is based on if 'signer_config.csv', then all rows defined in file
+    are signed. Else all bios*.bin in shellball will be signed.
+
+    Args:
+      keyset: master keyset, with subkeys[key_id] if defined
+      input_name: location of extracted shellball
+      output_name: unused
+
+    Raises:
+      SigningFailedError: if a signing step fails
+    """
+    shellball_dir = input_name
+    signerconfig_csv = os.path.join(shellball_dir, 'signer_config.csv')
+    if os.path.exists(signerconfig_csv):
+      with open(signerconfig_csv) as csv_file:
+        signerconfigs = SignerConfigsFromCSV(csv_file)
+
+      for signerconfig in signerconfigs:
+        self.SignOne(keyset,
+                     shellball_dir,
+                     signerconfig['firmware_image'],
+                     ec_image=signerconfig['ec_image'],
+                     model_name=signerconfig['model_name'],
+                     key_id=signerconfig['key_id'])
+    else:
+      # Sign all ./bios*.bin
+      for bios_path in glob.glob(os.path.join(input_name, 'bios*.bin')):
+        key_id_match = re.match(r'.*bios\.(\w+)\.bin', bios_path)
+        key_id = key_id_match.group(1) if key_id_match else ''
+        keyset_out_dir = 'keyset.' + key_id if key_id else 'keyset'
+        self.SignOne(keyset,
+                     shellball_dir,
+                     bios_path,
+                     model_name=key_id,
+                     key_id=key_id,
+                     keyset_out_dir=keyset_out_dir)
 
 
 class ShellballError(Exception):
@@ -237,3 +335,45 @@ class Shellball(object):
     cmd = [os.path.realpath(self.filename)]
     cmd += args
     cros_build_lib.RunCommand(cmd)
+
+
+def ResignImageFirmware(image_file, keyset):
+  """Resign the given firmware image.
+
+  Raises SignerFailedError
+  """
+  image_disk = cgpt.Disk(image_file)
+
+  with osutils.TempDir() as rootfs_dir:
+    with osutils.MountImagePartition(image_file,
+                                     image_disk.GetPartitionByLabel('ROOT-A'),
+                                     rootfs_dir):
+      sb_file = os.path.join(rootfs_dir, 'usr/sbin/chromeos-firmware')
+      if os.path.exists(sb_file):
+        logging.info("Found firmware, signing")
+        with Shellball(sb_file) as sb_dir:
+          fw_signer = FirmwareSigner()
+          if not fw_signer.Sign(keyset, sb_dir, None):
+            raise signer.SigningFailedError('Signing Firmware Image Failed: %s'
+                                            % sb_file)
+
+          # TODO (chingcodes) add VERSION.signer file generation
+      else:
+        logging.warning("No firmware found in image. Not signing firmware")
+
+
+def SignerConfigsFromCSV(signer_config_file):
+  """Returns list of SignerConfigs from a signer_config.csv file
+
+  CSV should have a header with fields model_name, firmware_image, key_id, and
+  ec_image
+
+  go/cros-unibuild-signing
+  """
+  csv_reader = csv.DictReader(signer_config_file)
+
+  for field in ('model_name', 'firmware_image', 'key_id', 'ec_image'):
+    if field not in csv_reader.fieldnames:
+      raise csv.Error('Missing field: ' + field)
+
+  return list(csv_reader)

@@ -130,10 +130,10 @@ class MockBaseSigner(signer.BaseSigner):
                required_keys_private=None,
                required_keyblocks=None):
     """Create a Signer based on the passed required lists."""
-    self._required_keys = required_keys or []
-    self._required_keys_public = required_keys_public or []
-    self._required_keys_private = required_keys_private or []
-    self._required_keyblocks = required_keyblocks or []
+    self.required_keys = required_keys or []
+    self.required_keys_public = required_keys_public or []
+    self.required_keys_private = required_keys_private or []
+    self.required_keyblocks = required_keyblocks or []
 
   def Sign(self, keyset, input_name, output_name):
     """Always return True on signing."""
@@ -201,26 +201,25 @@ def KeysetFromSigner(s, keydir, subdir='keyset'):
 
   keydir = os.path.join(keydir, subdir)
 
-  # pylint: disable=protected-access
-  for key_name in s._required_keys:
+  for key_name in s.required_keys:
     key = keys.KeyPair(key_name, keydir=keydir)
     ks.AddKey(key)
     keys_unittest.CreateDummyKeys(key)
 
-  for key_name in s._required_keys_public:
+  for key_name in s.required_keys_public:
     key = keys.KeyPair(key_name, keydir=keydir)
     ks.AddKey(key)
     keys_unittest.CreateDummyPublic(key)
 
-    if key in s._required_keyblocks:
+    if key in s.required_keyblocks:
       keys_unittest.CreateDummyKeyblock(key)
 
-  for key_name in s._required_keys_private:
+  for key_name in s.required_keys_private:
     key = keys.KeyPair(key_name, keydir=keydir)
     ks.AddKey(key)
     keys_unittest.CreateDummyPrivateKey(key)
 
-  for keyblock_name in s._required_keyblocks:
+  for keyblock_name in s.required_keyblocks:
     if keyblock_name not in ks.keys:
       ks.AddKey(keys.KeyPair(keyblock_name, keydir=keydir))
 
@@ -232,7 +231,7 @@ def KeysetFromSigner(s, keydir, subdir='keyset'):
 
 class MockFutilitySigner(signer.FutilitySigner):
   """Basic implementation of a FutilitySigner."""
-  _required_keys = ('foo',)
+  required_keys = ('foo',)
 
   def GetFutilityArgs(self, keyset, input_name, output_name):
     """Returns a list of [input_name, output_name]."""
@@ -255,7 +254,7 @@ class TestFutilitySigner(cros_test_lib.RunCommandTempDirTestCase):
     keyset.AddKey(foo_key)
 
     fsm = MockFutilitySigner()
-    self.assertTrue(fsm.Sign(keyset, 'foo', 'bar'))
+    fsm.Sign(keyset, 'foo', 'bar')
     self.assertCommandContains(['foo', 'bar'])
 
   def testSignWithMockMissingKey(self):

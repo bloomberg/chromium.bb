@@ -181,33 +181,33 @@ class BaseSigner(object):
   """Base Signer object."""
 
   # Override the following lists to enforce key requirements
-  _required_keys = ()
-  _required_keys_public = ()
-  _required_keys_private = ()
-  _required_keyblocks = ()
+  required_keys = ()
+  required_keys_public = ()
+  required_keys_private = ()
+  required_keyblocks = ()
 
   def CheckKeyset(self, keyset):
     """Returns true if all required keys and keyblocks are in keyset."""
-    for k in self._required_keys:
+    for k in self.required_keys:
       if k not in keyset.keys:
         return False
 
-    for k in self._required_keys_public:
+    for k in self.required_keys_public:
       if not keyset.KeyExists(k, require_public=True):
         return False
 
-    for k in self._required_keys_private:
+    for k in self.required_keys_private:
       if not keyset.KeyExists(k, require_private=True):
         return False
 
-    for kb in self._required_keyblocks:
+    for kb in self.required_keyblocks:
       if not keyset.KeyblockExists(kb):
         return False
 
     return True
 
   def Sign(self, keyset, input_name, output_name):
-    """Sign given input to output. Returns True if success."""
+    """Sign given input to output. Raises SigningFailedError on error"""
     raise NotImplementedError
 
 
@@ -220,8 +220,8 @@ class FutilitySigner(BaseSigner):
 
   def Sign(self, keyset, input_name, output_name):
     if self.CheckKeyset(keyset):
-      return RunFutility(self.GetFutilityArgs(keyset, input_name, output_name))
-    return False
+      if not RunFutility(self.GetFutilityArgs(keyset, input_name, output_name)):
+        raise SigningFailedError('Signing Command Failed for ' + input_name)
 
 
 def RunFutility(args):

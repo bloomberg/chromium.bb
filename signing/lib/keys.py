@@ -40,14 +40,14 @@ class KeyPair(object):
     keyblock: keyblock file complete path
   """
 
-  def __init__(self, name, keydir, version=1, subkeys=(),
+  def __init__(self, name, keydir, version='1', subkeys=(),
                pub_ext='.vbpubk', priv_ext='.vbprivk'):
     """Initialize KeyPair.
 
     Args:
       name: name of key
       keydir: directory containing key files
-      version: version of the key
+      version: string version of the key
       subkeys: list of subkeys to create
       pub_ext: file extension used for public key
       priv_ext: file extension used for private key
@@ -248,7 +248,7 @@ def KeysetFromDir(key_dir):
 
       if key_name not in ks.keys:
         logging.debug('Found new key %s', key_name)
-        ks.AddKey(KeyPair(key_name, key_dir, version=1))
+        ks.AddKey(KeyPair(key_name, key_dir, version='1'))
 
       subkey = key_match.group('subkey')
       if subkey:
