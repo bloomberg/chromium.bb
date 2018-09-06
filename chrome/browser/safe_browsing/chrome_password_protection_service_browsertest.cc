@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
@@ -27,7 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
@@ -130,7 +128,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void ConfigureEnterprisePasswordProtection(
       bool is_gsuite,
       PasswordProtectionTrigger trigger_type) {
-    scoped_features_.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
     if (is_gsuite)
       PrepareSyncAccount("example.com", "stub-user@example.com");
     browser()->profile()->GetPrefs()->SetInteger(
@@ -144,7 +141,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
-  base::test::ScopedFeatureList scoped_features_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
@@ -462,14 +458,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VerifyIsPasswordReuseProtectionConfigured) {
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  // When kEnterprisePasswordProtectionV1 feature is off.
-  // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
   // |IsPasswordReuseProtectionConfigured(..)| returns false.
   EXPECT_EQ(PASSWORD_PROTECTION_OFF,

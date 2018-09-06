@@ -10,11 +10,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/test_database_manager.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
@@ -1208,65 +1206,27 @@ TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(kEnterprisePasswordProtectionV1);
-    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SAVED_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::SIGN_IN_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::ENTERPRISE_PASSWORD));
+  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::SAVED_PASSWORD));
+  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::ENTERPRISE_PASSWORD));
 
-    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SAVED_PASSWORD));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SIGN_IN_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::ENTERPRISE_PASSWORD));
-  }
-
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
-    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SAVED_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::SIGN_IN_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::ENTERPRISE_PASSWORD));
-
-    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SAVED_PASSWORD));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::SIGN_IN_PASSWORD));
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
-    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-        PasswordReuseEvent::ENTERPRISE_PASSWORD));
-  }
+  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::SAVED_PASSWORD));
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::SIGN_IN_PASSWORD));
+  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+      PasswordReuseEvent::ENTERPRISE_PASSWORD));
 }
 
 TEST_P(PasswordProtectionServiceTest, TestMigrateCachedVerdict) {

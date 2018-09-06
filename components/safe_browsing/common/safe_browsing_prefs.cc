@@ -421,11 +421,9 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
 void GetSafeBrowsingWhitelistDomainsPref(
     const PrefService& prefs,
     std::vector<std::string>* out_canonicalized_domain_list) {
-  if (base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1)) {
-    const base::ListValue* pref_value =
-        prefs.GetList(prefs::kSafeBrowsingWhitelistDomains);
-    CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
-  }
+  const base::ListValue* pref_value =
+      prefs.GetList(prefs::kSafeBrowsingWhitelistDomains);
+  CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
 }
 
 void CanonicalizeDomainList(
@@ -484,10 +482,8 @@ void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
 
 bool MatchesPasswordProtectionLoginURL(const GURL& url,
                                        const PrefService& prefs) {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) ||
-      !url.is_valid()) {
+  if (!url.is_valid())
     return false;
-  }
 
   std::vector<GURL> login_urls;
   GetPasswordProtectionLoginURLsPref(prefs, &login_urls);
@@ -522,10 +518,8 @@ GURL GetPasswordProtectionChangePasswordURLPref(const PrefService& prefs) {
 
 bool MatchesPasswordProtectionChangePasswordURL(const GURL& url,
                                                 const PrefService& prefs) {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) ||
-      !url.is_valid()) {
+  if (!url.is_valid())
     return false;
-  }
 
   GURL change_password_url = GetPasswordProtectionChangePasswordURLPref(prefs);
   if (change_password_url.is_empty())

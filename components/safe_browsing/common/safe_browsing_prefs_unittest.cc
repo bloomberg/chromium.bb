@@ -60,11 +60,6 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
         base::JoinString(disabled_features, ","));
   }
 
-  void EnableEnterprisePasswordProtectionFeature() {
-    feature_list_.reset(new base::test::ScopedFeatureList);
-    feature_list_->InitAndEnableFeature(kEnterprisePasswordProtectionV1);
-  }
-
   std::string GetActivePref() { return GetExtendedReportingPrefName(prefs_); }
 
   // Convenience method for explicitly setting up all combinations of prefs and
@@ -187,8 +182,6 @@ TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
 }
 
 TEST_F(SafeBrowsingPrefsTest, VerifyMatchesPasswordProtectionLoginURL) {
-  EnableEnterprisePasswordProtectionFeature();
-
   GURL url("https://mydomain.com/login.html#ref?username=alice");
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
   EXPECT_FALSE(MatchesPasswordProtectionLoginURL(url, prefs_));
@@ -207,8 +200,6 @@ TEST_F(SafeBrowsingPrefsTest, VerifyMatchesPasswordProtectionLoginURL) {
 
 TEST_F(SafeBrowsingPrefsTest,
        VerifyMatchesPasswordProtectionChangePasswordURL) {
-  EnableEnterprisePasswordProtectionFeature();
-
   GURL url("https://mydomain.com/change_password.html#ref?username=alice");
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
   EXPECT_FALSE(MatchesPasswordProtectionChangePasswordURL(url, prefs_));

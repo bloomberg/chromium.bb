@@ -1653,8 +1653,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 // enterprise safe browsing whitelist domains.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        VerifyEnterpriseWhitelist) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
   GURL url = embedded_test_server()->GetURL(kEmptyPage);
   // Add test server domain into the enterprise whitelist.
   base::ListValue whitelist;
