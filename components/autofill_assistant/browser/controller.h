@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/script.h"
@@ -24,6 +25,8 @@ class WebContents;
 }  // namespace content
 
 namespace autofill_assistant {
+class ControllerTest;
+
 // Autofill assistant controller controls autofill assistant action detection,
 // display, execution and so on. The instance of this object self deletes when
 // the web contents is being destroyed.
@@ -42,21 +45,29 @@ class Controller : public ScriptExecutorDelegate,
   ClientMemory* GetClientMemory() override;
 
  private:
+  friend ControllerTest;
+
   Controller(content::WebContents* web_contents,
-             std::unique_ptr<Client> client);
+             std::unique_ptr<Client> client,
+             std::unique_ptr<WebController> web_controller,
+             std::unique_ptr<Service> service);
   ~Controller() override;
 
-  void GetScripts();
-  void OnGetScripts(bool result, const std::string& response);
+  void GetOrCheckScripts(const GURL& url);
+  void OnGetScripts(const GURL& url, bool result, const std::string& response);
+  void OnScriptChosen(const std::string& script_path);
+  void OnScriptExecuted(const std::string& script_path, bool success);
 
   // Overrides content::UiDelegate:
   void OnClickOverlay() override;
   void OnDestroy() override;
+  void OnScriptSelected(const std::string& script_path) override;
 
   // Overrides ScriptTracker::Listener:
   void OnRunnableScriptsChanged() override;
 
   // Overrides content::WebContentsObserver:
+  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void WebContentsDestroyed() override;
@@ -65,6 +76,9 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
   std::unique_ptr<ScriptTracker> script_tracker_;
+
+  // Domain of the last URL the controller requested scripts from.
+  std::string script_domain_;
   ClientMemory memory_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);

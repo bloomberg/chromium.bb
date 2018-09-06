@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 
+#include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 
@@ -40,6 +42,10 @@ class UiController {
   // string is returned.
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Show or update the UI to propose these scripts for execution. The set of
+  // scripts might be empty if there are no more runnable scripts.
+  virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts);
 
  protected:
   UiController() = default;

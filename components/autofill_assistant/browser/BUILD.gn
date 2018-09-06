@@ -63,6 +63,7 @@ jumbo_static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "controller_unittest.cc",
     "mock_run_once_callback.h",
     "mock_service.cc",
     "mock_service.h",
@@ -79,6 +80,7 @@ source_set("unit_tests") {
     ":proto",
     "//base",
     "//base/test:test_support",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
