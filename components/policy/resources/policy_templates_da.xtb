@@ -2748,13 +2748,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Adskil servernavne med kommaer. Jokertegn (*) er tilladt.
 
           Hvis denne politik ikke indstilles, prøver <ph name="PRODUCT_NAME" /> at registrere, om der er en server på intranettet, og kun i det tilfælde reageres der på IWA-anmodninger. Hvis en server registreres som internet, ignoreres IWA-anmodninger af <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Giver dig mulighed for at bestemme, om virtuelle maskiner skal have tilladelse til at køre i Chrome OS.
-
-      Hvis politikken er angivet som Sand, har enheden tilladelse til at køre virtuelle maskiner.
-      Hvis politikken er angivet som Falsk, har enheden ikke tilladelse til at køre virtuelle maskiner.
-      Hvis indstillingen for politikken ændres til Falsk, gælder den for start af nye virtuelle maskiner, men den stopper ikke virtuelle maskiner, som allerede kører.
-      Hvis politikken ikke angives på en administreret enhed, har enheden ikke tilladelse til at køre virtuelle maskiner.
-      Enheder, der ikke administreres, har tilladelse til at køre virtuelle maskiner.</translation>
 <translation id="8669669491594628013">Giver dig mulighed for at styre aktivering af advarsler om adgangskodebeskyttelse. Adgangskodebeskyttelse advarer brugerne, når de bruger deres beskyttede adgangskode på potentielt mistænkelige websites.
 
       Du kan bruge politikkerne "PasswordProtectionLoginURLs" og "PasswordProtectionChangePasswordURL" til at konfigurere, hvilken adgangskode der skal beskyttes.

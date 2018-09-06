@@ -374,6 +374,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 
 Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke i søgefeltet.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Du finder de tilgængelige valgmuligheder øverst på skærmen</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
 <translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />leveret af Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4616150815774728855">Åbn <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Brug adgangskode</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
+<translation id="4660011489602794167">Vis tastatur</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> blev føjet til din startskærm</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
@@ -603,7 +605,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5763514718066511291">Tryk for at kopiere webadressen til denne app</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5777170031995031090">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester.</translation>
-<translation id="5779929835642192302">Tilgængelige forslag</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> af <ph name="SPACE_AVAILABLE" /> i brug</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{For 1 time siden}one{For # time siden}other{For # timer siden}}</translation>
@@ -795,7 +796,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7251326866581677552">Blokeret fra nogle websites</translation>
 <translation id="7253272406652746122">Tilføj en Google-konto fra siden Konti i appen Indstillinger på din enhed.</translation>
 <translation id="7274013316676448362">Blokeret website</translation>
-<translation id="72867290065237936">Tryk for at skifte mellem adgangskodeforslag og tastatur</translation>
 <translation id="729975465115245577">Der er ikke nogen app på din enhed, hvor filen med adgangskoder kan gemmes.</translation>
 <translation id="7302081693174882195">Oplysninger: Sorteret efter mængden af sparede data</translation>
 <translation id="7333031090786104871">Det forrige website er stadig ved at blive tilføjet</translation>

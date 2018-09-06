@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">Dodajanje zaščitenega uporabnika</translation>
 <translation id="4297219207642690536">Znova zaženi in ponastavi</translation>
 <translation id="4297322094678649474">Spreminjanje jezikov</translation>
-<translation id="4300305918532693141">Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">dolga (2 s)</translation>
 <translation id="4306119971288449206">Aplikacije morajo biti opremljene z vrsto vsebine »<ph name="CONTENT_TYPE" />«</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB dejavno)</translation>
@@ -5154,7 +5153,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8834164572807951958">Člani skupine »<ph name="DESTINATION_NAME" />« bodo imeli dostop do kopije teh elementov.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Dodaj pripis sliki</translation>
-<translation id="8844690305858050198">Končano. Škodljiva programska oprema je odstranjena. Če želite znova vklopiti razširitve, obiščite &lt;a href="chrome://extensions"&gt;Razširitve&lt;/a&gt;.</translation>
 <translation id="8845001906332463065">Poiščite pomoč</translation>
 <translation id="8846141544112579928">Iskanje tipkovnice ...</translation>
 <translation id="8847988622838149491">USB</translation>

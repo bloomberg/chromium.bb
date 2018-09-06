@@ -199,7 +199,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2436117022029368436">Se comunican con Google para mejorar la navegación y Chrome</translation>
 <translation id="2440823041667407902">Acceso a la ubicación</translation>
 <translation id="2450083983707403292">¿Quieres empezar a descargar <ph name="FILE_NAME" /> de nuevo?</translation>
-<translation id="2476578072172137802">Configuración del sitio</translation>
+<translation id="2476578072172137802">Configuración del sitio web</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2498359688066513246">Ayuda y sugerencias</translation>
@@ -374,6 +374,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 
 Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para restringir la búsqueda, desliza el panel hasta arriba y toca el cuadro de búsqueda.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opciones disponibles junto a la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> (<ph name="BEGIN_DEEMPHASIZED" />ofrecida por Google<ph name="END_DEEMPHASIZED" />)</translation>
@@ -388,7 +389,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d marcador}other{%1$d marcadores}}</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas web</translation>
 <translation id="4159800535322890630">No permitir que los sitios web accedan a tus sensores</translation>
-<translation id="4165986682804962316">Configuración de sitios web</translation>
+<translation id="4165986682804962316">Configuración del sitio web</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4179980317383591987">Usados: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -446,6 +447,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utilizar contraseña</translation>
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
+<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822">Se ha añadido <ph name="NAME" /> a la pantalla de inicio</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
@@ -603,7 +605,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo de in
 <translation id="5763514718066511291">Toca para copiar la URL de esta aplicación</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5777170031995031090">Controla cómo utiliza Google tu historial de navegación para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
-<translation id="5779929835642192302">Sugerencias disponibles</translation>
 <translation id="5793665092639000975">Usando <ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
@@ -795,7 +796,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7251326866581677552">Bloqueados en algunos sitios web</translation>
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
-<translation id="72867290065237936">Toca para alternar entre las sugerencias de contraseña y el teclado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>

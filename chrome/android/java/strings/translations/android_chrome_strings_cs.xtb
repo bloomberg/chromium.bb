@@ -374,6 +374,7 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 
 Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. Chcete-li upřesnit vyhledávací dotaz, přejeďte po panelu až nahoru a klepněte na vyhledávací pole.</translation>
 <translation id="4056223980640387499">Sépie</translation>
+<translation id="4060598801229743805">Možnosti jsou k dispozici u horního okraje obrazovky</translation>
 <translation id="4062305924942672200">Právní informace</translation>
 <translation id="4084682180776658562">Záložka</translation>
 <translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4616150815774728855">Do aplikace <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Použít heslo</translation>
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
+<translation id="4660011489602794167">Zobrazit klávesnici</translation>
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
 <translation id="4684427112815847243">Synchronizovat vše</translation>
@@ -603,7 +605,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5763514718066511291">Klepnutím zkopírujete adresu URL této aplikace</translation>
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5777170031995031090">Nastavte, jak má Google využívat vaši historii procházení k personalizaci Vyhledávání, reklam a dalších služeb Google.</translation>
-<translation id="5779929835642192302">Jsou k dispozici návrhy</translation>
 <translation id="5793665092639000975">Je využito <ph name="SPACE_USED" /> z <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{před # hodinou}few{před # hodinami}many{před # hodiny}other{před # hodinami}}</translation>
@@ -795,7 +796,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7251326866581677552">Blokováno na všech webech</translation>
 <translation id="7253272406652746122">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
-<translation id="72867290065237936">Klepnutím můžete přepínat mezi návrhy hesel a klávesnicí</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>

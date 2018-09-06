@@ -2875,13 +2875,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
           
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Membolehkan anda mengawal sama ada mesin maya dibenarkan untuk dijalankan pada OS Chrome.
-
-      Jika dasar ditetapkan kepada Benar, peranti dibenarkan untuk menjalankan mesin maya.
-      Jika dasar ditetapkan kepada Palsu, peranti tidak akan dibenarkan untuk menjalankan mesin maya.
-      Apabila dasar ini ditukar kepada Palsu, dasar ini digunakan apabila memulakan mesin maya baharu tetapi tidak mematikan mesin maya yang sudah dijalankan.
-      Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak dibenarkan untuk menjalankan mesin maya.
-      Peranti yang tidak diurus dibenarkan untuk menjalankan mesin maya.</translation>
 <translation id="8669669491594628013">Membolehkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
 
       Anda boleh menggunakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengkonfigurasi kata laluan yang hendak dilindungi.
@@ -2894,7 +2887,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="867410340948518937">U2F (Faktor Kedua Universal)</translation>
 <translation id="8682611302223077049">Membenarkan anda menetapkan tempoh masa dalam milisaat. Sepanjang tempoh ini, pengguna akan dimaklumi bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula atau bahawa peranti <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula untuk menerapkan kemas kini yang belum selesai.
 
-      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila peningkatan dikesan. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, apl menu akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila satu pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
+      Sepanjang tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan mengemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila peningkatan dikesan. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga daripada tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga daripada tempoh pemberitahuan telah berlalu dan sekali lagi apabila tempoh penuh pemberitahuan telah tamat. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> akan mengikut jadual yang sama ini.
 
       Jika tidak ditetapkan, tempoh lalai selama 345,600,000 milisaat (empat hari) digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604,800,000 milisaat (satu minggu) untuk <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Amaran perlindungan kata laluan dicetuskan oleh penggunaan semula kata laluan</translation>

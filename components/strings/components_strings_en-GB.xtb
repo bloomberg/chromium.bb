@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1151972924205500581">Password required</translation>
 <translation id="1152921474424827756">Access a <ph name="BEGIN_LINK" />cached copy<ph name="END_LINK" /> of <ph name="URL" /></translation>
+<translation id="1156303062776767266">You're viewing a local or shared file</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> unexpectedly closed the connection.</translation>
 <translation id="1161325031994447685">Reconnecting to Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
@@ -534,6 +535,7 @@
 <translation id="4592951414987517459">Your connection to <ph name="DOMAIN" /> is encrypted using a modern cipher suite.</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4619615317237390068">Tabs from other devices</translation>
+<translation id="4646534391647090355">Take me there now</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="4690462567478992370">Stop using an invalid certificate</translation>
@@ -580,6 +582,7 @@
 <translation id="4958444002117714549">Expand list</translation>
 <translation id="4974590756084640048">Re-enable warnings</translation>
 <translation id="4988217478422488391">Makes it faster to pay for things online</translation>
+<translation id="4989163558385430922">See all</translation>
 <translation id="4989809363548539747">This plug-in is not supported</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="5018422839182700155">Can't open this page</translation>
@@ -724,6 +727,7 @@
 <translation id="5922853866070715753">Almost finished</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5951495562196540101">Can't enrol with consumer account (packaged licence available).</translation>
+<translation id="5966151627327109289">Signs you out of most sites. You may lose access to protected content from <ph name="SITE" /> and some other sites.</translation>
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
 <translation id="5975083100439434680">Zoom out</translation>
@@ -745,6 +749,7 @@
 <translation id="6071091556643036997">The policy type is invalid.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{This card will be saved to your Google account for faster checkout across devices.}other{These cards will be saved to your Google account for faster checkout across devices.}}</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
+<translation id="6096619198407627433">Signs you out of most sites. You won't be signed out of your Google account. You may lose access to protected content from <ph name="SITE" /> and some other sites.</translation>
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{None}=1{1 password (synced)}other{# passwords (synced)}}</translation>
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
@@ -816,6 +821,7 @@
 <translation id="6710594484020273272">&lt;Type search term&gt;</translation>
 <translation id="6711464428925977395">There is something wrong with the proxy server or the address is incorrect.</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
+<translation id="6744009308914054259">While waiting for a connection, you can visit Downloads to read offline articles.</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6757797048963528358">Your device went to sleep.</translation>
 <translation id="6778737459546443941">Your parent hasn't approved it yet</translation>
@@ -912,6 +918,7 @@ Additional details:
 <translation id="7416351320495623771">Manage passwords...</translation>
 <translation id="7419106976560586862">Profile Path</translation>
 <translation id="7437289804838430631">Add contact info</translation>
+<translation id="7440140511386898319">Explore while offline</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7444046173054089907">This site is blocked</translation>
 <translation id="7445762425076701745">The identity of the server to which you are connected cannot be fully validated. You are connected to a server using a name valid only within your network, and an external certificate authority has no way to validate ownership. As some certificate authorities will issue certificates for these names regardless, there is no way to ensure that you are connected to the intended website and not to an attacker.</translation>

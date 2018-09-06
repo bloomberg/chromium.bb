@@ -2781,13 +2781,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
           Separe os vários nomes de servidor por vírgulas. Os carateres universais (*) são permitidos.
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> tentará detetar se um servidor está na Intranet e só nesse momento irá responder a pedidos IWA. Se um servidor for detetado como Internet, os pedidos IWA serão ignorados pelo <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Permite-lhe controlar se as máquinas virtuais têm autorização para serem executadas no Chrome OS.
-
-      Se a política estiver definida como verdadeira, o dispositivo tem autorização para executar máquinas virtuais.
-      Se a política estiver definida como falsa, o dispositivo não tem autorização para executar máquinas virtuais.
-      Quando esta política é alterada para falsa, aplica-se à inicialização de novas máquinas virtuais e não encerra as que já se encontram em execução.
-      Quando esta política não está definida num dispositivo gerido, este não tem autorização para executar máquinas virtuais.
-      Os dispositivos não geridos têm autorização para executar máquinas virtuais.</translation>
 <translation id="8669669491594628013">Permite controlar o acionamento do aviso de proteção por palavra-passe. A proteção por palavra-passe alerta os utilizadores quando reutilizarem as respetivas palavras-passe protegidas em sites potencialmente suspeitos.
 
       Pode utilizar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar a palavra-passe a proteger.

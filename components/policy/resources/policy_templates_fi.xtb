@@ -2764,13 +2764,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
           Erota palvelinten nimet pilkulla. Jokerimerkit (*) sallitaan.
 
           Jos et aseta käytäntöä, <ph name="PRODUCT_NAME" /> pyrkii tarkistamaan, onko palvelin sisäverkossa, ja vastaa vasta sitten IWA-pyyntöihin. Jos palvelimen todetaan sijaitsevan sisäverkossa, <ph name="PRODUCT_NAME" /> ohittaa sen IWA-pyynnöt.</translation>
-<translation id="8667812577403206506">Tällä käytännöllä määritetään, voidaanko Chrome-käyttöjärjestelmässä suorittaa virtuaalikoneita.
-
-      Jos käytännön arvoksi asetetaan Tosi, laitteella on sallittua suorittaa virtuaalikoneita.
-      Jos käytännön arvoksi asetetaan Epätosi, laitteella ei ole sallittua suorittaa virtuaalikoneita.
-      Kun käytännön arvoksi muutetaan Epätosi, muutos koskee uusien virtuaalikoneiden käynnistämistä, mutta jo käynnissä olevia virtuaalikoneita ei sammuteta.
-      Jos tätä asetusta ei ole määritetty hallinnoidulla laitteella, laitteella ei ole sallittua suorittaa virtuaalikoneita.
-      Ei-hallinnoiduilla laitteilla on sallittua suorittaa virtuaalikoneita.</translation>
 <translation id="8669669491594628013">Sallii salasanasuojauksen varoituksen näyttämisen hallinnan. Salasanasuojaus ilmoittaa käyttäjille, jos nämä käyttävät suojattuja salasanoja uudelleen mahdollisesti haitallisilla sivustoilla.
 
       PasswordProtectionLoginURLs- ja PasswordProtectionChangePasswordURL-käytäntöjen avulla voit määrittää, mitkä salasanat suojataan.
@@ -2980,7 +2973,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="9158929520101169054">Salli kirjautuminen usealle tilille selaimessa</translation>
 <translation id="9159126470527871268">Ilmoita käyttäjille, että <ph name="PRODUCT_NAME" /> tai <ph name="PRODUCT_OS_NAME" /> on käynnistettävä uudelleen odottavan päivityksen käyttöönottamiseksi.
 
-      Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla ja <ph name="PRODUCT_OS_NAME" /> kertoo siitä ilmoituksella ilmaisinalueella Jos tila on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tila on Pakollinen, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää (<ph name="PRODUCT_NAME" />) tai neljä päivää (<ph name="PRODUCT_OS_NAME" />), ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntöasetuksista.
+      Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla ja <ph name="PRODUCT_OS_NAME" /> kertoo siitä ilmoituksella ilmaisinalueella. Jos tila on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tila on Pakollinen, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää (<ph name="PRODUCT_NAME" />) tai neljä päivää (<ph name="PRODUCT_OS_NAME" />), ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntöasetuksista.
 
       Käyttäjän käyttökerta palautetaan uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="9165792353046089850">Antaa sinun määrittää, sallitaanko sivustojen käyttää yhdistettyjä USB-laitteita. Käyttö on mahdollista estää kokonaan, tai käyttäjältä voidaan pyytää vahvistusta aina, kun verkkosivusto haluaa käyttää yhdistettyä USB-laitetta.

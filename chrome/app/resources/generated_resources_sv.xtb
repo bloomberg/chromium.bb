@@ -2181,7 +2181,6 @@
 <translation id="4296575653627536209">Lägg till kontrollerad användare</translation>
 <translation id="4297219207642690536">Starta om och återställ</translation>
 <translation id="4297322094678649474">Ändra språk</translation>
-<translation id="4300305918532693141"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen</translation>
 <translation id="4305227814872083840">lång (2 s)</translation>
 <translation id="4306119971288449206">Apparna måste visas med content-type <ph name="CONTENT_TYPE" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K aktiva)</translation>
@@ -5153,7 +5152,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8834164572807951958">De som använder <ph name="DESTINATION_NAME" /> får åtkomst till en kopia av dessa objekt.</translation>
 <translation id="8838770651474809439">Hamburgare</translation>
 <translation id="883911313571074303">Kommentera bild</translation>
-<translation id="8844690305858050198">Klart! Skadlig programvara har tagits bort. Om du vill aktivera tilläggen på nytt besöker du &lt;a href="chrome://extensions"&gt;Tillägg.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Få hjälp</translation>
 <translation id="8846141544112579928">Söker efter tangentbord …</translation>
 <translation id="8847988622838149491">USB</translation>

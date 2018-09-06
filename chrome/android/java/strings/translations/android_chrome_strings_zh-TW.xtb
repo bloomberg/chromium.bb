@@ -374,6 +374,7 @@
 
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
 <translation id="4056223980640387499">深褐色調</translation>
+<translation id="4060598801229743805">選項位於畫面頂端</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4084682180776658562">書籤</translation>
 <translation id="4084712963632273211">發佈者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 所提供<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">開啟 <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密碼</translation>
 <translation id="4645575059429386691">你的家長已停用這項功能</translation>
+<translation id="4660011489602794167">顯示鍵盤</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">輕觸即可複製這個應用程式的網址</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5777170031995031090">控管 Google 使用您瀏覽記錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定。</translation>
-<translation id="5779929835642192302">有自動填入建議</translation>
 <translation id="5793665092639000975">使用量：<ph name="SPACE_USED" /> (共 <ph name="SPACE_AVAILABLE" />)</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">封鎖部分網站的廣告</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
-<translation id="72867290065237936">輕觸即可在密碼建議和鍵盤之間切換</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>

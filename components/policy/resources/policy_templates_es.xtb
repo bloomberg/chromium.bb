@@ -2882,13 +2882,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá a las solicitudes de IWA. Si se detecta Internet como servidor, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que procedan de él.</translation>
-<translation id="8667812577403206506">Permite controlar si las máquinas virtuales se pueden ejecutar en Chrome OS.
-
-      Si se le asigna el valor "True" a esta política, el dispositivo puede ejecutar máquinas virtuales.
-      Si se le asigna el valor "False" a esta política, el dispositivo no puede ejecutar máquinas virtuales.
-      Cuando esta política cambia al valor "False", se aplica al iniciar nuevas máquinas virtuales, pero no apaga las máquinas virtuales que ya se estén ejecutando.
-      Si no se le asigna ningún valor a esta política en un dispositivo administrado, el dispositivo no puede ejecutar máquinas virtuales.
-      Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
 <translation id="8669669491594628013">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a utilizar la contraseña protegida en sitios web potencialmente sospechosos.
 
       Las políticas "PasswordProtectionLoginURLs" y "PasswordProtectionChangePasswordURL" sirven para configurar qué contraseñas se protegen.

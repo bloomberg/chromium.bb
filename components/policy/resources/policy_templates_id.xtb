@@ -2750,7 +2750,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Mengizinkan Anda untuk mengontrol apakah mesin virtual diizinkan untuk berjalan di Chrome OS atau tidak. Jika kebijakan disetel ke True, perangkat diizinkan untuk menjalankan mesin virtual. Jika kebijakan disetel ke False, perangkat tidak diizinkan untuk menjalankan mesin virtual. Jika kebijakan ini diubah ke False, setelan ini berlaku untuk mesin virtual yang baru dimulai, tetapi tidak mematikan mesin virtual yang sedang berjalan. Jika kebijakan ini tidak disetel di perangkat yang dikelola, perangkat tidak diizinkan untuk menjalankan mesin virtual. Perangkat yang tidak dikelola diizinkan untuk menjalankan mesin virtual.</translation>
 <translation id="8669669491594628013">Memungkinkan Anda mengontrol pemicu peringatan perlindungan sandi. Perlindungan sandi memberi tahu pengguna saat mereka menggunakan kembali sandi yang dilindungi di situs yang berpotensi mencurigakan.
 
       Anda dapat menggunakan kebijakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengonfigurasi sandi mana yang harus dilindungi.

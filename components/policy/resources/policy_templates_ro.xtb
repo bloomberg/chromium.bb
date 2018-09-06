@@ -2764,13 +2764,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> va încerca să detecteze dacă un anumit server se află în intranet și numai după aceea va răspunde la solicitările IWA. Dacă un server este detectat ca fiind pe internet, <ph name="PRODUCT_NAME" /> va ignora solicitările IWA trimise de acesta.</translation>
-<translation id="8667812577403206506">Îți permite să stabilești dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
-
-      Dacă politica este activată, dispozitivul are permisiunea de a rula mașini virtuale.
-      Dacă politica este dezactivată, dispozitivul nu va avea permisiunea de a rula mașini virtuale.
-      Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
-      Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
-      Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="8669669491594628013">Îți permite să controlezi declanșarea avertismentului privind protecția parolei. Protecția parolei îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
 
       Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola de protejat.

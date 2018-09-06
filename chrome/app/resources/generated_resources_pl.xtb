@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">Dodaj nadzorowanego użytkownika</translation>
 <translation id="4297219207642690536">Uruchom ponownie i zresetuj</translation>
 <translation id="4297322094678649474">Zmień języki</translation>
-<translation id="4300305918532693141">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">długie (2 s)</translation>
 <translation id="4306119971288449206">Aplikacje muszą być udostępniane z parametrem content-type „<ph name="CONTENT_TYPE" />”</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (aktywne <ph name="NUM_KILOBYTES_LIVE" /> KB)</translation>
@@ -5155,7 +5154,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8834164572807951958">Osoby z uprawnieniami do: „<ph name="DESTINATION_NAME" />” uzyskają dostęp do kopii tych elementów.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Dodaj notatkę na grafice</translation>
-<translation id="8844690305858050198">Gotowe. Szkodliwe oprogramowanie zostało usunięte. Aby z powrotem włączyć rozszerzenia, otwórz &lt;a href="chrome://extensions"&gt;Rozszerzenia&lt;/a&gt;.</translation>
 <translation id="8845001906332463065">Uzyskaj pomoc</translation>
 <translation id="8846141544112579928">Szukam klawiatury...</translation>
 <translation id="8847988622838149491">USB</translation>

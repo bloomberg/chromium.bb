@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">監視対象ユーザーを追加</translation>
 <translation id="4297219207642690536">再起動してリセット</translation>
 <translation id="4297322094678649474">言語を変更</translation>
-<translation id="4300305918532693141">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します。</translation>
 <translation id="4305227814872083840">長い（2 秒）</translation>
 <translation id="4306119971288449206">アプリはコンテンツタイプ「<ph name="CONTENT_TYPE" />」で配信される必要があります</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（<ph name="NUM_KILOBYTES_LIVE" /> K ライブ）</translation>
@@ -5155,7 +5154,6 @@
 <translation id="8834164572807951958">「<ph name="DESTINATION_NAME" />」のメンバーが、これらのアイテムのコピーにアクセスできるようになります。</translation>
 <translation id="8838770651474809439">ハンバーガー</translation>
 <translation id="883911313571074303">画像に注釈を付ける</translation>
-<translation id="8844690305858050198">有害なソフトウェアが削除されました。拡張機能をもう一度使用するには、&lt;a href="chrome://extensions"&gt;拡張機能&lt;/a&gt;のページにアクセスしてください。</translation>
 <translation id="8845001906332463065">ヘルプ</translation>
 <translation id="8846141544112579928">キーボードを探しています...</translation>
 <translation id="8847988622838149491">USB</translation>

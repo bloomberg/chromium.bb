@@ -374,6 +374,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 
 Om du vill ändra söktermen trycker du länge för att välja. Om du vill finjustera sökningen drar du panelen ända upp och trycker på sökrutan.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Alternativ finns högt upp på skärmen</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="4084712963632273211">Från <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />via Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4616150815774728855">Öppna <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Använd lösenordet</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
+<translation id="4660011489602794167">Visa tangentbord</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
@@ -603,7 +605,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5763514718066511291">Tryck om du vill kopiera webbadressen till appen</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5777170031995031090">Styr hur Google anpassar Sök, annonser och andra Google-tjänster utifrån webbhistoriken.</translation>
-<translation id="5779929835642192302">Förslag tillgängliga</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> av <ph name="SPACE_AVAILABLE" /> används</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
@@ -795,7 +796,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7251326866581677552">Blockeras från vissa webbplatser</translation>
 <translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="7274013316676448362">Blockerad webbplats</translation>
-<translation id="72867290065237936">Byt mellan lösenordsförslag och tangentbordet genom att trycka här</translation>
 <translation id="729975465115245577">Det finns ingen app som kan spara lösenordsfilen på enheten.</translation>
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>

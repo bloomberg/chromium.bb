@@ -374,6 +374,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 
 Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
 <translation id="4056223980640387499">Sépia</translation>
+<translation id="4060598801229743805">Options disponibles à proximité du haut de l'écran</translation>
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="4084682180776658562">Favori</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />proposé par Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4616150815774728855">Ouvrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utiliser le mot de passe</translation>
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
+<translation id="4660011489602794167">Afficher le clavier</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
@@ -603,7 +605,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5763514718066511291">Appuyez pour copier l'URL pour cette application</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5777170031995031090">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
-<translation id="5779929835642192302">Suggestions disponibles</translation>
 <translation id="5793665092639000975">Utilisation de <ph name="SPACE_USED" /> sur <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
@@ -795,7 +796,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7251326866581677552">Bloqué sur certains sites</translation>
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
-<translation id="72867290065237936">Appuyez pour basculer entre les suggestions de mots de passe et le clavier</translation>
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
 <translation id="7302081693174882195">Détails : tri effectué par volume de données enregistrées</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>

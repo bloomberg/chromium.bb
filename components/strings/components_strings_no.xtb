@@ -392,7 +392,7 @@
 <translation id="3586931643579894722">Skjul detaljer</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3615877443314183785">Angi en gyldig utløpsdato</translation>
-<translation id="36224234498066874">Slett nettlesingsdata...</translation>
+<translation id="36224234498066874">Slett nettleserdata</translation>
 <translation id="362276910939193118">Vis fullstendig logg</translation>
 <translation id="3623476034248543066">Vis verdien</translation>
 <translation id="3630155396527302611">Hvis programmet allerede har fått tillatelse til å bruke nettverket, kan du prøve
@@ -648,7 +648,7 @@
 <translation id="5386426401304769735">Sertifikatkjeden for dette nettstedet inneholder et sertifikat som er signert med SHA-1.</translation>
 <translation id="5387961145478138773">Få rask tilgang til favorittappene dine fra Google</translation>
 <translation id="540969355065856584">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke gyldig for øyeblikket. Dette kan være forårsaket av en feilkonfigurasjon eller en angriper som lytter på tilkoblingen din.</translation>
-<translation id="5421136146218899937">Slett nettlesingsdata...</translation>
+<translation id="5421136146218899937">Slett nettleserdata</translation>
 <translation id="5430298929874300616">Fjern bokmerke</translation>
 <translation id="5431657950005405462">Filen ble ikke funnet</translation>
 <translation id="5439770059721715174">Skjemavalideringsfeil i «<ph name="ERROR_PATH" />»: <ph name="ERROR" /></translation>
@@ -723,7 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
-<translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (pakkelisens er tilgjengelig).</translation>
+<translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
 <translation id="5967867314010545767">Fjern fra loggen</translation>
 <translation id="5975083100439434680">Zoom ut</translation>

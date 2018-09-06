@@ -374,6 +374,7 @@
 
 要调整您的搜索字词，长按即可选中所需内容。要缩小您的搜索范围，请向上滑动到面板顶部，然后点按搜索框。</translation>
 <translation id="4056223980640387499">棕色调</translation>
+<translation id="4060598801229743805">选项位于屏幕顶部附近</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4084682180776658562">已保存的书签</translation>
 <translation id="4084712963632273211">来自 <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />由 Google 提供<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@
 <translation id="4616150815774728855">打开<ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密码</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
+<translation id="4660011489602794167">显示键盘</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
@@ -603,7 +605,6 @@
 <translation id="5763514718066511291">点按即可复制该应用的网址</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5777170031995031090">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
-<translation id="5779929835642192302">有自动填充建议</translation>
 <translation id="5793665092639000975">已使用 <ph name="SPACE_USED" />，共 <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
@@ -795,7 +796,6 @@
 <translation id="7251326866581677552">已阻止在部分网站中显示广告</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
-<translation id="72867290065237936">点按即可在密码建议和键盘之间切换</translation>
 <translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7302081693174882195">详细信息：按已节省的数据流量排序</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>

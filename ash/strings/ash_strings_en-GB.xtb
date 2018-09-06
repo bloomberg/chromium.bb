@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Choose whether websites can use location services or the device’s microphone, camera or other features</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2808012452536866044">Better Together switched to a new phone</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">You pressed the shortcut for the docked magnifier. Do you want to turn it on?</translation>
 <translation id="4217571870635786043">Dictation</translation>
 <translation id="4261870227682513959">Show notification settings. Notifications are off</translation>
+<translation id="4269883910223712419">The admin of this device has the ability to:</translation>
 <translation id="4274921305979314545">Connect your Chromebook with your phone</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">The administrator of this device has access to all activity, including passwords and communications.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
+<translation id="6814658242098378692">Manage apps, extensions and themes</translation>
 <translation id="6820676911989879663">Take a break!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Rear microphone</translation>
 <translation id="726276584504105859">Drag here to use split screen</translation>
+<translation id="7303365578352795231">Answering on another device.</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
 <translation id="735745346212279324">VPN disconnected</translation>
 <translation id="7377169924702866686">Caps Lock is on.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Connecting to <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="7886169021410746335">Adjust privacy settings</translation>
 <translation id="7886277072580235377">Your Internet session will be cleared when you sign out. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send an email</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>

@@ -374,6 +374,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 
 Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a rafina căutarea, glisează panoul până în partea de sus și atinge caseta de căutare.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opțiunile sunt disponibile în partea de sus a ecranului</translation>
 <translation id="4062305924942672200">Informații juridice</translation>
 <translation id="4084682180776658562">Marcaj</translation>
 <translation id="4084712963632273211">De la <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />livrată de Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4616150815774728855">Deschide <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Folosește parola</translation>
 <translation id="4645575059429386691">Gestionat de părintele tău</translation>
+<translation id="4660011489602794167">Afișează tastatura</translation>
 <translation id="4663756553811254707">S-au șters <ph name="NUMBER_OF_BOOKMARKS" /> (de) marcaje</translation>
 <translation id="4665282149850138822">Site-ul <ph name="NAME" /> a fost adăugat pe ecranul de pornire</translation>
 <translation id="4684427112815847243">Sincronizare totală</translation>
@@ -603,7 +605,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5763514718066511291">Atinge pentru a copia adresa URL pentru această aplicație</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5777170031995031090">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
-<translation id="5779929835642192302">Sugestii disponibile</translation>
 <translation id="5793665092639000975">Se utilizează <ph name="SPACE_USED" /> din <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Acum # oră}few{Acum # ore}other{Acum # de ore}}</translation>
@@ -795,7 +796,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7251326866581677552">Blocate pe anumite site-uri</translation>
 <translation id="7253272406652746122">Adaugă un Cont Google din pagina Conturi din aplicația Setări a dispozitivului.</translation>
 <translation id="7274013316676448362">Site blocat</translation>
-<translation id="72867290065237936">Atinge pentru a comuta între sugestiile de parole și tastatură</translation>
 <translation id="729975465115245577">Dispozitivul nu are o aplicație pentru stocarea fișierului parolelor.</translation>
 <translation id="7302081693174882195">Detalii: sortate după volumul de date salvate</translation>
 <translation id="7333031090786104871">Încă se adaugă site-ul anterior</translation>

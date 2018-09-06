@@ -2845,13 +2845,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
           Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
 
           Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Hiermee kun je aangeven of er virtuele machines mogen worden uitgevoerd met Chrome OS.
-
-      Als het beleid is ingesteld op True (Waar), mogen virtuele machines worden uitgevoerd op het apparaat.
-      Als het beleid is ingesteld op False (Onwaar), mogen er geen virtuele machines worden uitgevoerd op het apparaat.
-      Als dit beleid wordt gewijzigd naar False (Onwaar), wordt dit toegepast op nieuwe virtuele machines, maar worden reeds uitgevoerde virtuele machines niet uitgeschakeld.
-      Als dit beleid op een beheerd apparaat niet is ingesteld, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
-      Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
 <translation id="8669669491594628013">Hiermee kun je de activering van een waarschuwing voor wachtwoordbeveiliging beheren. Wachtwoordbeveiliging waarschuwt gebruikers wanneer ze hun beveiligde wachtwoord hergebruiken op potentieel verdachte sites.
 
       Je kunt het beleid 'PasswordProtectionLoginURLs' en 'PasswordProtectionChangePasswordURL' gebruiken om te configureren welk wachtwoord moet worden beveiligd.

@@ -2767,13 +2767,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
           Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> próbuje wykryć, czy serwer jest w intranecie, i tylko wtedy odpowiada na żądania IWA. W przypadku serwera internetowego <ph name="PRODUCT_NAME" /> ignoruje żądania IWA.</translation>
-<translation id="8667812577403206506">Określa, czy w Chrome OS mogą działać maszyny wirtualne.
-
-      Jeśli zasada ma wartość Prawda, maszyny wirtualne mogą działać na urządzeniu.
-      Jeśli zasada ma wartość Fałsz, maszyny wirtualne nie mogą działać na urządzeniu.
-      Jeśli zmienisz wartość tej zasady na Fałsz, nie będzie można uruchamiać nowych maszyn wirtualnych, ale już działające maszyny nie zostaną zamknięte.
-      Jeśli zasada nie jest ustawiona na urządzeniu zarządzanym, nie można na nim uruchamiać maszyn wirtualnych.
-      Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="8669669491594628013">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasła. 
 Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swojego chronionego hasła na potencjalnie niebezpiecznych stronach.
 

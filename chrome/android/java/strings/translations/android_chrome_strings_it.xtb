@@ -374,6 +374,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 
 Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfezionare la ricerca, fai scorrere completamente il riquadro verso l'alto e tocca la casella di ricerca.</translation>
 <translation id="4056223980640387499">Seppia</translation>
+<translation id="4060598801229743805">Opzioni disponibili nella parte superiore dello schermo</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="4084712963632273211">Di <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />pubblicata da Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4616150815774728855">Apri <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utilizza password</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
+<translation id="4660011489602794167">Mostra tastiera</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
@@ -603,7 +605,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5763514718066511291">Tocca per copiare l'URL di quest'app</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5777170031995031090">Controlla il modo in cui Google utilizza la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
-<translation id="5779929835642192302">Suggerimenti disponibili</translation>
 <translation id="5793665092639000975">Spazio utilizzato: <ph name="SPACE_USED" /> di <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ora fa}other{# ore fa}}</translation>
@@ -795,7 +796,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7251326866581677552">Bloccati su alcuni siti</translation>
 <translation id="7253272406652746122">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
-<translation id="72867290065237936">Tocca per spostarti tra i suggerimenti delle password e la tastiera</translation>
 <translation id="729975465115245577">Il tuo dispositivo non ha un'app per archiviare il file di password.</translation>
 <translation id="7302081693174882195">Dettagli: ordinati per quantità di dati salvati</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>

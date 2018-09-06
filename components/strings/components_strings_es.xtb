@@ -464,7 +464,7 @@
 <translation id="413544239732274901">Más información</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utilizar valor predeterminado global (por defecto)</translation>
-<translation id="4165986682804962316">Configuración de sitios web</translation>
+<translation id="4165986682804962316">Configuración del sitio web</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -723,7 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en uso}other{# en uso}}</translation>
 <translation id="5922853866070715753">Casi hemos acabado</translation>
 <translation id="5939518447894949180">Restablecer</translation>
-<translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (licencia empaquetada disponible).</translation>
+<translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
 <translation id="5967592137238574583">Edita la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Reducir</translation>

@@ -2891,13 +2891,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Si vous utilisez plusieurs serveurs, séparez leur nom par une virgule. Les caractères génériques (*) sont autorisés.
 
           Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
-
-      Si cette règle est définie sur "True", l'appareil est autorisé à exécuter des machines virtuelles.
-      Si cette règle est définie sur "False", l'appareil n'est pas autorisé à exécuter de machines virtuelles.
-      Si vous modifiez cette règle en la définissant sur "False", elle est appliquée aux machines virtuelles qui vont être lancées, mais elle n'arrête pas celles qui le sont déjà.
-      Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
-      Les appareils non gérés sont autorisés à exécuter des machines virtuelles.</translation>
 <translation id="8669669491594628013">Permet de contrôler le déclenchement de l'avertissement relatif à la protection par mot de passe. Le service de protection par mot de passe alerte l'utilisateur lorsque ce dernier réutilise son mot de passe protégé sur des sites potentiellement suspects.
 
       Vous pouvez utiliser les règles "PasswordProtectionLoginURLs" et "PasswordProtectionChangePasswordURL" pour configurer le mot de passe à protéger.

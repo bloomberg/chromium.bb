@@ -10,6 +10,8 @@
 <translation id="2714180132046334502">Fondo oscuro</translation>
 <translation id="27349076983469322">Fondo claro</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="4004802134384979325">seleccionada</translation>
+<translation id="4827410568042294688">sin seleccionar</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6475604559827479857">Color para destacar palabras:</translation>
@@ -17,6 +19,7 @@
 <translation id="7261612856573623172">Voz en la función de texto a voz del sistema</translation>
 <translation id="7768784765476638775">Seleccionar para pronunciar</translation>
 <translation id="7914870167134465181">Destacar</translation>
+<translation id="8033827949643255796">seleccionados</translation>
 <translation id="8324974933005349667">Personalizar la configuración de texto a voz</translation>
 <translation id="992256792861109788">Rosa</translation>
 </translationbundle>

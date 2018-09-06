@@ -43,7 +43,7 @@
 <translation id="2497284189126895209">सर्व फाइल</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">कॅलिब्रेशन पूर्ण झाले</translation>
-<translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
+<translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
 <translation id="2583543531130364912">तुमची टचस्क्रीन कॅलिब्रेट करा</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2743387203779672305">क्लिपबोर्डवर कॉपी करा</translation>
@@ -92,7 +92,7 @@
 <translation id="528468243742722775">समाप्त</translation>
 <translation id="5329858601952122676">&amp;हटवा</translation>
 <translation id="5463830097259460683">इमोजी &amp;&amp; चिन्हे</translation>
-<translation id="5476505524087279545">अनचेक</translation>
+<translation id="5476505524087279545">चौकटीतली खूण काढा</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> सिस्टम</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Left Arrow</translation>
@@ -169,7 +169,7 @@
 <translation id="8772073294905169192">{HOURS,plural, =1{1ता}one{#ता}other{#ता}}</translation>
 <translation id="8798099450830957504">डीफॉल्ट</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
-<translation id="883911313571074303">प्रतिमेवर भाष्य करा</translation>
+<translation id="883911313571074303">इमेजवर भाष्य करा</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="9002566407876343676">उघडा</translation>
 <translation id="9038489124413477075">अनामित फोल्डर</translation>

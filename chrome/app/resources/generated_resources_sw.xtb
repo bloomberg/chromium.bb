@@ -2173,7 +2173,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4296575653627536209">Ongeza Mtumiaji Anayesimamiwa</translation>
 <translation id="4297219207642690536">Zima kisha uwashe na uweke upya</translation>
 <translation id="4297322094678649474">Badilisha Lugha</translation>
-<translation id="4300305918532693141">Ili kubadilisha mipangilio hii, <ph name="BEGIN_LINK" />weka upya usawazishaji<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">mrefu (sekunde 2)</translation>
 <translation id="4306119971288449206">Ni lazima programu zikabidhiwe aina ya maudhui "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -5147,7 +5146,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8834164572807951958">Wanachama wa '<ph name="DESTINATION_NAME" />' watapata idhini ya kufikia nakala ya vipengee hivi.</translation>
 <translation id="8838770651474809439">Hambaga</translation>
 <translation id="883911313571074303">Eleza kuhusu picha</translation>
-<translation id="8844690305858050198">Imemaliza! Imeondoa programu hatari. Ili uwashe viendelezi, tembelea &lt;a href="chrome://extensions"&gt;Viendelezi.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Pata usaidizi</translation>
 <translation id="8846141544112579928">Inatafuta kibodi...</translation>
 <translation id="8847988622838149491">USB</translation>

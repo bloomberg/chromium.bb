@@ -2751,13 +2751,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Razdvojite više poslužitelja zarezima. Zamjenski su znakovi (*) dopušteni.
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> pokušat će otkriti je li poslužitelj na intranetu te će jedino tada odgovoriti na IWA zahtjeve. Ako otkrije da se radi o poslužitelju na internetu, <ph name="PRODUCT_NAME" /> zanemarit će njegove IWA zahtjeve.</translation>
-<translation id="8667812577403206506">Omogućuje vam da odredite je li virtualnim računalima dopušteno pokretanje na OS-u Chrome.
-
-      Ako je pravilo postavljeno na True, uređaju je dopušteno pokretanje virtualnih računala.
-      Ako je pravilo postavljeno na False, uređaju nije dopušteno pokretanje virtualnih računala.
-      Kada se to pravilo promijeni na False, primjenjuje se na pokretanje novih virtualnih računala, ali ne isključuje virtualna računala koja su već pokrenuta.
-      Kada to pravilo nije postavljeno na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
-      Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="8669669491594628013">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke prikazati upozorenje. Zaštita zaporke to upozorenje prikazuje korisnicima kada ponovo upotrijebe svoju zaštićenu zaporku na potencijalno sumnjivim web-lokacijama.
 
       Da biste konfigurirali koju zaporku zaštititi, upotrijebite "PasswordProtectionLoginURLs" i "PasswordProtectionChangePasswordURL".

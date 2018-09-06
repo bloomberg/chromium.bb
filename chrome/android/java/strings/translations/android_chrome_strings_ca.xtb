@@ -374,6 +374,7 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 
 Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir millor la cerca, fes lliscar el tauler cap amunt tot el que puguis i toca el quadre de cerca.</translation>
 <translation id="4056223980640387499">Sèpia</translation>
+<translation id="4060598801229743805">Hi ha opcions disponibles a prop de la part superior de la pantalla</translation>
 <translation id="4062305924942672200">Informació legal</translation>
 <translation id="4084682180776658562">Adreça d'interès</translation>
 <translation id="4084712963632273211">Publicada originalment per <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />amb la tecnologia de Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4616150815774728855">Obre <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Fes servir la contrasenya</translation>
 <translation id="4645575059429386691">Gestionat pels pares</translation>
+<translation id="4660011489602794167">Mostra el teclat</translation>
 <translation id="4663756553811254707">S'han suprimit <ph name="NUMBER_OF_BOOKMARKS" /> adreces d'interès</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> s'ha afegit a la pantalla d'inici</translation>
 <translation id="4684427112815847243">Sincronitza-ho tot</translation>
@@ -603,7 +605,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5763514718066511291">Toca per copiar l'URL d'aquesta aplicació</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5777170031995031090">Controleu com utilitza Google el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google.</translation>
-<translation id="5779929835642192302">Suggeriments disponibles</translation>
 <translation id="5793665092639000975">S'estan utilitzant <ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{fa # hora}other{fa # hores}}</translation>
@@ -795,7 +796,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7251326866581677552">S'ha bloquejat en alguns llocs web</translation>
 <translation id="7253272406652746122">Afegeix un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
-<translation id="72867290065237936">Toca per canviar entre els suggeriments de contrasenya i el teclat</translation>
 <translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>

@@ -70,7 +70,7 @@
 <translation id="1989112275319619282">ब्राउझ करा</translation>
 <translation id="2015722694326466240">पासवर्ड पाहण्यासाठी, तुम्ही प्रथम तुमच्या डीव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
 <translation id="2068952045031577364">गेल्या आठवड्यात</translation>
-<translation id="2079545284768500474">पूर्ववत करा</translation>
+<translation id="2079545284768500474">पहिल्यासारखे करा</translation>
 <translation id="209018056901015185">डेस्कटॉप साइटची विनंती करा</translation>
 <translation id="2103075008456228677">history.google.com उघडा</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हलविले</translation>
@@ -166,7 +166,7 @@
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
 <translation id="360930808415985584">सिंक, पर्सनलायझेशन आणि बरेच काही नियंत्रित करा</translation>
 <translation id="3609785682760573515">संकालन करत आहे...</translation>
-<translation id="3628119975092896051">तुमची वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
+<translation id="3628119975092896051">तुमची वाचन सूची ऑफलाइन उपलब्ध आहे. तुमच्या वाचन सूचीमध्‍ये एक पेज जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> वर टॅप करा.</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3765471630796399471">दुसरा पासवर्ड वापरा</translation>
@@ -183,7 +183,7 @@
 <translation id="3967822245660637423">पूर्ण डाउनलोड करा</translation>
 <translation id="3989635538409502728">साइन आउट</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
-<translation id="4038354071007134711">या डिव्हाइसवरील कोणताही अॅप्लिकेशन फाईल उघडू शकत नाही.</translation>
+<translation id="4038354071007134711">या डिव्हाइसवरील कोणतीही अॅप्लिकेशन फाइल उघडू शकत नाही.</translation>
 <translation id="4042870976416480368">पेजमध्ये शोधा</translation>
 <translation id="4049507953662678203">आपल्याकडे नेटवर्क कनेक्शन आहे हे सुनिश्चित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="408404951701638773">शोध बारवर पोहोचणे आता आणखी सोपे आहे</translation>
@@ -202,7 +202,7 @@
 <translation id="430793432425771671">प्रत्येकगोष्ट संंकालित करा</translation>
 <translation id="4342284590510997375">नवीन</translation>
 <translation id="434816576838749873">ईमेल अॅप निवडा</translation>
-<translation id="4359125752503270327">हे पृष्ठ दुसऱ्या अनुप्रयोगामध्ये उघडेल.</translation>
+<translation id="4359125752503270327">हे पेज दुसऱ्या अॅप्समध्ये उघडेल.</translation>
 <translation id="4370827530403103842">संकालन कार्य करत नाही. निराकरण करण्यासाठी टॅप करा.</translation>
 <translation id="4375040482473363939">QR कोड शोध</translation>
 <translation id="4378154925671717803">फोन</translation>
@@ -228,7 +228,7 @@
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
 <translation id="4854345657858711387">पासकोड सेट करा</translation>
 <translation id="4860895144060829044">कॉल करा</translation>
-<translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला पासवर्ड अपडेट करावा असे आपण इच्छिता?</translation>
+<translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी तुमचा पासवर्ड अपडेट करावा असे तुम्हाला वाटते?</translation>
 <translation id="4881695831933465202">उघडा</translation>
 <translation id="4882831918239250449">तुम्ही ब्राउझ करत असलेला इतिहास पर्सनलाइझ शोध, जाहिराती आणि बरेच काही करण्यासाठी कसा वापरला जातो ते नियंत्रित करा</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
@@ -270,7 +270,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">आवृत्ती <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">क्षमस्व, आपल्या खात्यामध्ये साइन इन करताना काहीतरी समस्या आली.</translation>
-<translation id="5737974891429562743">खाते साइन-इन तपशील कालबाह्य झाले आहेत. संकालन प्रारंभ करण्यासाठी अपडेट करा.</translation>
+<translation id="5737974891429562743">खाते साइन इन तपशील कालबाह्य झाले आहेत. सिंक सुरू करण्यासाठी अपडेट करा.</translation>
 <translation id="5738887413654608789">हे आपल्याला आपल्या सभोवतालच्या गोष्टींवर आधारित संबंधित वेब पेज शोधू देते.</translation>
 <translation id="5771816112378578655">सेटअप प्रक्रियेत आहे...</translation>
 <translation id="5816228676161003208">हे आपल्याला आपला व्‍हॉइस वापरून अधिक जलद शोधू देते.</translation>
@@ -294,7 +294,7 @@
 <translation id="6012140227487808125">कूटबद्ध करीत आहे...</translation>
 <translation id="6021332621416007159">यामध्ये उघडा...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">या साइटसाठी <ph name="PASSWORD_MANAGER_BRAND" /> नी <ph name="USERNAME" /> करिता आपला पासवर्ड अपडेट करावा असे आपण इच्छिता?</translation>
+<translation id="6039694632319341016">या साइटसाठी <ph name="PASSWORD_MANAGER_BRAND" /> नी <ph name="USERNAME" /> करिता तुमचा पासवर्ड अपडेट करावा असे तुम्ही इच्छिता?</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="605721222689873409">YY</translation>
@@ -328,7 +328,7 @@
 <translation id="641799622251403418"><ph name="EMAIL" /> म्हणून साइन इन केले.
 
 आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो एंटर करा.</translation>
-<translation id="6418346271604475326">PDF तयार करीत आहे</translation>
+<translation id="6418346271604475326">पीडीएफ तयार करत आहे</translation>
 <translation id="6434591244308415567">एरर आली. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="6445981559479772097">संदेश पाठविला.</translation>

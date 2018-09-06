@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">Ingen nettverk</translation>
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">Registrerer fingeravtrykk</translation>
+<translation id="1059855432287631118">Registrering av fingeravtrykk</translation>
 <translation id="1061904396131502319">Snart tid for en pause</translation>
 <translation id="1062407476771304334">Erstatt</translation>
 <translation id="1067048845568873861">Opprettet</translation>
@@ -987,7 +987,7 @@
 <translation id="2493021387995458222">Velg «ord om gangen»</translation>
 <translation id="249303669840926644">Kunne ikke fullføre registreringen</translation>
 <translation id="2495777824269688114">Oppdag flere funksjoner eller få svar. Velg «?» for å få hjelp.</translation>
-<translation id="2496180316473517155">Nettlesingslogg</translation>
+<translation id="2496180316473517155">Nettleserlogg</translation>
 <translation id="2497229222757901769">Musehastighet</translation>
 <translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
 <translation id="249819058197909513">Ikke advar om denne appen igjen</translation>
@@ -2175,7 +2175,6 @@
 <translation id="4296575653627536209">Legg til en administrert bruker</translation>
 <translation id="4297219207642690536">Start på nytt og tilbakestill</translation>
 <translation id="4297322094678649474">Endre språk</translation>
-<translation id="4300305918532693141">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lang (2 s)</translation>
 <translation id="4306119971288449206">Apper må leveres med innholdstypen «<ph name="CONTENT_TYPE" />»</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB ubrukt)</translation>
@@ -4624,7 +4623,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
       Det kan hende innhold du har kjøpt (for eksempel filmer, TV-serier, musikk, bøker eller andre kjøp i apper) også slettes.
       <ph name="LINE_BREAKS2" />
       Dette har ikke innvirkning på apper eller innhold på andre enheter.</translation>
-<translation id="8026334261755873520">Slett nettlesingsdata</translation>
+<translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="8028060951694135607">Microsoft nøkkelgjenoppretting</translation>
 <translation id="8028134359912645720">Hold nede Control, Alt og Shift eller Appoversikt for å se hurtigtaster for disse modifikatorene.</translation>
 <translation id="8028803902702117856">Laster ned <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
@@ -5143,7 +5142,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8834164572807951958">Medlemmer av «<ph name="DESTINATION_NAME" />» får tilgang til kopier av disse elementene.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Kommenter bildet</translation>
-<translation id="8844690305858050198">Ferdig! Skadelig programvare er fjernet. For å slå på utvidelser igjen, besøk &lt;a href="chrome://extensions"&gt;Utvidelser&lt;/a&gt;.</translation>
 <translation id="8845001906332463065">Få hjelp</translation>
 <translation id="8846141544112579928">Søker etter tastatur …</translation>
 <translation id="8847988622838149491">USB</translation>

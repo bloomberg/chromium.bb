@@ -374,6 +374,7 @@
 
 Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīzāku meklēšanu, velciet paneli augšup līdz galam un pieskarieties meklēšanas lodziņam.</translation>
 <translation id="4056223980640387499">Sēpija</translation>
+<translation id="4060598801229743805">Opcijas, kas pieejamas ekrāna augšdaļā</translation>
 <translation id="4062305924942672200">Juridiskā informācija</translation>
 <translation id="4084682180776658562">Grāmatzīme</translation>
 <translation id="4084712963632273211">No izdevēja <ph name="PUBLISHER_ORIGIN" /> — <ph name="BEGIN_DEEMPHASIZED" />nodrošina Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -446,6 +447,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4616150815774728855">Atvērt <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Izmantot paroli</translation>
 <translation id="4645575059429386691">Pārvalda viens no jūsu vecākiem</translation>
+<translation id="4660011489602794167">Rādīt tastatūru</translation>
 <translation id="4663756553811254707">Dzēstas <ph name="NUMBER_OF_BOOKMARKS" /> grāmatzīmes</translation>
 <translation id="4665282149850138822">Vietne <ph name="NAME" /> tika pievienota sākuma ekrānam.</translation>
 <translation id="4684427112815847243">Sinhronizēt visu</translation>
@@ -603,7 +605,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5763514718066511291">Pieskarieties, lai kopētu šīs lietotnes URL.</translation>
 <translation id="5765780083710877561">Apraksts:</translation>
 <translation id="5777170031995031090">Kontrolējiet to, kā Google izmanto jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
-<translation id="5779929835642192302">Pieejami ieteikumi</translation>
 <translation id="5793665092639000975">Izmantotais apjoms: <ph name="SPACE_USED" /> no <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Atļaujas</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{pirms # stundas}zero{pirms # stundām}one{pirms # stundas}other{pirms # stundām}}</translation>
@@ -795,7 +796,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7251326866581677552">Bloķētas dažās vietnēs.</translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
-<translation id="72867290065237936">Pieskarieties, lai pārslēgtu starp paroles ieteikumiem un tastatūru</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>

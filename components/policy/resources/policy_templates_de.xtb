@@ -2749,13 +2749,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
-<translation id="8667812577403206506">Mit dieser Richtlinie können Sie festlegen, ob virtuelle Maschinen unter Chrome OS ausgeführt werden dürfen.
-
-      Wenn die Richtlinie auf "true" festgelegt ist, dürfen virtuelle Maschinen auf dem Gerät ausgeführt werden.
-      Wenn die Richtlinie auf "false" festgelegt ist, dürfen keine virtuellen Maschinen auf dem Gerät ausgeführt werden.
-      Wird diese Richtlinie auf "false" geändert, wirkt sich dies nur auf den Start neuer virtueller Maschinen aus. Virtuelle Maschinen, die bereits laufen, werden davon nicht beendet.
-      Ist diese Richtlinie auf einem verwalteten Gerät nicht konfiguriert, darf das Gerät virtuelle Maschinen nicht ausführen.
-      Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</translation>
 <translation id="8669669491594628013">Mit dieser Richtlinie können Sie die Auslösung der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
 
       Mithilfe der Richtlinien "PasswordProtectionLoginURLs" und "PasswordProtectionChangePasswordURL" können Sie konfigurieren, welches Passwort geschützt werden soll.

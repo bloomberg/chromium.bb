@@ -374,6 +374,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 
 Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refinar a pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="4056223980640387499">Sépia</translation>
+<translation id="4060598801229743805">Opções disponíveis perto da parte superior da tela</translation>
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4084682180776658562">Favorito</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />: <ph name="BEGIN_DEEMPHASIZED" />veiculado pelo Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -447,6 +448,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Usar senha</translation>
 <translation id="4645575059429386691">Gerenciado pelos seus pais</translation>
+<translation id="4660011489602794167">Mostrar teclado</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
@@ -603,7 +605,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="5763514718066511291">Toque para copiar o URL desse app</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5777170031995031090">Controle a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos.</translation>
-<translation id="5779929835642192302">Sugestões disponíveis</translation>
 <translation id="5793665092639000975">Usando <ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hora atrás}one{# horas atrás}other{# horas atrás}}</translation>
@@ -795,7 +796,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7251326866581677552">Bloqueados em alguns sites</translation>
 <translation id="7253272406652746122">Adicione uma Conta do Google na página de "Contas" do app "Config." do seu dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
-<translation id="72867290065237936">Toque para alternar entre sugestões de senha e teclado</translation>
 <translation id="729975465115245577">Seu dispositivo não tem um app para armazenar o arquivo de senhas.</translation>
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>

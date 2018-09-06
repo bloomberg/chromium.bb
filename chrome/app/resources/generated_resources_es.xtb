@@ -977,7 +977,7 @@
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
 <translation id="2473195200299095979">Traducir esta página</translation>
 <translation id="2475982808118771221">Se ha producido un error.</translation>
-<translation id="2476578072172137802">Configuración del sitio</translation>
+<translation id="2476578072172137802">Configuración del sitio web</translation>
 <translation id="2478176599153288112">Permisos de archivos multimedia para "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Compartir audio</translation>
 <translation id="2480868415629598489">Modificar los datos que se copian y se pegan</translation>
@@ -2179,7 +2179,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4296575653627536209">Añadir usuario supervisado</translation>
 <translation id="4297219207642690536">Reiniciar y restablecer</translation>
 <translation id="4297322094678649474">Cambiar idiomas</translation>
-<translation id="4300305918532693141">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">largo (2 s)</translation>
 <translation id="4306119971288449206">Las aplicaciones deben incluir el encabezado content-type "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K activos)</translation>
@@ -2659,7 +2658,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5075131525758602494">Introducir el PIN de la tarjeta SIM</translation>
 <translation id="5078490485380754244">Olvidar dispositivo</translation>
 <translation id="5078638979202084724">Añadir todas las pestañas a marcadores</translation>
-<translation id="5079950360618752063">Utiliza la contraseña sugerida</translation>
+<translation id="5079950360618752063">Utilizar contraseña sugerida</translation>
 <translation id="5084230410268011727">Permitir que los sitios web usen los sensores de luz y movimiento</translation>
 <translation id="5085162214018721575">Buscando actualizaciones...</translation>
 <translation id="5086082738160935172">Dispositivos de interfaz humana (HID)</translation>
@@ -2880,7 +2879,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5398772614898833570">Anuncios bloqueados</translation>
 <translation id="5402815541704507626">Descargar la actualización con datos móviles</translation>
 <translation id="540296380408672091">Bloquear siempre cookies en <ph name="HOST" /></translation>
-<translation id="5405146885510277940">Recuperar configuración</translation>
+<translation id="5405146885510277940">Restablecer configuración</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">Sorpréndeme</translation>
 <translation id="5411472733320185105">No utilizar la configuración de proxy para estos hosts y dominios:</translation>
@@ -5149,7 +5148,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8834164572807951958">Los miembros de "<ph name="DESTINATION_NAME" />" obtendrán acceso a la copia de estos elementos.</translation>
 <translation id="8838770651474809439">Hamburguesa</translation>
 <translation id="883911313571074303">Anotar imagen</translation>
-<translation id="8844690305858050198">Listo. Se ha eliminado el software malicioso. Para volver a activar las extensiones, accede a &lt;a href="chrome://extensions"&gt;Extensiones&lt;/a&gt;.</translation>
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846141544112579928">Buscando teclado...</translation>
 <translation id="8847988622838149491">USB</translation>

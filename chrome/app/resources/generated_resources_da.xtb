@@ -2180,7 +2180,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4296575653627536209">Tilføj en administreret bruger</translation>
 <translation id="4297219207642690536">Genstart og nulstil</translation>
 <translation id="4297322094678649474">Skift sprog</translation>
-<translation id="4300305918532693141">Hvis du vil ændre denne indstilling, skal du<ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lang (2 sek.)</translation>
 <translation id="4306119971288449206">Apps skal downloades med indholdstypen "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
@@ -5153,7 +5152,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8834164572807951958">Medlemmer af "<ph name="DESTINATION_NAME" />" får adgang til kopien af disse elementer.</translation>
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Annoter billede</translation>
-<translation id="8844690305858050198">Den skadelige software blev fjernet. Du kan aktivere udvidelser igen ved at gå til &lt;a href="chrome://extensions"&gt;Udvidelser.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Få hjælp</translation>
 <translation id="8846141544112579928">Søger efter tastatur...</translation>
 <translation id="8847988622838149491">USB</translation>

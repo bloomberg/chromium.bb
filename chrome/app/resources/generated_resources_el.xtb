@@ -2182,7 +2182,6 @@
 <translation id="4296575653627536209">Προσθήκη εποπτευόμενου χρήστη</translation>
 <translation id="4297219207642690536">Επανεκκίνηση και επαναφορά</translation>
 <translation id="4297322094678649474">Αλλαγή γλωσσών</translation>
-<translation id="4300305918532693141">Για να αλλάξετε αυτήν τη ρύθμιση, <ph name="BEGIN_LINK" />επαναφέρετε τον συγχρονισμό<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">μεγάλη (2 δ.)</translation>
 <translation id="4306119971288449206">Οι εφαρμογές θα πρέπει να προβάλλονται με τον τύπο περιεχομένου "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (πραγματικά <ph name="NUM_KILOBYTES_LIVE" />K)</translation>
@@ -5153,7 +5152,6 @@
 <translation id="8834164572807951958">Τα μέλη του "<ph name="DESTINATION_NAME" />" θα αποκτήσουν πρόσβαση στο αντίγραφο αυτών των στοιχείων.</translation>
 <translation id="8838770651474809439">Χάμπουργκερ</translation>
 <translation id="883911313571074303">Σχολιασμός εικόνας</translation>
-<translation id="8844690305858050198">Η διαδικασία ολοκληρώθηκε! Το επιβλαβές λογισμικό καταργήθηκε. Για να ενεργοποιήσετε ξανά τις επεκτάσεις, μεταβείτε στις &lt;a href="chrome://extensions"&gt;Επεκτάσεις.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Λήψη βοήθειας</translation>
 <translation id="8846141544112579928">Αναζήτηση για πληκτρολόγιο…</translation>
 <translation id="8847988622838149491">USB</translation>

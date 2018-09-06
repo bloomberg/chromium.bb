@@ -2694,13 +2694,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
-
-      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
-      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
-      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
-      Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
-      I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8669669491594628013">Ti consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
 
       Puoi utilizzare le norme "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" per configurare la password da proteggere.

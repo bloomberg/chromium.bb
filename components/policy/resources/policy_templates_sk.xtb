@@ -2834,13 +2834,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
           Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
 
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
-<translation id="8667812577403206506">Umožňuje ovládať, či sa virtuálne počítače môžu spúšťať v systéme Chrome OS.
-
-      Ak toto pravidlo nastavíte na hodnotu True, zariadenie bude môcť spúšťať virtuálne počítače.
-      Ak ho nastavíte na hodnotu False, zariadenie nebude môcť spúšťať virtuálne počítače.
-      Keď ho zmeníte na hodnotu False, použije sa na začínajúce nové virtuálne počítače, ale nevypne tie, ktoré sú už spustené.
-      Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
-      Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="8669669491594628013">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
 
       Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.

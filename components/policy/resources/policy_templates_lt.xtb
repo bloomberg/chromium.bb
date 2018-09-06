@@ -2874,13 +2874,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
 
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „<ph name="PRODUCT_NAME" />“ nepaisys jo siunčiamų IWA užklausų.</translation>
-<translation id="8667812577403206506">Galima valdyti, ar virtualiesiems įrenginiams leidžiama veikti „Chrome“ OS.
-
-      Jei politika nustatyta į „True“, įrenginiui leidžiama paleisti virtualiuosius įrenginius.
-      Jei politika nustatyta į „False“, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
-      Pakeitus šios politikos nustatymą į „False“, jis taikomas paleidžiant naujus virtualiuosius įrenginius, bet jau veikiantys virtualieji įrenginiai nėra išjungiami.
-      Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
-      Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
 <translation id="8669669491594628013">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
 
       Politiką „PasswordProtectionLoginURLs“ ir „PasswordProtectionChangePasswordURL“ galite naudoti konfigūruodami, kuriuos slaptažodžius apsaugoti.

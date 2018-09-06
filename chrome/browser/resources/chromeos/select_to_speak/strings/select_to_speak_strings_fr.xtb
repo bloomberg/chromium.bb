@@ -10,6 +10,8 @@
 <translation id="2714180132046334502">Arrière-plan sombre</translation>
 <translation id="27349076983469322">Arrière-plan clair</translation>
 <translation id="335581015389089642">Voix</translation>
+<translation id="4004802134384979325">cochée</translation>
+<translation id="4827410568042294688">désélectionné</translation>
 <translation id="5901630391730855834">Jaune</translation>
 <translation id="6017514345406065928">Vert</translation>
 <translation id="6475604559827479857">Couleur pour la mise en surbrillance des mots :</translation>
@@ -17,6 +19,7 @@
 <translation id="7261612856573623172">Voix de la synthèse vocale du système</translation>
 <translation id="7768784765476638775">Sélectionner pour prononcer</translation>
 <translation id="7914870167134465181">Mise en surbrillance</translation>
+<translation id="8033827949643255796">sélectionné</translation>
 <translation id="8324974933005349667">Personnaliser les paramètres de synthèse vocale</translation>
 <translation id="992256792861109788">Rose</translation>
 </translationbundle>
