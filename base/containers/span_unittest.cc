@@ -236,8 +236,6 @@ TEST(SpanTest, ConvertNonConstIntegralToConst) {
 
   span<int> int_span(vector.data(), vector.size());
   span<const int> const_span(int_span);
-  EXPECT_EQ(int_span.size(), const_span.size());
-
   EXPECT_THAT(const_span, Pointwise(Eq(), int_span));
 
   span<int, 6> static_int_span(vector.data(), vector.size());

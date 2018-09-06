@@ -352,8 +352,8 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
   int next_sequence_number = 0;
   bool last_event_was_pause = false;
 
-  auto next_read = reads.begin();
-  auto next_write = writes.begin();
+  auto* next_read = reads.begin();
+  auto* next_write = writes.begin();
   while (next_read != reads.end() || next_write != writes.end()) {
     if (next_read != reads.end() &&
         next_read->sequence_number == next_sequence_number) {
@@ -407,8 +407,8 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
   // ERR_IO_PENDING.
   CHECK(!last_event_was_pause);
 
-  CHECK(next_read == reads.end());
-  CHECK(next_write == writes.end());
+  CHECK_EQ(next_read, reads.end());
+  CHECK_EQ(next_write, writes.end());
 }
 
 SequencedSocketData::SequencedSocketData(const MockConnect& connect,
