@@ -14,6 +14,8 @@ enum OptimizationType {
   // This optimization applies a set of ResourceLoadingHint(s) to load the
   // page.
   RESOURCE_LOADING = 2;
+  // This optimization redirects the navigation through a lite page server.
+  LITE_PAGE_REDIRECT = 3;
 }
 
 // Presents semantics for how page load URLs should be matched.
@@ -141,6 +143,36 @@ message Hint {
   repeated PageHint page_hints = 4;
 }
 
+// Configuration and data for a Bloom filter.
+//
+// Note that some additional aspects of the BloomFilter are separately
+// specified between the client and server including the specific MurmurHash3
+// hashing function, how the hashing function is seeded, how bits are
+// addressed in the byte vector, and the nature of the strings that the
+// Bloom filter holds (whether host, host suffix, URL path, etc.).
+message BloomFilter {
+  // Specifies the number of hash functions to use in the Bloom filter.
+  // This essentially means how many bits will be set in the bit array
+  // for a string member of the Bloom filter.
+  optional int32 num_hash_functions = 1;
+  // The number of bits in the Bloom filter's bit array.
+  optional int32 num_bits = 2;
+  // The bit array data of the Bloom filter provided via a byte vector.
+  // The number of bytes provided must be large enough to hold the
+  // specified number of bits (num_bits).
+  optional bytes data = 3;
+}
+
+// A scalable filter for an optimization type. Initially, this is used to
+// provide a large scale blacklist but might be used for whitelists in
+// the future.
+message OptimizationFilter {
+  // The type of optimization this filter applies to.
+  optional OptimizationType optimization_type = 1;
+  // The filter data represented as a Bloom filter.
+  optional BloomFilter bloom_filter = 2;
+}
+
 message Configuration {
   // An ordered list containing hints for key/optimization combinations.
   //
@@ -158,4 +190,6 @@ message Configuration {
   // details for that key that it wants to provide as the client will only
   // look at that one record to decide which optimization to apply.
   repeated Hint hints = 1;
+  // A list of per-optimization blacklists.
+  repeated OptimizationFilter optimization_blacklists = 2;
 }

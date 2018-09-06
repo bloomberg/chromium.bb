@@ -104,6 +104,8 @@ ConvertProtoOptimizationTypeToPreviewsOptimizationType(
       return PreviewsType::NOSCRIPT;
     case optimization_guide::proto::RESOURCE_LOADING:
       return PreviewsType::RESOURCE_LOADING_HINTS;
+    case optimization_guide::proto::LITE_PAGE_REDIRECT:
+      return PreviewsType::LITE_PAGE_REDIRECT;
   }
 }
 
