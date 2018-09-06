@@ -62,6 +62,7 @@ public class KeyboardAccessoryData {
      */
     public final static class Tab {
         private final Drawable mIcon;
+        private final @Nullable String mOpeningAnnouncement;
         private final String mContentDescription;
         private final int mTabLayout;
         private final @AccessoryTabType int mRecordingType;
@@ -85,8 +86,15 @@ public class KeyboardAccessoryData {
 
         public Tab(Drawable icon, String contentDescription, @LayoutRes int tabLayout,
                 @AccessoryTabType int recordingType, @Nullable Listener listener) {
+            this(icon, contentDescription, null, tabLayout, recordingType, listener);
+        }
+
+        public Tab(Drawable icon, String contentDescription, @Nullable String openingAnnouncement,
+                @LayoutRes int tabLayout, @AccessoryTabType int recordingType,
+                @Nullable Listener listener) {
             mIcon = icon;
             mContentDescription = contentDescription;
+            mOpeningAnnouncement = openingAnnouncement;
             mTabLayout = tabLayout;
             mListener = listener;
             mRecordingType = recordingType;
@@ -102,15 +110,23 @@ public class KeyboardAccessoryData {
 
         /**
          * The description for this tab. It will become the content description of the icon.
-         * @return A short string describing the task of this tab.
+         * @return A short string describing the name of this tab.
          */
         public String getContentDescription() {
             return mContentDescription;
         }
 
         /**
-         * The description for this tab. It will become the content description of the icon.
-         * @return A short string describing the task of this tab.
+         * An optional announcement triggered when the Tab is opened.
+         * @return A string describing the contents of this tab.
+         */
+        public String getOpeningAnnouncement() {
+            return mOpeningAnnouncement;
+        }
+
+        /**
+         * Recording type of this tab. Used to sort it into the correct UMA bucket.
+         * @return A {@link AccessoryTabType}.
          */
         public @AccessoryTabType int getRecordingType() {
             return mRecordingType;

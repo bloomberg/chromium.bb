@@ -103,6 +103,8 @@ class PasswordAccessorySheetViewBinder {
             } else {
                 getTextView().setOnClickListener(null);
             }
+            // |setOnClickListener| has set this to |true|, so update it afterwards.
+            getTextView().setClickable(item.getItemSelectedCallback() != null);
         }
     }
 
@@ -131,6 +133,7 @@ class PasswordAccessorySheetViewBinder {
         @Override
         protected void bind(Item item) {
             super.bind(item);
+            getTextView().setClickable(true); // Ensures that "disabled" is announced.
             if (item.getItemSelectedCallback() == null) {
                 mSuggestionText.setEnabled(false);
                 mSuggestionText.setBackground(null);
@@ -147,7 +150,7 @@ class PasswordAccessorySheetViewBinder {
             // Jelly Bean, so the padding should be set after the background.
             if (!item.isPassword()) {
                 setIconForBitmap(null); // Set the default icon, then try to get a better one.
-                item.fetchFavicon(this ::setIconForBitmap);
+                item.fetchFavicon(this::setIconForBitmap);
                 mSuggestionText.setPadding(mPadding, 0, mPadding, 0);
             } else {
                 ApiCompatibilityUtils.setCompoundDrawablesRelative(

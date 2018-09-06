@@ -99,9 +99,11 @@ class KeyboardAccessoryViewBinder {
                     .updateAllTabs(view, model.getTabList());
         } else if (propertyKey == PropertyKey.VISIBLE) {
             view.setActiveTabColor(model.activeTab());
+            setActiveTabHint(model, view);
             view.setVisible(model.isVisible());
         } else if (propertyKey == PropertyKey.ACTIVE_TAB) {
             view.setActiveTabColor(model.activeTab());
+            setActiveTabHint(model, view);
         } else if (propertyKey == PropertyKey.BOTTOM_OFFSET) {
             view.setBottomOffset(model.bottomOffset());
         } else if (propertyKey == PropertyKey.TAB_SELECTION_CALLBACKS) {
@@ -110,6 +112,21 @@ class KeyboardAccessoryViewBinder {
             view.setTabSelectionAdapter(model.getTabSelectionCallbacks());
         } else {
             assert false : "Every possible property update needs to be handled!";
+        }
+    }
+
+    private static void setActiveTabHint(KeyboardAccessoryModel model, KeyboardAccessoryView view) {
+        int activeTab = -1;
+        if (model.activeTab() != null) {
+            activeTab = model.activeTab();
+        }
+        for (int i = 0; i < model.getTabList().size(); ++i) {
+            Tab tab = model.getTabList().get(i);
+            if (activeTab == i) {
+                view.setTabDescription(i, R.string.keyboard_accessory_sheet_hide);
+            } else {
+                view.setTabDescription(i, tab.getContentDescription());
+            }
         }
     }
 }

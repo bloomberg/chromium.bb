@@ -23,6 +23,10 @@ class AccessorySheetViewBinder {
         } else if (propertyKey == PropertyKey.VISIBLE) {
             viewPager.bringToFront(); // Ensure toolbars and other containers are overlaid.
             viewPager.setVisibility(model.isVisible() ? View.VISIBLE : View.GONE);
+            if (model.isVisible()
+                    && model.getActiveTabIndex() != AccessorySheetModel.NO_ACTIVE_TAB) {
+                announceOpenedTab(viewPager, model.getTabList().get(model.getActiveTabIndex()));
+            }
         } else if (propertyKey == PropertyKey.HEIGHT) {
             ViewGroup.LayoutParams p = viewPager.getLayoutParams();
             p.height = model.getHeight();
@@ -34,5 +38,10 @@ class AccessorySheetViewBinder {
         } else {
             assert false : "Every possible property update needs to be handled!";
         }
+    }
+
+    static void announceOpenedTab(View announcer, KeyboardAccessoryData.Tab tab) {
+        if (tab.getOpeningAnnouncement() == null) return;
+        announcer.announceForAccessibility(tab.getOpeningAnnouncement());
     }
 }
