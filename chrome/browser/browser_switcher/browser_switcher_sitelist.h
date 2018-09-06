@@ -21,7 +21,7 @@ class BrowserSwitcherSitelist {
   ~BrowserSwitcherSitelist();
 
   // Returns true if the given URL should be open in an alternative browser.
-  bool ShouldRedirect(const GURL& url) const;
+  bool ShouldSwitch(const GURL& url) const;
 
  private:
   PrefService* const prefs_;

@@ -45,84 +45,81 @@ class BrowserSwitcherSitelistTest : public testing::Test {
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectWildcard) {
   // A "*" by itself means everything matches.
   Initialize({"*"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("https://example.com/foobar/")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/foobar/")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://google.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("https://example.com/foobar/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/foobar/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://google.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectHost) {
   // A string without slashes means compare the URL's host (case-insensitive).
   Initialize({"example.com"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("https://example.com/")));
-  EXPECT_TRUE(
-      sitelist()->ShouldRedirect(GURL("http://subdomain.example.com/")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/foobar/")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://google.com/")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://example.ca/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("https://example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://subdomain.example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/foobar/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://google.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.ca/")));
 
   // For backwards compatibility, this should also match, even if it's not the
   // same host.
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("https://notexample.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("https://notexample.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectHostNotLowerCase) {
   // Host is not in lowercase form, but we compare ignoring case.
   Initialize({"eXaMpLe.CoM"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectWrongScheme) {
   Initialize({"example.com"}, {});
   // Scheme is not one of 'http', 'https' or 'file'.
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("ftp://example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("ftp://example.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectPrefix) {
   // A string with slashes means check if it's a prefix (case-sensitive).
   Initialize({"http://example.com/foobar"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/foobar")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/foobar")));
   EXPECT_TRUE(
-      sitelist()->ShouldRedirect(GURL("http://example.com/foobar/subroute/")));
+      sitelist()->ShouldSwitch(GURL("http://example.com/foobar/subroute/")));
   EXPECT_TRUE(
-      sitelist()->ShouldRedirect(GURL("http://example.com/foobar#fragment")));
-  EXPECT_TRUE(sitelist()->ShouldRedirect(
-      GURL("http://example.com/foobar?query=param")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("https://example.com/foobar")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("HTTP://EXAMPLE.COM/FOOBAR")));
-  EXPECT_FALSE(
-      sitelist()->ShouldRedirect(GURL("http://subdomain.example.com/")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://google.com/")));
+      sitelist()->ShouldSwitch(GURL("http://example.com/foobar#fragment")));
+  EXPECT_TRUE(
+      sitelist()->ShouldSwitch(GURL("http://example.com/foobar?query=param")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("https://example.com/foobar")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("HTTP://EXAMPLE.COM/FOOBAR")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://subdomain.example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://google.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectPrefixNotLowerCase) {
   // The scheme and host are case-insensitive, but the rest is case-sensitive.
   Initialize({"HTTP://EXAMPLE.COM/SUBROUTE"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/SUBROUTE")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://example.com/subroute")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/SUBROUTE")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/subroute")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectInvertedMatch) {
   // The most specific (i.e., longest string) rule should have priority.
   Initialize({"!subdomain.example.com", "example.com"}, {});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
-  EXPECT_FALSE(
-      sitelist()->ShouldRedirect(GURL("http://subdomain.example.com/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://subdomain.example.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectGreylist) {
   // The most specific (i.e., longest string) rule should have priority.
   Initialize({"example.com"}, {"http://example.com/login/"});
-  EXPECT_TRUE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://example.com/login/")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/login/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectGreylistWildcard) {
   Initialize({"*"}, {"*"});
   // If both are wildcards, prefer the greylist.
-  EXPECT_FALSE(sitelist()->ShouldRedirect(GURL("http://example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
 }
 
 }  // namespace browser_switcher
