@@ -6,13 +6,18 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -23,6 +28,50 @@
 #include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class TestThemeInfoObserver : public InstantServiceObserver {
+ public:
+  explicit TestThemeInfoObserver(InstantService* service) : service_(service) {
+    service_->AddObserver(this);
+  }
+
+  ~TestThemeInfoObserver() override { service_->RemoveObserver(this); }
+
+  void WaitForThemeApplied(bool theme_installed) {
+    DCHECK(!quit_closure_);
+
+    theme_installed_ = theme_installed;
+    if (!theme_info_.using_default_theme == theme_installed) {
+      return;
+    }
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  bool IsUsingDefaultTheme() { return theme_info_.using_default_theme; }
+
+ private:
+  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override {
+    theme_info_ = theme_info;
+
+    if (quit_closure_ && !theme_info_.using_default_theme == theme_installed_) {
+      std::move(quit_closure_).Run();
+      quit_closure_.Reset();
+    }
+  }
+
+  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>&,
+                               bool is_custom_links) override {}
+
+  InstantService* const service_;
+
+  ThemeBackgroundInfo theme_info_;
+
+  bool theme_installed_;
+  base::OnceClosure quit_closure_;
+};
 
 class InstantThemeTest : public extensions::ExtensionBrowserTest,
                          public InstantTestBase {
@@ -117,84 +166,147 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
   EXPECT_TRUE(loaded) << search_url;
 }
 
-// Flaky on all bots. http://crbug.com/335297.
-IN_PROC_BROWSER_TEST_F(InstantThemeTest,
-                       DISABLED_NoThemeBackgroundChangeEventOnTabSwitch) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-
-  // Install a theme.
-  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToExistingTab) {
+  // On the existing tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
-
-  // Open new tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-
-  // Make sure the tab did not receive an onthemechange event for the
-  // already-installed theme. (An event *is* sent, but that happens before the
-  // page can register its handler.)
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
-  int on_theme_changed_calls = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(0, on_theme_changed_calls);
-
-  // Activate the previous tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
-  // Switch back to new tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
-  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
-
-  // Confirm that new tab got no onthemechange event while switching tabs.
-  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  on_theme_changed_calls = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(0, on_theme_changed_calls);
-}
-
-// Flaky on all bots. http://crbug.com/335297, http://crbug.com/265971.
-IN_PROC_BROWSER_TEST_F(InstantThemeTest,
-                       DISABLED_SendThemeBackgroundChangedEvent) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-
-  // Install a theme.
-  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
-  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  const std::string helper_js = "document.body.style.cssText";
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Open new tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-
-  // Make sure the tab did not receive an onthemechange event for the
-  // already-installed theme. (An event *is* sent, but that happens before the
-  // page can register its handler.)
   content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
-  int on_theme_changed_calls = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(0, on_theme_changed_calls);
+  observer.WaitForThemeApplied(false);
+
+  // Get the default (no theme) css setting
+  std::string original_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &original_css_text));
+
+  // Open a new tab and install a theme on the new tab.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_EQ(3, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->active_index());
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  observer.WaitForThemeApplied(true);
+
+  // Get the current tab's theme CSS setting.
+  std::string css_text = "";
+  EXPECT_TRUE(
+      instant_test_utils::GetStringFromJS(active_tab, helper_js, &css_text));
+
+  // Switch to the previous tab.
+  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  observer.WaitForThemeApplied(true);
+
+  // Get the previous tab's theme CSS setting.
+  std::string previous_tab_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &previous_tab_css_text));
+
+  // The previous tab should also apply the new theme.
+  EXPECT_NE(original_css_text, css_text);
+  EXPECT_EQ(previous_tab_css_text, css_text);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToNewTab) {
+  // On the existing tab.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  const std::string helper_js = "document.body.style.cssText";
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  // Open new tab.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForThemeApplied(false);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Get the default (no theme) css setting
+  std::string original_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &original_css_text));
+
+  // Install a theme on this tab.
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  observer.WaitForThemeApplied(true);
+
+  // Get the current tab's theme CSS setting.
+  std::string css_text = "";
+  EXPECT_TRUE(
+      instant_test_utils::GetStringFromJS(active_tab, helper_js, &css_text));
+
+  // Open a new tab.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForThemeApplied(true);
+  ASSERT_EQ(3, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->active_index());
+
+  // Get the new tab's theme CSS setting.
+  std::string new_tab_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &new_tab_css_text));
+
+  // The new tab should change the original theme and also apply the new theme.
+  EXPECT_NE(original_css_text, new_tab_css_text);
+  EXPECT_EQ(css_text, new_tab_css_text);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeChangedWhenApplyingNewTheme) {
+  // On the existing tab.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  const std::string helper_js = "document.body.style.cssText";
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  // Open new tab.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForThemeApplied(false);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Get the default (no theme) css setting
+  std::string original_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &original_css_text));
+
+  // install a theme on this tab.
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  observer.WaitForThemeApplied(true);
+
+  // Get the current tab's theme CSS setting.
+  std::string css_text = "";
+  EXPECT_TRUE(
+      instant_test_utils::GetStringFromJS(active_tab, helper_js, &css_text));
 
   // Install a different theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme2", "snowflake theme"));
+  observer.WaitForThemeApplied(true);
 
-  // Confirm that the new tab got notified about the theme changed event.
-  on_theme_changed_calls = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(1, on_theme_changed_calls);
+  // Get the current tab's theme CSS setting.
+  std::string new_css_text = "";
+  EXPECT_TRUE(instant_test_utils::GetStringFromJS(active_tab, helper_js,
+                                                  &new_css_text));
+
+  // Confirm that the theme will take effect on the current tab when installing
+  // a new theme.
+  EXPECT_NE(original_css_text, css_text);
+  EXPECT_NE(css_text, new_css_text);
+  EXPECT_NE(original_css_text, new_css_text);
 }
