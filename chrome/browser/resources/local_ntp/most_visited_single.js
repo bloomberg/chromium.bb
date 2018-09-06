@@ -426,7 +426,7 @@ function truncateTitleText(titles) {
     const originalTitle = el.innerText;
     let truncatedTitle = el.innerText;
     while (el.scrollHeight > el.offsetHeight && truncatedTitle.length > 0) {
-      el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '...';
+      el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '\u2026';
     }
     if (truncatedTitle.length === 0) {
       console.error('Title truncation failed: ' + originalTitle);
