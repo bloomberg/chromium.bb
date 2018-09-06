@@ -231,6 +231,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 // android-only feature.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
                        DoNotShowUIUntilThresholdReached) {
+  settings_manager()->set_should_use_smart_ui_for_testing(true);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL a_url(embedded_test_server()->GetURL(
@@ -261,12 +262,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  bool use_smart_ui = settings_manager()->should_use_smart_ui();
-  EXPECT_EQ(client->did_show_ui_for_navigation(), !use_smart_ui);
+  EXPECT_EQ(client->did_show_ui_for_navigation(), false);
 
   histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
-                                     SubresourceFilterAction::kUISuppressed,
-                                     use_smart_ui ? 1 : 0);
+                                     SubresourceFilterAction::kUISuppressed, 1);
 
   ConfigureAsPhishingURL(b_url);
 
@@ -285,8 +284,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   EXPECT_TRUE(client->did_show_ui_for_navigation());
 
   histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
-                                     SubresourceFilterAction::kUISuppressed,
-                                     use_smart_ui ? 1 : 0);
+                                     SubresourceFilterAction::kUISuppressed, 1);
 }
 
 }  // namespace subresource_filter
