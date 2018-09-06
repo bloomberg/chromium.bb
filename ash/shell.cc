@@ -626,6 +626,11 @@ void Shell::NotifyOverviewModeEnded() {
     observer.OnOverviewModeEnded();
 }
 
+void Shell::NotifyOverviewModeEndingAnimationComplete() {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeEndingAnimationComplete();
+}
+
 void Shell::NotifySplitViewModeStarting() {
   for (auto& observer : shell_observers_)
     observer.OnSplitViewModeStarting();

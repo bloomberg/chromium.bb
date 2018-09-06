@@ -23,8 +23,10 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -193,16 +195,20 @@ class WindowSelectorController::OverviewBlurController
 
     WindowSelector* window_selector =
         Shell::Get()->window_selector_controller()->window_selector();
-    DCHECK(window_selector);
-
     for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-      if (window_selector->ShouldAnimateWallpaper(root)) {
-        root->AddObserver(this);
-        roots_to_animate_.push_back(root);
-      } else {
-        animation_.Reset(should_blur ? 1.0 : 0.0);
-        ApplyBlur(root, value);
+      // No need to animate the blur on exiting as this should only be called
+      // after overview animations are finished.
+      if (should_blur) {
+        DCHECK(window_selector);
+        if (window_selector->ShouldAnimateWallpaper(root)) {
+          root->AddObserver(this);
+          roots_to_animate_.push_back(root);
+          continue;
+        }
       }
+
+      animation_.Reset(should_blur ? 1.0 : 0.0);
+      ApplyBlur(root, value);
     }
 
     // Run the animation if one of the roots needs to be animated.
@@ -301,7 +307,12 @@ bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
     if (!CanSelect())
       return false;
 
-    window_selector_.reset(new WindowSelector(this));
+    // Clear any animations that may be running from last overview end.
+    for (const auto& animation : delayed_animations_)
+      animation->Shutdown();
+    delayed_animations_.clear();
+
+    window_selector_ = std::make_unique<WindowSelector>(this);
     window_selector_->set_use_slide_animation(should_slide_overview);
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
@@ -445,13 +456,13 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
-
-  if (IsBlurAllowed())
-    overview_blur_controller_->Unblur();
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
   window_selector->Shutdown();
+  // There may be no delayed animations in tests, so unblur right away.
+  if (delayed_animations_.empty() && IsBlurAllowed())
+    overview_blur_controller_->Unblur();
   // Don't delete |window_selector_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window_selector);
   last_selection_time_ = base::Time::Now();
@@ -467,21 +478,17 @@ void WindowSelectorController::AddDelayedAnimationObserver(
 
 void WindowSelectorController::RemoveAndDestroyAnimationObserver(
     DelayedAnimationObserver* animation_observer) {
-  class IsEqual {
-   public:
-    explicit IsEqual(DelayedAnimationObserver* animation_observer)
-        : animation_observer_(animation_observer) {}
-    bool operator()(const std::unique_ptr<DelayedAnimationObserver>& other) {
-      return (other.get() == animation_observer_);
-    }
+  const bool previous_empty = delayed_animations_.empty();
+  base::EraseIf(delayed_animations_,
+                base::MatchesUniquePtr(animation_observer));
 
-   private:
-    const DelayedAnimationObserver* animation_observer_;
-  };
-  delayed_animations_.erase(
-      std::remove_if(delayed_animations_.begin(), delayed_animations_.end(),
-                     IsEqual(animation_observer)),
-      delayed_animations_.end());
+  // If something has been removed and its the last observer, unblur the
+  // wallpaper and let observers know.
+  if (!previous_empty && delayed_animations_.empty()) {
+    if (IsBlurAllowed())
+      overview_blur_controller_->Unblur();
+    Shell::Get()->NotifyOverviewModeEndingAnimationComplete();
+  }
 }
 
 // static

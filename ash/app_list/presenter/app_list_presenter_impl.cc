@@ -35,10 +35,6 @@ namespace {
 // The y offset for app list animation when overview mode toggles.
 constexpr int kOverviewAnimationYOffset = 100;
 
-// The delay in milliseconds for app list animation when overview mode ends
-constexpr base::TimeDelta kOverviewEndAnimationDelay =
-    base::TimeDelta::FromMilliseconds(250);
-
 // The duration in milliseconds for app list animation when overview mode
 // toggles.
 constexpr base::TimeDelta kOverviewAnimationDuration =
@@ -48,8 +44,7 @@ inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
-void UpdateOverviewSettings(bool end_overview,
-                            ui::AnimationMetricsReporter* reporter,
+void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
                             ui::ScopedLayerAnimationSettings* settings) {
   settings->SetTransitionDuration(kOverviewAnimationDuration);
   settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
@@ -58,13 +53,6 @@ void UpdateOverviewSettings(bool end_overview,
 
   DCHECK(reporter);
   settings->SetAnimationMetricsReporter(reporter);
-
-  if (end_overview) {
-    settings->GetAnimator()->SchedulePauseForProperties(
-        kOverviewEndAnimationDelay,
-        ui::LayerAnimationElement::AnimatableProperty::OPACITY |
-            ui::LayerAnimationElement::AnimatableProperty::TRANSFORM);
-  }
 }
 
 class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
@@ -270,7 +258,7 @@ void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
   }
   UpdateYPositionAndOpacityForHomeLauncher(
       start ? kOverviewAnimationYOffset : 0, start ? 0.f : 1.f,
-      animate ? base::BindRepeating(&UpdateOverviewSettings, start,
+      animate ? base::BindRepeating(&UpdateOverviewSettings,
                                     state_animation_metrics_reporter_.get())
               : base::NullCallback());
 }

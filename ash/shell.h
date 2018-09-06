@@ -625,6 +625,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();
 
+  // Notifies observers that the end overivew mode animation has completed.
+  void NotifyOverviewModeEndingAnimationComplete();
+
   // Notifies observers that split view mode is about to be started (before the
   // window gets snapped and activated).
   void NotifySplitViewModeStarting();
