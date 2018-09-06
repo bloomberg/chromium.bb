@@ -1044,6 +1044,21 @@ public class PrefServiceBridge {
         nativeSetPromptForDownloadAndroid(status);
     }
 
+    /**
+     * @return Whether the explicit language prompt was shown at least once.
+     */
+    public boolean getExplicitLanguageAskPromptShown() {
+        return nativeGetExplicitLanguageAskPromptShown();
+    }
+
+    /**
+     * @param shown The value to set the underlying pref to: whether the prompt
+     * was shown to the user at least once.
+     */
+    public void setExplicitLanguageAskPromptShown(boolean shown) {
+        nativeSetExplicitLanguageAskPromptShown(shown);
+    }
+
     @VisibleForTesting
     public static void setInstanceForTesting(@Nullable PrefServiceBridge instanceForTesting) {
         sInstance = instanceForTesting;
@@ -1165,4 +1180,6 @@ public class PrefServiceBridge {
     private native void nativeSetDownloadAndSaveFileDefaultDirectory(String directory);
     private native int nativeGetPromptForDownloadAndroid();
     private native void nativeSetPromptForDownloadAndroid(int status);
+    private native boolean nativeGetExplicitLanguageAskPromptShown();
+    private native void nativeSetExplicitLanguageAskPromptShown(boolean shown);
 }

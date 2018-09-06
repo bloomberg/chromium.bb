@@ -1330,6 +1330,23 @@ static void JNI_PrefServiceBridge_SetPromptForDownloadAndroid(
   GetPrefService()->SetInteger(prefs::kPromptForDownloadAndroid, status);
 }
 
+static jboolean JNI_PrefServiceBridge_GetExplicitLanguageAskPromptShown(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  return translate_prefs->GetExplicitLanguageAskPromptShown();
+}
+
+static void JNI_PrefServiceBridge_SetExplicitLanguageAskPromptShown(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean shown) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  translate_prefs->SetExplicitLanguageAskPromptShown(shown);
+}
+
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_GE(pref_index, 0);
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
