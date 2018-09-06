@@ -60,11 +60,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Records UMA metrics about Tab usage.
 @property(nonatomic, readonly) TabUsageRecorder* tabUsageRecorder;
 
-// Whether web usage is enabled (meaning web views can be created in its tabs).
-// Defaults to NO.
-// Note that generally this should be set via BVC, not directly.
-@property(nonatomic, assign) BOOL webUsageEnabled;
-
 // YES if this tab set is off the record.
 @property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;
 

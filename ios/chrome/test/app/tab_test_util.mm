@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -193,8 +195,11 @@ void EvictOtherTabModelTabs() {
           ? [GetMainController().browserViewInformation mainTabModel]
           : [GetMainController().browserViewInformation otrTabModel];
   // Disabling and enabling web usage will evict all web views.
-  otherTabModel.webUsageEnabled = NO;
-  otherTabModel.webUsageEnabled = YES;
+  WebStateListWebUsageEnabler* enabler =
+      WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+          otherTabModel.browserState);
+  enabler->SetWebUsageEnabled(false);
+  enabler->SetWebUsageEnabled(true);
 }
 
 BOOL CloseAllIncognitoTabs() {

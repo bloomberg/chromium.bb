@@ -24,6 +24,8 @@
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
+#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -33,7 +35,6 @@
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -82,6 +83,12 @@ class TabModelTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
+    // Web usage is disabled during these tests.
+    web_usage_enabler_ =
+        WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
+            chrome_browser_state_.get());
+    web_usage_enabler_->SetWebUsageEnabled(false);
+
     session_window_ = [[SessionWindowIOS alloc] init];
 
     // Create tab model with just a dummy session service so the async state
@@ -98,6 +105,7 @@ class TabModelTest : public PlatformTest {
 
   void SetTabModel(TabModel* tab_model) {
     if (tab_model_) {
+      web_usage_enabler_->SetWebStateList(nullptr);
       @autoreleasepool {
         [tab_model_ browserStateDestroyed];
         tab_model_ = nil;
@@ -105,6 +113,7 @@ class TabModelTest : public PlatformTest {
     }
 
     tab_model_ = tab_model;
+    web_usage_enabler_->SetWebStateList(tab_model_.webStateList);
   }
 
   TabModel* CreateTabModel(SessionServiceIOS* session_service,
@@ -113,7 +122,6 @@ class TabModelTest : public PlatformTest {
         initWithSessionWindow:session_window
                sessionService:session_service
                  browserState:chrome_browser_state_.get()]);
-    [tab_model setWebUsageEnabled:NO];
     [tab_model setPrimary:YES];
     return tab_model;
   }
@@ -137,6 +145,7 @@ class TabModelTest : public PlatformTest {
   web::ScopedTestingWebClient web_client_;
   SessionWindowIOS* session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  WebStateListWebUsageEnabler* web_usage_enabler_;
   TabModel* tab_model_;
 };
 
