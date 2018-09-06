@@ -47,3 +47,14 @@ git_repository(
     commit = "55cc27b6eca3d7906fc1a920ca95df7717deb4e7",
     remote = "https://github.com/google/glog.git",
 )
+
+http_archive(
+    name = "freetype",
+    build_file = "freetype.BUILD",
+    # We patch out some modules we don't use from freetype config file.
+    patch_args = ["-p1"],
+    patches = ["freetype_config.patch"],
+    sha256 = "bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6",
+    strip_prefix = "freetype-2.9",
+    urls = ["https://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.gz"],
+)

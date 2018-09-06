@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO(vasilvv): make freetype a statically linked dependency for non-Linux ports.
 cc_library(
     name = "sdl2_ttf",
     srcs = ["SDL_ttf.c"],
     hdrs = ["SDL_ttf.h"],
-    copts = ["-I/usr/include/freetype2"],
-    linkopts = ["-lfreetype"],
     visibility = ["//visibility:public"],
-    deps = ["@sdl2"],
+    deps = [
+        "@freetype",
+        "@sdl2",
+    ],
 )
