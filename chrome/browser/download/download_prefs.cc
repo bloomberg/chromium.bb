@@ -13,9 +13,9 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -86,10 +86,7 @@ class DefaultDownloadDirectory {
  public:
   const base::FilePath& path() const { return path_; }
 
- private:
-  friend struct base::LazyInstanceTraitsBase<DefaultDownloadDirectory>;
-
-  DefaultDownloadDirectory() {
+  void Initialize() {
     if (!base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
       NOTREACHED();
     }
@@ -102,13 +99,20 @@ class DefaultDownloadDirectory {
     }
   }
 
+ private:
+  friend class base::NoDestructor<DefaultDownloadDirectory>;
+
+  DefaultDownloadDirectory() { Initialize(); }
+
   base::FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDownloadDirectory);
 };
 
-base::LazyInstance<DefaultDownloadDirectory>::DestructorAtExit
-    g_default_download_directory = LAZY_INSTANCE_INITIALIZER;
+DefaultDownloadDirectory& GetDefaultDownloadDirectorySingleton() {
+  static base::NoDestructor<DefaultDownloadDirectory> instance;
+  return *instance;
+}
 
 }  // namespace
 
@@ -263,8 +267,13 @@ base::FilePath DownloadPrefs::GetDefaultDownloadDirectoryForProfile() const {
 }
 
 // static
+void DownloadPrefs::ReinitializeDefaultDownloadDirectoryForTesting() {
+  GetDefaultDownloadDirectorySingleton().Initialize();
+}
+
+// static
 const base::FilePath& DownloadPrefs::GetDefaultDownloadDirectory() {
-  return g_default_download_directory.Get().path();
+  return GetDefaultDownloadDirectorySingleton().path();
 }
 
 // static
