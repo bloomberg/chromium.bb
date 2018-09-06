@@ -173,6 +173,7 @@ void av1_convolve_x_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   // horizontal filter
   const int16_t *x_filter = av1_get_interp_filter_subpel_kernel(
       filter_params_x, subpel_x_q4 & SUBPEL_MASK);
+
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
       int32_t res = 0;
@@ -510,16 +511,47 @@ static void convolve_2d_scale_wrapper(
                         y_step_qn, conv_params);
 }
 
+// TODO(huisu@google.com): bilinear filtering only needs 2 taps in general. So
+// we may create optimized code to do 2-tap filtering for all bilinear filtering
+// usages, not just IntraBC.
+static void convolve_2d_for_intrabc(const uint8_t *src, int src_stride,
+                                    uint8_t *dst, int dst_stride, int w, int h,
+                                    int subpel_x_q4, int subpel_y_q4,
+                                    ConvolveParams *conv_params) {
+  const InterpFilterParams *filter_params_x =
+      subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
+  const InterpFilterParams *filter_params_y =
+      subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
+  if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
+    av1_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
+                         filter_params_x, filter_params_y, 0, 0, conv_params);
+  } else if (subpel_x_q4 != 0) {
+    av1_convolve_x_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                        filter_params_y, 0, 0, conv_params);
+  } else {
+    av1_convolve_y_sr_c(src, src_stride, dst, dst_stride, w, h, filter_params_x,
+                        filter_params_y, 0, 0, conv_params);
+  }
+}
+
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             InterpFilters interp_filters, const int subpel_x_q4,
                             int x_step_q4, const int subpel_y_q4, int y_step_q4,
                             int scaled, ConvolveParams *conv_params,
-                            const struct scale_factors *sf) {
+                            const struct scale_factors *sf, int is_intrabc) {
+  assert(IMPLIES(is_intrabc, !scaled));
   (void)x_step_q4;
   (void)y_step_q4;
   (void)dst;
   (void)dst_stride;
+
+  if (is_intrabc && (subpel_x_q4 != 0 || subpel_y_q4 != 0)) {
+    convolve_2d_for_intrabc(src, src_stride, dst, dst_stride, w, h, subpel_x_q4,
+                            subpel_y_q4, conv_params);
+    return;
+  }
+
   InterpFilter filter_x;
   InterpFilter filter_y;
   const int need_filter_params_x = (subpel_x_q4 != 0) | scaled;
@@ -537,14 +569,15 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
           ? av1_get_interp_filter_params_with_block_size(filter_y, h)
           : NULL;
 
-  if (scaled)
+  if (scaled) {
     convolve_2d_scale_wrapper(src, src_stride, dst, dst_stride, w, h,
                               filter_params_x, filter_params_y, subpel_x_q4,
                               x_step_q4, subpel_y_q4, y_step_q4, conv_params);
-  else
+  } else {
     sf->convolve[subpel_x_q4 != 0][subpel_y_q4 != 0][conv_params->is_compound](
         src, src_stride, dst, dst_stride, w, h, filter_params_x,
         filter_params_y, subpel_x_q4, subpel_y_q4, conv_params);
+  }
 }
 
 void av1_highbd_convolve_2d_copy_sr_c(
@@ -974,18 +1007,52 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
   }
 }
 
+static void highbd_convolve_2d_for_intrabc(const uint16_t *src, int src_stride,
+                                           uint16_t *dst, int dst_stride, int w,
+                                           int h, int subpel_x_q4,
+                                           int subpel_y_q4,
+                                           ConvolveParams *conv_params,
+                                           int bd) {
+  const InterpFilterParams *filter_params_x =
+      subpel_x_q4 ? &av1_intrabc_filter_params : NULL;
+  const InterpFilterParams *filter_params_y =
+      subpel_y_q4 ? &av1_intrabc_filter_params : NULL;
+  if (subpel_x_q4 != 0 && subpel_y_q4 != 0) {
+    av1_highbd_convolve_2d_sr_c(src, src_stride, dst, dst_stride, w, h,
+                                filter_params_x, filter_params_y, 0, 0,
+                                conv_params, bd);
+  } else if (subpel_x_q4 != 0) {
+    av1_highbd_convolve_x_sr_c(src, src_stride, dst, dst_stride, w, h,
+                               filter_params_x, filter_params_y, 0, 0,
+                               conv_params, bd);
+  } else {
+    av1_highbd_convolve_y_sr_c(src, src_stride, dst, dst_stride, w, h,
+                               filter_params_x, filter_params_y, 0, 0,
+                               conv_params, bd);
+  }
+}
+
 void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    uint8_t *dst8, int dst_stride, int w, int h,
                                    InterpFilters interp_filters,
                                    const int subpel_x_q4, int x_step_q4,
                                    const int subpel_y_q4, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
-                                   const struct scale_factors *sf, int bd) {
+                                   const struct scale_factors *sf,
+                                   int is_intrabc, int bd) {
+  assert(IMPLIES(is_intrabc, !scaled));
   (void)x_step_q4;
   (void)y_step_q4;
   (void)dst_stride;
-
   const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+
+  if (is_intrabc && (subpel_x_q4 != 0 || subpel_y_q4 != 0)) {
+    uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
+    highbd_convolve_2d_for_intrabc(src, src_stride, dst, dst_stride, w, h,
+                                   subpel_x_q4, subpel_y_q4, conv_params, bd);
+    return;
+  }
+
   InterpFilter filter_x;
   InterpFilter filter_y;
   const int need_filter_params_x = (subpel_x_q4 != 0) | scaled;

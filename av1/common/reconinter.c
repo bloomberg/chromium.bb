@@ -77,6 +77,9 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
        av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
                       build_for_obmc, subpel_params->xs, subpel_params->ys,
                       &final_warp_params));
+  const int is_intrabc = mi->use_intrabc;
+  assert(IMPLIES(is_intrabc, !do_warp));
+
   if (do_warp && xd->cur_frame_force_integer_mv == 0) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
@@ -87,10 +90,11 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                    pd->subsampling_x, pd->subsampling_y, conv_params);
   } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf,
-                           w, h, conv_params, interp_filters, xd->bd);
+                           w, h, conv_params, interp_filters, is_intrabc,
+                           xd->bd);
   } else {
     inter_predictor(src, src_stride, dst, dst_stride, subpel_params, sf, w, h,
-                    conv_params, interp_filters);
+                    conv_params, interp_filters, is_intrabc);
   }
 }
 
