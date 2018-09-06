@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -13,7 +14,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -40,8 +40,7 @@
     _styler = [[ChromeTableViewStyler alloc] init];
 
     if (appBarStyle == ChromeTableViewControllerStyleWithAppBar) {
-      _appBarViewController = [[MDCAppBarViewController alloc] init];
-      [self addChildViewController:_appBarViewController];
+      _appBarViewController = [[ChromeAppBarViewController alloc] init];
     }
   }
   return self;
@@ -86,6 +85,7 @@
     ConfigureAppBarViewControllerWithCardStyle(self.appBarViewController);
     self.appBarViewController.headerView.trackingScrollView = self.tableView;
     // Add the AppBar's views after all other views have been registered.
+    [self addChildViewController:_appBarViewController];
     [self.view addSubview:self.appBarViewController.view];
     [self.appBarViewController didMoveToParentViewController:self];
   }
