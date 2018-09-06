@@ -21,6 +21,7 @@ class AccessorySheetViewBinder {
             viewPager.setAdapter(
                     AccessorySheetCoordinator.createTabViewAdapter(model.getTabList(), viewPager));
         } else if (propertyKey == PropertyKey.VISIBLE) {
+            viewPager.bringToFront(); // Ensure toolbars and other containers are overlaid.
             viewPager.setVisibility(model.isVisible() ? View.VISIBLE : View.GONE);
         } else if (propertyKey == PropertyKey.HEIGHT) {
             ViewGroup.LayoutParams p = viewPager.getLayoutParams();
