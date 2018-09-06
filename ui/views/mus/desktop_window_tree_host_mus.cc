@@ -53,15 +53,21 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     // provided by the window manager.
     GetViewAccessibility().set_is_ignored(true);
 
-    observed_.Add(widget_->GetNativeWindow()->GetRootWindow());
+    // Initialize kTopViewInset to a default value. Further updates will come
+    // from Ash. This is necessary so that during app window creation,
+    // GetWindowBoundsForClientBounds() can calculate correctly.
+    const auto& values = views::WindowManagerFrameValues::instance();
+    widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                           widget->IsMaximized()
+                                               ? values.maximized_insets.top()
+                                               : values.normal_insets.top());
+    observed_.Add(window());
   }
   ~ClientSideNonClientFrameView() override {}
 
  private:
   gfx::Insets GetClientInsets() const {
-    const int top_inset =
-        widget_->GetNativeWindow()->GetRootWindow()->GetProperty(
-            aura::client::kTopViewInset);
+    const int top_inset = window()->GetProperty(aura::client::kTopViewInset);
     return gfx::Insets(top_inset, 0, 0, 0);
   }
 
@@ -137,6 +143,10 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
       InvalidateLayout();
       widget_->GetRootView()->Layout();
     }
+  }
+
+  aura::Window* window() const {
+    return widget_->GetNativeWindow()->GetRootWindow();
   }
 
   views::Widget* widget_;
