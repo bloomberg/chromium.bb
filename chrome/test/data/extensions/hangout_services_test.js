@@ -116,6 +116,11 @@ function getAssociatedSink(sourceId, callback) {
               callback);
 }
 
+// Will call |callback(hardwarePlatformInfo)| on completion.
+function getHardwarePlatformInfo(callback) {
+  sendMessage({'method': 'getHardwarePlatformInfo'}, callback);
+}
+
 // Will call |callback()| on completion. If the extension you send to
 // is not loaded, the extension system will still call |callback()|
 // but will set lastError.
@@ -372,6 +377,17 @@ function testStoreLog(callback) {
             });
         });
     });
+}
+
+function testGetHardwarePlatformInfo(callback) {
+  getHardwarePlatformInfo(function(hardwarePlatformInfo) {
+    if (hardwarePlatformInfo.hasOwnProperty('manufacturer') &&
+        hardwarePlatformInfo.hasOwnProperty('model')) {
+      callback('');
+    } else {
+      callback('Missing information in hardwarePlatformInfo');
+    }
+  });
 }
 
 function testTimeout(callback) {

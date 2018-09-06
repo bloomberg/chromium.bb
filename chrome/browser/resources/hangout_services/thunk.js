@@ -191,6 +191,10 @@ chrome.runtime.onMessageExternal.addListener(function(
       chrome.webrtcAudioPrivate.setAudioExperiments(
           requestInfo, origin, experiments, doSendResponse);
       return true;
+    } else if (method == 'getHardwarePlatformInfo') {
+      chrome.enterprise.hardwarePlatform.getHardwarePlatformInfo(
+          doSendResponse);
+      return true;
     }
 
     throw new Error('Unknown method: ' + method);
