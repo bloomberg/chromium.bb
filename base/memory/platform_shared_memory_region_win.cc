@@ -16,6 +16,7 @@
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/windows_version.h"
 
 namespace base {
 namespace subtle {
@@ -300,19 +301,24 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
   }
 
-  // Windows ignores DACLs on unnamed shared section. Generate a random name in
-  // order to be able to enforce read-only.
-  uint64_t rand_values[4];
-  RandBytes(&rand_values, sizeof(rand_values));
-  string16 name =
-      StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx", rand_values[0],
-                   rand_values[1], rand_values[2], rand_values[3]);
+  string16 name;
+  if (base::win::GetVersion() < base::win::VERSION_WIN8_1) {
+    // Windows < 8.1 ignores DACLs on certain unnamed objects (like shared
+    // sections). So, we generate a random name when we need to enforce
+    // read-only.
+    uint64_t rand_values[4];
+    RandBytes(&rand_values, sizeof(rand_values));
+    name = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
+                        rand_values[0], rand_values[1], rand_values[2],
+                        rand_values[3]);
+    DCHECK(!name.empty());
+  }
 
   SECURITY_ATTRIBUTES sa = {sizeof(sa), &sd, FALSE};
   // Ask for the file mapping with reduced permisions to avoid passing the
   // access control permissions granted by default into unpriviledged process.
-  HANDLE h =
-      CreateFileMappingWithReducedPermissions(&sa, rounded_size, name.c_str());
+  HANDLE h = CreateFileMappingWithReducedPermissions(
+      &sa, rounded_size, name.empty() ? nullptr : name.c_str());
   if (h == nullptr) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
     return {};
