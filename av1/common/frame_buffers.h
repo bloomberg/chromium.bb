@@ -36,6 +36,12 @@ int av1_alloc_internal_frame_buffers(InternalFrameBufferList *list);
 // Free any data allocated to the frame buffers.
 void av1_free_internal_frame_buffers(InternalFrameBufferList *list);
 
+// Zeros all unused internal frame buffers. In particular, this zeros the
+// frame borders. Call this function after a sequence header change to
+// re-initialize the frame borders for the different width, height, or bit
+// depth.
+void av1_zero_unused_internal_frame_buffers(InternalFrameBufferList *list);
+
 // Callback used by libaom to request an external frame buffer. |cb_priv|
 // Callback private data, which points to an InternalFrameBufferList.
 // |min_size| is the minimum size in bytes needed to decode the next frame.
