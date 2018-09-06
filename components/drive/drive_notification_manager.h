@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 #define COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
+#include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_handler.h"
@@ -29,8 +32,10 @@ namespace drive {
 class DriveNotificationManager : public KeyedService,
                                  public syncer::InvalidationHandler {
  public:
+  // |clock| can be injected for testing.
   explicit DriveNotificationManager(
-      invalidation::InvalidationService* invalidation_service);
+      invalidation::InvalidationService* invalidation_service,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
   ~DriveNotificationManager() override;
 
   // KeyedService override.
@@ -80,6 +85,9 @@ class DriveNotificationManager : public KeyedService,
   // Updates the list of notifications that we're expecting
   void UpdateRegisteredDriveNotifications();
 
+  // Dispatches batched invalidations to observers.
+  void OnBatchTimerExpired();
+
   // Returns a string representation of NotificationSource.
   static std::string NotificationSourceToString(NotificationSource source);
 
@@ -99,6 +107,17 @@ class DriveNotificationManager : public KeyedService,
   // The timer is used for polling based notification. XMPP should usually be
   // used but notification is done per polling when XMPP is not working.
   base::OneShotTimer polling_timer_;
+
+  // This timer is used to batch together invalidations. The invalidation
+  // service can send many invalidations for the same id in rapid succession,
+  // batching them together and removing duplicates is an optimzation.
+  std::unique_ptr<base::RetainingOneShotTimer> batch_timer_;
+
+  // The batch of invalidation id's that we've seen from the invaliation
+  // service, will be reset when when send the invalidations to the observers.
+  std::set<std::string> invalidated_change_ids_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

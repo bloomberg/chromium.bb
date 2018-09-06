@@ -2324,6 +2324,7 @@ source_set("unit_tests") {
     "//components/drive/chromeos/file_cache_unittest.cc",
     "//components/drive/directory_loader_unittest.cc",
     "//components/drive/drive_file_util_unittest.cc",
+    "//components/drive/drive_notification_manager_unittest.cc",
     "//components/drive/drive_operation_queue_unittest.cc",
     "//components/drive/fake_file_system_unittest.cc",
     "//components/drive/file_change_unittest.cc",
