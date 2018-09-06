@@ -1306,6 +1306,15 @@ const FeatureEntry::FeatureVariation kAutofillDropdownLayoutVariations[] = {
      base::size(kAutofillDropdownLayoutTrailingIcon), nullptr}};
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
+    {"bottom_offline_indicator", "true"}};
+
+const FeatureEntry::FeatureVariation kOfflineIndicatorFeatureVariations[] = {
+    {"(bottom)", kBottomOfflineIndicatorEnabled,
+     base::size(kBottomOfflineIndicatorEnabled), nullptr}};
+#endif  // OS_ANDROID
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2514,9 +2523,17 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesShowAlternateDinoPageFeature)},
-    {"offline-indicator", flag_descriptions::kOfflineIndicatorName,
-     flag_descriptions::kOfflineIndicatorDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(offline_pages::kOfflineIndicatorFeature)},
+    {"offline-indicator-choice", flag_descriptions::kOfflineIndicatorChoiceName,
+     flag_descriptions::kOfflineIndicatorChoiceDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         offline_pages::kOfflineIndicatorFeature,
+         kOfflineIndicatorFeatureVariations,
+         offline_pages::kOfflineIndicatorFeature.name)},
+    {"offline-indicator-always-http-probe",
+     flag_descriptions::kOfflineIndicatorAlwaysHttpProbeName,
+     flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,

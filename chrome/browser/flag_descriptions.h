@@ -1553,8 +1553,11 @@ extern const char kNtpGoogleGInOmniboxDescription[];
 extern const char kOfflineBookmarksName[];
 extern const char kOfflineBookmarksDescription[];
 
-extern const char kOfflineIndicatorName[];
-extern const char kOfflineIndicatorDescription[];
+extern const char kOfflineIndicatorAlwaysHttpProbeName[];
+extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
+
+extern const char kOfflineIndicatorChoiceName[];
+extern const char kOfflineIndicatorChoiceDescription[];
 
 extern const char kOfflinePagesCtName[];
 extern const char kOfflinePagesCtDescription[];

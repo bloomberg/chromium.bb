@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
@@ -160,6 +161,12 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     @TargetApi(Build.VERSION_CODES.M)
     private static @ConnectionState int getConnectionStateFromSystem() {
         if (sSkipSystemCheckForTesting) return ConnectionState.NONE;
+
+        // Skip the system check below in order to force the HTTP probes. This is used for manual
+        // testing purposes.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_ALWAYS_HTTP_PROBE)) {
+            return ConnectionState.NONE;
+        }
 
         // NET_CAPABILITY_VALIDATED and NET_CAPABILITY_CAPTIVE_PORTAL are only available on
         // Marshmallow and later versions.
