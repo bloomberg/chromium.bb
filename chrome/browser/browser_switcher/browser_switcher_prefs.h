@@ -12,6 +12,8 @@ class PrefRegistrySyncable;
 namespace browser_switcher {
 namespace prefs {
 
+extern const char kAlternativeBrowserPath[];
+extern const char kAlternativeBrowserParameters[];
 extern const char kUrlList[];
 extern const char kUrlGreylist[];
 
