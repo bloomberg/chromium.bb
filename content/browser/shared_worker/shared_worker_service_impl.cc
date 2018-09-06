@@ -56,11 +56,6 @@ using StartLoaderCallback =
                             blink::mojom::SharedWorkerMainScriptLoadParamsPtr,
                             base::Optional<SubresourceLoaderParams>)>;
 
-bool IsShuttingDown(RenderProcessHost* host) {
-  return !host || host->FastShutdownStarted() ||
-         host->IsKeepAliveRefCountDisabled();
-}
-
 std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     int process_id,
     StoragePartitionImpl* storage_partition,
@@ -220,6 +215,11 @@ void CreateScriptLoaderOnIO(
 }
 
 }  // namespace
+
+bool IsShuttingDown(RenderProcessHost* host) {
+  return !host || host->FastShutdownStarted() ||
+         host->IsKeepAliveRefCountDisabled();
+}
 
 SharedWorkerServiceImpl::SharedWorkerServiceImpl(
     StoragePartitionImpl* storage_partition,

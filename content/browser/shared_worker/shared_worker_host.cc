@@ -61,11 +61,6 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
       url, name, resource_context, render_frames);
 }
 
-bool IsShuttingDown(RenderProcessHost* host) {
-  return !host || host->FastShutdownStarted() ||
-         host->IsKeepAliveRefCountDisabled();
-}
-
 }  // namespace
 
 // RAII helper class for talking to SharedWorkerDevToolsManager.
