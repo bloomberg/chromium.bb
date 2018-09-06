@@ -1275,18 +1275,6 @@ void WizardController::InitiateOOBEUpdate() {
 }
 
 void WizardController::StartOOBEUpdate() {
-  bool skip_update = false;
-  auto* skip_update_value = oobe_configuration_.FindKeyOfType(
-      configuration::kUpdateSkipUpdate, base::Value::Type::BOOLEAN);
-  if (skip_update_value)
-    skip_update = skip_update_value->GetBool();
-
-  if (skip_update) {
-    VLOG(1) << "Skip OOBE Update because of configuration";
-    OnUpdateCompleted();
-    return;
-  }
-
   VLOG(1) << "StartOOBEUpdate";
   SetCurrentScreenSmooth(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE), true);
   UpdateScreen::Get(screen_manager())->StartNetworkCheck();

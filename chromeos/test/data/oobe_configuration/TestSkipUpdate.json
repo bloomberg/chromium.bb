@@ -3,6 +3,6 @@
   "networkSelectGuid": "eth1_guid",
   "eulaAutoAccept": true,
   "eulaSendStatistics": true,
-  "updateSkip": true,
+  "updateSkipNonCritical": true,
   "wizardAutoEnroll": true
 }

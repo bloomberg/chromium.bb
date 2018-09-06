@@ -71,6 +71,7 @@ OobeTypes.TimezoneDsc;
  * @typedef {{
  *   welcomeNext: boolean|undefined,
  *   networkSelectGuid: string|undefined,
+ *   updateSkipNonCritical: boolean|undefined,
  * }}
  */
 OobeTypes.OobeConfiguration;

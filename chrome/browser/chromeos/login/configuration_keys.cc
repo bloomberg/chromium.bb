@@ -34,9 +34,8 @@ const char kEULAAutoAccept[] = "eulaAutoAccept";
 
 // == Update screen:
 
-// Boolean value, indicating that update check should be skipped entirely
-// (it might be required for future version pinning)
-const char kUpdateSkipUpdate[] = "updateSkip";
+// Boolean value, indicating that all non-critical updates should be skipped.
+const char kUpdateSkipUpdate[] = "updateSkipNonCritical";
 
 // == Wizard controller:
 
@@ -79,7 +78,7 @@ constexpr struct {
      ConfigurationHandlerSide::HANDLER_JS},
     {kEULAAutoAccept, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
     {kUpdateSkipUpdate, ValueType::BOOLEAN,
-     ConfigurationHandlerSide::HANDLER_CPP},
+     ConfigurationHandlerSide::HANDLER_JS},
     {kWizardAutoEnroll, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
