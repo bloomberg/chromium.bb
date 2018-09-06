@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -43,13 +44,13 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // receive a false negative. Additionally, since the host tracks pages by
   // hashing, there's also a small chance that the host erroneously returns an
   // id for a page that is not offlined.
-  base::Optional<int64_t> GetOfflineId(std::string url);
+  base::Optional<int64_t> GetOfflineId(const std::string& url);
 
   // Asynchronously fetches offline status for the given URLs. Any pages that
   // are currently offlined will be remembered by the FeedOfflineHost.
   void GetOfflineStatus(
       std::vector<std::string> urls,
-      base::OnceCallback<void(const std::vector<std::string>&)> callback);
+      base::OnceCallback<void(std::vector<std::string>)> callback);
 
   // Should be called from Feed any time the user manually removes articles or
   // groupings of articles. Propagates the signal to Prefetch.
@@ -80,6 +81,10 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
       override;
 
  private:
+  // Stores the given record in |url_hash_to_id_|. If there's a conflict, the
+  // new id will overwrite the old value.
+  void CacheOfflinePageAndId(const std::string& url, int64_t id);
+
   // The following objects all outlive us, so it is safe to hold raw pointers to
   // them. This is guaranteed by the FeedHostServiceFactory.
   offline_pages::OfflinePageModel* offline_page_model_;
@@ -87,6 +92,12 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
 
   base::RepeatingClosure on_suggestion_consumed_;
   base::RepeatingClosure on_suggestions_shown_;
+
+  // Only offlined pages that have passed through the host are stored. If there
+  // are ever no listeners to the offline host logic and OnNoListeners() is
+  // called this map is cleared. The key is the hash of the url, and the value
+  // is the offline id for the given page.
+  base::flat_map<uint32_t, int64_t> url_hash_to_id_;
 
   base::WeakPtrFactory<FeedOfflineHost> weak_ptr_factory_;
 

@@ -32,7 +32,7 @@ namespace feed {
 namespace {
 
 void OnGetOfflineStatus(ScopedJavaGlobalRef<jobject> callback,
-                        const std::vector<std::string>& urls) {
+                        std::vector<std::string> urls) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_urls =
       base::android::ToJavaArrayOfStrings(env, urls);
@@ -82,7 +82,7 @@ void FeedOfflineBridge::GetOfflineStatus(JNIEnv* env,
   base::android::AppendJavaStringArrayToStringVector(env, j_urls.obj(), &urls);
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   offline_host_->GetOfflineStatus(
-      urls, base::BindOnce(&OnGetOfflineStatus, callback));
+      std::move(urls), base::BindOnce(&OnGetOfflineStatus, callback));
 }
 
 void FeedOfflineBridge::OnContentRemoved(
