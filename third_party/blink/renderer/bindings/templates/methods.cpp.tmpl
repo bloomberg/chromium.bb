@@ -648,7 +648,7 @@ const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration
   {{method_configuration(method) | trim | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+  V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfilter %}{# secure_context() #}
