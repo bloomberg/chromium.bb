@@ -136,8 +136,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
     InstalledScriptsManager::ScriptStatus status =
         installed_scripts_manager->GetScriptData(script_url, &script_data);
     if (status == InstalledScriptsManager::ScriptStatus::kFailed) {
-      // This eventually terminates the worker thread.
-      ReportingProxy().DidEvaluateClassicScript(false);
+      close();
       return;
     }
 

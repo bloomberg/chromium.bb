@@ -668,9 +668,30 @@ void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
-  // This should never be called because close() is not defined in
-  // ServiceWorkerGlobalScope.
-  NOTREACHED();
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  // close() is not web-exposed. This is called when ServiceWorkerGlobalScope
+  // internally requests close() due to failure on startup when installed
+  // scripts couldn't be read.
+  //
+  // This may look like a roundabout way to terminate the thread, but close()
+  // seems like the standard way to initiate termination from inside the thread.
+
+  // Tell ServiceWorkerContextClient about the failure. The generic
+  // WorkerContextFailedToStart() wouldn't make sense because
+  // WorkerContextStarted() was already called.
+  Client().FailedToLoadInstalledScript();
+
+  // ServiceWorkerGlobalScope expects us to terminate the thread, so request
+  // that here.
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&WebEmbeddedWorkerImpl::TerminateWorkerContext,
+                      CrossThreadUnretained(embedded_worker_)));
+
+  // NOTE: WorkerThread calls WillDestroyWorkerGlobalScope() synchronously after
+  // this function returns, since it calls DidCloseWorkerGlobalScope() then
+  // PrepareForShutdownOnWorkerThread().
 }
 
 void ServiceWorkerGlobalScopeProxy::WillDestroyWorkerGlobalScope() {
@@ -682,7 +703,7 @@ void ServiceWorkerGlobalScopeProxy::WillDestroyWorkerGlobalScope() {
 }
 
 void ServiceWorkerGlobalScopeProxy::DidTerminateWorkerThread() {
-  // This should be called after WillDestroyWorkerGlobalScope().
+  // This must be called after WillDestroyWorkerGlobalScope().
   DCHECK(!worker_global_scope_);
   Client().WorkerContextDestroyed();
 }
@@ -709,6 +730,7 @@ void ServiceWorkerGlobalScopeProxy::Detach() {
 }
 
 void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
+  DCHECK(IsMainThread());
   embedded_worker_->TerminateWorkerContext();
 }
 
