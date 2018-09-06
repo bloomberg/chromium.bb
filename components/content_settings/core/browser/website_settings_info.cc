@@ -17,7 +17,7 @@ namespace {
 const char kPrefPrefix[] = "profile.content_settings.exceptions.";
 const char kDefaultPrefPrefix[] = "profile.default_content_setting_values.";
 
-std::string GetPrefName(const std::string& name, const char* prefix) {
+std::string GetPreferenceName(const std::string& name, const char* prefix) {
   std::string pref_name = name;
   base::ReplaceChars(pref_name, "-", "_", &pref_name);
   return std::string(prefix).append(pref_name);
@@ -37,8 +37,8 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
     IncognitoBehavior incognito_behavior)
     : type_(type),
       name_(name),
-      pref_name_(GetPrefName(name, kPrefPrefix)),
-      default_value_pref_name_(GetPrefName(name, kDefaultPrefPrefix)),
+      pref_name_(GetPreferenceName(name, kPrefPrefix)),
+      default_value_pref_name_(GetPreferenceName(name, kDefaultPrefPrefix)),
       initial_default_value_(std::move(initial_default_value)),
       sync_status_(sync_status),
       lossy_status_(lossy_status),
