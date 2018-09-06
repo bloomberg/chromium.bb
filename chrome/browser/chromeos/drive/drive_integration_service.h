@@ -193,8 +193,11 @@ class DriveIntegrationService : public KeyedService,
                               FileError error);
 
   // Unregisters drive mount point, and if |remount_delay| is specified
-  // then tries to add it back after that delay.
-  void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay);
+  // then tries to add it back after that delay. If |remount_delay| isn't
+  // specified, |failed_to_mount| is true and the user is offline, schedules a
+  // retry when the user is online.
+  void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay,
+                              bool failed_to_mount);
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -251,6 +254,7 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<NotificationManager> notification_manager_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
+  bool remount_when_online_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
