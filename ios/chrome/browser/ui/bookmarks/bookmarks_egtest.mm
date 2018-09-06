@@ -885,8 +885,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Ensure the Bottom 1 of Folder 1 is visible.  That means both folder and
   // scroll position are restored successfully.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(@"Bottom 1, 127.0.0.1")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Bottom 1")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -1089,8 +1088,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                          base::SysNSStringToUTF16(@"Top URL"), dummyURL);
 
   // Add URLs to Folder 1.
-  bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
-                         dummyURL);
   bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(@"Bottom 1"),
                          dummyURL);
   for (int i = 0; i < 20; i++) {
@@ -1606,7 +1603,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // verify the editable textfield is gone.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmark_editing_text")]
-      assertWithMatcher:grey_notVisible()];
+      assertWithMatcher:grey_nil()];
 }
 
 + (void)tapOnContextMenuButton:(int)menuButtonId
