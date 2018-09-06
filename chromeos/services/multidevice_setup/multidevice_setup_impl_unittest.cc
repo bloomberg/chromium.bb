@@ -307,12 +307,12 @@ class FakeAccountStatusChangeDelegateNotifierFactory
     : public AccountStatusChangeDelegateNotifierImpl::Factory {
  public:
   FakeAccountStatusChangeDelegateNotifierFactory(
-      device_sync::FakeDeviceSyncClient* expected_device_sync_client,
+      FakeHostStatusProviderFactory* fake_host_status_provider_factory,
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
       FakeSetupFlowCompletionRecorderFactory*
           fake_setup_flow_completion_recorder_factory)
-      : expected_device_sync_client_(expected_device_sync_client),
+      : fake_host_status_provider_factory_(fake_host_status_provider_factory),
         expected_testing_pref_service_(expected_testing_pref_service),
         fake_setup_flow_completion_recorder_factory_(
             fake_setup_flow_completion_recorder_factory) {}
@@ -324,12 +324,13 @@ class FakeAccountStatusChangeDelegateNotifierFactory
  private:
   // AccountStatusChangeDelegateNotifierImpl::Factory:
   std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
-      device_sync::DeviceSyncClient* device_sync_client,
+      HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       SetupFlowCompletionRecorder* setup_flow_completion_recorder,
       base::Clock* clock) override {
     EXPECT_FALSE(instance_);
-    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    EXPECT_EQ(fake_host_status_provider_factory_->instance(),
+              host_status_provider);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(fake_setup_flow_completion_recorder_factory_->instance(),
               setup_flow_completion_recorder);
@@ -339,7 +340,7 @@ class FakeAccountStatusChangeDelegateNotifierFactory
     return instance;
   }
 
-  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+  FakeHostStatusProviderFactory* fake_host_status_provider_factory_;
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
   FakeSetupFlowCompletionRecorderFactory*
       fake_setup_flow_completion_recorder_factory_;
@@ -416,7 +417,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
     fake_account_status_change_delegate_notifier_factory_ =
         std::make_unique<FakeAccountStatusChangeDelegateNotifierFactory>(
-            fake_device_sync_client_.get(), test_pref_service_.get(),
+            fake_host_status_provider_factory_.get(), test_pref_service_.get(),
             fake_setup_flow_completion_recorder_factory_.get());
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         fake_account_status_change_delegate_notifier_factory_.get());
