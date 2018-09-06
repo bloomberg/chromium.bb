@@ -49,7 +49,8 @@ class ProximityAuthProfilePrefManagerTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockAllowed) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_TRUE(pref_manager.IsEasyUnlockAllowed());
 
   // Simulating setting kEasyUnlockAllowed pref through enterprise policy.
@@ -59,7 +60,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockAllowed) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockEnabled) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_TRUE(pref_manager.IsEasyUnlockEnabled());
 
   pref_manager.SetIsEasyUnlockEnabled(true);
@@ -70,7 +72,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockEnabled) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_EQ(0L, pref_manager.GetLastPromotionCheckTimestampMs());
   pref_manager.SetLastPromotionCheckTimestampMs(kPromotionCheckTimestampMs1);
   EXPECT_EQ(kPromotionCheckTimestampMs1,
@@ -81,7 +84,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, LastPromotionCheckTimestamp) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, PromotionShownCount) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_EQ(0, pref_manager.GetPromotionShownCount());
   pref_manager.SetPromotionShownCount(1);
   EXPECT_EQ(1, pref_manager.GetPromotionShownCount());
@@ -90,7 +94,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, PromotionShownCount) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, ProximityThreshold) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_EQ(1, pref_manager.GetProximityThreshold());
   pref_manager.SetProximityThreshold(kProximityThreshold1);
   EXPECT_EQ(kProximityThreshold1, pref_manager.GetProximityThreshold());
@@ -99,7 +104,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, ProximityThreshold) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, IsChromeOSLoginEnabled) {
-  ProximityAuthProfilePrefManager pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
   EXPECT_FALSE(pref_manager.IsChromeOSLoginEnabled());
 
   pref_manager.SetIsChromeOSLoginEnabled(true);
@@ -110,7 +116,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsChromeOSLoginEnabled) {
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, SyncsToLocalPrefOnChange) {
-  ProximityAuthProfilePrefManager profile_pref_manager(&pref_service_);
+  ProximityAuthProfilePrefManager profile_pref_manager(
+      &pref_service_, nullptr /* multidevice_setup_service */);
 
   TestingPrefServiceSimple local_state;
   AccountId account_id = AccountId::FromUserEmail(kUserEmail);

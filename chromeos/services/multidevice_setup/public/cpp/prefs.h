@@ -27,6 +27,11 @@ extern const char kInstantTetheringEnabledPrefName[];
 extern const char kMessagesEnabledPrefName[];
 extern const char kSmartLockEnabledPrefName[];
 
+// The old pref which controlled if Smart Lock was enabled, prior to the
+// introduction of MultiDeviceSetupService. It will be removed once old Smart
+// Lock code is fully deprecated.
+extern const char kSmartLockEnabledDeprecatedPrefName[];
+
 void RegisterFeaturePrefs(PrefRegistrySimple* registry);
 bool AreAnyMultiDeviceFeaturesAllowed(PrefService* pref_service);
 
