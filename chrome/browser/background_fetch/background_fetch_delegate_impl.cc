@@ -46,7 +46,9 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
   offline_content_aggregator_->RegisterProvider(provider_namespace_, this);
 }
 
-BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() = default;
+BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() {
+  offline_content_aggregator_->UnregisterProvider(provider_namespace_);
+}
 
 download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
   if (download_service_)
