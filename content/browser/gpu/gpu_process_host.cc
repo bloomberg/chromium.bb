@@ -276,39 +276,6 @@ void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
   callback.Run(host);
 }
 
-#if defined(USE_OZONE)
-// The ozone platform use this callback to send IPC messages to the gpu process.
-void SendGpuProcessMessage(base::WeakPtr<GpuProcessHost> host,
-                           IPC::Message* message) {
-  if (host)
-    host->Send(message);
-  else
-    delete message;
-}
-
-// Helper to register Mus/conventional thread bouncers for ozone startup.
-void OzoneRegisterStartupCallbackHelper(
-    base::OnceCallback<void(ui::OzonePlatform*)> io_callback) {
-  // The callback registered in ozone can be called in any thread. So use an
-  // intermediary callback that bounces to the IO thread if needed, before
-  // running the callback.
-  auto bounce_callback = base::BindOnce(
-      [](base::TaskRunner* task_runner,
-         base::OnceCallback<void(ui::OzonePlatform*)> callback,
-         ui::OzonePlatform* platform) {
-        if (task_runner->RunsTasksInCurrentSequence()) {
-          std::move(callback).Run(platform);
-        } else {
-          task_runner->PostTask(FROM_HERE,
-                                base::BindOnce(std::move(callback), platform));
-        }
-      },
-      base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-      std::move(io_callback));
-  ui::OzonePlatform::RegisterStartupCallback(std::move(bounce_callback));
-}
-#endif  // defined(USE_OZONE)
-
 void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GpuDataManagerImpl::GetInstance()->AddLogMessage(
@@ -621,18 +588,16 @@ void GpuProcessHost::BindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (interface_name ==
       discardable_memory::mojom::DiscardableSharedMemoryManager::Name_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &BindDiscardableMemoryRequestOnUI,
-            discardable_memory::mojom::DiscardableSharedMemoryManagerRequest(
-                std::move(interface_pipe))));
+    BindDiscardableMemoryRequest(
+        discardable_memory::mojom::DiscardableSharedMemoryManagerRequest(
+            std::move(interface_pipe)));
     return;
   }
   process_->child_connection()->BindInterface(interface_name,
                                               std::move(interface_pipe));
 }
 
+#if defined(USE_OZONE)
 void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   // At the moment, this path is only used by Ozone/Wayland. Once others start
   // to use this, start to distinguish the origin of termination. By default,
@@ -640,6 +605,11 @@ void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   termination_origin_ = GpuTerminationOrigin::kOzoneWaylandProxy;
   process_->TerminateOnBadMessageReceived(message);
 }
+
+void GpuProcessHost::SendGpuProcessMessage(IPC::Message* message) {
+  Send(message);
+}
+#endif  // defined(USE_OZONE)
 
 // static
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
@@ -803,60 +773,6 @@ GpuProcessHost::~GpuProcessHost() {
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
 }
 
-#if defined(USE_OZONE)
-void GpuProcessHost::InitOzone() {
-  // Ozone needs to send the primary DRM device to GPU process as early as
-  // possible to ensure the latter always has a valid device. crbug.com/608839
-  // When running with mus, the OzonePlatform may not have been created yet. So
-  // defer the callback until OzonePlatform instance is created.
-  bool using_mojo = true;
-#if defined(OS_CHROMEOS)
-  using_mojo = features::IsOzoneDrmMojo();
-#endif
-  if (using_mojo) {
-    // TODO(rjkroege): Remove the legacy IPC code paths when no longer
-    // necessary. https://crbug.com/806092
-    auto interface_binder = base::BindRepeating(&GpuProcessHost::BindInterface,
-                                                weak_ptr_factory_.GetWeakPtr());
-    auto terminate_cb = base::BindOnce(&GpuProcessHost::TerminateGpuProcess,
-                                       weak_ptr_factory_.GetWeakPtr());
-
-    auto io_callback = base::BindOnce(
-        [](const base::RepeatingCallback<void(const std::string&,
-                                              mojo::ScopedMessagePipeHandle)>&
-               interface_binder,
-           base::OnceCallback<void(const std::string&)> terminate_cb,
-           ui::OzonePlatform* platform) {
-          DCHECK_CURRENTLY_ON(BrowserThread::IO);
-          platform->GetGpuPlatformSupportHost()->OnGpuServiceLaunched(
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-              interface_binder, std::move(terminate_cb));
-        },
-        interface_binder, std::move(terminate_cb));
-
-    OzoneRegisterStartupCallbackHelper(std::move(io_callback));
-  } else {
-    auto send_callback = base::BindRepeating(&SendGpuProcessMessage,
-                                             weak_ptr_factory_.GetWeakPtr());
-    // Create the callback that should run on the current thread (i.e. IO
-    // thread).
-    auto io_callback = base::BindOnce(
-        [](int host_id,
-           const base::RepeatingCallback<void(IPC::Message*)>& send_callback,
-           ui::OzonePlatform* platform) {
-          DCHECK_CURRENTLY_ON(BrowserThread::IO);
-          platform->GetGpuPlatformSupportHost()->OnGpuProcessLaunched(
-              host_id, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-              send_callback);
-        },
-        host_id_, send_callback);
-    OzoneRegisterStartupCallbackHelper(std::move(io_callback));
-  }
-}
-#endif  // defined(USE_OZONE)
-
 bool GpuProcessHost::Init() {
   init_start_time_ = base::TimeTicks::Now();
 
@@ -908,12 +824,10 @@ bool GpuProcessHost::Init() {
   params.product = GetContentClient()->GetProduct();
   params.deadline_to_synchronize_surfaces =
       switches::GetDeadlineToSynchronizeSurfaces();
+  params.main_thread_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, process_->child_channel(), std::move(params));
-
-#if defined(USE_OZONE)
-  InitOzone();
-#endif  // defined(USE_OZONE)
 
 #if defined(OS_MACOSX)
   ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);

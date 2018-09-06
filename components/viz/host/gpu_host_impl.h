@@ -78,6 +78,16 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void BindDiscardableMemoryRequest(
         discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
             request) = 0;
+    virtual void BindInterface(
+        const std::string& interface_name,
+        mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+#if defined(USE_OZONE)
+    virtual void TerminateGpuProcess(const std::string& message) = 0;
+
+    // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
+    // is removed.
+    virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
+#endif
 
    protected:
     virtual ~Delegate() {}
@@ -103,6 +113,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
     // Number of frames to CompositorFrame activation deadline.
     base::Optional<uint32_t> deadline_to_synchronize_surfaces = base::nullopt;
+
+    // Task runner corresponding to the main thread.
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner;
   };
 
   enum class EstablishChannelStatus {
@@ -146,6 +159,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   void SendOutstandingReplies();
 
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe);
+
   mojom::GpuService* gpu_service();
 
   bool initialized() const { return initialized_; }
@@ -155,6 +171,11 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   }
 
  private:
+#if defined(USE_OZONE)
+  void InitOzone();
+  void TerminateGpuProcess(const std::string& message);
+#endif  // defined(USE_OZONE)
+
   std::string GetShaderPrefixKey();
 
   void LoadedShader(int32_t client_id,
@@ -194,6 +215,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   Delegate* const delegate_;
   IPC::Channel* const channel_;
   const InitParams params_;
+
+  // Task runner corresponding to the thread |this| is created on.
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner_;
 
   mojom::VizMainAssociatedPtr viz_main_ptr_;
   mojom::GpuServicePtr gpu_service_ptr_;

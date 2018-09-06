@@ -84,10 +84,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       bool force_create,
       const base::Callback<void(GpuProcessHost*)>& callback);
 
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe);
-  void TerminateGpuProcess(const std::string& message);
-
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
   static GpuProcessHost* FromID(int host_id);
@@ -130,10 +126,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
-#if defined(USE_OZONE)
-  void InitOzone();
-#endif  // defined(USE_OZONE)
-
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
@@ -163,8 +155,14 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void BindDiscardableMemoryRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request)
       override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+#if defined(USE_OZONE)
+  void TerminateGpuProcess(const std::string& message) override;
+  void SendGpuProcessMessage(IPC::Message* message) override;
+#endif
 
-  // Message handlers.
+// Message handlers.
 #if defined(OS_ANDROID)
   void OnDestroyingVideoSurfaceAck();
 #endif
