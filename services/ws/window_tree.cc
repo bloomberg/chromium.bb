@@ -87,6 +87,9 @@ struct WindowTree::InFlightEvent {
   std::unique_ptr<ui::Event> event;
 };
 
+WindowTree::KnownWindow::KnownWindow() = default;
+WindowTree::KnownWindow::~KnownWindow() = default;
+
 WindowTree::WindowTree(WindowService* window_service,
                        ClientSpecificId client_id,
                        mojom::WindowTreeClient* client,
@@ -109,11 +112,11 @@ WindowTree::~WindowTree() {
                      DeleteClientRootReason::kDestructor);
   }
 
-  while (!client_created_windows_.empty()) {
+  while (FindFirstClientCreatedWindow()) {
     // RemoveWindowFromKnownWindows() should make it such that the Window is no
     // longer recognized as being created (owned) by this client.
     const bool delete_if_owned = true;
-    RemoveWindowFromKnownWindows(client_created_windows_.begin()->first,
+    RemoveWindowFromKnownWindows(FindFirstClientCreatedWindow(),
                                  delete_if_owned);
   }
 
@@ -126,15 +129,14 @@ void WindowTree::InitForEmbed(aura::Window* root,
   ServerWindow* server_window =
       window_service_->GetServerWindowForWindowCreateIfNecessary(root);
   const ClientWindowId client_window_id = server_window->frame_sink_id();
-  AddWindowToKnownWindows(root, client_window_id);
+  AddWindowToKnownWindows(root, client_window_id, nullptr);
   const bool is_top_level = false;
   ClientRoot* client_root = CreateClientRoot(root, is_top_level);
 
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root).id();
   const ClientWindowId focused_window_id =
-      root->HasFocus() ? window_to_client_window_id_map_[root]
-                       : ClientWindowId();
+      root->HasFocus() ? ClientWindowIdForWindow(root) : ClientWindowId();
   const bool drawn = root->IsVisible() && root->GetHost();
   window_tree_client_->OnEmbed(WindowToWindowData(root),
                                std::move(window_tree_ptr), display_id,
@@ -255,7 +257,7 @@ void WindowTree::CompleteScheduleEmbedForExistingClient(
     aura::Window* window,
     const ClientWindowId& id,
     const base::UnguessableToken& token) {
-  AddWindowToKnownWindows(window, id);
+  AddWindowToKnownWindows(window, id, nullptr);
   const bool is_top_level = false;
   ClientRoot* client_root = CreateClientRoot(window, is_top_level);
 
@@ -286,10 +288,14 @@ bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
   return false;
 }
 
-ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) {
-  auto iter = window_to_client_window_id_map_.find(window);
-  return iter == window_to_client_window_id_map_.end() ? ClientWindowId()
-                                                       : iter->second;
+bool WindowTree::IsWindowKnown(aura::Window* window) const {
+  return window && known_windows_map_.count(window) > 0u;
+}
+
+ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
+  auto iter = known_windows_map_.find(window);
+  return iter == known_windows_map_.end() ? ClientWindowId()
+                                          : iter->second.client_window_id;
 }
 
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
@@ -404,7 +410,9 @@ aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
 }
 
 bool WindowTree::IsClientCreatedWindow(aura::Window* window) {
-  return window && client_created_windows_.count(window) > 0u;
+  auto iter = known_windows_map_.find(window);
+  return iter == known_windows_map_.end() ? false
+                                          : iter->second.is_client_created;
 }
 
 bool WindowTree::IsClientRootWindow(aura::Window* window) {
@@ -429,10 +437,6 @@ WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
       return iter;
   }
   return client_roots_.end();
-}
-
-bool WindowTree::IsWindowKnown(aura::Window* window) const {
-  return window && window_to_client_window_id_map_.count(window) > 0u;
 }
 
 bool WindowTree::IsWindowRootOfAnotherClient(aura::Window* window) const {
@@ -499,21 +503,33 @@ void WindowTree::OnPerformDragDropDone(uint32_t change_id, int drag_result) {
       change_id, drag_result != ui::DragDropTypes::DRAG_NONE, drag_result);
 }
 
+aura::Window* WindowTree::FindFirstClientCreatedWindow() {
+  for (auto& pair : known_windows_map_) {
+    if (pair.second.is_client_created)
+      return pair.first;
+  }
+  return nullptr;
+}
+
 aura::Window* WindowTree::AddClientCreatedWindow(
     const ClientWindowId& id,
     bool is_top_level,
     std::unique_ptr<aura::Window> window_ptr) {
   aura::Window* window = window_ptr.get();
-  client_created_windows_[window] = std::move(window_ptr);
   ServerWindow::Create(window, this, id, is_top_level);
-  AddWindowToKnownWindows(window, id);
+  AddWindowToKnownWindows(window, id, std::move(window_ptr));
   return window;
 }
 
-void WindowTree::AddWindowToKnownWindows(aura::Window* window,
-                                         const ClientWindowId& id) {
-  DCHECK_EQ(0u, window_to_client_window_id_map_.count(window));
-  window_to_client_window_id_map_[window] = id;
+void WindowTree::AddWindowToKnownWindows(
+    aura::Window* window,
+    const ClientWindowId& id,
+    std::unique_ptr<aura::Window> owned_window) {
+  DCHECK(!IsWindowKnown(window));
+  KnownWindow& known_window = known_windows_map_[window];
+  known_window.client_window_id = id;
+  known_window.is_client_created = owned_window.get() != nullptr;
+  known_window.owned_window = std::move(owned_window);
 
   DCHECK(IsWindowKnown(window));
   client_window_id_to_window_map_[id] = window;
@@ -524,21 +540,25 @@ void WindowTree::AddWindowToKnownWindows(aura::Window* window,
 void WindowTree::RemoveWindowFromKnownWindows(aura::Window* window,
                                               bool delete_if_owned) {
   DCHECK(IsWindowKnown(window));
-  auto client_iter = client_created_windows_.find(window);
-  if (client_iter != client_created_windows_.end()) {
+  auto iter = known_windows_map_.find(window);
+  DCHECK(iter != known_windows_map_.end());
+  if (iter->second.owned_window) {
     window->RemoveObserver(this);
     if (!delete_if_owned) {
       // |window| is in the process of being deleted, release() to avoid double
       // deletion.
-      client_iter->second.release();
+      iter->second.owned_window.release();
     }
-    client_created_windows_.erase(client_iter);
+    iter->second.owned_window.reset();
   }
+  // Sanity check to make sure deletion didn't result in removal
+  DCHECK(iter == known_windows_map_.find(window));
+
   // Remove from these maps after destruction. This is necessary as destruction
   // may end up expecting to find a ServerWindow.
-  auto iter = window_to_client_window_id_map_.find(window);
-  client_window_id_to_window_map_.erase(iter->second);
-  window_to_client_window_id_map_.erase(iter);
+  DCHECK(iter != known_windows_map_.end());
+  client_window_id_to_window_map_.erase(iter->second.client_window_id);
+  known_windows_map_.erase(iter);
 }
 
 void WindowTree::RemoveWindowFromKnownWindowsRecursive(
@@ -576,9 +596,7 @@ Id WindowTree::ClientWindowIdToTransportId(
 
 Id WindowTree::TransportIdForWindow(aura::Window* window) const {
   DCHECK(IsWindowKnown(window));
-  auto iter = window_to_client_window_id_map_.find(window);
-  DCHECK(iter != window_to_client_window_id_map_.end());
-  return ClientWindowIdToTransportId(iter->second);
+  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
 }
 
 ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
@@ -1023,7 +1041,8 @@ bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
   }
 
   const bool owner_intercept_events =
-      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (connection_type_ != ConnectionType::kEmbedding &&
+       (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0);
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(this, window, owner_intercept_events);
   embedding->Init(window_service_, std::move(window_tree_client_ptr),
@@ -1252,11 +1271,8 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
   if (iter != client_roots_.end())
     DeleteClientRoot(iter->get(), WindowTree::DeleteClientRootReason::kDeleted);
 
-  DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
-  const ClientWindowId client_window_id =
-      window_to_client_window_id_map_[window];
-  window_tree_client_->OnWindowDeleted(
-      ClientWindowIdToTransportId(client_window_id));
+  DCHECK(IsWindowKnown(window));
+  window_tree_client_->OnWindowDeleted(TransportIdForWindow(window));
 
   const bool delete_if_owned = false;
   RemoveWindowFromKnownWindows(window, delete_if_owned);
@@ -1645,7 +1661,8 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const bool owner_intercept_events =
-      (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (connection_type_ != ConnectionType::kEmbedding &&
+       (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0);
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, token);
   std::unique_ptr<Embedding> embedding =
