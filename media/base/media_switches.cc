@@ -429,6 +429,10 @@ const base::Feature kUseModernMediaControls{"UseModernMediaControls",
 const base::Feature kRecordMediaEngagementScores{
     "RecordMediaEngagementScores", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Media Engagement Index recording for Web Audio playbacks.
+const base::Feature kRecordWebAudioEngagement{"RecordWebAudioEngagement",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // The following Media Engagement flags are not enabled on mobile platforms:
 // - MediaEngagementBypassAutoplayPolicies: enables the Media Engagement Index
 //   data to be esude to override autoplay policies. An origin with a high MEI

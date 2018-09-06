@@ -529,6 +529,9 @@ void MediaEngagementContentsObserver::UpdatePageTimer() {
 }
 
 bool MediaEngagementContentsObserver::AreAudioContextConditionsMet() const {
+  if (!base::FeatureList::IsEnabled(media::kRecordWebAudioEngagement))
+    return false;
+
   if (audio_context_players_.empty())
     return false;
 
