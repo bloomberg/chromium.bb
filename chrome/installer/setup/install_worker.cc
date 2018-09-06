@@ -135,7 +135,6 @@ base::string16 GetRegCommandKey(BrowserDistribution* dist,
 // in-place on rollback since a previous install of Chrome will be used in that
 // case.
 bool AddFirewallRulesCallback(bool system_level,
-                              BrowserDistribution* dist,
                               const base::FilePath& chrome_path,
                               bool remove_on_rollback,
                               const CallbackWorkItem& work_item) {
@@ -144,7 +143,7 @@ bool AddFirewallRulesCallback(bool system_level,
     return true;
 
   std::unique_ptr<FirewallManager> manager =
-      FirewallManager::Create(dist, chrome_path);
+      FirewallManager::Create(chrome_path);
   if (!manager) {
     LOG(ERROR) << "Failed creating a FirewallManager. Continuing with install.";
     return true;
@@ -166,13 +165,11 @@ bool AddFirewallRulesCallback(bool system_level,
 
 // Adds work items to |list| to create firewall rules.
 void AddFirewallRulesWorkItems(const InstallerState& installer_state,
-                               BrowserDistribution* dist,
                                bool is_new_install,
                                WorkItemList* list) {
   list->AddCallbackWorkItem(
       base::Bind(&AddFirewallRulesCallback,
                  installer_state.system_install(),
-                 dist,
                  installer_state.target_path().Append(kChromeExe),
                  is_new_install));
 }
@@ -508,12 +505,10 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
     install_list->AddCreateRegKeyWorkItem(
         reg_root, uninstall_reg, KEY_WOW64_32KEY);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          KEY_WOW64_32KEY,
                                          installer::kUninstallDisplayNameField,
-                                         browser_dist->GetDisplayName(),
-                                         true);
+                                         InstallUtil::GetDisplayName(), true);
     install_list->AddSetRegValueWorkItem(
         reg_root,
         uninstall_reg,
@@ -875,8 +870,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
                                 product, install_list);
 
   BrowserDistribution* dist = product.distribution();
-  AddVersionKeyWorkItems(root, dist->GetVersionKey(), dist->GetDisplayName(),
-                         new_version, add_language_identifier, install_list);
+  AddVersionKeyWorkItems(root, dist->GetVersionKey(),
+                         InstallUtil::GetDisplayName(), new_version,
+                         add_language_identifier, install_list);
 
   AddCleanupDeprecatedPerUserRegistrationsWorkItems(product, install_list);
 
@@ -888,7 +884,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
                                    product, install_list);
 #endif
-  AddFirewallRulesWorkItems(installer_state, dist, current_version == nullptr,
+  AddFirewallRulesWorkItems(installer_state, current_version == nullptr,
                             install_list);
 
   // We don't have a version check for Win10+ here so that Windows upgrades
@@ -1001,11 +997,9 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                              const Product& product,
                              WorkItemList* list) {
   DCHECK(installer_state.operation() != InstallerState::UNINSTALL);
-  BrowserDistribution* dist = product.distribution();
 
   if (!installer_state.system_install()) {
-    VLOG(1) << "No Active Setup processing to do for user-level "
-            << dist->GetDisplayName();
+    VLOG(1) << "No Active Setup processing to do for user-level Chrome";
     return;
   }
   DCHECK(installer_state.RequiresActiveSetup());
@@ -1016,12 +1010,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   VLOG(1) << "Adding registration items for Active Setup.";
   list->AddCreateRegKeyWorkItem(
       root, active_setup_path, WorkItem::kWow64Default);
-  list->AddSetRegValueWorkItem(root,
-                               active_setup_path,
-                               WorkItem::kWow64Default,
-                               L"",
-                               dist->GetDisplayName(),
-                               true);
+  list->AddSetRegValueWorkItem(root, active_setup_path, WorkItem::kWow64Default,
+                               L"", InstallUtil::GetDisplayName(), true);
 
   base::FilePath active_setup_exe(installer_state.GetInstallerDirectory(
       new_version).Append(kActiveSetupExe));
@@ -1039,11 +1029,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
 
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource.
-  list->AddSetRegValueWorkItem(root,
-                               active_setup_path,
-                               WorkItem::kWow64Default,
-                               L"Localized Name",
-                               dist->GetDisplayName(),
+  list->AddSetRegValueWorkItem(root, active_setup_path, WorkItem::kWow64Default,
+                               L"Localized Name", InstallUtil::GetDisplayName(),
                                true);
 
   list->AddSetRegValueWorkItem(root,

@@ -71,10 +71,9 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
   Product* p = AddProductFromPreferences(prefs, machine_state);
-  BrowserDistribution* dist = p->distribution();
-  VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-          << " distribution: " << dist->GetDisplayName();
+  VLOG(1) << (is_uninstall ? "Uninstall Chrome" : "Install Chrome");
 
+  BrowserDistribution* dist = p->distribution();
   state_key_ = dist->GetStateKey();
 
   if (is_uninstall) {

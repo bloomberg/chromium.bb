@@ -329,7 +329,6 @@ class ShellUtil {
   // all-users path).
   // Returns false on failure.
   static bool GetShortcutPath(ShortcutLocation location,
-                              BrowserDistribution* dist,
                               ShellChange level,
                               base::FilePath* path);
 
@@ -342,12 +341,10 @@ class ShellUtil {
   // empty, it will be removed.
   static bool MoveExistingShortcut(ShortcutLocation old_location,
                                    ShortcutLocation new_location,
-                                   BrowserDistribution* dist,
                                    const ShortcutProperties& properties);
 
   // Updates shortcut in |location| (or creates it if |options| specify
   // SHELL_SHORTCUT_CREATE_ALWAYS).
-  // |dist| gives the type of browser distribution currently in use.
   // |properties| and |operation| affect this method as described on their
   // invidividual definitions above.
   // |location| may be one of SHORTCUT_LOCATION_DESKTOP,
@@ -356,7 +353,6 @@ class ShellUtil {
   // SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR.
   static bool CreateOrUpdateShortcut(
       ShortcutLocation location,
-      BrowserDistribution* dist,
       const ShortcutProperties& properties,
       ShortcutOperation operation);
 
@@ -377,9 +373,9 @@ class ShellUtil {
   static base::string16 GetChromeDelegateCommand(
       const base::FilePath& chrome_exe);
 
-  // Gets a mapping of all registered browser names (excluding browsers in the
-  // |dist| distribution) and their reinstall command (which usually sets
-  // browser as default).
+  // Gets a mapping of all registered browser names (excluding the current
+  // browser) and their reinstall command (which usually sets browser as
+  // default).
   // Given browsers can be registered in HKCU (as of Win7) and/or in HKLM, this
   // method looks in both and gives precedence to values in HKCU as per the msdn
   // standard: http://goo.gl/xjczJ.
@@ -576,7 +572,6 @@ class ShellUtil {
   // Returns true if all shortcuts pointing to |target_exe| are successfully
   // deleted, including the case where no such shortcuts are found.
   static bool RemoveShortcuts(ShortcutLocation location,
-                              BrowserDistribution* dist,
                               ShellChange level,
                               const base::FilePath& target_exe);
 
@@ -590,7 +585,6 @@ class ShellUtil {
   // the vacuous case where no matching shortcuts are found.
   static bool RetargetShortcutsWithArgs(
       ShortcutLocation location,
-      BrowserDistribution* dist,
       ShellChange level,
       const base::FilePath& old_target_exe,
       const base::FilePath& new_target_exe);
@@ -603,7 +597,6 @@ class ShellUtil {
   // non-NULL and gets set at any point during this call.
   static bool ShortcutListMaybeRemoveUnknownArgs(
       ShortcutLocation location,
-      BrowserDistribution* dist,
       ShellChange level,
       const base::FilePath& chrome_exe,
       bool do_removal,

@@ -54,7 +54,6 @@ namespace installer {
 namespace {
 
 void LogShortcutOperation(ShellUtil::ShortcutLocation location,
-                          BrowserDistribution* dist,
                           const ShellUtil::ShortcutProperties& properties,
                           ShellUtil::ShortcutOperation operation,
                           bool failed) {
@@ -98,7 +97,7 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
   if (properties.has_shortcut_name())
     message.append(base::UTF16ToUTF8(properties.shortcut_name));
   else
-    message.append(base::UTF16ToUTF8(dist->GetDisplayName()));
+    message.append(base::UTF16ToUTF8(InstallUtil::GetDisplayName()));
   message.push_back('"');
 
   message.append(" shortcut to ");
@@ -119,13 +118,11 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
 
 void ExecuteAndLogShortcutOperation(
     ShellUtil::ShortcutLocation location,
-    BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties,
     ShellUtil::ShortcutOperation operation) {
-  LogShortcutOperation(location, dist, properties, operation, false);
-  if (!ShellUtil::CreateOrUpdateShortcut(location, dist, properties,
-                                         operation)) {
-    LogShortcutOperation(location, dist, properties, operation, true);
+  LogShortcutOperation(location, properties, operation, false);
+  if (!ShellUtil::CreateOrUpdateShortcut(location, properties, operation)) {
+    LogShortcutOperation(location, properties, operation, true);
   }
 }
 
@@ -361,8 +358,6 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   prefs.GetBool(master_preferences::kDoNotCreateTaskbarShortcut,
                 &do_not_create_taskbar_shortcut);
 
-  BrowserDistribution* dist = product.distribution();
-
   // The default operation on update is to overwrite shortcuts with the
   // currently desired properties, but do so only for shortcuts that still
   // exist.
@@ -391,9 +386,8 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
-    ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, base_properties,
-        shortcut_operation);
+    ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                   base_properties, shortcut_operation);
   }
 
   if (!do_not_create_quick_launch_shortcut ||
@@ -402,9 +396,8 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
     // install the per-user shortcut.
     ShellUtil::ShortcutProperties quick_launch_properties(base_properties);
     quick_launch_properties.level = ShellUtil::CURRENT_USER;
-    ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist,
-        quick_launch_properties, shortcut_operation);
+    ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                   quick_launch_properties, shortcut_operation);
   }
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
@@ -424,18 +417,16 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   // location.
   base::FilePath old_shortcut_path;
   ShellUtil::GetShortcutPath(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
       shortcut_level, &old_shortcut_path);
   if (base::PathExists(old_shortcut_path)) {
     ShellUtil::MoveExistingShortcut(
         ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
-        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
-        dist, start_menu_properties);
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, start_menu_properties);
   }
 
-  ExecuteAndLogShortcutOperation(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
-      start_menu_properties, shortcut_operation);
+  ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+                                 start_menu_properties, shortcut_operation);
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,

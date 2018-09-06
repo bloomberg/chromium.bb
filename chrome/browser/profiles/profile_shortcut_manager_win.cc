@@ -40,7 +40,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "components/prefs/pref_service.h"
@@ -256,17 +255,16 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
 bool GetDesktopShortcutsDirectories(
     base::FilePath* user_shortcuts_directory,
     base::FilePath* system_shortcuts_directory) {
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   if (user_shortcuts_directory &&
       !ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                  distribution, ShellUtil::CURRENT_USER,
+                                  ShellUtil::CURRENT_USER,
                                   user_shortcuts_directory)) {
     NOTREACHED();
     return false;
   }
   if (system_shortcuts_directory &&
       !ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                  distribution, ShellUtil::SYSTEM_LEVEL,
+                                  ShellUtil::SYSTEM_LEVEL,
                                   system_shortcuts_directory)) {
     NOTREACHED();
     return false;
@@ -554,12 +552,11 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     operation = ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL;
   }
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   for (const auto& shortcut : shortcuts) {
     const base::FilePath shortcut_name = shortcut.BaseName().RemoveExtension();
     properties.set_shortcut_name(shortcut_name.value());
     ShellUtil::CreateOrUpdateShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                      distribution, properties, operation);
+                                      properties, operation);
   }
 }
 
@@ -616,14 +613,13 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   const bool had_shortcuts = !shortcuts.empty();
   if (ensure_shortcuts_remain && had_shortcuts &&
       !ChromeDesktopShortcutsExist(chrome_exe)) {
-    BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
 
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
         profiles::internal::GetShortcutFilenameForProfile(base::string16()));
     ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution, properties,
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP, properties,
         ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
   }
 }

@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -204,8 +203,8 @@ class ProfileShortcutManagerTest : public testing::Test {
         base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
         location,
         base::Bind(&ShellUtil::CreateOrUpdateShortcut,
-                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, GetDistribution(),
-                   properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
+                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, properties,
+                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
         base::Bind([](bool succeeded) { EXPECT_TRUE(succeeded); }));
     thread_bundle_.RunUntilIdle();
   }
@@ -252,10 +251,6 @@ class ProfileShortcutManagerTest : public testing::Test {
     thread_bundle_.RunUntilIdle();
   }
 
-  BrowserDistribution* GetDistribution() {
-    return BrowserDistribution::GetDistribution();
-  }
-
   base::FilePath GetExePath() {
     base::FilePath exe_path;
     EXPECT_TRUE(base::PathService::Get(base::FILE_EXE, &exe_path));
@@ -265,7 +260,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   base::FilePath GetUserShortcutsDirectory() {
     base::FilePath user_shortcuts_directory;
     EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                           GetDistribution(),
                                            ShellUtil::CURRENT_USER,
                                            &user_shortcuts_directory));
     return user_shortcuts_directory;
@@ -274,7 +268,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   base::FilePath GetSystemShortcutsDirectory() {
     base::FilePath system_shortcuts_directory;
     EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                           GetDistribution(),
                                            ShellUtil::SYSTEM_LEVEL,
                                            &system_shortcuts_directory));
     return system_shortcuts_directory;

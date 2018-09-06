@@ -264,8 +264,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
   }
 
   void OnBrowserChosen(const base::string16& browser_name) override {
-    if (browser_name ==
-        BrowserDistribution::GetDistribution()->GetDisplayName()) {
+    if (browser_name == InstallUtil::GetDisplayName()) {
       base::RecordAction(
           base::UserMetricsAction("SettingsAppMonitor.ChromeBrowserChosen"));
     } else {
