@@ -452,7 +452,7 @@ TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithTwoDisplayItem) {
   EXPECT_TRUE(spec()->IsMixedCurrency());
 }
 
-TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
+TEST_F(PaymentRequestSpecTest, RetryWithShippingAddressErrors) {
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_shipping = true;
   RecreateSpecWithOptionsAndDetails(std::move(options),
@@ -463,7 +463,12 @@ TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
   mojom::AddressErrorsPtr shipping_address_errors = mojom::AddressErrors::New();
   shipping_address_errors->address_line = "Invalid address line";
   shipping_address_errors->city = "Invalid city";
-  spec()->UpdateShippingAddressErrors(std::move(shipping_address_errors));
+
+  mojom::PaymentValidationErrorsPtr errors =
+      mojom::PaymentValidationErrors::New();
+  errors->shipping_address = std::move(shipping_address_errors);
+
+  spec()->Retry(std::move(errors));
 
   EXPECT_EQ(base::UTF8ToUTF16("Invalid city"),
             spec()->GetShippingAddressError(autofill::ADDRESS_HOME_CITY));
@@ -474,7 +479,7 @@ TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
   EXPECT_TRUE(spec()->has_shipping_address_error());
 }
 
-TEST_F(PaymentRequestSpecTest, PayerErrors) {
+TEST_F(PaymentRequestSpecTest, RetryWithPayerErrors) {
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_payer_email = true;
   options->request_payer_name = true;
@@ -488,7 +493,12 @@ TEST_F(PaymentRequestSpecTest, PayerErrors) {
   payer_errors->email = "Invalid email";
   payer_errors->name = "Invalid name";
   payer_errors->phone = "Invalid phone";
-  spec()->UpdatePayerErrors(std::move(payer_errors));
+
+  mojom::PaymentValidationErrorsPtr errors =
+      mojom::PaymentValidationErrors::New();
+  errors->payer = std::move(payer_errors);
+
+  spec()->Retry(std::move(errors));
 
   EXPECT_EQ(base::UTF8ToUTF16("Invalid email"),
             spec()->GetPayerError(autofill::EMAIL_ADDRESS));

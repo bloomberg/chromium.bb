@@ -101,16 +101,12 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   RecomputeSpecForDetails();
 }
 
-void PaymentRequestSpec::UpdateShippingAddressErrors(
-    mojom::AddressErrorsPtr errors) {
-  shipping_address_errors_ = std::move(errors);
-  current_update_reason_ = UpdateReason::RETRY;
-  NotifyOnSpecUpdated();
-  current_update_reason_ = UpdateReason::NONE;
-}
+void PaymentRequestSpec::Retry(mojom::PaymentValidationErrorsPtr errors) {
+  if (!errors)
+    return;
 
-void PaymentRequestSpec::UpdatePayerErrors(mojom::PayerErrorFieldsPtr errors) {
-  payer_errors_ = std::move(errors);
+  shipping_address_errors_ = std::move(errors->shipping_address);
+  payer_errors_ = std::move(errors->payer);
   current_update_reason_ = UpdateReason::RETRY;
   NotifyOnSpecUpdated();
   current_update_reason_ = UpdateReason::NONE;
@@ -195,12 +191,12 @@ bool PaymentRequestSpec::has_payer_error() const {
 }
 
 void PaymentRequestSpec::RecomputeSpecForDetails() {
-  // Reparse the |details_| and update the observers.
-  UpdateSelectedShippingOption(/*after_update=*/true);
-
   // Clear the shipping address errors when the merchant updates the price based
   // on the shipping address that the user has newly fixed or selected.
   shipping_address_errors_.reset();
+
+  // Reparse the |details_| and update the observers.
+  UpdateSelectedShippingOption(/*after_update=*/true);
 
   NotifyOnSpecUpdated();
   current_update_reason_ = UpdateReason::NONE;
@@ -374,6 +370,10 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
             break;
         }
       }
+
+      // Update shipping address errors
+      if (details_->shipping_address_errors)
+        shipping_address_errors_ = std::move(details_->shipping_address_errors);
     }
     return;
   }

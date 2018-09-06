@@ -641,7 +641,6 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const std::string& validation_errors) {
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
-       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED});
 
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
@@ -655,7 +654,6 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const DialogEvent& dialog_event) {
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
-       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
        DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED,
        dialog_event});
 

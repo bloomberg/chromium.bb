@@ -258,6 +258,8 @@ class ShippingProfileViewController : public ProfileListViewController,
         // The error profile is known, refresh the view to display it correctly.
         PopulateList();
         UpdateContentView();
+        if (spec()->has_shipping_address_error())
+          ShowEditor(state()->selected_shipping_option_error_profile());
       }
     }
   }

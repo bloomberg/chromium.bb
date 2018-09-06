@@ -153,6 +153,7 @@ struct PaymentDetails {
   array<PaymentShippingOption> shipping_options;
   array<PaymentDetailsModifier> modifiers;
   string error = "";
+  AddressErrors? shipping_address_errors;
   // Identifier identifying the payment request, to be exposed
   // to payment apps. It is optional since this structure is used
   // by PaymentDetailsUpdate (next to PaymentDetailsInit) but
