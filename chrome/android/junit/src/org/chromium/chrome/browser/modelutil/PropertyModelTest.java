@@ -53,22 +53,11 @@ public class PropertyModelTest {
     public static ObjectPropertyKey<List<Integer>> OBJECT_PROPERTY_C = new ObjectPropertyKey<>();
 
     @Test
-    public void defaultValues() {
-        PropertyModel model = new PropertyModel(
-                BOOLEAN_PROPERTY_A, FLOAT_PROPERTY_A, INT_PROPERTY_A, OBJECT_PROPERTY_A);
-
-        assertThat(model.getValue(BOOLEAN_PROPERTY_A), equalTo(false));
-        assertThat(model.getValue(FLOAT_PROPERTY_A), equalTo(0f));
-        assertThat(model.getValue(INT_PROPERTY_A), equalTo(0));
-        assertThat(model.getValue(OBJECT_PROPERTY_A), equalTo(null));
-    }
-
-    @Test
     public void getAllSetProperties() {
         PropertyModel model = new PropertyModel(
                 BOOLEAN_PROPERTY_A, FLOAT_PROPERTY_A, INT_PROPERTY_A, OBJECT_PROPERTY_A);
-        model.setValue(BOOLEAN_PROPERTY_A, true);
-        model.setValue(INT_PROPERTY_A, 42);
+        model.set(BOOLEAN_PROPERTY_A, true);
+        model.set(INT_PROPERTY_A, 42);
         Collection<PropertyKey> setProperties = model.getAllSetProperties();
         assertThat(setProperties, containsInAnyOrder(BOOLEAN_PROPERTY_A, INT_PROPERTY_A));
         assertThat(setProperties.size(), equalTo(2));
@@ -90,9 +79,9 @@ public class PropertyModelTest {
         model.addObserver(observer);
         Mockito.<PropertyObserver>reset(observer);
 
-        model.setValue(key, value);
+        model.set(key, value);
         verify(observer).onPropertyChanged(model, key);
-        assertThat(model.getValue(key), equalTo(value));
+        assertThat(model.get(key), equalTo(value));
 
         model.removeObserver(observer);
     }
@@ -119,9 +108,9 @@ public class PropertyModelTest {
         model.addObserver(observer);
         Mockito.<PropertyObserver>reset(observer);
 
-        model.setValue(key, value);
+        model.set(key, value);
         verify(observer).onPropertyChanged(model, key);
-        assertThat(model.getValue(key), equalTo(value));
+        assertThat(model.get(key), equalTo(value));
 
         model.removeObserver(observer);
     }
@@ -144,9 +133,9 @@ public class PropertyModelTest {
         model.addObserver(observer);
         Mockito.<PropertyObserver>reset(observer);
 
-        model.setValue(key, value);
+        model.set(key, value);
         verify(observer).onPropertyChanged(model, key);
-        assertThat(model.getValue(key), equalTo(value));
+        assertThat(model.get(key), equalTo(value));
 
         model.removeObserver(observer);
     }
@@ -180,9 +169,9 @@ public class PropertyModelTest {
         model.addObserver(observer);
         Mockito.<PropertyObserver>reset(observer);
 
-        model.setValue(key, value);
+        model.set(key, value);
         verify(observer).onPropertyChanged(model, key);
-        assertThat(model.getValue(key), equalTo(value));
+        assertThat(model.get(key), equalTo(value));
 
         model.removeObserver(observer);
     }
@@ -191,22 +180,22 @@ public class PropertyModelTest {
     public void duplicateSetChangeSuppression() {
         PropertyModel model = new PropertyModel(
                 BOOLEAN_PROPERTY_A, FLOAT_PROPERTY_A, INT_PROPERTY_A, OBJECT_PROPERTY_A);
-        model.setValue(BOOLEAN_PROPERTY_A, true);
-        model.setValue(FLOAT_PROPERTY_A, 1f);
-        model.setValue(INT_PROPERTY_A, -1);
+        model.set(BOOLEAN_PROPERTY_A, true);
+        model.set(FLOAT_PROPERTY_A, 1f);
+        model.set(INT_PROPERTY_A, -1);
 
         Object obj = new Object();
-        model.setValue(OBJECT_PROPERTY_A, obj);
+        model.set(OBJECT_PROPERTY_A, obj);
 
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
         Mockito.<PropertyObserver>reset(observer);
 
-        model.setValue(BOOLEAN_PROPERTY_A, true);
-        model.setValue(FLOAT_PROPERTY_A, 1f);
-        model.setValue(INT_PROPERTY_A, -1);
-        model.setValue(OBJECT_PROPERTY_A, obj);
+        model.set(BOOLEAN_PROPERTY_A, true);
+        model.set(FLOAT_PROPERTY_A, 1f);
+        model.set(INT_PROPERTY_A, -1);
+        model.set(OBJECT_PROPERTY_A, obj);
 
         Mockito.verifyZeroInteractions(observer);
     }
@@ -215,7 +204,7 @@ public class PropertyModelTest {
     public void ensureValidKey() {
         PropertyModel model = new PropertyModel(BOOLEAN_PROPERTY_A, BOOLEAN_PROPERTY_B);
         thrown.expect(IllegalArgumentException.class);
-        model.setValue(BOOLEAN_PROPERTY_C, true);
+        model.set(BOOLEAN_PROPERTY_C, true);
     }
 
     @Test(expected = IllegalArgumentException.class)

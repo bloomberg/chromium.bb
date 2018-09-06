@@ -83,20 +83,20 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
 
         if (mSelectionView != null) {
             mSelectionView.setSelectionState(item.selected,
-                    properties.getValue(ListProperties.SELECTION_MODE_ACTIVE),
+                    properties.get(ListProperties.SELECTION_MODE_ACTIVE),
                     item.showSelectedAnimation);
         }
 
         itemView.setOnLongClickListener(v -> {
-            properties.getValue(ListProperties.CALLBACK_SELECTION).onResult(item);
+            properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
             return true;
         });
 
         itemView.setOnClickListener(v -> {
             if (mSelectionView != null && mSelectionView.isInSelectionMode()) {
-                properties.getValue(ListProperties.CALLBACK_SELECTION).onResult(item);
+                properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
             } else {
-                properties.getValue(ListProperties.CALLBACK_OPEN).onResult(offlineItem);
+                properties.get(ListProperties.CALLBACK_OPEN).onResult(offlineItem);
             }
         });
 
@@ -111,7 +111,7 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
 
         // Start the new request.
         mId = offlineItem.id;
-        mCancellable = properties.getValue(ListProperties.PROVIDER_VISUALS)
+        mCancellable = properties.get(ListProperties.PROVIDER_VISUALS)
                                .getVisuals(offlineItem, mWidthPx, mHeightPx, this);
 
         // Make sure to update our state properly if we got a synchronous response.
@@ -123,7 +123,7 @@ abstract class ThumbnailAwareViewHolder extends MoreButtonViewHolder implements 
 
         return mSelectionView.isSelected() != item.selected
                 || mSelectionView.isInSelectionMode()
-                != properties.getValue(ListProperties.SELECTION_MODE_ACTIVE);
+                != properties.get(ListProperties.SELECTION_MODE_ACTIVE);
     }
 
     // VisualsCallback implementation.

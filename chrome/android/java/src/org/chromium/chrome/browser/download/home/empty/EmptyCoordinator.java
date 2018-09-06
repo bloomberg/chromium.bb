@@ -102,12 +102,12 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
                 textId = R.string.download_manager_ui_empty;
             }
 
-            mModel.setValue(EmptyProperties.EMPTY_TEXT_RES_ID, textId);
-            mModel.setValue(EmptyProperties.EMPTY_ICON_RES_ID, iconId);
+            mModel.set(EmptyProperties.EMPTY_TEXT_RES_ID, textId);
+            mModel.set(EmptyProperties.EMPTY_ICON_RES_ID, iconId);
         } else {
             state = State.GONE;
         }
 
-        mModel.setValue(EmptyProperties.STATE, state);
+        mModel.set(EmptyProperties.STATE, state);
     }
 }

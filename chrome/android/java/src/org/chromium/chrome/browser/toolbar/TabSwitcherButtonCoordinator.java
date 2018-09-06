@@ -49,7 +49,7 @@ public class TabSwitcherButtonCoordinator {
                 mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
 
         CharSequence description = root.getResources().getString(R.string.open_tabs);
-        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
+        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
                 v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
     }
 
@@ -58,8 +58,7 @@ public class TabSwitcherButtonCoordinator {
      *                        button is clicked.
      */
     public void setTabSwitcherListener(OnClickListener onClickListener) {
-        mTabSwitcherButtonModel.setValue(
-                TabSwitcherButtonProperties.ON_CLICK_LISTENER, onClickListener);
+        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.ON_CLICK_LISTENER, onClickListener);
     }
 
     /**
@@ -121,7 +120,7 @@ public class TabSwitcherButtonCoordinator {
      * @param tint The {@link ColorStateList} used to tint the button.
      */
     public void setTint(ColorStateList tint) {
-        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.TINT, tint);
+        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.TINT, tint);
     }
 
     public void destroy() {
@@ -130,7 +129,7 @@ public class TabSwitcherButtonCoordinator {
     }
 
     private void updateTabCount() {
-        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.NUMBER_OF_TABS,
+        mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.NUMBER_OF_TABS,
                 mTabModelSelector.getCurrentModel().getCount());
     }
 }
