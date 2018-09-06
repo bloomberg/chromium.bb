@@ -27,6 +27,9 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   // ShelfView containing the overflow items.
   void InitOverflowBubble(views::View* anchor, ShelfView* shelf_view);
 
+  // Scrolls the bubble contents if it is a scroll update event.
+  void ProcessGestureEvent(const ui::GestureEvent& event);
+
   // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
   gfx::Rect GetBubbleBounds() override;
@@ -40,13 +43,13 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   void ScrollByXOffset(int x_offset);
   void ScrollByYOffset(int y_offset);
 
-  // views::View overrides:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
 
-  // ui::EventHandler overrides:
+  // ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // ShelfBackgroundAnimatorObserver:

@@ -84,6 +84,17 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   AddChildView(shelf_view_);
 }
 
+void OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
+  if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
+    return;
+
+  if (shelf_->IsHorizontalAlignment())
+    ScrollByXOffset(static_cast<int>(-event.details().scroll_x()));
+  else
+    ScrollByYOffset(static_cast<int>(-event.details().scroll_y()));
+  Layout();
+}
+
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {
   const gfx::Rect visible_bounds(GetContentsBounds());
   const gfx::Size contents_size(shelf_view_->GetPreferredSize());
@@ -158,8 +169,10 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
-  ScrollByXOffset(-event->x_offset());
-  ScrollByYOffset(-event->y_offset());
+  if (shelf_->IsHorizontalAlignment())
+    ScrollByXOffset(static_cast<int>(-event->x_offset()));
+  else
+    ScrollByYOffset(static_cast<int>(-event->y_offset()));
   Layout();
   event->SetHandled();
 }
