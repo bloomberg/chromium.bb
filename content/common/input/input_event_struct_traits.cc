@@ -8,6 +8,7 @@
 #include "content/common/input_messages.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {
@@ -330,6 +331,9 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
         wheel_event->has_precise_scrolling_deltas =
             wheel_data->has_precise_scrolling_deltas;
         wheel_event->dispatch_type = wheel_data->cancelable;
+        wheel_event->event_action =
+            static_cast<blink::WebMouseWheelEvent::EventAction>(
+                wheel_data->event_action);
       }
     }
 
@@ -381,7 +385,8 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::pointer_data(
         wheel_event->acceleration_ratio_y, wheel_event->resending_plugin_id,
         wheel_event->phase, wheel_event->momentum_phase,
         wheel_event->scroll_by_page, wheel_event->has_precise_scrolling_deltas,
-        wheel_event->dispatch_type);
+        wheel_event->dispatch_type,
+        static_cast<uint8_t>(wheel_event->event_action));
   }
 
   return PointerDataFromPointerProperties(

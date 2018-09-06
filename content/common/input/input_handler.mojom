@@ -65,6 +65,7 @@ struct WheelData {
   bool scroll_by_page;
   bool has_precise_scrolling_deltas;
   Cancelability cancelable;
+  uint8 event_action;
 };
 
 struct MouseData {

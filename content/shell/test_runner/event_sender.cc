@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/input/web_mouse_wheel_event_traits.h"
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_delegate.h"
@@ -2605,6 +2606,7 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
     event.delta_x *= kScrollbarPixelsPerTick;
     event.delta_y *= kScrollbarPixelsPerTick;
   }
+  event.event_action = content::WebMouseWheelEventTraits::GetEventAction(event);
   return event;
 }
 
