@@ -104,6 +104,13 @@ class PerfBenchmark(benchmark.Benchmark):
     # with the test results.
     options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
+
+
+    # TODO(crbug.com/881469): remove this once Webview support surface
+    # synchronization.
+    if options.browser_type == 'android-webview':
+      options.AppendExtraBrowserArgs(
+          '--disable-features=SurfaceSynchronization')
     self.SetExtraBrowserOptions(options)
 
   @staticmethod
