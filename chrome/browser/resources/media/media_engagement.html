@@ -38,7 +38,7 @@
       background: rgb(224, 236, 255);
       cursor: pointer;
       padding-bottom: 4px;
-      padding-right: 16px;
+      padding-right: 4px;
       padding-top: 4px;
       white-space: nowrap;
     }
@@ -87,6 +87,10 @@
       background: rgb(255, 255, 187);
     }
 
+    th.sort-column {
+      padding-right: 16px;
+    }
+
     th.sort-column::after {
       content: '▲';
       position: absolute;
@@ -133,6 +137,12 @@
         <th sort-key="mediaPlaybacks" sort-reverse>
           Sessions with playback
         </th>
+        <th sort-key="audioContextPlaybacks" sort-reverse>
+          Sessions with playback<br>(audio context only)
+        </th>
+        <th sort-key="mediaElementPlaybacks" sort-reverse>
+          Sessions with playback<br>(media element only)
+        </th>
         <th sort-key="audiblePlaybacks" sort-reverse>
           Audible Playbacks*
         </th>
@@ -166,6 +176,8 @@
       <td class="origin-cell"></td>
       <td class="visits-count-cell"></td>
       <td class="media-playbacks-count-cell"></td>
+      <td class="audio-context-playbacks-count-cell"></td>
+      <td class="media-element-playbacks-count-cell"></td>
       <td class="audible-playbacks-count-cell"></td>
       <td class="significant-playbacks-count-cell"></td>
       <td class="last-playback-time-cell"></td>

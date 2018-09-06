@@ -32,15 +32,17 @@ function createRow(rowInfo) {
   td[0].textContent = rowInfo.origin.url;
   td[1].textContent = rowInfo.visits;
   td[2].textContent = rowInfo.mediaPlaybacks;
-  td[3].textContent = rowInfo.audiblePlaybacks;
-  td[4].textContent = rowInfo.significantPlaybacks;
-  td[5].textContent = rowInfo.lastMediaPlaybackTime ?
+  td[3].textContent = rowInfo.audioContextPlaybacks;
+  td[4].textContent = rowInfo.mediaElementPlaybacks;
+  td[5].textContent = rowInfo.audiblePlaybacks;
+  td[6].textContent = rowInfo.significantPlaybacks;
+  td[7].textContent = rowInfo.lastMediaPlaybackTime ?
       new Date(rowInfo.lastMediaPlaybackTime).toISOString() :
       '';
-  td[6].textContent = rowInfo.isHigh ? 'Yes' : 'No';
-  td[7].textContent = rowInfo.highScoreChanges;
-  td[8].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
-  td[9].getElementsByClassName('engagement-bar')[0].style.width =
+  td[8].textContent = rowInfo.isHigh ? 'Yes' : 'No';
+  td[9].textContent = rowInfo.highScoreChanges;
+  td[10].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
+  td[11].getElementsByClassName('engagement-bar')[0].style.width =
       (rowInfo.totalScore * 50) + 'px';
   return document.importNode(template.content, true);
 }
@@ -80,7 +82,8 @@ function compareTableItem(sortKey, a, b) {
   if (sortKey == 'visits' || sortKey == 'mediaPlaybacks' ||
       sortKey == 'lastMediaPlaybackTime' || sortKey == 'totalScore' ||
       sortKey == 'audiblePlaybacks' || sortKey == 'significantPlaybacks' ||
-      sortKey == 'highScoreChanges' || sortKey == 'isHigh') {
+      sortKey == 'highScoreChanges' || sortKey == 'mediaElementPlaybacks' ||
+      sortKey == 'audioContextPlaybacks' || sortKey == 'isHigh') {
     return val1 - val2;
   }
 
