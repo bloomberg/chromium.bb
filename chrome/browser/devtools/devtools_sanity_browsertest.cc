@@ -1625,32 +1625,6 @@ class AutofillManagerTestDelegateDevtoolsImpl
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateDevtoolsImpl);
 };
 
-// Test params:
-//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
-//        is enabled for testing.
-//
-// This test is parametrized to ensure that it runs for the
-// AutofillExpandedPopupViews feature either enabled or disabled, while it's
-// rolled out.
-// TODO(crbug.com/831603): This can be merged into DevToolsSanityTest when
-//                         AutofillExpandedPopupViews becomes the default
-//                         behavior and is no longer used.
-class AutofillDevToolsSanityTest : public DevToolsSanityTest,
-                                   public ::testing::WithParamInterface<bool> {
- public:
-  AutofillDevToolsSanityTest() = default;
-  ~AutofillDevToolsSanityTest() override = default;
-
-  void SetUpOnMainThread() override {
-    const bool popup_views_enabled = GetParam();
-    scoped_feature_list_.InitWithFeatureState(
-        autofill::features::kAutofillExpandedPopupViews, popup_views_enabled);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Disabled. Failing on MacOS MSAN. See https://crbug.com/849129.
 #if defined(OS_MACOSX)
 #define MAYBE_TestDispatchKeyEventShowsAutoFill \
@@ -1659,7 +1633,7 @@ class AutofillDevToolsSanityTest : public DevToolsSanityTest,
 #define MAYBE_TestDispatchKeyEventShowsAutoFill \
   TestDispatchKeyEventShowsAutoFill
 #endif
-IN_PROC_BROWSER_TEST_P(AutofillDevToolsSanityTest,
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        MAYBE_TestDispatchKeyEventShowsAutoFill) {
   OpenDevToolsWindow(kDispatchKeyEventShowsAutoFill, false);
 
@@ -1675,8 +1649,6 @@ IN_PROC_BROWSER_TEST_P(AutofillDevToolsSanityTest,
   RunTestFunction(window_, "testDispatchKeyEventShowsAutoFill");
   CloseDevToolsWindow();
 }
-
-INSTANTIATE_TEST_CASE_P(All, AutofillDevToolsSanityTest, ::testing::Bool());
 
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
