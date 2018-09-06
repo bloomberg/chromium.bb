@@ -124,20 +124,8 @@ void VirtualKeyboardController::ForceShowKeyboardWithKeyset(
                              base::Unretained(this)));
 }
 
-void VirtualKeyboardController::OnTabletModeStarted() {
-  if (IsVirtualKeyboardEnabled()) {
-    SetKeyboardEnabled(true);
-  } else {
-    UpdateKeyboardEnabled();
-  }
-}
-
-void VirtualKeyboardController::OnTabletModeEnded() {
-  if (IsVirtualKeyboardEnabled()) {
-    SetKeyboardEnabled(false);
-  } else {
-    UpdateKeyboardEnabled();
-  }
+void VirtualKeyboardController::OnTabletModeEventsBlockingChanged() {
+  UpdateKeyboardEnabled();
 }
 
 void VirtualKeyboardController::OnTouchscreenDeviceConfigurationChanged() {
@@ -236,12 +224,12 @@ void VirtualKeyboardController::UpdateKeyboardEnabled() {
   if (IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(Shell::Get()
                            ->tablet_mode_controller()
-                           ->IsTabletModeWindowManagerEnabled());
+                           ->AreInternalInputDeviceEventsBlocked());
     return;
   }
   bool ignore_internal_keyboard = Shell::Get()
                                       ->tablet_mode_controller()
-                                      ->IsTabletModeWindowManagerEnabled();
+                                      ->AreInternalInputDeviceEventsBlocked();
   bool is_internal_keyboard_active =
       has_internal_keyboard_ && !ignore_internal_keyboard;
   SetKeyboardEnabled(!is_internal_keyboard_active && has_touchscreen_ &&

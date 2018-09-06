@@ -2289,6 +2289,8 @@ static_library("test_support_common") {
     "wm/lock_state_controller_test_api.h",
     "wm/splitview/split_view_highlight_view_test_api.cc",
     "wm/splitview/split_view_highlight_view_test_api.h",
+    "wm/tablet_mode/tablet_mode_controller_test_api.cc",
+    "wm/tablet_mode/tablet_mode_controller_test_api.h",
     "wm/test_activation_delegate.cc",
     "wm/test_activation_delegate.h",
     "wm/test_child_modal_parent.cc",
