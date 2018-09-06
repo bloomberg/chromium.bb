@@ -303,6 +303,21 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html
 
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-formatting-context-margin-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-stacking-context-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-002.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
+crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-006.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-block-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-button-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-001.html [ Failure ]
+crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
+crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
+crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
