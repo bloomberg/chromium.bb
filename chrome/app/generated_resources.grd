@@ -3501,6 +3501,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN" desc="Permission string for access to document scanning.">
           Access document scanners attached via USB or on the local network
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_HARDWARE_PLATFORM" desc="Permission string for access to hardware platform information.">
+          Read the manufacturer and model of this computer
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_FAVICON" desc="Permission string for access to favicons.">
           Read the icons of the websites you visit
         </message>

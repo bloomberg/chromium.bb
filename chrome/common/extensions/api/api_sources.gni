@@ -37,6 +37,7 @@ schema_sources_ = [
   "developer_private.idl",
   "downloads.idl",
   "downloads_internal.idl",
+  "enterprise_hardware_platform.idl",
   "font_settings.json",
   "gcm.json",
   "history.json",

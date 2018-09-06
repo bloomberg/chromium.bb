@@ -74,6 +74,8 @@ ChromeAPIPermissions::GetAllPermissions() const {
            APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kEnterpriseDeviceAttributes,
        "enterprise.deviceAttributes"},
+      {APIPermission::kEnterpriseHardwarePlatform,
+       "enterprise.hardwarePlatform"},
       {APIPermission::kEnterprisePlatformKeys, "enterprise.platformKeys"},
       {APIPermission::kFileBrowserHandler, "fileBrowserHandler",
        APIPermissionInfo::kFlagCannotBeOptional},

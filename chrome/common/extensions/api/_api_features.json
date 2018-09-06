@@ -372,6 +372,10 @@
     "dependencies": ["permission:echoPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.hardwarePlatform": {
+    "dependencies": ["permission:enterprise.hardwarePlatform"],
+    "contexts": ["blessed_extension"]
+  },
   "enterprise.deviceAttributes": {
     "dependencies": ["permission:enterprise.deviceAttributes"],
     "contexts": ["blessed_extension"]

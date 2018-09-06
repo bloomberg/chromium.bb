@@ -639,6 +639,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_DISPLAY_SOURCE,
        {APIPermission::kDisplaySource},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_HARDWARE_PLATFORM,
+       {APIPermission::kEnterpriseHardwarePlatform},
+       {}},
   };
 
   return std::vector<ChromePermissionMessageRule>(
