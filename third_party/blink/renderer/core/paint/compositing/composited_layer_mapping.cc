@@ -1310,20 +1310,31 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
+  FloatPoint old_position = graphics_layer_->GetPosition();
+  IntSize old_size = graphics_layer_->Size();
+  FloatPoint new_position = FloatPoint(relative_compositing_bounds.Location() -
+                                       graphics_layer_parent_location);
+  IntSize new_size = relative_compositing_bounds.Size();
+
   // An iframe's main GraphicsLayer is positioned by the CLM for the <iframe>
   // element in the parent frame's DOM.
   bool is_iframe_doc = GetLayoutObject().IsLayoutView() &&
                        !GetLayoutObject().GetFrame()->IsLocalRoot();
-  if (!is_iframe_doc) {
-    graphics_layer_->SetPosition(
-        FloatPoint(relative_compositing_bounds.Location() -
-                   graphics_layer_parent_location));
+  if (new_position != old_position && !is_iframe_doc) {
+    graphics_layer_->SetPosition(new_position);
+
+    if (RuntimeEnabledFeatures::JankTrackingEnabled()) {
+      LocalFrameView* frame_view = GetLayoutObject().View()->GetFrameView();
+      frame_view->GetJankTracker().NotifyCompositedLayerMoved(
+          OwningLayer(), FloatRect(old_position, FloatSize(old_size)),
+          FloatRect(new_position, FloatSize(new_size)));
+    }
   }
   graphics_layer_->SetOffsetFromLayoutObject(
       ToIntSize(local_compositing_bounds.Location()));
 
-  if (graphics_layer_->Size() != relative_compositing_bounds.Size())
-    graphics_layer_->SetSize(relative_compositing_bounds.Size());
+  if (old_size != new_size)
+    graphics_layer_->SetSize(new_size);
 
   // m_graphicsLayer is the corresponding GraphicsLayer for this PaintLayer and
   // its non-compositing descendants. So, the visibility flag for

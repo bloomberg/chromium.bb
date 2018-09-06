@@ -11,6 +11,10 @@ namespace blink {
 
 class JankTrackerTest : public RenderingTest {
  protected:
+  void SetUp() override {
+    RenderingTest::SetUp();
+    EnableCompositing();
+  }
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
   JankTracker& GetJankTracker() { return GetFrameView().GetJankTracker(); }
 
@@ -126,6 +130,41 @@ TEST_F(JankTrackerTest, IgnoreAfterInput) {
   SimulateInput();
   GetFrameView().UpdateAllLifecyclePhases();
   EXPECT_EQ(0.0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, CompositedElementMovement) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #jank {
+      position: relative;
+      width: 500px;
+      height: 200px;
+      background: yellow;
+    }
+    #container {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      left: 400px;
+      top: 100px;
+      background: #ccc;
+    }
+    .tr { will-change: transform; }
+    </style>
+    <div id='container' class='tr'>
+      <div id='space'></div>
+      <div id='jank' class='tr'></div>
+    </div>
+  )HTML");
+
+  GetDocument().getElementById("space")->setAttribute(
+      HTMLNames::styleAttr, AtomicString("height: 100px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+
+  // #jank is 400x200 after viewport intersection with correct application of
+  // composited #container offset, and 100px lower after janking, so jank score
+  // is (400 * 300) / (viewport size 800 * 600)
+  EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
 }
 
 }  // namespace blink

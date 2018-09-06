@@ -140,8 +140,10 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     if (interactive_detector)
       interactive_detector->HandleForInputDelay(event);
 
-    if (LocalFrameView* view = document->View())
-      view->GetJankTracker().NotifyInput(event);
+    if (RuntimeEnabledFeatures::JankTrackingEnabled()) {
+      if (LocalFrameView* view = document->View())
+        view->GetJankTracker().NotifyInput(event);
+    }
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
