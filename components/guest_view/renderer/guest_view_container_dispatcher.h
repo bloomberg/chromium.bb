@@ -21,10 +21,10 @@ class GuestViewContainerDispatcher : public content::RenderThreadObserver {
   // Returns true if |message| is handled for a GuestViewContainer.
   virtual bool HandlesMessage(const IPC::Message& message);
 
- private:
   // content::RenderThreadObserver implementation.
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainerDispatcher);
 };
 

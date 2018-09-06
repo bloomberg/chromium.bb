@@ -202,6 +202,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
       const NavigationController::LoadURLParams& load_params) override;
   void SizeContents(const gfx::Size& new_size) override;
   void WillDestroy() override;
+  void BeginAttach(WebContents* embedder_web_contents,
+                   int instance_id,
+                   bool is_full_page_plugin) final;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;

@@ -52,10 +52,6 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   void DidResizeElement(const gfx::Size& new_size) override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
-  // WebAssociatedURLLoaderClient overrides.
-  void DidReceiveData(const char* data, int data_length) override;
-  void DidFinishLoading() override;
-
   // GuestViewContainer overrides.
   void OnRenderFrameDestroyed() override;
 
@@ -66,7 +62,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // MimeHandlerViewContainerBase override.
   content::RenderFrame* GetEmbedderRenderFrame() const final;
   void CreateMimeHandlerViewGuestIfNecessary() final;
-  blink::WebFrame* GetGuestProxyFrame() const final;
+  blink::WebRemoteFrame* GetGuestProxyFrame() const final;
   int32_t GetInstanceId() const final;
   gfx::Size GetElementSize() const final;
 
@@ -79,7 +75,6 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   void OnCreateMimeHandlerViewGuestACK(int element_instance_id);
   void OnGuestAttached(int element_instance_id,
                        int guest_proxy_routing_id);
-  void OnMimeHandlerViewGuestOnLoadCompleted(int element_instance_id);
 
   // The RenderView routing ID of the guest.
   int guest_proxy_routing_id_;
