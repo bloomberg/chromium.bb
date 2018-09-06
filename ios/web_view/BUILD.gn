@@ -66,7 +66,13 @@ ios_web_view_public_headers = [
   "public/cwv_web_view_configuration.h",
 ]
 if (ios_web_view_enable_sync) {
-  ios_web_view_public_headers += [ "public/cwv_identity.h" ]
+  ios_web_view_public_headers += [
+    "public/cwv_identity.h",
+    "public/cwv_sync_controller.h",
+    "public/cwv_sync_controller_data_source.h",
+    "public/cwv_sync_controller_delegate.h",
+    "public/cwv_web_view_configuration_sync.h",
+  ]
 }
 if (ios_web_view_enable_autofill) {
   ios_web_view_public_headers += [
