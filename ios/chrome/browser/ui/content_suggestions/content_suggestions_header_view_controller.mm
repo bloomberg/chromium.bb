@@ -517,7 +517,16 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
-  return [self.logoVendor logoAnimationControllerOwner];
+  // Only return the logo vendor's animation controller owner if the logo view
+  // is fully visible.  This prevents the logo from being used in transition
+  // animations if the logo has been scrolled off screen.
+  UIView* logoView = self.logoVendor.view;
+  UIView* parentView = self.parentViewController.view;
+  CGRect logoFrame = [parentView convertRect:logoView.bounds fromView:logoView];
+  BOOL isLogoFullyVisible = CGRectEqualToRect(
+      CGRectIntersection(logoFrame, parentView.bounds), logoFrame);
+  return isLogoFullyVisible ? [self.logoVendor logoAnimationControllerOwner]
+                            : nil;
 }
 
 #pragma mark - NTPHomeConsumer
