@@ -2765,8 +2765,8 @@ crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pas
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-grid-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-path-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-masking/clip-path/clip-path-path-001.html [ Failure ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-002.html [ Failure ]
+crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-001.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
