@@ -35,12 +35,12 @@ Polymer({
    * @private
    */
   hasSubpageClickHandler_: function() {
-    return !!this.subpageRoute;
+    return !!this.subpageRoute && this.isFeatureAllowedByPolicy(this.feature);
   },
 
   /** @private */
   handleItemClick_: function(event) {
-    if (!this.subpageRoute)
+    if (!this.hasSubpageClickHandler_())
       return;
 
     // We do not navigate away if the click was on a link.
