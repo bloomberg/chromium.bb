@@ -331,6 +331,7 @@ NTSTATUS NewNtMapViewOfSectionImpl(
   if (block) {
     assert(g_nt_unmap_view_of_section_func);
     g_nt_unmap_view_of_section_func(process, *base);
+    *base = nullptr;
     ret = STATUS_UNSUCCESSFUL;
   }
 
