@@ -60,6 +60,8 @@ const char TranslatePrefs::kPrefTranslateAutoAlwaysCount[] =
     "translate_auto_always_count";
 const char TranslatePrefs::kPrefTranslateAutoNeverCount[] =
     "translate_auto_never_count";
+const char TranslatePrefs::kPrefExplicitLanguageAskShown[] =
+    "translate_explicit_language_ask_shown";
 #endif
 
 // The below properties used to be used but now are deprecated. Don't use them
@@ -718,6 +720,14 @@ void TranslatePrefs::ResetTranslationAutoNeverCount(
   DictionaryPrefUpdate update(prefs_, kPrefTranslateAutoNeverCount);
   update.Get()->SetInteger(language, 0);
 }
+
+bool TranslatePrefs::GetExplicitLanguageAskPromptShown() const {
+  return prefs_->GetBoolean(kPrefExplicitLanguageAskShown);
+}
+
+void TranslatePrefs::SetExplicitLanguageAskPromptShown(bool shown) {
+  prefs_->SetBoolean(kPrefExplicitLanguageAskShown, shown);
+}
 #endif  // defined(OS_ANDROID)
 
 void TranslatePrefs::UpdateLastDeniedTime(const std::string& language) {
@@ -876,6 +886,9 @@ void TranslatePrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       kPrefTranslateAutoNeverCount,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      kPrefExplicitLanguageAskShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 }

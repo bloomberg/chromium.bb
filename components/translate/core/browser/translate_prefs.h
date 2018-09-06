@@ -139,6 +139,7 @@ class TranslatePrefs {
 #if defined(OS_ANDROID)
   static const char kPrefTranslateAutoAlwaysCount[];
   static const char kPrefTranslateAutoNeverCount[];
+  static const char kPrefExplicitLanguageAskShown[];
 #endif
 
   // This parameter specifies how the language should be moved within the list.
@@ -268,6 +269,11 @@ class TranslatePrefs {
   int GetTranslationAutoNeverCount(const std::string& language) const;
   void IncrementTranslationAutoNeverCount(const std::string& language);
   void ResetTranslationAutoNeverCount(const std::string& language);
+
+  // These methods are used to determine whether the explicit language ask
+  // prompt was displayed to the user already.
+  bool GetExplicitLanguageAskPromptShown() const;
+  void SetExplicitLanguageAskPromptShown(bool shown);
 #endif
 
   // Update the last time on closing the Translate UI without translation.
