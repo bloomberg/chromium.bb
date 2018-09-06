@@ -271,7 +271,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                                     : DownloadedFileAction::OpenedInOtherApp;
   UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction", action,
                             DownloadedFileAction::Count);
-  _unopenedDownloads.Remove(_downloadTask);
+  if (_downloadTask) {  // _downloadTask can be null if coordinator was stopped.
+    _unopenedDownloads.Remove(_downloadTask);
+  }
 }
 
 #pragma mark - ContainedPresenterDelegate
