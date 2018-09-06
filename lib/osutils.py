@@ -652,7 +652,6 @@ class TempDir(object):
       prefix: See tempfile.mkdtemp documentation.
       base_dir: The directory to place the temporary directory.
       set_global: Set this directory as the global temporary directory.
-      storage: The object that will have its 'tempdir' attribute set.
       delete: Whether the temporary dir should be deleted as part of cleanup.
           (default: True)
       sudo_rm: Whether the temporary dir will need root privileges to remove.
