@@ -54,10 +54,7 @@ int av1_get_frame_buffer(void *cb_priv, size_t min_size,
 
   if (int_fb_list->int_fb[i].size < min_size) {
     aom_free(int_fb_list->int_fb[i].data);
-    // The data must be zeroed to fix a valgrind error from the C loop filter
-    // due to access uninitialized memory in frame border. It could be
-    // skipped if border were totally removed.
-    int_fb_list->int_fb[i].data = (uint8_t *)aom_calloc(1, min_size);
+    int_fb_list->int_fb[i].data = (uint8_t *)aom_malloc(min_size);
     if (!int_fb_list->int_fb[i].data) return -1;
     int_fb_list->int_fb[i].size = min_size;
   }
