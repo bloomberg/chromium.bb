@@ -951,9 +951,7 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
-void CompositorImpl::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
-  if (requested_update == VisualStateUpdate::kPrePaint)
-    return;
+void CompositorImpl::UpdateLayerTreeHost() {
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;

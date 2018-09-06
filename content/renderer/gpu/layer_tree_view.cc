@@ -479,8 +479,7 @@ void LayerTreeView::SynchronouslyComposite(
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
     delegate_->BeginMainFrame(base::TimeTicks::Now());
-    delegate_->UpdateVisualState(
-        cc::LayerTreeHostClient::VisualStateUpdate::kAll);
+    delegate_->UpdateVisualState();
     return;
   }
 
@@ -592,8 +591,8 @@ void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void LayerTreeView::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
-  delegate_->UpdateVisualState(requested_update);
+void LayerTreeView::UpdateLayerTreeHost() {
+  delegate_->UpdateVisualState();
 }
 
 void LayerTreeView::ApplyViewportDeltas(

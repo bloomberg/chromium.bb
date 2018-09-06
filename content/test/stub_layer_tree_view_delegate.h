@@ -28,7 +28,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidReceiveCompositorFrameAck() override {}
   bool IsClosing() const override;
   void RequestScheduleAnimation() override {}
-  void UpdateVisualState(VisualStateUpdate requested_update) override {}
+  void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
       std::unique_ptr<viz::CopyOutputRequest> request) override;

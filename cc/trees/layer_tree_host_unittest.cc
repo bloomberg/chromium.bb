@@ -125,8 +125,7 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void UpdateLayerTreeHost(
-      LayerTreeHostClient::VisualStateUpdate requested_update) override {
+  void UpdateLayerTreeHost() override {
     // This shouldn't cause a second commit to happen.
     layer_tree_host()->SetNeedsCommit();
   }
@@ -172,8 +171,7 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void UpdateLayerTreeHost(
-      LayerTreeHostClient::VisualStateUpdate requested_update) override {
+  void UpdateLayerTreeHost() override {
     EXPECT_TRUE(CheckStep(MAIN_LAYOUT, &main_));
   }
 
@@ -263,8 +261,7 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void UpdateLayerTreeHost(
-      LayerTreeHostClient::VisualStateUpdate requested_update) override {
+  void UpdateLayerTreeHost() override {
     // This shouldn't cause a second commit to happen.
     layer_tree_host()->SetNeedsUpdateLayers();
   }
@@ -3570,7 +3567,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter);
 
 // This verifies that animate_only BeginFrames only run animation/layout
-// updates, i.e. abort commits after the animate stage and only request layer
+// updates, i.e. abort commits after the paint stage and only request layer
 // tree updates for layout.
 //
 // The tests sends four Begin(Main)Frames in sequence: three animate_only
@@ -3655,21 +3652,7 @@ class LayerTreeHostTestAnimateOnlyBeginFrames
     }
   }
 
-  void UpdateLayerTreeHost(
-      LayerTreeHostClient::VisualStateUpdate requested_update) override {
-    ++update_layer_tree_host_count_;
-
-    if (begin_frame_count_ < 4) {
-      // First three BeginFrames are animate_only, so only kPrePaint updates are
-      // requested.
-      EXPECT_EQ(LayerTreeHostClient::VisualStateUpdate::kPrePaint,
-                requested_update);
-    } else {
-      EXPECT_EQ(4, begin_frame_count_);
-      // Last BeginFrame is normal, so all updates are requested.
-      EXPECT_EQ(LayerTreeHostClient::VisualStateUpdate::kAll, requested_update);
-    }
-  }
+  void UpdateLayerTreeHost() override { ++update_layer_tree_host_count_; }
 
   void DidCommit() override {
     ++commit_count_;
