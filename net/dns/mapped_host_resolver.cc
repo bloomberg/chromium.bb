@@ -114,6 +114,24 @@ bool MappedHostResolver::GetNoIPv6OnWifi() {
   return impl_->GetNoIPv6OnWifi();
 }
 
+void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
+  impl_->SetRequestContext(request_context);
+}
+
+void MappedHostResolver::AddDnsOverHttpsServer(std::string spec,
+                                               bool use_post) {
+  impl_->AddDnsOverHttpsServer(spec, use_post);
+}
+
+void MappedHostResolver::ClearDnsOverHttpsServers() {
+  impl_->ClearDnsOverHttpsServers();
+}
+
+const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
+MappedHostResolver::GetDnsOverHttpsServersForTesting() const {
+  return impl_->GetDnsOverHttpsServersForTesting();
+}
+
 int MappedHostResolver::ApplyRules(RequestInfo* info) const {
   HostPortPair host_port(info->host_port_pair());
   if (rules_.RewriteHost(&host_port)) {
