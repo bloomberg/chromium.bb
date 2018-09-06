@@ -13,7 +13,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/containers/checked_iterators.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 
@@ -222,8 +221,8 @@ class span : public internal::ExtentStorage<Extent> {
   using difference_type = ptrdiff_t;
   using pointer = T*;
   using reference = T&;
-  using iterator = CheckedRandomAccessIterator<T>;
-  using const_iterator = CheckedRandomAccessConstIterator<T>;
+  using iterator = T*;
+  using const_iterator = const T*;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   static constexpr index_type extent = Extent;
@@ -393,10 +392,8 @@ class span : public internal::ExtentStorage<Extent> {
   constexpr T* data() const noexcept { return data_; }
 
   // [span.iter], span iterator support
-  iterator begin() const noexcept { return iterator(data_, data_ + size()); }
-  iterator end() const noexcept {
-    return iterator(data_, data_ + size(), data_ + size());
-  }
+  constexpr iterator begin() const noexcept { return data(); }
+  constexpr iterator end() const noexcept { return data() + size(); }
 
   constexpr const_iterator cbegin() const noexcept { return begin(); }
   constexpr const_iterator cend() const noexcept { return end(); }

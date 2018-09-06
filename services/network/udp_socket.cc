@@ -362,7 +362,7 @@ void UDPSocket::DoSendToOrWrite(
   // |data| points to a range of bytes in the received message and will be
   // freed when this method returns, so copy out the bytes now.
   auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(data.size());
-  memcpy(buffer.get()->data(), data.data(), data.size());
+  memcpy(buffer.get()->data(), data.begin(), data.size());
 
   if (send_buffer_.get()) {
     auto request = std::make_unique<PendingSendRequest>();

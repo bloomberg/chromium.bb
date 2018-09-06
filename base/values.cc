@@ -374,12 +374,12 @@ Value* Value::SetPath(std::initializer_list<StringPiece> path, Value value) {
 }
 
 Value* Value::SetPath(span<const StringPiece> path, Value value) {
-  DCHECK(path.begin() != path.end());  // Can't be empty path.
+  DCHECK_NE(path.begin(), path.end());  // Can't be empty path.
 
   // Walk/construct intermediate dictionaries. The last element requires
   // special handling so skip it in this loop.
   Value* cur = this;
-  auto cur_path = path.begin();
+  const StringPiece* cur_path = path.begin();
   for (; (cur_path + 1) < path.end(); ++cur_path) {
     if (!cur->is_dict())
       return nullptr;
