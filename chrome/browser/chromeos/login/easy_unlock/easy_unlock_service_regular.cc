@@ -106,18 +106,21 @@ void LogSmartLockEnabledState(SmartLockEnabledState state) {
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,
     secure_channel::SecureChannelClient* secure_channel_client,
-    device_sync::DeviceSyncClient* device_sync_client)
+    device_sync::DeviceSyncClient* device_sync_client,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : EasyUnlockServiceRegular(
           profile,
           secure_channel_client,
           std::make_unique<EasyUnlockNotificationController>(profile),
-          device_sync_client) {}
+          device_sync_client,
+          multidevice_setup_client) {}
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,
     secure_channel::SecureChannelClient* secure_channel_client,
     std::unique_ptr<EasyUnlockNotificationController> notification_controller,
-    device_sync::DeviceSyncClient* device_sync_client)
+    device_sync::DeviceSyncClient* device_sync_client,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : EasyUnlockService(profile, secure_channel_client),
       turn_off_flow_status_(EasyUnlockService::IDLE),
       scoped_crypt_auth_device_manager_observer_(this),
@@ -126,6 +129,7 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
       deferring_device_load_(false),
       notification_controller_(std::move(notification_controller)),
       device_sync_client_(device_sync_client),
+      multidevice_setup_client_(multidevice_setup_client),
       shown_pairing_changed_notification_(false),
       weak_ptr_factory_(this) {
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
@@ -135,15 +139,17 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
       OnReady();
 
     device_sync_client_->AddObserver(this);
+
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+      OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
+
+      multidevice_setup_client_->AddObserver(this);
+    }
   }
 }
 
-EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
-  registrar_.RemoveAll();
-
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    device_sync_client_->RemoveObserver(this);
-}
+EasyUnlockServiceRegular::~EasyUnlockServiceRegular() = default;
 
 // TODO(jhawkins): This method with |has_unlock_keys| == true is the only signal
 // that SmartLock setup has completed successfully. Make this signal more
@@ -155,6 +161,18 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     // method once |device_sync_client_| is ready.
     PA_LOG(INFO) << "DeviceSyncClient is not ready yet, delaying "
                     "UseLoadedRemoteDevices().";
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
+      feature_state_ !=
+          multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+    // OnFeatureStatesChanged() will call back on this method when feature state
+    // changes.
+    PA_LOG(INFO) << "Smart Lock is disabled; aborting.";
+    SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList(),
+                            base::nullopt /* local_device */);
     return;
   }
 
@@ -504,7 +522,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
-      profile()->GetPrefs()));
+      profile()->GetPrefs(), multidevice_setup_client_));
 
   // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
   // shutdown. Revisit this condition after migration is fully completed.
@@ -538,10 +556,20 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    device_sync_client_->RemoveObserver(this);
-  else
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     scoped_crypt_auth_device_manager_observer_.RemoveAll();
+  }
+
+  registrar_.RemoveAll();
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    device_sync_client_->RemoveObserver(this);
+
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+      multidevice_setup_client_->RemoveObserver(this);
+    }
+  }
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {
@@ -558,6 +586,13 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   if (!ProfileHelper::IsPrimaryProfile(profile()))
     return false;
 
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
+      feature_state_ ==
+          multidevice_setup::mojom::FeatureState::kProhibitedByPolicy) {
+    return false;
+  }
+
   if (!profile()->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
     return false;
 
@@ -565,6 +600,12 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
 }
 
 bool EasyUnlockServiceRegular::IsEnabled() const {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+    return feature_state_ ==
+           multidevice_setup::mojom::FeatureState::kEnabledByUser;
+  }
+
   return pref_manager_ && pref_manager_->IsEasyUnlockEnabled();
 }
 
@@ -650,6 +691,21 @@ void EasyUnlockServiceRegular::OnNewDevicesSynced() {
   LoadRemoteDevices();
 
   remote_device_unlock_keys_before_sync_ = remote_device_unlock_keys_after_sync;
+}
+
+void EasyUnlockServiceRegular::OnFeatureStatesChanged(
+    const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+        feature_states_map) {
+  const auto it =
+      feature_states_map.find(multidevice_setup::mojom::Feature::kSmartLock);
+  if (it == feature_states_map.end()) {
+    feature_state_ =
+        multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
+    return;
+  }
+  feature_state_ = it->second;
+
+  LoadRemoteDevices();
 }
 
 void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(

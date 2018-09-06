@@ -66,7 +66,8 @@ class FakeEasyUnlockService : public EasyUnlockServiceRegular {
   explicit FakeEasyUnlockService(Profile* profile)
       : EasyUnlockServiceRegular(profile,
                                  nullptr /* secure_channel_client */,
-                                 nullptr /* device_sync_client */),
+                                 nullptr /* device_sync_client */,
+                                 nullptr /* multidevice_setup_client */),
         reauth_count_(0) {}
   ~FakeEasyUnlockService() override {}
 

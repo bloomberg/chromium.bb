@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/network_request_error.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -56,19 +57,22 @@ class EasyUnlockServiceRegular
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
       public cryptauth::CryptAuthDeviceManager::Observer,
-      public device_sync::DeviceSyncClient::Observer {
+      public device_sync::DeviceSyncClient::Observer,
+      public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   EasyUnlockServiceRegular(
       Profile* profile,
       secure_channel::SecureChannelClient* secure_channel_client,
-      device_sync::DeviceSyncClient* device_sync_client);
+      device_sync::DeviceSyncClient* device_sync_client,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
 
   // Constructor for tests.
   EasyUnlockServiceRegular(
       Profile* profile,
       secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<EasyUnlockNotificationController> notification_controller,
-      device_sync::DeviceSyncClient* device_sync_client);
+      device_sync::DeviceSyncClient* device_sync_client,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
 
   ~EasyUnlockServiceRegular() override;
 
@@ -119,6 +123,11 @@ class EasyUnlockServiceRegular
   void OnReady() override;
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
+
+  // multidevice_setup::MultiDeviceSetupClient::Observer:
+  void OnFeatureStatesChanged(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) override;
 
   void ShowNotificationIfNewDevicePresent(
       const std::set<std::string>& public_keys_before_sync,
@@ -210,12 +219,22 @@ class EasyUnlockServiceRegular
   // Responsible for showing all the notifications used for EasyUnlock.
   std::unique_ptr<EasyUnlockNotificationController> notification_controller_;
 
+  // Used to fetch local device and remote device data.
   device_sync::DeviceSyncClient* device_sync_client_;
+
+  // Used to determine the FeatureState of Smart Lock. See |feature_state_|.
+  multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
 
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
   cryptauth::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
+
+  // Caches feature state of Smart Lock. This service should only actively be
+  // running if its value is kEnabledByUser. Populated by using
+  // |multidevice_setup_client_|.
+  multidevice_setup::mojom::FeatureState feature_state_ =
+      multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
 
   // True if the pairing changed notification was shown, so that the next time
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'

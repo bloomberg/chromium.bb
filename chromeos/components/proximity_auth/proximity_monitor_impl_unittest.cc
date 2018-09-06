@@ -61,7 +61,10 @@ class MockProximityMonitorObserver : public ProximityMonitorObserver {
 
 class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager() : ProximityAuthProfilePrefManager(nullptr) {}
+  MockProximityAuthPrefManager()
+      : ProximityAuthProfilePrefManager(
+            nullptr,
+            nullptr /* multidevice_setup_client */) {}
   ~MockProximityAuthPrefManager() override {}
 
   MOCK_CONST_METHOD0(GetProximityThreshold,
