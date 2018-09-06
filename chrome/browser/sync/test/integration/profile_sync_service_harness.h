@@ -44,8 +44,13 @@ class ProfileSyncServiceHarness {
   ~ProfileSyncServiceHarness();
 
   // Signs in to a primary account without actually enabling sync the feature.
-  // TODO(treib): Rename this to SignInToPrimaryAccount.
-  bool SignIn();
+  bool SignInPrimaryAccount();
+
+#if !defined(OS_CHROMEOS)
+  // Signs out of the primary account. ChromeOS doesn't have the concept of
+  // sign-out, so this only exists on other platforms.
+  void SignOutPrimaryAccount();
+#endif  // !OS_CHROMEOS
 
   // Enables and configures sync for all available datatypes. Returns true only
   // after sync has been fully initialized and authenticated, and we are ready
@@ -82,14 +87,6 @@ class ProfileSyncServiceHarness {
   void StopSyncService(syncer::SyncService::SyncStopDataFate data_fate);
   // Starts the sync service after a previous stop.
   bool StartSyncService();
-
-#if !defined(OS_CHROMEOS)
-  // Signs out of the primary account. ChromeOS doesn't have the concept of
-  // sign-out, so this only exists on other platforms.
-  // TODO(treib): Rename this to SignOut() - it does nothing with the
-  // SyncService.
-  void SignoutSyncService();
-#endif  // !OS_CHROMEOS
 
   // Returns whether this client has unsynced items. Avoid verifying false
   // return values, because tests typically shouldn't make assumptions about

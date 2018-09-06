@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
   // We avoid calling SetupSync(), because we don't want to turn on full sync,
   // only sign in such that the standalone transport starts.
   ASSERT_TRUE(SetupClients());
-  ASSERT_TRUE(GetClient(0)->SignIn());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_FALSE(GetSyncService(0)->IsSyncActive())
