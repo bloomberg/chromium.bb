@@ -59,7 +59,7 @@ TeamDriveChangeListLoader::TeamDriveChangeListLoader(
   directory_loader_ = std::make_unique<DirectoryLoader>(
       logger, blocking_task_runner, resource_metadata, scheduler,
       root_folder_id_loader_.get(), start_page_token_loader_.get(),
-      apply_task_controller, root_entry_path_);
+      apply_task_controller, root_entry_path_, team_drive_id);
   directory_loader_->AddObserver(this);
 }
 

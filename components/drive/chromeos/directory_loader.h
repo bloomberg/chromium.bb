@@ -52,7 +52,8 @@ class DirectoryLoader {
                   RootFolderIdLoader* root_folder_id_loader,
                   StartPageTokenLoader* start_page_token_loader,
                   LoaderController* apply_task_controller,
-                  const base::FilePath& root_entry_path);
+                  const base::FilePath& root_entry_path,
+                  const std::string& team_drive_id);
   ~DirectoryLoader();
 
   // Adds and removes the observer.
@@ -150,6 +151,10 @@ class DirectoryLoader {
   // Can be a team drive root entry or for the users default corpus will be the
   // drive root entry.
   const base::FilePath root_entry_path_;
+
+  // The team drive id for this directory loader. Used to retrieve the start
+  // page token when performing a fast fetch.
+  const std::string team_drive_id_;
 
   THREAD_CHECKER(thread_checker_);
 
