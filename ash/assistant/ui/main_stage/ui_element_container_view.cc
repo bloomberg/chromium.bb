@@ -291,9 +291,13 @@ void UiElementContainerView::OnResponseChanged(
   for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
     StartLayerAnimationSequence(
         pair.first->layer()->GetAnimator(),
-        // Fade out the opacity to 0%.
+        // Fade out the opacity to 0%. Note that we approximate 0% by actually
+        // using 0.01%. We do this to workaround a DCHECK that requires
+        // aura::Windows to have a target opacity > 0% when shown. Because our
+        // window will be removed after it reaches this value, it should be safe
+        // to circumnavigate this DCHECK.
         CreateLayerAnimationSequence(
-            CreateOpacityElement(0.f, kUiElementAnimationFadeOutDuration)),
+            CreateOpacityElement(0.0001f, kUiElementAnimationFadeOutDuration)),
         // Observe the animation.
         ui_elements_exit_animation_observer_.get());
   }
@@ -465,9 +469,13 @@ void UiElementContainerView::OnCardReady(
     view_holder->Attach();
 
     // The view will be animated on its own layer, so we need to do some initial
-    // layer setup. We're going to fade the view in, so hide it.
+    // layer setup. We're going to fade the view in, so hide it. Note that we
+    // approximate 0% opacity by actually using 0.01%. We do this to workaround
+    // a DCHECK that requires aura::Windows to have a target opacity > 0% when
+    // shown. Because our window will be animated to full opacity from this
+    // value, it should be safe to circumnavigate this DCHECK.
     view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
-    view_holder->native_view()->layer()->SetOpacity(0.f);
+    view_holder->native_view()->layer()->SetOpacity(0.0001f);
 
     // We cache the native view for use during animations and its desired
     // opacity that we'll animate to while processing the next query response.
