@@ -23,7 +23,7 @@ class Array;
 }
 
 // UIElement type.
-enum UIElementType { WINDOW, WIDGET, VIEW, ROOT, FRAMESINK };
+enum UIElementType { WINDOW, WIDGET, VIEW, ROOT, FRAMESINK, SURFACE };
 
 class UI_DEVTOOLS_EXPORT UIElement {
  public:
