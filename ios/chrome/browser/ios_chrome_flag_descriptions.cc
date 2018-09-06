@@ -209,10 +209,6 @@ const char kOutOfWebFullscreenDescription[] =
     "Use the fullscreen implementation living outside of web. Disable the one "
     "in web.";
 
-const char kPasswordExportName[] = "Password Export";
-const char kPasswordExportDescription[] =
-    "Enables password exporting functionality in password settings.";
-
 const char kPhysicalWeb[] = "Physical Web";
 const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "

@@ -21,7 +21,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -224,12 +223,9 @@ initWithActivityItems:(NSArray*)activityItems
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kPasswordExport)) {
-      passwordExporter_ = [[PasswordExporter alloc]
-          initWithReauthenticationModule:reauthenticationModule_
-                                delegate:self];
-    }
+    passwordExporter_ = [[PasswordExporter alloc]
+        initWithReauthenticationModule:reauthenticationModule_
+                              delegate:self];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
     self.collectionViewAccessibilityIdentifier =
         @"SavePasswordsCollectionViewController";
@@ -307,14 +303,11 @@ initWithActivityItems:(NSArray*)activityItems
         forSectionWithIdentifier:SectionIdentifierBlacklist];
   }
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    // Export passwords button.
-    [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-    exportPasswordsItem_ = [self exportPasswordsItem];
-    [model addItem:exportPasswordsItem_
-        toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
-  }
+  // Export passwords button.
+  [model addSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
+  exportPasswordsItem_ = [self exportPasswordsItem];
+  [model addItem:exportPasswordsItem_
+      toSectionWithIdentifier:SectionIdentifierExportPasswordsButton];
 
   [self filterItems:self.searchTerm];
 }
@@ -606,8 +599,7 @@ blacklistedFormItemWithText:(NSString*)text
 }
 
 - (void)updateExportPasswordsButton {
-  if (!exportPasswordsItem_ || !base::FeatureList::IsEnabled(
-                                   password_manager::features::kPasswordExport))
+  if (!exportPasswordsItem_)
     return;
   if (!savedForms_.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
@@ -733,8 +725,6 @@ blacklistedFormItemWithText:(NSString*)text
     case ItemTypeExportPasswordsButton:
       DCHECK_EQ(SectionIdentifierExportPasswordsButton,
                 [model sectionIdentifierForSection:indexPath.section]);
-      DCHECK(base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport));
       if (exportReady_) {
         [self startPasswordsExportFlow];
       }
@@ -759,10 +749,7 @@ blacklistedFormItemWithText:(NSString*)text
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:NO];
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    [self setExportPasswordsButtonEnabled:NO];
-  }
+  [self setExportPasswordsButtonEnabled:NO];
   [self setSearchPasswordsItemEnabled:NO];
 }
 
@@ -770,11 +757,8 @@ blacklistedFormItemWithText:(NSString*)text
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:YES];
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    if (exportReady_) {
-      [self setExportPasswordsButtonEnabled:YES];
-    }
+  if (exportReady_) {
+    [self setExportPasswordsButtonEnabled:YES];
   }
   [self setSearchPasswordsItemEnabled:YES];
 }

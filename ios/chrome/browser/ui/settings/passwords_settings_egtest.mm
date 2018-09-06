@@ -17,7 +17,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -1551,10 +1550,6 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
 // Test export flow
 - (void)testExportFlow {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    return;
-  }
   // Saving a form is needed for exporting passwords.
   SaveExamplePasswordForm();
 
