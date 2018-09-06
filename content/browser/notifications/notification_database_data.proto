@@ -35,11 +35,11 @@ message NotificationDatabaseDataProto {
   optional int64 time_until_close_millis = 12;
   optional ClosedReason closed_reason = 13;
 
-  // A notification action, corresponds to content::PlatformNotificationAction.
+  // A notification action, corresponds to blink::PlatformNotificationAction.
   //
   // Next tag: 6
   message NotificationAction {
-    // Corresponds to PlatformNotificationActionType.
+    // Corresponds to blink::PlatformNotificationActionType.
     enum Type {
       BUTTON = 0;
       TEXT = 1;
@@ -53,7 +53,7 @@ message NotificationDatabaseDataProto {
   }
 
   // Actual data payload of the notification. This message is the protocol
-  // buffer meant to serialize the content::PlatformNotificationData structure.
+  // buffer meant to serialize the blink::PlatformNotificationData structure.
   //
   // Next tag: 16
   message NotificationData {

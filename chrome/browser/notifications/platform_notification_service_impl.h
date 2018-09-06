@@ -52,15 +52,15 @@ class PlatformNotificationServiceImpl
       content::BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
-      const content::PlatformNotificationData& notification_data,
-      const content::NotificationResources& notification_resources) override;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) override;
   void DisplayPersistentNotification(
       content::BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& service_worker_scope,
       const GURL& origin,
-      const content::PlatformNotificationData& notification_data,
-      const content::NotificationResources& notification_resources) override;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) override;
   void CloseNotification(content::BrowserContext* browser_context,
                          const std::string& notification_id) override;
   void ClosePersistentNotification(content::BrowserContext* browser_context,
@@ -106,8 +106,8 @@ class PlatformNotificationServiceImpl
       Profile* profile,
       const GURL& origin,
       const std::string& notification_id,
-      const content::PlatformNotificationData& notification_data,
-      const content::NotificationResources& notification_resources) const;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) const;
 
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,

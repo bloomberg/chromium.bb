@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_RESOURCES_LOADER_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/notifications/notification_image_loader.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"

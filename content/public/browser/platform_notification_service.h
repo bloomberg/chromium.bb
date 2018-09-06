@@ -19,11 +19,14 @@
 
 class GURL;
 
+namespace blink {
+struct NotificationResources;
+struct PlatformNotificationData;
+}  // namespace blink
+
 namespace content {
 
 class BrowserContext;
-struct NotificationResources;
-struct PlatformNotificationData;
 
 // The service using which notifications can be presented to the user. There
 // should be a unique instance of the PlatformNotificationService depending
@@ -42,8 +45,8 @@ class CONTENT_EXPORT PlatformNotificationService {
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
-      const PlatformNotificationData& notification_data,
-      const NotificationResources& notification_resources) = 0;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) = 0;
 
   // Displays the persistent notification described in |notification_data| to
   // the user. This method must be called on the UI thread.
@@ -52,8 +55,8 @@ class CONTENT_EXPORT PlatformNotificationService {
       const std::string& notification_id,
       const GURL& service_worker_origin,
       const GURL& origin,
-      const PlatformNotificationData& notification_data,
-      const NotificationResources& notification_resources) = 0;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) = 0;
 
   // Closes the notification identified by |notification_id|. This method must
   // be called on the UI thread.

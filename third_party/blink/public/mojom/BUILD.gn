@@ -38,6 +38,7 @@ mojom("mojom_platform") {
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
     "net/ip_address_space.mojom",
+    "notifications/notification.mojom",
     "page/display_cutout.mojom",
     "page/page_visibility_state.mojom",
     "payments/payment_app.mojom",

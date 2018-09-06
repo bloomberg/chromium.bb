@@ -20,18 +20,18 @@ using blink::WebString;
 namespace content {
 
 WebNotificationData ToWebNotificationData(
-    const PlatformNotificationData& platform_data) {
+    const blink::PlatformNotificationData& platform_data) {
   WebNotificationData web_data;
   web_data.title = WebString::FromUTF16(platform_data.title);
 
   switch (platform_data.direction) {
-    case PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+    case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
       web_data.direction = WebNotificationData::kDirectionLeftToRight;
       break;
-    case PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+    case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
       web_data.direction = WebNotificationData::kDirectionRightToLeft;
       break;
-    case PlatformNotificationData::DIRECTION_AUTO:
+    case blink::PlatformNotificationData::DIRECTION_AUTO:
       web_data.direction = WebNotificationData::kDirectionAuto;
       break;
   }
@@ -53,10 +53,10 @@ WebNotificationData ToWebNotificationData(
   web_data.actions.Swap(resized);
   for (size_t i = 0; i < platform_data.actions.size(); ++i) {
     switch (platform_data.actions[i].type) {
-      case PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
+      case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
         web_data.actions[i].type = blink::WebNotificationAction::kButton;
         break;
-      case PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
+      case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
         web_data.actions[i].type = blink::WebNotificationAction::kText;
         break;
       default:

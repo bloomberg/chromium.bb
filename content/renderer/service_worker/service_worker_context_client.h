@@ -45,8 +45,9 @@ class TaskRunner;
 }
 
 namespace blink {
-class WebDataConsumerHandle;
+struct PlatformNotificationData;
 struct WebServiceWorkerClientQueryOptions;
+class WebDataConsumerHandle;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
@@ -55,7 +56,6 @@ class WebURLResponse;
 
 namespace content {
 
-struct PlatformNotificationData;
 class EmbeddedWorkerInstanceClientImpl;
 class HostChildURLLoaderFactoryBundle;
 class ServiceWorkerNetworkProvider;
@@ -310,13 +310,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchFetchEventCallback callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
       DispatchNotificationClickEventCallback callback) override;
   void DispatchNotificationCloseEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       DispatchNotificationCloseEventCallback callback) override;
   void DispatchPushEvent(const base::Optional<std::string>& payload,
                          DispatchPushEventCallback callback) override;
@@ -345,13 +345,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::NullableString16& reply);
   void OnNotificationCloseEvent(
       int request_id,
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data);
+      const blink::PlatformNotificationData& notification_data);
 
   void OnFocusClientResponse(
       int request_id,

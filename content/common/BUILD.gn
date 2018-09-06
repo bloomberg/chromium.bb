@@ -209,8 +209,6 @@ source_set("common") {
     "net/url_request_service_worker_data.h",
     "net/url_request_user_data.cc",
     "net/url_request_user_data.h",
-    "notifications/notification_struct_traits.cc",
-    "notifications/notification_struct_traits.h",
     "origin_util.cc",
     "page_messages.h",
     "page_state_serialization.cc",

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_NOTIFICATION_RESOURCES_H_
-#define CONTENT_PUBLIC_COMMON_NOTIFICATION_RESOURCES_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_NOTIFICATION_RESOURCES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_NOTIFICATION_RESOURCES_H_
 
 #include <vector>
 
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace content {
+namespace blink {
 
 // Structure to hold the resources associated with a Web Notification.
-struct CONTENT_EXPORT NotificationResources {
+struct BLINK_COMMON_EXPORT NotificationResources {
   NotificationResources();
   NotificationResources(const NotificationResources& other);
   ~NotificationResources();
@@ -35,6 +35,6 @@ struct CONTENT_EXPORT NotificationResources {
   std::vector<SkBitmap> action_icons;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_COMMON_NOTIFICATION_RESOURCES_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_NOTIFICATION_RESOURCES_H_

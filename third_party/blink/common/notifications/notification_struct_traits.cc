@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/notifications/notification_struct_traits.h"
+#include "third_party/blink/public/common/notifications/notification_struct_traits.h"
 
 namespace {
 
@@ -26,7 +26,7 @@ bool ValidateVibrationPattern(const std::vector<int>& vibration_pattern) {
 }
 
 bool ValidateActions(
-    const std::vector<content::PlatformNotificationAction>& actions) {
+    const std::vector<blink::PlatformNotificationAction>& actions) {
   return actions.size() <= kMaximumActions;
 }
 
@@ -43,15 +43,15 @@ using blink::mojom::NotificationDirection;
 using blink::mojom::NotificationActionType;
 
 // static
-NotificationDirection EnumTraits<NotificationDirection,
-                                 content::PlatformNotificationData::Direction>::
-    ToMojom(content::PlatformNotificationData::Direction input) {
+NotificationDirection
+EnumTraits<NotificationDirection, blink::PlatformNotificationData::Direction>::
+    ToMojom(blink::PlatformNotificationData::Direction input) {
   switch (input) {
-    case content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
+    case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
       return NotificationDirection::LEFT_TO_RIGHT;
-    case content::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
+    case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
       return NotificationDirection::RIGHT_TO_LEFT;
-    case content::PlatformNotificationData::DIRECTION_AUTO:
+    case blink::PlatformNotificationData::DIRECTION_AUTO:
       return NotificationDirection::AUTO;
   }
 
@@ -61,18 +61,18 @@ NotificationDirection EnumTraits<NotificationDirection,
 
 // static
 bool EnumTraits<NotificationDirection,
-                content::PlatformNotificationData::Direction>::
+                blink::PlatformNotificationData::Direction>::
     FromMojom(NotificationDirection input,
-              content::PlatformNotificationData::Direction* out) {
+              blink::PlatformNotificationData::Direction* out) {
   switch (input) {
     case NotificationDirection::LEFT_TO_RIGHT:
-      *out = content::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+      *out = blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
       return true;
     case NotificationDirection::RIGHT_TO_LEFT:
-      *out = content::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      *out = blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
       return true;
     case NotificationDirection::AUTO:
-      *out = content::PlatformNotificationData::DIRECTION_AUTO;
+      *out = blink::PlatformNotificationData::DIRECTION_AUTO;
       return true;
   }
 
@@ -81,12 +81,12 @@ bool EnumTraits<NotificationDirection,
 
 // static
 NotificationActionType
-EnumTraits<NotificationActionType, content::PlatformNotificationActionType>::
-    ToMojom(content::PlatformNotificationActionType input) {
+EnumTraits<NotificationActionType, blink::PlatformNotificationActionType>::
+    ToMojom(blink::PlatformNotificationActionType input) {
   switch (input) {
-    case content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
+    case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
       return NotificationActionType::BUTTON;
-    case content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
+    case blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
       return NotificationActionType::TEXT;
   }
 
@@ -95,16 +95,15 @@ EnumTraits<NotificationActionType, content::PlatformNotificationActionType>::
 }
 
 // static
-bool EnumTraits<NotificationActionType,
-                content::PlatformNotificationActionType>::
+bool EnumTraits<NotificationActionType, blink::PlatformNotificationActionType>::
     FromMojom(NotificationActionType input,
-              content::PlatformNotificationActionType* out) {
+              blink::PlatformNotificationActionType* out) {
   switch (input) {
     case NotificationActionType::BUTTON:
-      *out = content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+      *out = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
       return true;
     case NotificationActionType::TEXT:
-      *out = content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+      *out = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
       return true;
   }
 
@@ -113,9 +112,9 @@ bool EnumTraits<NotificationActionType,
 
 // static
 bool StructTraits<blink::mojom::NotificationActionDataView,
-                  content::PlatformNotificationAction>::
+                  blink::PlatformNotificationAction>::
     Read(blink::mojom::NotificationActionDataView notification_action,
-         content::PlatformNotificationAction* out) {
+         blink::PlatformNotificationAction* out) {
   base::Optional<base::string16> placeholder;
   if (!notification_action.ReadType(&out->type) ||
       !notification_action.ReadTitle(&out->title) ||
@@ -130,9 +129,9 @@ bool StructTraits<blink::mojom::NotificationActionDataView,
 
 // static
 bool StructTraits<blink::mojom::NotificationDataDataView,
-                  content::PlatformNotificationData>::
+                  blink::PlatformNotificationData>::
     Read(blink::mojom::NotificationDataDataView notification_data,
-         content::PlatformNotificationData* platform_notification_data) {
+         blink::PlatformNotificationData* platform_notification_data) {
   // TODO(https://crbug.com/798466): Read the data directly into
   // platform_notification_data.data once it stores a vector of ints not chars.
   std::vector<uint8_t> data;
@@ -173,9 +172,9 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
 
 // static
 bool StructTraits<blink::mojom::NotificationResourcesDataView,
-                  content::NotificationResources>::
+                  blink::NotificationResources>::
     Read(blink::mojom::NotificationResourcesDataView in,
-         content::NotificationResources* out) {
+         blink::NotificationResources* out) {
   return in.ReadImage(&out->image) && in.ReadIcon(&out->notification_icon) &&
          in.ReadBadge(&out->badge) && in.ReadActionIcons(&out->action_icons);
 }

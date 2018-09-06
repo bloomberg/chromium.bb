@@ -18,7 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/persistent_notification_status.h"
-#include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
 namespace content {
 namespace {

@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
-#define CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
-
-#include <stddef.h>
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_PLATFORM_NOTIFICATION_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_PLATFORM_NOTIFICATION_DATA_H_
 
 #include <string>
 #include <vector>
@@ -13,10 +11,10 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 enum PlatformNotificationActionType {
   PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON = 0,
@@ -25,7 +23,7 @@ enum PlatformNotificationActionType {
 
 // A notification action (button or text input); corresponds to Blink
 // WebNotificationAction.
-struct CONTENT_EXPORT PlatformNotificationAction {
+struct BLINK_COMMON_EXPORT PlatformNotificationAction {
   PlatformNotificationAction();
   PlatformNotificationAction(const PlatformNotificationAction& other);
   ~PlatformNotificationAction();
@@ -51,7 +49,7 @@ struct CONTENT_EXPORT PlatformNotificationAction {
 // Structure representing the information associated with a Web Notification.
 // This struct should include the developer-visible information, kept
 // synchronized with the WebNotificationData structure defined in the Blink API.
-struct CONTENT_EXPORT PlatformNotificationData {
+struct BLINK_COMMON_EXPORT PlatformNotificationData {
   PlatformNotificationData();
   PlatformNotificationData(const PlatformNotificationData& other);
   ~PlatformNotificationData();
@@ -118,6 +116,6 @@ struct CONTENT_EXPORT PlatformNotificationData {
   std::vector<PlatformNotificationAction> actions;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_COMMON_PLATFORM_NOTIFICATION_DATA_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_NOTIFICATIONS_PLATFORM_NOTIFICATION_DATA_H_
