@@ -14,6 +14,9 @@ cr.define('nux', function() {
      */
     addBookmark(data, callback) {}
 
+    /** @param {boolean} show */
+    toggleBookmarkBar(show) {}
+
     /** @return {!Array<Object>} Array of email providers. */
     getEmailList() {}
   }
@@ -29,6 +32,11 @@ cr.define('nux', function() {
     addBookmark(data, callback) {
       chrome.bookmarks.create(data, callback);
       // TODO(scottchen): request C++ to cache favicon
+    }
+
+    /** @override */
+    toggleBookmarkBar(show) {
+      chrome.send('toggleBookmarkBar', [show]);
     }
 
     /** @override */

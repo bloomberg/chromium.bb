@@ -20,11 +20,16 @@ nux_email.EmailProviderModel;
 Polymer({
   is: 'email-chooser',
   properties: {
-    // TODO(scottchen): get from C++
-    /** @private */
-    bookmarkBarWasHidden_: Boolean,
-
     emailList: Array,
+
+    /** @private */
+    bookmarkBarWasShown_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('bookmark_bar_shown'),
+    },
+
+    /** @private */
+    gotStarted_: Boolean,
 
     /** @private {nux_email.EmailProviderModel} */
     selectedEmailProvider_: {
@@ -40,8 +45,14 @@ Polymer({
   ready: function() {
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
     this.emailList = this.browserProxy_.getEmailList();
+
     window.addEventListener('beforeunload', () => {
+      // Only need to clean up if user didn't choose "Get Started".
+      if (this.gotStarted_)
+        return;
+
       this.revertBookmark_();
+      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     });
   },
 
@@ -88,9 +99,6 @@ Polymer({
 
     if (emailProvider && emailProvider.bookmarkId)
       this.browserProxy_.removeBookmark(emailProvider.bookmarkId);
-
-    // TODO: also hide bookmark bar if this.selectedEmailProvider is now null &&
-    // the bookmarkBarWasHidden_ == true;
   },
 
   /**
@@ -99,6 +107,9 @@ Polymer({
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {
+    if (!this.browserProxy_)
+      return;
+
     if (prevEmail) {
       // If it was previously selected, it must've been assigned an id.
       assert(prevEmail.bookmarkId);
@@ -106,21 +117,24 @@ Polymer({
     }
 
     if (newEmail) {
+      this.browserProxy_.toggleBookmarkBar(true);
       this.browserProxy_.addBookmark(
           {title: newEmail.name, url: newEmail.url, parentId: '1'}, results => {
             this.selectedEmailProvider_.bookmarkId = results.id;
           });
+    } else {
+      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     }
   },
 
   /** @private */
   onNoThanksClicked_: function() {
-    this.revertBookmark_();
     window.location.replace('chrome://newtab');
   },
 
   /** @private */
   onGetStartedClicked_: function() {
+    this.gotStarted_ = true;
     window.location.replace(this.selectedEmailProvider_.url);
   },
 });
