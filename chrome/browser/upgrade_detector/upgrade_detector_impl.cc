@@ -24,6 +24,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -106,7 +107,7 @@ base::TimeDelta GetCheckForUpgradeDelay() {
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
 base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::Version installed_version;
 #if defined(OS_WIN)
