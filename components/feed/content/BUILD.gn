@@ -36,6 +36,7 @@ source_set("content_unit_tests") {
     ":feed_content",
     "//base",
     "//base/test:test_support",
+    "//components/offline_pages/core",
     "//components/offline_pages/core:test_support",
     "//components/offline_pages/core/prefetch:test_support",
     "//testing/gtest:gtest",
