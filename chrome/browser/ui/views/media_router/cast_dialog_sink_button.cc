@@ -8,6 +8,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_helper.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -38,13 +39,11 @@ class StopButton : public views::LabelButton {
       : views::LabelButton(button_listener, base::string16()) {
     // TODO(https://crbug.com/877702): Update the icon to match the mocks.
     static const gfx::ImageSkia icon = CreateVectorIcon(
-        kNavigateStopIcon, CastDialogSinkButton::kPrimaryIconSize,
-        gfx::kGoogleBlue500);
+        kNavigateStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
     SetImage(views::Button::STATE_NORMAL, icon);
     SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
     set_tag(button_tag);
-    SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(CastDialogSinkButton::kPrimaryIconBorderWidth)));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     SetEnabled(enabled);
     // Make it possible to navigate to this button by pressing the tab key.
     SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -103,27 +102,11 @@ gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
       break;
   }
   SkColor icon_color = enabled ? gfx::kChromeIconGrey : gfx::kGoogleGrey500;
-  return gfx::CreateVectorIcon(
-      *vector_icon, CastDialogSinkButton::kPrimaryIconSize, icon_color);
+  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize, icon_color);
 }
 
 gfx::ImageSkia CreateDisabledSinkIcon(SinkIconType icon_type) {
   return CreateSinkIcon(icon_type, false);
-}
-
-std::unique_ptr<views::View> CreateThrobber() {
-  views::Throbber* throbber = new views::Throbber();
-  throbber->Start();
-  auto throbber_container = std::make_unique<views::View>();
-  throbber_container->SetLayoutManager(std::make_unique<views::FillLayout>());
-  // The throbber is smaller than other icons, so the difference must be added
-  // to the border to make their overall sizes match.
-  const int extra_borders = CastDialogSinkButton::kPrimaryIconSize -
-                            throbber->CalculatePreferredSize().height();
-  throbber_container->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      extra_borders / 2 + CastDialogSinkButton::kPrimaryIconBorderWidth)));
-  throbber_container->AddChildView(throbber);
-  return throbber_container;
 }
 
 std::unique_ptr<views::View> CreatePrimaryIconForSink(
@@ -133,10 +116,10 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
   if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
-                                         CastDialogSinkButton::kPrimaryIconSize,
+                                         kPrimaryIconSize,
                                          gfx::kChromeIconGrey));
-    icon_view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(CastDialogSinkButton::kPrimaryIconBorderWidth)));
+    icon_view->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     return icon_view;
   } else if (sink.state == UIMediaSinkState::CONNECTED ||
              sink.state == UIMediaSinkState::DISCONNECTING) {
@@ -147,8 +130,8 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
   }
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(CreateSinkIcon(sink.icon_type));
-  icon_view->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(CastDialogSinkButton::kPrimaryIconBorderWidth)));
+  icon_view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
   return icon_view;
 }
 
@@ -168,11 +151,6 @@ base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
 }
 
 }  // namespace
-
-// static
-int CastDialogSinkButton::kPrimaryIconSize = 20;
-int CastDialogSinkButton::kPrimaryIconBorderWidth = 6;
-int CastDialogSinkButton::kSecondaryIconSize = 16;
 
 CastDialogSinkButton::CastDialogSinkButton(
     views::ButtonListener* button_listener,

@@ -18,12 +18,6 @@ namespace media_router {
 // hovered.
 class CastDialogSinkButton : public HoverButton {
  public:
-  // Icon sizes in DIP. These values are also used by the "no devices" view for
-  // consistency.
-  static int kPrimaryIconSize;
-  static int kPrimaryIconBorderWidth;
-  static int kSecondaryIconSize;
-
   CastDialogSinkButton(views::ButtonListener* button_listener,
                        const UIMediaSink& sink,
                        int button_tag);
