@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -29,7 +29,7 @@
   // The web view used to display the static content.
   WKWebView* _webView;
   // The header.
-  MDCAppBar* _appBar;
+  MDCAppBarViewController* _appBarViewController;
 }
 
 // Called when the back button is pressed.
@@ -47,8 +47,7 @@
   DCHECK(URL);
   self = [super init];
   if (self) {
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:[_appBar headerViewController]];
+    _appBarViewController = [[MDCAppBarViewController alloc] init];
     _browserState = browserState;
     _URL = URL;
   }
@@ -78,13 +77,14 @@
   _webView.navigationDelegate = self;
   [self.view addSubview:_webView];
 
-  ConfigureAppBarWithCardStyle(_appBar);
-  [_appBar headerViewController].headerView.trackingScrollView =
-      [_webView scrollView];
-  [_webView scrollView].delegate = [_appBar headerViewController];
+  ConfigureAppBarViewControllerWithCardStyle(_appBarViewController);
+  _appBarViewController.headerView.trackingScrollView = [_webView scrollView];
+  [_webView scrollView].delegate = _appBarViewController;
 
   // Add the app bar at the end.
-  [_appBar addSubviewsToParent];
+  [self addChildViewController:_appBarViewController];
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
 
   // Create a custom Back bar button item, as Material Navigation Bar deprecated
   // the back arrow with a shaft.
