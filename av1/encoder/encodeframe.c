@@ -2388,8 +2388,6 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   (void)*tp_orig;
   (void)split_rd;
-
-  av1_zero(pc_tree->pc_tree_stats);
   pc_tree->pc_tree_stats.valid = 1;
 
   // Override partition costs at the edges of the frame in the same
@@ -4059,6 +4057,15 @@ static void init_first_partition_pass_stats_tables(
   }
 }
 
+// clear pc_tree_stats
+static inline void clear_pc_tree_stats(PC_TREE *pt) {
+  if (pt == NULL) return;
+  pt->pc_tree_stats.valid = 0;
+  for (int i = 0; i < 4; ++i) {
+    clear_pc_tree_stats(pt->split[i]);
+  }
+}
+
 // Minimum number of samples to trigger the
 // mode_pruning_based_on_two_pass_partition_search feature.
 #define FIRST_PARTITION_PASS_MIN_SAMPLES 16
@@ -4225,6 +4232,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         // Reset the stats tables.
         if (sf->mode_pruning_based_on_two_pass_partition_search)
           av1_zero(x->first_partition_pass_stats);
+        clear_pc_tree_stats(pc_root);
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                               cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
                               pc_root, NULL);
