@@ -36,6 +36,26 @@ const MultiDeviceFeatureBehaviorImpl = {
   },
 
   /**
+   * Whether the gatekeeper pref for the whole Better Together feature suite is
+   * allowed by policy.
+   * @return {boolean}
+   */
+  isSuiteAllowedByPolicy: function() {
+    return this.pageContentData.betterTogetherState !==
+        settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
+  },
+
+  /**
+   * Whether an individual feature is allowed by policy.
+   * @param {!settings.MultiDeviceFeature} feature
+   * @return {boolean}
+   */
+  isFeatureAllowedByPolicy: function(feature) {
+    return this.getFeatureState(feature) !==
+        settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
+  },
+
+  /**
    * @param {!settings.MultiDeviceFeature} feature
    * @return {boolean}
    */

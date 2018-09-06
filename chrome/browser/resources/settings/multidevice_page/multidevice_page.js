@@ -94,6 +94,8 @@ Polymer({
    * @private
    */
   getSubLabelInnerHtml_: function() {
+    if (!this.isSuiteAllowedByPolicy())
+      return this.i18nAdvanced('multideviceSetupSummary');
     switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS:
         return this.i18nAdvanced('multideviceNoHostText');
@@ -177,6 +179,9 @@ Polymer({
 
   /** @private */
   handleItemClick_: function() {
+    if (!this.isHostSet())
+      return;
+
     settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
   },
 

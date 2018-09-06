@@ -22,7 +22,11 @@
 
 <dom-module id="settings-multidevice-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      cr-policy-indicator {
+        padding: 0 var(--cr-controlled-by-spacing);
+      }
+    </style>
     <settings-animated-pages id="pages" section="multidevice"
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
@@ -42,6 +46,16 @@
                 inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
             </div>
           </div>
+          <template is="dom-if"
+              if="[[!isSuiteAllowedByPolicy(pageContentData)]]"
+              restamp>
+            <cr-policy-indicator indicator-type="userPolicy">
+            </cr-policy-indicator>
+            <settings-multidevice-feature-toggle
+                feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
+                page-content-data="[[pageContentData]]">
+            </settings-multidevice-feature-toggle>
+          </template>
           <template is="dom-if"
               if="[[shouldShowSeparatorAndSubpageArrow_(pageContentData)]]"
               restamp>
@@ -83,7 +97,6 @@
         </settings-subpage>
       </template>
     </settings-animated-pages>
-
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
       <settings-password-prompt-dialog
           id="passwordPrompt" on-close="onPasswordPromptDialogClose_"
