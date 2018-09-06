@@ -5,16 +5,21 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -540,4 +545,54 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
             GetExclusiveAccessBubbleType());
   ASSERT_TRUE(
       GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+}
+
+// Test whether the top view's status is correct during various transitions
+// among normal state, browser fullscreen mode, and tab fullscreen mode.
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, TopViewStatusChange) {
+  ExclusiveAccessContext* context = GetExclusiveAccessManager()->context();
+#if defined(OS_MACOSX)
+  // First, set the preference to true so we expect to see the top view in
+  // fullscreen mode.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kShowFullscreenToolbar, true);
+#endif
+
+  // Test Normal state <--> Tab fullscreen mode.
+  EXPECT_FALSE(context->IsFullscreen());
+  EXPECT_FALSE(context->ShouldHideUIForFullscreen());
+
+  EnterActiveTabFullscreen();
+  EXPECT_TRUE(context->IsFullscreen());
+  EXPECT_TRUE(context->ShouldHideUIForFullscreen());
+
+  SendEscapeToFullscreenController();
+  EXPECT_FALSE(context->IsFullscreen());
+  EXPECT_FALSE(context->ShouldHideUIForFullscreen());
+
+  // Test Normal state <--> Browser fullscreen mode <--> Tab fullscreen mode.
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(context->IsFullscreen());
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  bool should_hide_top_ui = false;
+#else
+  bool should_hide_top_ui = true;
+#endif
+  EXPECT_EQ(should_hide_top_ui, context->ShouldHideUIForFullscreen());
+
+  EnterActiveTabFullscreen();
+  EXPECT_TRUE(context->IsFullscreen());
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(context->ShouldHideUIForFullscreen());
+#else
+  EXPECT_TRUE(context->ShouldHideUIForFullscreen());
+#endif
+
+  SendEscapeToFullscreenController();
+  EXPECT_TRUE(context->IsFullscreen());
+  EXPECT_EQ(should_hide_top_ui, context->ShouldHideUIForFullscreen());
+
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_FALSE(context->IsFullscreen());
+  EXPECT_FALSE(context->ShouldHideUIForFullscreen());
 }
