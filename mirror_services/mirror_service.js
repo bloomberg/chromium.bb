@@ -39,8 +39,8 @@ mr.mirror.Service = class extends mr.Module {
     /** @private @const {!mr.mirror.ServiceName} */
     this.serviceName_ = serviceName;
 
-    /** @private {?mr.ProviderManagerMirrorServiceCallbacks} */
-    this.mirrorServiceCallbacks_ = mirrorServiceCallbacks || null;
+    /** @protected {?mr.ProviderManagerMirrorServiceCallbacks} */
+    this.mirrorServiceCallbacks = mirrorServiceCallbacks || null;
 
     /** @protected {?mr.mirror.Session} */
     this.currentSession = null;
@@ -63,21 +63,23 @@ mr.mirror.Service = class extends mr.Module {
    * already initialized.
    * @param {!mr.ProviderManagerMirrorServiceCallbacks} mirrorServiceCallbacks
    *     Callbacks to provider manager.
+   * @param {boolean=} useMirroringService
    */
-  initialize(mirrorServiceCallbacks) {
+  initialize(mirrorServiceCallbacks, useMirroringService) {
     if (this.initialized_) {
       return;
     }
-    this.mirrorServiceCallbacks_ = mirrorServiceCallbacks;
+    this.mirrorServiceCallbacks = mirrorServiceCallbacks;
     this.initialized_ = true;
-    this.doInitialize();
+    this.doInitialize(useMirroringService);
   }
 
   /**
    * Called during initialization to perform service-specific initialization.
+   * @param {boolean=} useMirroringService
    * @protected
    */
-  doInitialize() {}
+  doInitialize(useMirroringService) {}
 
   /**
    * @return {mr.mirror.ServiceName}
@@ -139,8 +141,8 @@ mr.mirror.Service = class extends mr.Module {
             updatedRoute.mirrorInitData.activity =
                 this.currentSession.getActivity();
             this.currentSession.setOnActivityUpdate(
-                this.mirrorServiceCallbacks_.handleMirrorActivityUpdate.bind(
-                    this.mirrorServiceCallbacks_));
+                this.mirrorServiceCallbacks.handleMirrorActivityUpdate.bind(
+                    this.mirrorServiceCallbacks));
             return this.currentSession.start(/** @type {!MediaStream} */ (
                 this.currentMediaStream_.getMediaStream()));
           })
@@ -369,7 +371,7 @@ mr.mirror.Service = class extends mr.Module {
               .then(() => sessionToCleanUp.stop())
               .catch(err => this.logger.error('Error stopping session', err))
               .then(() => {
-                this.mirrorServiceCallbacks_.onMirrorSessionEnded(
+                this.mirrorServiceCallbacks.onMirrorSessionEnded(
                     sessionToCleanUp.getRoute().id);
               })
               .catch(err => this.logger.error('Error in ended callbacks', err))
@@ -452,7 +454,7 @@ mr.mirror.Service = class extends mr.Module {
   checkCaptureIssues_(settings, mediaStream, sinkId) {
     if (settings.shouldCaptureAudio && mediaStream.getMediaStream() &&
         !mediaStream.getMediaStream().getAudioTracks().length) {
-      this.mirrorServiceCallbacks_.sendIssue(
+      this.mirrorServiceCallbacks.sendIssue(
           new mr
               .Issue(
                   mr.mirror.Messages.MSG_MR_MIRROR_NO_AUDIO_CAPTURED,

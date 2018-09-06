@@ -101,6 +101,10 @@ mojo.IPAddress.prototype.address;
 mojo.IPAddress.prototype.address_bytes;
 
 
+/** @type {!Array<number>} */
+mojo.IPAddress.prototype.addressBytes;
+
+
 
 /**
  * @constructor
@@ -420,6 +424,10 @@ mojo.MediaRouteProviderConfig.prototype.enable_cast_sink_query;
 mojo.MediaRouteProviderConfig.prototype.use_views_dialog;
 
 
+/** @type {boolean} */
+mojo.MediaRouteProviderConfig.prototype.use_mirroring_service;
+
+
 
 /** @constructor */
 mojo.RemotingStopReason = function() {};
@@ -528,3 +536,158 @@ mojo.MirrorServiceRemotingSourcePtr.prototype.onError = function() {};
 
 /** @type {!mojo.InterfacePtrController} */
 mojo.MirrorServiceRemotingSourcePtr.prototype.ptr;
+
+
+
+/** @constructor */
+mojo.MirroringSessionError = function() {};
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_TIME_OUT;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_NOT_OK;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_MISMATCHED_CAST_MODE;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_MISMATCHED_SSRC_LENGTH;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_SELECT_MULTIPLE_AUDIO;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_SELECT_MULTIPLE_VIDEO;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_SELECT_INVALID_INDEX;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ANSWER_NO_AUDIO_OR_VIDEO;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.AUDIO_CAPTURE_ERROR;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.VIDEO_CAPTURE_ERROR;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.RTP_STREAM_ERROR;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.ENCODING_ERROR;
+/** @type {!mojo.MirroringSessionError} */
+mojo.MirroringSessionError.CAST_TRANSPORT_ERROR;
+
+
+
+/** @constructor */
+mojo.MirroringSessionType = function() {};
+/** @type {!mojo.MirroringSessionType} */
+mojo.MirroringSessionType.AUDIO_ONLY;
+/** @type {!mojo.MirroringSessionType} */
+mojo.MirroringSessionType.VIDEO_ONLY;
+/** @type {!mojo.MirroringSessionType} */
+mojo.MirroringSessionType.AUDIO_AND_VIDEO;
+
+
+
+/**
+ * @constructor
+ * @struct
+ */
+mojo.MirroringSessionParameters = function() {};
+
+
+/** @type {!mojo.MirroringSessionType} */
+mojo.MirroringSessionParameters.prototype.type;
+
+
+/** @type {?mojo.IPAddress} */
+mojo.MirroringSessionParameters.prototype.receiverAddress;
+
+
+/** @type {?string} */
+mojo.MirroringSessionParameters.prototype.receiverModelName;
+
+
+
+/**
+ * @constructor
+ * @struct
+ */
+mojo.MirroringCastMessage = function() {};
+
+
+/** @type {string} */
+mojo.MirroringCastMessage.prototype.messageNamespace;
+
+
+/** @type {string} */
+mojo.MirroringCastMessage.prototype.jsonFormatData;
+
+
+
+/**
+ * @type {string}
+ * @const
+ */
+mojo.MirroringRemotingNamespace;
+
+
+
+/**
+ * @type {string}
+ * @const
+ */
+mojo.MirroringWebRtcNamespace;
+
+
+
+/** @type {!Object} */
+mojo.MirroringCastMessageChannel;
+
+
+
+/**
+ * @constructor
+ */
+mojo.MirroringCastMessageChannelPtr = function() {};
+
+
+/** @param {!mojo.MirroringCastMessage} message */
+mojo.MirroringCastMessageChannelPtr.prototype.send = function(message) {};
+
+
+
+/** @type {!Object} */
+mojo.MirroringSessionObserver;
+
+
+
+/**
+ * @constructor
+ */
+mojo.MirroringSessionObserverPtr = function() {};
+
+
+/** @param {!mojo.MirroringSessionError} error */
+mojo.MirroringSessionObserverPtr.prototype.onError = function(error) {};
+
+
+/** Notifies the observer that a mirroring session started. */
+mojo.MirroringSessionObserverPtr.prototype.didStart = function() {};
+
+
+/** Notifies the observer that a mirroring session stopped. */
+mojo.MirroringSessionObserverPtr.prototype.didStop = function() {};
+
+
+
+/**
+ * @constructor
+ */
+mojo.MirroringServiceHostPtr = function() {};
+
+
+/**
+ * @param {!mojo.MirroringSessionParameters} session_params
+ * @param {!mojo.MirroringSessionObserverPtr} observer
+ * @param {!mojo.MirroringCastMessageChannelPtr} outbound_channel
+ * @param {!mojo.InterfaceRequest} inbound_channel
+ */
+mojo.MirroringServiceHostPtr.prototype.start = function(
+    session_params, observer, outbound_channel, inbound_channel) {};
+
+
+/** @type {!mojo.InterfacePtrController} */
+mojo.MirroringServiceHostPtr.prototype.ptr;

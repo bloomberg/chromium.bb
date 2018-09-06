@@ -193,6 +193,42 @@ mr.MediaRouterService.prototype.getMediaSinkServiceStatus;
 
 
 /**
+ * Gets the mirroring service host for a Tab mirroring session. The Media Router
+ * should bind the request to an implementation to receive command that controls
+ * the session.
+ * @param {number} targetTabId
+ * @param {!mojo.InterfaceRequest} request
+ * @export
+ */
+mr.MediaRouterService.prototype.getMirroringServiceHostForTab;
+
+
+/**
+ * Gets the mirroring service host for a Desktop mirroring session. The Media
+ * Router should bind the request to an implementation to receive command that
+ * controls the session.
+ * @param {number} initiatorTabId
+ * @param {string} desktopStreamId
+ * @param {!mojo.InterfaceRequest} request
+ * @export
+ */
+mr.MediaRouterService.prototype.getMirroringServiceHostForDesktop;
+
+
+/**
+ * Gets the mirroring service host for a OffscreenTab mirroring session. The
+ * Media Router should bind the request to an implementation to receive command
+ * that controls the session.
+ * @param {!mojo.Url} presentationUrl
+ * @param {string} presentationId
+ * @param {!mojo.InterfaceRequest} request
+ * @export
+ */
+mr.MediaRouterService.prototype.getMirroringServiceHostForOffscreenTab;
+
+
+
+/**
  * @interface
  */
 mr.MediaRouterRequestHandler = function() {};

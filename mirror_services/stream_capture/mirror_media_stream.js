@@ -155,11 +155,12 @@ mr.mirror.MirrorMediaStream = class {
    * Requests a screen capture source from the user via a native dialog and
    * returns the source ID, or rejects if a timeout is reached or the user
    * cancels.
+   * @param {Tab=} targetTab Optional tab that the stream is created for.
    * @param {number=} timeoutMillis The timeout in milliseconds.
    * @return {!Promise<string>} Fulfilled with the source ID.
-   * @private
    */
-  requestScreenCaptureSourceId_(
+  static requestScreenCaptureSourceId(
+      targetTab,
       timeoutMillis = mr.mirror.MirrorMediaStream.WINDOW_PICKER_TIMEOUT_) {
     return new Promise((resolve, reject) => {
       const desktopChooserConfig = ['screen', 'audio'];
@@ -181,7 +182,7 @@ mr.mirror.MirrorMediaStream = class {
       }, timeoutMillis);
       // https://developer.chrome.com/extensions/desktopCapture#method-chooseDesktopMedia
       requestId = chrome.desktopCapture.chooseDesktopMedia(
-          desktopChooserConfig, sourceId => {
+          desktopChooserConfig, targetTab || null, sourceId => {
             window.clearTimeout(timeoutId);
             if (!sourceId) {
               // User cancelled the desktop media selector prompt.
@@ -255,10 +256,11 @@ mr.mirror.MirrorMediaStream = class {
 
     // Video capture requires asking the user to pick which screen to capture.
 
-    return this.requestScreenCaptureSourceId_().then(sourceId => {
-      const constraints = this.captureParams_.toMediaConstraints(sourceId);
-      return this.generateScreenCaptureStream_(constraints).then(_ => this);
-    });
+    return mr.mirror.MirrorMediaStream.requestScreenCaptureSourceId().then(
+        sourceId => {
+          const constraints = this.captureParams_.toMediaConstraints(sourceId);
+          return this.generateScreenCaptureStream_(constraints).then(_ => this);
+        });
   }
 
   /**
