@@ -70,6 +70,10 @@ void RecordRemountResult(SmbMountResult result) {
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.RemountResult", result);
 }
 
+std::unique_ptr<TempFileManager> CreateTempFileManager() {
+  return std::make_unique<TempFileManager>();
+}
+
 }  // namespace
 
 bool SmbService::service_should_run_ = false;
@@ -258,10 +262,6 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
   }
 }
 
-void SmbService::InitTempFileManager() {
-  temp_file_manager_ = std::make_unique<TempFileManager>();
-}
-
 void SmbService::StartSetup() {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
@@ -291,18 +291,16 @@ void SmbService::StartSetup() {
 }
 
 void SmbService::SetupTempFileManagerAndCompleteSetup() {
-  // InitTempFileManager() has to be called on a separate thread since it
+  // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
   base::TaskTraits task_traits = {base::MayBlock(),
                                   base::TaskPriority::USER_BLOCKING,
                                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  base::OnceClosure task =
-      base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
-  base::OnceClosure reply =
-      base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr());
+  auto task = base::BindOnce(&CreateTempFileManager);
+  auto reply = base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr());
 
-  base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
-                                   std::move(reply));
+  base::PostTaskWithTraitsAndReplyWithResult(FROM_HERE, task_traits,
+                                             std::move(task), std::move(reply));
 }
 
 void SmbService::OnSetupKerberosResponse(bool success) {
@@ -313,7 +311,12 @@ void SmbService::OnSetupKerberosResponse(bool success) {
   SetupTempFileManagerAndCompleteSetup();
 }
 
-void SmbService::CompleteSetup() {
+void SmbService::CompleteSetup(
+    std::unique_ptr<TempFileManager> temp_file_manager) {
+  DCHECK(temp_file_manager);
+  DCHECK(!temp_file_manager_);
+
+  temp_file_manager_ = std::move(temp_file_manager);
   share_finder_ = std::make_unique<SmbShareFinder>(GetSmbProviderClient());
   RegisterHostLocators();
 
