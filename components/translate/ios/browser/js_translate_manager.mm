@@ -57,6 +57,24 @@
 #pragma mark -
 #pragma mark CRWJSInjectionManager methods
 
+- (void)inject {
+  NSString* script = [self injectionContent];
+
+  // Reset any state if previously injected.
+  if ([self hasBeenInjected]) {
+    NSString* resetScript =
+        @"try {"
+         "  cr.googleTranslate.revert();"
+         "} catch (e) {"
+         "}";
+    script = [resetScript stringByAppendingString:script];
+  }
+
+  // The scripts need to be re-injected to ensure that the logic that
+  // initializes translate can be restarted properly.
+  [[self receiver] injectScript:script forClass:[self class]];
+}
+
 - (NSString*)injectionContent {
   DCHECK(_translationScript);
   NSString* translationScript = _translationScript;
