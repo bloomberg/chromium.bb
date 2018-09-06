@@ -64,6 +64,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
 
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_TRUE(params_.http2_settings.empty());
+  EXPECT_FALSE(params_.greased_http2_frame);
   EXPECT_FALSE(params_.enable_websocket_over_http2);
 
   EXPECT_FALSE(params_.enable_quic);
@@ -794,6 +795,37 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_headers_include_h2_stream_dependency);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_grease_settings"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  bool greased_setting_found = false;
+  for (const auto& setting : params_.http2_settings) {
+    if ((setting.first & 0x0f0f) == 0x0a0a) {
+      greased_setting_found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(greased_setting_found);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameType) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_grease_frame_type"] = "true";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  ASSERT_TRUE(params_.greased_http2_frame);
+  const uint8_t frame_type = params_.greased_http2_frame.value().type;
+  EXPECT_EQ(0x0b, frame_type % 0x1f);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

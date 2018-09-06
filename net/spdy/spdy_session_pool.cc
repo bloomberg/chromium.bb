@@ -56,6 +56,7 @@ SpdySessionPool::SpdySessionPool(
     bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     const spdy::SettingsMap& initial_settings,
+    const base::Optional<GreasedHttp2Frame>& greased_http2_frame,
     SpdySessionPool::TimeFunc time_func)
     : http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
@@ -68,6 +69,7 @@ SpdySessionPool::SpdySessionPool(
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       session_max_recv_window_size_(session_max_recv_window_size),
       initial_settings_(initial_settings),
+      greased_http2_frame_(greased_http2_frame),
       time_func_(time_func),
       push_delegate_(nullptr) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -110,8 +112,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       ssl_config_service_, quic_supported_versions_,
       enable_sending_initial_data_, enable_ping_based_connection_checking_,
       support_ietf_format_quic_altsvc_, is_trusted_proxy,
-      session_max_recv_window_size_, initial_settings_, time_func_,
-      push_delegate_, net_log.net_log());
+      session_max_recv_window_size_, initial_settings_, greased_http2_frame_,
+      time_func_, push_delegate_, net_log.net_log());
 
   new_session->InitializeWithSocket(std::move(connection), this);
 

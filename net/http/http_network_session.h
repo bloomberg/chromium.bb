@@ -21,6 +21,7 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
@@ -113,7 +114,18 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     size_t spdy_session_max_recv_window_size;
     // HTTP/2 connection settings.
     // Unknown settings will still be sent to the server.
+    // Might contain unknown setting identifiers from a predefined set that
+    // servers are supposed to ignore, see
+    // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+    // The same setting will be sent on every connection to prevent the retry
+    // logic from hiding broken servers.
     spdy::SettingsMap http2_settings;
+    // If set, an HTTP/2 frame with a reserved frame type will be sent after
+    // every HEADERS and SETTINGS frame.  See
+    // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+    // The same frame will be sent out on all connections to prevent the retry
+    // logic from hiding broken servers.
+    base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
     // Whether to enable HTTP/2 Alt-Svc entries.
