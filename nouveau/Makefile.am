@@ -30,5 +30,6 @@ libdrm_nouveaunvifinclude_HEADERS = nvif/class.h \
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_nouveau.pc
 
+AM_TESTS_ENVIRONMENT = NM='$(NM)'
 TESTS = nouveau-symbol-check
 EXTRA_DIST = $(TESTS)
