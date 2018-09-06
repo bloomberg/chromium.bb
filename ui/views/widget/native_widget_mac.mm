@@ -244,8 +244,8 @@ void* NativeWidgetMac::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetMac::GetTooltipManager() const {
-  if (bridge_impl())
-    return bridge_impl()->tooltip_manager();
+  if (bridge_host_)
+    return bridge_host_->tooltip_manager();
 
   return nullptr;
 }

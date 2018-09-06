@@ -15,6 +15,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
@@ -30,7 +31,6 @@
 #import "ui/views/cocoa/cocoa_window_move_loop.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
-#include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -339,7 +339,6 @@ void BridgedNativeWidgetImpl::InitWindow(
   }
 
   [window_ setHasShadow:params->has_window_server_shadow];
-  tooltip_manager_.reset(new TooltipManagerMac(this));
 }
 
 void BridgedNativeWidgetImpl::SetInitialBounds(
@@ -1099,6 +1098,14 @@ void BridgedNativeWidgetImpl::ClearTouchBar() {
     if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
       [bridged_view_ setTouchBar:nil];
   }
+}
+
+void BridgedNativeWidgetImpl::UpdateTooltip() {
+  NSPoint nspoint =
+      ui::ConvertPointFromScreenToWindow(window_, [NSEvent mouseLocation]);
+  // Note: flip in the view's frame, which matches the window's contentRect.
+  gfx::Point point(nspoint.x, NSHeight([bridged_view_ frame]) - nspoint.y);
+  [bridged_view_ updateTooltipIfRequiredAt:point];
 }
 
 void BridgedNativeWidgetImpl::SetTextInputClient(

@@ -12,6 +12,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/views_delegate.h"
@@ -67,6 +68,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   // native on Mac, so nothing should ever want one in Widget form.
   DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
   widget_type_ = params.type;
+  tooltip_manager_.reset(new TooltipManagerMac(bridge()));
 
   bridge_impl_->SetParent(params.parent);
 

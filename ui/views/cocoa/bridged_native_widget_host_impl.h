@@ -56,6 +56,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
 
+  TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
+
   void InitWindow(const Widget::InitParams& params);
 
   // Changes the bounds of the window and the hosted layer if present. The
@@ -222,6 +224,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // instance that may be in another process.
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
 
+  std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;
   FocusManager* focus_manager_ = nullptr;  // Weak. Owned by our Widget.
 

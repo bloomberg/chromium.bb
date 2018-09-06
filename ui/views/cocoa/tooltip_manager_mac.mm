@@ -19,8 +19,9 @@ const int kTooltipMaxWidthPixels = 250;
 
 namespace views {
 
-TooltipManagerMac::TooltipManagerMac(BridgedNativeWidgetImpl* widget)
-    : widget_(widget) {}
+TooltipManagerMac::TooltipManagerMac(
+    views_bridge_mac::mojom::BridgedNativeWidget* bridge)
+    : bridge_(bridge) {}
 
 TooltipManagerMac::~TooltipManagerMac() {
 }
@@ -36,14 +37,7 @@ const gfx::FontList& TooltipManagerMac::GetFontList() const {
 }
 
 void TooltipManagerMac::UpdateTooltip() {
-  NSWindow* window = widget_->ns_window();
-  BridgedContentView* view = widget_->ns_view();
-
-  NSPoint nspoint =
-      ui::ConvertPointFromScreenToWindow(window, [NSEvent mouseLocation]);
-  // Note: flip in the view's frame, which matches the window's contentRect.
-  gfx::Point point(nspoint.x, NSHeight([view frame]) - nspoint.y);
-  [view updateTooltipIfRequiredAt:point];
+  bridge_->UpdateTooltip();
 }
 
 void TooltipManagerMac::TooltipTextChanged(View* view) {

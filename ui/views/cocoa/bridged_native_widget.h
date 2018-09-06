@@ -164,8 +164,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
   NSWindow* ns_window();
 
-  TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
-
   DragDropClientMac* drag_drop_client() { return drag_drop_client_.get(); }
   bool is_translucent_window() const { return is_translucent_window_; }
 
@@ -239,6 +237,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void SetWindowTitle(const base::string16& title) override;
   void MakeFirstResponder() override;
   void ClearTouchBar() override;
+  void UpdateTooltip() override;
   void AcquireCapture() override;
   void ReleaseCapture() override;
 
@@ -301,7 +300,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
-  std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
   ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;

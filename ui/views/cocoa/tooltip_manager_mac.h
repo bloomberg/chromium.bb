@@ -8,13 +8,19 @@
 #include "base/macros.h"
 #include "ui/views/widget/tooltip_manager.h"
 
-namespace views {
-class BridgedNativeWidgetImpl;
+namespace views_bridge_mac {
+namespace mojom {
+class BridgedNativeWidget;
+}  // namespace mojom
+}  // namespace views_bridge_mac
 
-// Manages native Cocoa tooltips for the given BridgedNativeWidgetImpl.
+namespace views {
+
+// Manages native Cocoa tooltips for the given BridgedNativeWidgetHostImpl.
 class TooltipManagerMac : public TooltipManager {
  public:
-  explicit TooltipManagerMac(BridgedNativeWidgetImpl* widget);
+  explicit TooltipManagerMac(
+      views_bridge_mac::mojom::BridgedNativeWidget* bridge);
   ~TooltipManagerMac() override;
 
   // TooltipManager:
@@ -24,7 +30,8 @@ class TooltipManagerMac : public TooltipManager {
   void TooltipTextChanged(View* view) override;
 
  private:
-  BridgedNativeWidgetImpl* widget_;  // Weak. Owns this.
+  views_bridge_mac::mojom::BridgedNativeWidget*
+      bridge_;  // Weak. Owned by the owner of this.
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerMac);
 };
