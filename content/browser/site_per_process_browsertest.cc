@@ -1836,19 +1836,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_observer->Wait();
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-// Flaky: https://crbug.com/836200.
-// Flaky timeouts on Mac: https://crbug.com/863971.
-#define MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden \
-  DISABLED_ScrollBubblingFromOOPIFWithBodyOverflowHidden
-#else
-#define MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden \
-  ScrollBubblingFromOOPIFWithBodyOverflowHidden
-#endif
 // Tests that scrolling bubbles from an oopif if its source body has
 // "overflow:hidden" style.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
+                       ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
   GURL url_domain_a(embedded_test_server()->GetURL(
       "a.com", "/scrollable_page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
