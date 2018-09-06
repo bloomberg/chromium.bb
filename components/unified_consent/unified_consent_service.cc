@@ -19,6 +19,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
 namespace unified_consent {
@@ -514,8 +515,10 @@ void UnifiedConsentService::RecordSettingsHistogram() {
 
 void UnifiedConsentService::CheckConsentBumpEligibility() {
   // Only check eligility if the user was eligible before.
-  if (!ShouldShowConsentBump())
+  if (!ShouldShowConsentBump()) {
+    metrics::RecordConsentBumpEligibility(false);
     return;
+  }
 
   syncer::ModelTypeSet user_types_without_user_events =
       syncer::UserSelectableTypes();
@@ -529,6 +532,8 @@ void UnifiedConsentService::CheckConsentBumpEligibility() {
     RecordConsentBumpSuppressReason(
         ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff);
   }
+  metrics::RecordConsentBumpEligibility(
+      pref_service_->GetBoolean(prefs::kShouldShowUnifiedConsentBump));
 }
 
 }  //  namespace unified_consent
