@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/network_session_configurator/common/network_features.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
@@ -488,6 +489,10 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
       command_line.HasSwitch(switches::kEnableEncryptionSelection);
   chrome::GetDefaultUserDataDirectory(&config->user_data_path);
   content::GetNetworkService()->SetCryptConfig(std::move(config));
+#endif
+#if defined(OS_MACOSX)
+  content::GetNetworkService()->SetEncryptionKey(
+      OSCrypt::GetRawEncryptionKey());
 #endif
 
   // Asynchronously reapply the most recently received CRLSet (if any).
