@@ -80,6 +80,7 @@ class StyleFetchedImage final : public StyleImage,
                     FetchParameters&,
                     bool is_lazyload_deferred);
 
+  bool IsEqual(const StyleImage&) const override;
   void Dispose();
 
   Member<ImageResourceContent> image_;
