@@ -15,11 +15,23 @@
 
 namespace content {
 
-ShellLoginDialog::ShellLoginDialog(
+// static
+scoped_refptr<ShellLoginDialog> ShellLoginDialog::Create(
     net::AuthChallengeInfo* auth_info,
+    LoginAuthRequiredCallback auth_required_callback) {
+  auto ret = base::WrapRefCounted(
+      new ShellLoginDialog(std::move(auth_required_callback)));
+  ret->Init(auth_info);
+  return ret;
+}
+
+ShellLoginDialog::ShellLoginDialog(
     LoginAuthRequiredCallback auth_required_callback)
     : auth_required_callback_(std::move(auth_required_callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+void ShellLoginDialog::Init(net::AuthChallengeInfo* auth_info) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(

@@ -386,8 +386,7 @@ scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
   // TODO: implement ShellLoginDialog for other platforms, drop this #if
   return nullptr;
 #else
-  return base::MakeRefCounted<ShellLoginDialog>(
-      auth_info, std::move(auth_required_callback));
+  return ShellLoginDialog::Create(auth_info, std::move(auth_required_callback));
 #endif
 }
 
