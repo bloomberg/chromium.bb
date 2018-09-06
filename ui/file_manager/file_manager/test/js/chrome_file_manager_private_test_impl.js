@@ -79,7 +79,7 @@ chrome.fileManagerPrivate = {
     // Returns chrome.fileManagerPrivate.FileTask[].
     var results = [];
     // Support for view-in-browser on single text file used by QuickView.
-    if (entries.length == 1 &&
+    if (entries.length == 1 && entries[0].metadata &&
         entries[0].metadata.contentMimeType == 'text/plain') {
       results.push({
         taskId: 'hhaomjibdihmijegdhdafkllkbggdgoj|file|view-in-browser',

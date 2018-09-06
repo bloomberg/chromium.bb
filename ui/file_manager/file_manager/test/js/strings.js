@@ -57,6 +57,7 @@ loadTimeData.data = new Proxy(
       GOOGLE_DRIVE_REDEEM_URL: 'http://www.google.com/intl/en/chrome/' +
           'devices/goodies.html?utm_source=filesapp&utm_medium=banner&' +
           'utm_campaign=gsg',
+      HIDE_SPACE_INFO: false,
       IMAGE_FILE_TYPE: '$1 image',
       INSTALL_LINUX_PACKAGE_INSTALL_BUTTON: 'Install',
       INSTALL_NEW_EXTENSION_LABEL: 'Install new service',

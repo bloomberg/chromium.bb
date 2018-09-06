@@ -279,6 +279,7 @@ test.BASIC_DRIVE_ENTRY_SET = [
  * @const
  */
 test.BASIC_CROSTINI_ENTRY_SET = [
+  test.ENTRIES.directoryA,
   test.ENTRIES.hello,
   test.ENTRIES.world,
   test.ENTRIES.desktop,
