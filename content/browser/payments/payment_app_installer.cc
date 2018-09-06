@@ -4,6 +4,8 @@
 
 #include "content/browser/payments/payment_app_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -26,12 +28,10 @@ class SelfDeleteInstaller
     : public WebContentsObserver,
       public base::RefCountedThreadSafe<SelfDeleteInstaller> {
  public:
-  SelfDeleteInstaller(WebContents* web_contents,
-                      const std::string& app_name,
+  SelfDeleteInstaller(const std::string& app_name,
                       const std::string& app_icon,
                       const GURL& sw_url,
                       const GURL& scope,
-                      bool use_cache,
                       const std::string& method,
                       PaymentAppInstaller::InstallPaymentAppCallback callback)
       : app_name_(app_name),
@@ -40,6 +40,10 @@ class SelfDeleteInstaller
         scope_(scope),
         method_(method),
         callback_(std::move(callback)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  }
+
+  void Init(WebContents* web_contents, bool use_cache) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // TODO(crbug.com/782270): Listen for web contents events to terminate
@@ -66,7 +70,7 @@ class SelfDeleteInstaller
           blink::mojom::ServiceWorkerUpdateViaCache::kNone;
     }
     service_worker_context->RegisterServiceWorker(
-        sw_url, option,
+        sw_url_, option,
         base::BindOnce(&SelfDeleteInstaller::OnRegisterServiceWorkerResult,
                        this));
   }
@@ -212,8 +216,9 @@ void PaymentAppInstaller::Install(WebContents* web_contents,
                                   InstallPaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  new SelfDeleteInstaller(web_contents, app_name, app_icon, sw_url, scope,
-                          use_cache, method, std::move(callback));
+  auto installer = base::MakeRefCounted<SelfDeleteInstaller>(
+      app_name, app_icon, sw_url, scope, method, std::move(callback));
+  installer->Init(web_contents, use_cache);
 }
 
 }  // namespace content

@@ -31,11 +31,9 @@ namespace content {
 // ResourceDispatcherHostDelegate::CreateLoginDelegate.
 class ShellLoginDialog : public LoginDelegate {
  public:
-  // Threading: IO thread.
-  ShellLoginDialog(
+  static scoped_refptr<ShellLoginDialog> Create(
       net::AuthChallengeInfo* auth_info,
-      base::OnceCallback<void(const base::Optional<net::AuthCredentials>&)>
-          auth_required_callback);
+      LoginAuthRequiredCallback auth_required_callback);
 
   // LoginDelegate implementation:
   // Threading: IO thread.
@@ -50,8 +48,15 @@ class ShellLoginDialog : public LoginDelegate {
   void UserCancelledAuth();
 
  protected:
+  // Threading: IO thread.
+  ShellLoginDialog(
+      base::OnceCallback<void(const base::Optional<net::AuthCredentials>&)>
+          auth_required_callback);
+
   // Threading: any
   ~ShellLoginDialog() override;
+
+  void Init(net::AuthChallengeInfo* auth_info);
 
  private:
   // All the methods that begin with Platform need to be implemented by the
