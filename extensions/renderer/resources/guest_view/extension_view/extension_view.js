@@ -34,12 +34,6 @@ function ExtensionViewImpl(extensionviewElement) {
 
 ExtensionViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
 
-ExtensionViewImpl.VIEW_TYPE = 'ExtensionView';
-
-ExtensionViewImpl.setupElement = function(proto) {
-  GuestViewContainer.forwardApiMethods(proto, EXTENSION_VIEW_API_METHODS);
-};
-
 ExtensionViewImpl.prototype.createGuest = function(callback) {
   this.guest.create(this.buildParams(), $Function.bind(function() {
     this.attachWindow$();
@@ -160,4 +154,5 @@ ExtensionViewImpl.prototype.load = function(src) {
   }, this));
 };
 
-GuestViewContainer.registerElement(ExtensionViewImpl);
+// Exports.
+exports.$set('ExtensionViewImpl', ExtensionViewImpl);

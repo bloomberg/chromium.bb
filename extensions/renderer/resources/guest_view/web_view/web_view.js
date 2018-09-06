@@ -6,7 +6,6 @@
 // BrowserPlugin object element. The object element is hidden within
 // the shadow DOM of the WebView element.
 
-var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
@@ -27,14 +26,6 @@ function WebViewImpl(webviewElement) {
 }
 
 WebViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
-
-WebViewImpl.VIEW_TYPE = 'WebView';
-
-// Add extra functionality to |this.element|.
-WebViewImpl.setupElement = function(proto) {
-  // Forward proto.foo* method calls to WebViewImpl.foo*.
-  GuestViewContainer.forwardApiMethods(proto, WEB_VIEW_API_METHODS);
-};
 
 // Sets up all of the webview attributes.
 WebViewImpl.prototype.setupAttributes = function() {
@@ -333,8 +324,6 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {};
     }
   }
 })();
-
-GuestViewContainer.registerElement(WebViewImpl);
 
 // Exports.
 exports.$set('WebViewImpl', WebViewImpl);
