@@ -197,15 +197,6 @@ class CAPTURE_EXPORT VideoCaptureDevice
         gfx::Rect visible_rect,
         const VideoFrameMetadata& additional_metadata) = 0;
 
-    // Attempts to reserve the same Buffer provided in the last call to one of
-    // the OnIncomingCapturedBufferXXX() methods. This will fail if the content
-    // of the Buffer has not been preserved, or if the |dimensions|, |format|,
-    // or |storage| disagree with how it was reserved via ReserveOutputBuffer().
-    // When this operation fails, nullptr will be returned.
-    virtual Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                             VideoPixelFormat format,
-                                             int new_frame_feedback_id) = 0;
-
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.
     virtual void OnError(VideoCaptureError error,

@@ -32,8 +32,6 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     int frame_feedback_id));
   MOCK_METHOD3(ReserveOutputBuffer,
                Buffer(const gfx::Size&, VideoPixelFormat, int));
-  MOCK_METHOD3(ResurrectLastOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
   MOCK_METHOD3(OnError,
                void(media::VideoCaptureError error,
                     const base::Location& from_here,

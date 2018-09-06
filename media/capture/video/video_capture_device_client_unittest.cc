@@ -84,7 +84,6 @@ TEST_F(VideoCaptureDeviceClientTest, Minimal) {
     EXPECT_CALL(*receiver_, OnLog(_));
     EXPECT_CALL(*receiver_, MockOnNewBufferHandle(expected_buffer_id));
     EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(expected_buffer_id, _, _));
-    EXPECT_CALL(*receiver_, OnBufferRetired(expected_buffer_id));
   }
   device_client_->OnIncomingCapturedData(data, kScratchpadSizeInBytes,
                                          kFrameFormat, 0 /*clockwise rotation*/,
@@ -99,9 +98,8 @@ TEST_F(VideoCaptureDeviceClientTest, Minimal) {
           gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE, gpu::kNullSurfaceHandle);
   {
     InSequence s;
-    const int expected_buffer_id = 1;
+    const int expected_buffer_id = 0;
     EXPECT_CALL(*receiver_, OnLog(_));
-    EXPECT_CALL(*receiver_, MockOnNewBufferHandle(expected_buffer_id));
     EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(expected_buffer_id, _, _));
     EXPECT_CALL(*receiver_, OnBufferRetired(expected_buffer_id));
   }

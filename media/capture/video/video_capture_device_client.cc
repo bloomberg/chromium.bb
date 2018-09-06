@@ -474,18 +474,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
       std::move(info));
 }
 
-VideoCaptureDevice::Client::Buffer
-VideoCaptureDeviceClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                                    VideoPixelFormat format,
-                                                    int new_frame_feedback_id) {
-  DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
-  const int buffer_id =
-      buffer_pool_->ResurrectLastForProducer(dimensions, format);
-  if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-    return Buffer();
-  return MakeBufferStruct(buffer_pool_, buffer_id, new_frame_feedback_id);
-}
-
 void VideoCaptureDeviceClient::OnError(VideoCaptureError error,
                                        const base::Location& from_here,
                                        const std::string& reason) {

@@ -67,13 +67,6 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
       const media::VideoFrameMetadata& additional_metadata) override {
     DoOnIncomingCapturedVideoFrame();
   }
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   int frame_feedback_id) override {
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
-    DoResurrectLastOutputBuffer();
-    return Buffer();
-  }
 };
 
 class ScreenCaptureDeviceAndroidTest : public testing::Test {

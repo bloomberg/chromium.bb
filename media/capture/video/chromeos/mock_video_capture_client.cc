@@ -95,14 +95,5 @@ void MockVideoCaptureClient::OnIncomingCapturedBufferExt(
   DoOnIncomingCapturedVideoFrame();
 }
 
-VideoCaptureDevice::Client::Buffer
-MockVideoCaptureClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                                  VideoPixelFormat format,
-                                                  int frame_feedback_id) {
-  DoResurrectLastOutputBuffer();
-  NOTREACHED() << "This should never be called";
-  return Buffer();
-}
-
 }  // namespace unittest_internal
 }  // namespace media

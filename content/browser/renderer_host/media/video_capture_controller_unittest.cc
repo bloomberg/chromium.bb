@@ -380,25 +380,13 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                            arbitrary_reference_time_,
                                            arbitrary_timestamp_);
 
-  // The buffer should be delivered to the clients in any order.
-  {
-    InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _));
-    EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_1, device_format.frame_size));
-  }
-  {
-    InSequence s;
-    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _));
-    EXPECT_CALL(*client_b_,
-                DoBufferReady(client_b_route_1, device_format.frame_size));
-  }
-  {
-    InSequence s;
-    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _));
-    EXPECT_CALL(*client_a_,
-                DoBufferReady(client_a_route_2, device_format.frame_size));
-  }
+  // The frame should be delivered to the clients in any order.
+  EXPECT_CALL(*client_a_,
+              DoBufferReady(client_a_route_1, device_format.frame_size));
+  EXPECT_CALL(*client_b_,
+              DoBufferReady(client_b_route_1, device_format.frame_size));
+  EXPECT_CALL(*client_a_,
+              DoBufferReady(client_a_route_2, device_format.frame_size));
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -430,24 +418,24 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                    .is_valid());
 
   // The new client needs to be notified of the creation of |kPoolSize| buffers;
-  // the old clients only |kPoolSize - 2|.
+  // the old clients only |kPoolSize - 1|.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2, _))
       .Times(kPoolSize);
   EXPECT_CALL(*client_b_,
               DoBufferReady(client_b_route_2, device_format.frame_size))
       .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1, _))
-      .Times(kPoolSize - 2);
+      .Times(kPoolSize - 1);
   EXPECT_CALL(*client_a_,
               DoBufferReady(client_a_route_1, device_format.frame_size))
       .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2, _))
-      .Times(kPoolSize - 2);
+      .Times(kPoolSize - 1);
   EXPECT_CALL(*client_a_,
               DoBufferReady(client_a_route_2, device_format.frame_size))
       .Times(kPoolSize);
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1, _))
-      .Times(kPoolSize - 2);
+      .Times(kPoolSize - 1);
   EXPECT_CALL(*client_b_,
               DoBufferReady(client_b_route_1, device_format.frame_size))
       .Times(kPoolSize);
@@ -643,20 +631,12 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
         .Times(1);
 
     // Device prepares and pushes a frame.
-    // For the first half of the frames we exercise ReserveOutputBuffer() while
-    // for the second half we exercise ResurrectLastOutputBuffer().
     // The frame is expected to arrive at |client_a_|.DoBufferReady(), which
     // automatically notifies |controller_| that it has finished consuming it.
     media::VideoCaptureDevice::Client::Buffer buffer;
-    if (frame_index < kTestFrameSequenceLength / 2) {
-      buffer = device_client_->ReserveOutputBuffer(
-          arbitrary_format.frame_size, arbitrary_format.pixel_format,
-          stub_frame_feedback_id);
-    } else {
-      buffer = device_client_->ResurrectLastOutputBuffer(
-          arbitrary_format.frame_size, arbitrary_format.pixel_format,
-          stub_frame_feedback_id);
-    }
+    buffer = device_client_->ReserveOutputBuffer(arbitrary_format.frame_size,
+                                                 arbitrary_format.pixel_format,
+                                                 stub_frame_feedback_id);
     ASSERT_TRUE(buffer.is_valid());
     device_client_->OnIncomingCapturedBuffer(
         std::move(buffer), arbitrary_format, arbitrary_reference_time_,

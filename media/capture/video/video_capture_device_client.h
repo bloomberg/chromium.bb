@@ -83,9 +83,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,
       const VideoFrameMetadata& additional_metadata) override;
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   VideoPixelFormat format,
-                                   int new_frame_feedback_id) override;
   void OnError(VideoCaptureError error,
                const base::Location& from_here,
                const std::string& reason) override;

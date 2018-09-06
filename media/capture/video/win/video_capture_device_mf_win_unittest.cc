@@ -57,9 +57,6 @@ class MockClient : public VideoCaptureDevice::Client {
       gfx::Rect visible_rect,
       const VideoFrameMetadata& additional_metadata) override {}
 
-  MOCK_METHOD3(ResurrectLastOutputBuffer,
-               Buffer(const gfx::Size&, VideoPixelFormat, int));
-
   MOCK_METHOD3(OnError,
                void(VideoCaptureError,
                     const base::Location&,
