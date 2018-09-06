@@ -858,9 +858,27 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context_->GetSecurityContext().AddressSpace());
-  request.SetReferrerString(fetch_request_data_->ReferrerString());
-  request.SetReferrerPolicy(fetch_request_data_->GetReferrerPolicy());
 
+  // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
+  // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
+  // encoded, otherwise, to HTTPRequest's header list.
+  //
+  // The following code also invokes "determine request's referrer" which is
+  // written in "Main fetch" operation.
+  const ReferrerPolicy referrer_policy =
+      fetch_request_data_->GetReferrerPolicy() == kReferrerPolicyDefault
+          ? execution_context_->GetReferrerPolicy()
+          : fetch_request_data_->GetReferrerPolicy();
+  const String referrer_string =
+      fetch_request_data_->ReferrerString() == Referrer::ClientReferrerString()
+          ? execution_context_->OutgoingReferrer()
+          : fetch_request_data_->ReferrerString();
+  // Note that generateReferrer generates |no-referrer| from |no-referrer|
+  // referrer string (i.e. String()).
+  // TODO(domfarolino): Can we use ResourceRequest's SetReferrerString() and
+  // SetReferrerPolicy() instead of calling SetHTTPReferrer()?
+  request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+      referrer_policy, fetch_request_data_->Url(), referrer_string));
   request.SetSkipServiceWorker(is_isolated_world_);
 
   if (fetch_request_data_->Keepalive()) {
