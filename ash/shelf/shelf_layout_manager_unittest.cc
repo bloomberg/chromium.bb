@@ -2017,6 +2017,35 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 }
 
+// Tests that the shelf background gets updated when the AppList stays open
+// during the tablet mode transition with a visible window.
+TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
+  // Home Launcher requires an internal display.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Show a window, which will later fill the whole screen.
+  std::unique_ptr<aura::Window> window(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      ws::mojom::kResizeBehaviorCanResize |
+                          ws::mojom::kResizeBehaviorCanMaximize);
+  wm::ActivateWindow(window.get());
+
+  // Show the AppList over |window|.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  // Transition to tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  // |window| should be maximized, and the shelf background should match the
+  // maximized state.
+  EXPECT_EQ(
+      wm::WORKSPACE_WINDOW_STATE_MAXIMIZED,
+      RootWindowController::ForWindow(window.get())->GetWorkspaceWindowState());
+  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
+}
+
 // Test the background color for split view mode.
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   // Split view is only enabled in tablet mode.
