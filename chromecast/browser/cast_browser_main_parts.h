@@ -108,6 +108,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_ANDROID)
   void StartPeriodicCrashReportUpload();
   void OnStartPeriodicCrashReportUpload();
+  scoped_refptr<base::SequencedTaskRunner> crash_reporter_runner_;
   std::unique_ptr<base::RepeatingTimer> crash_reporter_timer_;
 #endif
 
