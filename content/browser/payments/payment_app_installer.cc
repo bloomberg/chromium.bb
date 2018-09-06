@@ -46,6 +46,8 @@ class SelfDeleteInstaller
   void Init(WebContents* web_contents, bool use_cache) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+    AddRef();  // Balanced by Release() in FinishInstallation.
+
     // TODO(crbug.com/782270): Listen for web contents events to terminate
     // installation early.
     Observe(web_contents);
@@ -188,6 +190,7 @@ class SelfDeleteInstaller
     }
 
     Observe(nullptr);
+    Release();  // Balanced by AddRef() in the constructor.
   }
 
   std::string app_name_;
