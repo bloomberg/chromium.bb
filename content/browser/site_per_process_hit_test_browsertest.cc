@@ -2169,18 +2169,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_EQ(result.target_location.value(), parent_location);
 }
 
-#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
-// Flaky: https://crbug.com/833380
-#define MAYBE_SurfaceHitTestPointerEventsNone \
-  DISABLED_SurfaceHitTestPointerEventsNone
-#else
-#define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
-#endif
-
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_SurfaceHitTestPointerEventsNone) {
+                       SurfaceHitTestPointerEventsNone) {
   // TODO(sunxd): Fix pointer-events none for surface layer viz hit testing. See
   // https://crbug.com/841358.
   if (features::IsVizHitTestingSurfaceLayerEnabled()) {
@@ -2235,18 +2227,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky on Chrome OS. crbug.com/833380
-#define MAYBE_AsynchronousHitTestChildTimeout \
-  DISABLED_AsynchronousHitTestChildTimeout
-#else
-#define MAYBE_AsynchronousHitTestChildTimeout AsynchronousHitTestChildTimeout
-#endif
-
 // Verify that an event is properly retargeted to the main frame when an
 // asynchronous hit test to the child frame times out.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_AsynchronousHitTestChildTimeout) {
+                       AsynchronousHitTestChildTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_busy_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
