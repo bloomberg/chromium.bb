@@ -353,8 +353,15 @@ class SingleClientWalletSyncTest : public UssSwitchToggler, public SyncTest {
  protected:
   void RefreshAndWaitForOnPersonalDataChanged(
       autofill::PersonalDataManager* pdm) {
+    WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/true, pdm);
+  }
+
+  void WaitForOnPersonalDataChanged(bool should_trigger_refresh,
+                                    autofill::PersonalDataManager* pdm) {
     pdm->AddObserver(&personal_data_observer_);
-    pdm->Refresh();
+    if (should_trigger_refresh) {
+      pdm->Refresh();
+    }
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .WillRepeatedly(QuitMessageLoop(&run_loop));
@@ -412,11 +419,12 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, DownloadProfileStorage) {
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
-// TODO(crbug.com/853688): Reenable once the USS implementation of
-// AUTOFILL_WALLET_DATA (AutofillWalletSyncBridge) has sufficient functionality.
-IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
-                       DISABLED_DownloadAccountStorage_Card) {
-  InitWithFeatures(
+// The account storage requires USS, so we only test the USS implementation
+// here.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       DownloadAccountStorage_Card) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
       /*enabled_features=*/{switches::kSyncStandaloneTransport,
                             switches::kSyncUSSAutofillWalletData,
                             autofill::features::
@@ -424,6 +432,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
       /*disabled_features=*/{});
 
   ASSERT_TRUE(SetupClients());
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  pdm->OnSyncServiceInitialized(GetSyncService(0));
 
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
@@ -446,19 +456,32 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerCards(profile_data).size());
   EXPECT_EQ(0U, GetServerProfiles(profile_data).size());
 
-  // Check that one card and one profile are stored in the account storage.
+  // Check that one card is stored in the account storage.
   EXPECT_EQ(1U, GetServerCards(account_data).size());
-  EXPECT_EQ(1U, GetServerProfiles(account_data).size());
 
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
-  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
-  ASSERT_EQ(1uL, profiles.size());
 
   ExpectDefaultCreditCardValues(*cards[0]);
-  ExpectDefaultProfileValues(*profiles[0]);
+
+  // Now sign back out.
+  GetClient(0)->SignOutPrimaryAccount();
+
+  // Verify that sync is stopped.
+  ASSERT_EQ(syncer::SyncService::TransportState::DISABLED,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // Wait for PDM to receive the data change.
+  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
+
+  // Check that the account storage is now cleared.
+  EXPECT_EQ(0U, GetServerCards(account_data).size());
+
+  cards = pdm->GetCreditCards();
+  EXPECT_EQ(0U, cards.size());
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -480,6 +503,27 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
   cards = pdm->GetCreditCards();
   ASSERT_EQ(0uL, cards.size());
 }
+
+// ChromeOS does not sign out, so the test below does not apply.
+#if !defined(OS_CHROMEOS)
+// Wallet data should get cleared from the database when the user signs out.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnSignOut) {
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+
+  // Turn off sync, the card should be gone.
+  GetClient(0)->SignOutPrimaryAccount();
+
+  ASSERT_EQ(0uL, pdm->GetCreditCards().size());
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // Wallet is not using incremental updates. Make sure existing data gets
 // replaced when synced down.

@@ -433,9 +433,11 @@ class PersonalDatabaseHelper
       return;
     }
 
-    if (server_database_ != nullptr && server_database_ != profile_database_) {
-      // Remove the previous observer if we had any.
-      server_database_->RemoveObserver(personal_data_manager_);
+    if (server_database_ != nullptr) {
+      if (server_database_ != profile_database_) {
+        // Remove the previous observer if we had any.
+        server_database_->RemoveObserver(personal_data_manager_);
+      }
       personal_data_manager_->CancelPendingServerQueries();
     }
     server_database_ = new_server_database;
@@ -557,6 +559,13 @@ void PersonalDataManager::OnSyncServiceInitialized(
       // investigation is done.
       ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
           features::kAutofillResetFullServerCardsOnAuthError));
+    }
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableAccountWalletStorage)) {
+      // Use the ephemeral account storage when the user didn't enable the sync
+      // feature explicitly.
+      database_helper_->SetUseAccountStorageForServerCards(
+          !sync_service->IsSyncFeatureEnabled());
     }
   }
 }
@@ -1858,6 +1867,9 @@ void PersonalDataManager::CancelPendingServerQuery(
 void PersonalDataManager::CancelPendingServerQueries() {
   if (pending_server_creditcards_query_) {
     CancelPendingServerQuery(&pending_server_creditcards_query_);
+  }
+  if (pending_customer_data_query_) {
+    CancelPendingServerQuery(&pending_customer_data_query_);
   }
   // TODO(crbug.com/864519): also cancel the server addresses query once they
   // use the account storage.
