@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
@@ -61,7 +62,7 @@ void VideoCaptureDeviceChromeOSHalv3::AllocateAndStart(
     std::unique_ptr<Client> client) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(!camera_device_delegate_);
-
+  TRACE_EVENT0("camera", "Start Device");
   if (!camera_device_ipc_thread_.Start()) {
     std::string error_msg = "Failed to start device thread";
     LOG(ERROR) << error_msg;

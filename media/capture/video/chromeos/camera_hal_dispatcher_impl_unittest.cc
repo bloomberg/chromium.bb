@@ -34,6 +34,8 @@ class MockCameraHalServer : public cros::mojom::CameraHalServer {
   MOCK_METHOD1(DoCreateChannel,
                void(cros::mojom::CameraModuleRequest& camera_module_request));
 
+  MOCK_METHOD1(SetTracingEnabled, void(bool enabled));
+
   cros::mojom::CameraHalServerPtrInfo GetInterfacePtrInfo() {
     cros::mojom::CameraHalServerPtrInfo camera_hal_server_ptr_info;
     cros::mojom::CameraHalServerRequest camera_hal_server_request =
