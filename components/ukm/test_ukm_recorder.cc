@@ -56,6 +56,14 @@ bool TestUkmRecorder::ShouldRestrictToWhitelistedEntries() const {
   return false;
 }
 
+void TestUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {
+  const bool should_run_callback =
+      entry && entry_hash_to_wait_for_ == entry->event_hash;
+  UkmRecorderImpl::AddEntry(std::move(entry));
+  if (should_run_callback && on_add_entry_)
+    std::move(on_add_entry_).Run();
+}
+
 const UkmSource* TestUkmRecorder::GetSourceForSourceId(
     SourceId source_id) const {
   const UkmSource* source = nullptr;
@@ -66,6 +74,12 @@ const UkmSource* TestUkmRecorder::GetSourceForSourceId(
     }
   }
   return source;
+}
+
+void TestUkmRecorder::SetOnAddEntryCallback(base::StringPiece entry_name,
+                                            base::OnceClosure on_add_entry) {
+  on_add_entry_ = std::move(on_add_entry);
+  entry_hash_to_wait_for_ = base::HashMetricName(entry_name);
 }
 
 std::vector<const mojom::UkmEntry*> TestUkmRecorder::GetEntriesByName(
