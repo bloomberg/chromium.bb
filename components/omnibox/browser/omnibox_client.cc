@@ -73,6 +73,10 @@ AutocompleteClassifier* OmniboxClient::GetAutocompleteClassifier() {
   return nullptr;
 }
 
+QueryInOmnibox* OmniboxClient::GetQueryInOmnibox() {
+  return nullptr;
+}
+
 gfx::Image OmniboxClient::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   return gfx::Image();
