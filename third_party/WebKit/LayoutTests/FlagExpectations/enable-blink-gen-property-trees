@@ -130,29 +130,8 @@ crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/861824 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
 
 # These scrollbar tests should pass.
-crbug.com/836890 compositing/rtl/rtl-absolute-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-and-writing-mode-scrolling.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-fixed-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-overflow-invalidation.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
-crbug.com/836890 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
-crbug.com/836890 fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 paint/invalidation/scroll/document-flipped-blocks-writing-mode-scroll.html [ Failure ]
-crbug.com/836890 virtual/user-activation-v2/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 virtual/user-activation-v2/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 compositing/squashing/vertical-writing-mode-squashed.html [ Failure ]
-crbug.com/836890 paint/overflow/composited-scroll-vertical-rl.html [ Failure ]
 crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Failure ]
 crbug.com/836912 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
-
-# Something wrong with vertical-rl scrollbars
-crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
-crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
-crbug.com/853945 fast/block/positioning/rtl-fixed-positioning.html [ Failure ]
-crbug.com/836913 virtual/threaded/fast/scrolling/overlay-scrollbars.html [ Failure ]
 
 # These scrolling tests should pass.
 crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
@@ -233,8 +212,6 @@ crbug.com/879173 compositing/overflow/nested-render-surfaces-with-rotation.html 
 crbug.com/879173 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 
 crbug.com/879610 virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
-crbug.com/879610 fast/dom/scroll-reveal-left-overflow.html [ Failure ]
-crbug.com/879610 fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 
 Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
 crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]

@@ -233,20 +233,20 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns false iff this object or one of its ancestors has opacity:0.
   bool HasNonZeroEffectiveOpacity() const;
 
-  // DisplayItemClient methods.
-
  protected:
   void EnsureIdForTesting() { fragment_.EnsureIdForTesting(); };
 
-  // Do not call VisualRect directly outside of the DisplayItemClient
-  // interface, use a per-fragment one on FragmentData instead.
  private:
+  // DisplayItemClient methods.
+
   // Hide DisplayItemClient's methods whose names are too generic for
   // LayoutObjects. Should use LayoutObject's methods instead.
   using DisplayItemClient::Invalidate;
   using DisplayItemClient::IsValid;
   using DisplayItemClient::GetPaintInvalidationReason;
 
+  // Do not call VisualRect directly outside of the DisplayItemClient
+  // interface, use a per-fragment one on FragmentData instead.
   LayoutRect VisualRect() const final;
 
   void ClearPartialInvalidationVisualRect() const final {
@@ -261,6 +261,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   String DebugName() const final;
+
+  // End of DisplayItemClient methods.
 
   LayoutObject* Parent() const { return parent_; }
   bool IsDescendantOf(const LayoutObject*) const;
@@ -2353,6 +2355,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
   void ApplyFirstLineChanges(const ComputedStyle& old_style);
+
+  LayoutRect VisualRectForInlineBox() const {
+    return AdjustVisualRectForInlineBox(VisualRect());
+  }
+  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
+    return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
+  }
+  LayoutRect AdjustVisualRectForInlineBox(const LayoutRect&) const;
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

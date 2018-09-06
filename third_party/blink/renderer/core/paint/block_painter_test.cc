@@ -82,7 +82,7 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
   // The scrolled contents should be scrolled and clipped.
   auto* contents_transform = contents_chunk.properties.Transform();
   auto* contents_scroll = contents_transform->ScrollNode();
-  EXPECT_EQ(IntRect(0, 0, 200, 300), contents_scroll->ContentsRect());
+  EXPECT_EQ(IntSize(200, 300), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 200, 200), contents_scroll->ContainerRect());
   auto* contents_clip = contents_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(0, 0, 200, 200), contents_clip->ClipRect().Rect());
@@ -140,7 +140,7 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
   // The scrolled contents should be scrolled and clipped.
   auto* contents_transform = contents_chunk.properties.Transform();
   auto* contents_scroll = contents_transform->ScrollNode();
-  EXPECT_EQ(IntRect(0, 0, 800, 2000), contents_scroll->ContentsRect());
+  EXPECT_EQ(IntSize(800, 2000), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 800, 600), contents_scroll->ContainerRect());
   auto* contents_clip = contents_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(0, 0, 800, 600), contents_clip->ClipRect().Rect());

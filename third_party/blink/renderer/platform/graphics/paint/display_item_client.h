@@ -44,7 +44,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   // The visual rect of this DisplayItemClient. For SPv1, it's in the object
   // space of the object that owns the GraphicsLayer, i.e. offset by
   // GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation().
-  // For SPv2, it's in the space of the parent transform node.
+  // It's in the space of the parent transform node.
   virtual LayoutRect VisualRect() const = 0;
 
   // The outset will be used to inflate visual rect after the visual rect is

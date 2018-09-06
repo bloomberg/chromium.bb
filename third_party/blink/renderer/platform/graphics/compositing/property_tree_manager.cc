@@ -282,8 +282,7 @@ void PropertyTreeManager::CreateCompositorScrollNode(
 
   compositor_node.container_bounds =
       static_cast<gfx::Size>(scroll_node->ContainerRect().Size());
-  compositor_node.bounds =
-      static_cast<gfx::Size>(scroll_node->ContentsRect().Size());
+  compositor_node.bounds = static_cast<gfx::Size>(scroll_node->ContentsSize());
   compositor_node.user_scrollable_horizontal =
       scroll_node->UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =

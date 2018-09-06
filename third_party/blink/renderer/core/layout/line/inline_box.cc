@@ -96,11 +96,11 @@ String InlineBox::DebugName() const {
 }
 
 LayoutRect InlineBox::VisualRect() const {
-  return GetLineLayoutItem().VisualRect();
+  return GetLineLayoutItem().VisualRectForInlineBox();
 }
 
 LayoutRect InlineBox::PartialInvalidationVisualRect() const {
-  return GetLineLayoutItem().PartialInvalidationVisualRect();
+  return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
 }
 
 #ifndef NDEBUG

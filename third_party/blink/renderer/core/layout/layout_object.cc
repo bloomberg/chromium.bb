@@ -4072,6 +4072,25 @@ void LayoutObject::InvalidateClipPathCache() {
     fragment->InvalidateClipPathCache();
 }
 
+LayoutRect LayoutObject::AdjustVisualRectForInlineBox(
+    const LayoutRect& visual_rect) const {
+  // For simplicity, we use the layout object's visual rect as the visual rect
+  // of contained inline boxes, mapped to the correct transform space of the
+  // inline boxes.
+  if (const auto* properties = FirstFragment().PaintProperties()) {
+    if (const auto* scroll_translation = properties->ScrollTranslation()) {
+      // This mapping happens for inline box whose LayoutObject is a LayoutBlock
+      // whose VisualRect is not in the same transform space as the inline box.
+      // For now this happens for EllipsisBox only.
+      DCHECK(scroll_translation->Matrix().IsIdentityOr2DTranslation());
+      auto float_visual_rect = FloatRect(visual_rect);
+      float_visual_rect.Move(-scroll_translation->Matrix().To2DTranslation());
+      return EnclosingLayoutRect(float_visual_rect);
+    }
+  }
+  return visual_rect;
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

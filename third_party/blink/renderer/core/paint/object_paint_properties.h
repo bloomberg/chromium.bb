@@ -97,17 +97,26 @@ class CORE_EXPORT ObjectPaintProperties {
 
   // The hierarchy of the transform subtree created by a LayoutObject is as
   // follows:
-  // [ paintOffsetTranslation ]           Normally paint offset is accumulated
-  // |                                    without creating a node until we see,
-  // |                                    for example, transform or
-  // |                                    position:fixed.
-  // +---[ transform ]                    The space created by CSS transform.
-  //     |                                This is the local border box space.
-  //     +---[ perspective ]              The space created by CSS perspective.
-  //         +---[ replacedContentTransform ] Additional transform for replaced
-  //                                      elements to implement object-fit.
-  //                    OR                (Replaced elements don't scroll.)
-  //         +---[ scrollTranslation ]    The space created by overflow clip.
+  // [ PaintOffsetTranslation ]
+  // |   Normally paint offset is accumulated without creating a node until
+  // |   we see, for example, transform or position:fixed.
+  // +-[ Transform ]
+  //   |   The space created by CSS transform. This is the local border box
+  //   |   space.
+  //   +-[ Perspective ]
+  //     |   The space created by CSS perspective.
+  //     +-[ ReplacedContentTransform ]
+  //         Additional transform for replaced elements to implement object-fit.
+  //         (Replaced elements don't scroll.)
+  //     OR
+  //     +-[ ScrollTranslation ]
+  //         The space created by overflow clip. The translation equals the
+  //         offset between the scrolling contents and the scrollable area of
+  //         the container, both originated from the top-left corner, so it is
+  //         the sum of scroll origin and scroll offset of the ScrollableArea.
+  //         To use any content offset based on ScrollOrigin() (e.g. LayoutBox
+  //         or InlineBox's PhysicalLocation()) in this space, we should add
+  //         ScrollOrigin() to the offset.
   ADD_TRANSFORM(PaintOffsetTranslation, paint_offset_translation_);
   ADD_TRANSFORM(Transform, transform_);
   ADD_TRANSFORM(Perspective, perspective_);

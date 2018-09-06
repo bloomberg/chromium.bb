@@ -287,9 +287,11 @@ class LineLayoutItem {
     return layout_object_->DocumentBeingDestroyed();
   }
 
-  LayoutRect VisualRect() const { return layout_object_->VisualRect(); }
-  LayoutRect PartialInvalidationVisualRect() const {
-    return layout_object_->PartialInvalidationVisualRect();
+  LayoutRect VisualRectForInlineBox() const {
+    return layout_object_->VisualRectForInlineBox();
+  }
+  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
+    return layout_object_->PartialInvalidationVisualRectForInlineBox();
   }
 
   bool IsHashTableDeletedValue() const {

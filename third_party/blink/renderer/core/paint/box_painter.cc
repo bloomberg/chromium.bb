@@ -62,12 +62,17 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
 
-    if (const auto* fragment = paint_info.FragmentToPaint(layout_box_)) {
-      scoped_scroll_property.emplace(
-          paint_info.context.GetPaintController(),
-          fragment->ContentsProperties(), layout_box_,
-          DisplayItem::PaintPhaseToScrollType(paint_info.phase));
-    }
+    const auto* fragment = paint_info.FragmentToPaint(layout_box_);
+    if (!fragment)
+      return;
+
+    scoped_scroll_property.emplace(
+        paint_info.context.GetPaintController(), fragment->ContentsProperties(),
+        layout_box_, DisplayItem::PaintPhaseToScrollType(paint_info.phase));
+    // See comments for ScrollTranslation in object_paint_properties.h for the
+    // reason of moving by ScrollOrigin(). TODO(wangxianzhu): Encapsulate such
+    // logic at various places into one class.
+    paint_rect.MoveBy(layout_box_.ScrollOrigin());
 
     // The background painting code assumes that the borders are part of the
     // paintRect so we expand the paintRect by the border size when painting the
