@@ -19944,6 +19944,7 @@ Called by update_net_error_codes.py.-->
   <int value="2539" label="TextEncoderStreamConstructor"/>
   <int value="2540" label="TextDecoderStreamConstructor"/>
   <int value="2541" label="SignedExchangeInnerResponse"/>
+  <int value="2542" label="PaymentAddressLanguageCode"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
