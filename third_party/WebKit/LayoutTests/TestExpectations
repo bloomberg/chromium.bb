@@ -2782,6 +2782,8 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/abort-refresh-immediate.window.html [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/abort-while-navigating.window.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-grid-002.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-002.html [ Failure ]
