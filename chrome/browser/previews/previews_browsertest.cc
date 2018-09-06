@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -28,6 +29,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -75,7 +77,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     noscript_css_requested_ = false;
     noscript_js_requested_ = false;
-    https_url_count_ = 0;
 
     // Set up https server with resource monitor.
     https_server_.reset(
@@ -87,6 +88,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
     https_url_ = https_server_->GetURL("/previews/noscript_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    base_https_lite_page_url_ =
+        https_server_->GetURL("/previews/lite_page_test.html");
+    ASSERT_TRUE(base_https_lite_page_url_.SchemeIs(url::kHttpsScheme));
 
     https_no_transform_url_ = https_server_->GetURL(
         "/previews/noscript_test_with_no_transform_header.html");
@@ -108,7 +113,11 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     http_url_ = http_server_->GetURL("/previews/noscript_test.html");
     ASSERT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
 
-    subframe_url_ = http_server_->GetURL("/iframe_blank.html");
+    base_http_lite_page_url_ =
+        http_server_->GetURL("/previews/lite_page_test.html");
+    ASSERT_TRUE(base_http_lite_page_url_.SchemeIs(url::kHttpScheme));
+
+    subframe_url_ = http_server_->GetURL("/previews/iframe_blank.html");
     ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
 
     redirect_url_ = http_server_->GetURL("/previews/redirect.html");
@@ -126,19 +135,23 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   }
 
   const GURL& https_url() const { return https_url_; }
+  const GURL& base_https_lite_page_url() const {
+    return base_https_lite_page_url_;
+  }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& https_media_url() const { return https_media_url_; }
   const GURL& http_url() const { return http_url_; }
+  const GURL& base_http_lite_page_url() const {
+    return base_http_lite_page_url_;
+  }
   const GURL& redirect_url() const { return redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
   bool noscript_css_requested() const { return noscript_css_requested_; }
   bool noscript_js_requested() const { return noscript_js_requested_; }
-  int https_url_count() const { return https_url_count_; }
 
  private:
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
-    https_url_count_++;
     if (request.GetURL().spec().find("noscript_test.css") !=
         std::string::npos) {
       noscript_css_requested_ = true;
@@ -162,14 +175,15 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
+  GURL base_https_lite_page_url_;
   GURL https_no_transform_url_;
   GURL https_media_url_;
   GURL http_url_;
+  GURL base_http_lite_page_url_;
   GURL redirect_url_;
   GURL subframe_url_;
   bool noscript_css_requested_;
   bool noscript_js_requested_;
-  int https_url_count_;
 };
 
 // Loads a webpage that has both script and noscript tags and also requests
@@ -474,7 +488,7 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
     replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
-    return http_url().ReplaceComponents(replacements);
+    return base_http_lite_page_url().ReplaceComponents(replacements);
   }
 
   GURL https_lite_page_url(int return_code, std::string* headers = nullptr) {
@@ -483,12 +497,14 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
     replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
-    return https_url().ReplaceComponents(replacements);
+    return base_https_lite_page_url().ReplaceComponents(replacements);
   }
 
-  GURL NavigatedURL() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
+
+  GURL NavigatedURL() { return GetWebContents()->GetURL(); }
 
   void VerifyPreviewLoaded() {
     const GURL navigated_url = NavigatedURL();
@@ -522,48 +538,137 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
                        MAYBE_LitePagePreviewsTriggering) {
-  // Verify the preview is not triggered on HTTP pageloads.
-  ui_test_utils::NavigateToURL(browser(), http_lite_page_url(200));
-  VerifyPreviewNotLoaded();
+  // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
+  // The histograms in these tests can only be checked by the expected bucket,
+  // and not by a unique sample. This is because each navigation to a preview
+  // will cause two navigations and two records, one for the original navigation
+  // under test, and another one for loading the preview.
 
-  // Verify the preview is triggered on HTTPS pageloads.
-  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
-  VerifyPreviewLoaded();
+  {
+    // Verify the preview is not triggered on HTTP pageloads.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), http_lite_page_url(200));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+  }
 
-  // Verify the preview is not triggered when loading a media resource.
-  ui_test_utils::NavigateToURL(browser(), https_media_url());
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is triggered on HTTPS pageloads.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
+    VerifyPreviewLoaded();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+  }
 
-  // Verify the preview is not triggered for POST navigations.
-  std::string post_data = "helloworld";
-  NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_LINK);
-  params.window_action = NavigateParams::SHOW_WINDOW;
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.is_renderer_initiated = false;
-  params.uses_post = true;
-  params.post_data = network::ResourceRequestBody::CreateFromBytes(
-      post_data.data(), post_data.size());
-  ui_test_utils::NavigateToURL(&params);
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is not triggered when loading a media resource.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), https_media_url());
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.BlacklistReasons",
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kPathSuffixBlacklisted,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+  }
 
-  // Verify the preview is not triggered when navigating to the previews server.
-  ui_test_utils::NavigateToURL(browser(), previews_server());
-  EXPECT_EQ(NavigatedURL(), previews_server());
+  {
+    // Verify the preview is not triggered for POST navigations.
+    base::HistogramTester histogram_tester;
+    std::string post_data = "helloworld";
+    NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_LINK);
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    params.is_renderer_initiated = false;
+    params.uses_post = true;
+    params.post_data = network::ResourceRequestBody::CreateFromBytes(
+        post_data.data(), post_data.size());
+    ui_test_utils::NavigateToURL(&params);
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+  }
 
-  // Verify the preview is not triggered when navigating to a private IP.
-  ui_test_utils::NavigateToURL(browser(), GURL("https://0.0.0.0/"));
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is not triggered when navigating to the previews
+    // server.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), previews_server());
+    EXPECT_EQ(NavigatedURL(), previews_server());
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.BlacklistReasons",
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kNavigationToPreviewsDomain,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+  }
 
-  // Verify the preview is not triggered when navigating to a domain without a
-  // dot.
-  ui_test_utils::NavigateToURL(browser(), GURL("https://no-dots-here/"));
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is not triggered when navigating to a private IP.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), GURL("https://0.0.0.0/"));
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.BlacklistReasons",
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kNavigationToPrivateDomain,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+    VerifyPreviewNotLoaded();
+  }
 
-  // Verify a subframe navigation does not trigger a preview.
-  const int starting_https_url_count = https_url_count();
-  ui_test_utils::NavigateToURL(browser(), subframe_url());
-  ExecuteScript("window.open(\"" + https_url().spec() + "\", \"subframe\")");
-  EXPECT_EQ(https_url_count(), starting_https_url_count + 1);
+  {
+    // Verify the preview is not triggered when navigating to a domain without a
+    // dot.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), GURL("https://no-dots-here/"));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.BlacklistReasons",
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kNavigationToPrivateDomain,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 1);
+  }
+
+  {
+    // Verify a subframe navigation does not trigger a preview.
+    const base::string16 kSubframeTitle = base::ASCIIToUTF16("Subframe");
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), subframe_url());
+
+    // Navigate in the subframe and wait for it to finish. The waiting is
+    // accomplished by |ExecuteScriptAndExtractString| which waits for
+    // |window.domAutomationController.send| in the HTML page.
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        GetWebContents()->GetMainFrame(),
+        "window.open(\"" + base_https_lite_page_url().spec() +
+            "\", \"subframe\")",
+        &result));
+    EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
+
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        PreviewsLitePageNavigationThrottle::IneligibleReason::
+            kSubframeNavigation,
+        1);
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       false, 2);
+  }
 }
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
@@ -576,13 +681,23 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
                        MAYBE_LitePagePreviewsRedirect) {
-  // Verify the preview is triggered when an HTTP page redirects to HTTPS.
-  ui_test_utils::NavigateToURL(browser(), redirect_url());
-  VerifyPreviewLoaded();
+  {
+    // Verify the preview is triggered when an HTTP page redirects to HTTPS.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), redirect_url());
+    VerifyPreviewLoaded();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+  }
 
-  // Verify the preview is triggered when an HTTPS page redirects to HTTPS.
-  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(307));
-  VerifyPreviewLoaded();
+  {
+    // Verify the preview is triggered when an HTTPS page redirects to HTTPS.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), https_lite_page_url(307));
+    VerifyPreviewLoaded();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 2);
+  }
 }
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
@@ -595,13 +710,35 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
                        MAYBE_LitePagePreviewsResponse) {
-  // Verify the preview is not triggered when the server responds with 404.
-  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(404));
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is not triggered when the server responds with 404.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), https_lite_page_url(404));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
+        1);
+  }
 
-  // Verify the preview is not triggered when the server responds with 503.
-  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503));
-  VerifyPreviewNotLoaded();
+  {
+    // Verify the preview is not triggered when the server responds with 503.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kServiceUnavailable,
+        1);
+  }
 }
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.

@@ -39825,6 +39825,28 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="PreviewsServerLitePageBlacklistReason">
+  <int value="0" label="Path suffix"/>
+  <int value="1" label="Navigation to Previews Domain"/>
+  <int value="2" label="Navigation to Private Domain"/>
+</enum>
+
+<enum name="PreviewsServerLitePageIneligibleReason">
+  <int value="0" label="Scheme not HTTPS"/>
+  <int value="1" label="HTTP POST"/>
+  <int value="2" label="Subframe navigation"/>
+  <int value="3" label="Server Unavailable"/>
+</enum>
+
+<enum name="PreviewsServerLitePageServerResponse">
+  <int value="0" label="OK"/>
+  <int value="1" label="Redirect"/>
+  <int value="2" label="Preview Unavailable"/>
+  <int value="3" label="Service Unavailable"/>
+  <int value="4" label="Other"/>
+  <int value="5" label="Failed"/>
+</enum>
+
 <enum name="PreviewsType">
   <int value="0" label="None"/>
   <int value="1" label="Offline"/>

@@ -20,6 +20,40 @@ struct OpenURLParams;
 // new one to the Previews Server.
 class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
  public:
+  // Reasons that a navigation is blacklisted from this preview. This enum must
+  // remain synchronized with the enum |PreviewsServerLitePageBlacklistReason|
+  // in metrics/histograms/enums.xml.
+  enum class BlacklistReason {
+    kPathSuffixBlacklisted = 0,
+    kNavigationToPreviewsDomain = 1,
+    kNavigationToPrivateDomain = 2,
+    kMaxValue = kNavigationToPrivateDomain,
+  };
+
+  // Reasons that a navigation is not eligible for this preview. This enum must
+  // remain synchronized with the enum |PreviewsServerLitePageIneligibleReason|
+  // in metrics/histograms/enums.xml.
+  enum class IneligibleReason {
+    kNonHttpsScheme = 0,
+    kHttpPost = 1,
+    kSubframeNavigation = 2,
+    kServerUnavailable = 3,
+    kMaxValue = kServerUnavailable,
+  };
+
+  // The response type from the previews server. This enum must
+  // remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
+  // metrics/histograms/enums.xml.
+  enum class ServerResponse {
+    kOk = 0,
+    kRedirect = 1,
+    kPreviewUnavailable = 2,
+    kServiceUnavailable = 3,
+    kOther = 4,
+    kFailed = 5,
+    kMaxValue = kFailed,
+  };
+
   PreviewsLitePageNavigationThrottle(
       content::NavigationHandle* handle,
       PreviewsLitePageNavigationThrottleManager* manager);
@@ -29,7 +63,7 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // Attempts to extract the original URL from the given Previews URL. Returns
   // false if |url| is not a valid Preview URL. It is ok to pass nullptr for
   // |original_url| if you only want the boolean return value.
-  static bool GetOriginalURL(GURL url, std::string* original_url);
+  static bool GetOriginalURL(const GURL& url, std::string* original_url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageNavigationThrottleTest,
