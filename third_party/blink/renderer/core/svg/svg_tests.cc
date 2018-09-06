@@ -29,11 +29,11 @@ namespace blink {
 
 SVGTests::SVGTests(SVGElement* context_element)
     : required_extensions_(
-          SVGStaticStringList::Create(context_element,
-                                      SVGNames::requiredExtensionsAttr)),
+          SVGStaticStringList::Create<' '>(context_element,
+                                           SVGNames::requiredExtensionsAttr)),
       system_language_(
-          SVGStaticStringList::Create(context_element,
-                                      SVGNames::systemLanguageAttr)) {
+          SVGStaticStringList::Create<','>(context_element,
+                                           SVGNames::systemLanguageAttr)) {
   DCHECK(context_element);
 
   context_element->AddToPropertyMap(required_extensions_);
