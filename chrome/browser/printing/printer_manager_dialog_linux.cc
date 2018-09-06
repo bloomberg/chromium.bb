@@ -13,7 +13,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace {
 
@@ -53,7 +53,7 @@ bool OpenPrinterConfigDialog(const char* const* command) {
 // Detect the command based on the deskop environment and open the printer
 // manager dialog.
 void DetectAndOpenPrinterConfigDialog() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   bool opened = false;
