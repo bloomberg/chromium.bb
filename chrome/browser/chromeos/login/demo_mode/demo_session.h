@@ -29,6 +29,7 @@ namespace chromeos {
 
 // Tracks global demo session state. For example, whether the demo session has
 // started, and whether the demo session offline resources have been loaded.
+// TODO(michaelpg): Componentize the logic for providing offline resources.
 class DemoSession : public session_manager::SessionManagerObserver,
                     extensions::ExtensionRegistryObserver {
  public:
@@ -47,6 +48,10 @@ class DemoSession : public session_manager::SessionManagerObserver,
     // Add new entries above this line and make sure to update kLast value.
     kLast = kOffline,
   };
+
+  // The name of the demo mode resources CrOS component or preinstalled
+  // imageloader image.
+  static const char kDemoModeResourcesComponentName[];
 
   // Location on disk where pre-installed demo mode resources are expected to be
   // found.
@@ -139,6 +144,9 @@ class DemoSession : public session_manager::SessionManagerObserver,
   void InstalledComponentLoaded(
       component_updater::CrOSComponentManager::Error error,
       const base::FilePath& path);
+
+  // Loads the preinstalled offline resources image.
+  void LoadPreinstalledOfflineResources();
 
   // Callback for the image loader request to load offline demo mode resources.
   // |mount_path| is the path at which the resources were loaded.

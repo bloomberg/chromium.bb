@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 class PrefRegistrySimple;
@@ -84,13 +85,23 @@ class DemoSetupController
   void OnMultipleLicensesAvailable(
       const EnrollmentLicenseMap& licenses) override;
 
+  void SetCrOSComponentLoadErrorForTest(
+      component_updater::CrOSComponentManager::Error error);
   void SetDeviceLocalAccountPolicyStoreForTest(policy::CloudPolicyStore* store);
   void SetOfflineDataDirForTest(const base::FilePath& offline_dir);
 
  private:
-  // Initiates online enrollment that registers and sets up the device in the
-  // demo mode domain.
-  void EnrollOnline();
+  // Attempts to load the CrOS component with demo resources for online
+  // enrollment and passes the result to OnDemoResourcesCrOSComponentLoaded().
+  void LoadDemoResourcesCrOSComponent();
+
+  // Callback to initiate online enrollment once the CrOS component has loaded.
+  // If the component loaded successfully, registers and sets up the device in
+  // the demo mode domain. If |error| indicates the component couldn't be
+  // loaded, demo setup will fail.
+  void OnDemoResourcesCrOSComponentLoaded(
+      component_updater::CrOSComponentManager::Error error,
+      const base::FilePath& path);
 
   // Initiates offline enrollment that locks the device and sets up offline
   // policies required by demo mode. It requires no network connectivity since
@@ -122,6 +133,11 @@ class DemoSetupController
   // Demo mode configuration type that will be setup when Enroll() is called.
   // Should be set explicitly.
   DemoSession::DemoModeConfig demo_config_ = DemoSession::DemoModeConfig::kNone;
+
+  // Error code to use when attempting to load the demo resources CrOS
+  // component.
+  component_updater::CrOSComponentManager::Error component_error_for_tests_ =
+      component_updater::CrOSComponentManager::Error::NONE;
 
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;

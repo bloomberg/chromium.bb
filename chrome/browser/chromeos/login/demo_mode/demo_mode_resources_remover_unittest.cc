@@ -68,9 +68,10 @@ class DemoModeResourcesRemoverTest : public testing::Test {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     components_path_override_ = std::make_unique<base::ScopedPathOverride>(
         chromeos::DIR_PREINSTALLED_COMPONENTS, scoped_temp_dir_.GetPath());
-    demo_resources_path_ = scoped_temp_dir_.GetPath()
-                               .AppendASCII("cros-components")
-                               .AppendASCII("demo-mode-resources");
+    demo_resources_path_ =
+        scoped_temp_dir_.GetPath()
+            .AppendASCII("cros-components")
+            .AppendASCII(DemoSession::kDemoModeResourcesComponentName);
 
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());

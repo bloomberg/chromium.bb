@@ -48,9 +48,6 @@ DemoSession* g_demo_session = nullptr;
 // Type of demo config forced on for tests.
 base::Optional<DemoSession::DemoModeConfig> g_force_demo_config;
 
-// The name of the offline demo resource image loader component.
-constexpr char kDemoResourcesComponentName[] = "demo-mode-resources";
-
 // Path relative to the path at which offline demo resources are loaded that
 // contains image with demo Android apps.
 constexpr base::FilePath::CharType kDemoAppsPath[] =
@@ -121,12 +118,16 @@ std::string GetHighlightsAppId() {
 }  // namespace
 
 // static
+const char DemoSession::kDemoModeResourcesComponentName[] =
+    "demo-mode-resources";
+
+// static
 base::FilePath DemoSession::GetPreInstalledDemoResourcesPath() {
   base::FilePath preinstalled_components_root;
   base::PathService::Get(DIR_PREINSTALLED_COMPONENTS,
                          &preinstalled_components_root);
   return preinstalled_components_root.AppendASCII("cros-components")
-      .AppendASCII(kDemoResourcesComponentName);
+      .AppendASCII(kDemoModeResourcesComponentName);
 }
 
 // static
@@ -257,11 +258,16 @@ void DemoSession::EnsureOfflineResourcesLoaded(
     return;
   offline_resources_load_requested_ = true;
 
+  if (offline_enrolled_) {
+    LoadPreinstalledOfflineResources();
+    return;
+  }
+
   component_updater::CrOSComponentManager* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   if (cros_component_manager) {
     g_browser_process->platform_part()->cros_component_manager()->Load(
-        kDemoResourcesComponentName,
+        kDemoModeResourcesComponentName,
         component_updater::CrOSComponentManager::MountPolicy::kMount,
         component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
         base::BindOnce(&DemoSession::InstalledComponentLoaded,
@@ -270,6 +276,8 @@ void DemoSession::EnsureOfflineResourcesLoaded(
     // Cros component manager may be unset in tests - if that is the case,
     // report component install failure, so DemoSession attempts loading the
     // component directly from the pre-installed component path.
+    // TODO(michaelpg): Rework tests to require the online component to load in
+    // online-enrolled demo mode.
     InstalledComponentLoaded(
         component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
         base::FilePath());
@@ -341,10 +349,14 @@ void DemoSession::InstalledComponentLoaded(
     return;
   }
 
+  LoadPreinstalledOfflineResources();
+}
+
+void DemoSession::LoadPreinstalledOfflineResources() {
   chromeos::DBusThreadManager::Get()
       ->GetImageLoaderClient()
       ->LoadComponentAtPath(
-          kDemoResourcesComponentName, GetPreInstalledDemoResourcesPath(),
+          kDemoModeResourcesComponentName, GetPreInstalledDemoResourcesPath(),
           base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
 }
