@@ -3825,10 +3825,10 @@
   "VirtualMachinesAllowed": {
     "os": ["chromeos"],
     "test_policy": {
-      "virtual_machines_allowed": false
+      "virtual_machines_allowed": true
     },
     "pref_mappings": [
-      { "pref": "cros.virtual_machines_allowed"}
+      { "pref": "cros.device.virtual_machines_allowed"}
     ]
   },
 
