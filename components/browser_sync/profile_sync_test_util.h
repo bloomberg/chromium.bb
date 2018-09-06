@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -147,6 +148,10 @@ class ProfileSyncServiceBundle {
     return &sync_sessions_client_;
   }
 
+  invalidation::ProfileIdentityProvider* identity_provider() {
+    return identity_provider_.get();
+  }
+
   invalidation::FakeInvalidationService* fake_invalidation_service() {
     return &fake_invalidation_service_;
   }
@@ -173,6 +178,7 @@ class ProfileSyncServiceBundle {
       local_session_event_router_;
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
+  std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

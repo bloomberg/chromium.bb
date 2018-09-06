@@ -40,6 +40,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
@@ -65,6 +66,7 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/invalidation/impl/p2p_invalidator.h"
+#include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -166,9 +168,11 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
 
 std::unique_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
-      std::unique_ptr<invalidation::InvalidationService>(
-          new fake_server::FakeServerInvalidationService));
+      std::make_unique<fake_server::FakeServerInvalidationService>(),
+      std::make_unique<invalidation::ProfileIdentityProvider>(
+          IdentityManagerFactory::GetForProfile(profile)));
 }
 
 std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
@@ -176,9 +180,10 @@ std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
-      std::unique_ptr<invalidation::InvalidationService>(
-          new invalidation::P2PInvalidationService(
-              profile->GetRequestContext(), notification_target)));
+      std::make_unique<invalidation::P2PInvalidationService>(
+          profile->GetRequestContext(), notification_target),
+      std::make_unique<invalidation::ProfileIdentityProvider>(
+          IdentityManagerFactory::GetForProfile(profile)));
 }
 
 std::unique_ptr<KeyedService> BuildSelfNotifyingP2PProfileInvalidationProvider(
@@ -603,6 +608,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   DCHECK(profile);
   profiles_[index] = profile;
 
+  SetUpInvalidations(index);
   AddBrowser(index);
 
   // Make sure the ProfileSyncService has been created before creating the
@@ -640,49 +646,77 @@ void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
   signin_client->SetURLLoaderFactoryForTest(test_shared_url_loader_factory_);
 }
 
+void SyncTest::SetUpInvalidations(int index) {
+  switch (server_type_) {
+    case EXTERNAL_LIVE_SERVER:
+      // DO NOTHING. External live sync servers use GCM to notify profiles of
+      // any invalidations in sync'ed data. In this case, to notify other
+      // profiles of invalidations, we use sync refresh notifications instead.
+      break;
+
+    case IN_PROCESS_FAKE_SERVER: {
+      KeyedService* test_factory =
+          invalidation::DeprecatedProfileInvalidationProviderFactory::
+              GetInstance()
+                  ->SetTestingFactoryAndUse(
+                      GetProfile(index),
+                      BuildFakeServerProfileInvalidationProvider);
+      invalidation::InvalidationService* invalidation_service =
+          static_cast<invalidation::ProfileInvalidationProvider*>(test_factory)
+              ->GetInvalidationService();
+      auto* fake_invalidation_service =
+          static_cast<fake_server::FakeServerInvalidationService*>(
+              invalidation_service);
+
+      fake_server_->AddObserver(fake_invalidation_service);
+      if (TestUsesSelfNotifications())
+        fake_invalidation_service->EnableSelfNotifications();
+      else
+        fake_invalidation_service->DisableSelfNotifications();
+      fake_server_invalidation_services_[index] = fake_invalidation_service;
+      break;
+    }
+    case SERVER_TYPE_UNDECIDED:
+    case LOCAL_PYTHON_SERVER:
+      BrowserContextKeyedServiceFactory::TestingFactoryFunction
+          invalidation_provider =
+              TestUsesSelfNotifications()
+                  ? BuildSelfNotifyingP2PProfileInvalidationProvider
+                  : BuildRealisticP2PProfileInvalidationProvider;
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
+          ->SetTestingFactoryAndUse(GetProfile(index), invalidation_provider);
+  }
+}
+
 void SyncTest::InitializeInvalidations(int index) {
   configuration_refresher_ = std::make_unique<ConfigurationRefresher>();
-  if (UsingExternalServers()) {
-    // DO NOTHING. External live sync servers use GCM to notify profiles of any
-    // invalidations in sync'ed data. In this case, to notify other profiles of
-    // invalidations, we use sync refresh notifications instead.
-  } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    fake_server::FakeServerInvalidationService* invalidation_service =
-        static_cast<fake_server::FakeServerInvalidationService*>(
-            static_cast<invalidation::ProfileInvalidationProvider*>(
-                invalidation::DeprecatedProfileInvalidationProviderFactory::
-                    GetInstance()
-                        ->SetTestingFactoryAndUse(
-                            GetProfile(index),
-                            BuildFakeServerProfileInvalidationProvider))
-                ->GetInvalidationService());
-    fake_server_->AddObserver(invalidation_service);
-    if (TestUsesSelfNotifications()) {
-      invalidation_service->EnableSelfNotifications();
-    } else {
-      invalidation_service->DisableSelfNotifications();
+
+  switch (server_type_) {
+    case EXTERNAL_LIVE_SERVER:
+      // DO NOTHING. External live sync servers use GCM to notify profiles of
+      // any invalidations in sync'ed data. In this case, to notify other
+      // profiles of invalidations, we use sync refresh notifications instead.
+      break;
+    case IN_PROCESS_FAKE_SERVER: {
+      configuration_refresher_->Observe(
+          ProfileSyncServiceFactory::GetForProfile(GetProfile(index)));
+      break;
     }
-    fake_server_invalidation_services_[index] = invalidation_service;
-    configuration_refresher_->Observe(
-        ProfileSyncServiceFactory::GetForProfile(GetProfile(index)));
-  } else {
-    invalidation::P2PInvalidationService* p2p_invalidation_service = static_cast<
-        invalidation::P2PInvalidationService*>(
-        static_cast<invalidation::ProfileInvalidationProvider*>(
-            invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetInstance()
-                    ->SetTestingFactoryAndUse(
-                        GetProfile(index),
-                        TestUsesSelfNotifications()
-                            ? BuildSelfNotifyingP2PProfileInvalidationProvider
-                            : BuildRealisticP2PProfileInvalidationProvider))
-            ->GetInvalidationService());
-    p2p_invalidation_service->UpdateCredentials(username_, password_);
-    // Start listening for and emitting notifications of commits.
-    DCHECK(!invalidation_forwarders_[index]);
-    invalidation_forwarders_[index] =
-        std::make_unique<P2PInvalidationForwarder>(clients_[index]->service(),
-                                                   p2p_invalidation_service);
+    case SERVER_TYPE_UNDECIDED:
+    case LOCAL_PYTHON_SERVER:
+      invalidation::InvalidationService* invalidation_service =
+          invalidation::DeprecatedProfileInvalidationProviderFactory::
+              GetForProfile(GetProfile(index))
+                  ->GetInvalidationService();
+      invalidation::P2PInvalidationService* p2p_invalidation_service =
+          static_cast<invalidation::P2PInvalidationService*>(
+              invalidation_service);
+      p2p_invalidation_service->UpdateCredentials(username_, password_);
+      // Start listening for and emitting notifications of commits.
+      DCHECK(!invalidation_forwarders_[index]);
+      invalidation_forwarders_[index] =
+          std::make_unique<P2PInvalidationForwarder>(clients_[index]->service(),
+                                                     p2p_invalidation_service);
   }
 }
 

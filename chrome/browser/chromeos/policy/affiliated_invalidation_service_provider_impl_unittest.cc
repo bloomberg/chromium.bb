@@ -53,7 +53,7 @@ std::unique_ptr<KeyedService> BuildProfileInvalidationProvider(
   invalidation_service->SetInvalidatorState(
       syncer::TRANSIENT_INVALIDATION_ERROR);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
-      std::move(invalidation_service));
+      std::move(invalidation_service), nullptr);
 }
 
 }  // namespace

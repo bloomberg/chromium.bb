@@ -35,16 +35,22 @@ class TiclProfileSettingsProviderTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override;
-  void TearDown() override;
 
   TiclInvalidationService::InvalidationNetworkChannel GetNetworkChannel();
 
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   gcm::FakeGCMDriver gcm_driver_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  identity::IdentityTestEnvironment identity_test_env_;
 
+  // |identity_test_env_| should be declared before |identity_provider_|
+  // in order to ensure correct destruction order.
+  identity::IdentityTestEnvironment identity_test_env_;
+  std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
+
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+
+  // The service has to be below the provider since the service keeps
+  // a non-owned pointer to the provider.
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 
  private:
@@ -61,20 +67,16 @@ void TiclProfileSettingsProviderTest::SetUp() {
 
   request_context_getter_ =
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
+  identity_provider_ = std::make_unique<ProfileIdentityProvider>(
+      identity_test_env_.identity_manager());
 
-  invalidation_service_.reset(new TiclInvalidationService(
-      "TestUserAgent",
-      std::unique_ptr<IdentityProvider>(
-          new ProfileIdentityProvider(identity_test_env_.identity_manager())),
+  invalidation_service_ = std::make_unique<TiclInvalidationService>(
+      "TestUserAgent", identity_provider_.get(),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
-      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */));
+      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */);
   invalidation_service_->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));
-}
-
-void TiclProfileSettingsProviderTest::TearDown() {
-  invalidation_service_.reset();
 }
 
 TiclInvalidationService::InvalidationNetworkChannel

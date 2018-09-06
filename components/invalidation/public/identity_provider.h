@@ -82,6 +82,9 @@ class IdentityProvider {
   virtual void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
                                      const std::string& access_token) = 0;
 
+  // Set the account id that should be registered for invalidations.
+  virtual void SetActiveAccountId(const std::string& account_id) = 0;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

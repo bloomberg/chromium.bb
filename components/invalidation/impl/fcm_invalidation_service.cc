@@ -16,7 +16,7 @@
 namespace invalidation {
 
 FCMInvalidationService::FCMInvalidationService(
-    std::unique_ptr<IdentityProvider> identity_provider,
+    IdentityProvider* identity_provider,
     gcm::GCMDriver* gcm_driver,
     instance_id::InstanceIDDriver* instance_id_driver,
     PrefService* pref_service,
@@ -24,7 +24,7 @@ FCMInvalidationService::FCMInvalidationService(
     network::mojom::URLLoaderFactory* loader_factory)
     : gcm_driver_(gcm_driver),
       instance_id_driver_(instance_id_driver),
-      identity_provider_(std::move(identity_provider)),
+      identity_provider_(identity_provider),
       pref_service_(pref_service),
       parse_json_(parse_json),
       loader_factory_(loader_factory) {}
@@ -176,8 +176,8 @@ void FCMInvalidationService::StartInvalidator() {
       gcm_driver_, instance_id_driver_);
   network->StartListening();
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
-      std::move(network), identity_provider_.get(), pref_service_,
-      loader_factory_, parse_json_);
+      std::move(network), identity_provider_, pref_service_, loader_factory_,
+      parse_json_);
 
   invalidator_->RegisterHandler(this);
   CHECK(invalidator_->UpdateRegisteredIds(

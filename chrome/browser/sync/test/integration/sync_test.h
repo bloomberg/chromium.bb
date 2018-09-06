@@ -387,6 +387,9 @@ class SyncTest : public InProcessBrowserTest {
 
   // Sets up the client-side invalidations infrastructure depending on the
   // value of |server_type_|.
+  void SetUpInvalidations(int index);
+
+  // Initializes the invalidations that were set up in SetUpInvalidations.
   void InitializeInvalidations(int index);
 
   // Clear server data, and restart sync.

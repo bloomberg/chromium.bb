@@ -66,10 +66,13 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
+  auto identity_provider =
+      std::make_unique<invalidation::ProfileIdentityProvider>(
+          IdentityManagerFactory::GetForBrowserState(browser_state));
+
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
-      std::make_unique<invalidation::ProfileIdentityProvider>(
-          IdentityManagerFactory::GetForBrowserState(browser_state)),
+      identity_provider.get(),
       std::make_unique<invalidation::TiclProfileSettingsProvider>(
           browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
@@ -79,7 +82,8 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   service->Init(
       std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 
-  return std::make_unique<ProfileInvalidationProvider>(std::move(service));
+  return std::make_unique<ProfileInvalidationProvider>(
+      std::move(service), std::move(identity_provider));
 }
 
 void IOSChromeProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(

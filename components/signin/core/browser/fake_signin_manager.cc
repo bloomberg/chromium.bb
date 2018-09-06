@@ -8,7 +8,9 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 
 FakeSigninManagerBase::FakeSigninManagerBase(
     SigninClient* client,
@@ -152,6 +154,11 @@ void FakeSigninManager::DoSignOut(
       // Do nothing.
       break;
   }
+  ClearAuthenticatedAccountId();
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
 
   FireGoogleSignedOut(account_id, account_info);
 }

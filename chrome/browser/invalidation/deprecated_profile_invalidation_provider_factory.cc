@@ -104,8 +104,10 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     return testing_factory_(context).release();
 
 #if defined(OS_ANDROID)
+  // Android does not need an IdentityProvider, because it gets the account
+  // on the java side.
   auto service = std::make_unique<InvalidationServiceAndroid>();
-  return new ProfileInvalidationProvider(std::move(service));
+  return new ProfileInvalidationProvider(std::move(service), nullptr);
 #else
 
   std::unique_ptr<IdentityProvider> identity_provider;
@@ -129,7 +131,7 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<TiclInvalidationService> service =
       std::make_unique<TiclInvalidationService>(
-          GetUserAgent(), std::move(identity_provider),
+          GetUserAgent(), identity_provider.get(),
           std::make_unique<TiclProfileSettingsProvider>(profile->GetPrefs()),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           profile->GetRequestContext(),
@@ -138,7 +140,8 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 
-  return new ProfileInvalidationProvider(std::move(service));
+  return new ProfileInvalidationProvider(std::move(service),
+                                         std::move(identity_provider));
 #endif
 }
 
