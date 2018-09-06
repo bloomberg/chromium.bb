@@ -18,6 +18,7 @@
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
+class ScriptTrackerTest;
 
 // The script tracker keeps track of which scripts are available, which are
 // running, which have run, which are runnable whose preconditions are met.
@@ -62,13 +63,15 @@ class ScriptTracker {
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
 
+ private:
+  friend ScriptTrackerTest;
+
   // Returns a set of scripts that can be run, according to the last round of
   // checks.
   const std::vector<ScriptHandle>& runnable_scripts() const {
     return runnable_scripts_;
   }
 
- private:
   void OnScriptRun(base::OnceCallback<void(bool)> original_callback,
                    bool success);
   void UpdateRunnableScriptsIfNecessary();

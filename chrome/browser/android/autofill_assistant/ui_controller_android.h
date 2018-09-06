@@ -10,7 +10,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
-#include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
 namespace autofill_assistant {
@@ -31,7 +30,6 @@ class UiControllerAndroid : public UiController, public Client {
       base::OnceCallback<void(const std::string&)> callback) override;
   void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) override;
-  void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
 
   // Overrides Client:
   std::string GetApiKey() override;

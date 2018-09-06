@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_DELEGATE_H_
 
-#include <string>
-
 namespace autofill_assistant {
 // UI delegate called for script executions.
 class UiDelegate {
@@ -19,9 +17,6 @@ class UiDelegate {
   // Called when the Autofill Assistant should be destroyed, e.g. the tab
   // detached from the associated activity.
   virtual void OnDestroy() = 0;
-
-  // Called when a script was selected for execution.
-  virtual void OnScriptSelected(const std::string& script_path) = 0;
 
  protected:
   UiDelegate() = default;
