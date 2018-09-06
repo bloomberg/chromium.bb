@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -331,14 +330,6 @@ class OutputControllerTest : public ::testing::Test {
                         std::string(), &mock_sync_reader_,
                         &stream_monitor_coordinator_, processing_id_);
     controller_->SetVolume(kTestVolume);
-
-    // TODO(https://crbug.com/867827) remove histogram allocator creation when
-    // removing output controller checks.
-    if (!base::GlobalHistogramAllocator::Get()) {
-      const int32_t kAllocatorMemorySize = 8 << 20;
-      base::GlobalHistogramAllocator::CreateWithLocalMemory(
-          kAllocatorMemorySize, 0, "HistogramAllocatorTest");
-    }
   }
 
   void TearDown() override { controller_ = base::nullopt; }
