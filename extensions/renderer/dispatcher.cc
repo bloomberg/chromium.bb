@@ -609,12 +609,15 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
   // Libraries.
   std::vector<JsResourceInfo> resources = {
       {"appView", IDR_APP_VIEW_JS},
+      {"appViewElement", IDR_APP_VIEW_ELEMENT_JS},
       {"entryIdManager", IDR_ENTRY_ID_MANAGER},
       {"extensionOptions", IDR_EXTENSION_OPTIONS_JS},
+      {"extensionOptionsElement", IDR_EXTENSION_OPTIONS_ELEMENT_JS},
       {"extensionOptionsAttributes", IDR_EXTENSION_OPTIONS_ATTRIBUTES_JS},
       {"extensionOptionsConstants", IDR_EXTENSION_OPTIONS_CONSTANTS_JS},
       {"extensionOptionsEvents", IDR_EXTENSION_OPTIONS_EVENTS_JS},
       {"extensionView", IDR_EXTENSION_VIEW_JS},
+      {"extensionViewElement", IDR_EXTENSION_VIEW_ELEMENT_JS},
       {"extensionViewApiMethods", IDR_EXTENSION_VIEW_API_METHODS_JS},
       {"extensionViewAttributes", IDR_EXTENSION_VIEW_ATTRIBUTES_JS},
       {"extensionViewConstants", IDR_EXTENSION_VIEW_CONSTANTS_JS},
@@ -626,6 +629,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"guestView", IDR_GUEST_VIEW_JS},
       {"guestViewAttributes", IDR_GUEST_VIEW_ATTRIBUTES_JS},
       {"guestViewContainer", IDR_GUEST_VIEW_CONTAINER_JS},
+      {"guestViewContainerElement", IDR_GUEST_VIEW_CONTAINER_ELEMENT_JS},
       {"guestViewDeny", IDR_GUEST_VIEW_DENY_JS},
       {"guestViewEvents", IDR_GUEST_VIEW_EVENTS_JS},
       {"imageUtil", IDR_IMAGE_UTIL_JS},
@@ -640,6 +644,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       // Note: webView not webview so that this doesn't interfere with the
       // chrome.webview API bindings.
       {"webView", IDR_WEB_VIEW_JS},
+      {"webViewElement", IDR_WEB_VIEW_ELEMENT_JS},
       {"webViewActionRequests", IDR_WEB_VIEW_ACTION_REQUESTS_JS},
       {"webViewApiMethods", IDR_WEB_VIEW_API_METHODS_JS},
       {"webViewAttributes", IDR_WEB_VIEW_ATTRIBUTES_JS},
@@ -1313,30 +1318,25 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     requires_guest_view_module = true;
-    module_system->Require("appView");
+    module_system->Require("appViewElement");
   }
 
   // Require ExtensionOptions.
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     requires_guest_view_module = true;
-    module_system->Require("extensionOptions");
-    module_system->Require("extensionOptionsAttributes");
+    module_system->Require("extensionOptionsElement");
   }
 
   // Require ExtensionView.
   if (context->GetAvailability("extensionViewInternal").is_available()) {
     requires_guest_view_module = true;
-    module_system->Require("extensionView");
-    module_system->Require("extensionViewApiMethods");
-    module_system->Require("extensionViewAttributes");
+    module_system->Require("extensionViewElement");
   }
 
   // Require WebView.
   if (context->GetAvailability("webViewInternal").is_available()) {
     requires_guest_view_module = true;
-    module_system->Require("webView");
-    module_system->Require("webViewApiMethods");
-    module_system->Require("webViewAttributes");
+    module_system->Require("webViewElement");
   }
 
   if (requires_guest_view_module &&
