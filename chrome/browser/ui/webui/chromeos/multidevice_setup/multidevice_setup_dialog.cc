@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/multidevice_setup_resources.h"
@@ -25,9 +26,8 @@ namespace multidevice_setup {
 
 namespace {
 
-// TODO(khorimoto): Replace with actual help center URL when available.
+// TODO(khorimoto): Localize footnote marker if necessary.
 const char kFootnoteMarker[] = "*";
-const char kSetupLearnMoreLink[] = "https://multidevice-learn-more.com";
 
 constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
@@ -77,7 +77,7 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
           base::ASCIIToUTF16(kFootnoteMarker),
-          base::ASCIIToUTF16(kSetupLearnMoreLink)));
+          base::ASCIIToUTF16(chrome::kMultiDeviceLearnMoreURL)));
   html_source->AddString(
       "startSetupPageFootnote",
       l10n_util::GetStringFUTF16(
