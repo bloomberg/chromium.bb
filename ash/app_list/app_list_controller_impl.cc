@@ -503,12 +503,23 @@ void AppListControllerImpl::OnOverviewModeEnding() {
   if (!IsHomeLauncherEnabledInTabletMode())
     return;
 
-  // Only animate the app list when overview mode is using slide animation.
-  presenter_.ScheduleOverviewModeAnimation(
-      false /* start */, Shell::Get()
-                             ->window_selector_controller()
-                             ->window_selector()
-                             ->use_slide_animation() /* animate */);
+  // Animate the launcher if overview mode is sliding out. Let
+  // OnOverviewModeEndingAnimationComplete handle showing the launcher after
+  // overview mode finishes animating. WindowSelector however is nullptr by the
+  // time the animations are finished, so we need to check the animation type
+  // here.
+  use_slide_to_exit_overview_mode_ = Shell::Get()
+                                         ->window_selector_controller()
+                                         ->window_selector()
+                                         ->use_slide_animation();
+}
+
+void AppListControllerImpl::OnOverviewModeEndingAnimationComplete() {
+  if (!IsHomeLauncherEnabledInTabletMode())
+    return;
+
+  presenter_.ScheduleOverviewModeAnimation(/*start=*/false,
+                                           use_slide_to_exit_overview_mode_);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
