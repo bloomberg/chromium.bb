@@ -2263,6 +2263,10 @@ crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 crbug.com/806357 [ Win Debug ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 crbug.com/839038 [ Mac ] external/wpt/pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html [ Skip ]
 
+crbug.com/346473  fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
+crbug.com/346473  virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
+crbug.com/346473  virtual/user-activation-v2/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
+
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]

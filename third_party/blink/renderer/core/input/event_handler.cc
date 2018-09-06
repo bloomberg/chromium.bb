@@ -964,11 +964,11 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   event_result = DispatchMousePointerEvent(
       WebInputEvent::kPointerMove, mev.InnerNode(), mev.CanvasRegionId(),
       mev.Event(), coalesced_events);
+  // TODO(crbug.com/346473): Since there is no default action for the mousemove
+  // event we should consider doing drag&drop even when js cancels the
+  // mouse move event.
   // https://w3c.github.io/uievents/#event-type-mousemove
-  // Since there is no default action for the mousemove event issue a
-  // mouse dragged event irrespective of whether the event is cancelled.
-  if (event_result != WebInputEventResult::kNotHandled &&
-      event_result != WebInputEventResult::kHandledApplication)
+  if (event_result != WebInputEventResult::kNotHandled)
     return event_result;
 
   return mouse_event_manager_->HandleMouseDraggedEvent(mev);
