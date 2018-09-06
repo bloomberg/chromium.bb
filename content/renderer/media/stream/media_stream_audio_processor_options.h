@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_processing.h"
@@ -30,6 +31,13 @@ class TypingDetection;
 namespace content {
 
 using webrtc::AudioProcessing;
+
+static constexpr int kAudioProcessingSampleRate =
+#if defined(OS_ANDROID)
+    AudioProcessing::kSampleRate16kHz;
+#else
+    AudioProcessing::kSampleRate48kHz;
+#endif
 
 // Simple struct with audio-processing properties.
 struct CONTENT_EXPORT AudioProcessingProperties {
