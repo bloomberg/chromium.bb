@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_ANDROID_VR_WEB_XR_PRESENTATION_STATE_H_
 
 #include <memory>
+#include <utility>
 
-#include "base/cancelable_callback.h"
+#include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -167,15 +168,15 @@ class WebXrPresentationState {
   // becoming true.
   void TryDeferredProcessing();
 
-  bool HaveAnimatingFrame() { return animating_frame_; }
+  bool HaveAnimatingFrame() const { return animating_frame_; }
   WebXrFrame* GetAnimatingFrame();
-  bool HaveProcessingFrame() { return processing_frame_; }
+  bool HaveProcessingFrame() const { return processing_frame_; }
   WebXrFrame* GetProcessingFrame();
-  bool HaveRenderingFrame() { return rendering_frame_; }
+  bool HaveRenderingFrame() const { return rendering_frame_; }
   WebXrFrame* GetRenderingFrame();
 
-  void set_mailbox_bridge_ready(bool ready) { mailbox_bridge_ready_ = ready; }
-  bool mailbox_bridge_ready() const { return mailbox_bridge_ready_; }
+  bool mailbox_bridge_ready() { return mailbox_bridge_ready_; }
+  void NotifyMailboxBridgeReady() { mailbox_bridge_ready_ = true; }
 
   // Used by WebVrCanAnimateFrame() to detect when ui_->CanSendWebVrVSync()
   // transitions from false to true, as part of starting the incoming frame
@@ -185,8 +186,6 @@ class WebXrPresentationState {
   // GpuMemoryBuffer creation needs a buffer ID. We don't really care about
   // this, but try to keep it unique to avoid confusion.
   int next_memory_buffer_id = 0;
-
-  base::OnceClosure end_presentation_callback;
 
  private:
   // Checks if we're in a valid state for processing the current animating

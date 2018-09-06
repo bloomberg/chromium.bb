@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr/gvr_controller_delegate.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
+#include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/android/vr/vr_shell_gl.h"
 #include "chrome/browser/vr/render_loop.h"
@@ -27,7 +29,7 @@ RenderLoopFactory::Params::Params(
     gvr::GvrApi* gvr_api,
     const UiInitialState& ui_initial_state,
     bool reprojected_rendering,
-    bool daydream_support,
+    bool cardboard_gamepad,
     bool pause_content,
     bool low_density,
     base::WaitableEvent* gl_surface_created_event,
@@ -35,7 +37,7 @@ RenderLoopFactory::Params::Params(
     : gvr_api(gvr_api),
       ui_initial_state(ui_initial_state),
       reprojected_rendering(reprojected_rendering),
-      daydream_support(daydream_support),
+      cardboard_gamepad(cardboard_gamepad),
       pause_content(pause_content),
       low_density(low_density),
       gl_surface_created_event(gl_surface_created_event),
@@ -64,28 +66,27 @@ std::unique_ptr<RenderLoop> RenderLoopFactory::Create(
       params->ui_initial_state);
   auto controller_delegate =
       std::make_unique<GvrControllerDelegate>(params->gvr_api, vr_gl_thread);
-  auto vr_shell_gl = std::make_unique<VrShellGl>(
-      vr_gl_thread, params->gvr_api, params->reprojected_rendering,
-      params->daydream_support, params->ui_initial_state.in_web_vr,
-      params->pause_content, params->low_density, kSlidingAverageSize);
-  vr_gl_thread->task_runner()->PostTask(
+  auto compositor_delegate = std::make_unique<VrShellGl>(
+      vr_gl_thread,
+      base::BindOnce(&UiInterface::OnGlInitialized, base::Unretained(ui.get())),
+      params->gvr_api, params->reprojected_rendering, params->pause_content,
+      params->low_density, kSlidingAverageSize);
+  auto scheduler_delegate = std::make_unique<GvrSchedulerDelegate>(
+      vr_gl_thread, ui.get(), params->gvr_api, compositor_delegate.get(),
+      params->ui_initial_state.in_web_vr, params->cardboard_gamepad,
+      kSlidingAverageSize);
+  compositor_delegate->set_webxr_presentation_state(
+      scheduler_delegate->webxr());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&VrShellGl::Init, vr_shell_gl->GetWeakPtr(),
+      base::BindOnce(&VrShellGl::Init, compositor_delegate->GetWeakPtr(),
                      base::Unretained(params->gl_surface_created_event),
-                     base::Passed(std::move(params->surface_callback))));
-  SchedulerDelegate* scheduler_delegate = vr_shell_gl.get();
+                     base::Passed(std::move(params->surface_callback)),
+                     params->ui_initial_state.in_web_vr));
   auto render_loop = std::make_unique<RenderLoop>(
-      std::move(ui), std::move(vr_shell_gl), scheduler_delegate,
-      std::move(controller_delegate), vr_gl_thread, kSlidingAverageSize);
-  scheduler_delegate->SetDrawWebXrCallback(base::BindRepeating(
-      &RenderLoop::Draw, base::Unretained(render_loop.get()),
-      CompositorDelegate::kWebXrFrame));
-  scheduler_delegate->SetDrawBrowserCallback(base::BindRepeating(
-      &RenderLoop::Draw, base::Unretained(render_loop.get()),
-      CompositorDelegate::kUiFrame));
-  scheduler_delegate->SetWebXrInputCallback(
-      base::BindRepeating(&RenderLoop::ProcessControllerInputForWebXr,
-                          base::Unretained(render_loop.get())));
+      std::move(ui), std::move(scheduler_delegate),
+      std::move(compositor_delegate), std::move(controller_delegate),
+      vr_gl_thread, kSlidingAverageSize);
   return render_loop;
 }
 

@@ -56,8 +56,8 @@ void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
                          const ToolbarState& toolbar_state) {
   ui_ = std::make_unique<Ui>(browser_.get(), nullptr, nullptr, nullptr, nullptr,
                              ui_initial_state);
-  ui_->OnGlInitialized(content_texture_, kGlTextureLocationLocal,
-                       content_overlay_texture_, kGlTextureLocationLocal, 0);
+  ui_->OnGlInitialized(kGlTextureLocationLocal, content_texture_,
+                       content_overlay_texture_, 0);
   ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);
 }
 

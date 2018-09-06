@@ -165,9 +165,8 @@ VrTestContext::~VrTestContext() = default;
 void VrTestContext::InitializeGl() {
   unsigned int content_texture_id = CreateTexture(0xFF000080);
   unsigned int ui_texture_id = CreateTexture(0xFF008000);
-  ui_->OnGlInitialized(content_texture_id, kGlTextureLocationLocal,
-                       content_texture_id, kGlTextureLocationLocal,
-                       ui_texture_id);
+  ui_->OnGlInitialized(kGlTextureLocationLocal, content_texture_id,
+                       content_texture_id, ui_texture_id);
   keyboard_delegate_->Initialize(
       ui_instance_->scene()->SurfaceProviderForTesting(),
       ui_instance_->ui_element_renderer());

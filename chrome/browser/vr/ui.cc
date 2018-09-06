@@ -369,11 +369,10 @@ void Ui::CancelPlatformToast() {
   model_->platform_toast.reset();
 }
 
-void Ui::OnGlInitialized(unsigned int content_texture_id,
-                         GlTextureLocation content_location,
+void Ui::OnGlInitialized(GlTextureLocation textures_location,
+                         unsigned int content_texture_id,
                          unsigned int content_overlay_texture_id,
-                         GlTextureLocation content_overlay_location,
-                         unsigned int ui_texture_id) {
+                         unsigned int platform_ui_texture_id) {
   ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
       std::make_unique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
@@ -381,9 +380,9 @@ void Ui::OnGlInitialized(unsigned int content_texture_id,
   scene_->OnGlInitialized(provider_.get());
   model_->content_texture_id = content_texture_id;
   model_->content_overlay_texture_id = content_overlay_texture_id;
-  model_->content_location = content_location;
-  model_->content_overlay_location = content_overlay_location;
-  model_->hosted_platform_ui.texture_id = ui_texture_id;
+  model_->content_location = textures_location;
+  model_->content_overlay_location = textures_location;
+  model_->hosted_platform_ui.texture_id = platform_ui_texture_id;
 }
 
 void Ui::RequestFocus(int element_id) {

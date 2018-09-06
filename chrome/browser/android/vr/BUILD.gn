@@ -25,6 +25,8 @@ static_library("vr_android") {
     "gvr_keyboard_delegate.cc",
     "gvr_keyboard_delegate.h",
     "gvr_keyboard_shim.cc",
+    "gvr_scheduler_delegate.cc",
+    "gvr_scheduler_delegate.h",
     "gvr_util.cc",
     "gvr_util.h",
     "mailbox_to_surface_bridge.cc",

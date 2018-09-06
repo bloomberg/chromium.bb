@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_ANDROID_VSYNC_HELPER_H_
 
 #include <jni.h>
+#include <utility>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
@@ -16,14 +17,13 @@ namespace vr {
 
 class AndroidVSyncHelper {
  public:
-  AndroidVSyncHelper();
+  using Callback = base::RepeatingCallback<void(base::TimeTicks)>;
+  explicit AndroidVSyncHelper(Callback callback);
   ~AndroidVSyncHelper();
   void OnVSync(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jlong time_nanos);
-
-  void RequestVSync(
-      const base::RepeatingCallback<void(base::TimeTicks)>& callback);
+  void RequestVSync();
   void CancelVSyncRequest();
 
   // The last interval will be a multiple of the actual refresh interval, use
@@ -37,7 +37,8 @@ class AndroidVSyncHelper {
   base::TimeTicks last_vsync_;
   base::TimeDelta last_interval_;
   base::TimeDelta display_vsync_interval_;
-  base::RepeatingCallback<void(base::TimeTicks)> callback_;
+  Callback callback_;
+  bool vsync_requested_ = false;
 
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
 

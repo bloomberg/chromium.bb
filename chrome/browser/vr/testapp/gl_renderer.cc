@@ -42,13 +42,15 @@ bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
 }
 
 // TODO(acondor): Provide actual implementation for the methods.
+void GlRenderer::OnResume() {}
 FovRectangles GlRenderer::GetRecommendedFovs() {
   return {{}, {}};
 }
 float GlRenderer::GetZNear() {
   return 0;
 }
-RenderInfo GlRenderer::GetRenderInfo(FrameType frame_type) {
+RenderInfo GlRenderer::GetRenderInfo(FrameType frame_type,
+                                     const gfx::Transform& head_pose) {
   return {};
 }
 RenderInfo GlRenderer::GetOptimizedRenderInfoForFovs(
@@ -72,15 +74,9 @@ void GlRenderer::BufferBoundsChanged(const gfx::Size& content_buffer_size,
 void GlRenderer::GetContentQuadDrawParams(Transform* uv_transform,
                                           float* border_x,
                                           float* border_y) {}
-void GlRenderer::SubmitFrame(FrameType frame_type) {}
-void GlRenderer::SetUiInterface(CompositorUiInterface* ui) {}
-void GlRenderer::SetShowingVrDialog(bool showing) {}
 int GlRenderer::GetContentBufferWidth() {
   return 0;
 }
-void GlRenderer::ConnectPresentingService(
-    device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRRuntimeSessionOptionsPtr options) {}
 
 void GlRenderer::RenderFrame() {
   // Checking and clearing GL errors can be expensive, but we can afford to do
