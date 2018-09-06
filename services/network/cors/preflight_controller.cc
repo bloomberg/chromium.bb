@@ -81,18 +81,18 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
   preflight_request->headers.SetHeader(
-      cors::header_names::kAccessControlRequestMethod, request.method);
+      header_names::kAccessControlRequestMethod, request.method);
 
   std::string request_headers =
       CreateAccessControlRequestHeadersHeader(request.headers);
   if (!request_headers.empty()) {
     preflight_request->headers.SetHeader(
-        cors::header_names::kAccessControlRequestHeaders, request_headers);
+        header_names::kAccessControlRequestHeaders, request_headers);
   }
 
   if (request.is_external_request) {
     preflight_request->headers.SetHeader(
-        cors::header_names::kAccessControlRequestExternal, "true");
+        header_names::kAccessControlRequestExternal, "true");
   }
 
   DCHECK(request.request_initiator);
@@ -123,10 +123,9 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
   // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
   *detected_error_status = CheckPreflightAccess(
       final_url, head.headers->response_code(),
+      GetHeaderString(head.headers, header_names::kAccessControlAllowOrigin),
       GetHeaderString(head.headers,
-                      cors::header_names::kAccessControlAllowOrigin),
-      GetHeaderString(head.headers,
-                      cors::header_names::kAccessControlAllowCredentials),
+                      header_names::kAccessControlAllowCredentials),
       original_request.fetch_credentials_mode,
       tainted ? url::Origin() : *original_request.request_initiator,
       false /* allow_file_origin */);

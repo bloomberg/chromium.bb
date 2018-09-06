@@ -27,7 +27,7 @@ base::Optional<std::string> GetHeaderString(
 }
 
 bool NeedsPreflight(const ResourceRequest& request) {
-  if (!cors::IsCORSEnabledRequestMode(request.fetch_request_mode))
+  if (!IsCORSEnabledRequestMode(request.fetch_request_mode))
     return false;
 
   if (request.is_external_request)
@@ -88,7 +88,7 @@ CORSURLLoader::~CORSURLLoader() = default;
 
 void CORSURLLoader::Start() {
   if (fetch_cors_flag_ &&
-      cors::IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+      IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
     // Username and password should be stripped in a CORS-enabled request.
     if (request_.url.has_username() || request_.url.has_password()) {
       GURL::Replacements replacements;

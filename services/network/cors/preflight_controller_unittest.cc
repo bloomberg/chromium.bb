@@ -50,7 +50,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
   EXPECT_EQ("null", header);
 
   EXPECT_TRUE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry", header);
 }
 
@@ -73,7 +73,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   // left out in the preflight request.
   std::string header;
   EXPECT_FALSE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
@@ -108,7 +108,7 @@ TEST(PreflightControllerCreatePreflightRequestTest,
   // Empty list also; see comment in test above.
   std::string header;
   EXPECT_FALSE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
@@ -123,7 +123,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
 
   std::string header;
   EXPECT_TRUE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
   EXPECT_EQ("x-custom-header", header);
 }
 
@@ -141,7 +141,7 @@ TEST(PreflightControllerCreatePreflightRequestTest,
 
   std::string header;
   EXPECT_TRUE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
   EXPECT_EQ("content-type", header);
 }
 
@@ -157,7 +157,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeForbiddenHeaders) {
 
   std::string header;
   EXPECT_FALSE(preflight->headers.GetHeader(
-      cors::header_names::kAccessControlRequestHeaders, &header));
+      header_names::kAccessControlRequestHeaders, &header));
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest, Tainted) {
@@ -256,7 +256,7 @@ class PreflightControllerTest : public testing::Test {
           net::test_server::ShouldHandle(request, "/tainted")
               ? url::Origin()
               : url::Origin::Create(test_server_.base_url());
-      response->AddCustomHeader(cors::header_names::kAccessControlAllowOrigin,
+      response->AddCustomHeader(header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
       response->AddCustomHeader(header_names::kAccessControlAllowMethods,
                                 "GET, OPTIONS");
