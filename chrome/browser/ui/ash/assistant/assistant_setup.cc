@@ -179,11 +179,22 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
                           true);
       }
       break;
+    case ConsentFlowUi::ERROR_ACCOUNT:
+      // Show the opted out mode UI for unsupported Account as they are in opted
+      // out mode.
+      // TODO(llin): we should show a error account message in Opted out UI or
+      // in the onboarding flow.
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        false);
+      break;
     case ConsentFlowUi::ALREADY_CONSENTED:
       prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
                         true);
       break;
-    default:
+    case ConsentFlowUi::UNSPECIFIED:
+    case ConsentFlowUi::ERROR:
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                        false);
       LOG(ERROR) << "Invalid activity control consent status.";
   }
 }
