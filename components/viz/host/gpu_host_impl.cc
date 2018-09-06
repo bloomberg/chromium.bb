@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -22,7 +23,10 @@
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "ipc/ipc_channel.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -75,6 +79,30 @@ FontRenderParams& GetFontRenderParams() {
   return *instance;
 }
 
+#if defined(USE_OZONE)
+// Helper to register Mus/conventional thread bouncers for ozone startup.
+void OzoneRegisterStartupCallbackHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
+    base::OnceCallback<void(ui::OzonePlatform*)> callback) {
+  // The callback registered in ozone can be called in any thread. So use an
+  // intermediary callback that bounces to the GpuHost thread if needed, before
+  // running the callback.
+  auto bounce_callback = base::BindOnce(
+      [](base::SingleThreadTaskRunner* host_thread_task_runner,
+         base::OnceCallback<void(ui::OzonePlatform*)> callback,
+         ui::OzonePlatform* platform) {
+        if (host_thread_task_runner->BelongsToCurrentThread()) {
+          std::move(callback).Run(platform);
+        } else {
+          host_thread_task_runner->PostTask(
+              FROM_HERE, base::BindOnce(std::move(callback), platform));
+        }
+      },
+      base::RetainedRef(host_thread_task_runner), std::move(callback));
+  ui::OzonePlatform::RegisterStartupCallback(std::move(bounce_callback));
+}
+#endif  // defined(USE_OZONE)
+
 }  // namespace
 
 GpuHostImpl::InitParams::InitParams() = default;
@@ -89,6 +117,7 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
     : delegate_(delegate),
       channel_(channel),
       params_(std::move(params)),
+      host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
@@ -108,6 +137,10 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       mojo::MakeRequest(&gpu_service_ptr_), std::move(host_proxy),
       std::move(discardable_manager_ptr), activity_flags_.CloneHandle(),
       GetFontRenderParams().Get()->subpixel_rendering);
+
+#if defined(USE_OZONE)
+  InitOzone();
+#endif  // defined(USE_OZONE)
 }
 
 GpuHostImpl::~GpuHostImpl() = default;
@@ -242,11 +275,86 @@ void GpuHostImpl::SendOutstandingReplies() {
   }
 }
 
+void GpuHostImpl::BindInterface(const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle interface_pipe) {
+  delegate_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
 mojom::GpuService* GpuHostImpl::gpu_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(gpu_service_ptr_.is_bound());
   return gpu_service_ptr_.get();
 }
+
+#if defined(USE_OZONE)
+void GpuHostImpl::InitOzone() {
+  // Ozone needs to send the primary DRM device to GPU service as early as
+  // possible to ensure the latter always has a valid device.
+  // https://crbug.com/608839
+  // If the OzonePlatform is not created yet, defer the callback until
+  // OzonePlatform instance is created.
+  bool using_mojo = true;
+#if defined(OS_CHROMEOS)
+  using_mojo = features::IsOzoneDrmMojo();
+#endif
+  if (using_mojo) {
+    // TODO(rjkroege): Remove the legacy IPC code paths when no longer
+    // necessary. https://crbug.com/806092
+    auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
+                                                weak_ptr_factory_.GetWeakPtr());
+    auto terminate_callback = base::BindOnce(&GpuHostImpl::TerminateGpuProcess,
+                                             weak_ptr_factory_.GetWeakPtr());
+
+    auto startup_callback = base::BindOnce(
+        [](const base::RepeatingCallback<void(const std::string&,
+                                              mojo::ScopedMessagePipeHandle)>&
+               interface_binder,
+           base::OnceCallback<void(const std::string&)> terminate_callback,
+           scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+           scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
+           ui::OzonePlatform* platform) {
+          DCHECK(host_thread_task_runner->BelongsToCurrentThread());
+          platform->GetGpuPlatformSupportHost()->OnGpuServiceLaunched(
+              main_thread_task_runner, host_thread_task_runner,
+              interface_binder, std::move(terminate_callback));
+        },
+        interface_binder, std::move(terminate_callback),
+        params_.main_thread_task_runner, host_thread_task_runner_);
+    OzoneRegisterStartupCallbackHelper(host_thread_task_runner_,
+                                       std::move(startup_callback));
+  } else {
+    auto send_callback = base::BindRepeating(
+        [](base::WeakPtr<GpuHostImpl> host, IPC::Message* message) {
+          if (host)
+            host->delegate_->SendGpuProcessMessage(message);
+          else
+            delete message;
+        },
+        weak_ptr_factory_.GetWeakPtr());
+    // Create the callback that should run on the current thread.
+    auto startup_callback = base::BindOnce(
+        [](int host_id,
+           const base::RepeatingCallback<void(IPC::Message*)>& send_callback,
+           scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+           scoped_refptr<base::SingleThreadTaskRunner> host_thread_task_runner,
+           ui::OzonePlatform* platform) {
+          DCHECK(host_thread_task_runner->BelongsToCurrentThread());
+          platform->GetGpuPlatformSupportHost()->OnGpuProcessLaunched(
+              host_id, main_thread_task_runner, host_thread_task_runner,
+              send_callback);
+        },
+        params_.restart_id, send_callback, params_.main_thread_task_runner,
+        host_thread_task_runner_);
+    OzoneRegisterStartupCallbackHelper(host_thread_task_runner_,
+                                       std::move(startup_callback));
+  }
+}
+
+void GpuHostImpl::TerminateGpuProcess(const std::string& message) {
+  delegate_->TerminateGpuProcess(message);
+}
+
+#endif  // defined(USE_OZONE)
 
 std::string GpuHostImpl::GetShaderPrefixKey() {
   if (shader_prefix_key_.empty()) {
