@@ -251,13 +251,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // current page value.
     self.currentPage = _currentPage;
     [self configureViewControllerForCurrentSizeClassesAndPage];
+    [self setInsetForRemoteTabs];
   };
-  auto completion =
-      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        // Modify Remote Tabs Insets when page appears and during rotation.
-        [self setInsetForRemoteTabs];
-      };
-  [coordinator animateAlongsideTransition:animate completion:completion];
+  [coordinator animateAlongsideTransition:animate completion:nil];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
