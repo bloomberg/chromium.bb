@@ -473,6 +473,7 @@ const CGFloat kShadowRadius = 12.0f;
   // Configure the table view.
   self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
   self.sharedState.tableView.estimatedRowHeight = kEstimatedRowHeight;
+  self.sharedState.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   // Setting a sectionFooterHeight of 0 will be the same as not having a
   // footerView, which shows a cell separator for the last cell. Removing this
@@ -1884,16 +1885,6 @@ const CGFloat kShadowRadius = 12.0f;
 }
 
 #pragma mark - UITableViewDelegate
-
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
-    return kEstimatedRowHeight;
-  }
-  return UITableViewAutomaticDimension;
-}
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
