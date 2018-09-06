@@ -19,6 +19,8 @@ KEY_FINGERS=(
   "75DDC3C4A499F1A18CB5F3C8CBF8D6FD518E17E1"
   # Debian Stable Release Key (9/stretch)
   "067E3C456BAE240ACEE88F6FEF0F382A1A7B6500"
+  # Debian Archive Automatic Signing Key (9/stretch)
+  "16E90B3FDF65EDE3AA7F323C04EE7237B7D453EC"
   # Ubuntu Archive Automatic Signing Key
   "630239CC130E1A7FD81A27B140976EAF437D05B5"
   # Ubuntu Archive Automatic Signing Key (2012)
