@@ -411,8 +411,7 @@ void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
   if (!is_animation_paused_) {
     // If there is no separator to show, then that means we want the text to
     // disappear after animating.
-    if (!ShouldShowSeparator())
-      label()->SetVisible(false);
+    ResetSlideAnimation(/*show_label=*/ShouldShowSeparator());
     parent()->Layout();
     parent()->SchedulePaint();
   }
@@ -563,9 +562,9 @@ void IconLabelBubbleView::AnimateOut() {
   }
 }
 
-void IconLabelBubbleView::ResetSlideAnimation(bool show) {
-  label()->SetVisible(show);
-  slide_animation_.Reset(show);
+void IconLabelBubbleView::ResetSlideAnimation(bool show_label) {
+  label()->SetVisible(show_label);
+  slide_animation_.Reset(show_label);
 }
 
 void IconLabelBubbleView::PauseAnimation() {
