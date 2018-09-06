@@ -36,6 +36,7 @@ static const struct pci_device {
 } pciids[] = {
 	/* Keep ids sorted by gen; latest gen first */
 	INTEL_TGL_12_IDS(12),
+	INTEL_EHL_IDS(11),
 	INTEL_ICL_11_IDS(11),
 	INTEL_CNL_IDS(10),
 	INTEL_CFL_IDS(9),
