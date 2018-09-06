@@ -79,8 +79,10 @@ struct FormParsingTestCase {
   std::vector<FieldDataDescription> fields;
   // -1 just mean no checking.
   int number_of_all_possible_passwords = -1;
+  int number_of_all_possible_usernames = -1;
   // null means no checking
   const autofill::ValueElementVector* all_possible_passwords = nullptr;
+  const autofill::ValueElementVector* all_possible_usernames = nullptr;
   bool username_may_use_prefilled_placeholder = false;
 };
 
@@ -326,6 +328,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
                   parsed_form->username_may_use_prefilled_placeholder);
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
+        CheckAllValuesUnique(parsed_form->other_possible_usernames);
         if (test_case.number_of_all_possible_passwords >= 0) {
           EXPECT_EQ(
               static_cast<size_t>(test_case.number_of_all_possible_passwords),
@@ -334,6 +337,15 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         if (test_case.all_possible_passwords) {
           EXPECT_EQ(*test_case.all_possible_passwords,
                     parsed_form->all_possible_passwords);
+        }
+        if (test_case.number_of_all_possible_usernames >= 0) {
+          EXPECT_EQ(
+              static_cast<size_t>(test_case.number_of_all_possible_usernames),
+              parsed_form->other_possible_usernames.size());
+        }
+        if (test_case.all_possible_usernames) {
+          EXPECT_EQ(*test_case.all_possible_usernames,
+                    parsed_form->other_possible_usernames);
         }
       }
     }
@@ -352,6 +364,7 @@ TEST(FormParserTest, NotPasswordForm) {
                   {.form_control_type = "text"}, {.form_control_type = "text"},
               },
           .number_of_all_possible_passwords = 0,
+          .number_of_all_possible_usernames = 0,
       },
   });
 }
@@ -359,13 +372,15 @@ TEST(FormParserTest, NotPasswordForm) {
 TEST(FormParserTest, SkipNotTextFields) {
   CheckTestData({
       {
-          "Select between username and password fields",
+          "A 'select' between username and password fields",
           {
               {.role = ElementRole::USERNAME},
               {.form_control_type = "select"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
+          .number_of_all_possible_passwords = 1,
+          .number_of_all_possible_usernames = 1,
       },
   });
 }
@@ -380,6 +395,7 @@ TEST(FormParserTest, OnlyPasswordFields) {
                    .form_control_type = "password"},
               },
           .number_of_all_possible_passwords = 1,
+          .number_of_all_possible_usernames = 0,
       },
       {
           "2 password fields, new and confirmation password",
@@ -508,6 +524,7 @@ TEST(FormParserTest, TestFocusability) {
                .form_control_type = "password",
                .is_focusable = true},
           },
+          .number_of_all_possible_usernames = 2,
       },
       {
           "focusable and non-focusable text fields before password",
@@ -564,6 +581,9 @@ TEST(FormParserTest, TextAndPasswordFields) {
                .form_control_type = "password",
                .value = ""},
           },
+          // all_possible_* only count fields with non-empty values.
+          .number_of_all_possible_passwords = 0,
+          .number_of_all_possible_usernames = 0,
       },
       {
           .description_for_logging = "Simple sign-in form with filled data",
@@ -696,6 +716,7 @@ TEST(FormParserTest, TestAutocomplete) {
                    .autocomplete_attribute = "password"},
               },
           .number_of_all_possible_passwords = 3,
+          .number_of_all_possible_usernames = 2,
       },
       {
           "Basic heuristics kick in if autocomplete analysis fails",
@@ -1095,6 +1116,10 @@ TEST(FormParserTest, AllPossiblePasswords) {
       {ASCIIToUTF16("a"), ASCIIToUTF16("p1")},
       {ASCIIToUTF16("b"), ASCIIToUTF16("p3")},
   };
+  const autofill::ValueElementVector kUsernames = {
+      {ASCIIToUTF16("b"), ASCIIToUTF16("chosen")},
+      {ASCIIToUTF16("a"), ASCIIToUTF16("first")},
+  };
   CheckTestData({
       {
           .description_for_logging = "It is always the first field name which "
@@ -1105,18 +1130,22 @@ TEST(FormParserTest, AllPossiblePasswords) {
                   {.form_control_type = "password", .name = "p1", .value = "a"},
                   {.role = ElementRole::USERNAME,
                    .form_control_type = "text",
+                   .name = "chosen",
+                   .value = "b",
                    .autocomplete_attribute = "username"},
                   {.role = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password",
                    .autocomplete_attribute = "current-password",
                    .value = "a"},
-                  {.form_control_type = "text"},
-                  {.form_control_type = "text"},
+                  {.form_control_type = "text", .name = "first", .value = "a"},
+                  {.form_control_type = "text", .value = "a"},
                   {.form_control_type = "password", .name = "p3", .value = "b"},
                   {.form_control_type = "password", .value = "b"},
               },
           .number_of_all_possible_passwords = 2,
           .all_possible_passwords = &kPasswords,
+          .number_of_all_possible_usernames = 2,
+          .all_possible_usernames = &kUsernames,
       },
       {
           .description_for_logging =

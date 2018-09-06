@@ -546,10 +546,12 @@ void SetFields(const SignificantFields& significant_fields,
 // parsing and wraps that in a ProcessedField. Returns the vector of all those
 // ProcessedField instances, or an empty vector if there was not a single
 // password field. Also, computes the vector of all password values and
-// associated element names in |all_possible_passwords|.
+// associated element names in |all_possible_passwords|, and similarly for
+// usernames and |all_possible_usernames|.
 std::vector<ProcessedField> ProcessFields(
     const std::vector<FormFieldData>& fields,
-    autofill::ValueElementVector* all_possible_passwords) {
+    autofill::ValueElementVector* all_possible_passwords,
+    autofill::ValueElementVector* all_possible_usernames) {
   DCHECK(all_possible_passwords);
   DCHECK(all_possible_passwords->empty());
 
@@ -558,24 +560,28 @@ std::vector<ProcessedField> ProcessFields(
 
   result.reserve(fields.size());
 
-  // |all_possible_passwords| should only contain each value once. |seen_values|
-  // ensures that duplicates are ignored.
-  std::set<base::StringPiece16> seen_values;
-  // Pretend that an empty value has been already seen, so that empty-valued
-  // password elements won't get added to |all_possible_passwords|.
-  seen_values.insert(base::StringPiece16());
+  // |all_possible_passwords| should only contain each value once.
+  // |seen_password_values| ensures that duplicates are ignored.
+  std::set<base::StringPiece16> seen_password_values;
+  // Similarly for usernames.
+  std::set<base::StringPiece16> seen_username_values;
 
   for (const FormFieldData& field : fields) {
     if (!field.IsTextInputElement())
       continue;
 
     const bool is_password = field.form_control_type == "password";
-    if (is_password) {
-      // Only the field name of the first occurrence is added to
-      // |all_possible_passwords|.
+    if (!field.value.empty()) {
+      std::set<base::StringPiece16>& seen_values =
+          is_password ? seen_password_values : seen_username_values;
+      autofill::ValueElementVector* all_possible_fields =
+          is_password ? all_possible_passwords : all_possible_usernames;
+      // Only the field name of the first occurrence is added.
       auto insertion = seen_values.insert(base::StringPiece16(field.value));
-      if (insertion.second)  // There was no such element in |seen_values|.
-        all_possible_passwords->push_back({field.value, field.name});
+      if (insertion.second) {
+        // There was no such element in |seen_values|.
+        all_possible_fields->push_back({field.value, field.name});
+      }
     }
 
     const AutocompleteFlag flag =
@@ -641,14 +647,17 @@ bool GetMayUsePrefilledPlaceholder(
 
 // Puts together a PasswordForm, the result of the parsing, based on the
 // |form_data| description of the form metadata (e.g., action), the already
-// parsed information about what are the |significant_fields|, and the list
-// |all_possible_passwords| of all non-empty password values and associated
-// element names which occurred in the form. |form_predictions| is used to find
-// fields that may have preffilled placeholders.
+// parsed information about what are the |significant_fields|, the list
+// |all_possible_passwords| of all non-empty password values which occurred in
+// the form and their associated element names, and the list
+// |all_possible_usernames| of all non-empty username values which
+// occurred in the form and their associated elements. |form_predictions| is
+// used to find fields that may have preffilled placeholders.
 std::unique_ptr<PasswordForm> AssemblePasswordForm(
     const autofill::FormData& form_data,
     const SignificantFields* significant_fields,
     autofill::ValueElementVector all_possible_passwords,
+    autofill::ValueElementVector all_possible_usernames,
     const FormPredictions* form_predictions) {
   if (!significant_fields || !significant_fields->HasPasswords())
     return nullptr;
@@ -660,6 +669,9 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->action = form_data.action;
   result->form_data = form_data;
   result->all_possible_passwords = std::move(all_possible_passwords);
+  // TODO(crbug.com/881346) Rename PasswordForm::other_possible_usernames to
+  // all_possible_usernames once the old parser is gone.
+  result->other_possible_usernames = std::move(all_possible_usernames);
   result->scheme = PasswordForm::SCHEME_HTML;
   result->preferred = false;
   result->blacklisted_by_user = false;
@@ -679,8 +691,9 @@ std::unique_ptr<PasswordForm> ParseFormData(
     const FormPredictions* form_predictions,
     FormParsingMode mode) {
   autofill::ValueElementVector all_possible_passwords;
-  std::vector<ProcessedField> processed_fields =
-      ProcessFields(form_data.fields, &all_possible_passwords);
+  autofill::ValueElementVector all_possible_usernames;
+  std::vector<ProcessedField> processed_fields = ProcessFields(
+      form_data.fields, &all_possible_passwords, &all_possible_usernames);
 
   if (processed_fields.empty())
     return nullptr;
@@ -751,9 +764,9 @@ std::unique_ptr<PasswordForm> ParseFormData(
                             username_detection_method,
                             UsernameDetectionMethod::kCount);
 
-  return AssemblePasswordForm(form_data, significant_fields.get(),
-                              std::move(all_possible_passwords),
-                              form_predictions);
+  return AssemblePasswordForm(
+      form_data, significant_fields.get(), std::move(all_possible_passwords),
+      std::move(all_possible_usernames), form_predictions);
 }
 
 }  // namespace password_manager
