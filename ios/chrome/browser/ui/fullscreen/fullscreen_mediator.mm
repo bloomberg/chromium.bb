@@ -120,6 +120,13 @@ void FullscreenMediator::FullscreenModelScrollEventStarted(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);
   StopAnimating(true /* update_model */);
+  // Show the toolbars if the user begins a scroll past the bottom edge of the
+  // screen and the toolbars have been fully collapsed.
+  if (model_->is_scrolled_to_bottom() &&
+      AreCGFloatsEqual(model_->progress(), 0.0) &&
+      model_->can_collapse_toolbar()) {
+    AnimateModelReset();
+  }
 }
 
 void FullscreenMediator::FullscreenModelScrollEventEnded(

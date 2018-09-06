@@ -4150,6 +4150,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.footerFullscreenProgress = progress;
 
   if (IsUIRefreshPhase1Enabled()) {
+    // TODO(crbug.com/880656): Update implementation to make the bottom toolbar
+    // animatable.
     self.secondaryToolbarHeightConstraint.constant =
         [self secondaryToolbarHeightWithInset] * progress;
 
