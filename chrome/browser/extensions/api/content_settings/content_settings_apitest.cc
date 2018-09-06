@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
   EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
 
   size_t num_values = 0;
-  int javascript_type = ContentSettingTypeToHistogramValue(
+  int images_type = ContentSettingTypeToHistogramValue(
       CONTENT_SETTINGS_TYPE_IMAGES, &num_values);
   int geolocation_type = ContentSettingTypeToHistogramValue(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, &num_values);
@@ -378,14 +378,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
       CONTENT_SETTINGS_TYPE_COOKIES, &num_values);
 
   histogram_tester.ExpectBucketCount(
-      "ContentSettings.ExtensionEmbeddedSettingSet", javascript_type, 1);
+      "ContentSettings.ExtensionEmbeddedSettingSet", images_type, 1);
   histogram_tester.ExpectBucketCount(
       "ContentSettings.ExtensionEmbeddedSettingSet", geolocation_type, 1);
   histogram_tester.ExpectTotalCount(
       "ContentSettings.ExtensionEmbeddedSettingSet", 2);
 
   histogram_tester.ExpectBucketCount(
-      "ContentSettings.ExtensionNonEmbeddedSettingSet", javascript_type, 1);
+      "ContentSettings.ExtensionNonEmbeddedSettingSet", images_type, 1);
   histogram_tester.ExpectBucketCount(
       "ContentSettings.ExtensionNonEmbeddedSettingSet", cookies_type, 1);
   histogram_tester.ExpectTotalCount(

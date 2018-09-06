@@ -249,6 +249,18 @@ ContentSettingsContentSettingSetFunction::Run() {
                                                readable_type_name.c_str())));
   }
 
+  size_t num_values = 0;
+  int histogram_value =
+      ContentSettingTypeToHistogramValue(content_type, &num_values);
+  if (primary_pattern != secondary_pattern &&
+      secondary_pattern != ContentSettingsPattern::Wildcard()) {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionEmbeddedSettingSet",
+                               histogram_value, num_values);
+  } else {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionNonEmbeddedSettingSet",
+                               histogram_value, num_values);
+  }
+
   if (primary_pattern != secondary_pattern &&
       secondary_pattern != ContentSettingsPattern::Wildcard() &&
       !info->website_settings_info()->SupportsEmbeddedExceptions() &&
@@ -286,18 +298,6 @@ ContentSettingsContentSettingSetFunction::Run() {
       !Profile::FromBrowserContext(browser_context())
            ->HasOffTheRecordProfile()) {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
-  }
-
-  size_t num_values = 0;
-  int histogram_value =
-      ContentSettingTypeToHistogramValue(content_type, &num_values);
-  if (primary_pattern != secondary_pattern &&
-      secondary_pattern != ContentSettingsPattern::Wildcard()) {
-    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionEmbeddedSettingSet",
-                               histogram_value, num_values);
-  } else {
-    UMA_HISTOGRAM_EXACT_LINEAR("ContentSettings.ExtensionNonEmbeddedSettingSet",
-                               histogram_value, num_values);
   }
 
   scoped_refptr<ContentSettingsStore> store =
