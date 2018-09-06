@@ -548,6 +548,8 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
     return app_list_view_->HandleScroll(
         (&mouse_event)->AsMouseWheelEvent()->offset().y(), ui::ET_MOUSEWHEEL);
   }
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
+    AcceptAutocompleteText();
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
 }
 
