@@ -4,7 +4,10 @@
 
 #include "ui/views/cocoa/cocoa_window_move_loop.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "components/crash/core/common/crash_key.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
@@ -46,6 +49,13 @@ CocoaWindowMoveLoop::CocoaWindowMoveLoop(BridgedNativeWidgetImpl* owner,
       weak_factory_(this) {}
 
 CocoaWindowMoveLoop::~CocoaWindowMoveLoop() {
+  // Record the address and stack to help catch https://crbug.com/876493.
+  static crash_reporter::CrashKeyString<19> address_key("move_loop_address");
+  address_key.Set(base::StringPrintf("%p", this));
+
+  static crash_reporter::CrashKeyString<1024> stack_key("move_loop_stack");
+  crash_reporter::SetCrashKeyStringToStackTrace(&stack_key,
+                                                base::debug::StackTrace());
   // Handle the pathological case, where |this| is destroyed while running.
   if (exit_reason_ref_) {
     *exit_reason_ref_ = WINDOW_DESTROYED;
@@ -73,6 +83,10 @@ Widget::MoveLoopResult CocoaWindowMoveLoop::Run() {
   // TabDragController.
   NSEventMask mask = NSLeftMouseUpMask | NSLeftMouseDraggedMask;
   auto handler = ^NSEvent*(NSEvent* event) {
+    // The docs say this always runs on the main thread, but if it didn't,
+    // it would explain https://crbug.com/876493, so let's make sure.
+    CHECK_EQ(CFRunLoopGetMain(), CFRunLoopGetCurrent());
+
     CocoaWindowMoveLoop* strong = [weak_cocoa_window_move_loop weak].get();
     if (!strong || !strong->exit_reason_ref_) {
       // By this point CocoaWindowMoveLoop was deleted while processing this

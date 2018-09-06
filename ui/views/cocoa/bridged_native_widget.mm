@@ -609,7 +609,8 @@ bool BridgedNativeWidgetImpl::HasCapture() {
 Widget::MoveLoopResult BridgedNativeWidgetImpl::RunMoveLoop(
     const gfx::Vector2d& drag_offset) {
   DCHECK(!HasCapture());
-  DCHECK(!window_move_loop_);
+  // https://crbug.com/876493
+  CHECK(!window_move_loop_);
 
   // RunMoveLoop caller is responsible for updating the window to be under the
   // mouse, but it does this using possibly outdated coordinate from the mouse
