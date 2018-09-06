@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
 
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_feature.mojom-shared.h"

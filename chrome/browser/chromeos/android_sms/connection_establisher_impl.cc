@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chromeos {
 

@@ -10,7 +10,7 @@
 #include "content/public/test/fake_service_worker_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/message_port/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chromeos {
 

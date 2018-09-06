@@ -27,7 +27,7 @@
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 #include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"

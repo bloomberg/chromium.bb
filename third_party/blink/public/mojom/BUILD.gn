@@ -134,8 +134,8 @@ mojom("speech_recognition_error_code") {
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
   sources = [
-    "message_port/message_port.mojom",
-    "message_port/user_activation_snapshot.mojom",
+    "messaging/message_port.mojom",
+    "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_object.mojom",

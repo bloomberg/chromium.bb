@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_H_
 
 #include "base/android/jni_weak_ref.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 
 namespace content {
 

@@ -17,7 +17,7 @@
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 
 class GURL;
 

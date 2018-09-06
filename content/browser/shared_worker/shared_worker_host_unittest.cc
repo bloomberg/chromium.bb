@@ -25,7 +25,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "url/origin.h"
 
 using blink::MessagePortChannel;

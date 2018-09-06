@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 
 #include "base/time/time.h"
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"

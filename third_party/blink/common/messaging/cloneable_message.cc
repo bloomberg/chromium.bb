@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/common/message_port/cloneable_message.h"
+#include "third_party/blink/public/common/messaging/cloneable_message.h"
 
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
-#include "third_party/blink/public/mojom/message_port/message_port.mojom.h"
+#include "third_party/blink/public/mojom/messaging/message_port.mojom.h"
 
 namespace blink {
 

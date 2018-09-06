@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
