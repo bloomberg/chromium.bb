@@ -36,19 +36,12 @@ class MockD3D11VideoDecoderImpl : public D3D11VideoDecoderImpl {
             nullptr,
             base::RepeatingCallback<gpu::CommandBufferStub*()>()) {}
 
-  MOCK_METHOD6(
-      Initialize,
-      void(const VideoDecoderConfig& config,
-           bool low_delay,
-           CdmContext* cdm_context,
-           const InitCB& init_cb,
-           const OutputCB& output_cb,
-           const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb));
+  void Initialize(InitCB init_cb,
+                  ReturnPictureBufferCB return_picture_buffer_cb) override {
+    MockInitialize();
+  }
 
-  MOCK_METHOD2(Decode,
-               void(scoped_refptr<DecoderBuffer> buffer,
-                    const DecodeCB& decode_cb));
-  MOCK_METHOD1(Reset, void(const base::RepeatingClosure& closure));
+  MOCK_METHOD0(MockInitialize, void());
 };
 
 class D3D11VideoDecoderTest : public ::testing::Test {
@@ -79,7 +72,9 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     decoder_ = base::WrapUnique<VideoDecoder>(
         d3d11_decoder_raw_ = new D3D11VideoDecoder(
             gpu_task_runner_, nullptr /* MediaLog */, gpu_preferences_,
-            gpu_workarounds_, std::move(impl)));
+            gpu_workarounds_, std::move(impl),
+            base::BindRepeating(
+                []() -> gpu::CommandBufferStub* { return nullptr; })));
     d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
                             base::Unretained(&create_device_mock_)));
@@ -102,7 +97,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
     if (expectation == kExpectSuccess) {
       EXPECT_CALL(*this, MockInitCB(_)).Times(0);
-      EXPECT_CALL(*impl_, Initialize(_, low_delay, cdm_context, _, _, _));
+      EXPECT_CALL(*impl_, MockInitialize());
     } else {
       EXPECT_CALL(*this, MockInitCB(false));
     }
@@ -164,7 +159,10 @@ TEST_F(D3D11VideoDecoderTest, SupportsH264) {
   CreateDecoder();
   // Make sure that we're testing H264.
   ASSERT_EQ(supported_config_.profile(), H264PROFILE_MAIN);
-  InitializeDecoder(supported_config_, kExpectSuccess);
+  // We do not actually try to initialize the decoder, since we don't mock
+  // out enough of D3D for that to work.  Instead, we just check that
+  // IsPotentiallySupported is correct.
+  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(supported_config_));
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP8) {
