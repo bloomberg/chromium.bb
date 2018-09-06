@@ -222,7 +222,7 @@ void CreateScriptLoaderOnIO(
 }  // namespace
 
 SharedWorkerServiceImpl::SharedWorkerServiceImpl(
-    StoragePartition* storage_partition,
+    StoragePartitionImpl* storage_partition,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<ChromeAppCacheService> appcache_service)
     : storage_partition_(storage_partition),
@@ -261,9 +261,11 @@ void SharedWorkerServiceImpl::TerminateAllWorkersForTesting(
                                                   std::move(callback));
   } else {
     terminate_all_workers_callback_ = std::move(callback);
-    for (auto& host : worker_hosts_)
-      host->TerminateWorker();
-    // Monitor for actual termination in DestroyHost.
+    // Use an explicit iterator and be careful because TerminateWorker() can
+    // call DestroyHost(), which removes the host from |worker_hosts_| and could
+    // invalidate the iterator.
+    for (auto it = worker_hosts_.begin(); it != worker_hosts_.end();)
+      (*it++)->TerminateWorker();
   }
 }
 
@@ -331,17 +333,11 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* process_host =
-      RenderProcessHost::FromID(host->process_id());
   worker_hosts_.erase(worker_hosts_.find(host));
 
   // Complete the call to TerminateAllWorkersForTesting if no more workers.
   if (worker_hosts_.empty() && terminate_all_workers_callback_)
     std::move(terminate_all_workers_callback_).Run();
-
-  if (!IsShuttingDown(process_host))
-    process_host->DecrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kSharedWorker);
 }
 
 void SharedWorkerServiceImpl::CreateWorker(
@@ -352,7 +348,6 @@ void SharedWorkerServiceImpl::CreateWorker(
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   DCHECK(!blob_url_loader_factory || instance->url().SchemeIsBlob());
 
   bool constructor_uses_file_url =
@@ -370,22 +365,15 @@ void SharedWorkerServiceImpl::CreateWorker(
   // Bounce to the IO thread to setup service worker and appcache support in
   // case the request for the worker script will need to be intercepted by them.
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    StoragePartitionImpl* storage_partition =
-        service_worker_context_->storage_partition();
-    if (!storage_partition) {
-      // The context is shutting down. Just drop the request.
-      return;
-    }
-
     // Set up the factory bundle for non-NetworkService URLs, e.g.,
     // chrome-extension:// URLs. One factory bundle is consumed by the browser
     // for SharedWorkerScriptLoaderFactory, and one is sent to the renderer for
     // subresource loading.
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_browser =
-        CreateFactoryBundle(process_id, storage_partition,
+        CreateFactoryBundle(process_id, storage_partition_,
                             constructor_uses_file_url);
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories =
-        CreateFactoryBundle(process_id, storage_partition,
+        CreateFactoryBundle(process_id, storage_partition_,
                             constructor_uses_file_url);
 
     // NetworkService (PlzWorker):
@@ -433,7 +421,7 @@ void SharedWorkerServiceImpl::CreateWorker(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &CreateScriptLoaderOnIO,
-            storage_partition->url_loader_factory_getter(),
+            storage_partition_->url_loader_factory_getter(),
             std::move(factory_bundle_for_browser),
             std::move(subresource_loader_factories), service_worker_context_,
             appcache_handle_core,
@@ -486,10 +474,6 @@ void SharedWorkerServiceImpl::StartWorker(
     host->TerminateWorker();
     return;
   }
-
-  // Keep the renderer process alive that will be hosting the shared worker.
-  process_host->IncrementKeepAliveRefCount(
-      RenderProcessHost::KeepAliveClientType::kSharedWorker);
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.

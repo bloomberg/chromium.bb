@@ -61,6 +61,11 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
       url, name, resource_context, render_frames);
 }
 
+bool IsShuttingDown(RenderProcessHost* host) {
+  return !host || host->FastShutdownStarted() ||
+         host->IsKeepAliveRefCountDisabled();
+}
+
 }  // namespace
 
 // RAII helper class for talking to SharedWorkerDevToolsManager.
@@ -105,6 +110,12 @@ SharedWorkerHost::SharedWorkerHost(
   // AddClient() or Start(). AddClient() can sometimes be called before Start()
   // when two clients call new SharedWorker() at around the same time.
   worker_request_ = mojo::MakeRequest(&worker_);
+
+  // Keep the renderer process alive that will be hosting the shared worker.
+  RenderProcessHost* process_host = RenderProcessHost::FromID(process_id);
+  DCHECK(!IsShuttingDown(process_host));
+  process_host->IncrementKeepAliveRefCount(
+      RenderProcessHost::KeepAliveClientType::kSharedWorker);
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -123,6 +134,12 @@ SharedWorkerHost::~SharedWorkerHost() {
     case Phase::kTerminationSent:
     case Phase::kTerminationSentAndClosed:
       break;
+  }
+
+  RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
+  if (!IsShuttingDown(process_host)) {
+    process_host->DecrementKeepAliveRefCount(
+        RenderProcessHost::KeepAliveClientType::kSharedWorker);
   }
 }
 
