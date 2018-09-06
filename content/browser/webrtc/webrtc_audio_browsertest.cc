@@ -18,73 +18,25 @@
 #include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/service_manager/sandbox/features.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
 namespace content {
 
-namespace {
-
-// Temporary enum, used for running the tests with different combination of
-// flags while audio service is under experiment.
-// TODO(https://crbug.com/850878) Remove after enabling sandboxing on all
-// platforms.
-enum class AudioServiceFeatures {
-  kDisabled,
-  kOutOfProcess,
-#if defined(OS_WIN)
-  kSandboxed,
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  kSandboxedWithAudioServiceAPM
-#endif
-};
-}  // namespace
-
 // This class tests the scenario when permission to access mic or camera is
 // granted.
-class WebRtcAudioBrowserTest
-    : public WebRtcContentBrowserTestBase,
-      public testing::WithParamInterface<AudioServiceFeatures> {
+class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
+                               public testing::WithParamInterface<bool> {
  public:
   WebRtcAudioBrowserTest() {
     std::vector<base::Feature> audio_service_oop_features = {
         features::kAudioServiceAudioStreams,
         features::kAudioServiceOutOfProcess};
-    switch (GetParam()) {
-      case AudioServiceFeatures::kDisabled:
-        // Force audio service out of process to disabled.
-        audio_service_features_.InitWithFeatures({},
-                                                 audio_service_oop_features);
-        break;
-      case AudioServiceFeatures::kOutOfProcess:
-        // Force audio service out of process to enabled.
-        audio_service_features_.InitWithFeatures(
-            audio_service_oop_features,
-#if defined(OS_WIN)
-            // Force audio service sandboxing (available only on Windows) to
-            // disabled.
-            {service_manager::features::kAudioServiceSandbox});
-#else
-            {});
-#endif
-        break;
-#if defined(OS_WIN)
-      case AudioServiceFeatures::kSandboxed:
-        // Force audio service out of process and sandboxing to enabled.
-        audio_service_oop_features.push_back(
-            service_manager::features::kAudioServiceSandbox);
-        audio_service_features_.InitWithFeatures(audio_service_oop_features,
-                                                 {});
-        break;
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-      case AudioServiceFeatures::kSandboxedWithAudioServiceAPM:
-        audio_service_oop_features.push_back(
-            service_manager::features::kAudioServiceSandbox);
-        audio_service_oop_features.push_back(
-            features::kWebRtcApmInAudioService);
-#endif
+    if (GetParam()) {
+      // Force audio service out of process to enabled.
+      audio_service_features_.InitWithFeatures(audio_service_oop_features, {});
+    } else {
+      // Force audio service out of process to disabled.
+      audio_service_features_.InitWithFeatures({}, audio_service_oop_features);
     }
   }
   ~WebRtcAudioBrowserTest() override {}
@@ -178,30 +130,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 // We run these tests with the audio service both in and out of the the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(
-    ,
-    WebRtcAudioBrowserTest,
-    ::testing::Values(AudioServiceFeatures::kDisabled,
-                      AudioServiceFeatures::kOutOfProcess,
-                      AudioServiceFeatures::kSandboxedWithAudioServiceAPM));
-#elif defined(OS_WIN)
-// On Windows, also run in sandboxed mode.
-INSTANTIATE_TEST_CASE_P(
-    ,
-    WebRtcAudioBrowserTest,
-    ::testing::Values(AudioServiceFeatures::kDisabled,
-                      AudioServiceFeatures::kOutOfProcess,
-                      AudioServiceFeatures::kSandboxed,
-                      AudioServiceFeatures::kSandboxedWithAudioServiceAPM));
+INSTANTIATE_TEST_CASE_P(, WebRtcAudioBrowserTest, ::testing::Bool());
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #else
 // Platforms where the out of process audio service isn't supported
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcAudioBrowserTest,
-                        ::testing::Values(AudioServiceFeatures::kDisabled));
+INSTANTIATE_TEST_CASE_P(, WebRtcAudioBrowserTest, ::testing::Values(false));
 #endif
 
 }  // namespace content
