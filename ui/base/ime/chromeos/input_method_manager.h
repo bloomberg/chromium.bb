@@ -88,7 +88,12 @@ class UI_BASE_IME_EXPORT InputMethodManager {
         bool is_extra_input_options_enabled,
         bool is_emoji_enabled,
         bool is_handwriting_enabled,
-        bool is_voice_enabled){};
+        bool is_voice_enabled) {}
+
+    // Called when an input method extension is added or removed.
+    virtual void OnInputMethodExtensionAdded(const std::string& extension_id) {}
+    virtual void OnInputMethodExtensionRemoved(
+        const std::string& extension_id) {}
   };
 
   // CandidateWindowObserver is notified of events related to the candidate
@@ -349,6 +354,12 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   // Gets the implementation of the keyboard controller.
   virtual ui::InputMethodKeyboardController*
   GetInputMethodKeyboardController() = 0;
+
+  // Notifies an input method extension is added or removed.
+  virtual void NotifyInputMethodExtensionAdded(
+      const std::string& extension_id) = 0;
+  virtual void NotifyInputMethodExtensionRemoved(
+      const std::string& extension_id) = 0;
 };
 
 }  // namespace input_method

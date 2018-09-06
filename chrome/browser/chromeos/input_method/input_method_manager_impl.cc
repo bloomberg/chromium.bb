@@ -619,6 +619,7 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
   }
 
   manager_->NotifyImeMenuListChanged();
+  manager_->NotifyInputMethodExtensionAdded(extension_id);
 }
 
 void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
@@ -655,6 +656,7 @@ void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
   // If |current_input_method| is no longer in |active_input_method_ids|,
   // switch to the first one in |active_input_method_ids|.
   ChangeInputMethod(current_input_method.id(), false);
+  manager_->NotifyInputMethodExtensionRemoved(extension_id);
 }
 
 void InputMethodManagerImpl::StateImpl::GetInputMethodExtensions(
@@ -1276,6 +1278,18 @@ void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
   // users. This method is only called when the preference is changing.
   state_->menu_activated = is_active;
   MaybeNotifyImeMenuActivationChanged();
+}
+
+void InputMethodManagerImpl::NotifyInputMethodExtensionAdded(
+    const std::string& extension_id) {
+  for (auto& observer : observers_)
+    observer.OnInputMethodExtensionAdded(extension_id);
+}
+
+void InputMethodManagerImpl::NotifyInputMethodExtensionRemoved(
+    const std::string& extension_id) {
+  for (auto& observer : observers_)
+    observer.OnInputMethodExtensionRemoved(extension_id);
 }
 
 void InputMethodManagerImpl::NotifyImeMenuListChanged() {

@@ -201,6 +201,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   void NotifyObserversImeExtraInputStateChange() override;
   ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
       override;
+  void NotifyInputMethodExtensionAdded(
+      const std::string& extension_id) override;
+  void NotifyInputMethodExtensionRemoved(
+      const std::string& extension_id) override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;
