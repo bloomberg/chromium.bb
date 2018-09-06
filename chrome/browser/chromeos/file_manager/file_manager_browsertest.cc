@@ -15,6 +15,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "ui/keyboard/keyboard_switches.h"
 
 namespace file_manager {
 
@@ -120,9 +121,11 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
                                       "TrustedEventsDefaultAction");
     }
 
-    // Default mode is clamshell: force Ash into tablet mode if requested.
+    // Default mode is clamshell: force Ash into tablet mode if requested,
+    // and enable the Ash virtual keyboard sub-system therein.
     if (GetParam().tablet_mode) {
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
+      command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
     }
 
     // TODO(crbug.com/879404): Fix tests to work with NativeSMB.
@@ -144,15 +147,15 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     return "file_manager_test_manifest.json";
   }
 
+  bool GetTabletMode() const override { return GetParam().tablet_mode; }
+
   bool GetEnableDriveFs() const override { return GetParam().enable_drivefs; }
 
   bool GetRequiresStartupBrowser() const override {
     return GetParam().with_browser;
   }
 
-  bool GetNeedsZipSupport() const override {
-    return GetParam().needs_zip;
-  }
+  bool GetNeedsZipSupport() const override { return GetParam().needs_zip; }
 
   bool GetIsOffline() const override { return GetParam().offline; }
 
