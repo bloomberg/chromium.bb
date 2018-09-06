@@ -1,3 +1,46 @@
+.meson-build: &meson-build
+  - meson _build
+      -D amdgpu=true
+      -D cairo-tests=true
+      -D etnaviv=true
+      -D exynos=true
+      -D freedreno=true
+      -D freedreno-kgsl=true
+      -D intel=true
+      -D libkms=true
+      -D man-pages=true
+      -D nouveau=true
+      -D omap=true
+      -D radeon=true
+      -D tegra=true
+      -D udev=true
+      -D valgrind=true
+      -D vc4=true
+      -D vmwgfx=true
+  - ninja -C _build
+  - ninja -C _build test
+
+.autotools-build: &autotools-build
+  - mkdir _build
+  - cd _build
+  - ../autogen.sh
+      --enable-udev
+      --enable-libkms
+      --enable-intel
+      --enable-radeon
+      --enable-admgpu
+      --enable-nouveau
+      --enable-vmwfgx
+      --enable-omap-experimental-api
+      --enable-exynos-experimental-api
+      --enable-freedreno
+      --enable-freedreno-kgsl
+      --enable-tegra-experimental-api
+      --enable-vc4
+      --enable-etnaviv-experimental-api
+  - make
+  - make check
+
 latest-meson:
   stage: build
   image: base/archlinux:latest
@@ -10,27 +53,7 @@ latest-meson:
         valgrind
         libatomic_ops
         cairo cunit
-  script:
-    - meson _build
-        -D amdgpu=true
-        -D cairo-tests=true
-        -D etnaviv=true
-        -D exynos=true
-        -D freedreno=true
-        -D freedreno-kgsl=true
-        -D intel=true
-        -D libkms=true
-        -D man-pages=true
-        -D nouveau=true
-        -D omap=true
-        -D radeon=true
-        -D tegra=true
-        -D udev=true
-        -D valgrind=true
-        -D vc4=true
-        -D vmwgfx=true
-    - ninja -C _build
-    - ninja -C _build test
+  script: *meson-build
 
 latest-autotools:
   stage: build
@@ -45,26 +68,7 @@ latest-autotools:
         cairo cunit
         xorg-util-macros
         git # autogen.sh depends on git
-  script:
-    - mkdir _build
-    - cd _build
-    - ../autogen.sh
-        --enable-udev
-        --enable-libkms
-        --enable-intel
-        --enable-radeon
-        --enable-admgpu
-        --enable-nouveau
-        --enable-vmwfgx
-        --enable-omap-experimental-api
-        --enable-exynos-experimental-api
-        --enable-freedreno
-        --enable-freedreno-kgsl
-        --enable-tegra-experimental-api
-        --enable-vc4
-        --enable-etnaviv-experimental-api
-    - make
-    - make check
+  script: *autotools-build
 
 oldest-meson:
   stage: build
@@ -98,29 +102,9 @@ oldest-meson:
       (cd $LIBPCIACCESS_VERSION && ./configure --prefix=$HOME/prefix && make install)
     - pip3 install wheel setuptools
     - pip3 install meson==0.43
-  script:
     - export PKG_CONFIG_PATH=$HOME/prefix/lib/pkgconfig:$HOME/prefix/share/pkgconfig
     - export LD_LIBRARY_PATH="$HOME/prefix/lib:$LD_LIBRARY_PATH"
-    - meson _build
-        -D amdgpu=true
-        -D cairo-tests=true
-        -D etnaviv=true
-        -D exynos=true
-        -D freedreno=true
-        -D freedreno-kgsl=true
-        -D intel=true
-        -D libkms=true
-        -D man-pages=true
-        -D nouveau=true
-        -D omap=true
-        -D radeon=true
-        -D tegra=true
-        -D udev=true
-        -D valgrind=true
-        -D vc4=true
-        -D vmwgfx=true
-    - ninja -C _build
-    - ninja -C _build test
+  script: *meson-build
 
 oldest-autotools:
   stage: build
@@ -155,25 +139,6 @@ oldest-autotools:
       wget --no-check-certificate https://xorg.freedesktop.org/releases/individual/lib/$LIBPCIACCESS_VERSION.tar.bz2 &&
       tar -jxvf $LIBPCIACCESS_VERSION.tar.bz2 &&
       (cd $LIBPCIACCESS_VERSION && ./configure --prefix=$HOME/prefix && make install)
-  script:
     - export PKG_CONFIG_PATH=$HOME/prefix/lib/pkgconfig:$HOME/prefix/share/pkgconfig
     - export LD_LIBRARY_PATH="$HOME/prefix/lib:$LD_LIBRARY_PATH"
-    - mkdir _build
-    - cd _build
-    - ../autogen.sh
-        --enable-udev
-        --enable-libkms
-        --enable-intel
-        --enable-radeon
-        --enable-admgpu
-        --enable-nouveau
-        --enable-vmwfgx
-        --enable-omap-experimental-api
-        --enable-exynos-experimental-api
-        --enable-freedreno
-        --enable-freedreno-kgsl
-        --enable-tegra-experimental-api
-        --enable-vc4
-        --enable-etnaviv-experimental-api
-    - make
-    - make check
+  script: *autotools-build
