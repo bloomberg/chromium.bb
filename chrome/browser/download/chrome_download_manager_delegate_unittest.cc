@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -257,8 +256,6 @@ class ChromeDownloadManagerDelegateTest
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
  private:
-  // Resets the global cached DefaultDownloadDirectory instance.
-  base::ShadowingAtExitManager at_exit_manager_;
   base::ScopedPathOverride download_dir_override_{
       chrome::DIR_DEFAULT_DOWNLOADS};
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
@@ -273,6 +270,7 @@ ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
+  DownloadPrefs::ReinitializeDefaultDownloadDirectoryForTesting();
   ChromeRenderViewHostTestHarness::SetUp();
 
   CHECK(profile());
