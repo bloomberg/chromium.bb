@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
+#include "chromeos/services/multidevice_setup/host_status_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 class PrefRegistrySimple;
@@ -27,11 +27,11 @@ namespace multidevice_setup {
 class SetupFlowCompletionRecorder;
 
 // Concrete AccountStatusChangeDelegateNotifier implementation, which uses
-// DeviceSyncClient to check for account changes and PrefStore to track previous
-// notifications.
+// HostStatusProvider to check for account changes and PrefStore to track
+// previous notifications.
 class AccountStatusChangeDelegateNotifierImpl
     : public AccountStatusChangeDelegateNotifier,
-      public device_sync::DeviceSyncClient::Observer {
+      public HostStatusProvider::Observer {
  public:
   class Factory {
    public:
@@ -39,7 +39,7 @@ class AccountStatusChangeDelegateNotifierImpl
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<AccountStatusChangeDelegateNotifier> BuildInstance(
-        device_sync::DeviceSyncClient* device_sync_client,
+        HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         SetupFlowCompletionRecorder* setup_flow_completion_recorder,
         base::Clock* clock);
@@ -62,10 +62,10 @@ class AccountStatusChangeDelegateNotifierImpl
   static const char kExistingUserHostSwitchedPrefName[];
   static const char kExistingUserChromebookAddedPrefName[];
 
-  static const char kHostPublicKeyFromMostRecentSyncPrefName[];
+  static const char kHostDeviceIdFromMostRecentHostStatusUpdatePrefName[];
 
   AccountStatusChangeDelegateNotifierImpl(
-      device_sync::DeviceSyncClient* device_sync_client,
+      HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       SetupFlowCompletionRecorder* setup_flow_completion_recorder,
       base::Clock* clock);
@@ -73,28 +73,30 @@ class AccountStatusChangeDelegateNotifierImpl
   // AccountStatusChangeDelegateNotifier:
   void OnDelegateSet() override;
 
-  // device_sync::DeviceSyncClient::Observer:
-  void OnNewDevicesSynced() override;
+  // HostStatusProvider::Observer:
+  void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
+                              host_status_with_device) override;
 
-  void CheckForMultiDeviceEvents();
+  void CheckForMultiDeviceEvents(
+      const HostStatusProvider::HostStatusWithDevice& host_status_with_device);
 
   void CheckForNewUserPotentialHostExistsEvent(
-      const cryptauth::RemoteDeviceRefList&);
+      const HostStatusProvider::HostStatusWithDevice& host_status_with_device);
   void CheckForExistingUserHostSwitchedEvent(
-      const base::Optional<std::string>& host_public_key_before_sync,
-      const std::string& new_host_device_name);
+      const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
+      const base::Optional<std::string>& host_device_id_before_update);
   void CheckForExistingUserChromebookAddedEvent(
-      bool local_device_was_enabled_client_before_sync);
+      const base::Optional<std::string>& host_device_id_before_update);
 
   // Loads data from previous session using PrefService.
-  base::Optional<std::string> LoadHostPublicKeyFromEndOfPreviousSession();
+  base::Optional<std::string> LoadHostDeviceIdFromEndOfPreviousSession();
 
-  // Set to base::nullopt if there was no enabled host in the most recent sync.
-  base::Optional<std::string> host_public_key_from_most_recent_sync_;
-  bool local_device_is_enabled_client_;
+  // Set to base::nullopt if there was no enabled host in the most recent
+  // host status update.
+  base::Optional<std::string> host_device_id_from_most_recent_update_;
 
   mojom::AccountStatusChangeDelegatePtr delegate_ptr_;
-  device_sync::DeviceSyncClient* device_sync_client_;
+  HostStatusProvider* host_status_provider_;
   PrefService* pref_service_;
   SetupFlowCompletionRecorder* setup_flow_completion_recorder_;
   base::Clock* clock_;
