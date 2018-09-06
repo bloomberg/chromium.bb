@@ -77,6 +77,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/task/post_task.h"
 #include "chromecast/app/android/crash_handler.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
@@ -488,7 +489,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
-  StartPeriodicCrashReportUpload();
+  crash_reporter_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  crash_reporter_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastBrowserMainParts::StartPeriodicCrashReportUpload,
+                     base::Unretained(this)));
 #endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetNetLog(net_log_.get());
