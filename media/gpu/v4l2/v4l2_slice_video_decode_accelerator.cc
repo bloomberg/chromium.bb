@@ -26,6 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/unaligned_shared_memory.h"
@@ -181,7 +182,6 @@ V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
       at_client(false),
       picture_id(-1),
       texture_id(0),
-      egl_sync(EGL_NO_SYNC_KHR),
       cleared(false) {}
 
 V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord(OutputRecord&&) =
@@ -227,26 +227,6 @@ V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
         base::Bind(&VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer,
                    client, input_id));
   }
-}
-
-struct V4L2SliceVideoDecodeAccelerator::EGLSyncKHRRef {
-  EGLSyncKHRRef(EGLDisplay egl_display, EGLSyncKHR egl_sync);
-  ~EGLSyncKHRRef();
-  EGLDisplay const egl_display;
-  EGLSyncKHR egl_sync;
-};
-
-V4L2SliceVideoDecodeAccelerator::EGLSyncKHRRef::EGLSyncKHRRef(
-    EGLDisplay egl_display,
-    EGLSyncKHR egl_sync)
-    : egl_display(egl_display), egl_sync(egl_sync) {}
-
-V4L2SliceVideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
-  // We don't check for eglDestroySyncKHR failures, because if we get here
-  // with a valid sync object, something went wrong and we are getting
-  // destroyed anyway.
-  if (egl_sync != EGL_NO_SYNC_KHR)
-    eglDestroySyncKHR(egl_display, egl_sync);
 }
 
 V4L2SliceVideoDecodeAccelerator::PictureRecord::PictureRecord(
@@ -1167,23 +1147,22 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(int index) {
   DCHECK(!output_record.at_client);
   DCHECK_NE(output_record.picture_id, -1);
 
-  if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
+  if (output_record.egl_fence) {
     // If we have to wait for completion, wait. Note that free_output_buffers_
     // is a FIFO queue, so we always wait on the buffer that has been in the
     // queue the longest. Every 100ms we check whether the decoder is shutting
-    // down, or we might get stuck waiting on a sync that will never come:
+    // down, or we might get stuck waiting on a fence that will never come:
     // https://crbug.com/845645
     while (!IsDestroyPending()) {
-      constexpr EGLTimeKHR wait_ns =
-          100 * base::Time::kNanosecondsPerMicrosecond *
-          base::Time::kMicrosecondsPerMillisecond;  // 100ms
-      EGLint result = eglClientWaitSyncKHR(egl_display_, output_record.egl_sync,
-                                           0, wait_ns);
+      const EGLTimeKHR wait_ns =
+          base::TimeDelta::FromMilliseconds(100).InNanoseconds();
+      EGLint result =
+          output_record.egl_fence->ClientWaitWithTimeoutNanos(wait_ns);
       if (result == EGL_CONDITION_SATISFIED_KHR) {
         break;
       } else if (result == EGL_FALSE) {
         // This will cause tearing, but is safe otherwise.
-        DVLOGF(1) << "eglClientWaitSyncKHR failed!";
+        DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
         break;
       }
       DCHECK_EQ(result, EGL_TIMEOUT_EXPIRED_KHR);
@@ -1192,12 +1171,7 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(int index) {
     if (IsDestroyPending())
       return false;
 
-    if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
-      VLOGF(1) << "eglDestroySyncKHR failed!";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return false;
-    }
-    output_record.egl_sync = EGL_NO_SYNC_KHR;
+    output_record.egl_fence.reset();
   }
 
   struct v4l2_buffer qbuf;
@@ -1530,10 +1504,7 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
   for (auto& output_record : output_buffer_map_) {
     DCHECK(!output_record.at_device);
 
-    if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
-      if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE)
-        VLOGF(1) << "eglDestroySyncKHR failed.";
-    }
+    output_record.egl_fence.reset();
 
     picture_buffers_to_dismiss.push_back(output_record.picture_id);
   }
@@ -1649,7 +1620,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
     DCHECK(!output_record.at_client);
-    DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+    DCHECK(!output_record.egl_fence);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(output_record.dmabuf_fds.empty());
     DCHECK_EQ(output_record.cleared, false);
@@ -1761,7 +1732,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
   }
 
   OutputRecord& output_record = output_buffer_map_[buffer_index];
-  DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+  DCHECK(!output_record.egl_fence);
   DCHECK(!output_record.at_client);
   DCHECK(!output_record.at_device);
 
@@ -1871,7 +1842,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
 
-  std::unique_ptr<EGLSyncKHRRef> egl_sync_ref;
+  std::unique_ptr<gl::GLFenceEGL> egl_fence;
 
   if (!make_context_current_cb_.is_null()) {
     if (!make_context_current_cb_.Run()) {
@@ -1880,27 +1851,24 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
       return;
     }
 
-    EGLSyncKHR egl_sync =
-        eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
-    if (egl_sync == EGL_NO_SYNC_KHR) {
-      VLOGF(1) << "eglCreateSyncKHR() failed";
+    egl_fence = gl::GLFenceEGL::Create();
+    if (!egl_fence) {
+      VLOGF(1) << "gl::GLFenceEGL::Create() failed";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
-
-    egl_sync_ref.reset(new EGLSyncKHRRef(egl_display_, egl_sync));
   }
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask,
                  base::Unretained(this), picture_buffer_id,
-                 base::Passed(&egl_sync_ref)));
+                 base::Passed(&egl_fence)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
     int32_t picture_buffer_id,
-    std::unique_ptr<EGLSyncKHRRef> egl_sync_ref) {
+    std::unique_ptr<gl::GLFenceEGL> egl_fence) {
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
@@ -1913,7 +1881,7 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer was
     // posted to us by the client. In that case just ignore this (we've already
-    // dismissed it and accounted for that) and let the sync object get
+    // dismissed it and accounted for that) and let the fence object get
     // destroyed.
     DVLOGF(3) << "got picture id=" << picture_buffer_id
               << " not in use (anymore?).";
@@ -1927,14 +1895,11 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
     return;
   }
 
-  DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+  DCHECK(!output_record.egl_fence);
   DCHECK(!output_record.at_device);
   output_record.at_client = false;
-  if (egl_sync_ref) {
-    output_record.egl_sync = egl_sync_ref->egl_sync;
-    // Take ownership of the EGLSync.
-    egl_sync_ref->egl_sync = EGL_NO_SYNC_KHR;
-  }
+  // Take ownership of the EGL fence.
+  output_record.egl_fence = std::move(egl_fence);
 
   surfaces_at_display_.erase(it);
 }
