@@ -415,7 +415,7 @@ CHAR-LIMIT guidelines:
 
       <!-- Autofill and Payments preferences -->
       <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
-        Suggestions available
+        Passwords available
       </message>
       <message name="IDS_PREFS_AUTOFILL_AND_PAYMENTS" desc="Title of Autofill and payments settings prefrences. [CHAR-LIMIT=32]">
         Autofill and payments
@@ -3695,6 +3695,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
 
       <!-- Password Accessory Strings -->
+      <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
+          Show keyboard
+      </message>
       <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
           Suggest strong password...
       </message>
@@ -3702,7 +3705,10 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
           Suggest password...
       </message>
       <message name="IDS_PASSWORD_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the password accessory sheet.">
-          Tap to toggle between password suggestions and keyboard
+          Show passwords
+      </message>
+      <message name="IDS_PASSWORD_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening a password bottom sheet containing saved credentials and options like managing and generating passwords.">
+          Showing saved passwords and password options
       </message>
 
 

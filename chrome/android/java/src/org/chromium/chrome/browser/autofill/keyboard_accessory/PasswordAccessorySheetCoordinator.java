@@ -71,6 +71,7 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
         mContext = context;
         mTab = new KeyboardAccessoryData.Tab(IconProvider.getInstance().getIcon(mContext),
                 context.getString(R.string.password_accessory_sheet_toggle),
+                context.getString(R.string.password_accessory_sheet_opened),
                 R.layout.password_accessory_sheet, AccessoryTabType.PASSWORDS, this);
     }
 

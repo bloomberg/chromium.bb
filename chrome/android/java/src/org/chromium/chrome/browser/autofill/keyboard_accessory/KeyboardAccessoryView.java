@@ -9,6 +9,7 @@ import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewPager;
@@ -16,7 +17,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.LinearLayout;
 
@@ -64,6 +64,14 @@ class KeyboardAccessoryView extends LinearLayout {
         // Apply RTL layout changes to the views children:
         ApiCompatibilityUtils.setLayoutDirection(mActionsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+
+        // Set listener's to touch/click events so they are not propagated to the page below.
+        setOnTouchListener((view, motionEvent) -> {
+            performClick(); // Setting a touch listener requires this call which is a NoOp.
+            return true; // Return that the motionEvent was consumed and needs no further handling.
+        });
+        setOnClickListener(view -> {});
+        setClickable(false); // Disables the "Double-tap to activate" Talkback reading.
     }
 
     void setVisible(boolean visible) {
@@ -136,10 +144,20 @@ class KeyboardAccessoryView extends LinearLayout {
         }
     }
 
+    public void setTabDescription(int i, String description) {
+        TabLayout.Tab tab = mTabLayout.getTabAt(i);
+        if (tab != null) tab.setContentDescription(description);
+    }
+
+    public void setTabDescription(int i, @StringRes int messageId) {
+        TabLayout.Tab tab = mTabLayout.getTabAt(i);
+        if (tab != null) tab.setContentDescription(messageId);
+    }
+
     private void show() {
         bringToFront(); // Needs to overlay every component and the bottom sheet - like a keyboard.
         setVisibility(View.VISIBLE);
-        announceForAccessibility(((ViewGroup) getParent()).getContentDescription());
+        announceForAccessibility(getContentDescription());
     }
 
     private void hide() {
