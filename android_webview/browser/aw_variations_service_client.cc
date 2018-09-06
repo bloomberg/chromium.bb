@@ -28,6 +28,10 @@ AwVariationsServiceClient::AwVariationsServiceClient() {}
 
 AwVariationsServiceClient::~AwVariationsServiceClient() {}
 
+std::string AwVariationsServiceClient::GetApplicationLocale() {
+  return std::string();
+}
+
 base::Callback<base::Version(void)>
 AwVariationsServiceClient::GetVersionForSimulationCallback() {
   return base::BindRepeating(&GetVersionForSimulation);
