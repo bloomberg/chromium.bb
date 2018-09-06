@@ -126,23 +126,23 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   if (![identifier hasSuffix:kTextSuggestionsItemsTouchId])
     return nil;
 
-  return [self createCandidateListItem];
+  return [self makeCandidateListItem];
 }
 
-- (NSCandidateListTouchBarItem*)createCandidateListItem {
-  NSCandidateListTouchBarItem* candidateListItem =
+- (NSCandidateListTouchBarItem*)makeCandidateListItem {
+  base::scoped_nsobject<NSCandidateListTouchBarItem> candidateListItem(
       [[NSCandidateListTouchBarItem alloc]
-          initWithIdentifier:kTextSuggestionsItemsTouchId];
+          initWithIdentifier:kTextSuggestionsItemsTouchId]);
 
-  candidateListItem.delegate = self;
+  [candidateListItem setDelegate:self];
   if (selectionRange_.length)
-    candidateListItem.collapsed = YES;
+    [candidateListItem setCollapsed:YES];
 
   [candidateListItem setCandidates:suggestions_
                   forSelectedRange:selectionRange_
                           inString:text_];
 
-  return candidateListItem;
+  return candidateListItem.autorelease();
 }
 
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
