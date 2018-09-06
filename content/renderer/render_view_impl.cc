@@ -1120,8 +1120,6 @@ void RenderViewImpl::DidCloseWidget() {
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
   g_routing_id_view_map.Get().erase(GetRoutingID());
-  // TODO(ajwong): Does this message actually get sent?
-  RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
 }
 
 void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
@@ -1375,9 +1373,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
 
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-#endif
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
 
@@ -2019,17 +2014,6 @@ void RenderViewImpl::OnClosePage() {
 
   Send(new ViewHostMsg_ClosePage_ACK(GetRoutingID()));
 }
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnClose() {
-  if (GetWidget()->closing())
-    RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));
-  // This method is protected for OS_MACOSX only, because the message gets sent
-  // to the RenderViewImpl instead of to the RenderWidget.
-  // TODO(danakj): Move this message to RenderWidget?
-  RenderWidget::OnClose();
-}
-#endif
 
 void RenderViewImpl::OnMoveOrResizeStarted() {
   if (webview())

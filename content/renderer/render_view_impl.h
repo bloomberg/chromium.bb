@@ -448,9 +448,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
   void OnClosePage();
-#if defined(OS_MACOSX)
-  void OnClose();
-#endif
 
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(

@@ -255,11 +255,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
-  // with mock hosts as input in test cases.
-  static void ReleaseOnCloseACK(
-      RenderProcessHost* host,
-      const SessionStorageNamespaceMap& sessions,
-      int view_route_id);
+  // with mock hosts as input in test cases. The RenderWidget routing associated
+  // with the view is used as the key since the ViewMsg_Close and
+  // ViewHostMsg_Close_ACK logic is centered around RenderWidgets.
+  static void ReleaseOnCloseACK(RenderProcessHost* host,
+                                const SessionStorageNamespaceMap& sessions,
+                                int widget_route_id);
 
   // Register/unregister the host identified by the host id in the global host
   // list.
@@ -532,7 +533,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);
-  void OnCloseACK(int old_route_id);
+  void OnCloseACK(int closed_widget_route_id);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

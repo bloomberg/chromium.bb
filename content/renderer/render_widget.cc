@@ -1677,6 +1677,8 @@ void RenderWidget::Close() {
   layer_tree_view_.reset();
   if (owner_delegate_)
     owner_delegate_->DidCloseWidget();
+  // Note the ACK is a control message going to the RenderProcessHost.
+  RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id()));
 }
 
 void RenderWidget::CloseWebWidget() {

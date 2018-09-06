@@ -522,8 +522,8 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
         session_storage_namespaces_awaiting_close_.release());
   }
 
-  void Hold(const SessionStorageNamespaceMap& sessions, int view_route_id) {
-    (*session_storage_namespaces_awaiting_close_)[view_route_id] = sessions;
+  void Hold(const SessionStorageNamespaceMap& sessions, int widget_route_id) {
+    (*session_storage_namespaces_awaiting_close_)[widget_route_id] = sessions;
   }
 
   void Release(int old_route_id) {
@@ -4215,7 +4215,7 @@ void RenderProcessHost::SetHungRendererAnalysisFunction(
 void RenderProcessHostImpl::ReleaseOnCloseACK(
     RenderProcessHost* host,
     const SessionStorageNamespaceMap& sessions,
-    int view_route_id) {
+    int widget_route_id) {
   DCHECK(host);
   if (sessions.empty())
     return;
@@ -4225,7 +4225,7 @@ void RenderProcessHostImpl::ReleaseOnCloseACK(
     holder = new SessionStorageHolder();
     host->SetUserData(kSessionStorageHolderKey, base::WrapUnique(holder));
   }
-  holder->Hold(sessions, view_route_id);
+  holder->Hold(sessions, widget_route_id);
 }
 
 void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
@@ -4467,12 +4467,12 @@ void RenderProcessHostImpl::OnUserMetricsRecordAction(
   base::RecordComputedAction(action);
 }
 
-void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
+void RenderProcessHostImpl::OnCloseACK(int closed_widget_route_id) {
   SessionStorageHolder* holder =
       static_cast<SessionStorageHolder*>(GetUserData(kSessionStorageHolderKey));
   if (!holder)
     return;
-  holder->Release(old_route_id);
+  holder->Release(closed_widget_route_id);
 }
 
 void RenderProcessHostImpl::OnGpuSwitched() {

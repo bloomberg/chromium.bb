@@ -611,41 +611,9 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   RejectMouseLockOrUnlockIfNecessary();
 
   if (process_->IsInitializedAndNotDead()) {
-    // This logic below simulates the routing behavior from when RenderWidget
-    // associated with RenderViews shared the same routing IDs.
-    //
-    // In the original code, the sharing of the routing ID yielded a bastardized
-    // version of dynamic dispatch wherein the ultimate static code path that
-    // handled a ViewMsg_Close changed based on if
-    //
-    //   (a) the RenderWidgetImpl was also a RenderViewImpl
-    //   (b) the RenderViewImpl hooked the message in OnMessageReceived
-    //
-    // In the current code, if RenderWidgetImpl IS NOT a RenderViewImpl,
-    // RenderWidgetHost WILL NOT have a |owner_delegate_| and the message can
-    // be dispatched directly. This is the simplest case.
-    //
-    // If RenderWidgetImpl IS is a RenderViewImpl, then on some platforms
-    // (seems like only Mac?) RenderViewImpl overrides ViewMsg::OnClose to do
-    // additional processing before passing it up to RenderWidgetImpl::OnClose.
-    //
-    // When it is not overridden, the message delegated up via
-    // IPC_MESSAGE_UNHANDLED to the RenderWidget's message dispatching.
-    //
-    // Basically, there are 2 overlapping hand-written implementations of
-    // dynamic dispatch occuring: one via IPC_MESSAGE_UNHANDLED, and another
-    // via calling the super-class method.
-    //
-    // TODO(ajwong): Once the routing_id split CL lands, remove one of these
-    // implementaions of hand-written dyanmic dispatch. The world does not
-    // need so many implementations of what's effectively "virtual."
-    if (owner_delegate_) {
-      owner_delegate_->RenderWidgetDidShutdown();
-    } else {
-      // Tell the non-view RendererWidget to close.
-      bool rv = Send(new ViewMsg_Close(routing_id_));
-      DCHECK(rv);
-    }
+    // Tell the RendererWidget to close.
+    bool rv = Send(new ViewMsg_Close(routing_id_));
+    DCHECK(rv);
   }
 
   Destroy(also_delete);

@@ -243,7 +243,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     content::WebPreferences)
 
-// Tells the render view to close.
+// Tells the render widget to close.
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
@@ -456,7 +456,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 // and the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestSetBounds, gfx::Rect /* bounds */)
 
-// Indicates that the render view has been closed in response to a
+// Indicates that the render widget has been closed in response to a
 // Close message.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_Close_ACK,
                      int /* old_route_id */)
