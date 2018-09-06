@@ -14,8 +14,8 @@
 
 #include "tools/render/trace_program.h"
 
-#include "absl/time/clock.h"
 #include "gflags/gflags.h"
+#include "absl/time/clock.h"
 #include "tools/render/layout_constants.h"
 
 DEFINE_bool(show_fps, false, "Show the current framerate of the program");
@@ -171,7 +171,7 @@ void TraceProgram::PollKeyboard() {
   }
   if (state[SDL_SCANCODE_R]) {
     absl::optional<Box> new_viewport =
-        renderer_->BoundContainedPackets(Box{state_.offset, state_.viewport});
+        trace_->BoundContainedPackets(Box{state_.offset, state_.viewport});
     if (new_viewport) {
       state_.offset = new_viewport->origin;
       state_.viewport = new_viewport->size;

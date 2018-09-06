@@ -54,10 +54,6 @@ class TraceRenderer {
     highlighted_packet_ = highlighted_packet;
   }
 
-  // For specified section of the graph, find a bounding box that contains all
-  // of the packets in it, or return nullopt if none are contained.
-  absl::optional<Box> BoundContainedPackets(Box boundary);
-
  private:
   // Packet metadata as uploaded onto the GPU.
   struct Packet {

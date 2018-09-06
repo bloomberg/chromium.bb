@@ -117,7 +117,10 @@ inline Box IntersectBoxes(const Box& a, const Box& b) {
 }
 
 inline bool IsInside(const Box& inner, const Box& outer) {
-  return IntersectBoxes(inner, outer) == inner;
+  const vec2 corner_inner = inner.origin + inner.size;
+  const vec2 corner_outer = outer.origin + outer.size;
+  return inner.origin.x >= outer.origin.x && inner.origin.y >= outer.origin.y &&
+         corner_inner.x <= corner_outer.x && corner_inner.y <= corner_outer.y;
 }
 
 inline bool IsInside(vec2 point, const Box& box) {

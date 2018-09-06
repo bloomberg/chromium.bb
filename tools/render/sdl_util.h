@@ -208,18 +208,6 @@ class GlTexture {
   GLuint texture_;
 };
 
-class GlBufferMapCleanup {
- public:
-  GlBufferMapCleanup(GLenum buffer) : buffer_(buffer) {}
-  ~GlBufferMapCleanup() { glUnmapBuffer(buffer_); }
-
-  GlBufferMapCleanup(const GlBufferMapCleanup&) = delete;
-  GlBufferMapCleanup& operator=(const GlBufferMapCleanup&) = delete;
-
- private:
-  GLenum buffer_;
-};
-
 }  // namespace render
 }  // namespace quic_trace
 

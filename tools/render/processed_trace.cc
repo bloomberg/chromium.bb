@@ -327,5 +327,29 @@ void ProcessedTrace::FillTableForPacket(Table* table,
   }
 }
 
+absl::optional<Box> ProcessedTrace::BoundContainedPackets(Box boundary) {
+  RenderedPacket key{Box(), nullptr};
+
+  key.box.origin.x = boundary.origin.x;
+  auto range_start = absl::c_lower_bound(rendered_packets_, key);
+
+  key.box.origin.x =
+      boundary.origin.x + boundary.size.x + kSentPacketDurationMs;
+  auto range_end = absl::c_upper_bound(rendered_packets_, key);
+
+  if (range_start == rendered_packets_.end() ||
+      range_end == rendered_packets_.end() || range_start > range_end) {
+    return absl::nullopt;
+  }
+
+  absl::optional<Box> result;
+  for (auto it = range_start; it <= range_end; it++) {
+    if (IsInside(it->box, boundary)) {
+      result = result.has_value() ? BoundingBox(*result, it->box) : it->box;
+    }
+  }
+  return result;
+}
+
 }  // namespace render
 }  // namespace quic_trace

@@ -188,46 +188,5 @@ void TraceRenderer::Render() {
   glDisable(GL_SCISSOR_TEST);
 }
 
-// TODO(vasilvv): we now have enough information in ProcessedTrace to do this
-// without a copy from GPU.
-absl::optional<Box> TraceRenderer::BoundContainedPackets(Box boundary) {
-  DCHECK(buffer_ready_);
-
-  // Since we don't actually store the list of the rectangles in memory, we get
-  // to fetch it from the GPU.
-  glBindBuffer(GL_ARRAY_BUFFER, *buffer_);
-  const Packet* packets = reinterpret_cast<Packet*>(glMapBufferRange(
-      GL_ARRAY_BUFFER, 0, packet_count_ * sizeof(Packet), GL_MAP_READ_BIT));
-  CHECK(packets != nullptr)
-      << "Failed to fetch packets, GL error: " << glGetError();
-  GlBufferMapCleanup cleanup(GL_ARRAY_BUFFER);
-
-  const float time_start = boundary.origin.x;
-  const float time_end = boundary.origin.x + boundary.size.x;
-  const Packet* packets_end = packets + packet_count_;
-  const auto compare = [](const Packet& a, const Packet& b) {
-    return a.time < b.time;
-  };
-  const Packet* range_start = std::lower_bound(
-      packets, packets_end, Packet{time_start, 0, 0, 0}, compare);
-  const Packet* range_end = std::upper_bound(
-      packets, packets_end, Packet{time_end, 0, 0, 0}, compare);
-
-  if (range_start == packets_end || range_end == packets_end ||
-      range_start > range_end) {
-    return absl::nullopt;
-  }
-
-  absl::optional<Box> result;
-  for (const Packet* it = range_start; it <= range_end; it++) {
-    Box packet{vec2(it->time, it->offset),
-               vec2(kSentPacketDurationMs, it->size)};
-    if (IsInside(packet, boundary)) {
-      result = result.has_value() ? BoundingBox(*result, packet) : packet;
-    }
-  }
-  return result;
-}
-
 }  // namespace render
 }  // namespace quic_trace
