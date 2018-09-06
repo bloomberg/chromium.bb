@@ -1008,6 +1008,16 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
   }
 }
 
+void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
+    const GURL& presentation_url,
+    const std::string& presentation_id,
+    mirroring::mojom::MirroringServiceHostRequest request) {
+  if (ShouldUseMirroringService() && IsValidPresentationUrl(presentation_url)) {
+    mirroring::CastMirroringServiceHost::GetForOffscreenTab(
+        context_, presentation_url, presentation_id, std::move(request));
+  }
+}
+
 void MediaRouterMojoImpl::BindToMojoRequest(
     mojo::InterfaceRequest<mojom::MediaRouter> request) {
   bindings_.AddBinding(this, std::move(request));

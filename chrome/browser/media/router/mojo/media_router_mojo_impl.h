@@ -363,6 +363,10 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       int32_t initiator_tab_id,
       const std::string& desktop_stream_id,
       mirroring::mojom::MirroringServiceHostRequest request) override;
+  void GetMirroringServiceHostForOffscreenTab(
+      const GURL& presentation_url,
+      const std::string& presentation_id,
+      mirroring::mojom::MirroringServiceHostRequest request) override;
 
   // Result callback when Mojo TerminateRoute is invoked.
   // |route_id|: ID of MediaRoute passed to the TerminateRoute request.
