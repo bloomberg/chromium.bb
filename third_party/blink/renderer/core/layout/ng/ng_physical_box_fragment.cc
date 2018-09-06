@@ -145,7 +145,8 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
   if (style.HasVisualOverflowingEffect()) {
     if (GetLayoutObject()->IsBox()) {
       ink_overflow.Expand(style.BoxDecorationOutsets());
-      if (style.HasOutline()) {
+      if (NGOutlineUtils::HasPaintedOutline(style,
+                                            GetLayoutObject()->GetNode())) {
         Vector<LayoutRect> outline_rects;
         // The result rects are in coordinates of this object's border box.
         AddSelfOutlineRects(&outline_rects, LayoutPoint());

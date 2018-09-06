@@ -1763,6 +1763,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasPerspective() const { return Perspective() > 0; }
 
   // Outline utility functions.
+  // HasOutline is insufficient to determine whether Node has an outline.
+  // Use NGOutlineUtils::HasPaintedOutline instead.
   bool HasOutline() const {
     return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }

@@ -14,6 +14,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class LayoutRect;
+class Node;
 class NGPhysicalFragment;
 class NGPhysicalBoxFragment;
 struct NGPhysicalOffset;
@@ -30,6 +31,8 @@ class CORE_EXPORT NGOutlineUtils {
                                         const NGPhysicalOffset& paint_offset,
                                         FragmentMap* anchor_fragment_map,
                                         OutlineRectMap* outline_rect_map);
+
+  static bool HasPaintedOutline(const ComputedStyle& style, const Node* node);
 
   // Union of all outline rectangles, including outline thickness.
   static NGPhysicalOffsetRect ComputeEnclosingOutline(
