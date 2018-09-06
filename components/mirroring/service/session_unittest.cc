@@ -21,6 +21,7 @@
 #include "media/cast/test/utility/net_utility.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/ip_address.h"
+#include "services/ws/public/cpp/gpu/gpu.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -208,7 +209,8 @@ class SessionTest : public mojom::ResourceProvider,
     session_ = std::make_unique<Session>(
         std::move(session_params), gfx::Size(1920, 1080),
         std::move(session_observer_ptr), std::move(resource_provider_ptr),
-        std::move(outbound_channel_ptr), mojo::MakeRequest(&inbound_channel_));
+        std::move(outbound_channel_ptr), mojo::MakeRequest(&inbound_channel_),
+        nullptr);
     scoped_task_environment_.RunUntilIdle();
     Mock::VerifyAndClear(this);
   }

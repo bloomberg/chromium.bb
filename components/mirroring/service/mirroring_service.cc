@@ -8,10 +8,14 @@
 #include "components/mirroring/service/session.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/ws/public/cpp/gpu/gpu.h"
+#include "ui/base/ui_base_features.h"
 
 namespace mirroring {
 
-MirroringService::MirroringService() {
+MirroringService::MirroringService(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : io_task_runner_(std::move(io_task_runner)) {
   registry_.AddInterface<mojom::MirroringService>(
       base::BindRepeating(&MirroringService::Create, base::Unretained(this)));
 }
@@ -55,10 +59,17 @@ void MirroringService::Start(mojom::SessionParametersPtr params,
                              mojom::CastMessageChannelPtr outbound_channel,
                              mojom::CastMessageChannelRequest inbound_channel) {
   session_.reset();  // Stops the current session if active.
+  std::unique_ptr<ws::Gpu> gpu = nullptr;
+  if (params->type != mojom::SessionType::AUDIO_ONLY) {
+    gpu = ws::Gpu::Create(
+        context()->connector(),
+        features::IsUsingWindowService() ? "ui" : "content_browser",
+        io_task_runner_);
+  }
   session_ = std::make_unique<Session>(
       std::move(params), max_resolution, std::move(observer),
       std::move(resource_provider), std::move(outbound_channel),
-      std::move(inbound_channel));
+      std::move(inbound_channel), std::move(gpu));
 }
 
 }  // namespace mirroring

@@ -4,6 +4,10 @@
   "display_name": "Mirroring Service",
   "interface_provider_specs": {
     "service_manager:connector": {
+      "requires": {
+        "content_browser": [ "gpu_client" ],
+        "ui": [ "gpu_client" ]
+      },
       "provides": {
         "mirroring": [
           "mirroring.mojom.MirroringService"

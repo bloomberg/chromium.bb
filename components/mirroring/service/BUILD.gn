@@ -55,12 +55,15 @@ component("mirroring_service") {
     "//components/mirroring/mojom:service",
     "//components/version_info",
     "//crypto",
+    "//gpu/config",
     "//media",
     "//media/capture:capture_base",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
     "//media/cast:net",
     "//media/cast:sender",
+    "//media/gpu",
+    "//media/mojo/clients",
     "//media/mojo/common:common",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
@@ -70,6 +73,8 @@ component("mirroring_service") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp:cpp",
+    "//services/ws/public/cpp/gpu",
+    "//ui/base",
     "//ui/gfx",
   ]
 
@@ -113,6 +118,7 @@ source_set("unittests") {
     "//net",
     "//services/network:test_support",
     "//services/network/public/mojom",
+    "//services/ws/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
   ]
