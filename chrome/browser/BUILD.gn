@@ -5099,13 +5099,6 @@ static_library("test_support") {
     deps += [ "//chromeos:test_support" ]
   }
 
-  if (is_mac && !mac_views_browser) {
-    sources += [
-      "chooser_controller/mock_chooser_controller.cc",
-      "chooser_controller/mock_chooser_controller.h",
-    ]
-  }
-
   if (is_win) {
     sources += [
       "notifications/win/mock_itoastnotification.cc",

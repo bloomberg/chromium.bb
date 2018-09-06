@@ -18,10 +18,6 @@ translated_xibs = [
   "Toolbar.xib",
 ]
 
-if (!mac_views_browser) {
-  translated_xibs += [ "HttpAuthLoginSheet.xib" ]
-}
-
 untranslated_xibs = [
   "BookmarkBarFolderWindow.xib",
   "FindBar.xib",
