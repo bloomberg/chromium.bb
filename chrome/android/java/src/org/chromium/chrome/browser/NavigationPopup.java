@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -29,6 +28,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -57,7 +57,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     private final int mFaviconSize;
 
-    private Bitmap mDefaultFavicon;
+    private DefaultFaviconHelper mDefaultFaviconHelper;
 
     /**
      * Loads the favicons asynchronously.
@@ -118,6 +118,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     public void dismiss() {
         if (mInitialized) mFaviconHelper.destroy();
         mInitialized = false;
+        if (mDefaultFaviconHelper != null) mDefaultFaviconHelper.clearCache();
         super.dismiss();
     }
 
@@ -169,17 +170,14 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
      * @param pageUrl the page for which the favicon was retrieved.
      * @param favicon the favicon data.
      */
-    private void onFaviconAvailable(String pageUrl, Object favicon) {
+    private void onFaviconAvailable(String pageUrl, Bitmap favicon) {
         if (favicon == null) {
-            if (mDefaultFavicon == null) {
-                mDefaultFavicon = BitmapFactory.decodeResource(
-                        mContext.getResources(), R.drawable.default_favicon);
-            }
-            favicon = mDefaultFavicon;
+            if (mDefaultFaviconHelper == null) mDefaultFaviconHelper = new DefaultFaviconHelper();
+            favicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(mContext, pageUrl, true);
         }
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             NavigationEntry entry = mHistory.getEntryAtIndex(i);
-            if (TextUtils.equals(pageUrl, entry.getUrl())) entry.updateFavicon((Bitmap) favicon);
+            if (TextUtils.equals(pageUrl, entry.getUrl())) entry.updateFavicon(favicon);
         }
         mAdapter.notifyDataSetChanged();
     }
