@@ -312,11 +312,6 @@ if (enable_extensions) {
 
     deps = [
       "//base",
-
-      # TODO(benwells): figure out what to do with the api target and
-      # api resources compiled into the chrome resource bundle.
-      # http://crbug.com/162530
-      "//chrome:resources",
       "//components/crx_file",
       "//components/nacl/common:buildflags",
       "//components/url_formatter",
