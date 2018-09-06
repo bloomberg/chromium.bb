@@ -59,7 +59,15 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   static scoped_refptr<ClipPaintPropertyNode> Create(
       const ClipPaintPropertyNode& parent,
       State&& state) {
-    return base::AdoptRef(new ClipPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(new ClipPaintPropertyNode(
+        &parent, std::move(state), false /* is_parent_alias */));
+  }
+  static scoped_refptr<ClipPaintPropertyNode> CreateAlias(
+      const ClipPaintPropertyNode& parent) {
+    return base::AdoptRef(new ClipPaintPropertyNode(
+        &parent,
+        State{nullptr, FloatRoundedRect(LayoutRect::InfiniteIntRect())},
+        true /* is_parent_alias */));
   }
 
   bool Update(const ClipPaintPropertyNode& parent, State&& state) {
@@ -67,6 +75,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     if (state == state_)
       return parent_changed;
 
+    DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
     SetChanged();
     state_ = std::move(state);
     return true;
@@ -86,8 +95,20 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return parent == Parent() && state_.EqualIgnoringHitTestRects(state);
   }
 
+  // Returns the local transform space of this node. Note that the function
+  // first unaliases the node, meaning that it walks up the parent chain until
+  // it finds a concrete node (not a parent alias) or root. The reason for this
+  // is that a parent alias conceptually doesn't have a local transform space,
+  // so we just want to return a convenient space which would eliminate extra
+  // work. The parent's transform node qualifies as that. Also note, although
+  // this is a walk up the parent chain, the only case it would be heavy is if
+  // there is a long chain of nested aliases, which is unlikely.
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return state_.local_transform_space.get();
+    // TODO(vmpstr): If this becomes a performance problem, then we should audit
+    // the call sites and explicitly unalias clip nodes everywhere. If this is
+    // done, then here we can add a DCHECK that we never invoke this function on
+    // a parent alias.
+    return Unalias()->state_.local_transform_space.get();
   }
   const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
   const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {
@@ -106,13 +127,15 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
   scoped_refptr<ClipPaintPropertyNode> Clone() const {
-    return base::AdoptRef(new ClipPaintPropertyNode(Parent(), State(state_)));
+    return base::AdoptRef(
+        new ClipPaintPropertyNode(Parent(), State(state_), IsParentAlias()));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a clip node has changed.
   bool operator==(const ClipPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_;
+    return Parent() == o.Parent() && state_ == o.state_ &&
+           IsParentAlias() == o.IsParentAlias();
   }
 #endif
 
@@ -122,8 +145,10 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   size_t CacheMemoryUsageInBytes() const;
 
  private:
-  ClipPaintPropertyNode(const ClipPaintPropertyNode* parent, State&& state)
-      : PaintPropertyNode(parent), state_(std::move(state)) {}
+  ClipPaintPropertyNode(const ClipPaintPropertyNode* parent,
+                        State&& state,
+                        bool is_parent_alias)
+      : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {}
 
   // For access to GetClipCache();
   friend class GeometryMapper;

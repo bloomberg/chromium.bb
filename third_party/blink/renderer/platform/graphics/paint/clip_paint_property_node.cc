@@ -10,11 +10,12 @@
 namespace blink {
 
 const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
-  DEFINE_STATIC_REF(
-      ClipPaintPropertyNode, root,
-      base::AdoptRef(new ClipPaintPropertyNode(
-          nullptr, State{&TransformPaintPropertyNode::Root(),
-                         FloatRoundedRect(LayoutRect::InfiniteIntRect())})));
+  DEFINE_STATIC_REF(ClipPaintPropertyNode, root,
+                    base::AdoptRef(new ClipPaintPropertyNode(
+                        nullptr,
+                        State{&TransformPaintPropertyNode::Root(),
+                              FloatRoundedRect(LayoutRect::InfiniteIntRect())},
+                        true /* is_parent_alias */)));
   return *root;
 }
 
