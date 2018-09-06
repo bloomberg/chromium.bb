@@ -13,6 +13,15 @@
 
 namespace blink {
 
+namespace {
+
+String MakeLargeString() {
+  std::vector<char> data(20000, 'a');
+  return String(String(data.data(), data.size()).ReleaseImpl());
+}
+
+}  // namespace
+
 class ParkableStringTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -28,6 +37,7 @@ TEST_F(ParkableStringTest, Simple) {
   EXPECT_TRUE(parkable_abc.Is8Bit());
   EXPECT_EQ(3u, parkable_abc.length());
   EXPECT_EQ(3u, parkable_abc.CharactersSizeInBytes());
+  EXPECT_FALSE(parkable_abc.is_parkable());  // Small strings are not parkable.
 
   EXPECT_EQ(String("abc"), parkable_abc.ToString());
   ParkableString copy = parkable_abc;
@@ -37,17 +47,21 @@ TEST_F(ParkableStringTest, Simple) {
 TEST_F(ParkableStringTest, Park) {
   base::HistogramTester histogram_tester;
 
-  ParkableString parkable(String("abc").Impl());
-  EXPECT_FALSE(parkable.Impl()->is_parked());
-  EXPECT_TRUE(parkable.Impl()->Park());
-  EXPECT_TRUE(parkable.Impl()->is_parked());
+  {
+    ParkableString parkable(MakeLargeString().ReleaseImpl());
+    EXPECT_TRUE(parkable.is_parkable());
+    EXPECT_FALSE(parkable.Impl()->is_parked());
+    EXPECT_TRUE(parkable.Impl()->Park());
+    EXPECT_TRUE(parkable.Impl()->is_parked());
+  }
 
+  String large_string = MakeLargeString();
+  ParkableString parkable(large_string.Impl());
+  EXPECT_TRUE(parkable.is_parkable());
   // Not the only one to have a reference to the string.
-  String abc("abc");
-  ParkableString parkable2(abc.Impl());
-  EXPECT_FALSE(parkable2.Impl()->Park());
-  abc = String();
-  EXPECT_TRUE(parkable2.Impl()->Park());
+  EXPECT_FALSE(parkable.Impl()->Park());
+  large_string = String();
+  EXPECT_TRUE(parkable.Impl()->Park());
 
   histogram_tester.ExpectBucketCount(
       "Memory.MovableStringParkingAction",
@@ -58,13 +72,15 @@ TEST_F(ParkableStringTest, Park) {
 TEST_F(ParkableStringTest, Unpark) {
   base::HistogramTester histogram_tester;
 
-  ParkableString parkable(String("abc").Impl());
+  ParkableString parkable(MakeLargeString().Impl());
+  String unparked_copy = parkable.ToString().IsolatedCopy();
+  EXPECT_TRUE(parkable.is_parkable());
   EXPECT_FALSE(parkable.Impl()->is_parked());
   EXPECT_TRUE(parkable.Impl()->Park());
   EXPECT_TRUE(parkable.Impl()->is_parked());
 
   String unparked = parkable.ToString();
-  EXPECT_EQ(String("abc"), unparked);
+  EXPECT_EQ(unparked_copy, unparked);
   EXPECT_FALSE(parkable.Impl()->is_parked());
 
   histogram_tester.ExpectTotalCount("Memory.MovableStringParkingAction", 2);
@@ -74,6 +90,50 @@ TEST_F(ParkableStringTest, Unpark) {
   histogram_tester.ExpectBucketCount(
       "Memory.MovableStringParkingAction",
       ParkableStringImpl::ParkingAction::kUnparkedInForeground, 1);
+}
+
+TEST_F(ParkableStringTest, LockUnlock) {
+  ParkableString parkable(MakeLargeString().Impl());
+  ParkableStringImpl* impl = parkable.Impl();
+  EXPECT_EQ(0, impl->lock_depth_);
+
+  parkable.Lock();
+  EXPECT_EQ(1, impl->lock_depth_);
+  parkable.Lock();
+  parkable.Unlock();
+  EXPECT_EQ(1, impl->lock_depth_);
+  parkable.Unlock();
+  EXPECT_EQ(0, impl->lock_depth_);
+
+  parkable.Lock();
+  EXPECT_FALSE(impl->Park());
+  parkable.Unlock();
+  EXPECT_TRUE(impl->Park());
+
+  std::thread t([&]() { parkable.Lock(); });
+  t.join();
+  EXPECT_FALSE(impl->Park());
+  parkable.Unlock();
+  EXPECT_TRUE(impl->Park());
+}
+
+TEST_F(ParkableStringTest, LockParkedString) {
+  ParkableString parkable(MakeLargeString().Impl());
+  ParkableStringImpl* impl = parkable.Impl();
+  EXPECT_EQ(0, impl->lock_depth_);
+  EXPECT_TRUE(impl->Park());
+
+  parkable.Lock();  // Locking doesn't unpark.
+  EXPECT_TRUE(impl->is_parked());
+  parkable.ToString();
+  EXPECT_FALSE(impl->is_parked());
+  EXPECT_EQ(1, impl->lock_depth_);
+
+  EXPECT_FALSE(impl->Park());
+  parkable.Unlock();
+  EXPECT_EQ(0, impl->lock_depth_);
+  EXPECT_TRUE(impl->Park());
+  EXPECT_TRUE(impl->is_parked());
 }
 
 TEST_F(ParkableStringTest, TableSimple) {

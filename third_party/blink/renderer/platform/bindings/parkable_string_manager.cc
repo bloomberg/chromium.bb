@@ -61,8 +61,8 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
   if (it != table_.end())
     return it->value;
 
-  auto new_parkable_string =
-      base::MakeRefCounted<ParkableStringImpl>(std::move(string));
+  auto new_parkable_string = base::MakeRefCounted<ParkableStringImpl>(
+      std::move(string), ParkableStringImpl::ParkableState::kParkable);
   table_.insert(raw_ptr, new_parkable_string.get());
   return new_parkable_string;
 }

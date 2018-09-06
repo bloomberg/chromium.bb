@@ -164,8 +164,11 @@ class ParkableStringResource16 final
     DCHECK(!parkable_string_.Is8Bit());
   }
 
-  // V8 external resources are "compressible", not "parkable".
-  bool IsCompressible() const override { return true; }
+  bool IsCacheable() const override { return !parkable_string_.is_parkable(); }
+
+  void Lock() const override { parkable_string_.Lock(); }
+
+  void Unlock() const override { parkable_string_.Unlock(); }
 
   size_t length() const override { return parkable_string_.length(); }
 
@@ -185,8 +188,11 @@ class ParkableStringResource8 final
     DCHECK(parkable_string_.Is8Bit());
   }
 
-  // V8 external resources are "compressible", not "parkable".
-  bool IsCompressible() const override { return true; }
+  bool IsCacheable() const override { return !parkable_string_.is_parkable(); }
+
+  void Lock() const override { parkable_string_.Lock(); }
+
+  void Unlock() const override { parkable_string_.Unlock(); }
 
   size_t length() const override { return parkable_string_.length(); }
 
