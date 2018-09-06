@@ -30,6 +30,10 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
  private:
   friend class AndroidSmsAppHelperDelegateImplTest;
 
+  // Note: This constructor should only be used in testing. Right now, objects
+  // built using this constructor will segfault on profile_ if
+  // LaunchAndroidSmsApp is called. We'll need to fix this once tests for that
+  // function are added. See https://crbug.com/876972.
   explicit AndroidSmsAppHelperDelegateImpl(
       web_app::PendingAppManager* pending_app_manager);
   void OnAppInstalled(const GURL& app_url,
@@ -37,9 +41,11 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;
+  bool LaunchAndroidSmsApp() override;
 
   static const char kMessagesWebAppUrl[];
   web_app::PendingAppManager* pending_app_manager_;
+  Profile* profile_;
   base::WeakPtrFactory<AndroidSmsAppHelperDelegateImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImpl);
