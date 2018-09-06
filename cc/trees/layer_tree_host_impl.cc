@@ -2592,9 +2592,18 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
 
     if (layer->is_surface_layer()) {
       const auto* surface_layer = static_cast<const SurfaceLayerImpl*>(layer);
-      if (!surface_layer->surface_hit_testable()) {
-        overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
-            layer->ScreenSpaceTransform(), gfx::Rect(surface_layer->bounds())));
+      // If a surface layer is created not by child frame compositor or the
+      // frame owner has pointer-events: none property, the surface layer
+      // becomes not hit testable. We should not generate data for it.
+      if (!surface_layer->ShouldGenerateSurfaceHitTestData()) {
+        // If a surface layer is created due to video or offscreen canvas, it
+        // can still block overlapped surface layers from getting events, we
+        // need to account for all layers that don't have pointer-events: none.
+        if (!surface_layer->has_pointer_events_none()) {
+          overlapping_region.Union(MathUtil::MapEnclosingClippedRect(
+              layer->ScreenSpaceTransform(),
+              gfx::Rect(surface_layer->bounds())));
+        }
         continue;
       }
 

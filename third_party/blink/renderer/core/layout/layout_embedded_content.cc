@@ -255,6 +255,13 @@ CompositingReasons LayoutEmbeddedContent::AdditionalCompositingReasons() const {
 void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
                                            const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
+
+  if (!old_style || Style()->PointerEvents() != old_style->PointerEvents()) {
+    Node* node = GetNode();
+    if (node->IsFrameOwnerElement())
+      ToHTMLFrameOwnerElement(node)->PointerEventsChanged();
+  }
+
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
   if (!embedded_content_view)
     return;

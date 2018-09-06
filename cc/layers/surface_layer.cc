@@ -103,7 +103,16 @@ void SurfaceLayer::SetSurfaceHitTestable(bool surface_hit_testable) {
   if (surface_hit_testable_ == surface_hit_testable)
     return;
   surface_hit_testable_ = surface_hit_testable;
+}
+
+void SurfaceLayer::SetHasPointerEventsNone(bool has_pointer_events_none) {
+  if (has_pointer_events_none_ == has_pointer_events_none)
+    return;
+  has_pointer_events_none_ = has_pointer_events_none;
   SetNeedsPushProperties();
+  // Change of pointer-events property triggers an update of viz hit test data,
+  // we need to commit in order to submit the new data with compositor frame.
+  SetNeedsCommit();
 }
 
 void SurfaceLayer::SetMayContainVideo(bool may_contain_video) {
@@ -145,6 +154,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
+  layer_impl->SetHasPointerEventsNone(has_pointer_events_none_);
 }
 
 }  // namespace cc
