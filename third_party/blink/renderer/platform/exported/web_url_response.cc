@@ -399,6 +399,12 @@ void WebURLResponse::SetEncodedDataLength(long long length) {
   resource_response_->SetEncodedDataLength(length);
 }
 
+void WebURLResponse::SetIsSignedExchangeInnerResponse(
+    bool is_signed_exchange_inner_response) {
+  resource_response_->SetIsSignedExchangeInnerResponse(
+      is_signed_exchange_inner_response);
+}
+
 WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
   scoped_refptr<ResourceResponse::ExtraData> data =
       resource_response_->GetExtraData();

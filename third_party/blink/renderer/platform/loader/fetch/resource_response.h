@@ -416,6 +416,15 @@ class PLATFORM_EXPORT ResourceResponse final {
     async_revalidation_requested_ = requested;
   }
 
+  bool IsSignedExchangeInnerResponse() const {
+    return is_signed_exchange_inner_response_;
+  }
+
+  void SetIsSignedExchangeInnerResponse(
+      bool is_signed_exchange_inner_response) {
+    is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
+  }
+
   // This method doesn't compare the all members.
   static bool Compare(const ResourceResponse&, const ResourceResponse&);
 
@@ -478,6 +487,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if this resource is stale and needs async revalidation. Will only
   // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
   bool async_revalidation_requested_ = false;
+
+  // True if this resource is from an inner response of a signed exchange.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+  bool is_signed_exchange_inner_response_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =

@@ -968,6 +968,9 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 
+  if (response_.IsSignedExchangeInnerResponse())
+    UseCounter::Count(*document, WebFeature::kSignedExchangeInnerResponse);
+
   GetLocalFrameClient().DidCreateNewDocument();
 }
 

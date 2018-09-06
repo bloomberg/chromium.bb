@@ -19943,6 +19943,7 @@ Called by update_net_error_codes.py.-->
   <int value="2538" label="V8Window_WebkitMediaStream_ConstructorGetter"/>
   <int value="2539" label="TextEncoderStreamConstructor"/>
   <int value="2540" label="TextDecoderStreamConstructor"/>
+  <int value="2541" label="SignedExchangeInnerResponse"/>
 </enum>
 
 <enum name="FeedbackSource">
