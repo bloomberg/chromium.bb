@@ -140,6 +140,84 @@ struct ParsedJpegImage {
   size_t output_size;
 };
 
+// Global singleton to hold on to common data and other user-defined options.
+class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
+ public:
+  JpegDecodeAcceleratorTestEnvironment(
+      const base::FilePath::CharType* jpeg_filenames,
+      int perf_decode_times)
+      : perf_decode_times_(perf_decode_times ? perf_decode_times
+                                             : kDefaultPerfDecodeTimes),
+        user_jpeg_filenames_(jpeg_filenames ? jpeg_filenames
+                                            : kDefaultJpegFilename) {}
+  void SetUp() override;
+
+  // Creates and returns a FilePath for the pathless |name|. The current folder
+  // is used if |name| exists in it, otherwise //media/test/data is used.
+  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
+    LOG_ASSERT(std::find_if(name.begin(), name.end(),
+                            base::FilePath::IsSeparator) == name.end())
+        << name << " should be just a file name and not have a path";
+    const base::FilePath original_file_path = base::FilePath(name);
+    if (base::PathExists(original_file_path))
+      return original_file_path;
+    return GetTestDataFilePath(name);
+  }
+
+  // Used for InputSizeChange test case. The image size should be smaller than
+  // |kDefaultJpegFilename|.
+  std::unique_ptr<ParsedJpegImage> image_data_1280x720_black_;
+  // Used for ResolutionChange test case.
+  std::unique_ptr<ParsedJpegImage> image_data_640x368_black_;
+  // Used for testing some drivers which will align the output resolution to a
+  // multiple of 16. 640x360 will be aligned to 640x368.
+  std::unique_ptr<ParsedJpegImage> image_data_640x360_black_;
+  // Parsed data of "peach_pi-1280x720.jpg".
+  std::unique_ptr<ParsedJpegImage> image_data_1280x720_default_;
+  // Parsed data of failure image.
+  std::unique_ptr<ParsedJpegImage> image_data_invalid_;
+  // Parsed data for images with at least one odd dimension.
+  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_odd_;
+  // Parsed data from command line.
+  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_user_;
+  // Decode times for performance measurement.
+  int perf_decode_times_;
+
+ private:
+  const base::FilePath::CharType* user_jpeg_filenames_;
+};
+
+void JpegDecodeAcceleratorTestEnvironment::SetUp() {
+  image_data_1280x720_black_ = ParsedJpegImage::CreateBlackImage(1280, 720);
+  image_data_640x368_black_ = ParsedJpegImage::CreateBlackImage(640, 368);
+  image_data_640x360_black_ = ParsedJpegImage::CreateBlackImage(640, 360);
+
+  image_data_1280x720_default_ = ParsedJpegImage::CreateFromFile(
+      GetOriginalOrTestDataFilePath(kDefaultJpegFilename));
+
+  image_data_invalid_ =
+      std::make_unique<ParsedJpegImage>(base::FilePath("failure.jpg"));
+  image_data_invalid_->data_str.resize(100, 0);
+  image_data_invalid_->InitializeSizes(1280, 720);
+
+  // Load test images with at least one odd dimension.
+  for (const auto* filename : kOddJpegFilenames) {
+    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
+    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
+    image_data_odd_.push_back(std::move(image_data));
+  }
+
+  // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
+  std::vector<base::FilePath::StringType> filenames = base::SplitString(
+      user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const auto& filename : filenames) {
+    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
+    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
+    image_data_user_.push_back(std::move(image_data));
+  }
+}
+
 enum ClientState {
   CS_CREATED,
   CS_INITIALIZED,
@@ -440,84 +518,6 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
     return false;
   }
   return true;
-}
-
-// Global singleton to hold on to common data and other user-defined options.
-class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
- public:
-  JpegDecodeAcceleratorTestEnvironment(
-      const base::FilePath::CharType* jpeg_filenames,
-      int perf_decode_times)
-      : perf_decode_times_(perf_decode_times ? perf_decode_times
-                                             : kDefaultPerfDecodeTimes),
-        user_jpeg_filenames_(jpeg_filenames ? jpeg_filenames
-                                            : kDefaultJpegFilename) {}
-  void SetUp() override;
-
-  // Creates and returns a FilePath for the pathless |name|. The current folder
-  // is used if |name| exists in it, otherwise //media/test/data is used.
-  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
-    LOG_ASSERT(std::find_if(name.begin(), name.end(),
-                            base::FilePath::IsSeparator) == name.end())
-        << name << " should be just a file name and not have a path";
-    const base::FilePath original_file_path = base::FilePath(name);
-    if (base::PathExists(original_file_path))
-      return original_file_path;
-    return GetTestDataFilePath(name);
-  }
-
-  // Used for InputSizeChange test case. The image size should be smaller than
-  // |kDefaultJpegFilename|.
-  std::unique_ptr<ParsedJpegImage> image_data_1280x720_black_;
-  // Used for ResolutionChange test case.
-  std::unique_ptr<ParsedJpegImage> image_data_640x368_black_;
-  // Used for testing some drivers which will align the output resolution to a
-  // multiple of 16. 640x360 will be aligned to 640x368.
-  std::unique_ptr<ParsedJpegImage> image_data_640x360_black_;
-  // Parsed data of "peach_pi-1280x720.jpg".
-  std::unique_ptr<ParsedJpegImage> image_data_1280x720_default_;
-  // Parsed data of failure image.
-  std::unique_ptr<ParsedJpegImage> image_data_invalid_;
-  // Parsed data for images with at least one odd dimension.
-  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_odd_;
-  // Parsed data from command line.
-  std::vector<std::unique_ptr<ParsedJpegImage>> image_data_user_;
-  // Decode times for performance measurement.
-  int perf_decode_times_;
-
- private:
-  const base::FilePath::CharType* user_jpeg_filenames_;
-};
-
-void JpegDecodeAcceleratorTestEnvironment::SetUp() {
-  image_data_1280x720_black_ = ParsedJpegImage::CreateBlackImage(1280, 720);
-  image_data_640x368_black_ = ParsedJpegImage::CreateBlackImage(640, 368);
-  image_data_640x360_black_ = ParsedJpegImage::CreateBlackImage(640, 360);
-
-  image_data_1280x720_default_ = ParsedJpegImage::CreateFromFile(
-      GetOriginalOrTestDataFilePath(kDefaultJpegFilename));
-
-  image_data_invalid_ =
-      std::make_unique<ParsedJpegImage>(base::FilePath("failure.jpg"));
-  image_data_invalid_->data_str.resize(100, 0);
-  image_data_invalid_->InitializeSizes(1280, 720);
-
-  // Load test images with at least one odd dimension.
-  for (const auto* filename : kOddJpegFilenames) {
-    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
-    image_data_odd_.push_back(std::move(image_data));
-  }
-
-  // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
-  std::vector<base::FilePath::StringType> filenames = base::SplitString(
-      user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const auto& filename : filenames) {
-    const base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = ParsedJpegImage::CreateFromFile(input_file);
-    image_data_user_.push_back(std::move(image_data));
-  }
 }
 
 // This class holds a |client| that will be deleted on |task_runner|. This is
