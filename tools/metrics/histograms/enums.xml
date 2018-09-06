@@ -19946,6 +19946,40 @@ Called by update_net_error_codes.py.-->
   <int value="2541" label="SignedExchangeInnerResponse"/>
 </enum>
 
+<enum name="FeaturePolicyFeature">
+<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy.mojom.-->
+
+  <int value="0" label="kNotFound"/>
+  <int value="1" label="kAutoplay"/>
+  <int value="2" label="kCamera"/>
+  <int value="3" label="kEncryptedMedia"/>
+  <int value="4" label="kFullscreen"/>
+  <int value="5" label="kGeolocation"/>
+  <int value="6" label="kMicrophone"/>
+  <int value="7" label="kMidiFeature"/>
+  <int value="8" label="kPayment"/>
+  <int value="9" label="kSpeaker"/>
+  <int value="10" label="kDocumentCookie"/>
+  <int value="11" label="kDocumentDomain"/>
+  <int value="12" label="kSyncScript"/>
+  <int value="13" label="kSyncXHR"/>
+  <int value="14" label="kUsb"/>
+  <int value="15" label="kAccessibilityEvents"/>
+  <int value="16" label="kWebVr"/>
+  <int value="17" label="kAccelerometer"/>
+  <int value="18" label="kAmbientLightSensor"/>
+  <int value="19" label="kGyroscope"/>
+  <int value="20" label="kMagnetometer"/>
+  <int value="21" label="kUnsizedMedia"/>
+  <int value="22" label="kLegacyImageFormats"/>
+  <int value="23" label="kImageCompression"/>
+  <int value="24" label="kAnimations"/>
+  <int value="25" label="kMaxDownscalingImage"/>
+  <int value="26" label="kPictureInPicture"/>
+  <int value="27" label="kVerticalScroll"/>
+  <int value="28" label="kDocumentWrite"/>
+</enum>
+
 <enum name="FeedbackSource">
   <int value="0" label="Arc App"/>
   <int value="1" label="Ash"/>
