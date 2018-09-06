@@ -68,6 +68,7 @@ component("gpu") {
     "//chrome/gpu",
     "//components/arc/common:media",
     "//components/arc/video_accelerator",
+    "//components/mirroring/service:mirroring_service",
     "//components/viz/service/main",
     "//content/gpu:*",
     "//content/renderer:*",

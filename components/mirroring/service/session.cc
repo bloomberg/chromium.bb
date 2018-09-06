@@ -27,16 +27,21 @@
 #include "components/mirroring/service/udp_socket_client.h"
 #include "components/mirroring/service/video_capture_client.h"
 #include "crypto/random.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_input_device.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/sender/audio_sender.h"
 #include "media/cast/sender/video_sender.h"
+#include "media/gpu/gpu_video_accelerator_util.h"
+#include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
+#include "services/ws/public/cpp/gpu/gpu.h"
 
 using media::cast::FrameSenderConfig;
 using media::cast::RtpPayloadType;
@@ -371,7 +376,8 @@ Session::Session(mojom::SessionParametersPtr session_params,
                  mojom::SessionObserverPtr observer,
                  mojom::ResourceProviderPtr resource_provider,
                  mojom::CastMessageChannelPtr outbound_channel,
-                 mojom::CastMessageChannelRequest inbound_channel)
+                 mojom::CastMessageChannelRequest inbound_channel,
+                 std::unique_ptr<ws::Gpu> gpu)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),
@@ -380,6 +386,8 @@ Session::Session(mojom::SessionParametersPtr session_params,
                           std::move(inbound_channel),
                           base::BindRepeating(&Session::OnResponseParsingError,
                                               base::Unretained(this))),
+      gpu_(std::move(gpu)),
+      gpu_channel_host_(nullptr),
       weak_factory_(this) {
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
@@ -409,6 +417,22 @@ Session::Session(mojom::SessionParametersPtr session_params,
   session_monitor_.emplace(
       kMaxCrashReportBytes, session_params_.receiver_address,
       std::move(session_tags), std::move(url_loader_factory));
+
+  if (gpu_) {
+    gpu_channel_host_ = gpu_->EstablishGpuChannelSync();
+    if (gpu_channel_host_ &&
+        gpu_channel_host_->gpu_feature_info().status_values
+                [gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
+            gpu::kGpuFeatureStatusEnabled) {
+      supported_profiles_ = gpu_channel_host_->gpu_info()
+                                .video_encode_accelerator_supported_profiles;
+    }
+  }
+  if (supported_profiles_.empty()) {
+    // HW encoding is not supported.
+    gpu_channel_host_ = nullptr;
+    gpu_.reset();
+  }
 
   CreateAndSendOffer();
 }
@@ -463,6 +487,8 @@ void Session::StopSession() {
   video_capture_client_.reset();
   media_remoter_.reset();
   resource_provider_.reset();
+  gpu_channel_host_ = nullptr;
+  gpu_.reset();
   if (observer_) {
     observer_->DidStop();
     observer_.reset();
@@ -499,17 +525,27 @@ void Session::OnEncoderStatusChange(OperationalStatus status) {
 
 media::VideoEncodeAccelerator::SupportedProfiles
 Session::GetSupportedVeaProfiles() {
-  // TODO(xjz): Establish GPU channel and query for the supported profiles.
-  return media::VideoEncodeAccelerator::SupportedProfiles();
+  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+      supported_profiles_);
 }
 
 void Session::CreateVideoEncodeAccelerator(
     const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback) {
-  DVLOG(1) << __func__;
-  // TODO(xjz): Establish GPU channel and create the
-  // media::MojoVideoEncodeAccelerator with the gpu info.
-  if (!callback.is_null())
-    callback.Run(video_encode_thread_, nullptr);
+  if (callback.is_null())
+    return;
+  std::unique_ptr<media::VideoEncodeAccelerator> mojo_vea;
+  if (gpu_ && gpu_channel_host_ && !supported_profiles_.empty()) {
+    if (!vea_provider_) {
+      gpu_->CreateVideoEncodeAcceleratorProvider(
+          mojo::MakeRequest(&vea_provider_));
+    }
+    media::mojom::VideoEncodeAcceleratorPtr vea;
+    vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+    // std::make_unique doesn't work to create a unique pointer of the subclass.
+    mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
+                                                         supported_profiles_));
+  }
+  callback.Run(video_encode_thread_, std::move(mojo_vea));
 }
 
 void Session::CreateVideoEncodeMemory(

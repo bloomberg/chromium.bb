@@ -303,10 +303,13 @@ void ChromeContentUtilityClient::RegisterServices(
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
       base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     service_manager::EmbeddedServiceInfo mirroring_info;
-    mirroring_info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<mirroring::MirroringService>();
-        });
+    mirroring_info.factory = base::BindRepeating(
+        [](scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+            -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<mirroring::MirroringService>(
+              std::move(io_task_runner));
+        },
+        content::ChildThread::Get()->GetIOTaskRunner());
     services->emplace(mirroring::mojom::kServiceName, mirroring_info);
   }
 #endif
