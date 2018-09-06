@@ -939,9 +939,10 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   if (login_window_)
     return;
 
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
+  // TODO(crbug.com/881390): Mash support for keyboard driven OOBE.
+  if (!features::IsMultiProcessMash() &&
+      system::InputDeviceSettings::ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
-    // crbug.com/405859
     focus_ring_controller_ = std::make_unique<ash::FocusRingController>();
     focus_ring_controller_->SetVisible(true);
 
