@@ -29,6 +29,14 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
+struct MatchGURLHash {
+  // The |bool| is whether the match is a calculator suggestion. We want them
+  // compare differently against other matches with the same URL.
+  size_t operator()(const std::pair<GURL, bool>& p) const {
+    return std::hash<std::string>()(p.first.spec()) + p.second;
+  }
+};
+
 // A match attribute when a default match's score has been boosted
 // with a higher scoring non-default match.
 static const char kScoreBoostedFrom[] = "score_boosted_from";
@@ -356,16 +364,20 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
 void AutocompleteResult::SortAndDedupMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
-  // Group matches by stripped URL.
-  std::unordered_map<GURL, std::list<ACMatches::iterator>, MatchGURLHash>
+  // Group matches by stripped URL and whether it's a calculator suggestion.
+  std::unordered_map<std::pair<GURL, bool>, std::list<ACMatches::iterator>,
+                     MatchGURLHash>
       url_to_matches;
-  for (auto i = matches->begin(); i != matches->end(); ++i)
-    url_to_matches[i->stripped_destination_url].push_back(i);
+  for (auto i = matches->begin(); i != matches->end(); ++i) {
+    std::pair<GURL, bool> p = GetMatchComparisonFields(*i);
+    url_to_matches[p].push_back(i);
+  }
   CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
       page_classification);
   // Find best default, and non-default, match in each group.
   for (auto& group : url_to_matches) {
-    const GURL& gurl = group.first;
+    const auto& p = group.first;
+    const GURL& gurl = p.first;
     // The list of matches whose URL are equivalent.
     auto& duplicate_matches = group.second;
     if (gurl.is_empty() || duplicate_matches.size() == 1)
@@ -413,8 +425,9 @@ void AutocompleteResult::SortAndDedupMatches(
       std::remove_if(
           matches->begin(), matches->end(),
           [&url_to_matches](const AutocompleteMatch& m) {
+            std::pair<GURL, bool> p = GetMatchComparisonFields(m);
             return !m.stripped_destination_url.is_empty() &&
-                   &(*url_to_matches[m.stripped_destination_url].front()) != &m;
+                   &(*url_to_matches[p].front()) != &m;
           }),
       matches->end());
 }
@@ -560,4 +573,10 @@ void AutocompleteResult::MergeMatchesByProvider(
       delta--;
     }
   }
+}
+
+std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
+    const AutocompleteMatch& match) {
+  return std::make_pair(match.stripped_destination_url,
+                        match.type == AutocompleteMatchType::CALCULATOR);
 }

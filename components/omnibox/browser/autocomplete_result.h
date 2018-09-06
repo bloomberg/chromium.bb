@@ -161,6 +161,14 @@ class AutocompleteResult {
       const ACMatches& old_matches,
       const ACMatches& new_matches);
 
+  // This pulls the relevant fields out of a match for comparison with other
+  // matches for the purpose of deduping. It uses the stripped URL, so that we
+  // collapse similar URLs if necessary, and whether the match is a calculator
+  // suggestion, because we don't want to dedupe them against URLs that simply
+  // happen to go to the same destination.
+  static std::pair<GURL, bool> GetMatchComparisonFields(
+      const AutocompleteMatch& match);
+
   ACMatches matches_;
 
   const_iterator default_match_;
