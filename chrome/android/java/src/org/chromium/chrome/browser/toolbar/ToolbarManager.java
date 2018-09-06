@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -892,8 +893,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 maybeShowDuetHelpBubble(currentTab);
 
                 // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
-                mLocationBar.getContainerView().setAccessibilityTraversalBefore(
-                        R.id.bottom_toolbar);
+                ApiCompatibilityUtils.setAccessibilityTraversalBefore(
+                        mLocationBar.getContainerView(), R.id.bottom_toolbar);
             }
 
             onNativeLibraryReady();
