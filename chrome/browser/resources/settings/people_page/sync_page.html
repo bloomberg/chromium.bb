@@ -410,8 +410,7 @@
               $i18n{personalizeGoogleServicesTitle}
             </div>
             <paper-icon-button-light actionable class="icon-external">
-              <button aria-label="$i18n{personalizeGoogleServicesTitle}">
-              </button>
+              <button></button>
             </paper-icon-button-light>
           </a>
 
@@ -422,7 +421,7 @@
               $i18n{manageSyncedDataTitle}
             </div>
             <paper-icon-button-light actionable class="icon-external">
-              <button aria-label="$i18n{manageSyncedDataTitle}"></button>
+              <button></button>
             </paper-icon-button-light>
           </a>
 
@@ -452,20 +451,29 @@
                 on-paper-radio-group-changed=
                     "onEncryptionRadioSelectionChanged_">
               <cr-radio-button name="encrypt-with-google"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
+                  class="list-item" disabled="[[syncPrefs.encryptAllData]]"
+                  aria-label="$i18n{encryptWithGoogleCredentialsLabel}">
                 $i18n{encryptWithGoogleCredentialsLabel}
               </cr-radio-button>
-              <cr-radio-button name="encrypt-with-passphrase"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
-                <template is="dom-if" if="[[syncPrefs.fullEncryptionBody]]">
-                  <span>[[syncPrefs.fullEncryptionBody]]</span>
-                </template>
-                <template is="dom-if" if="[[!syncPrefs.fullEncryptionBody]]">
-                  <span on-click="onLearnMoreTap_">
+              <template is="dom-if" if="[[syncPrefs.fullEncryptionBody]]">
+                <cr-radio-button name="encrypt-with-passphrase"
+                    class="list-item" disabled="[[syncPrefs.encryptAllData]]"
+                    aria-labelledby="fullEncryptionBody">
+                  <span id="fullEncryptionBody">
+                    [[syncPrefs.fullEncryptionBody]]
+                  </span>
+                </cr-radio-button>
+              </template>
+              <template is="dom-if" if="[[!syncPrefs.fullEncryptionBody]]">
+                <cr-radio-button name="encrypt-with-passphrase"
+                    class="list-item" disabled="[[syncPrefs.encryptAllData]]"
+                    aria-labelledby="encryptWithSyncPassphraseLabel">
+                  <span id="encryptWithSyncPassphraseLabel"
+                      on-click="onLearnMoreTap_">
                     $i18nRaw{encryptWithSyncPassphraseLabel}
                   </span>
-                </template>
-              </cr-radio-button>
+                </cr-radio-button>
+              </template>
             </paper-radio-group>
           </div>
 
