@@ -27,7 +27,7 @@
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/video_decode_accelerator.h"
-#include "ui/gl/gl_image.h"
+#include "ui/gl/gl_fence_egl.h"
 
 namespace media {
 
@@ -92,7 +92,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     int32_t picture_id;
     GLuint client_texture_id;
     GLuint texture_id;
-    EGLSyncKHR egl_sync;
+    std::unique_ptr<gl::GLFenceEGL> egl_fence;
     std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
   };
@@ -337,10 +337,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Return false if no buffers are pending on decoder_input_queue_.
   bool TrySetNewBistreamBuffer();
 
-  // Auto-destruction reference for EGLSync (for message-passing).
-  struct EGLSyncKHRRef;
+  // Task to flag the specified picture buffer for reuse, executed on the
+  // decoder_thread_. The picture buffer can only be reused after the specified
+  // fence has been signaled.
   void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
+                              std::unique_ptr<gl::GLFenceEGL> egl_fence);
 
   // Called to actually send |dec_surface| to the client - as a result of
   // decoding the stream in |bitstream_id| - after it is decoded preserving
