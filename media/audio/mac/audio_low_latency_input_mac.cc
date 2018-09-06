@@ -18,6 +18,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
@@ -301,6 +302,9 @@ bool AUAudioInputStream::Open() {
   const int sample_rate =
       AudioManagerMac::HardwareSampleRateForDevice(input_device_id_);
   DCHECK_EQ(sample_rate, format_.mSampleRate);
+
+  log_callback_.Run(base::StrCat(
+      {"AU in: Open using ", use_voice_processing_ ? "VPAU" : "AUHAL"}));
 
   const bool success =
       use_voice_processing_ ? OpenVoiceProcessingAU() : OpenAUHAL();
