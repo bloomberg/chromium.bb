@@ -606,7 +606,7 @@ class CroshTest(image_test_lib.ImageTestCase):
     # compromise of CrOS system security in verified mode.  It has happened.
     WHITELIST = {
         'dev.d': {'50-crosh.sh'},
-        'extra.d': {'30-cups.sh'},
+        'extra.d': set(),
         'removable.d': {'50-crosh.sh'},
     }
 
