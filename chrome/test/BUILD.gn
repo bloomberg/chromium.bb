@@ -2787,6 +2787,7 @@ test("unit_tests") {
   if (is_win) {
     assert(toolkit_views)
     sources += [
+      "../browser/browser_switcher/alternative_browser_launcher_unittest.cc",
       "../browser/browser_switcher/browser_switcher_sitelist_unittest.cc",
       "../browser/media/widevine_hardware_caps_win_unittest.cc",
       "../browser/notifications/win/mock_notification_image_retainer.cc",
