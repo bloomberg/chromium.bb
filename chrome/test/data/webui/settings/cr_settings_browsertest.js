@@ -1992,7 +1992,6 @@ CrSettingsMultideviceSubpageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
     'multidevice_subpage_tests.js',
   ]),
 };
