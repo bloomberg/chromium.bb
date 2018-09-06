@@ -146,7 +146,7 @@ This file contains the strings for ash.
         Autohide shelf
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALWAYS_SHOW_SHELF" desc="Title of the menu item in the context menu for always showing the shelf">
-        Always Show Shelf
+        Always show shelf
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_POSITION" desc="Title of the menu item in the context menu for aligning the shelf">
         Shelf position
