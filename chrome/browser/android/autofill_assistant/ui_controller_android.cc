@@ -72,6 +72,11 @@ void UiControllerAndroid::ChooseCard(
   std::move(callback).Run("");
 }
 
+void UiControllerAndroid::UpdateScripts(
+    const std::vector<ScriptHandle>& scripts) {
+  // TODO(crbug.com/806868): Implement UpdateScripts.
+}
+
 std::string UiControllerAndroid::GetApiKey() {
   std::string api_key;
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {

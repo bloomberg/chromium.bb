@@ -34,6 +34,8 @@ class MockUiController : public UiController {
   }
   MOCK_METHOD1(OnChooseCard,
                void(base::OnceCallback<void(const std::string&)>& callback));
+
+  MOCK_METHOD1(UpdateScripts, void(const std::vector<ScriptHandle>& scripts));
 };
 
 }  // namespace autofill_assistant
