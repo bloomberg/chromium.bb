@@ -21,7 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -102,7 +102,7 @@ std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
 }
 
 void CellularConfigDocument::LoadCellularConfigFile() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Load partner customization startup manifest if it is available.
   base::FilePath config_path(kCellularConfigPath);
