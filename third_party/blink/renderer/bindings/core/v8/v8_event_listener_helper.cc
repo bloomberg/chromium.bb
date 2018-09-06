@@ -74,10 +74,8 @@ EventListener* V8EventListenerHelper::GetEventListener(
   v8::Isolate* isolate = script_state->GetIsolate();
   V8PrivateProperty::Symbol listener_property =
       is_attribute
-          ? V8PrivateProperty::
-                GetV8EventListenerOrEventHandlerAttributeListener(isolate)
-          : V8PrivateProperty::GetV8EventListenerOrEventHandlerListener(
-                isolate);
+          ? V8PrivateProperty::GetCustomWrappableEventHandler(isolate)
+          : V8PrivateProperty::GetCustomWrappableEventListener(isolate);
 
   return GetEventListenerInternal<EventListener>(
       script_state, object, listener_property, lookup,
