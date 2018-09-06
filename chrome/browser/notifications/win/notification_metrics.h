@@ -88,6 +88,8 @@ enum class GetNotificationLaunchIdStatus {
   GET_NODE_VALUE_FAILED = 8,
   CONVERSION_TO_PROP_VALUE_FAILED = 9,
   GET_STRING_FAILED = 10,
+  GET_NAMED_ITEM_NULL = 11,
+  GET_FIRST_CHILD_NULL = 12,
   COUNT  // Must be the final value.
 };
 

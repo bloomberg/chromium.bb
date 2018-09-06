@@ -51627,6 +51627,8 @@ Full version information for the fingerprint enum values:
   <int value="8" label="GET_NODE_VALUE_FAILED"/>
   <int value="9" label="CONVERSION_TO_PROP_VALUE_FAILED"/>
   <int value="10" label="GET_STRING_FAILED"/>
+  <int value="11" label="GET_NAMED_ITEM_NULL"/>
+  <int value="12" label="GET_FIRST_CHILD_NULL"/>
 </enum>
 
 <enum name="WindowsNotificationGetSettingPolicy">
