@@ -305,15 +305,15 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
       !net::IsCertStatusMinorError(ssl_info->cert_status)) {
     ssl_info_ = ssl_info;
   }
+
+  network::ResourceResponseHead inner_response_head_shown_to_client =
+      resource_response;
   if (ssl_info.has_value() &&
       !(url_loader_options_ &
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    network::ResourceResponseHead response_info = resource_response;
-    response_info.ssl_info = base::nullopt;
-    client_->OnReceiveResponse(response_info);
-  } else {
-    client_->OnReceiveResponse(resource_response);
+    inner_response_head_shown_to_client.ssl_info = base::nullopt;
   }
+  client_->OnReceiveResponse(inner_response_head_shown_to_client);
 
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out

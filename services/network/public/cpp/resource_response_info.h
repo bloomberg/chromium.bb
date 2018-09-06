@@ -185,6 +185,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // mime sniffing anymore.
   bool did_mime_sniff;
 
+  // True if the response is an inner response of a signed exchange.
+  bool is_signed_exchange_inner_response = false;
+
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.
 };

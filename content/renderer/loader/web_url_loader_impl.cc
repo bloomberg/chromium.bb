@@ -1205,6 +1205,8 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetConnectionInfo(info.connection_info);
   response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
   response->SetRequestId(request_id);
+  response->SetIsSignedExchangeInnerResponse(
+      info.is_signed_exchange_inner_response);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 

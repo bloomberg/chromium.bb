@@ -526,6 +526,8 @@ void SignedExchangeHandler::OnVerifyCert(
   }
 
   network::ResourceResponseHead response_head;
+  response_head.is_signed_exchange_inner_response = true;
+
   response_head.headers = envelope_->BuildHttpResponseHeaders();
   response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
                                                &response_head.charset);

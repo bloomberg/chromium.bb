@@ -41,6 +41,21 @@ gen-signedexchange \
   -o sxg-location.sxg \
   -miRecordSize 100
 
+# Generate the signed exchange file which also reports use counter info.
+gen-signedexchange \
+  -version 1b2 \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
+  -status 200 \
+  -content sxg-usecounter.html \
+  -certificate $certs_dir/127.0.0.1.sxg.pem \
+  -certUrl https://127.0.0.1:8443/loading/sxg/resources/127.0.0.1.sxg.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/sxg/resources/resource.validity.msg \
+  -privateKey $certs_dir/127.0.0.1.sxg.key \
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o sxg-usecounter.sxg \
+  -miRecordSize 100
+
 # Generate the signed exchange file which certificate file is not available.
 gen-signedexchange \
   -version 1b2 \
