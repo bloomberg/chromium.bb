@@ -29,6 +29,7 @@ extern const base::Feature kOfflinePagesDescriptiveFailStatusFeature;
 extern const base::Feature kOfflinePagesCTSuppressNotificationsFeature;
 extern const base::Feature kOfflinePagesShowAlternateDinoPageFeature;
 extern const base::Feature kOfflineIndicatorFeature;
+extern const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature;
 
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.
@@ -112,6 +113,12 @@ std::string GetPrefetchingOfflinePagesExperimentTag();
 
 // Returns true if offline indicator UI is shown when the user is offline.
 bool IsOfflineIndicatorFeatureEnabled();
+
+// Returns true if we should always do http probes to detect network
+// connectivity instead of retrieving it from the system. This enables the user
+// to test our http probe detection on Android devices with Marshmallow and
+// above.
+bool IsOfflineIndicatorAlwaysHttpProbeEnabled();
 
 }  // namespace offline_pages
 

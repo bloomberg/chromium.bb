@@ -48,7 +48,10 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for offline indicator interacting with chrome activity. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.OFFLINE_INDICATOR})
+        "enable-features=" + ChromeFeatureList.OFFLINE_INDICATOR + "<FakeStudy",
+        "force-fieldtrials=FakeStudy/FakeGroup",
+        "force-fieldtrial-params=FakeStudy.FakeGroup:"
+                + OfflineIndicatorController.PARAM_STABLE_OFFLINE_WAIT_SECONDS + "/1"})
 // TODO(jianli): Add test for disabled feature.
 public class OfflineIndicatorControllerTest {
     @Rule
@@ -72,8 +75,6 @@ public class OfflineIndicatorControllerTest {
             }
             NetworkChangeNotifier.forceConnectivityState(true);
             OfflineIndicatorController.initialize();
-            OfflineIndicatorController.getInstance().overrideTimeToWaitForStableOfflineForTesting(
-                    1500);
         });
     }
 

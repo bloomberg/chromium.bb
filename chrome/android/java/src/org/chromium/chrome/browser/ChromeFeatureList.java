@@ -247,6 +247,8 @@ public abstract class ChromeFeatureList {
     public static final String NTP_MODERN_LAYOUT = "NTPModernLayout";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
+    public static final String OFFLINE_INDICATOR_ALWAYS_HTTP_PROBE =
+            "OfflineIndicatorAlwaysHttpProbe";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
             "OfflinePagesDescriptiveFailStatus";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =

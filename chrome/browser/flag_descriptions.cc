@@ -2573,9 +2573,15 @@ const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =
     "Enable saving bookmarked pages for offline viewing.";
 
-const char kOfflineIndicatorName[] = "Enable offline indicator";
-const char kOfflineIndicatorDescription[] =
-    "Enable showing offline indicator while offline.";
+const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
+const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
+    "Always do http probe to detect network connectivity for offline indicator "
+    "as opposed to just taking the connection state from the system."
+    "Used for testing.";
+
+const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
+const char kOfflineIndicatorChoiceDescription[] =
+    "Show an offline indicator while offline.";
 
 const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
 const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
