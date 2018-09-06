@@ -19,11 +19,9 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "url/origin.h"
@@ -36,11 +34,9 @@ class SharedWorkerHostTest : public testing::Test {
  public:
   SharedWorkerHostTest()
       : mock_render_process_host_(&browser_context_),
-        service_(&storage_partition_,
+        service_(nullptr /* storage_partition */,
                  nullptr /* service_worker_context */,
-                 nullptr /* appcache_service */) {
-    storage_partition_.set_network_context(&network_context_);
-  }
+                 nullptr /* appcache_service */) {}
 
   base::WeakPtr<SharedWorkerHost> CreateHost() {
     GURL url("http://www.example.com/w.js");
@@ -86,8 +82,6 @@ class SharedWorkerHostTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
-  TestStoragePartition storage_partition_;
-  network::TestNetworkContext network_context_;
   TestBrowserContext browser_context_;
   MockRenderProcessHost mock_render_process_host_;
 

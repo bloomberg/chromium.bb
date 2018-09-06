@@ -33,14 +33,14 @@ namespace content {
 class ChromeAppCacheService;
 class SharedWorkerInstance;
 class SharedWorkerHost;
-class StoragePartition;
+class StoragePartitionImpl;
 struct SubresourceLoaderParams;
 
 // Created per StoragePartition.
 class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
  public:
   SharedWorkerServiceImpl(
-      StoragePartition* storage_partition,
+      StoragePartitionImpl* storage_partition,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       scoped_refptr<ChromeAppCacheService> appcache_service);
   ~SharedWorkerServiceImpl() override;
@@ -64,7 +64,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   void DestroyHost(SharedWorkerHost* host);
 
-  StoragePartition* storage_partition() { return storage_partition_; }
+  StoragePartitionImpl* storage_partition() { return storage_partition_; }
 
  private:
   friend class SharedWorkerServiceImplTest;
@@ -102,7 +102,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   base::OnceClosure terminate_all_workers_callback_;
 
   // |storage_partition_| owns |this|.
-  StoragePartition* const storage_partition_;
+  StoragePartitionImpl* const storage_partition_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
 
