@@ -12,6 +12,8 @@ from __future__ import print_function
 
 import cStringIO
 import collections
+import errno
+import fnmatch
 import itertools
 import lddtree
 import magic
@@ -619,3 +621,86 @@ class CroshTest(image_test_lib.ImageTestCase):
       found_modules = set(os.listdir(mod_path))
       unknown_modules = found_modules - good_modules
       self.assertEqual(set(), unknown_modules)
+
+
+class SymlinkTest(image_test_lib.ImageTestCase):
+  """Verify symlinks in the rootfs."""
+
+  # These are an allow list only.  We don't require any of these to actually
+  # be symlinks.  But if they are, they have to point to these targets.
+  #
+  # The key is the symlink and the value is the symlink target.
+  # Both accept fnmatch style expressions (i.e. globs).
+  _ACCEPTABLE_LINKS = {
+      '/etc/localtime': '/var/lib/timezone/localtime',
+      '/etc/machine-id': '/var/lib/dbus/machine-id',
+      '/etc/mtab': '/proc/mounts',
+
+      # The kip board has a broken/dangling symlink.  Allow it until we can
+      # rewrite the code.  Or kip goes EOL.
+      '/lib/firmware/elan_i2c.bin': '/opt/google/touch/firmware/*',
+
+      # Some boards don't set this up properly.  It's not a big deal.
+      '/usr/libexec/editor': '/usr/bin/*',
+
+      # These are hacks to make dev images and `dev_install` work.  Normally
+      # /usr/local isn't mounted or populated, so it's not too big a deal to
+      # let these things always point there.
+      '/etc/env.d/*': '/usr/local/etc/env.d/*',
+      '/usr/bin/python*': '/usr/local/bin/python*',
+      '/usr/lib/portage': '/usr/local/lib/portage',
+      '/usr/lib/python-exec': '/usr/local/lib/python-exec',
+      '/usr/lib/debug': '/usr/local/usr/lib/debug',
+  }
+
+  @classmethod
+  def _SymlinkTargetAllowed(cls, source, target):
+    """See whether |source| points to an acceptable |target|."""
+    # Allow any /etc path to point to any /run path.
+    if source.startswith('/etc') and target.startswith('/run'):
+      return True
+
+    # Scan the allow list.
+    for allow_source, allow_target in cls._ACCEPTABLE_LINKS.items():
+      if (fnmatch.fnmatch(source, allow_source) and
+          fnmatch.fnmatch(target, allow_target)):
+        return True
+
+    # Reject everything else.
+    return False
+
+  def TestCheckSymlinkTargets(self):
+    """Make sure the targets of all symlinks are 'valid'."""
+    failures = []
+    for root, _, files in os.walk(image_test_lib.ROOT_A):
+      for name in files:
+        full_path = os.path.join(root, name)
+        try:
+          target = os.readlink(full_path)
+        except OSError as e:
+          # If it's not a symlink, ignore it.
+          if e.errno == errno.EINVAL:
+            continue
+          raise
+
+        # Ignore symlinks to just basenames.
+        if '/' not in target:
+          continue
+
+        # Resolve the link target relative to the rootfs.
+        resolved_target = osutils.ResolveSymlinkInRoot(full_path,
+                                                       image_test_lib.ROOT_A)
+        normed_target = os.path.normpath(resolved_target)
+
+        # If the target exists, it's fine.
+        if os.path.exists(normed_target):
+          continue
+
+        # Now check the allow list.
+        source = '/' + os.path.relpath(full_path, image_test_lib.ROOT_A)
+        if not self._SymlinkTargetAllowed(source, target):
+          failures.append((source, target))
+
+    for (source, target) in failures:
+      logging.error('Insecure symlink: %s -> %s', source, target)
+    self.assertEqual(0, len(failures))
