@@ -58,6 +58,22 @@
   <message name="IDS_OMNIBOX_FILE" desc="Text shown in the omnibox to indicate a user is viewing a file.">
     File
   </message>
+  <message name="IDS_DRIVE_SUGGESTION_DOCUMENT" desc="Google Docs product name, for use in omnibox Docs result descriptions.">
+    Google Docs
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_SPREADSHEET" desc="Google Sheets product name, for use in omnibox Sheets result descriptions.">
+    Google Sheets
+  </message>
+    <message name="IDS_DRIVE_SUGGESTION_PRESENTATION" desc="Google Slides product name, for use in omnibox Slides result descriptions.">
+    Google Slides
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_GENERAL" desc="Google Drive product name, for use in general omnibox Drive file result descriptions.">
+    Google Drive
+  </message>
+  <message name="IDS_DRIVE_SUGGESTION_DESCRIPTION_TEMPLATE" desc="Product description for Google Drive omnibox results.">
+    <ph name="RESULT_MODIFIED_DATE">$1<ex>12/31/2018</ex></ph> - <ph name="RESULT_PRODUCT_SOURCE">$2<ex>Google Docs</ex></ph>
+  </message>
+
 
   <!-- Accessibility labels for autocomplete match types.
        These are parameterized on the text being completed into the omnibox.
