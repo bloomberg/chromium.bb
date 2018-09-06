@@ -24,6 +24,10 @@ const char MediaEngagementScore::kSignificantPlaybacksKey[] =
 const char MediaEngagementScore::kVisitsWithMediaTagKey[] =
     "visitsWithMediaTag";
 const char MediaEngagementScore::kHighScoreChanges[] = "highScoreChanges";
+const char MediaEngagementScore::kSignificantMediaPlaybacksKey[] =
+    "mediaElementPlaybacks";
+const char MediaEngagementScore::kSignificantAudioContextPlaybacksKey[] =
+    "audioContextPlaybacks";
 
 const char MediaEngagementScore::kScoreMinVisitsParamName[] = "min_visits";
 const char MediaEngagementScore::kHighScoreLowerThresholdParamName[] =
@@ -82,24 +86,18 @@ MediaEngagementScore::MediaEngagementScore(base::Clock* clock,
     : MediaEngagementScore(
           clock,
           origin,
-          GetMediaEngagementScoreDictForSettings(settings, origin)) {
-  settings_map_ = settings;
-}
+          GetMediaEngagementScoreDictForSettings(settings, origin),
+          settings) {}
 
 MediaEngagementScore::MediaEngagementScore(
     base::Clock* clock,
     const GURL& origin,
     std::unique_ptr<base::DictionaryValue> score_dict,
     HostContentSettingsMap* settings)
-    : MediaEngagementScore(clock, origin, std::move(score_dict)) {
-  settings_map_ = settings;
-}
-
-MediaEngagementScore::MediaEngagementScore(
-    base::Clock* clock,
-    const GURL& origin,
-    std::unique_ptr<base::DictionaryValue> score_dict)
-    : origin_(origin), clock_(clock), score_dict_(score_dict.release()) {
+    : origin_(origin),
+      clock_(clock),
+      score_dict_(score_dict.release()),
+      settings_map_(settings) {
   if (!score_dict_)
     return;
 
@@ -110,6 +108,10 @@ MediaEngagementScore::MediaEngagementScore(
   score_dict_->GetInteger(kSignificantPlaybacksKey, &significant_playbacks_);
   score_dict_->GetInteger(kVisitsWithMediaTagKey, &visits_with_media_tag_);
   score_dict_->GetInteger(kHighScoreChanges, &high_score_changes_);
+  score_dict_->GetInteger(kSignificantMediaPlaybacksKey,
+                          &media_element_playbacks_);
+  score_dict_->GetInteger(kSignificantAudioContextPlaybacksKey,
+                          &audio_context_playbacks_);
 
   double internal_time;
   if (score_dict_->GetDouble(kLastMediaPlaybackTimeKey, &internal_time))
@@ -120,14 +122,23 @@ MediaEngagementScore::MediaEngagementScore(
   // or if we have data from before the bit was introduced.
   bool was_high = is_high_;
   Recalculate();
-  if (is_high_ != was_high) {
-    if (settings_map_) {
-      Commit();
-    } else {
-      // Update the internal dictionary for testing.
-      score_dict_->SetBoolean(kHasHighScoreKey, is_high_);
-    }
+  bool needs_commit = is_high_ != was_high;
+
+  // If we have a score for media playbacks and we do not have a value for
+  // both media element playbacks and audio context playbacks then we should
+  // copy media playbacks into media element playbacks.
+  bool has_new_playbacks_key_ =
+      score_dict_->FindKey(kSignificantMediaPlaybacksKey) ||
+      score_dict_->FindKey(kSignificantAudioContextPlaybacksKey);
+  if (!has_new_playbacks_key_) {
+    media_element_playbacks_ = media_playbacks_;
+    needs_commit = true;
   }
+
+  // If we need to commit because of a migration and we have the settings map
+  // then we should commit.
+  if (needs_commit && settings_map_)
+    Commit();
 }
 
 // TODO(beccahughes): Add typemap.
@@ -169,6 +180,8 @@ bool MediaEngagementScore::UpdateScoreDict() {
   int stored_significant_playbacks = 0;
   int stored_visits_with_media_tag = 0;
   int high_score_changes = 0;
+  int stored_media_element_playbacks = 0;
+  int stored_audio_context_playbacks = 0;
 
   score_dict_->GetInteger(kVisitsKey, &stored_visits);
   score_dict_->GetInteger(kMediaPlaybacksKey, &stored_media_playbacks);
@@ -181,6 +194,10 @@ bool MediaEngagementScore::UpdateScoreDict() {
   score_dict_->GetInteger(kVisitsWithMediaTagKey,
                           &stored_visits_with_media_tag);
   score_dict_->GetInteger(kHighScoreChanges, &high_score_changes);
+  score_dict_->GetInteger(kSignificantMediaPlaybacksKey,
+                          &stored_media_element_playbacks);
+  score_dict_->GetInteger(kSignificantAudioContextPlaybacksKey,
+                          &stored_audio_context_playbacks);
 
   bool changed = stored_visits != visits() ||
                  stored_media_playbacks != media_playbacks() ||
@@ -188,6 +205,8 @@ bool MediaEngagementScore::UpdateScoreDict() {
                  stored_audible_playbacks != audible_playbacks() ||
                  stored_significant_playbacks != significant_playbacks() ||
                  stored_visits_with_media_tag != visits_with_media_tag() ||
+                 stored_media_element_playbacks != media_element_playbacks() ||
+                 stored_audio_context_playbacks != audio_context_playbacks() ||
                  stored_last_media_playback_internal !=
                      last_media_playback_time_.ToInternalValue();
 
@@ -210,6 +229,10 @@ bool MediaEngagementScore::UpdateScoreDict() {
   score_dict_->SetInteger(kSignificantPlaybacksKey, significant_playbacks_);
   score_dict_->SetInteger(kVisitsWithMediaTagKey, visits_with_media_tag_);
   score_dict_->SetInteger(kHighScoreChanges, high_score_changes_);
+  score_dict_->SetInteger(kSignificantMediaPlaybacksKey,
+                          media_element_playbacks_);
+  score_dict_->SetInteger(kSignificantAudioContextPlaybacksKey,
+                          audio_context_playbacks_);
 
   return true;
 }
