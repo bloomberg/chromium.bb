@@ -113,7 +113,12 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     views::ButtonListener* button_listener,
     const UIMediaSink& sink,
     int button_tag) {
-  if (sink.issue) {
+  // The stop button has the highest priority, and the issue icon comes second.
+  if (sink.state == UIMediaSinkState::CONNECTED ||
+      sink.state == UIMediaSinkState::DISCONNECTING) {
+    return std::make_unique<StopButton>(
+        button_listener, button_tag, sink.state == UIMediaSinkState::CONNECTED);
+  } else if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
                                          kPrimaryIconSize,
@@ -121,10 +126,6 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     icon_view->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     return icon_view;
-  } else if (sink.state == UIMediaSinkState::CONNECTED ||
-             sink.state == UIMediaSinkState::DISCONNECTING) {
-    return std::make_unique<StopButton>(
-        button_listener, button_tag, sink.state == UIMediaSinkState::CONNECTED);
   } else if (sink.state == UIMediaSinkState::CONNECTING) {
     return CreateThrobber();
   }
