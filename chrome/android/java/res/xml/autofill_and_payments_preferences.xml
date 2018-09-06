@@ -12,7 +12,7 @@
 
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
        android:title="@string/autofill_payment_methods"
-       android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardsFragment"
+       android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillPaymentMethodsFragment"
        android:key="autofill_payment_methods" />
 
 </PreferenceScreen>
