@@ -89,12 +89,14 @@ class P2PSocketManager::DnsRequest {
     if (host_name_.back() != '.')
       host_name_ += '.';
 
-    net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
-    int result =
-        resolver_->Resolve(info, net::DEFAULT_PRIORITY, &addresses_,
-                           base::BindOnce(&P2PSocketManager::DnsRequest::OnDone,
-                                          base::Unretained(this)),
-                           &request_, net::NetLogWithSource());
+    net::HostPortPair host(host_name_, 0);
+    // TODO(crbug.com/879746): Pass in a
+    // net::HostResolver::ResolveHostParameters with source set to MDNS if we
+    // have a ".local." TLD (once MDNS is supported).
+    request_ =
+        resolver_->CreateRequest(host, net::NetLogWithSource(), base::nullopt);
+    int result = request_->Start(base::BindOnce(
+        &P2PSocketManager::DnsRequest::OnDone, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnDone(result);
   }
@@ -102,26 +104,24 @@ class P2PSocketManager::DnsRequest {
  private:
   void OnDone(int result) {
     net::IPAddressList list;
-    if (result != net::OK) {
+    const base::Optional<net::AddressList>& addresses =
+        request_->GetAddressResults();
+    if (result != net::OK || !addresses) {
       LOG(ERROR) << "Failed to resolve address for " << host_name_
                  << ", errorcode: " << result;
       done_callback_.Run(list);
       return;
     }
 
-    DCHECK(!addresses_.empty());
-    for (net::AddressList::iterator iter = addresses_.begin();
-         iter != addresses_.end(); ++iter) {
-      list.push_back(iter->address());
+    for (const auto& endpoint : *addresses) {
+      list.push_back(endpoint.address());
     }
     done_callback_.Run(list);
   }
 
-  net::AddressList addresses_;
-
   std::string host_name_;
   net::HostResolver* resolver_;
-  std::unique_ptr<net::HostResolver::Request> request_;
+  std::unique_ptr<net::HostResolver::ResolveHostRequest> request_;
 
   DoneCallback done_callback_;
 };
