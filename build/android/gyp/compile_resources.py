@@ -303,7 +303,7 @@ def _CreateLinkApkArgs(options):
     '-o', options.apk_path,
   ]
 
-  for j in options.android_sdk_jars:
+  for j in options.include_resources:
     link_command += ['-I', j]
   if options.proguard_file:
     link_command += ['--proguard', options.proguard_file]
@@ -375,16 +375,19 @@ def _FixManifest(options, temp_dir):
     except build_utils.CalledProcessError:
       return None
 
-  extract_all = [maybe_extract_version(j) for j in options.android_sdk_jars]
+  android_sdk_jars = [j for j in options.include_resources
+                      if os.path.basename(j) in ('android.jar',
+                                                 'android_system.jar')]
+  extract_all = [maybe_extract_version(j) for j in android_sdk_jars]
   successful_extractions = [x for x in extract_all if x]
   if len(successful_extractions) == 0:
     raise Exception(
         'Unable to find android SDK jar among candidates: %s'
-            % ', '.join(options.android_sdk_jars))
+            % ', '.join(android_sdk_jars))
   elif len(successful_extractions) > 1:
     raise Exception(
         'Found multiple android SDK jars among candidates: %s'
-            % ', '.join(options.android_sdk_jars))
+            % ', '.join(android_sdk_jars))
   version_code, version_name = successful_extractions.pop()
 
   # ElementTree.find does not work if the required tag is the root.
@@ -657,7 +660,7 @@ def main(args):
     options.android_manifest,
     options.shared_resources_whitelist,
   ]
-  possible_input_paths += options.android_sdk_jars
+  possible_input_paths += options.include_resources
   input_paths = [x for x in possible_input_paths if x]
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(options.extra_r_text_files)

@@ -1731,6 +1731,7 @@ if (enable_arcore) {
   ar_module_tmpl("ar_public_module") {
     manifest_package = manifest_package
     module_name = "ArPublic"
+    base_module_target = ":monochrome_public_base_module"
   }
 }
 
@@ -1738,6 +1739,7 @@ if (enable_vr) {
   vr_module_tmpl("vr_public_module") {
     manifest_package = manifest_package
     module_name = "VrPublic"
+    base_module_target = ":chrome_modern_public_base_module"
   }
 }
 

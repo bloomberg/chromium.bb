@@ -1919,6 +1919,7 @@ if (enable_java_templates) {
 
     _is_bundle_module =
         defined(invoker.is_bundle_module) && invoker.is_bundle_module
+    _is_base_module = defined(invoker.is_base_module) && invoker.is_base_module
 
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
@@ -2135,6 +2136,12 @@ if (enable_java_templates) {
       _deps += [ invoker.product_version_resources_dep ]
     }
 
+    if (defined(invoker.alternative_android_sdk_dep)) {
+      _android_sdk_dep = invoker.alternative_android_sdk_dep
+    } else {
+      _android_sdk_dep = "//third_party/android_tools:android_sdk_java"
+    }
+
     _compile_resources_target = "${_template_name}__compile_resources"
     compile_resources(_compile_resources_target) {
       forward_variables_from(invoker,
@@ -2161,21 +2168,24 @@ if (enable_java_templates) {
       if (_enable_multidex) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
-      if (_is_bundle_module) {
-        proto_format = true
-      }
       output = _packaged_resources_path
 
       build_config = _build_config
       deps = _deps + [
                ":$_merge_manifest_target",
                ":$_build_config_target",
+               _android_sdk_dep,
              ]
-      if (defined(invoker.alternative_android_sdk_dep)) {
-        deps += [ invoker.alternative_android_sdk_dep ]
-      } else {
-        deps += [ "//third_party/android_tools:android_sdk_java" ]
+
+      if (_is_bundle_module) {
+        proto_format = true
+        if (defined(invoker.base_module_arsc_resource_target)) {
+          assert(defined(invoker.base_module_arsc_resource))
+          include_resource = "${invoker.base_module_arsc_resource}"
+          deps += [ invoker.base_module_arsc_resource_target ]
+        }
       }
+
       if (defined(invoker.shared_resources_whitelist_target)) {
         _whitelist_gen_dir =
             get_label_info(invoker.shared_resources_whitelist_target,
@@ -2190,6 +2200,39 @@ if (enable_java_templates) {
         ]
       }
     }
+
+    if (_is_base_module && _is_bundle_module) {
+      # Bundle modules have to reference resources from the base module.
+      # However, to compile the bundle module's resources we have to give it an
+      # arsc resource to link against (aapt2 fails with proto resources). Thus,
+      # add an arsc resource compilation step to make the bundle module's link
+      # step work.
+      compile_resources("${_template_name}__compile_arsc_resources") {
+        forward_variables_from(invoker,
+                               [
+                                 "support_zh_hk",
+                                 "aapt_locale_whitelist",
+                                 "exclude_xxxhdpi",
+                                 "png_to_webp",
+                                 "xxxhdpi_whitelist",
+                                 "no_xml_namespaces",
+                               ])
+        android_manifest = _android_manifest
+        version_code = _version_code
+        version_name = _version_name
+
+        proto_format = false
+        output = "$target_gen_dir/$_template_name.arsc.ap_"
+
+        build_config = _build_config
+        deps = _deps + [
+                 ":$_merge_manifest_target",
+                 ":$_build_config_target",
+                 _android_sdk_dep,
+               ]
+      }
+    }
+
     _srcjar_deps += [ ":$_compile_resources_target" ]
 
     if (_native_libs_deps != []) {
@@ -2878,19 +2921,33 @@ if (enable_java_templates) {
   #   module_name: Name of the module.
   #   is_base_module: If defined and true, indicates that this is the bundle's
   #     base module (optional).
+  #   base_module_target: Base module target of the bundle this module will be
+  #     added to (optional). Can only be specified for non-base modules.
   template("android_app_bundle_module") {
     _is_base_module = defined(invoker.is_base_module) && invoker.is_base_module
 
-    if (!_is_base_module) {
-      assert(!defined(write_asset_list))
-      assert(!defined(firebase_app_id))
-      assert(!defined(app_as_shared_lib))
-      assert(!defined(shared_resources))
-      assert(!defined(shared_resources_whitelist_target))
-      assert(!defined(build_hooks_android_impl_deps))
-      assert(!defined(shared_libraries))
+    if (_is_base_module) {
+      assert(!defined(invoker.base_module_target))
+    } else {
+      assert(!defined(invoker.write_asset_list))
+      assert(!defined(invoker.firebase_app_id))
+      assert(!defined(invoker.app_as_shared_lib))
+      assert(!defined(invoker.shared_resources))
+      assert(!defined(invoker.shared_resources_whitelist_target))
+      assert(!defined(invoker.build_hooks_android_impl_deps))
+      assert(!defined(invoker.shared_libraries))
+      assert(defined(invoker.base_module_target))
     }
 
+    # TODO(tiborg): We have several flags that are necessary for workarounds
+    # that come from the fact that the resources get compiled in the bundle
+    # module target, but bundle modules have to have certain flags in
+    # common or bundle modules have to know information about the base module.
+    # Those flags include version_code, version_name,
+    # base_module_arsc_resource and base_module_arsc_resource_target. It would
+    # be better to move the resource compile target into the bundle target. By
+    # doing so we can keep the bundle modules independent from the bundle and
+    # potentially reuse the same bundle modules for multiple bundles.
     android_apk_or_module(target_name) {
       forward_variables_from(invoker,
                              [
@@ -2900,6 +2957,8 @@ if (enable_java_templates) {
                                "android_manifest",
                                "android_manifest_dep",
                                "app_as_shared_lib",
+                               "base_module_arsc_resource",
+                               "base_module_arsc_resource_target",
                                "chromium_code",
                                "classpath_deps",
                                "data",
@@ -2911,6 +2970,7 @@ if (enable_java_templates) {
                                "exclude_xxxhdpi",
                                "firebase_app_id",
                                "input_jars_paths",
+                               "is_base_module",
                                "java_files",
                                "javac_args",
                                "load_library_from_apk",
@@ -2947,6 +3007,16 @@ if (enable_java_templates) {
       no_build_hooks = !_is_base_module
       if (defined(invoker.module_name)) {
         name = invoker.module_name
+      }
+      if (defined(invoker.base_module_target)) {
+        _base_module_target = invoker.base_module_target
+        _base_module_target_gen_dir =
+            get_label_info(_base_module_target, "target_gen_dir")
+        _base_module_target_name = get_label_info(_base_module_target, "name")
+        base_module_arsc_resource =
+            "$_base_module_target_gen_dir/$_base_module_target_name.arsc.ap_"
+        base_module_arsc_resource_target =
+            "${_base_module_target}__compile_arsc_resources"
       }
     }
   }
