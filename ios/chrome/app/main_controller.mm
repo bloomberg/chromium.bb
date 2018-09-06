@@ -32,7 +32,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/payments/core/features.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
@@ -1194,10 +1193,7 @@ enum class ShowTabSwitcherSnapshotResult {
   [self sendQueuedFeedback];
   [self scheduleSpotlightResync];
   [self scheduleDeleteDownloadsDirectory];
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordExport)) {
-    [self scheduleDeleteTempPasswordsDirectory];
-  }
+  [self scheduleDeleteTempPasswordsDirectory];
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];

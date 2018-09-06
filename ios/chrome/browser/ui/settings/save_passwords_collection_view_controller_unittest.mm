@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -51,21 +50,11 @@ typedef struct {
 } ExportPasswordsFeatureStatus;
 
 class SavePasswordsCollectionViewControllerTest
-    : public CollectionViewControllerTest,
-      public ::testing::WithParamInterface<ExportPasswordsFeatureStatus> {
+    : public CollectionViewControllerTest {
  protected:
   SavePasswordsCollectionViewControllerTest() = default;
 
   void SetUp() override {
-    // TODO(crbug.com/792840): Remove parametrized tests once the feature is
-    // enabled.
-    if (GetParam().export_enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          password_manager::features::kPasswordExport);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          password_manager::features::kPasswordExport);
-    }
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
     CollectionViewControllerTest::SetUp();
@@ -169,45 +158,39 @@ class SavePasswordsCollectionViewControllerTest
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests default case has no saved sites and no blacklisted sites.
-TEST_P(SavePasswordsCollectionViewControllerTest, TestInitialization) {
+TEST_F(SavePasswordsCollectionViewControllerTest, TestInitialization) {
   CheckController();
-  EXPECT_EQ(GetParam().section_offset + 2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
 }
 
 // Tests adding one item in saved password section.
-TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedPasswords) {
+TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedPasswords) {
   AddSavedForm1();
 
-  int section_offset = GetParam().section_offset;
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests adding one item in blacklisted password section.
-TEST_P(SavePasswordsCollectionViewControllerTest, AddBlacklistedPasswords) {
+TEST_F(SavePasswordsCollectionViewControllerTest, AddBlacklistedPasswords) {
   AddBlacklistedForm1();
 
-  int section_offset = GetParam().section_offset;
-
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests adding one item in saved password section, and two items in blacklisted
 // password section.
-TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedAndBlacklisted) {
+TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedAndBlacklisted) {
   AddSavedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  int section_offset = GetParam().section_offset;
-
   // There should be two sections added.
-  EXPECT_EQ(section_offset + 5, NumberOfSections());
+  EXPECT_EQ(6, NumberOfSections());
 
   // There should be 1 row in saved password section.
   EXPECT_EQ(1, NumberOfItemsInSection(3));
@@ -216,7 +199,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedAndBlacklisted) {
 }
 
 // Tests the order in which the saved passwords are displayed.
-TEST_P(SavePasswordsCollectionViewControllerTest, TestSavedPasswordsOrder) {
+TEST_F(SavePasswordsCollectionViewControllerTest, TestSavedPasswordsOrder) {
   AddSavedForm2();
 
   CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 0);
@@ -227,7 +210,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest, TestSavedPasswordsOrder) {
 }
 
 // Tests the order in which the blacklisted passwords are displayed.
-TEST_P(SavePasswordsCollectionViewControllerTest,
+TEST_F(SavePasswordsCollectionViewControllerTest,
        TestBlacklistedPasswordsOrder) {
   AddBlacklistedForm2();
   CheckTextCellTitle(@"secret2.com", 3, 0);
@@ -239,30 +222,26 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
 
 // Tests displaying passwords in the saved passwords section when there are
 // duplicates in the password store.
-TEST_P(SavePasswordsCollectionViewControllerTest, AddSavedDuplicates) {
+TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
 
-  int section_offset = GetParam().section_offset;
-
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests displaying passwords in the blacklisted passwords section when there
 // are duplicates in the password store.
-TEST_P(SavePasswordsCollectionViewControllerTest, AddBlacklistedDuplicates) {
+TEST_F(SavePasswordsCollectionViewControllerTest, AddBlacklistedDuplicates) {
   AddBlacklistedForm1();
   AddBlacklistedForm1();
 
-  int section_offset = GetParam().section_offset;
-
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(3));
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections.
-TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItems) {
+TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItems) {
   AddSavedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
@@ -278,11 +257,9 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItems) {
         }));
   };
 
-  int section_offset = GetParam().section_offset;
-
   // Delete item in save passwords section.
   deleteItemWithWait(3, 0);
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   // Section 3 should now be the blacklisted passwords section, and should still
   // have both its items.
   EXPECT_EQ(2, NumberOfItemsInSection(3));
@@ -292,12 +269,12 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItems) {
   EXPECT_EQ(1, NumberOfItemsInSection(3));
   deleteItemWithWait(3, 0);
   // There should be no password sections remaining and no search bar.
-  EXPECT_EQ(section_offset + 2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections
 // when there are duplicates in the store.
-TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
+TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
   AddBlacklistedForm1();
@@ -315,11 +292,9 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
         }));
   };
 
-  int section_offset = GetParam().section_offset;
-
   // Delete item in save passwords section.
   deleteItemWithWait(3, 0);
-  EXPECT_EQ(section_offset + 4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   // Section 3 should now be the blacklisted passwords section, and should still
   // have both its items.
   EXPECT_EQ(2, NumberOfItemsInSection(3));
@@ -329,14 +304,11 @@ TEST_P(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
   EXPECT_EQ(1, NumberOfItemsInSection(3));
   deleteItemWithWait(3, 0);
   // There should be no password sections remaining and no search bar.
-  EXPECT_EQ(section_offset + 2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
 }
 
-TEST_P(SavePasswordsCollectionViewControllerTest,
+TEST_F(SavePasswordsCollectionViewControllerTest,
        TestExportButtonDisabledNoSavedPasswords) {
-  if (!GetParam().export_enabled)
-    return;
-
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
   [save_password_controller updateExportPasswordsButton];
@@ -358,11 +330,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
               UIAccessibilityTraitNotEnabled);
 }
 
-TEST_P(SavePasswordsCollectionViewControllerTest,
+TEST_F(SavePasswordsCollectionViewControllerTest,
        TestExportButtonEnabledWithSavedPasswords) {
-  if (!GetParam().export_enabled)
-    return;
-
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
   AddSavedForm1();
@@ -377,11 +346,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
 }
 
 // Tests that the "Export Passwords..." button is greyed out in edit mode.
-TEST_P(SavePasswordsCollectionViewControllerTest,
+TEST_F(SavePasswordsCollectionViewControllerTest,
        TestExportButtonDisabledEditMode) {
-  if (!GetParam().export_enabled)
-    return;
-
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
   AddSavedForm1();
@@ -400,11 +366,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
 
 // Tests that the "Export Passwords..." button is enabled after exiting
 // edit mode.
-TEST_P(SavePasswordsCollectionViewControllerTest,
+TEST_F(SavePasswordsCollectionViewControllerTest,
        TestExportButtonEnabledWhenEdittingFinished) {
-  if (!GetParam().export_enabled)
-    return;
-
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
   AddSavedForm1();
@@ -423,7 +386,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
                UIAccessibilityTraitNotEnabled);
 }
 
-TEST_P(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
+TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
   autofill::PasswordForm form;
@@ -445,14 +408,13 @@ TEST_P(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
 }
 
 // Tests filtering of items.
-TEST_P(SavePasswordsCollectionViewControllerTest, FilterItems) {
+TEST_F(SavePasswordsCollectionViewControllerTest, FilterItems) {
   AddSavedForm1();
   AddSavedForm2();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  int section_offset = GetParam().section_offset;
-  EXPECT_EQ(section_offset + 5, NumberOfSections());
+  EXPECT_EQ(6, NumberOfSections());
 
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
@@ -487,15 +449,5 @@ TEST_P(SavePasswordsCollectionViewControllerTest, FilterItems) {
   EXPECT_EQ(2, NumberOfItemsInSection(3));
   EXPECT_EQ(2, NumberOfItemsInSection(4));
 }
-
-const std::vector<ExportPasswordsFeatureStatus> kExportFeatureStatusCases{
-    // Passwords export disabled
-    {FALSE, 0},
-    // Passwords export enabled
-    {TRUE, 1}};
-
-INSTANTIATE_TEST_CASE_P(ExportDisabledAndEnabled,
-                        SavePasswordsCollectionViewControllerTest,
-                        ::testing::ValuesIn(kExportFeatureStatusCases));
 
 }  // namespace
