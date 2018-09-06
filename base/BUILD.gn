@@ -197,6 +197,7 @@ jumbo_component("base") {
     "compiler_specific.h",
     "component_export.h",
     "containers/adapters.h",
+    "containers/checked_iterators.h",
     "containers/circular_deque.h",
     "containers/flat_map.h",
     "containers/flat_set.h",
