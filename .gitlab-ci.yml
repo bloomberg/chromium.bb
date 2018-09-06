@@ -1,3 +1,15 @@
+.artifacts-meson: &artifacts-meson
+  when: always
+  paths:
+   - _build/meson-logs
+
+.artifacts-autotools: &artifacts-autotools
+  when: always
+  paths:
+    - _build/*.log
+    - _build/*/*.log
+    - _build/*/*/*.log
+
 .meson-build: &meson-build
   - meson _build
       -D amdgpu=true
@@ -58,6 +70,7 @@ latest-meson:
 latest-autotools:
   stage: build
   image: base/archlinux:latest
+  artifacts: *artifacts-autotools
   before_script:
     - pacman -Syu --noconfirm --needed
         base-devel
@@ -73,6 +86,7 @@ latest-autotools:
 oldest-meson:
   stage: build
   image: debian:stable
+  artifacts: *artifacts-meson
   before_script:
     - printf > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft "%s\n"
         'path-exclude=/usr/share/doc/*'
@@ -109,6 +123,7 @@ oldest-meson:
 oldest-autotools:
   stage: build
   image: debian:stable
+  artifacts: *artifacts-autotools
   before_script:
     - printf > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft "%s\n"
         'path-exclude=/usr/share/doc/*'
