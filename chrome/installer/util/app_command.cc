@@ -74,7 +74,7 @@ void AppCommand::AddWorkItems(HKEY predefined_root,
                               const base::string16& command_path,
                               WorkItemList* item_list) const {
   // Command_path is derived from GetRegCommandKey which always returns
-  // value from GetVersionKey() which should be 32-bit hive.
+  // value from GetClientsKeyPath() which should be 32-bit hive.
   item_list->AddCreateRegKeyWorkItem(
                  predefined_root, command_path, KEY_WOW64_32KEY)
       ->set_log_message("creating AppCommand registry key");

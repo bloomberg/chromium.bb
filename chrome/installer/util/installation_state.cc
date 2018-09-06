@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -20,13 +21,13 @@ namespace {
 
 // Initializes |commands| from the "Commands" subkey of |version_key|. Returns
 // false if there is no "Commands" subkey or on error.
-bool InitializeCommands(const base::win::RegKey& version_key,
+bool InitializeCommands(const base::win::RegKey& clients_key,
                         AppCommands* commands) {
   static const DWORD kAccess =
       KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_WOW64_32KEY;
   base::win::RegKey commands_key;
 
-  if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
+  if (commands_key.Open(clients_key.Handle(), google_update::kRegCommandsKey,
                         kAccess) == ERROR_SUCCESS) {
     return commands->Initialize(commands_key, KEY_WOW64_32KEY);
   }
@@ -53,7 +54,7 @@ bool ProductState::Initialize(bool system_install) {
   static const DWORD kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
   const BrowserDistribution* distribution =
       BrowserDistribution::GetDistribution();
-  const std::wstring version_key(distribution->GetVersionKey());
+  const std::wstring clients_key(install_static::GetClientsKeyPath());
   const std::wstring state_key(distribution->GetStateKey());
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   base::win::RegKey key;
@@ -62,7 +63,7 @@ bool ProductState::Initialize(bool system_install) {
   Clear();
 
   // Read from the Clients key.
-  if (key.Open(root_key, version_key.c_str(), kAccess) == ERROR_SUCCESS) {
+  if (key.Open(root_key, clients_key.c_str(), kAccess) == ERROR_SUCCESS) {
     base::string16 version_str;
     if (key.ReadValue(google_update::kRegVersionField,
                       &version_str) == ERROR_SUCCESS) {

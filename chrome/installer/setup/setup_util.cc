@@ -158,18 +158,20 @@ void RemoveMultiChromeFrame(const InstallerState& installer_state) {
   // ClientState\UninstallString contains a path including "\Chrome Frame\".
   // Multi-install GCF would have had "\Chrome\", and anything else is garbage.
 
-  UpdatingAppRegistrationData gcf_data(
-      L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}");
+  static constexpr wchar_t kGcfGuid[] =
+      L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
+  base::string16 clients_key_path = install_static::GetClientsKeyPath(kGcfGuid);
   base::win::RegKey clients_key;
+  base::string16 client_state_key_path =
+      install_static::GetClientStateKeyPath(kGcfGuid);
   base::win::RegKey client_state_key;
 
   const bool has_clients_key =
-      clients_key.Open(installer_state.root_key(),
-                       gcf_data.GetVersionKey().c_str(),
+      clients_key.Open(installer_state.root_key(), clients_key_path.c_str(),
                        KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS;
   const bool has_client_state_key =
       client_state_key.Open(installer_state.root_key(),
-                            gcf_data.GetStateKey().c_str(),
+                            client_state_key_path.c_str(),
                             KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS;
   if (!has_clients_key && !has_client_state_key)
     return;  // Nothing to check or to clean.
@@ -195,12 +197,11 @@ void RemoveMultiChromeFrame(const InstallerState& installer_state) {
   int success_count = 0;
 
   if (InstallUtil::DeleteRegistryKey(installer_state.root_key(),
-                                     gcf_data.GetVersionKey(),
-                                     KEY_WOW64_32KEY)) {
+                                     clients_key_path, KEY_WOW64_32KEY)) {
     ++success_count;
   }
   if (InstallUtil::DeleteRegistryKey(installer_state.root_key(),
-                                     gcf_data.GetStateKey(), KEY_WOW64_32KEY)) {
+                                     client_state_key_path, KEY_WOW64_32KEY)) {
     ++success_count;
   }
   if (InstallUtil::DeleteRegistryKey(
@@ -230,10 +231,10 @@ void RemoveMultiChromeFrame(const InstallerState& installer_state) {
 void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
 // The app launcher was only registered for Google Chrome.
 #if defined(GOOGLE_CHROME_BUILD)
-  UpdatingAppRegistrationData reg_data(
-      L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}");
+  static constexpr wchar_t kLauncherGuid[] =
+      L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
 
-  base::string16 path(reg_data.GetVersionKey());
+  base::string16 path = install_static::GetClientsKeyPath(kLauncherGuid);
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY)
           .Valid()) {
@@ -261,9 +262,7 @@ void RemoveAppHostExe(const InstallerState& installer_state) {
 void RemoveLegacyChromeAppCommands(const InstallerState& installer_state) {
 // These app commands were only registered for Google Chrome.
 #if defined(GOOGLE_CHROME_BUILD)
-  base::string16 path(GetRegistrationDataCommandKey(
-      installer_state.product().distribution()->GetAppRegistrationData(),
-      L"install-extension"));
+  base::string16 path(GetCommandKey(L"install-extension"));
 
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY)
@@ -520,10 +519,8 @@ bool IsProcessorSupported() {
   return base::CPU().has_sse2();
 }
 
-base::string16 GetRegistrationDataCommandKey(
-    const AppRegistrationData& reg_data,
-    const wchar_t* name) {
-  base::string16 cmd_key(reg_data.GetVersionKey());
+base::string16 GetCommandKey(const wchar_t* name) {
+  base::string16 cmd_key = install_static::GetClientsKeyPath();
   cmd_key.append(1, base::FilePath::kSeparators[0])
       .append(google_update::kRegCommandsKey)
       .append(1, base::FilePath::kSeparators[0])

@@ -7,6 +7,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -40,9 +41,10 @@ void ProductStateTest::SetUp() {
       registry_override_manager_.OverrideRegistry(overridden_));
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ASSERT_EQ(ERROR_SUCCESS,
-            clients_.Create(overridden_, dist->GetVersionKey().c_str(),
-                            KEY_ALL_ACCESS | KEY_WOW64_32KEY));
+  ASSERT_EQ(
+      ERROR_SUCCESS,
+      clients_.Create(overridden_, install_static::GetClientsKeyPath().c_str(),
+                      KEY_ALL_ACCESS | KEY_WOW64_32KEY));
   ASSERT_EQ(ERROR_SUCCESS,
             client_state_.Create(overridden_, dist->GetStateKey().c_str(),
                                  KEY_ALL_ACCESS | KEY_WOW64_32KEY));

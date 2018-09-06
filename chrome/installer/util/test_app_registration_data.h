@@ -13,7 +13,6 @@ class TestAppRegistrationData : public AppRegistrationData {
   ~TestAppRegistrationData() override;
   base::string16 GetStateKey() const override;
   base::string16 GetStateMediumKey() const override;
-  base::string16 GetVersionKey() const override;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_TEST_APP_REGISTRATION_DATA_H_

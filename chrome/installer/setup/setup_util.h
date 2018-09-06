@@ -104,9 +104,7 @@ bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line);
 bool IsProcessorSupported();
 
 // Returns the "...\\Commands\\|name|" registry key for a product's |reg_data|.
-base::string16 GetRegistrationDataCommandKey(
-    const AppRegistrationData& reg_data,
-    const wchar_t* name);
+base::string16 GetCommandKey(const wchar_t* name);
 
 // Deletes all values and subkeys of the key |path| under |root|, preserving
 // the keys named in |keys_to_preserve| (each of which must be an ASCII string).

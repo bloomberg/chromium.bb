@@ -14,7 +14,6 @@ class AppRegistrationData {
   virtual ~AppRegistrationData() {}
   virtual base::string16 GetStateKey() const = 0;
   virtual base::string16 GetStateMediumKey() const = 0;
-  virtual base::string16 GetVersionKey() const = 0;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_APP_REGISTRATION_DATA_H_

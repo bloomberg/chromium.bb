@@ -124,11 +124,6 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   }
 }
 
-base::string16 GetRegCommandKey(BrowserDistribution* dist,
-                                const wchar_t* name) {
-  return GetRegistrationDataCommandKey(dist->GetAppRegistrationData(), name);
-}
-
 // A callback invoked by |work_item| that adds firewall rules for Chrome. Rules
 // are left in-place on rollback unless |remove_on_rollback| is true. This is
 // the case for new installs only. Updates and overinstalls leave the rule
@@ -593,22 +588,17 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 // Create Version key for a product (if not already present) and sets the new
 // product version as the last step.
 void AddVersionKeyWorkItems(HKEY root,
-                            const base::string16& version_key,
+                            const base::string16& clients_key,
                             const base::string16& product_name,
                             const base::Version& new_version,
                             bool add_language_identifier,
                             WorkItemList* list) {
-  list->AddCreateRegKeyWorkItem(root, version_key, KEY_WOW64_32KEY);
+  list->AddCreateRegKeyWorkItem(root, clients_key, KEY_WOW64_32KEY);
 
-  list->AddSetRegValueWorkItem(root,
-                               version_key,
-                               KEY_WOW64_32KEY,
-                               google_update::kRegNameField,
-                               product_name,
+  list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
+                               google_update::kRegNameField, product_name,
                                true);  // overwrite name also
-  list->AddSetRegValueWorkItem(root,
-                               version_key,
-                               KEY_WOW64_32KEY,
+  list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
                                google_update::kRegOopcrashesField,
                                static_cast<DWORD>(1),
                                false);  // set during first install
@@ -619,16 +609,11 @@ void AddVersionKeyWorkItems(HKEY root,
     base::string16 language(GetCurrentTranslation());
     if (base::LowerCaseEqualsASCII(language, "en-us"))
       language.resize(2);
-    list->AddSetRegValueWorkItem(root,
-                                 version_key,
-                                 KEY_WOW64_32KEY,
-                                 google_update::kRegLangField,
-                                 language,
+    list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
+                                 google_update::kRegLangField, language,
                                  false);  // do not overwrite language
   }
-  list->AddSetRegValueWorkItem(root,
-                               version_key,
-                               KEY_WOW64_32KEY,
+  list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
                                google_update::kRegVersionField,
                                ASCIIToUTF16(new_version.GetString()),
                                true);  // overwrite version
@@ -709,23 +694,22 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         installer_state.GetInstallerDirectory(new_version).Append(
             setup_path.BaseName()));
 
-    BrowserDistribution* dist = installer_state.product().distribution();
-    const base::string16 version_key(dist->GetVersionKey());
+    const base::string16 clients_key(install_static::GetClientsKeyPath());
 
     if (current_version) {
       in_use_update_work_items->AddSetRegValueWorkItem(
-          root, version_key, KEY_WOW64_32KEY,
+          root, clients_key, KEY_WOW64_32KEY,
           google_update::kRegOldVersionField,
           ASCIIToUTF16(current_version->GetString()), true);
     }
     if (critical_version.IsValid()) {
       in_use_update_work_items->AddSetRegValueWorkItem(
-          root, version_key, KEY_WOW64_32KEY,
+          root, clients_key, KEY_WOW64_32KEY,
           google_update::kRegCriticalVersionField,
           ASCIIToUTF16(critical_version.GetString()), true);
     } else {
       in_use_update_work_items->AddDeleteRegValueWorkItem(
-          root, version_key, KEY_WOW64_32KEY,
+          root, clients_key, KEY_WOW64_32KEY,
           google_update::kRegCriticalVersionField);
     }
 
@@ -738,7 +722,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       product_rename_cmd.AppendSwitch(switches::kVerboseLogging);
     InstallUtil::AppendModeSwitch(&product_rename_cmd);
     in_use_update_work_items->AddSetRegValueWorkItem(
-        root, version_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField,
+        root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField,
         product_rename_cmd.GetCommandLineString(), true);
 
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
@@ -752,15 +736,14 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     regular_update_work_items->set_log_message("RegularUpdateWorkItemList");
 
     // Since this was not an in-use-update, delete 'opv', 'cpv', and 'cmd' keys.
-    BrowserDistribution* dist = installer_state.product().distribution();
-    const base::string16 version_key(dist->GetVersionKey());
+    const base::string16 clients_key(install_static::GetClientsKeyPath());
     regular_update_work_items->AddDeleteRegValueWorkItem(
-        root, version_key, KEY_WOW64_32KEY, google_update::kRegOldVersionField);
+        root, clients_key, KEY_WOW64_32KEY, google_update::kRegOldVersionField);
     regular_update_work_items->AddDeleteRegValueWorkItem(
-        root, version_key, KEY_WOW64_32KEY,
+        root, clients_key, KEY_WOW64_32KEY,
         google_update::kRegCriticalVersionField);
     regular_update_work_items->AddDeleteRegValueWorkItem(
-        root, version_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField);
+        root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField);
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }
@@ -869,8 +852,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddUninstallShortcutWorkItems(installer_state, setup_path, new_version,
                                 product, install_list);
 
-  BrowserDistribution* dist = product.distribution();
-  AddVersionKeyWorkItems(root, dist->GetVersionKey(),
+  AddVersionKeyWorkItems(root, install_static::GetClientsKeyPath(),
                          InstallUtil::GetDisplayName(), new_version,
                          add_language_identifier, install_list);
 
@@ -1066,8 +1048,7 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
                            const Product& product,
                            WorkItemList* install_list) {
   const HKEY root_key = installer_state.root_key();
-  base::string16 cmd_key(
-      GetRegCommandKey(product.distribution(), kCmdOnOsUpgrade));
+  const base::string16 cmd_key(GetCommandKey(kCmdOnOsUpgrade));
 
   if (installer_state.operation() == InstallerState::UNINSTALL) {
     install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key, KEY_WOW64_32KEY)
@@ -1102,8 +1083,7 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
     return;
 
   const HKEY root_key = installer_state.root_key();
-  const base::string16 cmd_key(
-      GetRegCommandKey(product.distribution(), kCmdStoreDMToken));
+  const base::string16 cmd_key(GetCommandKey(kCmdStoreDMToken));
 
   if (installer_state.operation() == InstallerState::UNINSTALL) {
     install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key, KEY_WOW64_32KEY)
