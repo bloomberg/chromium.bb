@@ -418,3 +418,4 @@ def dawn(c):
   soln = c.solutions.add()
   soln.name = 'dawn'
   soln.url = 'https://dawn.googlesource.com/dawn.git'
+  c.got_revision_mapping['dawn'] = 'got_revision'
