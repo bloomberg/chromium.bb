@@ -103,6 +103,19 @@ Polymer({
       value: '',
       observer: 'onPinValueChange_',
     },
+
+    /**
+     * @private
+     */
+    forceUnderline_: {
+      type: Boolean,
+      value: false,
+    }
+  },
+
+  listeners: {
+    'blur': 'onBlur_',
+    'focus': 'onFocus_',
   },
 
   /**
@@ -172,6 +185,16 @@ Polymer({
     // location, as this function will not be called by something that will also
     // modify the input value.
     this.focus(this.selectionStart_, this.selectionEnd_);
+  },
+
+  /** @private */
+  onFocus_: function() {
+    this.forceUnderline_ = true;
+  },
+
+  /** @private */
+  onBlur_: function() {
+    this.forceUnderline_ = false;
   },
 
   /**

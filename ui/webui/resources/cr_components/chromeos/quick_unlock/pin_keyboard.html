@@ -160,7 +160,7 @@
             is-input-rtl$="[[isInputRtl_(value)]]"
             has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
             placeholder="[[getInputPlaceholder_(enablePassword)]]"
-            on-keydown="onInputKeyDown_">
+            on-keydown="onInputKeyDown_" force-underline$="[[forceUnderline_]]">
         </cr-input>
       </div>
       <slot select="[problem]"></slot>
