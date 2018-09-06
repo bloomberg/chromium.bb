@@ -58,10 +58,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   enum SnapPosition { NONE, LEFT, RIGHT };
 
   // Why splitview was ended. For now, all reasons will be kNormal except when
-  // the home launcher button is pressed.
+  // the home launcher button is pressed or an unsnappable window just got
+  // activated.
   enum class EndReason {
     kNormal = 0,
     kHomeLauncherPressed,
+    kUnsnappableWindowActivated,
   };
 
   class Observer {

@@ -1596,6 +1596,24 @@ TEST_F(SplitViewControllerTest, WindowStateOnExit) {
   EXPECT_FALSE(wm::GetWindowState(window2.get())->IsMaximized());
 }
 
+// Test that if overview and splitview are both active at the same time,
+// activiate an unsnappable window should end both overview and splitview mode.
+TEST_F(SplitViewControllerTest, ActivateNonSnappableWindow) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateNonSnappableWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ToggleOverview();
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  wm::ActivateWindow(window3.get());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.
