@@ -285,7 +285,7 @@ void URLLoaderClientImpl::OnReceiveCachedMetadata(
 }
 
 void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  if (is_deferred_) {
+  if (NeedsStoringMessage()) {
     accumulated_transfer_size_diff_during_deferred_ += transfer_size_diff;
   } else {
     resource_dispatcher_->OnTransferSizeUpdated(request_id_,
@@ -307,7 +307,7 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
   body_consumer_ = new URLResponseBodyConsumer(
       request_id_, resource_dispatcher_, std::move(body), task_runner_);
 
-  if (is_deferred_) {
+  if (NeedsStoringMessage()) {
     body_consumer_->SetDefersLoading();
     return;
   }
