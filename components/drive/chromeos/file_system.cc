@@ -387,8 +387,6 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(), delegate, resource_metadata_);
 }
 
-// TODO(slangley): Support checking a specific team drive or default corpus,
-// rather than just polling all of them.
 void FileSystem::CheckForUpdates() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "CheckForUpdates";
@@ -400,17 +398,54 @@ void FileSystem::CheckForUpdates() {
                                     weak_ptr_factory_.GetWeakPtr()));
 
   for (auto& team_drive : team_drive_change_list_loaders_) {
-    team_drive_operation_queue_->AddOperation(
-        team_drive.second->GetWeakPtr(),
-        base::BindOnce(&internal::TeamDriveChangeListLoader::CheckForUpdates,
-                       team_drive.second->GetWeakPtr()),
+    auto update_checked_closure =
         base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr(),
-                   team_drive.first, closure));
+                   team_drive.first, closure);
+    if (!team_drive.second->IsRefreshing()) {
+      team_drive_operation_queue_->AddOperation(
+          team_drive.second->GetWeakPtr(),
+          base::BindOnce(&internal::TeamDriveChangeListLoader::CheckForUpdates,
+                         team_drive.second->GetWeakPtr()),
+          update_checked_closure);
+    } else {
+      // If the change list loader is refreshing, then calling CheckForUpdates
+      // will just add the callback to a queue to be called when the refresh
+      // is complete.
+      team_drive.second->CheckForUpdates(update_checked_closure);
+    }
   }
 
   default_corpus_change_list_loader_->CheckForUpdates(
       base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr(),
                  std::string(), closure));
+}
+
+void FileSystem::CheckForUpdates(const std::set<std::string>& ids) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  base::RepeatingClosure closure = base::BarrierClosure(
+      ids.size(), base::BindOnce(&FileSystem::OnUpdateCompleted,
+                                 weak_ptr_factory_.GetWeakPtr()));
+
+  for (const auto& id : ids) {
+    if (id.empty()) {
+      default_corpus_change_list_loader_->CheckForUpdates(
+          base::Bind(&FileSystem::OnUpdateChecked,
+                     weak_ptr_factory_.GetWeakPtr(), std::string(), closure));
+    } else {
+      auto it = team_drive_change_list_loaders_.find(id);
+
+      // It is possible for the team drive to have been deleted by the time we
+      // receive the push notification.
+      if (it != team_drive_change_list_loaders_.end()) {
+        it->second->CheckForUpdates(base::Bind(&FileSystem::OnUpdateChecked,
+                                               weak_ptr_factory_.GetWeakPtr(),
+                                               it->first, closure));
+      } else {
+        closure.Run();
+      }
+    }
+  }
 }
 
 void FileSystem::OnUpdateChecked(const std::string& team_drive_id,
@@ -880,6 +915,8 @@ void FileSystem::OnFileChanged(const FileChange& changed_files) {
 
 void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::set<std::string> added_team_drives;
+  std::set<std::string> removed_team_drives;
 
   for (const auto& entry : changed_team_drives.map()) {
     for (const auto& change : entry.second.list()) {
@@ -891,6 +928,7 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
         team_drive_change_list_loaders_.erase(it);
         // If we were tracking the update status we can remove that as well.
         last_update_metadata_.erase(change.team_drive_id());
+        removed_team_drives.insert(change.team_drive_id());
       } else if (change.IsAddOrUpdate()) {
         // If this is an update (e.g. a renamed team drive), then just erase the
         // existing entry so we can re-add it with the new path.
@@ -908,8 +946,12 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
             base::DoNothing());
         team_drive_change_list_loaders_.emplace(change.team_drive_id(),
                                                 std::move(loader));
+        added_team_drives.insert(change.team_drive_id());
       }
     }
+  }
+  for (auto& observer : observers_) {
+    observer.OnTeamDrivesUpdated(added_team_drives, removed_team_drives);
   }
 }
 
@@ -937,6 +979,7 @@ void FileSystem::OnTeamDriveListLoaded(
   }
   team_drive_change_list_loaders_.clear();
 
+  std::set<std::string> added_team_drives_ids;
   for (const auto& team_drive : team_drives_list) {
     auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
         team_drive.team_drive_id(), team_drive.team_drive_path(), logger_,
@@ -950,6 +993,10 @@ void FileSystem::OnTeamDriveListLoaded(
         base::DoNothing());
     team_drive_change_list_loaders_.emplace(team_drive.team_drive_id(),
                                             std::move(loader));
+    added_team_drives_ids.insert(team_drive.team_drive_id());
+  }
+  for (auto& observer : observers_) {
+    observer.OnTeamDrivesUpdated(added_team_drives_ids, {});
   }
 }
 

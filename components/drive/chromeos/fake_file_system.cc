@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -46,6 +47,10 @@ void FakeFileSystem::RemoveObserver(FileSystemObserver* observer) {
 }
 
 void FakeFileSystem::CheckForUpdates() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void FakeFileSystem::CheckForUpdates(const std::set<std::string>& ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

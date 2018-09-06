@@ -106,7 +106,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
   // drive::FakeDriveService::ChangeObserver override.
   void OnNewChangeAvailable() override {
-    sync_engine()->OnNotificationReceived();
+    sync_engine()->OnNotificationTimerFired();
   }
 
   SyncFileSystemService* sync_file_system_service() {

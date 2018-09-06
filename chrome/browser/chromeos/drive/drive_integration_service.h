@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_INTEGRATION_SERVICE_H_
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -130,7 +132,8 @@ class DriveIntegrationService : public KeyedService,
   void RemoveObserver(DriveIntegrationServiceObserver* observer);
 
   // DriveNotificationObserver implementation.
-  void OnNotificationReceived() override;
+  void OnNotificationReceived(const std::set<std::string>& ids) override;
+  void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
   EventLogger* event_logger() { return logger_.get(); }
@@ -165,6 +168,9 @@ class DriveIntegrationService : public KeyedService,
     REMOUNTING,
   };
   class DriveFsHolder;
+
+  // Manages passing changes in team drives to the drive notification manager.
+  class NotificationManager;
 
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
@@ -236,6 +242,7 @@ class DriveIntegrationService : public KeyedService,
       profile_notification_registrar_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
+  std::unique_ptr<NotificationManager> notification_manager_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
 

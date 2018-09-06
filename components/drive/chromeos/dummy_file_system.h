@@ -6,6 +6,8 @@
 #define COMPONENTS_DRIVE_CHROMEOS_DUMMY_FILE_SYSTEM_H_
 
 #include <stdint.h>
+#include <set>
+#include <string>
 
 #include "components/drive/chromeos/file_system_interface.h"
 
@@ -18,6 +20,7 @@ class DummyFileSystem : public FileSystemInterface {
   void AddObserver(FileSystemObserver* observer) override {}
   void RemoveObserver(FileSystemObserver* observer) override {}
   void CheckForUpdates() override {}
+  void CheckForUpdates(const std::set<std::string>& ids) override {}
   void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
