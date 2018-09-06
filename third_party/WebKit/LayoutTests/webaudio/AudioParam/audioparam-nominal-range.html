@@ -112,8 +112,11 @@
           args: [],
           limits: {
             frequency: {minValue: -sampleRate / 2, maxValue: sampleRate / 2},
-            detune:
-                {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
+            detune: {
+              // 3.4028..e38 is the most positive single float value.
+              minValue: -Math.fround(1200 * Math.log2(3.4028234663852886e38)),
+              maxValue: Math.fround(1200 * Math.log2(3.4028234663852886e38))
+            }
           }
         },
         {
