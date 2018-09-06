@@ -267,12 +267,31 @@ void NewPasswordFormManager::Save() {
 void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
 }
 
+void NewPasswordFormManager::UpdateUsername(
+    const base::string16& new_username) {
+  DCHECK(parsed_submitted_form_);
+  parsed_submitted_form_->username_value = new_username;
+  parsed_submitted_form_->username_element.clear();
+
+  // TODO(https://crbug.com/831123): Implement processing username editing votes
+  // after implementation of |other_possible_usernames|.
+
+  CreatePendingCredentials();
+}
+
+void NewPasswordFormManager::UpdatePasswordValue(
+    const base::string16& new_password) {
+  DCHECK(parsed_submitted_form_);
+  parsed_submitted_form_->password_value = new_password;
+  parsed_submitted_form_->password_element.clear();
+
+  // TODO(https://crbug.com/831123): Implement processing password editing votes
+  // after implementation of |all_possible_passwords|.
+  CreatePendingCredentials();
+}
+
 // TODO(https://crbug.com/831123): Implement all methods from
 // PasswordFormManagerForUI.
-void NewPasswordFormManager::UpdateUsername(
-    const base::string16& new_username) {}
-void NewPasswordFormManager::UpdatePasswordValue(
-    const base::string16& new_password) {}
 void NewPasswordFormManager::OnNopeUpdateClicked() {}
 void NewPasswordFormManager::OnNeverClicked() {}
 void NewPasswordFormManager::OnNoInteraction(bool is_update) {}
@@ -343,6 +362,8 @@ bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
     return false;
   submitted_form_ = submitted_form;
   is_submitted_ = true;
+  parsed_submitted_form_ = ParseFormAndMakeLogging(
+      client_, submitted_form_, predictions_, FormParsingMode::SAVING);
   CreatePendingCredentials();
   return true;
 }
@@ -440,8 +461,6 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   DCHECK(is_submitted_);
   // TODO(https://crbug.com/831123): Process correctly the case when saved
   // credentials are not received from the store yet.
-  parsed_submitted_form_ = ParseFormAndMakeLogging(
-      client_, submitted_form_, predictions_, FormParsingMode::SAVING);
   if (!parsed_submitted_form_)
     return;
 

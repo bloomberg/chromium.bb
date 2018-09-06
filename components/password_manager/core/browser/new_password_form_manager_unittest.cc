@@ -149,6 +149,10 @@ class NewPasswordFormManagerTest : public testing::Test {
     field.unique_renderer_id = 5;
     observed_form_only_password_fields_.fields.push_back(field);
 
+    submitted_form_ = observed_form_;
+    submitted_form_.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
+    submitted_form_.fields[kPasswordFieldIndex].value = ASCIIToUTF16("secret1");
+
     saved_match_.origin = origin;
     saved_match_.action = action;
     saved_match_.signon_realm = "https://accounts.google.com/";
@@ -166,10 +170,18 @@ class NewPasswordFormManagerTest : public testing::Test {
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
     psl_saved_match_.is_public_suffix_match = true;
 
-    parsed_form_ = saved_match_;
-    parsed_form_.form_data = observed_form_;
-    parsed_form_.username_element = observed_form_.fields[1].name;
-    parsed_form_.password_element = observed_form_.fields[2].name;
+    parsed_observed_form_ = saved_match_;
+    parsed_observed_form_.form_data = observed_form_;
+    parsed_observed_form_.username_element =
+        observed_form_.fields[kUsernameFieldIndex].name;
+    parsed_observed_form_.password_element =
+        observed_form_.fields[kPasswordFieldIndex].name;
+
+    parsed_submitted_form_ = parsed_observed_form_;
+    parsed_submitted_form_.username_value =
+        submitted_form_.fields[kUsernameFieldIndex].value;
+    parsed_submitted_form_.password_value =
+        submitted_form_.fields[kPasswordFieldIndex].value;
 
     blacklisted_match_ = saved_match_;
     blacklisted_match_.blacklisted_by_user = true;
@@ -179,11 +191,13 @@ class NewPasswordFormManagerTest : public testing::Test {
 
  protected:
   FormData observed_form_;
+  FormData submitted_form_;
   FormData observed_form_only_password_fields_;
   PasswordForm saved_match_;
   PasswordForm psl_saved_match_;
   PasswordForm blacklisted_match_;
-  PasswordForm parsed_form_;
+  PasswordForm parsed_observed_form_;
+  PasswordForm parsed_submitted_form_;
   StubPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
@@ -398,17 +412,10 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->SetNonFederated({}, 0u);
 
-  FormData submitted_form = observed_form_;
-  submitted_form.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
-  submitted_form.fields[kPasswordFieldIndex].value = ASCIIToUTF16("pw1");
-
-  PasswordForm expected = parsed_form_;
-  expected.username_value = ASCIIToUTF16("user1");
-  expected.password_value = ASCIIToUTF16("pw1");
-
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
-  CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
+  CheckPendingCredentials(parsed_submitted_form_,
+                          form_manager_->GetPendingCredentials());
 }
 
 // Tests creating pending credentials when new credentials are submitted and the
@@ -417,18 +424,10 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsNewCredentials) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  FormData submitted_form = observed_form_;
-  base::string16 username = saved_match_.username_value + ASCIIToUTF16("1");
-  base::string16 password = saved_match_.password_value + ASCIIToUTF16("1");
-  submitted_form.fields[kUsernameFieldIndex].value = username;
-  submitted_form.fields[kPasswordFieldIndex].value = password;
-  PasswordForm expected = parsed_form_;
-  expected.username_value = username;
-  expected.password_value = password;
-
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
-  CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
+  CheckPendingCredentials(parsed_submitted_form_,
+                          form_manager_->GetPendingCredentials());
 }
 
 // Tests that when submitted credentials are equal to already saved one then
@@ -437,13 +436,12 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsAlreadySaved) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  FormData submitted_form = observed_form_;
-  submitted_form.fields[kUsernameFieldIndex].value =
+  submitted_form_.fields[kUsernameFieldIndex].value =
       saved_match_.username_value;
-  submitted_form.fields[kPasswordFieldIndex].value =
+  submitted_form_.fields[kPasswordFieldIndex].value =
       saved_match_.password_value;
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
   CheckPendingCredentials(/* expected */ saved_match_,
                           form_manager_->GetPendingCredentials());
 }
@@ -460,14 +458,13 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
 
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  FormData submitted_form = observed_form_;
-  submitted_form.fields[kUsernameFieldIndex].value =
+  submitted_form_.fields[kUsernameFieldIndex].value =
       saved_match_.username_value;
-  submitted_form.fields[kPasswordFieldIndex].value =
+  submitted_form_.fields[kPasswordFieldIndex].value =
       saved_match_.password_value;
 
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
 }
 
@@ -480,12 +477,11 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsPasswordOverriden) {
   PasswordForm expected = saved_match_;
   expected.password_value += ASCIIToUTF16("1");
 
-  FormData submitted_form = observed_form_;
-  submitted_form.fields[kUsernameFieldIndex].value =
+  submitted_form_.fields[kUsernameFieldIndex].value =
       saved_match_.username_value;
-  submitted_form.fields[kPasswordFieldIndex].value = expected.password_value;
+  submitted_form_.fields[kPasswordFieldIndex].value = expected.password_value;
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(submitted_form, &driver_));
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
 }
 
@@ -741,6 +737,78 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
   ASSERT_EQ(1u, credentials_to_update.size());
   not_best_saved_match.password_value = new_password;
   EXPECT_EQ(not_best_saved_match, credentials_to_update[0]);
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdateUsernameEmptyStore) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_);
+
+  base::string16 new_username =
+      parsed_submitted_form_.username_value + ASCIIToUTF16("1");
+  PasswordForm expected = parsed_submitted_form_;
+  expected.username_value = new_username;
+  expected.username_element.clear();
+
+  form_manager_->UpdateUsername(new_username);
+
+  CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
+  EXPECT_TRUE(form_manager_->IsNewLogin());
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdateUsernameToAlreadyExisting) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_);
+
+  base::string16 new_username = saved_match_.username_value;
+  base::string16 expected_password = parsed_submitted_form_.password_value;
+  PasswordForm expected = saved_match_;
+  expected.password_value = expected_password;
+
+  form_manager_->UpdateUsername(new_username);
+
+  CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdatePasswordEmptyStore) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_);
+
+  base::string16 new_password =
+      parsed_submitted_form_.password_value + ASCIIToUTF16("1");
+  PasswordForm expected = parsed_submitted_form_;
+  expected.password_value = new_password;
+  expected.password_element.clear();
+
+  form_manager_->UpdatePasswordValue(new_password);
+
+  CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
+  EXPECT_TRUE(form_manager_->IsNewLogin());
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdatePasswordToAlreadyExisting) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  // Emulate submitting form with known username and different password.
+  submitted_form_.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_);
+
+  // The user changes password to already saved one.
+  base::string16 password = saved_match_.password_value;
+  form_manager_->UpdatePasswordValue(password);
+
+  CheckPendingCredentials(saved_match_, form_manager_->GetPendingCredentials());
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
 }
 
 }  // namespace  password_manager
