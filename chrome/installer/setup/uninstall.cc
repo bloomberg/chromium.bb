@@ -879,7 +879,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   HKEY reg_root = installer_state.root_key();
 
   // Note that we must retrieve the distribution-specific data before deleting
-  // product.GetVersionKey().
+  // the browser's Clients key.
   base::string16 distribution_data(GetDistributionData());
 
   // Remove Control Panel uninstall link.
@@ -890,8 +890,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       reg_root, install_static::GetUninstallRegistryPath(), KEY_WOW64_32KEY);
 
   // Remove Omaha product key.
-  InstallUtil::DeleteRegistryKey(
-      reg_root, browser_dist->GetVersionKey(), KEY_WOW64_32KEY);
+  InstallUtil::DeleteRegistryKey(reg_root, install_static::GetClientsKeyPath(),
+                                 KEY_WOW64_32KEY);
 
   // Also try to delete the MSI value in the ClientState key (it might not be
   // there). This is due to a Google Update behaviour where an uninstall and a

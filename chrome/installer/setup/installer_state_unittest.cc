@@ -90,8 +90,8 @@ TEST_F(InstallerStateTest, WithProduct) {
   {
     RegistryOverrideManager override_manager;
     ASSERT_NO_FATAL_FAILURE(override_manager.OverrideRegistry(root));
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
+    RegKey chrome_key(root, install_static::GetClientsKeyPath().c_str(),
+                      KEY_ALL_ACCESS);
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,

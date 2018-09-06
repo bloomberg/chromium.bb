@@ -440,11 +440,8 @@ TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
 }
 
 TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
-  base::string16 app_guid = L"{AAAAAAAA-BBBB-1111-0123-456789ABCDEF}";
-  UpdatingAppRegistrationData reg_data(app_guid);
-  base::string16 key =
-      installer::GetRegistrationDataCommandKey(reg_data, L"test_name");
-  EXPECT_TRUE(base::EndsWith(key, app_guid + L"\\Commands\\test_name",
+  const base::string16 key = installer::GetCommandKey(L"test_name");
+  EXPECT_TRUE(base::EndsWith(key, L"\\Commands\\test_name",
                              base::CompareCase::SENSITIVE));
 }
 

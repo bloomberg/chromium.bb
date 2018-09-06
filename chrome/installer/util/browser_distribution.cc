@@ -73,7 +73,3 @@ base::string16 BrowserDistribution::GetStateKey() const {
 base::string16 BrowserDistribution::GetStateMediumKey() const {
   return app_reg_data_->GetStateMediumKey();
 }
-
-base::string16 BrowserDistribution::GetVersionKey() const {
-  return app_reg_data_->GetVersionKey();
-}

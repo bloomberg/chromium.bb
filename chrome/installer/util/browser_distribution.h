@@ -24,7 +24,6 @@ class BrowserDistribution {
   const AppRegistrationData& GetAppRegistrationData() const;
   base::string16 GetStateKey() const;
   base::string16 GetStateMediumKey() const;
-  base::string16 GetVersionKey() const;
 
  protected:
   explicit BrowserDistribution(

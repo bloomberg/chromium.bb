@@ -13,6 +13,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -30,7 +31,6 @@ TEST(ProductTest, ProductInstallBasic) {
 
   std::unique_ptr<Product> product =
       std::make_unique<Product>(BrowserDistribution::GetDistribution());
-  BrowserDistribution* distribution = product->distribution();
 
   base::FilePath user_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
@@ -53,7 +53,7 @@ TEST(ProductTest, ProductInstallBasic) {
     EXPECT_EQ(nullptr, machine_state.GetProductState(system_level));
 
     // Let's pretend chrome is installed.
-    RegKey version_key(root, distribution->GetVersionKey().c_str(),
+    RegKey version_key(root, install_static::GetClientsKeyPath().c_str(),
                        KEY_ALL_ACCESS);
     ASSERT_TRUE(version_key.Valid());
 

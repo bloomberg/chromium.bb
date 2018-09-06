@@ -445,15 +445,14 @@ installer::InstallStatus RenameChromeExecutables(
   // Add work items to delete Chrome's "opv", "cpv", and "cmd" values.
   // TODO(grt): Clean this up; https://crbug.com/577816.
   HKEY reg_root = installer_state->root_key();
-  base::string16 version_key;
-  version_key = installer_state->product().distribution()->GetVersionKey();
-  install_list->AddDeleteRegValueWorkItem(reg_root, version_key,
+  const base::string16 clients_key = install_static::GetClientsKeyPath();
+  install_list->AddDeleteRegValueWorkItem(reg_root, clients_key,
                                           KEY_WOW64_32KEY,
                                           google_update::kRegOldVersionField);
   install_list->AddDeleteRegValueWorkItem(
-      reg_root, version_key, KEY_WOW64_32KEY,
+      reg_root, clients_key, KEY_WOW64_32KEY,
       google_update::kRegCriticalVersionField);
-  install_list->AddDeleteRegValueWorkItem(reg_root, version_key,
+  install_list->AddDeleteRegValueWorkItem(reg_root, clients_key,
                                           KEY_WOW64_32KEY,
                                           google_update::kRegRenameCmdField);
   // old_chrome.exe is still in use in most cases, so ignore failures here.

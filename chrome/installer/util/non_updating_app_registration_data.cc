@@ -16,7 +16,3 @@ base::string16 NonUpdatingAppRegistrationData::GetStateKey() const {
 base::string16 NonUpdatingAppRegistrationData::GetStateMediumKey() const {
   return key_path_;
 }
-
-base::string16 NonUpdatingAppRegistrationData::GetVersionKey() const {
-  return key_path_;
-}
