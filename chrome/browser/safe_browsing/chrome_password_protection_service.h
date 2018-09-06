@@ -202,9 +202,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   bool IsIncognito() override;
 
-  // Checks if pinging should be enabled based on the |trigger_type| and user
-  // state, updates |reason| accordingly.
+  // Checks if pinging should be enabled based on the |trigger_type|,
+  // |password_type| and user state, updates |reason| accordingly.
   bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
+                        ReusedPasswordType password_type,
                         RequestOutcome* reason) override;
 
   // If user enabled history syncing.
@@ -267,7 +268,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
-                           VerifyUserPopulationForProtectedPasswordEntryPing);
+                           VerifyUserPopulationForSyncPasswordEntryPing);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyUserPopulationForSavedPasswordEntryPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseUserEventNotRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,

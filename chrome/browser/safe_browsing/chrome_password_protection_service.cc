@@ -576,6 +576,7 @@ bool ChromePasswordProtectionService::IsIncognito() {
 
 bool ChromePasswordProtectionService::IsPingingEnabled(
     LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordType password_type,
     RequestOutcome* reason) {
   if (!IsSafeBrowsingEnabled()) {
     *reason = RequestOutcome::SAFE_BROWSING_DISABLED;
@@ -583,6 +584,15 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   }
 
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
+    if (password_type == PasswordReuseEvent::SAVED_PASSWORD)
+      return true;
+
+    if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD &&
+        GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN) {
+      *reason = RequestOutcome::USER_NOT_SIGNED_IN;
+      return false;
+    }
+
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref();
     if (trigger_level == PASSWORD_REUSE) {
@@ -799,6 +809,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     case RequestOutcome::DISABLED_DUE_TO_FEATURE_DISABLED:
     case RequestOutcome::DISABLED_DUE_TO_USER_POPULATION:
     case RequestOutcome::SAFE_BROWSING_DISABLED:
+    case RequestOutcome::USER_NOT_SIGNED_IN:
       MaybeLogPasswordReuseLookupResult(web_contents,
                                         PasswordReuseLookup::REQUEST_FAILURE);
       break;

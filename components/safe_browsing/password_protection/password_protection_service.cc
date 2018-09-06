@@ -399,7 +399,7 @@ bool PasswordProtectionService::CanSendPing(
     ReusedPasswordType password_type,
     RequestOutcome* reason) {
   *reason = RequestOutcome::UNKNOWN;
-  if (IsPingingEnabled(trigger_type, reason) &&
+  if (IsPingingEnabled(trigger_type, password_type, reason) &&
       !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
     return true;
   }

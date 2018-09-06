@@ -91,11 +91,13 @@ enum class RequestOutcome {
   // No request sent if the admin configures password protection to
   // warn on ALL password reuses (rather than just phishing sites).
   PASSWORD_ALERT_MODE = 18,
-  // No request sent sent if the admin turns off password protection.
+  // No request sent if the admin turns off password protection.
   TURNED_OFF_BY_ADMIN = 19,
   // No request sent because Safe Browsing is disabled.
   SAFE_BROWSING_DISABLED = 20,
-  kMaxValue = SAFE_BROWSING_DISABLED,
+  // No request sent because user is not signed-in.
+  USER_NOT_SIGNED_IN = 21,
+  kMaxValue = USER_NOT_SIGNED_IN,
 };
 
 // Enum values indicates if a password protection warning is shown or
