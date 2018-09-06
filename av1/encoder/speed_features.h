@@ -543,6 +543,10 @@ typedef struct SPEED_FEATURES {
   // single inter mode as a group.
   int prune_comp_search_by_single_result;
 
+  // Skip certain motion modes (OBMC, warped, interintra) for single reference
+  // motion search, using the results of single ref SIMPLE_TRANSLATION
+  int prune_single_motion_modes_by_simple_trans;
+
   // Reuse the inter_intra_mode search result from NEARESTMV mode to other
   // single ref modes
   int reuse_inter_intra_mode;
