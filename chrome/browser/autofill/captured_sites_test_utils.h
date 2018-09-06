@@ -27,6 +27,10 @@ namespace captured_sites_test_utils {
 //    has expired for the page to load or for the page to respond to the last
 //    user action.
 const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
+// The amount of time to wait for a page to trigger a paint in response to a
+// an ation. The Captured Site Automation Framework uses this timeout to
+// break out of a wait loop after a hover action.
+const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(5);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -68,6 +72,9 @@ class PageActivityObserver : public content::WebContentsObserver {
   // finished loading the page.
   void WaitTillPageIsIdle(
       base::TimeDelta continuous_paint_timeout = default_action_timeout);
+  // Wait until Chrome makes at least 1 visual update, or until timeout
+  // expires.
+  bool WaitForVisualUpdate(base::TimeDelta timeout = visual_update_timeout);
 
  private:
   // PageActivityObserver determines if Chrome stopped painting by checking if
@@ -185,11 +192,19 @@ class TestRecipeReplayer {
   static void SetUpCommandLine(base::CommandLine* command_line);
   static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
                                   const std::string& element_xpath);
+  static bool GetCenterCoordinateOfTargetElement(
+      content::RenderFrameHost* frame,
+      const std::string& target_element_xpath,
+      int& x,
+      int& y);
   static bool SimulateLeftMouseClickAt(
       content::RenderFrameHost* render_frame_host,
       const gfx::Point& point);
+  static bool SimulateMouseHoverAt(content::RenderFrameHost* render_frame_host,
+                                   const gfx::Point& point);
 
  private:
+  Browser* browser();
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
   content::WebContents* GetWebContents();
   void CleanupSiteData();
@@ -209,8 +224,12 @@ class TestRecipeReplayer {
       std::unique_ptr<base::DictionaryValue>& recipe);
   bool ExecuteAutofillAction(const base::DictionaryValue& action);
   bool ExecuteClickAction(const base::DictionaryValue& action);
+  bool ExecuteHoverAction(const base::DictionaryValue& action);
+  bool ExecutePressEnterAction(const base::DictionaryValue& action);
+  bool ExecuteRunCommandAction(const base::DictionaryValue& action);
   bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);
   bool ExecuteTypeAction(const base::DictionaryValue& action);
+  bool ExecuteTypePasswordAction(const base::DictionaryValue& action);
   bool ExecuteValidateFieldValueAction(const base::DictionaryValue& action);
   bool ExecuteWaitForStateAction(const base::DictionaryValue& action);
   bool GetTargetHTMLElementXpathFromAction(const base::DictionaryValue& action,
@@ -236,6 +255,7 @@ class TestRecipeReplayer {
       const std::string& get_property_function_body,
       const std::string& expected_value,
       const bool ignoreCase = false);
+  void NavigateAwayAndDismissBeforeUnloadDialog();
 
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;

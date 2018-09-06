@@ -16,9 +16,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -32,6 +35,9 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
 // The maximum amount of time to wait for Chrome to finish autofilling a form.
@@ -44,7 +50,6 @@ const base::TimeDelta kAutofillActionWaitForVisualUpdateTimeout =
 // Automation Framework will retry an autofill action a couple times before
 // concluding that Chrome Autofill does not work.
 const int kAutofillActionNumRetries = 5;
-
 }  // namespace
 
 namespace captured_sites_test_utils {
@@ -81,7 +86,7 @@ void PageActivityObserver::WaitTillPageIsIdle(
         web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
     if (page_is_loading) {
       finished_load_time = base::TimeTicks::Now();
-    } else if (base::TimeTicks::Now() - finished_load_time >
+    } else if ((base::TimeTicks::Now() - finished_load_time) >
                continuous_paint_timeout) {
       // |continuous_paint_timeout| has expired since Chrome loaded the page.
       // During this period of time, Chrome has been continuously painting
@@ -91,6 +96,20 @@ void PageActivityObserver::WaitTillPageIsIdle(
       break;
     }
   } while (page_is_loading || paint_occurred_during_last_loop_);
+}
+
+bool PageActivityObserver::WaitForVisualUpdate(base::TimeDelta timeout) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  while (!paint_occurred_during_last_loop_) {
+    base::RunLoop heart_beat;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, heart_beat.QuitClosure(), kPaintEventCheckInterval);
+    heart_beat.Run();
+    if ((base::TimeTicks::Now() - start_time) > timeout) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void PageActivityObserver::DidCommitAndDrawCompositorFrame() {
@@ -219,6 +238,10 @@ void TestRecipeReplayer::Setup() {
       << "Cannot install the root certificate "
       << "for the local web page replay server.";
   CleanupSiteData();
+
+  // Bypass permission dialogs.
+  PermissionRequestManager::FromWebContents(GetWebContents())
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
 }
 
 void TestRecipeReplayer::Cleanup() {
@@ -235,6 +258,10 @@ void TestRecipeReplayer::Cleanup() {
 TestRecipeReplayChromeFeatureActionExecutor*
 TestRecipeReplayer::feature_action_executor() {
   return feature_action_executor_;
+}
+
+Browser* TestRecipeReplayer::browser() {
+  return browser_;
 }
 
 content::WebContents* TestRecipeReplayer::GetWebContents() {
@@ -464,11 +491,20 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
       if (!ExecuteClickAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "hover") == 0) {
+      if (!ExecuteHoverAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "pressEnter") == 0) {
+      if (!ExecutePressEnterAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "select") == 0) {
       if (!ExecuteSelectDropdownAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "type") == 0) {
       if (!ExecuteTypeAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "typePassword") == 0) {
+      if (!ExecuteTypePasswordAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "validateField") == 0) {
       if (!ExecuteValidateFieldValueAction(*action))
@@ -480,6 +516,13 @@ bool TestRecipeReplayer::ReplayRecordedActions(
       ADD_FAILURE() << "Unrecognized action type: " << type;
     }
   }  // end foreach action
+
+  // Dismiss the beforeUnloadDialog if the last page of the test has a
+  // beforeUnload function.
+  if (recipe->FindKey("dismissBeforeUnload")) {
+    NavigateAwayAndDismissBeforeUnloadDialog();
+  }
+
   return true;
 }
 
@@ -573,6 +616,116 @@ bool TestRecipeReplayer::ExecuteClickAction(
   return true;
 }
 
+bool TestRecipeReplayer::ExecuteHoverAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  VLOG(1) << "Hovering over `" << xpath << "`.";
+  PageActivityObserver page_activity_observer(frame);
+
+  int x, y;
+  if (!GetCenterCoordinateOfTargetElement(frame, xpath, x, y))
+    return false;
+
+  if (!SimulateMouseHoverAt(frame, gfx::Point(x, y)))
+    return false;
+
+  if (!page_activity_observer.WaitForVisualUpdate()) {
+    ADD_FAILURE() << "The page did not respond to a mouse hover action!";
+    return false;
+  }
+
+  return true;
+}
+
+bool TestRecipeReplayer::ExecutePressEnterAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  VLOG(1) << "Press 'Enter' on `" << xpath << "`.";
+  PageActivityObserver page_activity_observer(frame);
+  if (!PlaceFocusOnElement(frame, xpath))
+    return false;
+
+  ui::DomKey key = ui::DomKey::ENTER;
+  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+  SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key, code,
+                   key_code, false, false, false, false);
+  page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteRunCommandAction(
+    const base::DictionaryValue& action) {
+  // Extract the list of JavaScript commands into a vector.
+  std::vector<std::string> commands;
+
+  const base::Value* commands_list_container = action.FindKey("commands");
+  if (!commands_list_container) {
+    ADD_FAILURE()
+        << "Failed to extract the list of commands from the run command "
+        << "action!";
+    return false;
+  }
+
+  if (base::Value::Type::LIST != commands_list_container->type()) {
+    ADD_FAILURE() << "commands is not an array!";
+    return false;
+  }
+
+  const base::Value::ListStorage& commands_list =
+      commands_list_container->GetList();
+  for (base::ListValue::const_iterator it_command = commands_list.begin();
+       it_command != commands_list.end(); ++it_command) {
+    if (base::Value::Type::STRING != it_command->type()) {
+      ADD_FAILURE() << "command is not a string!";
+      return false;
+    }
+    commands.push_back(it_command->GetString());
+  }
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame)) {
+    return false;
+  }
+
+  VLOG(1) << "Running JavaScript commands on the page.";
+
+  // Execute the commands.
+  PageActivityObserver page_activity_observer(frame);
+  for (const std::string& command : commands) {
+    if (!content::ExecuteScript(frame, command)) {
+      ADD_FAILURE() << "Failed to execute JavaScript command `" << command
+                    << "`!";
+      return false;
+    }
+    // Wait in case the JavaScript command triggers page load or layout
+    // changes.
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  return true;
+}
+
 bool TestRecipeReplayer::ExecuteSelectDropdownAction(
     const base::DictionaryValue& action) {
   const base::Value* index_container = action.FindKey("index");
@@ -654,6 +807,58 @@ bool TestRecipeReplayer::ExecuteTypeAction(
   }
 
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteTypePasswordAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  const base::Value* value_container = action.FindKey("value");
+  if (!value_container) {
+    ADD_FAILURE() << "Failed to extract the value from the type password"
+                  << " action!";
+    return false;
+  }
+
+  if (base::Value::Type::STRING != value_container->type()) {
+    ADD_FAILURE() << "Value is not a string!";
+    return false;
+  }
+
+  std::string value = value_container->GetString();
+
+  // Clear the password field first, in case a previous value is there.
+  if (!ExecuteJavaScriptOnElementByXpath(
+          frame, xpath,
+          "automation_helper.setInputElementValue(target, ``);")) {
+    ADD_FAILURE() << "Failed to execute JavaScript to clear the input value!";
+    return false;
+  }
+
+  if (!PlaceFocusOnElement(frame, xpath))
+    return false;
+
+  VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
+
+  const char* c_array = value.c_str();
+  for (size_t index = 0; index < value.size(); index++) {
+    ui::DomKey key = ui::DomKey::FromCharacter(c_array[index]);
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key,
+                     code, key_code, false, false, false, false);
+  }
+
   return true;
 }
 
@@ -986,9 +1191,66 @@ bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
   }
 }
 
+bool TestRecipeReplayer::GetCenterCoordinateOfTargetElement(
+    content::RenderFrameHost* frame,
+    const std::string& target_element_xpath,
+    int& x,
+    int& y) {
+  const std::string get_target_field_x_js(base::StringPrintf(
+      "window.domAutomationController.send("
+      "    (function() {"
+      "       try {"
+      "         const element = automation_helper.getElementByXpath(`%s`);"
+      "         const rect = element.getBoundingClientRect();"
+      "         console.log(`Window href x: ${location.href}`);"
+      "         return Math.floor(rect.left + rect.width / 2);"
+      "       } catch(ex) {}"
+      "       return -1;"
+      "    })());",
+      target_element_xpath.c_str()));
+  const std::string get_target_field_y_js(base::StringPrintf(
+      "window.domAutomationController.send("
+      "    (function() {"
+      "       try {"
+      "         const element = automation_helper.getElementByXpath(`%s`);"
+      "         const rect = element.getBoundingClientRect();"
+      "         console.log(`Window href y: ${location.href}`);"
+      "         return Math.floor(rect.top + rect.height / 2);"
+      "       } catch(ex) {}"
+      "       return -1;"
+      "    })());",
+      target_element_xpath.c_str()));
+  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_x_js, &x)) {
+    ADD_FAILURE()
+        << "Failed to run script to extract target element's x coordinate!";
+    return false;
+  }
+
+  if (x == -1) {
+    ADD_FAILURE() << "Failed to extract target element's x coordinate!";
+    return false;
+  }
+
+  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_y_js, &y)) {
+    ADD_FAILURE()
+        << "Failed to run script to extract target element's y coordinate!";
+    return false;
+  }
+
+  if (y == -1) {
+    ADD_FAILURE() << "Failed to extract target element's y coordinate!";
+    return false;
+  }
+
+  return true;
+}
+
 bool TestRecipeReplayer::SimulateLeftMouseClickAt(
     content::RenderFrameHost* render_frame_host,
     const gfx::Point& point) {
+  if (!SimulateMouseHoverAt(render_frame_host, point))
+    return false;
+
   blink::WebMouseEvent mouse_event(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
@@ -1005,18 +1267,35 @@ bool TestRecipeReplayer::SimulateLeftMouseClickAt(
   content::RenderWidgetHost* widget =
       render_frame_host->GetView()->GetRenderWidgetHost();
 
-  gfx::Point reset_mouse(offset.origin());
-  reset_mouse =
-      gfx::Point(reset_mouse.x() + point.x(), reset_mouse.y() + point.y());
-  if (!ui_test_utils::SendMouseMoveSync(reset_mouse)) {
-    ADD_FAILURE() << "Failed to position the mouse!";
-    return false;
-  }
-
   widget->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   widget->ForwardMouseEvent(mouse_event);
   return true;
+}
+
+bool TestRecipeReplayer::SimulateMouseHoverAt(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Point& point) {
+  gfx::Rect offset =
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetContainerBounds();
+  gfx::Point reset_mouse =
+      gfx::Point(offset.x() + point.x(), offset.y() + point.y());
+  if (!ui_test_utils::SendMouseMoveSync(reset_mouse)) {
+    ADD_FAILURE() << "Failed to position the mouse!";
+    return false;
+  }
+  return true;
+}
+
+void TestRecipeReplayer::NavigateAwayAndDismissBeforeUnloadDialog() {
+  content::PrepContentsForBeforeUnloadTest(GetWebContents());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  app_modal::JavaScriptAppModalDialog* alert =
+      ui_test_utils::WaitForAppModalDialog();
+  alert->native_dialog()->AcceptAppModalDialog();
 }
 
 // TestRecipeReplayChromeFeatureActionExecutor --------------------------------
