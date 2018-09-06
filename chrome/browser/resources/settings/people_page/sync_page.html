@@ -31,9 +31,7 @@
         opacity: var(--cr-disabled-opacity);
       }
 
-      #create-password-box,
-      #reset-sync-message-box-encryption,
-      #reset-sync-message-box-user-events {
+      #create-password-box {
         /* In order to line up with the encryption radio box text. */
         margin-inline-start: var(--settings-indent-width);
       }
@@ -71,6 +69,10 @@
 
       #other-sync-items > .list-item {
         border-top: var(--settings-separator-line);
+      }
+
+      .passphrase-reset-icon {
+        margin-right: 8px;
       }
 
 <if expr="not chromeos">
@@ -361,19 +363,20 @@
           <!-- User events is disabled and unchecked if data is encrypted or
                typed urls are disabled. -->
           <template is="dom-if" if="[[unifiedConsentEnabled]]">
-            <div class="layout horizontal list-item"
-                hidden="[[!syncPrefs.userEventsRegistered]]">
+            <div hidden="[[!syncPrefs.userEventsRegistered]]"
+                class$="[[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
+                    layout horizontal list-item">
               <div class="start" id="userEventsCheckboxLabel">
-                <div>$i18n{userEventsCheckboxLabel}</div>
+                $i18n{userEventsCheckboxLabel}
                 <div class="secondary">
                   $i18n{userEventsCheckboxText}
-                </div>
-                <div id="reset-sync-message-box-user-events" class="list-item"
-                  hidden="[[!syncPrefs.encryptAllData]]">
-                  <span>
-                    <iron-icon icon="settings:info-outline"></iron-icon>
-                    $i18nRaw{passphraseResetHint}
-                  </span>
+                  <div id="reset-sync-message-box-user-events"
+                      hidden="[[!syncPrefs.encryptAllData]]">
+                    <iron-icon icon="settings:info-outline"
+                        class="passphrase-reset-icon">
+                    </iron-icon>
+                    $i18nRaw{passphraseResetHintToggle}
+                  </div>
                 </div>
               </div>
               <cr-toggle id="userEventsToggle"
@@ -425,10 +428,19 @@
 
           <div id="encryptionDescription"
               hidden="[[syncPrefs.passphraseRequired]]"
-              class$="two-line single-column
+              class$="single-column
+                  [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
                   [[getListItemClass_(unifiedConsentEnabled)]]">
-            <div>$i18n{encryptionOptionsTitle}</div>
-            <div class="secondary">$i18n{syncDataEncryptedText}</div>
+            $i18n{encryptionOptionsTitle}
+            <div class="secondary">
+              $i18n{syncDataEncryptedText}
+              <div hidden="[[!syncPrefs.encryptAllData]]">
+                <iron-icon icon="settings:info-outline"
+                    class="passphrase-reset-icon">
+                </iron-icon>
+                $i18nRaw{passphraseResetHintEncryption}
+              </div>
+            </div>
           </div>
 
           <div id="encryptionRadioGroupContainer" class="list-frame"
@@ -455,16 +467,6 @@
                 </template>
               </cr-radio-button>
             </paper-radio-group>
-
-            <!-- duplicated from above -->
-            <div id="reset-sync-message-box-encryption" class="list-item"
-                hidden="[[!syncPrefs.encryptAllData]]">
-              <span>
-                <iron-icon icon="settings:info-outline"></iron-icon>
-                $i18nRaw{passphraseResetHint}
-              </span>
-            </div>
-
           </div>
 
           <template is="dom-if" if="[[creatingNewPassphrase_]]">
