@@ -24,7 +24,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
 
@@ -142,7 +142,7 @@ class ConsentBumpActivator : public BrowserListObserver,
   // this might crash because the profile has not been fully initialized yet.
   static bool ShouldShowConsentBumpFor(Profile* profile) {
     if (!profile->IsSyncAllowed() ||
-        !IsUnifiedConsentFeatureWithBumpEnabled(profile) ||
+        !unified_consent::IsUnifiedConsentFeatureWithBumpEnabled() ||
         !ProfileSyncServiceFactory::HasProfileSyncService(profile))
       return false;
 
@@ -184,7 +184,7 @@ LoginUIService::LoginUIService(Profile* profile)
 #endif
 {
 #if !defined(OS_CHROMEOS)
-  if (IsUnifiedConsentFeatureWithBumpEnabled(profile)) {
+  if (unified_consent::IsUnifiedConsentFeatureWithBumpEnabled()) {
     consent_bump_activator_ =
         std::make_unique<ConsentBumpActivator>(this, profile);
   }

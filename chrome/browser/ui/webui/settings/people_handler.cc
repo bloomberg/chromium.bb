@@ -26,7 +26,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -51,6 +50,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -626,7 +626,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   // is disabled.
   // TODO(scottchen): finish the UI for signed-out users
   //    (https://crbug.com/800972).
-  if (IsUnifiedConsentFeatureEnabled(profile_) &&
+  if (unified_consent::IsUnifiedConsentFeatureEnabled() &&
       (IsProfileAuthNeededOrHasErrors() || !service)) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();

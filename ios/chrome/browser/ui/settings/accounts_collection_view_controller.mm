@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #import "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -41,7 +42,6 @@
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -136,7 +136,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
     browser_sync::ProfileSyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
-    if (!IsUnifiedConsentFeatureEnabled()) {
+    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
       // When unified consent flag is enabled, the sync settings are available
       // in the "Google Services and sync" settings.
       _syncObserver.reset(new SyncObserverBridge(self, syncService));
@@ -237,7 +237,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self addAccountItem]
       toSectionWithIdentifier:SectionIdentifierAccounts];
 
-  if (!IsUnifiedConsentFeatureEnabled()) {
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Sync and Google Activity section.
     // When unified consent flag is enabled, those settings are available in
     // the Google Services and sync settings.

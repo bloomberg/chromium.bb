@@ -7,13 +7,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 
 UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
@@ -51,7 +51,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   if (!sync_service)
     return nullptr;
 
-  if (!IsUnifiedConsentFeatureEnabled(profile)) {
+  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
     unified_consent::UnifiedConsentService::RollbackIfNeeded(
         profile->GetPrefs(), sync_service);
     return nullptr;

@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -29,8 +29,8 @@ namespace {
 // Width of the different dialogs that make up the signin flow.
 const int kModalDialogWidth = 448;
 
-// Width of the confirmation dialog with DICE.
-const int kModalDialogWidthForDice = 512;
+// Width of the confirmation dialog with Unified Consent is enabled.
+const int kModalDialogWidthForUnifiedConsent = 512;
 
 // Height of the tab-modal dialog displaying the password-separated signin
 // flow. It matches the dimensions of the server content the dialog displays.
@@ -50,10 +50,11 @@ CGFloat GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
 }
 
 int GetSyncConfirmationDialogPreferredWidth(Profile* profile) {
-  // If unified-consent enabled, we show a different sync confirmation dialog
+  // If unified consent is enabled, we show a different sync confirmation dialog
   // which uses a different width.
-  return IsUnifiedConsentFeatureEnabled(profile) && profile->IsSyncAllowed()
-             ? kModalDialogWidthForDice
+  return unified_consent::IsUnifiedConsentFeatureEnabled() &&
+                 profile->IsSyncAllowed()
+             ? kModalDialogWidthForUnifiedConsent
              : kModalDialogWidth;
 }
 

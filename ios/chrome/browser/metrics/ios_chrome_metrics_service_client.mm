@@ -59,7 +59,6 @@
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -294,8 +293,7 @@ bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
       ProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
           browser_state);
   ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync),
-                                browser_state->GetPrefs(),
-                                IsUnifiedConsentFeatureEnabled());
+                                browser_state->GetPrefs());
   return (history_service != nullptr && sync != nullptr);
 }
 

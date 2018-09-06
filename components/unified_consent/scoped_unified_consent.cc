@@ -34,8 +34,6 @@ ScopedUnifiedConsent::ScopedUnifiedConsent(UnifiedConsentFeatureState state) {
       break;
     }
   }
-
-  DCHECK_EQ(state, internal::GetUnifiedConsentFeatureState());
 }
 
 ScopedUnifiedConsent::~ScopedUnifiedConsent() {}

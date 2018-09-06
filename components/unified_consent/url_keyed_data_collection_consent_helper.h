@@ -43,8 +43,7 @@ class UrlKeyedDataCollectionConsentHelper {
   //
   // Note: |pref_service| must outlive the retuned instance.
   static std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-  NewAnonymizedDataCollectionConsentHelper(bool is_unified_consent_enabled,
-                                           PrefService* pref_service,
+  NewAnonymizedDataCollectionConsentHelper(PrefService* pref_service,
                                            syncer::SyncService* sync_service);
 
   // Creates a new |UrlKeyedDataCollectionConsentHelper| instance that checks
@@ -58,8 +57,7 @@ class UrlKeyedDataCollectionConsentHelper {
   // 2. If |is_unified_consent_enabled| is false then URL-keyed data collection
   //    is enabled if sync is active and if sync history is enabled.
   static std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-  NewPersonalizedDataCollectionConsentHelper(bool is_unified_consent_enabled,
-                                             syncer::SyncService* sync_service);
+  NewPersonalizedDataCollectionConsentHelper(syncer::SyncService* sync_service);
 
   virtual ~UrlKeyedDataCollectionConsentHelper();
 

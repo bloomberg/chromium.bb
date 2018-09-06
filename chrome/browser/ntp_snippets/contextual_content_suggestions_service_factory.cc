@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -27,6 +26,7 @@
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_service.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
@@ -103,10 +103,9 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       content::BrowserContext::GetDefaultStoragePartition(context);
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       consent_helper;
-  if (IsUnifiedConsentFeatureEnabled(profile)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
         NewPersonalizedDataCollectionConsentHelper(
-            true, /*is_unified_consent_enabled*/
             ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
                 profile));
   }

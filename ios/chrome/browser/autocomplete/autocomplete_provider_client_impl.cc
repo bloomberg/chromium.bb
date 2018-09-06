@@ -26,7 +26,6 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/unified_consent/feature.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
@@ -34,7 +33,6 @@ AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     : browser_state_(browser_state),
       url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
                               NewPersonalizedDataCollectionConsentHelper(
-                                  IsUnifiedConsentFeatureEnabled(),
                                   ProfileSyncServiceFactory::GetForBrowserState(
                                       browser_state_))) {}
 

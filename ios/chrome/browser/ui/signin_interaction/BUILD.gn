@@ -13,6 +13,7 @@ source_set("signin_interaction") {
   ]
   deps = [
     "//base",
+    "//components//unified_consent",
     "//components/prefs",
     "//components/signin/core/browser",
     "//ios/chrome/browser",
@@ -22,7 +23,6 @@ source_set("signin_interaction") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/unified_consent",
-    "//ios/chrome/browser/unified_consent:feature",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
   ]
