@@ -27,7 +27,6 @@
 -CrSettingsSiteListTest.SiteList
 -CrSettingsSubpageTest.All
 -CrSettingsZoomLevelsTest.All
--MaterialHistoryListTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
@@ -35,9 +34,6 @@
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
 -PasswordsAndFormsBrowserTest.uiTests
 -SettingsAdvancedPageBrowserTest.Load
-
-# Mac only failure. See crbug.com/874976
--MaterialHistoryItemTest.All
 
 # Mac only failure. See crbug.com/876990
 -CrSettingsPrivacyPageTest.All
