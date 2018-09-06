@@ -88,7 +88,7 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
     }
     this.button_.hidden = !this.lastPicture_;
     var url = this.lastPicture_ && this.lastPicture_.thumbnailURL;
-    this.button_.style.backgroundImage = url ? ('url(' + url + ')') : 'none';
+    this.button_.style.backgroundImage = url ? ('url("' + url + '")') : 'none';
   });
 };
 
