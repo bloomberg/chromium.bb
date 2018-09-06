@@ -280,22 +280,27 @@ bool WebMediaPlayerMSCompositor::UpdateCurrentFrame(
   if (stopped_)
     return false;
 
-  base::TimeTicks render_time;
-
   base::AutoLock auto_lock(current_frame_lock_);
 
   if (rendering_frame_buffer_)
     RenderUsingAlgorithm(deadline_min, deadline_max);
 
-  if (!current_frame_->metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-    DCHECK(!rendering_frame_buffer_)
-        << "VideoFrames need REFERENCE_TIME to use "
-           "sophisticated video rendering algorithm.";
+  bool tracing_or_dcheck_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &tracing_or_dcheck_enabled);
+#if DCHECK_IS_ON()
+  tracing_or_dcheck_enabled = true;
+#endif  // DCHECK_IS_ON()
+  if (tracing_or_dcheck_enabled) {
+    base::TimeTicks render_time;
+    if (!current_frame_->metadata()->GetTimeTicks(
+            media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+      DCHECK(!rendering_frame_buffer_)
+          << "VideoFrames need REFERENCE_TIME to use "
+             "sophisticated video rendering algorithm.";
+    }
+    TRACE_EVENT_END2("media", "UpdateCurrentFrame", "Ideal Render Instant",
+                     render_time.ToInternalValue(), "Serial", serial_);
   }
-
-  TRACE_EVENT_END2("media", "UpdateCurrentFrame", "Ideal Render Instant",
-                   render_time.ToInternalValue(), "Serial", serial_);
   return !current_frame_rendered_;
 }
 
