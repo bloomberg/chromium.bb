@@ -1012,6 +1012,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual LayoutUnit ComputeReplacedLogicalHeight(
       LayoutUnit estimated_used_width = LayoutUnit()) const;
 
+  // Returns the size that percentage logical heights of this box should be
+  // resolved against. This function will walk the ancestor chain of this
+  // object to determine this size.
+  //  - out_cb returns the LayoutBlock which provided the size.
+  //  - out_skipped_auto_height_containing_block returns if any auto height
+  //    blocks were skipped to obtain out_cb.
+  LayoutUnit ContainingBlockLogicalHeightForPercentageResolution(
+      LayoutBlock** out_cb = nullptr,
+      bool* out_skipped_auto_height_containing_block = nullptr) const;
+
   bool PercentageLogicalHeightIsResolvable() const;
   LayoutUnit ComputePercentageLogicalHeight(const Length& height) const;
 

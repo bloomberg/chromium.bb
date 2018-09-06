@@ -304,6 +304,13 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void CheckPositionedObjectsNeedLayout();
 #endif
 
+  // This method returns the size that percentage logical heights should
+  // resolve against *if* this LayoutBlock is the containing block for the
+  // percentage calculation.
+  //
+  // A version of this function without the above restriction, (that will walk
+  // the ancestor chain in quirks mode), see:
+  // LayoutBox::ContainingBlockLogicalHeightForPercentageResolution
   LayoutUnit AvailableLogicalHeightForPercentageComputation() const;
   bool HasDefiniteLogicalHeight() const;
 
