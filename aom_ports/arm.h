@@ -26,7 +26,7 @@ extern "C" {
 /*ARMv7 optional NEON instructions.*/
 #define HAS_NEON 0x04
 
-int arm_cpu_caps(void);
+int aom_arm_cpu_caps(void);
 
 // Earlier gcc compilers have issues with some neon intrinsics
 #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ == 4 && \
