@@ -487,9 +487,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void BeginMainFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
-  using VisualStateUpdate = LayerTreeHostClient::VisualStateUpdate;
-  void RequestMainFrameUpdate(
-      VisualStateUpdate requested_update = VisualStateUpdate::kAll);
+  void RequestMainFrameUpdate();
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();

@@ -583,8 +583,8 @@ static void SendDamagedRectsRecursive(ui::Layer* layer) {
     SendDamagedRectsRecursive(child);
 }
 
-void Compositor::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
-  if (!root_layer() || requested_update == VisualStateUpdate::kPrePaint)
+void Compositor::UpdateLayerTreeHost() {
+  if (!root_layer())
     return;
   SendDamagedRectsRecursive(root_layer());
 }

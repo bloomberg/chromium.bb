@@ -146,10 +146,9 @@ void ProxyMain::BeginMainFrame(
   max_requested_pipeline_stage_ = NO_PIPELINE_STAGE;
 
   // When we don't need to produce a CompositorFrame, there's also no need to
-  // paint or commit our updates. We still need to run layout though, as it can
+  // commit our updates. We still need to run layout and paint though, as it can
   // have side effects on page loading behavior.
-  bool skip_paint_and_commit =
-      begin_main_frame_state->begin_frame_args.animate_only;
+  bool skip_commit = begin_main_frame_state->begin_frame_args.animate_only;
 
   // If commits are deferred, skip the entire pipeline.
   bool skip_full_pipeline = defer_commits_;
@@ -158,7 +157,7 @@ void ProxyMain::BeginMainFrame(
   // now, and there was no intermediate request for a commit since the last
   // BeginMainFrame, we can skip the full pipeline.
   skip_full_pipeline |=
-      skip_paint_and_commit && final_pipeline_stage_ == NO_PIPELINE_STAGE;
+      skip_commit && final_pipeline_stage_ == NO_PIPELINE_STAGE;
 
   if (skip_full_pipeline) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
@@ -220,15 +219,13 @@ void ProxyMain::BeginMainFrame(
 
   // See LayerTreeHostClient::MainFrameUpdate for more documentation on
   // what this does.
-  layer_tree_host_->RequestMainFrameUpdate(
-      skip_paint_and_commit ? LayerTreeHost::VisualStateUpdate::kPrePaint
-                            : LayerTreeHost::VisualStateUpdate::kAll);
+  layer_tree_host_->RequestMainFrameUpdate();
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  skip_paint_and_commit |= defer_commits_;
+  skip_commit |= defer_commits_;
 
-  if (skip_paint_and_commit) {
+  if (skip_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
