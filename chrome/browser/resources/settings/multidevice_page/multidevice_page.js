@@ -42,18 +42,12 @@ Polymer({
     },
 
     /**
-     * Features which the user has requested to be enabled but could not be
-     * enabled immediately because they require that the user enter a password
-     * first. This array is only set when the password prompt is visible; if the
-     * user enters a correct password, the features are enabled, and if the user
-     * closes the prompt without entering a correct password, these pending
-     * requests are dropped.
-     * @private {!Array<!settings.MultiDeviceFeature>}
+     * The feature which the user wishes to enable, but which requires
+     * authentication. Once |authToken_| is valid, this value will be passed
+     * along to |browserProxy_|, and subsequently cleared.
+     * @private {?settings.MultiDeviceFeature}
      */
-    featuresToBeEnabledOnceAuthenticated_: {
-      type: Array,
-      value: [],
-    },
+    attemptedEnabledFeature_: {type: Number, value: null},
 
     /** @private {boolean} */
     showPasswordPromptDialog_: {
@@ -202,6 +196,18 @@ Polymer({
     }
   },
 
+  /**
+   * Tell |this.browserProxy_| to enable |this.attemptedEnabledFeature_|.
+   * @private
+   */
+  enableAttemptedFeature_: function() {
+    if (this.attemptedEnabledFeature_ != null) {
+      this.browserProxy_.setFeatureEnabledState(
+          this.attemptedEnabledFeature_, true /* enabled */, this.authToken_);
+      this.attemptedEnabledFeature_ = null;
+    }
+  },
+
   /** @private */
   openPasswordPromptDialog_: function() {
     this.showPasswordPromptDialog_ = true;
@@ -209,22 +215,6 @@ Polymer({
 
   /** @private */
   onPasswordPromptDialogClose_: function() {
-    // If |this.authToken_| is set when the dialog has been closed, this means
-    // that the user entered the correct password into the dialog. Thus, send
-    // all pending features to be enabled.
-    if (this.authToken_) {
-      this.featuresToBeEnabledOnceAuthenticated_.forEach((feature) => {
-        this.browserProxy_.setFeatureEnabledState(
-            feature, true /* enabled */, this.authToken_);
-      });
-    }
-
-    // If the features were enabled above, they no longer need to be tracked.
-    // Likewise, if the features were not enabled above, the user did not enter
-    // the correct password in the dialog, so the features should not actually
-    // be enabled.
-    this.featuresToBeEnabledOnceAuthenticated_ = [];
-
     this.showPasswordPromptDialog_ = false;
   },
 
@@ -240,55 +230,53 @@ Polymer({
     let feature = event.detail.feature;
     let enabled = event.detail.enabled;
 
-    if (!this.isAuthenticationRequiredForChange_(feature, enabled)) {
-      this.browserProxy_.setFeatureEnabledState(
-          feature, enabled, this.authToken_);
-      return;
+    // Authentication is never required if disabling a feature; only consider it
+    // if enabling.
+    if (enabled) {
+      // TODO(crbug.com/876436): Actually determine this, when the API is
+      // available. It's fine to default to true here for now, because it errs
+      // on the side of more security.
+      let isSmartLockPrefEnabled = true;
+
+      let isPasswordPromptRequired =
+          (feature === settings.MultiDeviceFeature.SMART_LOCK) ||
+          (feature === settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE &&
+           isSmartLockPrefEnabled);
+
+      if (isPasswordPromptRequired) {
+        this.attemptedEnabledFeature_ = feature;
+
+        if (this.authToken_) {
+          this.enableAttemptedFeature_();
+        } else {
+          this.openPasswordPromptDialog_();
+        }
+        return;
+      }
     }
 
-    this.featuresToBeEnabledOnceAuthenticated_.push(feature);
-    this.openPasswordPromptDialog_();
-  },
-
-  /**
-   * @param {!settings.MultiDeviceFeature} feature The feature to change.
-   * @param {boolean} enabled True if the user has requested to enable the
-   *     feature; false if the user has requested to disable the feature.
-   * @return {boolean} Whether authentication is required to change the
-   *     feature's state.
-   * @private
-   */
-  isAuthenticationRequiredForChange_: function(feature, enabled) {
-    // Disabling a feature never requires authentication.
-    if (!enabled)
-      return false;
-
-    // Enabling SmartLock always requires authentication.
-    if (feature == settings.MultiDeviceFeature.SMART_LOCK)
-      return true;
-
-    // Enabling any feature besides SmartLock and the Better Together suite does
-    // not require authentication.
-    if (feature != settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE)
-      return false;
-
-    let smartLockState =
-        this.getFeatureState(settings.MultiDeviceFeature.SMART_LOCK);
-
-    // If the user is enabling the Better Together suite and this change would
-    // result in SmartLock being implicitly enabled, authentication is required.
-    // SmartLock is implicitly enabled if it is only currently not enabled due
-    // to the suite being disabled or due to the SmartLock host device not
-    // having a lock screen set.
-    return smartLockState ==
-        settings.MultiDeviceFeatureState.UNAVAILABLE_SUITE_DISABLED ||
-        smartLockState ==
-        settings.MultiDeviceFeatureState.UNAVAILABLE_INSUFFICIENT_SECURITY;
+    // No authentication is required.
+    this.browserProxy_.setFeatureEnabledState(feature, enabled);
   },
 
   /** @private */
   onForgetDeviceRequested_: function() {
     this.browserProxy_.removeHostDevice();
     settings.navigateTo(settings.routes.MULTIDEVICE);
+  },
+
+  /**
+   * Called when the authToken_ changes. If the authToken is valid, that
+   * indicates the user authenticated successfully. If not, cancel the pending
+   * attempt to enable attemptedEnabledFeature_.
+   * @param {String} authToken
+   * @private
+   */
+  authTokenChanged_: function(authToken) {
+    if (this.authToken_) {
+      this.enableAttemptedFeature_();
+    } else {
+      this.attemptedEnabledFeature_ = null;
+    }
   },
 });
