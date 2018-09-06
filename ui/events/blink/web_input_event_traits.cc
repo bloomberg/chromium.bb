@@ -243,18 +243,6 @@ bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
   }
 }
 
-bool WebInputEventTraits::CanCauseScroll(
-    const blink::WebMouseWheelEvent& event) {
-#if defined(USE_AURA)
-  // Scroll events generated from the mouse wheel when the control key is held
-  // don't trigger scrolling. Instead, they may cause zooming.
-  return event.has_precise_scrolling_deltas ||
-         (event.GetModifiers() & blink::WebInputEvent::kControlKey) == 0;
-#else
-  return true;
-#endif
-}
-
 uint32_t WebInputEventTraits::GetUniqueTouchEventId(
     const WebInputEvent& event) {
   if (WebInputEvent::IsTouchEventType(event.GetType())) {

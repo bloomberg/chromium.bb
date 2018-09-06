@@ -89,15 +89,9 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
       // Reset the target if the dom event is cancelled to make sure that new
       // targeting happens for the next wheel event.
       wheel_target_ = nullptr;
-      // TODO(ekaramad): This does not seem correct. The behavior of shift +
-      // scrolling seems different on Mac vs Linux/Windows. We need this done
-      // properly and perhaps even tag WebMouseWheelEvent with a scrolling
-      // direction (https://crbug.com/853292).
-      // When using shift + mouse scroll (to horizontally scroll), the expected
-      // value of |delta_x| is exactly zero.
-      bool is_vertical =
-          (std::abs(dom_event->deltaX()) < std::abs(dom_event->deltaY())) &&
-          (!dom_event->shiftKey() || dom_event->deltaX() != 0);
+
+      bool is_vertical = dom_event->NativeEvent().event_action ==
+                         WebMouseWheelEvent::EventAction::kScrollVertical;
       // TODO(ekaramad): If the only wheel handlers on the page are from such
       // disabled frames we should simply start scrolling on CC and the events
       // must get here as passive (https://crbug.com/853059).

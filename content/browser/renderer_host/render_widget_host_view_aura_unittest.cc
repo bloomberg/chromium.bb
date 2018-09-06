@@ -5527,7 +5527,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
           events[0]->ToEvent()->Event()->web_event.get());
   // Check if scroll is caused when ctrl-scroll is generated from
   // mouse wheel event.
-  EXPECT_FALSE(WebInputEventTraits::CanCauseScroll(*wheel_event));
+  EXPECT_EQ(blink::WebMouseWheelEvent::EventAction::kPageZoom,
+            wheel_event->event_action);
 
   // Ack'ing the outstanding event should flush the pending event queue.
   events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -5551,7 +5552,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   // mouse wheel event.
   wheel_event = static_cast<const WebMouseWheelEvent*>(
       events[1]->ToEvent()->Event()->web_event.get());
-  EXPECT_TRUE(WebInputEventTraits::CanCauseScroll(*wheel_event));
+  EXPECT_NE(blink::WebMouseWheelEvent::EventAction::kPageZoom,
+            wheel_event->event_action);
 
   events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
@@ -5572,7 +5574,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   // from scroll event.
   wheel_event = static_cast<const WebMouseWheelEvent*>(
       events[1]->ToEvent()->Event()->web_event.get());
-  EXPECT_TRUE(WebInputEventTraits::CanCauseScroll(*wheel_event));
+  EXPECT_NE(blink::WebMouseWheelEvent::EventAction::kPageZoom,
+            wheel_event->event_action);
 }
 
 // Ensures that the mapping from ui::TouchEvent to blink::WebTouchEvent doesn't

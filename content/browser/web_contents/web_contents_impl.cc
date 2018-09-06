@@ -2190,7 +2190,7 @@ bool WebContentsImpl::HandleWheelEvent(
   //      (i.e. control+tab) then the OS's buffered scroll events will come in
   //      with control key set which isn't what the user wants
   if (delegate_ && event.wheel_ticks_y &&
-      !ui::WebInputEventTraits::CanCauseScroll(event)) {
+      event.event_action == blink::WebMouseWheelEvent::EventAction::kPageZoom) {
     // Count only integer cumulative scrolls as zoom events; this handles
     // smooth scroll and regular scroll device behavior.
     zoom_scroll_remainder_ += event.wheel_ticks_y;

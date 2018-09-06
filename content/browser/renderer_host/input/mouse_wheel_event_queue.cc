@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/input/input_event_dispatch_type.h"
+#include "content/common/input/web_mouse_wheel_event_traits.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -57,6 +58,10 @@ void MouseWheelEventQueue::QueueEvent(
       event.latency.Terminate();
 
       last_event->CoalesceWith(event);
+      // The deltas for the coalesced event change; the corresponding action
+      // might be different now.
+      last_event->event.event_action =
+          WebMouseWheelEventTraits::GetEventAction(last_event->event);
       TRACE_EVENT_INSTANT2("input", "MouseWheelEventQueue::CoalescedWheelEvent",
                            TRACE_EVENT_SCOPE_THREAD, "total_dx",
                            last_event->event.delta_x, "total_dy",
@@ -65,7 +70,13 @@ void MouseWheelEventQueue::QueueEvent(
     }
   }
 
-  wheel_queue_.push_back(std::make_unique<QueuedWebMouseWheelEvent>(event));
+  MouseWheelEventWithLatencyInfo event_with_action(event.event, event.latency);
+  event_with_action.event.event_action =
+      WebMouseWheelEventTraits::GetEventAction(event.event);
+  // Update the expected event action before queuing the event. From this point
+  // on, the action should not change.
+  wheel_queue_.push_back(
+      std::make_unique<QueuedWebMouseWheelEvent>(event_with_action));
   TryForwardNextEventToRenderer();
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize", wheel_queue_.size());
 }
@@ -78,8 +89,8 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
     return false;
   }
 
-  if (!ui::WebInputEventTraits::CanCauseScroll(
-          event_sent_for_gesture_ack_->event)) {
+  if (event_sent_for_gesture_ack_->event.event_action ==
+      blink::WebMouseWheelEvent::EventAction::kPageZoom) {
     TRACE_EVENT_INSTANT0("input", "Wheel Event Cannot Cause Scroll",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
@@ -129,8 +140,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
 
 #if !defined(OS_MACOSX)
     // Swap X & Y if Shift is down and when there is no horizontal movement.
-    if ((event_sent_for_gesture_ack_->event.GetModifiers() &
-         WebInputEvent::kShiftKey) != 0 &&
+    if (event_sent_for_gesture_ack_->event.event_action ==
+            blink::WebMouseWheelEvent::EventAction::kScrollHorizontal &&
         event_sent_for_gesture_ack_->event.delta_x == 0) {
       scroll_update.data.scroll_update.delta_x =
           event_sent_for_gesture_ack_->event.delta_y;
