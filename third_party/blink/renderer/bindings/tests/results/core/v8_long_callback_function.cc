@@ -54,12 +54,11 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
       IncumbentScriptState()->GetContext());
 
   v8::Local<v8::Function> function;
-  // callback function\'s invoke:
+  // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
-  // case.
-  DCHECK(CallbackFunction()->IsFunction());
+  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;

@@ -74,6 +74,7 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
 {{callback_invoke(
     'callback interface', None,
     method.cpp_type, method.native_value_traits_tag, method.arguments,
+    False,
     interface_name, method.name)}}
 }
 
