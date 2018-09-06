@@ -45,22 +45,27 @@ bool use_locked_mock_keychain = false;
 // this and migrate to different encryption without data loss.
 const char kEncryptionVersionPrefix[] = "v10";
 
-// This lock is used to make the GetEncrytionKey method thread-safe.
+// This lock is used to make the GetEncrytionKey and
+// OSCrypt::GetRawEncryptionKey methods thread-safe.
 base::LazyInstance<base::Lock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
+
+// The cached AES encryption key singleton.
+crypto::SymmetricKey* g_cached_encryption_key = nullptr;
+
+// true if |g_cached_encryption_key| has been initialized.
+bool g_key_is_cached = false;
 
 // Generates a newly allocated SymmetricKey object based on the password found
 // in the Keychain.  The generated key is for AES encryption.  Returns NULL key
 // in the case password access is denied or key generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
-  static crypto::SymmetricKey* cached_encryption_key = nullptr;
-  static bool key_is_cached = false;
   base::AutoLock auto_lock(g_lock.Get());
 
   if (use_mock_keychain && use_locked_mock_keychain)
     return nullptr;
 
-  if (key_is_cached)
-    return cached_encryption_key;
+  if (g_key_is_cached)
+    return g_cached_encryption_key;
 
   static bool mock_keychain_command_line_flag =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -78,26 +83,44 @@ crypto::SymmetricKey* GetEncryptionKey() {
 
   // Subsequent code must guarantee that the correct key is cached before
   // returning.
-  key_is_cached = true;
+  g_key_is_cached = true;
 
   if (password.empty())
-    return cached_encryption_key;
+    return g_cached_encryption_key;
 
   std::string salt(kSalt);
 
   // Create an encryption key from our password and salt. The key is
   // intentionally leaked.
-  cached_encryption_key =
+  g_cached_encryption_key =
       crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, password, salt, kEncryptionIterations,
           kDerivedKeySizeInBits)
           .release();
-  ANNOTATE_LEAKING_OBJECT_PTR(cached_encryption_key);
-  DCHECK(cached_encryption_key);
-  return cached_encryption_key;
+  ANNOTATE_LEAKING_OBJECT_PTR(g_cached_encryption_key);
+  DCHECK(g_cached_encryption_key);
+  return g_cached_encryption_key;
 }
 
 }  // namespace
+
+// static
+std::string OSCrypt::GetRawEncryptionKey() {
+  crypto::SymmetricKey* key = GetEncryptionKey();
+  if (!key)
+    return std::string();
+  return key->key();
+}
+
+// static
+void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
+  DCHECK(!raw_key.empty());
+  base::AutoLock auto_lock(g_lock.Get());
+  auto key = crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key);
+  DCHECK(!g_key_is_cached) << "Encryption key already set.";
+  g_cached_encryption_key = key.release();
+  g_key_is_cached = true;
+}
 
 bool OSCrypt::EncryptString16(const base::string16& plaintext,
                               std::string* ciphertext) {

@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_observer.h"
+#include "components/os_crypt/os_crypt.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
@@ -49,7 +50,6 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
-#include "components/os_crypt/os_crypt.h"
 #endif
 
 namespace network {
@@ -441,6 +441,12 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #endif
 }
 #endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
+  OSCrypt::SetRawEncryptionKey(encryption_key);
+}
+#endif  // OS_MACOSX
 
 void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
