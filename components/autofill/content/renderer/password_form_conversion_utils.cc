@@ -820,19 +820,6 @@ bool GetPasswordForm(
   }
   password_form->other_possible_usernames = std::move(other_possible_usernames);
 
-  // Report metrics.
-  if (!username_field) {
-    // To get a better idea on how password forms without a username field
-    // look like, report the total number of text and password fields.
-    UMA_HISTOGRAM_COUNTS_100(
-        "PasswordManager.EmptyUsernames.TextAndPasswordFieldCount",
-        layout_sequence.size());
-    // For comparison, also report the number of password fields.
-    UMA_HISTOGRAM_COUNTS_100(
-        "PasswordManager.EmptyUsernames.PasswordFieldCount",
-        std::count(layout_sequence.begin(), layout_sequence.end(), 'P'));
-  }
-
   password_form->origin = std::move(form_origin);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
   password_form->scheme = PasswordForm::SCHEME_HTML;
