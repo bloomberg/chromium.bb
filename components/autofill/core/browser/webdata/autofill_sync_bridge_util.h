@@ -18,6 +18,9 @@ class AutofillTable;
 class CreditCard;
 struct PaymentsCustomerData;
 
+// Returns the specified |server_id| encoded in base 64.
+std::string GetBase64EncodedServerId(const std::string& server_id);
+
 // Returns the wallet specifics id for the specified |server_id|.
 std::string GetSpecificsIdForEntryServerId(const std::string& server_id);
 
