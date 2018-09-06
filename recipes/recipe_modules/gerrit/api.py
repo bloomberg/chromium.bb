@@ -138,22 +138,15 @@ class GerritApi(recipe_api.RecipeApi):
         query_params=[('change', str(change))],
         o_params=['ALL_REVISIONS', 'ALL_COMMITS'],
         limit=1)
-
-    if len(cls) != 1:  # pragma: no cover
-      raise self.m.step.InfraFailure(
-          'Change not found: host:%r change:%r' % (host, change))
-
-    return self.extract_patchset_info(cls[0], patchset)
-
-  def extract_patchset_info(self, change_info, patchset):
-    for revision in change_info['revisions'].itervalues():
+    cl = cls[0] if len(cls) == 1 else {'revisions': {}}
+    for ri in cl['revisions'].itervalues():
       # TODO(tandrii): add support for patchset=='current'.
-      if str(revision['_number']) == str(patchset):
-        return revision
+      if str(ri['_number']) == str(patchset):
+        return ri
 
     raise self.m.step.InfraFailure(
-        'Patchset %r not found for change %r' % (
-            patchset, change_info['_number']))
+        'Error querying for CL description: host:%r change:%r; patchset:%r' % (
+            host, change, patchset))
 
   def get_changes(self, host, query_params, start=None, limit=None,
                   o_params=None, step_test_data=None, **kwargs):
