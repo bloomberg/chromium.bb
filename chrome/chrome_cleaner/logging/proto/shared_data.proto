@@ -246,6 +246,7 @@ message ProcessInformation {
     DEPRECATED_SIGNATURE_MATCHER_SANDBOX = 2;
     ESET_SANDBOX = 3;
     JSON_PARSER_SANDBOX = 4;
+    ZIP_ARCHIVER_SANDBOX = 5;
   }
   optional Process process = 1;
 
