@@ -156,7 +156,6 @@ jumbo_split_static_library("ui") {
       "cocoa/clickhold_button_cell.mm",
       "cocoa/cocoa_util.h",
       "cocoa/cocoa_util.mm",
-      "cocoa/constrained_web_dialog_delegate_mac.mm",
       "cocoa/constrained_window/constrained_window_alert.h",
       "cocoa/constrained_window/constrained_window_alert.mm",
       "cocoa/constrained_window/constrained_window_button.h",
@@ -283,7 +282,6 @@ jumbo_split_static_library("ui") {
       "cocoa/hung_renderer_controller.mm",
       "cocoa/image_button_cell.h",
       "cocoa/image_button_cell.mm",
-      "cocoa/importer/import_lock_dialog_cocoa.mm",
       "cocoa/info_bubble_view.h",
       "cocoa/info_bubble_view.mm",
       "cocoa/info_bubble_window.h",
@@ -346,8 +344,6 @@ jumbo_split_static_library("ui") {
       "cocoa/location_bar/translate_decoration.mm",
       "cocoa/location_bar/zoom_decoration.h",
       "cocoa/location_bar/zoom_decoration.mm",
-      "cocoa/login_handler_cocoa.h",
-      "cocoa/login_handler_cocoa.mm",
       "cocoa/main_menu_item.h",
       "cocoa/menu_button.h",
       "cocoa/menu_button.mm",
@@ -403,7 +399,6 @@ jumbo_split_static_library("ui") {
       "cocoa/screen_capture_notification_ui_cocoa.mm",
       "cocoa/separate_fullscreen_window.h",
       "cocoa/separate_fullscreen_window.mm",
-      "cocoa/simple_message_box_bridge_views.mm",
       "cocoa/simple_message_box_cocoa.h",
       "cocoa/simple_message_box_cocoa.mm",
       "cocoa/single_web_contents_dialog_manager_cocoa.h",
@@ -1353,7 +1348,6 @@ jumbo_split_static_library("ui") {
       "media_router/presentation_receiver_window_controller.cc",
       "media_router/presentation_receiver_window_controller.h",
       "media_router/presentation_receiver_window_delegate.h",
-      "media_router/presentation_receiver_window_factory_mac.cc",
       "media_router/query_result_manager.cc",
       "media_router/query_result_manager.h",
       "media_router/ui_media_sink.cc",
@@ -2250,12 +2244,16 @@ jumbo_split_static_library("ui") {
       "views/close_bubble_on_tab_activation_helper.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
+      "views/profiles/avatar_button.cc",
+      "views/profiles/avatar_button.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
       "views/profiles/dice_accounts_menu.cc",
       "views/profiles/dice_accounts_menu.h",
       "views/profiles/profile_chooser_view.cc",
       "views/profiles/profile_chooser_view.h",
+      "views/profiles/user_manager_view.cc",
+      "views/profiles/user_manager_view.h",
       "webui/app_launcher_page_ui.cc",
       "webui/app_launcher_page_ui.h",
       "webui/profile_helper.cc",
@@ -2295,15 +2293,6 @@ jumbo_split_static_library("ui") {
       "webui/welcome_ui.cc",
       "webui/welcome_ui.h",
     ]
-
-    if (!is_mac || mac_views_browser) {
-      sources += [
-        "views/profiles/avatar_button.cc",
-        "views/profiles/avatar_button.h",
-        "views/profiles/user_manager_view.cc",
-        "views/profiles/user_manager_view.h",
-      ]
-    }
 
     if (enable_dice_support) {
       sources += [
@@ -2488,6 +2477,21 @@ jumbo_split_static_library("ui") {
       # manage_passwords_decoration.mm
       "passwords/manage_passwords_icon.cc",
       "passwords/manage_passwords_icon.h",
+      "views/apps/chrome_app_window_client_views_mac.mm",
+      "views/certificate_viewer_mac_views.mm",
+      "views/dropdown_bar_host_mac.mm",
+      "views/frame/browser_frame_mac.h",
+      "views/frame/browser_frame_mac.mm",
+      "views/frame/browser_native_widget_window_mac.h",
+      "views/frame/browser_native_widget_window_mac.mm",
+      "views/frame/browser_non_client_frame_view_factory_mac.mm",
+      "views/frame/browser_non_client_frame_view_mac.h",
+      "views/frame/browser_non_client_frame_view_mac.mm",
+      "views/frame/native_browser_frame_factory_mac.mm",
+      "views/infobars/legacy_infobars_mac.cc",
+      "views/tab_contents/chrome_web_contents_view_delegate_views_mac.h",
+      "views/tab_contents/chrome_web_contents_view_delegate_views_mac.mm",
+      "views/tabs/window_finder_mac.mm",
       "web_contents_sizer.mm",
       "webui/help/version_updater_mac.h",
       "webui/help/version_updater_mac.mm",
@@ -2502,6 +2506,7 @@ jumbo_split_static_library("ui") {
     deps += [
       "//chrome/app/nibs:localizer_table",
       "//chrome/browser/apps/app_shim",
+      "//extensions/components/native_app_window",
       "//third_party/google_toolbox_for_mac",
       "//third_party/molokocacao",
       "//third_party/mozilla",
@@ -2512,41 +2517,6 @@ jumbo_split_static_library("ui") {
       "Carbon.framework",
       "Quartz.framework",
     ]
-
-    if (mac_views_browser) {
-      # MacViews sources that we still want to keep behind a compile-time flag.
-      # TODO(jackhou): Move items to general views sources out of here.
-      sources += [
-        "views/apps/chrome_app_window_client_views_mac.mm",
-        "views/certificate_viewer_mac_views.mm",
-        "views/dropdown_bar_host_mac.mm",
-        "views/frame/browser_frame_mac.h",
-        "views/frame/browser_frame_mac.mm",
-        "views/frame/browser_native_widget_window_mac.h",
-        "views/frame/browser_native_widget_window_mac.mm",
-        "views/frame/browser_non_client_frame_view_factory_mac.mm",
-        "views/frame/browser_non_client_frame_view_mac.h",
-        "views/frame/browser_non_client_frame_view_mac.mm",
-        "views/frame/native_browser_frame_factory_mac.mm",
-        "views/infobars/legacy_infobars_mac.cc",
-        "views/tab_contents/chrome_web_contents_view_delegate_views_mac.h",
-        "views/tab_contents/chrome_web_contents_view_delegate_views_mac.mm",
-        "views/tabs/window_finder_mac.mm",
-      ]
-
-      deps += [ "//extensions/components/native_app_window" ]
-
-      # Truly cocoa-browser-specific sources. These are secondary UI pieces that
-      # are obsolete before mac_views_browser will ever ship, so they aren't
-      # linked in at all.
-      sources -= [
-        "cocoa/constrained_web_dialog_delegate_mac.mm",
-        "cocoa/importer/import_lock_dialog_cocoa.mm",
-        "cocoa/login_handler_cocoa.h",
-        "cocoa/login_handler_cocoa.mm",
-        "cocoa/simple_message_box_bridge_views.mm",
-      ]
-    }
   } else {  # non-Mac.
     sources += [ "web_contents_sizer.cc" ]
   }
@@ -3341,14 +3311,8 @@ jumbo_split_static_library("ui") {
       deps += [ "//ui/views:features" ]
 
       if (is_mac) {
-        # This Mac-specific file is being removed in this case because it's only
-        # needed when Views isn't used on Mac.
-        sources -=
-            [ "media_router/presentation_receiver_window_factory_mac.cc" ]
-
         # This source file is compiled out on Mac because there is a
-        # Mac-specific implementation of it that works on mac_views_browser
-        # builds as well:
+        # Mac-specific implementation of it.
         sources -= [ "views/permission_bubble/permission_prompt_impl_views.cc" ]
       }
 
@@ -3855,10 +3819,22 @@ jumbo_split_static_library("ui") {
       "extensions/installation_error_infobar_delegate.h",
       "extensions/settings_api_bubble_helpers.cc",
       "extensions/settings_api_bubble_helpers.h",
+      "views/extensions/browser_action_drag_data.cc",
+      "views/extensions/browser_action_drag_data.h",
+      "views/extensions/extension_action_platform_delegate_views.cc",
+      "views/extensions/extension_action_platform_delegate_views.h",
+      "views/extensions/extension_dialog.cc",
+      "views/extensions/extension_dialog.h",
+      "views/extensions/extension_dialog_observer.cc",
+      "views/extensions/extension_dialog_observer.h",
       "views/extensions/extension_popup.cc",
       "views/extensions/extension_popup.h",
       "views/extensions/extension_view_views.cc",
       "views/extensions/extension_view_views.h",
+      "views/extensions/media_galleries_dialog_views.cc",
+      "views/extensions/media_galleries_dialog_views.h",
+      "views/extensions/media_gallery_checkbox_view.cc",
+      "views/extensions/media_gallery_checkbox_view.h",
       "webui/extensions/extension_basic_info.cc",
       "webui/extensions/extension_basic_info.h",
       "webui/extensions/extension_icon_source.cc",
@@ -3867,22 +3843,6 @@ jumbo_split_static_library("ui") {
 
     if (!is_mac) {
       deps += [ "//apps/ui/views" ]
-    }
-    if (!is_mac || mac_views_browser) {
-      sources += [
-        "views/extensions/browser_action_drag_data.cc",
-        "views/extensions/browser_action_drag_data.h",
-        "views/extensions/extension_action_platform_delegate_views.cc",
-        "views/extensions/extension_action_platform_delegate_views.h",
-        "views/extensions/extension_dialog.cc",
-        "views/extensions/extension_dialog.h",
-        "views/extensions/extension_dialog_observer.cc",
-        "views/extensions/extension_dialog_observer.h",
-        "views/extensions/media_galleries_dialog_views.cc",
-        "views/extensions/media_galleries_dialog_views.h",
-        "views/extensions/media_gallery_checkbox_view.cc",
-        "views/extensions/media_gallery_checkbox_view.h",
-      ]
     }
     if (use_aura) {
       sources += [
@@ -4089,8 +4049,10 @@ static_library("test_support") {
       "../../test/views/scoped_macviews_browser_mode.cc",
       "../../test/views/scoped_macviews_browser_mode.h",
       "extensions/browser_action_test_util.h",
+      "views/find_bar_host_unittest_util_views.cc",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
+      "views/toolbar/browser_action_test_util_views.cc",
       "views/toolbar/browser_action_test_util_views_mac.mm",
       "views/webauthn/authenticator_request_dialog_view_test_api.cc",
       "views/webauthn/authenticator_request_dialog_view_test_api.h",
@@ -4099,12 +4061,6 @@ static_library("test_support") {
       sources += [
         "cocoa/extensions/browser_action_test_util_views_cocoa.mm",
         "cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm",
-      ]
-    }
-    if (!is_mac || mac_views_browser) {
-      sources += [
-        "views/find_bar_host_unittest_util_views.cc",
-        "views/toolbar/browser_action_test_util_views.cc",
       ]
     }
     if (use_aura) {
