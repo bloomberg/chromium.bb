@@ -44,11 +44,6 @@ namespace content {
 
 namespace {
 
-#if defined(ANDROID)
-const int kAudioProcessingSampleRate = 16000;
-#else
-const int kAudioProcessingSampleRate = 48000;
-#endif
 const int kAudioProcessingNumberOfChannel = 1;
 
 // The number of packers used for testing.

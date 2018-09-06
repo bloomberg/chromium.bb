@@ -665,19 +665,13 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   DCHECK(input_format.IsValid());
   input_format_ = input_format;
 
-  // TODO(ajm): For now, we assume fixed parameters for the output when audio
-  // processing is enabled, to match the previous behavior. We should either
-  // use the input parameters (in which case, audio processing will convert
-  // at output) or ideally, have a backchannel from the sink to know what
-  // format it would prefer.
-#if defined(OS_ANDROID)
-  int audio_processing_sample_rate = AudioProcessing::kSampleRate16kHz;
-#else
-  int audio_processing_sample_rate = AudioProcessing::kSampleRate48kHz;
-#endif
-  const int output_sample_rate = audio_processing_ ?
-                                 audio_processing_sample_rate :
-                                 input_format.sample_rate();
+  // TODO(crbug/881275): For now, we assume fixed parameters for the output when
+  // audio processing is enabled, to match the previous behavior. We should
+  // either use the input parameters (in which case, audio processing will
+  // convert at output) or ideally, have a backchannel from the sink to know
+  // what format it would prefer.
+  const int output_sample_rate = audio_processing_ ? kAudioProcessingSampleRate
+                                                   : input_format.sample_rate();
   media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
       input_format.channel_layout();
