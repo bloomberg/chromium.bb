@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 700 tests; 632 PASS, 68 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 701 tests; 633 PASS, 68 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -652,6 +652,7 @@ PASS transform: rotateY
 PASS transform: non-invertible matrices
 FAIL transform: non-invertible matrices in matched transform lists assert_approx_equals: expected matrix(0,-1,1,0,250,0) but got matrix(0.705995, -0.708217, 0.708217, 0.705995, 274.95, 0): The value should be matrix(0,-1,1,0,250,0) at 499ms but got matrix(0.705995, -0.708217, 0.708217, 0.705995, 274.95, 0) expected 0 +/- 0.0001 but got 0.705995
 PASS transform: non-invertible matrices in mismatched transform lists
+PASS transform: perspective
 PASS transform-box (type: discrete) has testInterpolation function
 FAIL transform-box uses discrete animation when animating between "fill-box" and "border-box" with linear easing assert_equals: The value should be border-box at 500ms expected "border-box" but got "view-box"
 FAIL transform-box uses discrete animation when animating between "fill-box" and "border-box" with effect easing assert_equals: The value should be border-box at 960ms expected "border-box" but got "view-box"
