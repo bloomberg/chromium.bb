@@ -110,7 +110,7 @@ class ToolbarButtonSlotData {
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
-                    if (mDrawable == null) imageButton.setEnabled(false);
+                    imageButton.setEnabled(mDrawable != null);
                     imageButton.setOnClickListener(mOnClickListener);
                 }
             });
