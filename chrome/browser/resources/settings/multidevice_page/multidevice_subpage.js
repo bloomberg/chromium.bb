@@ -56,17 +56,9 @@ Polymer({
     },
   },
 
-  /** @private {?settings.MultiDeviceBrowserProxy} */
-  browserProxy_: null,
-
-  /** @override */
-  created: function() {
-    this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
-  },
-
   /** @private */
   handleAndroidMessagesButtonClick_: function() {
-    this.browserProxy_.setUpAndroidSms();
+    this.androidMessagesRequiresSetup_ = false;
   },
 
   listeners: {

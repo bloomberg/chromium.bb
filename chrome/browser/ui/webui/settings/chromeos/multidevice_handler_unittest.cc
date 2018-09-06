@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "content/public/test/test_web_ui.h"
@@ -22,11 +21,8 @@ namespace {
 class TestMultideviceHandler : public MultideviceHandler {
  public:
   TestMultideviceHandler(
-      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-          android_sms_app_helper)
-      : MultideviceHandler(multidevice_setup_client,
-                           std::move(android_sms_app_helper)) {}
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
+      : MultideviceHandler(multidevice_setup_client) {}
   ~TestMultideviceHandler() override = default;
 
   // Make public for testing.
@@ -111,14 +107,9 @@ class MultideviceHandlerTest : public testing::Test {
 
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
-    auto fake_android_sms_app_helper_delegate =
-        std::make_unique<multidevice_setup::FakeAndroidSmsAppHelperDelegate>();
-    fake_android_sms_app_helper_delegate_ =
-        fake_android_sms_app_helper_delegate.get();
 
     handler_ = std::make_unique<TestMultideviceHandler>(
-        fake_multidevice_setup_client_.get(),
-        std::move(fake_android_sms_app_helper_delegate));
+        fake_multidevice_setup_client_.get());
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascript();
@@ -193,11 +184,6 @@ class MultideviceHandlerTest : public testing::Test {
         success);
   }
 
-  void CallSetUpAndroidSms() {
-    base::ListValue empty_args;
-    test_web_ui()->HandleReceivedMessage("setUpAndroidSms", &empty_args);
-  }
-
   void CallSetFeatureEnabledState(multidevice_setup::mojom::Feature feature,
                                   bool enabled,
                                   const base::Optional<std::string>& auth_token,
@@ -239,11 +225,6 @@ class MultideviceHandlerTest : public testing::Test {
     return fake_multidevice_setup_client_.get();
   }
 
-  multidevice_setup::FakeAndroidSmsAppHelperDelegate*
-  fake_android_sms_app_helper_delegate() {
-    return fake_android_sms_app_helper_delegate_;
-  }
-
   const cryptauth::RemoteDeviceRef test_device_;
 
  private:
@@ -263,8 +244,6 @@ class MultideviceHandlerTest : public testing::Test {
       host_status_with_device_;
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
       feature_states_map_;
-  multidevice_setup::FakeAndroidSmsAppHelperDelegate*
-      fake_android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);
 };
@@ -299,12 +278,6 @@ TEST_F(MultideviceHandlerTest, PageContentData) {
 TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
   CallRetryPendingHostSetup(true /* success */);
   CallRetryPendingHostSetup(false /* success */);
-}
-
-TEST_F(MultideviceHandlerTest, SetUpAndroidSms) {
-  EXPECT_FALSE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
-  CallSetUpAndroidSms();
-  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasLaunchedApp());
 }
 
 TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {

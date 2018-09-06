@@ -24,12 +24,6 @@ cr.define('settings', function() {
     removeHostDevice() {}
 
     retryPendingHostSetup() {}
-
-    /**
-     * Called when the "Set Up" button is clicked to open the Android Messages
-     * PWA.
-     */
-    setUpAndroidSms() {}
   }
 
   /**
@@ -60,11 +54,6 @@ cr.define('settings', function() {
     /** @override */
     retryPendingHostSetup() {
       chrome.send('retryPendingHostSetup');
-    }
-
-    /** @override */
-    setUpAndroidSms() {
-      chrome.send('setUpAndroidSms');
     }
   }
 

@@ -77,7 +77,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
@@ -227,10 +226,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
-                GetForProfile(profile),
-            std::make_unique<
-                chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(
-                profile)));
+                GetForProfile(profile)));
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::PointerHandler>());

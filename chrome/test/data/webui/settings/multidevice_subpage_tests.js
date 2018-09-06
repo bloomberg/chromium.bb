@@ -2,25 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @implements {settings.MultideviceBrowserProxy}
- */
-class TestMultideviceBrowserProxy extends TestBrowserProxy {
-  constructor() {
-    super([
-      'setUpAndroidSms',
-    ]);
-  }
-
-  /** @override */
-  setUpAndroidSms() {
-    this.methodCalled('setUpAndroidSms');
-  }
-}
-
 suite('Multidevice', function() {
   let multideviceSubpage = null;
-  let browserProxy = null;
   // Although HOST_SET_MODES is effectively a constant, it cannot reference the
   // enum settings.MultiDeviceSettingsMode from here so its initialization is
   // deferred to the suiteSetup function.
@@ -77,10 +60,6 @@ suite('Multidevice', function() {
   });
 
   setup(function() {
-    browserProxy = new TestMultideviceBrowserProxy();
-    settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
-
-    PolymerTest.clearBody();
     multideviceSubpage = document.createElement('settings-multidevice-subpage');
     multideviceSubpage.pageContentData = {hostDeviceName: 'Pixel XL'};
     setMode(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
@@ -154,20 +133,4 @@ suite('Multidevice', function() {
 
     assertFalse(!!multideviceSubpage.$$(controllerSelector));
   });
-
-  test(
-      'AndroidMessages set up button calls browser proxy function', function() {
-        const messagesItem = multideviceSubpage.$$('#messagesItem');
-
-        multideviceSubpage.androidMessagesRequiresSetup_ = true;
-        Polymer.dom.flush();
-
-        const setUpButton =
-            multideviceSubpage.$$('#messagesItem > [slot=feature-controller]');
-        assertTrue(!!setUpButton);
-
-        setUpButton.click();
-
-        return browserProxy.whenCalled('setUpAndroidSms');
-      });
 });
