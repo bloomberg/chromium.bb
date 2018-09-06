@@ -63,9 +63,6 @@ class AdvancedProtectionStatusManager : public KeyedService,
 
   bool IsRefreshScheduled();
 
-  // If primary user of this profile is signed in.
-  bool IsUserSignedIn();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            NotSignedInOnStartUp);
@@ -82,6 +79,8 @@ class AdvancedProtectionStatusManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            SignInAndSignOutEvent);
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest, AccountRemoval);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           StayInAdvancedProtection);
 
   void Initialize();
 
@@ -130,6 +129,10 @@ class AdvancedProtectionStatusManager : public KeyedService,
   // Only called in tests.
   void SetMinimumRefreshDelay(const base::TimeDelta& delay);
 
+  // Gets the account ID of the primary account of |profile_|.
+  // Returns an empty string if user is not signed in.
+  std::string GetPrimaryAccountId() const;
+
   // Only called in tests to set a customized minimum delay.
   AdvancedProtectionStatusManager(Profile* profile,
                                   const base::TimeDelta& min_delay);
@@ -141,10 +144,6 @@ class AdvancedProtectionStatusManager : public KeyedService,
 
   // Is the profile account under advanced protection.
   bool is_under_advanced_protection_;
-
-  // Account ID of the primary account of |profile_|. If this profile is not
-  // signed in, this field will be empty.
-  std::string primary_account_id_;
 
   std::unique_ptr<AdvancedProtectionTokenConsumer> token_consumer_;
 

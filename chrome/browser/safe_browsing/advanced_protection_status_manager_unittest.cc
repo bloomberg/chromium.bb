@@ -47,7 +47,6 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
 
   ~AdvancedProtectionStatusManagerTest() override {}
 
-#if !defined(OS_CHROMEOS)
   std::string SignIn(const std::string& gaia_id,
                      const std::string& email,
                      bool is_under_advanced_protection) {
@@ -57,11 +56,14 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
     account_info.is_under_advanced_protection = is_under_advanced_protection;
     std::string account_id =
         account_tracker_service_->SeedAccountInfo(account_info);
+#if defined(OS_CHROMEOS)
+    fake_signin_manager_->SignIn(account_id);
+#else
     fake_signin_manager_->SignIn(gaia_id, email, "password");
+#endif
     GetTokenService()->UpdateCredentials(account_id, "refresh_token");
     return account_id;
   }
-#endif
 
   FakeProfileOAuth2TokenService* GetTokenService() {
     ProfileOAuth2TokenService* service =
@@ -104,13 +106,12 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
 
 }  // namespace
 
-#if !defined(OS_CHROMEOS)
 TEST_F(AdvancedProtectionStatusManagerTest, NotSignedInOnStartUp) {
   ASSERT_FALSE(testing_profile_->GetPrefs()->HasPrefPath(
       prefs::kAdvancedProtectionLastRefreshInUs));
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
-  ASSERT_FALSE(aps_manager.IsUserSignedIn());
+  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
 
   // If user's not signed-in. No refresh is required.
   EXPECT_FALSE(aps_manager.is_under_advanced_protection());
@@ -132,7 +133,7 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(aps_manager.IsUserSignedIn());
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
 
   // An OAuth2 access token request should be sent.
   ASSERT_TRUE(IsRequestActive());
@@ -158,7 +159,7 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(aps_manager.IsUserSignedIn());
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
 
   // An OAuth2 access token request should be sent.
   ASSERT_TRUE(IsRequestActive());
@@ -183,7 +184,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignedInLongTimeAgoNotUnderAP) {
       SignIn("gaia_id", "email", /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
-  ASSERT_TRUE(aps_manager.IsUserSignedIn());
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
   base::RunLoop().RunUntilIdle();
   // An OAuth2 access token request should be sent.
   ASSERT_TRUE(IsRequestActive());
@@ -230,7 +231,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndUnderAP) {
       SignIn("gaia_id", "email", /* is_under_advanced_protection = */ true);
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
-  ASSERT_TRUE(aps_manager.IsUserSignedIn());
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
   ASSERT_TRUE(aps_manager.is_under_advanced_protection());
 
   // Since user is already under advanced protection, no need to refresh.
@@ -240,11 +241,37 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndUnderAP) {
   aps_manager.UnsubscribeFromSigninEvents();
 }
 
+TEST_F(AdvancedProtectionStatusManagerTest, StayInAdvancedProtection) {
+  base::Time last_update = base::Time::Now();
+  testing_profile_->GetPrefs()->SetInt64(
+      prefs::kAdvancedProtectionLastRefreshInUs,
+      last_update.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  std::string account_id =
+      SignIn("gaia_id", "email", /* is_under_advanced_protection = */ true);
+  AdvancedProtectionStatusManager aps_manager(
+      testing_profile_.get(), base::TimeDelta() /*no min delay*/);
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_TRUE(aps_manager.is_under_advanced_protection());
+
+  // Simulate gets refresh token.
+  aps_manager.OnGetIDToken(account_id, kIdTokenAdvancedProtectionEnabled);
+  EXPECT_GT(
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
+          testing_profile_->GetPrefs()->GetInt64(
+              prefs::kAdvancedProtectionLastRefreshInUs))),
+      last_update);
+  EXPECT_TRUE(aps_manager.IsRefreshScheduled());
+  aps_manager.UnsubscribeFromSigninEvents();
+}
+
+#if !defined(OS_CHROMEOS)
+// Not applicable to Chrome OS.
 TEST_F(AdvancedProtectionStatusManagerTest, SignInAndSignOutEvent) {
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
   ASSERT_FALSE(aps_manager.is_under_advanced_protection());
-  ASSERT_FALSE(aps_manager.IsUserSignedIn());
+  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
 
   SignIn("gaia_id", "email", /* is_under_advanced_protection = */ true);
   EXPECT_TRUE(aps_manager.is_under_advanced_protection());
@@ -257,12 +284,13 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignInAndSignOutEvent) {
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
   aps_manager.UnsubscribeFromSigninEvents();
 }
+#endif
 
 TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   AdvancedProtectionStatusManager aps_manager(
       testing_profile_.get(), base::TimeDelta() /*no min delay*/);
   ASSERT_FALSE(aps_manager.is_under_advanced_protection());
-  ASSERT_FALSE(aps_manager.IsUserSignedIn());
+  ASSERT_TRUE(aps_manager.GetPrimaryAccountId().empty());
 
   std::string account_id =
       SignIn("gaia_id", "email", /* is_under_advanced_protection = */ false);
@@ -282,5 +310,5 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
   aps_manager.UnsubscribeFromSigninEvents();
 }
-#endif
+
 }  // namespace safe_browsing
