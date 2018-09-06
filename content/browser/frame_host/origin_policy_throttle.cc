@@ -37,7 +37,12 @@ bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
     const GURL& url,
     std::string* request_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
+
+  bool origin_policy_enabled =
+      base::FeatureList::IsEnabled(features::kOriginPolicy) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+  if (!origin_policy_enabled)
     return false;
 
   if (!url.SchemeIs(url::kHttpsScheme))
@@ -64,7 +69,11 @@ OriginPolicyThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
           net::HttpRequestHeaders::kSecOriginPolicy))
     return nullptr;
 
-  DCHECK(base::FeatureList::IsEnabled(features::kOriginPolicy));
+  // TODO(vogelheim): Rewrite & hoist up this DCHECK to ensure that ..HasHeader
+  //     and ShouldRequestOriginPolicy are always equal on entry to the method.
+  //     This depends on https://crbug.com/881234 being fixed.
+  DCHECK(OriginPolicyThrottle::ShouldRequestOriginPolicy(handle->GetURL(),
+                                                         nullptr));
   return base::WrapUnique(new OriginPolicyThrottle(handle));
 }
 
