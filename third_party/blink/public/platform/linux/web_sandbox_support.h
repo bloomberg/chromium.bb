@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_SANDBOX_SUPPORT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_SANDBOX_SUPPORT_H_
 
-#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -52,11 +52,11 @@ class WebSandboxSupport {
   //   preferredLocale: preferred locale identifier for the |characters|
   //                    (e.g. "en", "ja", "zh-CN")
   //
-  // Returns a WebFallbackFont instance with the font name and filename.
+  // Returns a OutOfProcessFont instance with the font name and filename.
   // The instance has empty font name if the request cannot be satisfied.
   virtual void GetFallbackFontForCharacter(WebUChar32,
                                            const char* preferred_locale,
-                                           WebFallbackFont*) = 0;
+                                           OutOfProcessFont*) = 0;
 
   // Fill out the given WebFontRenderStyle with the user's preferences for
   // rendering the given font at the given size (in pixels), given weight and

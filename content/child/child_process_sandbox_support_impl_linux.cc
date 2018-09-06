@@ -21,7 +21,7 @@
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
-#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -31,7 +31,7 @@ namespace content {
 void GetFallbackFontForCharacter(sk_sp<font_service::FontLoader> font_loader,
                                  int32_t character,
                                  const char* preferred_locale,
-                                 blink::WebFallbackFont* fallback_font) {
+                                 blink::OutOfProcessFont* fallback_font) {
   DCHECK(font_loader.get());
   font_service::mojom::FontIdentityPtr font_identity;
   bool is_bold = false;
@@ -44,7 +44,7 @@ void GetFallbackFontForCharacter(sk_sp<font_service::FontLoader> font_loader,
     return;
   }
 
-  // TODO(drott): Perhaps take WebFallbackFont out of the picture here and pass
+  // TODO(drott): Perhaps take OutOfProcessFont out of the picture here and pass
   // mojo FontIdentityPtr directly?
   fallback_font->name =
       blink::WebString::FromUTF8(family_name.c_str(), family_name.length());
