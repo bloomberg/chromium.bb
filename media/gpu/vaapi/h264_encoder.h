@@ -102,7 +102,6 @@ class H264Encoder : public AcceleratedVideoEncoder {
   bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;
-  size_t GetBitstreamBufferSize() const override;
   size_t GetMaxNumOfRefFrames() const override;
   bool PrepareEncodeJob(EncodeJob* encode_job) override;
 
