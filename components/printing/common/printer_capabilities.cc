@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_keys.h"
@@ -40,7 +40,7 @@ std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(
     const std::string& device_name,
     scoped_refptr<PrintBackend> print_backend) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!device_name.empty());
   scoped_refptr<PrintBackend> backend =
       print_backend ? print_backend
@@ -113,7 +113,7 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     scoped_refptr<PrintBackend> print_backend) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   const auto printer_name_description =
       GetPrinterNameAndDescription(basic_info);
