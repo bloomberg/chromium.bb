@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
@@ -24,7 +25,6 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,6 +36,7 @@ namespace {
 using autofill::FillingStatus;
 using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
+using autofill::password_generation::PasswordGenerationUserEvent;
 using base::ASCIIToUTF16;
 using base::UTF16ToWide;
 using testing::_;
@@ -43,6 +44,7 @@ using testing::AnyNumber;
 using testing::ByMove;
 using testing::ElementsAre;
 using testing::Mock;
+using testing::NiceMock;
 using testing::NotNull;
 using testing::PrintToString;
 using testing::Return;
@@ -260,6 +262,15 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
     EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(AnyNumber());
+
+    // Mock objects needed by password generation
+    mock_password_manager_driver_ =
+        std::make_unique<NiceMock<MockPasswordManagerDriver>>();
+    mock_generation_manager_ =
+        std::make_unique<NiceMock<MockPasswordGenerationManager>>(
+            nullptr, mock_password_manager_driver_.get());
+    mock_dialog_ =
+        std::make_unique<NiceMock<MockPasswordGenerationDialogView>>();
   }
 
   PasswordAccessoryController* controller() {
@@ -279,12 +290,43 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_favicon_service_.get();
   }
 
+ protected:
+  // Sets up mocks needed by the generation flow and signals the
+  // |PasswordAccessoryController| that generation is available.
+  void InitializeGeneration(const base::string16& password);
+
+  std::unique_ptr<NiceMock<MockPasswordManagerDriver>>
+      mock_password_manager_driver_;
+  std::unique_ptr<NiceMock<MockPasswordGenerationManager>>
+      mock_generation_manager_;
+  std::unique_ptr<NiceMock<MockPasswordGenerationDialogView>> mock_dialog_;
+  base::HistogramTester histogram_tester_;
+
  private:
-  base::MockCallback<PasswordAccessoryController::CreateDialogFactory>
+  NiceMock<base::MockCallback<PasswordAccessoryController::CreateDialogFactory>>
       mock_dialog_factory_;
   std::unique_ptr<testing::StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_;
 };
+
+void PasswordAccessoryControllerTest::InitializeGeneration(
+    const base::string16& password) {
+  ON_CALL(*(mock_password_manager_driver_.get()),
+          GetPasswordGenerationManager())
+      .WillByDefault(Return(mock_generation_manager_.get()));
+
+  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
+
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, GetTestGenerationUIData1(),
+      mock_password_manager_driver_->AsWeakPtr());
+
+  ON_CALL(*(mock_generation_manager_.get()), GeneratePassword(_, _, _, _, _))
+      .WillByDefault(Return(password));
+
+  ON_CALL(mock_dialog_factory(), Run)
+      .WillByDefault(Return(ByMove(std::move(mock_dialog_))));
+}
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
   PasswordAccessoryController* initial_controller =
@@ -446,18 +488,14 @@ TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
 // are updated.
 TEST_F(PasswordAccessoryControllerTest,
        UpdatesSignaturesForDifferentGenerationForms) {
-  MockPasswordManagerDriver mock_driver;
-  password_manager::StubPasswordManagerClient stub_client;
-  MockPasswordGenerationManager mock_generation_manager(&stub_client,
-                                                        &mock_driver);
-
   // Called twice for different forms.
   EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true)).Times(2);
   controller()->OnAutomaticGenerationStatusChanged(
-      true, GetTestGenerationUIData1(), (&mock_driver)->AsWeakPtr());
+      true, GetTestGenerationUIData1(),
+      mock_password_manager_driver_->AsWeakPtr());
   PasswordGenerationUIData new_ui_data = GetTestGenerationUIData2();
-  controller()->OnAutomaticGenerationStatusChanged(true, new_ui_data,
-                                                   (&mock_driver)->AsWeakPtr());
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, new_ui_data, mock_password_manager_driver_->AsWeakPtr());
 
   autofill::FormSignature form_signature =
       autofill::CalculateFormSignature(new_ui_data.password_form.form_data);
@@ -465,16 +503,15 @@ TEST_F(PasswordAccessoryControllerTest,
       autofill::CalculateFieldSignatureByNameAndType(
           new_ui_data.generation_element, "password");
 
-  std::unique_ptr<MockPasswordGenerationDialogView> dialog_view =
-      std::make_unique<MockPasswordGenerationDialogView>();
-  MockPasswordGenerationDialogView* raw_dialog_view = dialog_view.get();
+  MockPasswordGenerationDialogView* raw_dialog_view = mock_dialog_.get();
 
   base::string16 generated_password = ASCIIToUTF16("t3stp@ssw0rd");
   EXPECT_CALL(mock_dialog_factory(), Run)
-      .WillOnce(Return(ByMove(std::move(dialog_view))));
-  EXPECT_CALL(mock_driver, GetPasswordGenerationManager())
-      .WillOnce(Return(&mock_generation_manager));
-  EXPECT_CALL(mock_generation_manager,
+      .WillOnce(Return(ByMove(std::move(mock_dialog_))));
+  EXPECT_CALL(*(mock_password_manager_driver_.get()),
+              GetPasswordGenerationManager())
+      .WillOnce(Return(mock_generation_manager_.get()));
+  EXPECT_CALL(*(mock_generation_manager_.get()),
               GeneratePassword(_, form_signature, field_signature,
                                uint32_t(new_ui_data.max_length), _))
       .WillOnce(Return(generated_password));
@@ -720,4 +757,75 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
       url::Origin::Create(GURL("https://other.frame.com/")), true, false);
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordAccepted, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordEdited) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+  controller()->MaybeGeneratedPasswordChanged(test_password);
+
+  // Since MaybeGeneratedPasswordChanged was called with the same password
+  // the histogram should not record an edit operation.
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 0);
+
+  controller()->MaybeGeneratedPasswordChanged(
+      ASCIIToUTF16("changed_t3stp@ssw0rd"));
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 1);
+
+  // Since the edit operation should only be logged once per lifetime
+  // of the generated password, check that changing the password again doesn't
+  // record editing again.
+  controller()->MaybeGeneratedPasswordChanged(
+      ASCIIToUTF16("changed_t3stp@ssw0rd_again"));
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordDeleted) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+  controller()->GeneratedPasswordDeleted();
+
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordDeleted, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordRejected) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordRejected();
+
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordRejectedInDialog, 1);
 }
