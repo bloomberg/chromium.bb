@@ -70,6 +70,12 @@ const int kMaxFetcherRetries = 8;
 // accounts have changed in the content-area.
 const char* const kGaiaCookieName = "APISID";
 
+// Records metrics for ListAccounts failures.
+void RecordListAccountsFailure(GoogleServiceAuthError::State error_state) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsFailure", error_state,
+                            GoogleServiceAuthError::NUM_STATES);
+}
+
 }  // namespace
 
 GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
@@ -818,6 +824,8 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
     return;
   }
 
+  RecordListAccountsFailure(GoogleServiceAuthError::NONE);
+
   for (gaia::ListedAccount& account : listed_accounts_) {
     DCHECK(account.id.empty());
     account.id = AccountTrackerService::PickAccountIdForAccount(
@@ -855,8 +863,7 @@ void GaiaCookieManagerService::OnListAccountsFailure(
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsFailure",
-      error.state(), GoogleServiceAuthError::NUM_STATES);
+  RecordListAccountsFailure(error.state());
   for (auto& observer : observer_list_) {
     observer.OnGaiaAccountsInCookieUpdated(listed_accounts_,
                                            signed_out_accounts_, error);
