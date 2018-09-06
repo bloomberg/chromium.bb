@@ -29,8 +29,8 @@ class ConversionContext {
                     cc::DisplayItemList& cc_list)
       : layer_state_(layer_state),
         layer_offset_(layer_offset),
-        current_transform_(layer_state.Transform()),
-        current_clip_(layer_state.Clip()),
+        current_transform_(layer_state.Transform()->Unalias()),
+        current_clip_(layer_state.Clip()->Unalias()),
         current_effect_(layer_state.Effect()),
         chunk_to_layer_mapper_(layer_state_,
                                layer_offset_,
@@ -311,12 +311,13 @@ static bool CombineClip(const ClipPaintPropertyNode* clip,
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
+  target_clip = target_clip->Unalias();
   if (target_clip == current_clip_)
     return;
 
   // Step 1: Exit all clips until the lowest common ancestor is found.
   const ClipPaintPropertyNode* lca_clip =
-      &LowestCommonAncestor(*target_clip, *current_clip_);
+      LowestCommonAncestor(*target_clip, *current_clip_).Unalias();
   while (current_clip_ != lca_clip) {
 #if DCHECK_IS_ON()
     DCHECK(state_stack_.size() && state_stack_.back().type == StateEntry::kClip)
@@ -327,7 +328,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
 #endif
     if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip)
       break;
-    current_clip_ = current_clip_->Parent();
+    current_clip_ = current_clip_->Parent()->Unalias();
     StateEntry& previous_state = state_stack_.back();
     if (current_clip_ == lca_clip) {
       // |lca_clip| is an intermediate clip in a series of combined clips.
@@ -345,7 +346,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   // At this point the current clip must be an ancestor of the target.
   Vector<const ClipPaintPropertyNode*, 1u> pending_clips;
   for (const ClipPaintPropertyNode* clip = target_clip; clip != current_clip_;
-       clip = clip->Parent()) {
+       clip = clip->Parent()->Unalias()) {
     // This should never happen unless the DCHECK in step 1 failed.
     if (!clip)
       break;
@@ -377,6 +378,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
 void ConversionContext::StartClip(
     const FloatRoundedRect& combined_clip_rect,
     const ClipPaintPropertyNode* lowest_combined_clip_node) {
+  DCHECK_EQ(lowest_combined_clip_node, lowest_combined_clip_node->Unalias());
   auto* local_transform =
       lowest_combined_clip_node->LocalTransformSpace()->Unalias();
   if (local_transform != current_transform_)
