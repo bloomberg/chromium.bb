@@ -85,8 +85,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   virtual void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
-  void SetPreviewsDecider(previews::PreviewsDecider* previews_decider);
-
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
   std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
@@ -229,10 +227,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
     resource_type_provider_ = std::move(resource_type_provider);
   }
 
-  previews::PreviewsDecider* previews_decider() const {
-    return previews_decider_;
-  }
-
   // The production channel of this build.
   std::string channel() const { return channel_; }
 
@@ -318,10 +312,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Observes pageload events and records per host data use.
   std::unique_ptr<DataReductionProxyDataUseObserver> data_use_observer_;
-
-  // Previews IO data that is owned by Profile IO data. Deleted at the same time
-  // as |this|.
-  previews::PreviewsDecider* previews_decider_;
 
   // Whether the Data Reduction Proxy has been enabled or not by the user. In
   // practice, this can be overridden by the command line.
