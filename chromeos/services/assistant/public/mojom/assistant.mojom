@@ -161,6 +161,14 @@ interface DeviceActions {
 
   // Enables or disables Bluetooth.
   SetBluetoothEnabled(bool enabled);
+
+  // Gets the current screen brightness level (0-1.0).
+  // The level is set to 0 in the event of an error.
+  GetScreenBrightnessLevel() => (bool success, double level);
+
+  // Sets the screen brightness level (0-1.0).  If |gradual| is true, the
+  // transition will be animated.
+  SetScreenBrightnessLevel(double level, bool gradual);
 };
 
 // Enumeration of possible completions for an Assistant interaction.

@@ -156,6 +156,11 @@ class FakeDeviceActions : mojom::DeviceActions {
   // mojom::DeviceActions:
   void SetWifiEnabled(bool enabled) override {}
   void SetBluetoothEnabled(bool enabled) override {}
+  void GetScreenBrightnessLevel(
+      GetScreenBrightnessLevelCallback callback) override {
+    std::move(callback).Run(true, 1.0);
+  }
+  void SetScreenBrightnessLevel(double level, bool gradual) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 

@@ -46,12 +46,13 @@ namespace {
 constexpr char kWiFiDeviceSettingId[] = "WIFI";
 constexpr char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
+constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
 constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
 constexpr base::Feature kAssistantTimerNotificationFeature{
     "ChromeOSAssistantTimerNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
-constexpr float kDefaultVolumeStep = 0.1f;
+constexpr float kDefaultSliderStep = 0.1f;
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
@@ -489,43 +490,11 @@ void HandleOnOffChange(api::client_op::ModifySettingArgs modify_setting_args,
   LogUnsupportedChange(modify_setting_args);
 }
 
-void HandleValueChange(
-    api::client_op::ModifySettingArgs modify_setting_args,
-    std::function<void(double, api::client_op::ModifySettingArgs_Unit)>
-        set_value_handler,
-    std::function<void(bool, double, api::client_op::ModifySettingArgs_Unit)>
-        incr_decr_handler) {
-  switch (modify_setting_args.change()) {
-    case api::client_op::ModifySettingArgs_Change_SET:
-      set_value_handler(modify_setting_args.numeric_value(),
-                        modify_setting_args.unit());
-      return;
-
-    case api::client_op::ModifySettingArgs_Change_INCREASE:
-      incr_decr_handler(true, modify_setting_args.numeric_value(),
-                        modify_setting_args.unit());
-      return;
-
-    case api::client_op::ModifySettingArgs_Change_DECREASE:
-      incr_decr_handler(false, modify_setting_args.numeric_value(),
-                        modify_setting_args.unit());
-      return;
-
-    case api::client_op::ModifySettingArgs_Change_ON:
-    case api::client_op::ModifySettingArgs_Change_OFF:
-    case api::client_op::ModifySettingArgs_Change_TOGGLE:
-    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
-      // This shouldn't happen.
-      break;
-  }
-  LogUnsupportedChange(modify_setting_args);
-}
-
-// Helper function that converts a volume value sent from the server, either
+// Helper function that converts a slider value sent from the server, either
 // absolute or a delta, from a given unit (e.g., STEP), to a percentage.
-double ConvertVolumeValueToPercent(double value,
-                                   api::client_op::ModifySettingArgs_Unit unit,
-                                   double default_value) {
+double ConvertSliderValueToLevel(double value,
+                                 api::client_op::ModifySettingArgs_Unit unit,
+                                 double default_value) {
   switch (unit) {
     case api::client_op::ModifySettingArgs_Unit_RANGE:
       // "set volume to 20%".
@@ -545,8 +514,50 @@ double ConvertVolumeValueToPercent(double value,
       // This shouldn't happen.
       break;
   }
-  LOG(ERROR) << "Unsupported volume unit: " << unit;
+  LOG(ERROR) << "Unsupported slider unit: " << unit;
   return default_value;
+}
+
+void HandleSliderChange(api::client_op::ModifySettingArgs modify_setting_args,
+                        std::function<void(double)> set_value_handler,
+                        std::function<double()> get_value_handler) {
+  switch (modify_setting_args.change()) {
+    case api::client_op::ModifySettingArgs_Change_SET: {
+      // For unsupported units, set the value to the current value, for
+      // visual feedback.
+      double new_value = ConvertSliderValueToLevel(
+          modify_setting_args.numeric_value(), modify_setting_args.unit(),
+          get_value_handler());
+      set_value_handler(new_value);
+      return;
+    }
+
+    case api::client_op::ModifySettingArgs_Change_INCREASE:
+    case api::client_op::ModifySettingArgs_Change_DECREASE: {
+      double current_value = get_value_handler();
+      double step = kDefaultSliderStep;
+      if (modify_setting_args.numeric_value() != 0.0f) {
+        // For unsupported units, use the default step percentage.
+        step = ConvertSliderValueToLevel(modify_setting_args.numeric_value(),
+                                         modify_setting_args.unit(),
+                                         kDefaultSliderStep);
+      }
+      double new_value = (modify_setting_args.change() ==
+                          api::client_op::ModifySettingArgs_Change_INCREASE)
+                             ? std::min(current_value + step, 1.0)
+                             : std::max(current_value - step, 0.0);
+      set_value_handler(new_value);
+      return;
+    }
+
+    case api::client_op::ModifySettingArgs_Change_ON:
+    case api::client_op::ModifySettingArgs_Change_OFF:
+    case api::client_op::ModifySettingArgs_Change_TOGGLE:
+    case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
+      // This shouldn't happen.
+      break;
+  }
+  LogUnsupportedChange(modify_setting_args);
 }
 
 void AssistantManagerServiceImpl::OnModifySettingsAction(
@@ -556,13 +567,13 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
 
   if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [this](bool enabled) {
+    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
       this->service_->device_actions()->SetWifiEnabled(enabled);
     });
   }
 
   if (modify_setting_args.setting_id() == kBluetoothDeviceSettingId) {
-    HandleOnOffChange(modify_setting_args, [this](bool enabled) {
+    HandleOnOffChange(modify_setting_args, [&](bool enabled) {
       this->service_->device_actions()->SetBluetoothEnabled(enabled);
     });
   }
@@ -571,28 +582,30 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
     assistant_client::VolumeControl& volume_control =
         this->platform_api_->GetAudioOutputProvider().GetVolumeControl();
 
-    HandleValueChange(
+    HandleSliderChange(
         modify_setting_args,
-        [&volume_control](double value,
-                          api::client_op::ModifySettingArgs_Unit unit) {
-          // For unsupported units, set the volume to the current volume, for
-          // visual feedback.
-          float new_volume = ConvertVolumeValueToPercent(
-              value, unit, volume_control.GetSystemVolume());
-          volume_control.SetSystemVolume(new_volume, true);
-        },
-        [&volume_control](bool incr, double value,
-                          api::client_op::ModifySettingArgs_Unit unit) {
-          float volume = volume_control.GetSystemVolume();
-          float step = kDefaultVolumeStep;
-          if (value != 0.0f) {
-            // For unsupported units, use the default step percentage.
-            step = ConvertVolumeValueToPercent(value, unit, step);
+        [&](double value) { volume_control.SetSystemVolume(value, true); },
+        [&]() { return volume_control.GetSystemVolume(); });
+  }
+
+  if (modify_setting_args.setting_id() == kScreenBrightnessDeviceSettingId) {
+    this->service_->device_actions()->GetScreenBrightnessLevel(base::BindOnce(
+        [](base::WeakPtr<chromeos::assistant::AssistantManagerServiceImpl>
+               this_,
+           api::client_op::ModifySettingArgs modify_setting_args, bool success,
+           double current_value) {
+          if (!success || !this_) {
+            return;
           }
-          float new_volume = incr ? std::min(volume + step, 1.0f)
-                                  : std::max(volume - step, 0.0f);
-          volume_control.SetSystemVolume(new_volume, true);
-        });
+          HandleSliderChange(
+              modify_setting_args,
+              [&](double new_value) {
+                this_->service_->device_actions()->SetScreenBrightnessLevel(
+                    new_value, true);
+              },
+              [&]() { return current_value; });
+        },
+        weak_factory_.GetWeakPtr(), modify_setting_args));
   }
 }
 
@@ -611,7 +624,8 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
   DVLOG(2) << "IsSettingSupported=" << setting_id;
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId ||
-          setting_id == kVolumeLevelDeviceSettingId);
+          setting_id == kVolumeLevelDeviceSettingId ||
+          setting_id == kScreenBrightnessDeviceSettingId);
 }
 
 bool AssistantManagerServiceImpl::SupportsModifySettings() {
