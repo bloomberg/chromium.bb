@@ -4,6 +4,7 @@
 
 #include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -13,6 +14,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/metrics/uma_utils.h"
+#endif
 
 ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
     PrefService* pref_service)
@@ -83,7 +88,12 @@ void ChromeUnifiedConsentServiceClient::SetServiceEnabled(Service service,
       pref_service_->SetBoolean(prefs::kAlternateErrorPagesEnabled, enabled);
       break;
     case Service::kMetricsReporting:
+#if defined(OS_ANDROID)
+      // TODO(https://crbug.com/880936): Move inside ChangeMetricsReportingState
+      chrome::android::SetUsageAndCrashReporting(enabled);
+#else
       ChangeMetricsReportingState(enabled);
+#endif
       break;
     case Service::kNetworkPrediction:
       pref_service_->SetInteger(
