@@ -83,16 +83,12 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
       message.append("Start menu ");
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:
-      message.append("Start menu/" +
-                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
-                                     BrowserDistribution::SUBFOLDER_CHROME)) +
-                      " ");
+      NOTREACHED();
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
-      message.append("Start menu/" +
-                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
-                                     BrowserDistribution::SUBFOLDER_APPS)) +
-                     " ");
+      message.append(
+          "Start menu/" +
+          base::UTF16ToUTF8(InstallUtil::GetChromeAppsShortcutDirName()) + " ");
       break;
     default:
       NOTREACHED();

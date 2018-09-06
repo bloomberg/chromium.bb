@@ -34,7 +34,6 @@
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -70,11 +69,11 @@ void ValidateBrowserWindowProperties(
   EXPECT_EQ(S_OK, pps->GetValue(PKEY_AppUserModel_RelaunchDisplayNameResource,
                                 prop_var.Receive()));
   EXPECT_EQ(VT_LPWSTR, prop_var.get().vt);
-  EXPECT_EQ(
-      base::FilePath(profiles::internal::GetShortcutFilenameForProfile(
-          expected_profile_name,
-          BrowserDistribution::GetDistribution())).RemoveExtension().value(),
-      prop_var.get().pwszVal);
+  EXPECT_EQ(base::FilePath(profiles::internal::GetShortcutFilenameForProfile(
+                               expected_profile_name))
+                .RemoveExtension()
+                .value(),
+            prop_var.get().pwszVal);
   prop_var.Reset();
 
   // The relaunch command should specify the profile.

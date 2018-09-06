@@ -475,7 +475,7 @@ void GetShellIntegrationEntries(
   // resource rather than this.
   entries->push_back(std::make_unique<RegistryEntry>(
       capabilities, ShellUtil::kRegApplicationDescription,
-      dist->GetLongAppDescription()));
+      InstallUtil::GetLongAppDescription()));
   entries->push_back(std::make_unique<RegistryEntry>(
       capabilities, ShellUtil::kRegApplicationIcon, icon_path));
   entries->push_back(std::make_unique<RegistryEntry>(
@@ -1027,15 +1027,15 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(
 }
 
 // Returns |properties.shortcut_name| if the property is set, otherwise it
-// returns dist->GetShortcutName(). In any case, it makes sure the return value
-// is suffixed with ".lnk".
+// returns InstallUtil::GetShortcutName(). In any case, it makes sure the return
+// value is suffixed with ".lnk".
 base::string16 ExtractShortcutNameFromProperties(
     BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties) {
   DCHECK(dist);
   base::string16 shortcut_name = properties.has_shortcut_name()
                                      ? properties.shortcut_name
-                                     : dist->GetShortcutName();
+                                     : InstallUtil::GetShortcutName();
 
   if (!base::EndsWith(shortcut_name, installer::kLnkExt,
                       base::CompareCase::INSENSITIVE_ASCII))
@@ -1599,14 +1599,12 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
     case SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:
       dir_key = (level == CURRENT_USER) ? base::DIR_START_MENU :
                                           base::DIR_COMMON_START_MENU;
-      folder_to_append = dist->GetStartMenuShortcutSubfolder(
-          BrowserDistribution::SUBFOLDER_CHROME);
+      folder_to_append = InstallUtil::GetChromeShortcutDirNameDeprecated();
       break;
     case SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
       dir_key = (level == CURRENT_USER) ? base::DIR_START_MENU :
                                           base::DIR_COMMON_START_MENU;
-      folder_to_append = dist->GetStartMenuShortcutSubfolder(
-          BrowserDistribution::SUBFOLDER_APPS);
+      folder_to_append = InstallUtil::GetChromeAppsShortcutDirName();
       break;
     case SHORTCUT_LOCATION_TASKBAR_PINS:
       dir_key = base::DIR_TASKBAR_PINS;

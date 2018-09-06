@@ -11,17 +11,11 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/installer/util/util_constants.h"
 
 class AppRegistrationData;
 
 class BrowserDistribution {
  public:
-  enum Subfolder {
-    SUBFOLDER_CHROME,
-    SUBFOLDER_APPS,
-  };
-
   virtual ~BrowserDistribution();
 
   static BrowserDistribution* GetDistribution();
@@ -34,17 +28,6 @@ class BrowserDistribution {
 
   // Returns the localized display name of this distribution.
   virtual base::string16 GetDisplayName();
-
-  // Returns the localized name of the Chrome shortcut for this distribution.
-  virtual base::string16 GetShortcutName();
-
-  // Returns the localized name of the subfolder in the Start Menu identified by
-  // |subfolder_type| that this distribution should create shortcuts in. For
-  // SUBFOLDER_CHROME this returns GetShortcutName().
-  virtual base::string16 GetStartMenuShortcutSubfolder(
-      Subfolder subfolder_type);
-
-  virtual base::string16 GetLongAppDescription();
 
  protected:
   explicit BrowserDistribution(
