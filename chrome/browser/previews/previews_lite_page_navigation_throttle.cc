@@ -5,8 +5,10 @@
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -103,40 +105,60 @@ PreviewsLitePageNavigationThrottle::~PreviewsLitePageNavigationThrottle() =
     default;
 
 bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
+  // Check if the parameters of the navigation are not eligible for the preview.
+  std::vector<IneligibleReason> ineligible_reasons;
   const GURL& url = navigation_handle()->GetURL();
   if (!url.SchemeIs(url::kHttpsScheme))
-    return false;
+    ineligible_reasons.push_back(IneligibleReason::kNonHttpsScheme);
 
   if (navigation_handle()->IsPost())
-    return false;
+    ineligible_reasons.push_back(IneligibleReason::kHttpPost);
 
   if (!navigation_handle()->IsInMainFrame())
-    return false;
+    ineligible_reasons.push_back(IneligibleReason::kSubframeNavigation);
 
   if (manager_->IsServerUnavailable())
+    ineligible_reasons.push_back(IneligibleReason::kServerUnavailable);
+
+  // Record UMA.
+  for (IneligibleReason reason : ineligible_reasons) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
+                              reason);
+  }
+  if (!ineligible_reasons.empty())
     return false;
+
+  // Check dynamic blacklists.
+  std::vector<BlacklistReason> blacklist_reasons;
 
   if (IsPreviewsDomain(url))
-    return false;
+    blacklist_reasons.push_back(BlacklistReason::kNavigationToPreviewsDomain);
 
   if (IsPrivateDomain(url))
-    return false;
+    blacklist_reasons.push_back(BlacklistReason::kNavigationToPrivateDomain);
 
   std::vector<std::string> blacklisted_path_suffixes =
       previews::params::LitePagePreviewsBlacklistedPathSuffixes();
-  for (std::string suffix : blacklisted_path_suffixes) {
+  for (const std::string& suffix : blacklisted_path_suffixes) {
     if (base::EndsWith(url.path(), suffix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-      return false;
+      blacklist_reasons.push_back(BlacklistReason::kPathSuffixBlacklisted);
+      break;
     }
   }
 
-  return true;
+  // Record UMA
+  for (BlacklistReason reason : blacklist_reasons) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.BlacklistReasons",
+                              reason);
+  }
+
+  return blacklist_reasons.empty();
 }
 
 // static
 bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
-    GURL url,
+    const GURL& url,
     std::string* original_url) {
   if (!url.is_valid())
     return false;
@@ -202,15 +224,13 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
-  const GURL url = navigation_handle()->GetURL();
-  if (!IsEligibleForPreview())
-    return content::NavigationThrottle::PROCEED;
-
-  // Make sure we're not trying to bypass this navigation.
-  if (manager_->CheckSingleBypass(url.spec()))
-    return content::NavigationThrottle::PROCEED;
-
-  return TriggerPreview();
+  const bool trigger =
+      IsEligibleForPreview() &&
+      !manager_->CheckSingleBypass(navigation_handle()->GetURL().spec());
+  UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.Triggered", trigger);
+  if (trigger)
+    return TriggerPreview();
+  return content::NavigationThrottle::PROCEED;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -229,6 +249,9 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
   if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url))
     return content::NavigationThrottle::PROCEED;
 
+  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                            ServerResponse::kFailed);
+
   // The Preview was triggered but there was some irrecoverable issue (like
   // there is no network connection). Load the original page and let it go
   // through the normal process for whatever error it is.
@@ -243,8 +266,7 @@ content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillProcessResponse() {
   const net::HttpResponseHeaders* response_headers =
       navigation_handle()->GetResponseHeaders();
-  if (!response_headers)
-    return content::NavigationThrottle::PROCEED;
+  DCHECK(response_headers);
 
   std::string original_url;
   if (!GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
@@ -260,9 +282,31 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
 
   const int response_code = response_headers->response_code();
 
-  if (response_code == net::HTTP_OK ||
-      response_code == net::HTTP_TEMPORARY_REDIRECT)
+  if (response_code == net::HTTP_OK) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kOk);
     return content::NavigationThrottle::PROCEED;
+  }
+
+  if (response_code == net::HTTP_TEMPORARY_REDIRECT) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kRedirect);
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  const base::TimeDelta penalty =
+      base::TimeTicks::Now() - navigation_handle()->NavigationStart();
+  UMA_HISTOGRAM_MEDIUM_TIMES("Previews.ServerLitePage.HttpOnlyFallbackPenalty",
+                             penalty);
+  manager_->AddSingleBypass(original_url);
+  content::OpenURLParams original_url_params =
+      MakeOpenURLParams(navigation_handle(), GURL(original_url));
+
+  if (response_code == net::HTTP_NOT_FOUND) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kPreviewUnavailable);
+    return CreateNewNavigation(original_url_params);
+  }
 
   if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
     std::string retry_after_header;
@@ -274,13 +318,15 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
                                            base::Time::Now(), &retry_after);
     }
     manager_->SetServerUnavailableFor(retry_after);
+
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kServiceUnavailable);
+    return CreateNewNavigation(original_url_params);
   }
 
-  manager_->AddSingleBypass(original_url);
-  content::OpenURLParams url_params =
-      MakeOpenURLParams(navigation_handle(), GURL(original_url));
-
-  return CreateNewNavigation(url_params);
+  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                            ServerResponse::kOther);
+  return CreateNewNavigation(original_url_params);
 }
 
 const char* PreviewsLitePageNavigationThrottle::GetNameForLogging() {
