@@ -263,4 +263,55 @@ TEST_F(ComputeLayerSelectionTest, RangeBeginAtBlockEnd) {
   EXPECT_EQ(composited_selection.end.edge_bottom, gfx::Point(28, 28));
 }
 
+TEST_F(ComputeLayerSelectionTest, BlockEndBR1) {
+  // LayerSelection should be:
+  // ^test<br>
+  // |<br>
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;'>"
+      "test<br><br></div>");
+  Element* target = GetDocument().QuerySelector("div");
+  FocusAndSelectAll(target, *target);
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
+TEST_F(ComputeLayerSelectionTest, BlockEndBR2) {
+  // LayerSelection should be:
+  // ^test<br>
+  // |<br>
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;'>"
+      "<div><span>test<br></span><br></div>");
+  Element* target = GetDocument().QuerySelector("div");
+  FocusAndSelectAll(target, *target);
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
+TEST_F(ComputeLayerSelectionTest, BlockEndBR3) {
+  // LayerSelection should be:
+  // ^test<br>
+  // |<br>
+  SetBodyContent(
+      "<div style='font: 10px/10px Ahem;'>"
+      "<div><div>test<br></div><br></div>");
+  Element* target = GetDocument().QuerySelector("div");
+  FocusAndSelectAll(target, *target);
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
 }  // namespace blink
