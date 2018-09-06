@@ -69,5 +69,4 @@
   ; https://crbug.com/850021
   (global-name "com.apple.cvmsServ")
   ; crbug.com/792217
-  (global-name "com.apple.system.notification_center")
-  (global-name "com.apple.windowserver.active"))
+  (global-name "com.apple.system.notification_center"))
