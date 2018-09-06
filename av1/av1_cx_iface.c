@@ -154,7 +154,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // render width
   0,                            // render height
   AOM_SUPERBLOCK_SIZE_DYNAMIC,  // superblock_size
-  0,                            // Single tile decoding is off by default.
+  1,                            // this depends on large_scale_tile.
   0,                            // error_resilient_mode off by default.
   0,                            // s_frame_mode off by default.
   0,                            // film_grain_test_vector
