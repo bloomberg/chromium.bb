@@ -67,6 +67,8 @@ static const char kTestLoggingSessionIdKey[] = "app_session_id";
 static const char kTestLoggingSessionIdValue[] = "0123456789abcdef";
 static const char kTestLoggingUrl[] = "dummy url string";
 
+constexpr int kWebAppId = 15;  // Arbitrary.
+
 std::string ParamsToString(const base::ListValue& parameters) {
   std::string parameter_string;
   EXPECT_TRUE(base::JSONWriter::Write(parameters, &parameter_string));
@@ -323,6 +325,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   void StartEventLogging(const std::string& peerConnectionId,
                          int maxLogSizeBytes,
+                         int webAppId,
                          bool expect_success,
                          const std::string& expected_error = std::string()) {
     DCHECK_EQ(expect_success, expected_error.empty());
@@ -331,6 +334,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     params.AppendString(peerConnectionId);
     params.AppendInteger(maxLogSizeBytes);
+    params.AppendInteger(webAppId);
 
     if (expect_success) {
       scoped_refptr<WebrtcLoggingPrivateStartEventLoggingFunction> function(
@@ -705,6 +709,7 @@ class WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled
   bool WebRtcEventLogCollectionPolicy() const override { return true; }
 };
 
+// Also covers StartEventLoggingForLegalWebAppIdSucceeds scenario.
 IN_PROC_BROWSER_TEST_F(
     WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
     StartEventLoggingForKnownPeerConnectionSucceeds) {
@@ -712,7 +717,8 @@ IN_PROC_BROWSER_TEST_F(
   SetUpPeerConnection(peer_connection_id);
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   constexpr bool expect_success = true;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -724,8 +730,8 @@ IN_PROC_BROWSER_TEST_F(
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -736,8 +742,8 @@ IN_PROC_BROWSER_TEST_F(
   const int max_size_bytes = 1;
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -748,8 +754,8 @@ IN_PROC_BROWSER_TEST_F(
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes + 1;
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -761,8 +767,8 @@ IN_PROC_BROWSER_TEST_F(
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -776,8 +782,8 @@ IN_PROC_BROWSER_TEST_F(
   constexpr bool expect_success = false;
   const std::string error_message =
       kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-  StartEventLogging(peer_connection_id_2, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id_2, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -791,16 +797,49 @@ IN_PROC_BROWSER_TEST_F(
   // First call succeeds.
   {
     constexpr bool expect_success = true;
-    StartEventLogging(peer_connection_id, max_size_bytes, expect_success);
+    StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                      expect_success);
   }
 
   // Second call fails.
   {
     constexpr bool expect_success = false;
     const std::string error_message = kStartRemoteLoggingFailureAlreadyLogging;
-    StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                      error_message);
+    StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                      expect_success, error_message);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForTooLowWebAppIdFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const size_t web_app_id =
+      webrtc_event_logging::kMinWebRtcEventLogWebAppId - 1;
+  ASSERT_LT(web_app_id, webrtc_event_logging::kMinWebRtcEventLogWebAppId);
+  constexpr bool expect_success = false;
+  const std::string error_message =
+      webrtc_event_logging::kStartRemoteLoggingFailureIllegalWebAppId;
+  StartEventLogging(peer_connection_id, max_size_bytes, web_app_id,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
+    StartEventLoggingForTooHighWebAppIdFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const size_t web_app_id =
+      webrtc_event_logging::kMaxWebRtcEventLogWebAppId + 1;
+  ASSERT_GT(web_app_id, webrtc_event_logging::kMaxWebRtcEventLogWebAppId);
+  constexpr bool expect_success = false;
+  const std::string error_message =
+      webrtc_event_logging::kStartRemoteLoggingFailureIllegalWebAppId;
+  StartEventLogging(peer_connection_id, max_size_bytes, web_app_id,
+                    expect_success, error_message);
 }
 
 // Testing with either the feature or the policy disabled (not both).
@@ -836,8 +875,8 @@ IN_PROC_BROWSER_TEST_P(
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -877,8 +916,8 @@ IN_PROC_BROWSER_TEST_F(
   const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   constexpr bool expect_success = false;
   const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
-  StartEventLogging(peer_connection_id, max_size_bytes, expect_success,
-                    error_message);
+  StartEventLogging(peer_connection_id, max_size_bytes, kWebAppId,
+                    expect_success, error_message);
 }
 
 #endif  // !defined(OS_ANDROID)

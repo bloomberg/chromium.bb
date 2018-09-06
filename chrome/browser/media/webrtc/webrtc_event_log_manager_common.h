@@ -35,6 +35,16 @@ extern const size_t kMaxRemoteLogFileSizeBytes;
 // Maximum size for a response from Crash, which is the upload ID.
 extern const size_t kWebRtcEventLogMaxUploadIdBytes;
 
+// The number of digits required to encode a remote-bound log ID.
+extern const size_t kWebRtcEventLogIdLength;
+
+// Min/max legal web-app IDs.
+extern const size_t kMinWebRtcEventLogWebAppId;
+extern const size_t kMaxWebRtcEventLogWebAppId;
+
+// Sentinel value, guaranteed not to fall inside the range of min-max valid IDs.
+extern const size_t kInvalidWebRtcEventLogWebAppId;
+
 // Limit over the number of concurrently active (currently being written to
 // disk) remote-bound log files. This limits IO operations, and so it is
 // applied globally (all browser contexts are limited together).
@@ -55,14 +65,17 @@ extern const size_t kMaxWebRtcEventLogHistoryFiles;
 // Overhead incurred by GZIP due to its header and footer.
 extern const size_t kGzipOverheadBytes;
 
-// Remote-bound log files' names will be of the format [prefix]_[log_id].[ext],
-// where |prefix| is equal to kRemoteBoundWebRtcEventLogFileNamePrefix,
-// |log_id| is composed of 32 random characters from '0'-'9' and 'A'-'F',
-// and |ext| is the extension determined by the used LogCompressor::Factory,
-// which will be either kWebRtcEventLogUncompressedExtension or
-// kWebRtcEventLogGzippedExtension.
-extern const base::FilePath::CharType
-    kRemoteBoundWebRtcEventLogFileNamePrefix[];
+// Remote-bound log files' names will be of the format:
+// [prefix]_[web_app_id]_[log_id].[ext]
+// Where:
+// * |prefix| is equal to kRemoteBoundWebRtcEventLogFileNamePrefix.
+// * |web_app_id| is a number between kMinWebRtcEventLogWebAppId and
+//   kMaxWebRtcEventLogWebAppId, with zero padding.
+// * |log_id| is composed of 32 random characters from '0'-'9' and 'A'-'F'.
+// * |ext| is the extension determined by the used LogCompressor::Factory,
+//   which will be either kWebRtcEventLogUncompressedExtension or
+//   kWebRtcEventLogGzippedExtension.
+extern const char kRemoteBoundWebRtcEventLogFileNamePrefix[];
 extern const base::FilePath::CharType kWebRtcEventLogUncompressedExtension[];
 extern const base::FilePath::CharType kWebRtcEventLogGzippedExtension[];
 
@@ -87,6 +100,7 @@ extern const char kStartRemoteLoggingFailureFeatureDisabled[];
 extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
+extern const char kStartRemoteLoggingFailureIllegalWebAppId[];
 extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
 extern const char kStartRemoteLoggingFailureAlreadyLogging[];
 extern const char kStartRemoteLoggingFailureGeneric[];
@@ -418,6 +432,9 @@ class GzippedLogFileWriterFactory : public LogFileWriter::Factory {
   std::unique_ptr<GzipLogCompressorFactory> gzip_compressor_factory_;
 };
 
+// Create a random identifier of 32 hexadecimal (uppercase) characters.
+std::string CreateWebRtcEventLogId();
+
 // Translate a BrowserContext into an ID. This lets us associate PeerConnections
 // with BrowserContexts, while making sure that we never call the
 // BrowserContext's methods outside of the UI thread (because we can't call them
@@ -438,13 +455,31 @@ WebRtcEventLogPeerConnectionKey::BrowserContextId GetBrowserContextId(
 base::FilePath GetRemoteBoundWebRtcEventLogsDir(
     const base::FilePath& browser_context_dir);
 
+// Produce the path to a remote-bound WebRTC event log file with the given
+// log ID, web-app ID and extension, in the given directory.
+base::FilePath WebRtcEventLogPath(
+    const base::FilePath& remote_logs_dir,
+    const std::string& log_id,
+    size_t web_app_id,
+    const base::FilePath::StringPieceType& extension);
+
+// Checks whether the path/filename would be a valid reference to a remote-bound
+// even log. These functions do not examine the file's content or its extension.
+bool IsValidRemoteBoundLogFilename(const std::string& filename);
+bool IsValidRemoteBoundLogFilePath(const base::FilePath& path);
+
 // Given WebRTC event log's path, return the path to the history file that
 // is, or would be, associated with it.
-base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& log);
+base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& path);
 
 // Attempts to extract the local ID from the file's path. Returns the empty
 // string in case of an error.
 std::string ExtractRemoteBoundWebRtcEventLogLocalIdFromPath(
+    const base::FilePath& path);
+
+// Attempts to extract the web-app ID from the file's path.
+// Returns kInvalidWebRtcEventLogWebAppId in case of an error.
+size_t ExtractRemoteBoundWebRtcEventLogWebAppIdFromPath(
     const base::FilePath& path);
 
 }  // namespace webrtc_event_logging

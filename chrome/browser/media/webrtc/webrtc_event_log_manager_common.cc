@@ -4,12 +4,18 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
+#include <cctype>
 #include <limits>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -21,12 +27,28 @@ using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
 
 const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
 
+const size_t kWebRtcEventLogIdLength = 32;
+
+// Be careful not to change these without updating the number of characters
+// reserved in the filename. See kWebAppIdLength.
+const size_t kMinWebRtcEventLogWebAppId = 1;
+const size_t kMaxWebRtcEventLogWebAppId = 99;
+
+// Sentinel value for an invalid web-app ID.
+const size_t kInvalidWebRtcEventLogWebAppId = 0;
+static_assert(kInvalidWebRtcEventLogWebAppId < kMinWebRtcEventLogWebAppId ||
+                  kInvalidWebRtcEventLogWebAppId > kMaxWebRtcEventLogWebAppId,
+              "Sentinel value must be distinct from legal values.");
+
+const char kRemoteBoundWebRtcEventLogFileNamePrefix[] = "webrtc_event_log";
+
 const char kStartRemoteLoggingFailureFeatureDisabled[] = "Feature disabled.";
 const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[] =
     "Unlimited size disallowed.";
 const char kStartRemoteLoggingFailureMaxSizeTooSmall[] = "Max size too small.";
 const char kStartRemoteLoggingFailureMaxSizeTooLarge[] =
     "Excessively large max log size.";
+const char kStartRemoteLoggingFailureIllegalWebAppId[] = "Illegal web-app ID.";
 const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[] =
     "Unknown or inactive peer connection.";
 const char kStartRemoteLoggingFailureAlreadyLogging[] = "Already logging.";
@@ -41,6 +63,8 @@ constexpr int kDefaultMemLevel = 8;
 
 constexpr size_t kGzipHeaderBytes = 15;
 constexpr size_t kGzipFooterBytes = 10;
+
+constexpr size_t kWebAppIdLength = 2;
 
 // Tracks budget over a resource (such as bytes allowed in a file, etc.).
 // Allows an unlimited budget.
@@ -674,6 +698,28 @@ bool GzipLogCompressor::Deflate(int flush, std::string* output) {
   return success;
 }
 
+// Given a string with a textual representation of a web-app ID, return the
+// ID in integer form. If the textual representation does not name a valid
+// web-app ID, return kInvalidWebRtcEventLogWebAppId.
+size_t ExtractWebAppId(base::StringPiece str) {
+  DCHECK_EQ(str.length(), kWebAppIdLength);
+
+  // Avoid leading '+', etc.
+  for (size_t i = 0; i < str.length(); i++) {
+    if (!std::isdigit(str[i])) {
+      return kInvalidWebRtcEventLogWebAppId;
+    }
+  }
+
+  size_t result;
+  if (!base::StringToSizeT(str, &result) ||
+      result < kMinWebRtcEventLogWebAppId ||
+      result > kMaxWebRtcEventLogWebAppId) {
+    return kInvalidWebRtcEventLogWebAppId;
+  }
+  return result;
+}
+
 }  // namespace
 
 const size_t kGzipOverheadBytes = kGzipHeaderBytes + kGzipFooterBytes;
@@ -790,6 +836,17 @@ std::unique_ptr<LogFileWriter> GzippedLogFileWriterFactory::Create(
   return result;
 }
 
+// Create a random identifier of 32 hexadecimal (uppercase) characters.
+std::string CreateWebRtcEventLogId() {
+  // UnguessableToken's interface makes no promisses over case. We therefore
+  // convert, even if the current implementation does not require it.
+  std::string log_id =
+      base::ToUpperASCII(base::UnguessableToken::Create().ToString());
+  DCHECK_EQ(log_id.size(), kWebRtcEventLogIdLength);
+  DCHECK_EQ(log_id.find_first_not_of("0123456789ABCDEF"), std::string::npos);
+  return log_id;
+}
+
 BrowserContextId GetBrowserContextId(
     const content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -815,29 +872,116 @@ base::FilePath GetRemoteBoundWebRtcEventLogsDir(
   return browser_context_dir.Append(kRemoteBoundLogSubDirectory);
 }
 
-base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& log) {
-  return log.RemoveExtension().AddExtension(kWebRtcEventLogHistoryExtension);
+base::FilePath WebRtcEventLogPath(
+    const base::FilePath& remote_logs_dir,
+    const std::string& log_id,
+    size_t web_app_id,
+    const base::FilePath::StringPieceType& extension) {
+  DCHECK_GE(web_app_id, kMinWebRtcEventLogWebAppId);
+  DCHECK_LE(web_app_id, kMaxWebRtcEventLogWebAppId);
+
+  static_assert(kWebAppIdLength == 2u, "Fix the code below.");
+  const std::string web_app_id_str = base::StringPrintf("%02zu", web_app_id);
+  DCHECK_EQ(web_app_id_str.length(), kWebAppIdLength);
+
+  const std::string filename =
+      std::string(kRemoteBoundWebRtcEventLogFileNamePrefix) + "_" +
+      web_app_id_str + "_" + log_id;
+
+  return remote_logs_dir.AppendASCII(filename).AddExtension(extension);
+}
+
+bool IsValidRemoteBoundLogFilename(const std::string& filename) {
+  // The -1 is because of the implict \0.
+  const size_t kPrefixLength =
+      base::size(kRemoteBoundWebRtcEventLogFileNamePrefix) - 1;
+
+  // [prefix]_[web_app_id]_[log_id]
+  const size_t expected_length =
+      kPrefixLength + 1 + kWebAppIdLength + 1 + kWebRtcEventLogIdLength;
+  if (filename.length() != expected_length) {
+    return false;
+  }
+
+  size_t index = 0;
+
+  // Expect prefix.
+  if (filename.find(kRemoteBoundWebRtcEventLogFileNamePrefix) != index) {
+    return false;
+  }
+  index += kPrefixLength;
+
+  // Expect underscore between prefix and web-app ID.
+  if (filename[index] != '_') {
+    return false;
+  }
+  index += 1;
+
+  // Expect web-app-ID.
+  const size_t web_app_id =
+      ExtractWebAppId(base::StringPiece(&filename[index], kWebAppIdLength));
+  if (web_app_id == kInvalidWebRtcEventLogWebAppId) {
+    return false;
+  }
+  index += kWebAppIdLength;
+
+  // Expect underscore between web-app ID and log ID.
+  if (filename[index] != '_') {
+    return false;
+  }
+  index += 1;
+
+  // Expect log ID.
+  const std::string log_id = filename.substr(index);
+  DCHECK_EQ(log_id.length(), kWebRtcEventLogIdLength);
+  const char* const log_id_chars = "0123456789ABCDEF";
+  if (filename.find_first_not_of(log_id_chars, index) != std::string::npos) {
+    return false;
+  }
+
+  return true;
+}
+
+bool IsValidRemoteBoundLogFilePath(const base::FilePath& path) {
+  const std::string filename = path.BaseName().RemoveExtension().MaybeAsASCII();
+  return IsValidRemoteBoundLogFilename(filename);
+}
+
+base::FilePath GetWebRtcEventLogHistoryFilePath(const base::FilePath& path) {
+  // TODO(crbug.com/775415): Check for validity (after fixing unit tests).
+  return path.RemoveExtension().AddExtension(kWebRtcEventLogHistoryExtension);
 }
 
 std::string ExtractRemoteBoundWebRtcEventLogLocalIdFromPath(
     const base::FilePath& path) {
   const std::string filename = path.BaseName().RemoveExtension().MaybeAsASCII();
-
-  if (filename.empty()) {
-    LOG(WARNING) << "Non-ASCII or empty filename.";
+  if (!IsValidRemoteBoundLogFilename(filename)) {
+    LOG(WARNING) << "Invalid remote-bound WebRTC event log filename.";
     return std::string();
   }
 
-  const std::string prefix =
-      base::FilePath(kRemoteBoundWebRtcEventLogFileNamePrefix).MaybeAsASCII();
-  DCHECK(!prefix.empty());
+  DCHECK_GE(filename.length(), kWebRtcEventLogIdLength);
+  return filename.substr(filename.length() - kWebRtcEventLogIdLength);
+}
 
-  if (filename.find(prefix) != 0) {
-    LOG(WARNING) << "Filename does not begin with expected prefix.";
-    return std::string();
+size_t ExtractRemoteBoundWebRtcEventLogWebAppIdFromPath(
+    const base::FilePath& path) {
+  const std::string filename = path.BaseName().RemoveExtension().MaybeAsASCII();
+  if (!IsValidRemoteBoundLogFilename(filename)) {
+    LOG(WARNING) << "Invalid remote-bound WebRTC event log filename.";
+    return kInvalidWebRtcEventLogWebAppId;
   }
 
-  return filename.substr(prefix.length());
+  // The -1 is because of the implict \0.
+  const size_t kPrefixLength =
+      base::size(kRemoteBoundWebRtcEventLogFileNamePrefix) - 1;
+
+  // The +1 is for the underscore between the prefix and the web-app ID.
+  // Length verified by above call to IsValidRemoteBoundLogFilename().
+  DCHECK_GE(filename.length(), kPrefixLength + 1 + kWebAppIdLength);
+  base::StringPiece id_str(&filename[kPrefixLength + 1], kWebAppIdLength);
+
+  return ExtractWebAppId(id_str);
 }
 
 }  // namespace webrtc_event_logging
