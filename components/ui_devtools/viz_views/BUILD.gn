@@ -12,6 +12,8 @@ source_set("viz_views") {
     "frame_sink_element.h",
     "overlay_agent_viz.cc",
     "overlay_agent_viz.h",
+    "surface_element.cc",
+    "surface_element.h",
   ]
 
   deps = [
