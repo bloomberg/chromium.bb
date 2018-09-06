@@ -198,6 +198,9 @@ bool CrashpadCrashClient::InitializeCrashReporting(Mode mode,
     case SandboxType::kJsonParser:
       SetCrashKey(kProcessType, "json_parser");
       break;
+    case SandboxType::kZipArchiver:
+      SetCrashKey(kProcessType, "zip_archiver");
+      break;
     default:
       NOTREACHED();
   }

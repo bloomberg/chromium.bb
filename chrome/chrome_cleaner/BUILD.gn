@@ -43,6 +43,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/strings:unittest_sources",
     "//chrome/chrome_cleaner/test:unittest_sources",
     "//chrome/chrome_cleaner/ui:unittest_sources",
+    "//chrome/chrome_cleaner/zip_archiver:unittest_sources",
   ]
 }
 
