@@ -204,9 +204,9 @@ void V8LazyEventListener::CompileScript(ScriptState* script_state,
 
   wrapped_function->SetName(V8String(GetIsolate(), function_name_));
 
-  SetListenerObject(script_state, wrapped_function,
-                    V8PrivateProperty::GetV8EventListenerOrEventHandlerListener(
-                        GetIsolate()));
+  SetListenerObject(
+      script_state, wrapped_function,
+      V8PrivateProperty::GetCustomWrappableEventListener(GetIsolate()));
 }
 
 void V8LazyEventListener::FireErrorEvent(v8::Local<v8::Context> v8_context,
