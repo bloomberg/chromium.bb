@@ -18,7 +18,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -38,11 +37,9 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -58,10 +55,6 @@ import org.chromium.ui.UiUtils;
  * through {@link Toolbar} rather than using this class directly.
  */
 public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
-    public static final String NTP_BUTTON_NEWS_FEED_VARIANT = "news_feed";
-    public static final String NTP_BUTTON_HOME_VARIANT = "home";
-    public static final String NTP_BUTTON_CHROME_VARIANT = "chrome";
-
     private Invalidator mInvalidator;
 
     private final int[] mTempPosition = new int[2];
@@ -800,7 +793,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Opens hompage in the current tab.
      */
     protected void openHomepage() {
-        getLocationBar().hideSuggestions();
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
     }
 
@@ -998,37 +990,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param ntpButton The button that needs to be changed.
      */
     protected void changeIconToNTPIcon(TintedImageButton ntpButton) {
-        if (!FeatureUtilities.isNewTabPageButtonEnabled() || ntpButton == null) return;
-
-        // Check for a cached icon variant in shared preferences.
-        String iconVariant = ChromePreferenceManager.getInstance().getNewTabPageButtonVariant();
-
-        // If there is no cached icon variant and the native library is ready, try to retrieve the
-        // icon variant from variations associated data.
-        if (TextUtils.isEmpty(iconVariant) && isNativeLibraryReady()) {
-            iconVariant = FeatureUtilities.getNTPButtonVariant();
-        }
-
-        // Return if no icon variant is found.
-        if (TextUtils.isEmpty(iconVariant)) return;
-
-        int iconResId = 0;
-        switch (iconVariant) {
-            case NTP_BUTTON_HOME_VARIANT:
-                iconResId = R.drawable.ic_home;
-                break;
-            case NTP_BUTTON_NEWS_FEED_VARIANT:
-                iconResId = R.drawable.ic_library_news_feed;
-                break;
-            case NTP_BUTTON_CHROME_VARIANT:
-                iconResId = R.drawable.ic_chrome;
-                break;
-            default:
-                break;
-        }
-        assert iconResId != 0;
-
-        ntpButton.setImageResource(iconResId);
+        ntpButton.setImageResource(mToolbarDataProvider.getHomeButtonIcon());
     }
 
     @Override
