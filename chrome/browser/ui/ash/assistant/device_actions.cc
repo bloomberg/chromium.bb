@@ -7,6 +7,8 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -34,4 +36,28 @@ void DeviceActions::SetBluetoothEnabled(bool enabled) {
   // power controller.
   profile->GetPrefs()->SetBoolean(ash::prefs::kUserBluetoothAdapterEnabled,
                                   enabled);
+}
+
+void HandleScreenBrightnessCallback(
+    DeviceActions::GetScreenBrightnessLevelCallback callback,
+    base::Optional<double> level) {
+  if (level.has_value()) {
+    std::move(callback).Run(true, level.value() / 100.0);
+  } else {
+    std::move(callback).Run(false, 0.0);
+  }
+}
+
+void DeviceActions::GetScreenBrightnessLevel(
+    DeviceActions::GetScreenBrightnessLevelCallback callback) {
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->GetScreenBrightnessPercent(
+          base::BindOnce(&HandleScreenBrightnessCallback, std::move(callback)));
+}
+
+void DeviceActions::SetScreenBrightnessLevel(double level, bool gradual) {
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->SetScreenBrightnessPercent(level * 100.0f, gradual);
 }
