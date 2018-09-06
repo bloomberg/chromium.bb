@@ -58,7 +58,7 @@ executable("remoting_client_plugin_newlib") {
     "//remoting/signaling",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
-    "//third_party/webrtc/system_wrappers:metrics_default",
+    "//third_party/webrtc_overrides:metrics",
     "//ui/events:dom_keycode_converter",
   ]
 
