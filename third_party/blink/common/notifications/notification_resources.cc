@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/notification_resources.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 
-namespace content {
+namespace blink {
 
 NotificationResources::NotificationResources() {}
 
@@ -13,4 +13,4 @@ NotificationResources::NotificationResources(
 
 NotificationResources::~NotificationResources() {}
 
-}  // namespace content
+}  // namespace blink

@@ -16,11 +16,14 @@
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 
+namespace blink {
+struct PlatformNotificationData;
+}
+
 namespace content {
 
 struct NotificationDatabaseData;
 class PlatformNotificationContextImpl;
-struct PlatformNotificationData;
 
 // Implementation of the NotificationService used for Web Notifications. Is
 // responsible for displaying, updating and reading of both non-persistent
@@ -41,14 +44,14 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   void GetPermissionStatus(GetPermissionStatusCallback callback) override;
   void DisplayNonPersistentNotification(
       const std::string& token,
-      const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources,
+      const blink::PlatformNotificationData& platform_notification_data,
+      const blink::NotificationResources& notification_resources,
       blink::mojom::NonPersistentNotificationListenerPtr listener_ptr) override;
   void CloseNonPersistentNotification(const std::string& token) override;
   void DisplayPersistentNotification(
       int64_t service_worker_registration_id,
-      const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources,
+      const blink::PlatformNotificationData& platform_notification_data,
+      const blink::NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback) override;
   void ClosePersistentNotification(const std::string& notification_id) override;
   void GetNotifications(int64_t service_worker_registration_id,
@@ -67,27 +70,27 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   // destroy |this| by calling OnConnectionError() directly, then return false.
   // So, please do not touch |this| again after you got a false return value.
   bool ValidateNotificationResources(
-      const NotificationResources& notification_resources);
+      const blink::NotificationResources& notification_resources);
 
   void DisplayPersistentNotificationOnIOThread(
       int64_t service_worker_registration_id,
       int64_t persistent_notification_id,
-      const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources,
+      const blink::PlatformNotificationData& platform_notification_data,
+      const blink::NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback callback);
 
   void DisplayPersistentNotificationWithIdOnIOThread(
       int64_t service_worker_registration_id,
-      const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources,
+      const blink::PlatformNotificationData& platform_notification_data,
+      const blink::NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback callback,
       bool success,
       const std::string& notification_id);
 
   void DisplayPersistentNotificationWithServiceWorkerOnIOThread(
       const std::string& notification_id,
-      const PlatformNotificationData& platform_notification_data,
-      const NotificationResources& notification_resources,
+      const blink::PlatformNotificationData& platform_notification_data,
+      const blink::NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback callback,
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);

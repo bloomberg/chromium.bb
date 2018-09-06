@@ -266,7 +266,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void DispatchNotificationClickEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
       DispatchNotificationClickEventCallback callback) override {
@@ -279,7 +279,7 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void DispatchNotificationCloseEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       DispatchNotificationCloseEventCallback callback) override {
     if (!helper_)
       return;
@@ -654,7 +654,7 @@ void EmbeddedWorkerTestHelper::OnPushEvent(
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     int action_index,
     const base::Optional<base::string16>& reply,
     mojom::ServiceWorker::DispatchNotificationClickEventCallback callback) {
@@ -664,7 +664,7 @@ void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
 
 void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
                           base::Time::Now());
@@ -933,7 +933,7 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     int action_index,
     const base::Optional<base::string16>& reply,
     mojom::ServiceWorker::DispatchNotificationClickEventCallback callback) {
@@ -946,7 +946,7 @@ void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(
 
 void EmbeddedWorkerTestHelper::OnNotificationCloseEventStub(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

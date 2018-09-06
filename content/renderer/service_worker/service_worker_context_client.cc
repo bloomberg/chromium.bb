@@ -1777,7 +1777,7 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
 
 void ServiceWorkerContextClient::DispatchNotificationClickEvent(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     int action_index,
     const base::Optional<base::string16>& reply,
     DispatchNotificationClickEventCallback callback) {
@@ -1803,7 +1803,7 @@ void ServiceWorkerContextClient::DispatchNotificationClickEvent(
 
 void ServiceWorkerContextClient::DispatchNotificationCloseEvent(
     const std::string& notification_id,
-    const PlatformNotificationData& notification_data,
+    const blink::PlatformNotificationData& notification_data,
     DispatchNotificationCloseEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->notification_close_event_callbacks));

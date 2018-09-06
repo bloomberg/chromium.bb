@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
-namespace content {
+namespace blink {
 
 PlatformNotificationAction::PlatformNotificationAction() {}
 
@@ -20,4 +20,4 @@ PlatformNotificationData::PlatformNotificationData(
 
 PlatformNotificationData::~PlatformNotificationData() {}
 
-}  // namespace content
+}  // namespace blink

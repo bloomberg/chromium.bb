@@ -15,12 +15,12 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/common/notification_resources.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 using ::testing::_;
@@ -118,11 +118,10 @@ TEST_F(PersistentNotificationHandlerTest,
     EXPECT_CALL(*mock_logger_, LogPersistentNotificationShown());
 
     PlatformNotificationServiceImpl::GetInstance()
-        ->DisplayPersistentNotification(&profile_, kExampleNotificationId,
-                                        origin_ /* service_worker_scope */,
-                                        origin_,
-                                        content::PlatformNotificationData(),
-                                        content::NotificationResources());
+        ->DisplayPersistentNotification(
+            &profile_, kExampleNotificationId,
+            origin_ /* service_worker_scope */, origin_,
+            blink::PlatformNotificationData(), blink::NotificationResources());
 
     run_loop.Run();
   }

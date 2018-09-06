@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/test/test_suite.h"
+#include "mojo/core/embedder/embedder.h"
 #include "v8/include/libplatform/libplatform.h"
 #include "v8/include/v8.h"
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
+  mojo::core::Init();
   v8::V8::InitializeICUDefaultLocation(argv[0]);
   v8::V8::InitializeExternalStartupData(argv[0]);
   auto platform = base::WrapUnique(v8::platform::CreateDefaultPlatform());

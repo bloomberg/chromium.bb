@@ -20,8 +20,8 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/notification_resources.h"
-#include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
+#include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
@@ -85,8 +85,8 @@ void BlinkNotificationServiceImpl::OnConnectionError() {
 
 void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     const std::string& token,
-    const PlatformNotificationData& platform_notification_data,
-    const NotificationResources& notification_resources,
+    const blink::PlatformNotificationData& platform_notification_data,
+    const blink::NotificationResources& notification_resources,
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!ValidateNotificationResources(notification_resources))
@@ -143,7 +143,7 @@ BlinkNotificationServiceImpl::CheckPermissionStatus() {
 }
 
 bool BlinkNotificationServiceImpl::ValidateNotificationResources(
-    const NotificationResources& notification_resources) {
+    const blink::NotificationResources& notification_resources) {
   if (notification_resources.image.drawsNothing() ||
       base::FeatureList::IsEnabled(features::kNotificationContentImage))
     return true;
@@ -157,8 +157,8 @@ bool BlinkNotificationServiceImpl::ValidateNotificationResources(
 
 void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
-    const PlatformNotificationData& platform_notification_data,
-    const NotificationResources& notification_resources,
+    const blink::PlatformNotificationData& platform_notification_data,
+    const blink::NotificationResources& notification_resources,
     DisplayPersistentNotificationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!ValidateNotificationResources(notification_resources))
@@ -191,8 +191,8 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
 void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
     int64_t service_worker_registration_id,
     int64_t next_persistent_notification_id,
-    const PlatformNotificationData& platform_notification_data,
-    const NotificationResources& notification_resources,
+    const blink::PlatformNotificationData& platform_notification_data,
+    const blink::NotificationResources& notification_resources,
     DisplayPersistentNotificationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -218,8 +218,8 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
 void BlinkNotificationServiceImpl::
     DisplayPersistentNotificationWithIdOnIOThread(
         int64_t service_worker_registration_id,
-        const PlatformNotificationData& platform_notification_data,
-        const NotificationResources& notification_resources,
+        const blink::PlatformNotificationData& platform_notification_data,
+        const blink::NotificationResources& notification_resources,
         DisplayPersistentNotificationCallback callback,
         bool success,
         const std::string& notification_id) {
@@ -245,8 +245,8 @@ void BlinkNotificationServiceImpl::
 void BlinkNotificationServiceImpl::
     DisplayPersistentNotificationWithServiceWorkerOnIOThread(
         const std::string& notification_id,
-        const PlatformNotificationData& platform_notification_data,
-        const NotificationResources& notification_resources,
+        const blink::PlatformNotificationData& platform_notification_data,
+        const blink::NotificationResources& notification_resources,
         DisplayPersistentNotificationCallback callback,
         blink::ServiceWorkerStatusCode service_worker_status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -306,7 +306,7 @@ void BlinkNotificationServiceImpl::GetNotifications(
     // try to get notifications without permission, so return empty vectors
     // indicating that no (accessible) notifications exist at this time.
     std::move(callback).Run(std::vector<std::string>(),
-                            std::vector<PlatformNotificationData>());
+                            std::vector<blink::PlatformNotificationData>());
     return;
   }
 
@@ -332,7 +332,7 @@ void BlinkNotificationServiceImpl::DidGetNotificationsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<std::string> ids;
-  std::vector<PlatformNotificationData> datas;
+  std::vector<blink::PlatformNotificationData> datas;
 
   for (const NotificationDatabaseData& database_data : notifications) {
     // An empty filter tag matches all, else we need an exact match.

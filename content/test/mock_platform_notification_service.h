@@ -18,10 +18,12 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "url/gurl.h"
 
-namespace content {
-
+namespace blink {
 struct NotificationResources;
 struct PlatformNotificationData;
+}  // namespace blink
+
+namespace content {
 
 // Responsible for tracking active notifications and allowed origins for the
 // Web Notification API when running layout and content tests.
@@ -46,15 +48,15 @@ class MockPlatformNotificationService : public PlatformNotificationService {
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
-      const PlatformNotificationData& notification_data,
-      const NotificationResources& notification_resources) override;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) override;
   void DisplayPersistentNotification(
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& service_worker_scope,
       const GURL& origin,
-      const PlatformNotificationData& notification_data,
-      const NotificationResources& notification_resources) override;
+      const blink::PlatformNotificationData& notification_data,
+      const blink::NotificationResources& notification_resources) override;
   void CloseNotification(BrowserContext* browser_context,
                          const std::string& notification_id) override;
   void ClosePersistentNotification(BrowserContext* browser_context,

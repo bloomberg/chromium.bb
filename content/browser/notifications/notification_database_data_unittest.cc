@@ -30,8 +30,8 @@ const int kTimeUntilFirstClickMillis = 11111;
 const int kTimeUntilLastClickMillis = 22222;
 const int kTimeUntilCloseMillis = 33333;
 
-const PlatformNotificationActionType kNotificationActionType =
-    PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+const blink::PlatformNotificationActionType kNotificationActionType =
+    blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
 const char kOrigin[] = "https://example.com/";
 const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
@@ -54,10 +54,10 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   std::vector<char> developer_data(
       kNotificationData, kNotificationData + base::size(kNotificationData));
 
-  PlatformNotificationData notification_data;
+  blink::PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16(kNotificationTitle);
   notification_data.direction =
-      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
+      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
   notification_data.lang = kNotificationLang;
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
@@ -71,7 +71,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.require_interaction = true;
   notification_data.data = developer_data;
   for (size_t i = 0; i < blink::kWebNotificationMaxActions; i++) {
-    PlatformNotificationAction notification_action;
+    blink::PlatformNotificationAction notification_action;
     notification_action.type = kNotificationActionType;
     notification_action.action = base::NumberToString(i);
     notification_action.title = base::NumberToString16(i);
@@ -128,7 +128,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
             copied_data.time_until_close_millis);
   EXPECT_EQ(database_data.closed_reason, copied_data.closed_reason);
 
-  const PlatformNotificationData& copied_notification_data =
+  const blink::PlatformNotificationData& copied_notification_data =
       copied_data.notification_data;
 
   EXPECT_EQ(notification_data.title, copied_notification_data.title);
@@ -199,14 +199,14 @@ TEST(NotificationDatabaseDataTest, ActionDeserializationIsNotAdditive) {
 }
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeActionTypes) {
-  PlatformNotificationActionType action_types[] = {
-      PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON,
-      PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT};
+  blink::PlatformNotificationActionType action_types[] = {
+      blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON,
+      blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT};
 
-  for (PlatformNotificationActionType action_type : action_types) {
-    PlatformNotificationData notification_data;
+  for (blink::PlatformNotificationActionType action_type : action_types) {
+    blink::PlatformNotificationData notification_data;
 
-    PlatformNotificationAction action;
+    blink::PlatformNotificationAction action;
     action.type = action_type;
     notification_data.actions.push_back(action);
 
@@ -226,13 +226,13 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeActionTypes) {
 }
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeDirections) {
-  PlatformNotificationData::Direction directions[] = {
-      PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
-      PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
-      PlatformNotificationData::DIRECTION_AUTO};
+  blink::PlatformNotificationData::Direction directions[] = {
+      blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT,
+      blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT,
+      blink::PlatformNotificationData::DIRECTION_AUTO};
 
   for (size_t i = 0; i < base::size(directions); ++i) {
-    PlatformNotificationData notification_data;
+    blink::PlatformNotificationData notification_data;
     notification_data.direction = directions[i];
 
     NotificationDatabaseData database_data;
@@ -273,11 +273,11 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeClosedReasons) {
 }
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeNullPlaceholder) {
-  PlatformNotificationAction action;
+  blink::PlatformNotificationAction action;
   action.type = kNotificationActionType;
   action.placeholder = base::NullableString16();  // null string.
 
-  PlatformNotificationData notification_data;
+  blink::PlatformNotificationData notification_data;
   notification_data.actions.push_back(action);
 
   NotificationDatabaseData database_data;

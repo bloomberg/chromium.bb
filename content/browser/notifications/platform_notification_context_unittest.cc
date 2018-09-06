@@ -15,12 +15,12 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/notification_database_data.h"
-#include "content/public/common/notification_resources.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -530,8 +530,8 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   NotificationDatabaseData notification_database_data;
   notification_database_data.service_worker_registration_id =
       kFakeServiceWorkerRegistrationId;
-  PlatformNotificationData notification_data;
-  content::NotificationResources notification_resources;
+  blink::PlatformNotificationData notification_data;
+  blink::NotificationResources notification_resources;
 
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
