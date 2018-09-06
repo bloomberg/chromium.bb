@@ -65,7 +65,7 @@ class PermissionsUpdater {
   // during startup (to ensure all extensions are initialized through the
   // delegate).
   // |delegate| is a singleton instance and is leaked.
-  static void SetPlatformDelegate(Delegate* delegate);
+  static Delegate* SetPlatformDelegate(Delegate* delegate);
 
   // Grants |permissions| that were defined as optional in the manifest to
   // |extension|, updating the active permission set and notifying any

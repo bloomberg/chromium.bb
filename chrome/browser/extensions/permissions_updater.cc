@@ -88,11 +88,14 @@ PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
 PermissionsUpdater::~PermissionsUpdater() {}
 
 // static
-void PermissionsUpdater::SetPlatformDelegate(Delegate* delegate) {
+PermissionsUpdater::Delegate* PermissionsUpdater::SetPlatformDelegate(
+    Delegate* delegate) {
   // Make sure we're setting it only once (allow setting to nullptr, but then
   // take special care of actually freeing it).
   CHECK(!g_delegate || !delegate);
+  Delegate* previous_delegate = g_delegate;
   g_delegate = delegate;
+  return previous_delegate;
 }
 
 void PermissionsUpdater::GrantOptionalPermissions(

@@ -230,6 +230,13 @@ ChromeUserManagerImpl::CreateChromeUserManager() {
   return std::unique_ptr<ChromeUserManager>(new ChromeUserManagerImpl());
 }
 
+// static
+void ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting() {
+  delete extensions::PermissionsUpdater::SetPlatformDelegate(nullptr);
+  delete extensions::ExtensionTabUtil::SetPlatformDelegate(nullptr);
+  delete extensions::ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
+}
+
 ChromeUserManagerImpl::ChromeUserManagerImpl()
     : ChromeUserManager(base::ThreadTaskRunnerHandle::IsSet()
                             ? base::ThreadTaskRunnerHandle::Get()

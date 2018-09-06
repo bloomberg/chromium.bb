@@ -135,8 +135,8 @@ class ExtensionTabUtil {
 
   // Platform specific logic moved to delegate. This should be set during
   // startup.
-  // |delegate| is a singleton instance and is leaked.
-  static void SetPlatformDelegate(Delegate* delegate);
+  // |delegate| is never deleted by this class.
+  static Delegate* SetPlatformDelegate(Delegate* delegate);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The
