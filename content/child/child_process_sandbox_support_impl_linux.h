@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
-struct WebFallbackFont;
+struct OutOfProcessFont;
 struct WebFontRenderStyle;
 }
 
@@ -24,7 +24,7 @@ namespace content {
 void GetFallbackFontForCharacter(sk_sp<font_service::FontLoader> font_loader,
                                  const int32_t character,
                                  const char* preferred_locale,
-                                 blink::WebFallbackFont* family);
+                                 blink::OutOfProcessFont* family);
 
 // Returns rendering settings for a provided font family, size, and style.
 // |size_and_style| stores the bold setting in its least-significant bit, the

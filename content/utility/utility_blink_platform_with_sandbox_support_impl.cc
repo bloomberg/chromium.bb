@@ -15,13 +15,13 @@
 #include "content/child/child_process_sandbox_support_impl_linux.h"
 #include "content/child/child_thread_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #endif
 
 namespace blink {
 class WebSandboxSupport;
-struct WebFallbackFont;
+struct OutOfProcessFont;
 struct WebFontRenderStyle;
 }  // namespace blink
 
@@ -44,7 +44,7 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
   void GetFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
-      blink::WebFallbackFont* fallbackFont) override;
+      blink::OutOfProcessFont* fallbackFont) override;
   void GetWebFontRenderStyleForStrike(const char* family,
                                       int size,
                                       bool is_bold,
@@ -58,7 +58,7 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
   // here.
   base::Lock unicode_font_families_mutex_;
   // Maps unicode chars to their fallback fonts.
-  std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
+  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif  // defined(OS_MACOSX)
 };
@@ -103,9 +103,9 @@ bool UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::LoadFont(
 void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
     GetFallbackFontForCharacter(blink::WebUChar32 character,
                                 const char* preferred_locale,
-                                blink::WebFallbackFont* fallback_font) {
+                                blink::OutOfProcessFont* fallback_font) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
+  const std::map<int32_t, blink::OutOfProcessFont>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     fallback_font->name = iter->second.name;

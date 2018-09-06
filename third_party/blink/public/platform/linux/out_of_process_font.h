@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_FALLBACK_FONT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_FALLBACK_FONT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_OUT_OF_PROCESS_FONT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_OUT_OF_PROCESS_FONT_H_
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -37,8 +37,8 @@
 
 namespace blink {
 
-struct WebFallbackFont {
-  WebFallbackFont()
+struct OutOfProcessFont {
+  OutOfProcessFont()
       : name(WebString()),
         filename(WebVector<char>()),
         fontconfig_interface_id(0),
@@ -55,4 +55,4 @@ struct WebFallbackFont {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_FALLBACK_FONT_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_OUT_OF_PROCESS_FONT_H_

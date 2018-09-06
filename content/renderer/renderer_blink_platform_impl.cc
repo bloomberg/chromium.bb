@@ -130,7 +130,7 @@
 
 #include "base/synchronization/lock.h"
 #include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
@@ -222,7 +222,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
   void GetFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
-      blink::WebFallbackFont* fallbackFont) override;
+      blink::OutOfProcessFont* fallbackFont) override;
   void GetWebFontRenderStyleForStrike(const char* family,
                                       int size,
                                       bool is_bold,
@@ -235,7 +235,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
   // unicode code points. It needs this information frequently so we cache it
   // here.
   base::Lock unicode_font_families_mutex_;
-  std::map<int32_t, blink::WebFallbackFont> unicode_font_families_;
+  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 };
@@ -303,7 +303,7 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 
 void RendererBlinkPlatformImpl::Shutdown() {
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
-  // SandboxSupport contains a map of WebFallbackFont objects, which hold
+  // SandboxSupport contains a map of OutOfProcessFont objects, which hold
   // WebStrings and WebVectors, which become invalidated when blink is shut
   // down. Hence, we need to clear that map now, just before blink::shutdown()
   // is called.
@@ -607,9 +607,9 @@ bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
 void RendererBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     blink::WebUChar32 character,
     const char* preferred_locale,
-    blink::WebFallbackFont* fallbackFont) {
+    blink::OutOfProcessFont* fallbackFont) {
   base::AutoLock lock(unicode_font_families_mutex_);
-  const std::map<int32_t, blink::WebFallbackFont>::const_iterator iter =
+  const std::map<int32_t, blink::OutOfProcessFont>::const_iterator iter =
       unicode_font_families_.find(character);
   if (iter != unicode_font_families_.end()) {
     fallbackFont->name = iter->second.name;

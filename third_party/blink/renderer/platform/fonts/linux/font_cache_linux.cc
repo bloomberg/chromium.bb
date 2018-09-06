@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
@@ -56,7 +56,7 @@ void FontCache::GetFontForCharacter(
     const char* preferred_locale,
     FontCache::PlatformFallbackFont* fallback_font) {
   if (Platform::Current()->GetSandboxSupport()) {
-    WebFallbackFont web_fallback_font;
+    OutOfProcessFont web_fallback_font;
     Platform::Current()->GetSandboxSupport()->GetFallbackFontForCharacter(
         c, preferred_locale, &web_fallback_font);
     fallback_font->name = web_fallback_font.name;
