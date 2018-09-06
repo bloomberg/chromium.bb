@@ -200,31 +200,6 @@ class AutofillCapturedSitesInteractiveTest
 
   bool ShowAutofillSuggestion(content::RenderFrameHost* frame,
                               const std::string& target_element_xpath) {
-    const std::string get_target_field_x_js(base::StringPrintf(
-        "window.domAutomationController.send("
-        "    (function() {"
-        "       try {"
-        "         const element = automation_helper.getElementByXpath(`%s`);"
-        "         const rect = element.getBoundingClientRect();"
-        "         console.log(`Window href x: ${location.href}`);"
-        "         return Math.floor(rect.left + rect.width / 2);"
-        "       } catch(ex) {}"
-        "       return -1;"
-        "    })());",
-        target_element_xpath.c_str()));
-    const std::string get_target_field_y_js(base::StringPrintf(
-        "window.domAutomationController.send("
-        "    (function() {"
-        "       try {"
-        "         const element = automation_helper.getElementByXpath(`%s`);"
-        "         const rect = element.getBoundingClientRect();"
-        "         console.log(`Window href y: ${location.href}`);"
-        "         return Math.floor(rect.top + rect.height / 2);"
-        "       } catch(ex) {}"
-        "       return -1;"
-        "    })());",
-        target_element_xpath.c_str()));
-
     // First, automation should focus on the frame containg the autofill form.
     // Doing so ensures that Chrome scrolls the element into view if the
     // element is off the page.
@@ -232,16 +207,10 @@ class AutofillCapturedSitesInteractiveTest
             frame, target_element_xpath))
       return false;
 
-    int x;
-    if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_x_js, &x))
-      return false;
-    if (x == -1)
-      return false;
-
-    int y;
-    if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_y_js, &y))
-      return false;
-    if (y == -1)
+    int x, y;
+    if (!captured_sites_test_utils::TestRecipeReplayer::
+            GetCenterCoordinateOfTargetElement(frame, target_element_xpath, x,
+                                               y))
       return false;
 
     test_delegate()->Reset();
