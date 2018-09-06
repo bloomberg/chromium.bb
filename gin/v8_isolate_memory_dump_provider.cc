@@ -90,6 +90,12 @@ void DumpCodeStatistics(base::trace_event::MemoryAllocatorDump* dump,
 //     - contexts
 //       - detached_context  10
 //       - native_context    20
+//   - workers
+//     - contexts
+//       - detached_context
+//         - isolate_0x1234  10
+//       - native_context
+//         - isolate_0x1234  20
 // ========================================
 void DumpContextStatistics(
     base::trace_event::ProcessMemoryDump* process_memory_dump,
@@ -97,8 +103,7 @@ void DumpContextStatistics(
     std::string dump_name_suffix,
     size_t number_of_detached_contexts,
     size_t number_of_native_contexts) {
-  std::string dump_name_prefix =
-      dump_base_name + "/contexts" + dump_name_suffix;
+  std::string dump_name_prefix = dump_base_name + "/contexts";
   std::string native_context_name =
       dump_name_prefix + "/native_context" + dump_name_suffix;
   auto* native_context_dump =
@@ -106,7 +111,8 @@ void DumpContextStatistics(
   native_context_dump->AddScalar(
       "object_count", base::trace_event::MemoryAllocatorDump::kUnitsObjects,
       number_of_native_contexts);
-  std::string detached_context_name = dump_name_prefix + "/detached_context";
+  std::string detached_context_name =
+      dump_name_prefix + "/detached_context" + dump_name_suffix;
   auto* detached_context_dump =
       process_memory_dump->CreateAllocatorDump(detached_context_name);
   detached_context_dump->AddScalar(
