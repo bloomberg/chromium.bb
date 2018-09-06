@@ -51,10 +51,15 @@ static bool EqualWithinMovementThreshold(const FloatPoint& a,
          fabs(a.Y() - b.Y()) < threshold_physical_px;
 }
 
-static bool SmallerThanRegionGranularity(const LayoutRect& rect,
+static bool SmallerThanRegionGranularity(const FloatRect& rect,
                                          float granularity_scale) {
-  return rect.Width().ToFloat() * granularity_scale < 0.5 ||
-         rect.Height().ToFloat() * granularity_scale < 0.5;
+  return rect.Width() * granularity_scale < 0.5 ||
+         rect.Height() * granularity_scale < 0.5;
+}
+
+static const TransformPaintPropertyNode* TransformNodeFor(
+    LayoutObject& object) {
+  return object.FirstFragment().LocalBorderBoxProperties().Transform();
 }
 
 #ifdef TRACE_JANK_REGIONS
@@ -82,74 +87,76 @@ JankTracker::JankTracker(LocalFrameView* frame_view)
              &JankTracker::TimerFired),
       max_distance_(0.0) {}
 
+void JankTracker::AccumulateJank(const LayoutObject& source,
+                                 const PaintLayer& painting_layer,
+                                 FloatRect old_rect,
+                                 FloatRect new_rect) {
+  if (old_rect.IsEmpty() || new_rect.IsEmpty())
+    return;
+
+  if (EqualWithinMovementThreshold(LogicalStart(old_rect, source),
+                                   LogicalStart(new_rect, source), source))
+    return;
+
+  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
+  float scale = RegionGranularityScale(viewport);
+
+  if (SmallerThanRegionGranularity(old_rect, scale) &&
+      SmallerThanRegionGranularity(new_rect, scale))
+    return;
+
+  const auto* local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
+  const auto* root_xform = TransformNodeFor(*source.View());
+
+  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, old_rect);
+  GeometryMapper::SourceToDestinationRect(local_xform, root_xform, new_rect);
+
+  if (!old_rect.Intersects(viewport) && !new_rect.Intersects(viewport))
+    return;
+
+  DVLOG(2) << source.DebugName() << " moved from " << old_rect.ToString()
+           << " to " << new_rect.ToString();
+
+  max_distance_ =
+      std::max(max_distance_, GetMoveDistance(old_rect, new_rect, source));
+
+  IntRect visible_old_rect = RoundedIntRect(old_rect);
+  visible_old_rect.Intersect(viewport);
+
+  IntRect visible_new_rect = RoundedIntRect(new_rect);
+  visible_new_rect.Intersect(viewport);
+
+  visible_old_rect.Scale(scale);
+  visible_new_rect.Scale(scale);
+
+  region_.Unite(Region(visible_old_rect));
+  region_.Unite(Region(visible_new_rect));
+}
+
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
                                        const LayoutRect& old_visual_rect,
                                        const PaintLayer& painting_layer) {
   if (!IsActive())
     return;
 
-  LayoutRect new_visual_rect = object.FirstFragment().VisualRect();
-  if (old_visual_rect.IsEmpty() || new_visual_rect.IsEmpty())
+  AccumulateJank(object, painting_layer, FloatRect(old_visual_rect),
+                 FloatRect(object.FirstFragment().VisualRect()));
+}
+
+void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
+                                             FloatRect old_layer_rect,
+                                             FloatRect new_layer_rect) {
+  if (!IsActive())
     return;
 
-  if (EqualWithinMovementThreshold(
-          LogicalStart(FloatRect(old_visual_rect), object),
-          LogicalStart(FloatRect(new_visual_rect), object), object))
-    return;
+  // Convert to the local transform space, whose origin is the layer's previous
+  // location because the property trees haven't been updated yet.
+  FloatPoint transform_parent_offset = -old_layer_rect.Location();
+  old_layer_rect.MoveBy(transform_parent_offset);
+  new_layer_rect.MoveBy(transform_parent_offset);
 
-  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
-  float scale = RegionGranularityScale(viewport);
-
-  if (SmallerThanRegionGranularity(old_visual_rect, scale) &&
-      SmallerThanRegionGranularity(new_visual_rect, scale))
-    return;
-
-  const auto* local_transform = painting_layer.GetLayoutObject()
-                                    .FirstFragment()
-                                    .LocalBorderBoxProperties()
-                                    .Transform();
-  const auto* ancestor_transform = painting_layer.GetLayoutObject()
-                                       .View()
-                                       ->FirstFragment()
-                                       .LocalBorderBoxProperties()
-                                       .Transform();
-
-  FloatRect old_visual_rect_abs = FloatRect(old_visual_rect);
-  GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
-                                          old_visual_rect_abs);
-
-  FloatRect new_visual_rect_abs = FloatRect(new_visual_rect);
-  GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
-                                          new_visual_rect_abs);
-
-  // TOOD(crbug.com/842282): Consider tracking a separate jank score for each
-  // transform space to avoid these local-to-absolute conversions, once we have
-  // a better idea of how to aggregate multiple scores for a page.
-  // See review thread of http://crrev.com/c/1046155 for more details.
-
-  if (!old_visual_rect_abs.Intersects(viewport) &&
-      !new_visual_rect_abs.Intersects(viewport))
-    return;
-
-  DVLOG(2) << object.DebugName() << " moved from "
-           << old_visual_rect_abs.ToString() << " to "
-           << new_visual_rect_abs.ToString();
-
-  max_distance_ = std::max(
-      max_distance_,
-      GetMoveDistance(old_visual_rect_abs, new_visual_rect_abs, object));
-
-  IntRect visible_old_visual_rect = RoundedIntRect(old_visual_rect_abs);
-  visible_old_visual_rect.Intersect(viewport);
-
-  IntRect visible_new_visual_rect = RoundedIntRect(new_visual_rect_abs);
-  visible_new_visual_rect.Intersect(viewport);
-
-  visible_old_visual_rect.Scale(scale);
-  visible_new_visual_rect.Scale(scale);
-
-  region_.Unite(Region(visible_old_visual_rect));
-  region_.Unite(Region(visible_new_visual_rect));
+  AccumulateJank(paint_layer.GetLayoutObject(), paint_layer, old_layer_rect,
+                 new_layer_rect);
 }
 
 void JankTracker::NotifyPrePaintFinished() {
