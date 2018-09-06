@@ -51,13 +51,17 @@ bool IsUserAllowedInner(const user_manager::User& user,
 }
 
 bool IsManagedSessionEnabled(const user_manager::User* active_user) {
+  // If the service doesn't exist or the policy is not set, enable managed
+  // session by default.
+  const bool managed_session_enabled_by_default = true;
+
   policy::DeviceLocalAccountPolicyService* service =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetDeviceLocalAccountPolicyService();
 
   if (!service)
-    return false;
+    return managed_session_enabled_by_default;
 
   const policy::PolicyMap::Entry* entry =
       service->GetBrokerForUser(active_user->GetAccountId().GetUserEmail())
@@ -66,9 +70,8 @@ bool IsManagedSessionEnabled(const user_manager::User* active_user) {
           ->policy_map()
           .Get(policy::key::kDeviceLocalAccountManagedSessionEnabled);
 
-  // If the policy is not set, enable managed session by default.
   if (!entry)
-    return true;
+    return managed_session_enabled_by_default;
 
   return entry && entry->value && entry->value->GetBool();
 }

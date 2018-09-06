@@ -36,6 +36,12 @@ bool ActiveTabPermissionGranterDelegateChromeOS::ShouldGrantActiveTabOrPrompt(
   if (g_resolved_callback)
     callback = *g_resolved_callback;
 
+  if (!profiles::ArePublicSessionRestrictionsEnabled()) {
+    if (callback)
+      callback.Run({APIPermission::kActiveTab});
+    return true;
+  }
+
   bool already_handled = permission_helper::HandlePermissionRequest(
       *extension, {APIPermission::kActiveTab}, web_contents, callback,
       permission_helper::PromptFactory());

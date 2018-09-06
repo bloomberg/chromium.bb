@@ -489,11 +489,14 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
 }
 
 // static
-void ExtensionTabUtil::SetPlatformDelegate(Delegate* delegate) {
+ExtensionTabUtil::Delegate* ExtensionTabUtil::SetPlatformDelegate(
+    Delegate* delegate) {
   // Allow setting it only once (also allow reset to nullptr, but then take
   // special care to free it).
   CHECK(!g_extension_tab_util_delegate || !delegate);
+  Delegate* previous_delegate = g_extension_tab_util_delegate;
   g_extension_tab_util_delegate = delegate;
+  return previous_delegate;
 }
 
 // static
