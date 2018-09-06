@@ -426,8 +426,7 @@ static const arg_def_t rowmtarg =
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
-    ARG_DEF(NULL, "tile-rows", 1,
-            "Number of tile rows to use, log2 (set to 0 while threads > 1)");
+    ARG_DEF(NULL, "tile-rows", 1, "Number of tile rows to use, log2");
 static const arg_def_t tile_width =
     ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
 static const arg_def_t tile_height =
