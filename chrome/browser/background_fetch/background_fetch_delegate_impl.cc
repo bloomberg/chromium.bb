@@ -418,6 +418,7 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
 void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
     const std::string& download_guid,
     const base::FilePath& path,
+    base::Optional<storage::BlobDataHandle> blob_handle,
     uint64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -438,7 +439,7 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
     client()->OnDownloadComplete(
         job_unique_id, download_guid,
         std::make_unique<content::BackgroundFetchResult>(
-            base::Time::Now(), path, base::nullopt /* blob_handle */, size));
+            base::Time::Now(), path, std::move(blob_handle), size));
   }
 
   job_details.current_download_guids.erase(
