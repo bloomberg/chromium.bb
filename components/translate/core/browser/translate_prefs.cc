@@ -839,13 +839,14 @@ int TranslatePrefs::GetForceTriggerOnEnglishPagesCount() const {
 
 void TranslatePrefs::ReportForceTriggerOnEnglishPages() {
   int current_count = GetForceTriggerOnEnglishPagesCount();
-  prefs_->SetInteger(kForceTriggerTranslateCount, current_count + 1);
+  if (current_count != -1)
+    prefs_->SetInteger(kForceTriggerTranslateCount, current_count + 1);
 }
 
 void TranslatePrefs::ReportAcceptedAfterForceTriggerOnEnglishPages() {
   int current_count = GetForceTriggerOnEnglishPagesCount();
-  if (current_count > 0)
-    prefs_->SetInteger(kForceTriggerTranslateCount, current_count - 1);
+  if (current_count != -1)
+    prefs_->SetInteger(kForceTriggerTranslateCount, -1);
 }
 
 // static

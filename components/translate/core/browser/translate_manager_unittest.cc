@@ -491,6 +491,13 @@ TEST_F(TranslateManagerTest,
   EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
               ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 2),
                           Bucket(INITIATION_STATUS_SHOW_ICON, 2)));
+
+  // Initiating Translation again should still show the UI because accepting
+  // once prevents backoff from occurring moving forward.
+  translate_manager_->InitiateTranslation("en");
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 3),
+                          Bucket(INITIATION_STATUS_SHOW_ICON, 3)));
 }
 
 TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
