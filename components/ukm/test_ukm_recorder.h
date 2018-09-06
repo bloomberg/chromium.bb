@@ -31,6 +31,8 @@ class TestUkmRecorder : public UkmRecorderImpl {
   bool ShouldRestrictToWhitelistedSourceIds() const override;
   bool ShouldRestrictToWhitelistedEntries() const override;
 
+  void AddEntry(mojom::UkmEntryPtr entry) override;
+
   size_t sources_count() const { return sources().size(); }
 
   size_t entries_count() const { return entries().size(); }
@@ -46,6 +48,10 @@ class TestUkmRecorder : public UkmRecorderImpl {
 
   // Gets UkmSource data for a single SourceId.
   const UkmSource* GetSourceForSourceId(ukm::SourceId source_id) const;
+
+  // Sets a callback that will be called when recording an entry for entry name.
+  void SetOnAddEntryCallback(base::StringPiece entry_name,
+                             base::OnceClosure on_add_entry);
 
   // Gets all of the entries recorded for entry name.
   std::vector<const mojom::UkmEntry*> GetEntriesByName(
@@ -75,6 +81,9 @@ class TestUkmRecorder : public UkmRecorderImpl {
                                        base::StringPiece metric_name);
 
  private:
+  uint64_t entry_hash_to_wait_for_;
+  base::OnceClosure on_add_entry_;
+
   DISALLOW_COPY_AND_ASSIGN(TestUkmRecorder);
 };
 
