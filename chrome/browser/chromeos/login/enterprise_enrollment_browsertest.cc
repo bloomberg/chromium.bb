@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_switches.h"
@@ -741,6 +743,21 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
   EXPECT_TRUE(IsStepDisplayed("signin"));
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has requisition, it gets applied at the
+// beginning.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDeviceRequisition) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  auto* policy_manager = g_browser_process->platform_part()
+                             ->browser_policy_connector_chromeos()
+                             ->GetDeviceCloudPolicyManager();
+  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
   // We have to remove the enrollment_helper before the dtor gets called.
   ResetHelper();
 }

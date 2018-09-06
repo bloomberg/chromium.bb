@@ -320,8 +320,8 @@ WizardController::WizardController()
         base::Bind(&WizardController::OnAccessibilityStatusChanged,
                    weak_factory_.GetWeakPtr()));
   }
-  oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
   OobeConfiguration::Get()->AddObserver(this);
+  OnOobeConfigurationChanged();
 }
 
 WizardController::~WizardController() {
@@ -1430,6 +1430,18 @@ void WizardController::OnOobeConfigurationChanged() {
       oobe_configuration_);
   if (current_screen_) {
     current_screen_->SetConfiguration(&oobe_configuration_, true /*notify */);
+  }
+  auto* requisition_value = oobe_configuration_.FindKeyOfType(
+      configuration::kDeviceRequisition, base::Value::Type::STRING);
+  if (requisition_value) {
+    auto* policy_manager = g_browser_process->platform_part()
+                               ->browser_policy_connector_chromeos()
+                               ->GetDeviceCloudPolicyManager();
+    if (policy_manager) {
+      VLOG(1) << "Using Device Requisition from configuration"
+              << requisition_value->GetString();
+      policy_manager->SetDeviceRequisition(requisition_value->GetString());
+    }
   }
 }
 
