@@ -9,11 +9,10 @@
 
 // clang-format off
 
-#include "third_party/blink/renderer/bindings/tests/results/core/v8_string_sequence_callback_function_long_sequence_arg.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_treat_non_object_as_null_void_function.h"
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
-#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -23,11 +22,11 @@
 
 namespace blink {
 
-const char* V8StringSequenceCallbackFunctionLongSequenceArg::NameInHeapSnapshot() const {
-  return "V8StringSequenceCallbackFunctionLongSequenceArg";
+const char* V8TreatNonObjectAsNullVoidFunction::NameInHeapSnapshot() const {
+  return "V8TreatNonObjectAsNullVoidFunction";
 }
 
-v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) {
+v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* callback_this_value) {
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
@@ -41,9 +40,9 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
             "invoke",
-            "StringSequenceCallbackFunctionLongSequenceArg",
+            "TreatNonObjectAsNullVoidFunction",
             "The provided callback is no longer runnable."));
-    return v8::Nothing<Vector<String>>();
+    return v8::Nothing<void>();
   }
 
   // step: Prepare to run script with relevant settings.
@@ -56,9 +55,12 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
   v8::Local<v8::Function> function;
   // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
-  //
-  // No [TreatNonObjectAsNull] presents.  Must be always callable.
-  DCHECK(CallbackObject()->IsFunction());
+  if (!CallbackObject()->IsFunction()) {
+    // Handle the special case of [TreatNonObjectAsNull].
+    //
+    // step 4.1. If the callback function's return type is void, return.
+    return v8::JustVoid();
+  }
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
@@ -68,13 +70,8 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
-  v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
-  ALLOW_UNUSED_LOCAL(argument_creation_context);
-  v8::Local<v8::Value> v8_arg = ToV8(arg, argument_creation_context, GetIsolate());
-  constexpr int argc = 1;
-  v8::Local<v8::Value> argv[] = { v8_arg };
-  static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
+  const int argc = 0;
+  v8::Local<v8::Value> *argv = nullptr;
 
   v8::Local<v8::Value> call_result;
   // step: Let callResult be Call(X, thisArg, esArgs).
@@ -87,29 +84,32 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
           GetIsolate()).ToLocal(&call_result)) {
     // step: If callResult is an abrupt completion, set completion to callResult
     //   and jump to the step labeled return.
-    return v8::Nothing<Vector<String>>();
+    return v8::Nothing<void>();
   }
 
   // step: Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
-  {
-    ExceptionState exception_state(GetIsolate(),
-                                   ExceptionState::kExecutionContext,
-                                   "StringSequenceCallbackFunctionLongSequenceArg",
-                                   "invoke");
-    auto native_result =
-        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
-            GetIsolate(), call_result, exception_state);
-    if (exception_state.HadException())
-      return v8::Nothing<Vector<String>>();
-    else
-      return v8::Just<Vector<String>>(native_result);
-  }
+  return v8::JustVoid();
 }
 
-v8::Maybe<Vector<String>> V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceArg>::Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) {
+void V8TreatNonObjectAsNullVoidFunction::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  v8::Maybe<void> maybe_result =
+      Invoke(callback_this_value);
+  // An exception if any is killed with the v8::TryCatch above.
+  ALLOW_UNUSED_LOCAL(maybe_result);
+}
+
+v8::Maybe<void> V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::Invoke(ScriptWrappable* callback_this_value) {
   return Proxy()->Invoke(
-      callback_this_value, arg);
+      callback_this_value);
+}
+
+void V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+  Proxy()->InvokeAndReportException(
+      callback_this_value);
 }
 
 }  // namespace blink

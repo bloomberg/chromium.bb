@@ -98,6 +98,7 @@ SameObject
 SaveSameObject
 SecureContext=|*
 SetterCallWith=ExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow
+TreatNonObjectAsNull
 TreatNullAs=NullString|EmptyString
 URL
 Unforgeable

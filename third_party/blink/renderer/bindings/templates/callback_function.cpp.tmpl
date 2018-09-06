@@ -19,6 +19,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
 {{callback_invoke(
     'callback function', 'invoke',
     return_cpp_type, native_value_traits_tag, arguments,
+    is_treat_non_object_as_null,
     callback_function_name, 'invoke')}}
 }
 
@@ -27,6 +28,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Construct({{argument_declarations[
 {{callback_invoke(
     'callback function', 'construct',
     return_cpp_type, native_value_traits_tag, arguments,
+    is_treat_non_object_as_null,
     callback_function_name, 'construct')}}
 }
 {% endif %}

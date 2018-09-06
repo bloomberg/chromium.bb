@@ -54,12 +54,11 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
       IncumbentScriptState()->GetContext());
 
   v8::Local<v8::Function> function;
-  // callback function\'s invoke:
+  // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
-  // case.
-  DCHECK(CallbackFunction()->IsFunction());
+  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
@@ -139,7 +138,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
   // Note that step 7. and 8. are side effect free (except for a very rare
   // exception due to no incumbent realm), so it's okay to put step 3. after
   // step 7. and 8.
-  if (!CallbackFunction()->IsConstructor()) {
+  if (!IsConstructor()) {
     V8ThrowException::ThrowTypeError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -150,12 +149,11 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
   }
 
   v8::Local<v8::Function> function;
-  // callback function\'s invoke:
+  // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
   //
-  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
-  // case.
-  DCHECK(CallbackFunction()->IsFunction());
+  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  DCHECK(CallbackObject()->IsFunction());
   function = CallbackFunction();
 
   // step: Let esArgs be the result of converting args to an ECMAScript

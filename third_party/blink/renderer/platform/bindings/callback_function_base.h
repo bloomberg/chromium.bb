@@ -31,9 +31,14 @@ class PLATFORM_EXPORT CallbackFunctionBase
 
   virtual void Trace(blink::Visitor* visitor);
 
+  v8::Local<v8::Object> CallbackObject() {
+    return callback_function_.NewLocal(GetIsolate());
+  }
+
   v8::Isolate* GetIsolate() const {
     return callback_relevant_script_state_->GetIsolate();
   }
+
   ScriptState* CallbackRelevantScriptState() {
     return callback_relevant_script_state_;
   }
@@ -42,16 +47,18 @@ class PLATFORM_EXPORT CallbackFunctionBase
   bool IsConstructor() const { return CallbackFunction()->IsConstructor(); }
 
  protected:
-  explicit CallbackFunctionBase(v8::Local<v8::Function>);
+  explicit CallbackFunctionBase(v8::Local<v8::Object>);
 
   v8::Local<v8::Function> CallbackFunction() const {
-    return callback_function_.NewLocal(GetIsolate());
+    return callback_function_.NewLocal(GetIsolate()).As<v8::Function>();
   }
   ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
 
  private:
   // The "callback function type" value.
-  TraceWrapperV8Reference<v8::Function> callback_function_;
+  // Use v8::Object instead of v8::Function in order to handle
+  // [TreatNonObjectAsNull].
+  TraceWrapperV8Reference<v8::Object> callback_function_;
   // The associated Realm of the callback function type value.
   Member<ScriptState> callback_relevant_script_state_;
   // The callback context, i.e. the incumbent Realm when an ECMAScript value is
@@ -92,7 +99,9 @@ class PLATFORM_EXPORT V8PersistentCallbackFunctionBase
 
  private:
   Member<CallbackFunctionBase> callback_function_;
-  v8::Persistent<v8::Function> v8_function_;
+  // Use v8::Object instead of v8::Function in order to handle
+  // [TreatNonObjectAsNull].
+  v8::Persistent<v8::Object> v8_function_;
 };
 
 // V8PersistentCallbackFunction<V8CallbackFunction> is a counter-part of

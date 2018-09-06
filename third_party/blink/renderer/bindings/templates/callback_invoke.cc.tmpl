@@ -11,12 +11,14 @@
       return_cpp_type = Blink (C++) return type
       return_native_value_traits_tag = tag of NativeValueTraits for return type
       arguments = dict of arguments\' info
+      is_treat_non_object_as_null = True if [TreatNonObjectAsNull]
       interface_name = interface name used for exception
       operation_name = interface name used for exception and property lookup
 #}
 {% macro callback_invoke(
     interface_or_function, invoke_or_construct,
     return_cpp_type, return_native_value_traits_tag, arguments,
+    is_treat_non_object_as_null,
     interface_name, operation_name) %}
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
@@ -53,7 +55,7 @@
   // Note that step 7. and 8. are side effect free (except for a very rare
   // exception due to no incumbent realm), so it's okay to put step 3. after
   // step 7. and 8.
-  if (!CallbackFunction()->IsConstructor()) {
+  if (!IsConstructor()) {
     V8ThrowException::ThrowTypeError(
         GetIsolate(),
         ExceptionMessages::FailedToExecute(
@@ -67,12 +69,36 @@
   v8::Local<v8::Function> function;
   {# Fill |function|. #}
   {% if interface_or_function == 'callback function' %}
-  // callback function\'s invoke:
+  // callback function's invoke:
   // step 4. If ! IsCallable(F) is false:
+  {% if is_treat_non_object_as_null %}
+  if (!CallbackObject()->IsFunction()) {
+    // Handle the special case of [TreatNonObjectAsNull].
+    //
+    {% if return_cpp_type == 'void' %}
+    // step 4.1. If the callback function's return type is void, return.
+    return v8::JustVoid();
+    {% else %}
+    // step 4.2. Return the result of converting undefined to the callback
+    //   function's return type.
+    ExceptionState exception_state(GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   "{{interface_name}}",
+                                   "{{operation_name}}");
+    auto native_result =
+        NativeValueTraits<{{return_native_value_traits_tag}}>::NativeValue(
+            GetIsolate(), v8::Undefined(GetIsolate()), exception_state);
+    if (exception_state.HadException())
+      return v8::Nothing<{{return_cpp_type}}>();
+    else
+      return v8::Just<{{return_cpp_type}}>(native_result);
+    {% endif %}{# if return_cpp_type == 'void' #}
+  }
+  {% else %}
   //
-  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
-  // case.
-  DCHECK(CallbackFunction()->IsFunction());
+  // No [TreatNonObjectAsNull] presents.  Must be always callable.
+  DCHECK(CallbackObject()->IsFunction());
+  {% endif %}
   function = CallbackFunction();
   {% else %}
   if (IsCallbackObjectCallable()) {
