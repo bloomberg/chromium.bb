@@ -133,17 +133,12 @@ CastRemotingConnector* CastRemotingConnector::Get(
   CastRemotingConnector* connector =
       static_cast<CastRemotingConnector*>(contents->GetUserData(kUserDataKey));
   if (!connector) {
-    // TODO(xjz): Use TabAndroid::GetAndroidId() to get the tab ID when support
-    // remoting on Android.
-    const SessionID tab_id = SessionTabHelper::IdForTab(contents);
-    if (!tab_id.is_valid())
-      return nullptr;
     if (!media_router::MediaRouterEnabled(contents->GetBrowserContext()))
       return nullptr;
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
-        tab_id,
+        SessionTabHelper::IdForTab(contents),
 #if defined(TOOLKIT_VIEWS) && \
     (!defined(OS_MACOSX) || defined(MAC_VIEWS_BROWSER))
         base::BindRepeating(
@@ -199,7 +194,15 @@ CastRemotingConnector::CastRemotingConnector(
       binding_(this),
       weak_factory_(this) {
   DCHECK(permission_request_callback_);
-  media_router_->RegisterRemotingSource(tab_id_, this);
+#if !defined(OS_ANDROID)
+  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid()) {
+    // Register this remoting source only when Mirroring Service is not used.
+    // Note: If mirroring service is not used, remoting is not supported for
+    // OffscreenTab mirroring as there is no valid tab_id associated with an
+    // OffscreenTab.
+    media_router_->RegisterRemotingSource(tab_id_, this);
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 CastRemotingConnector::~CastRemotingConnector() {
@@ -212,7 +215,10 @@ CastRemotingConnector::~CastRemotingConnector() {
     notifyee->OnSinkGone();
     notifyee->OnCastRemotingConnectorDestroyed();
   }
-  media_router_->UnregisterRemotingSource(tab_id_);
+#if !defined(OS_ANDROID)
+  if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid())
+    media_router_->UnregisterRemotingSource(tab_id_);
+#endif  // !defined(OS_ANDROID)
 }
 
 void CastRemotingConnector::ConnectToService(
