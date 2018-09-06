@@ -16,13 +16,19 @@ extern const char kWelcomeNext[];
 
 extern const char kNetworkSelectGUID[];
 
-extern const char kEULASendUsageStatistics[];
+extern const char kDeviceRequisition[];
 
+extern const char kEULASendUsageStatistics[];
 extern const char kEULAAutoAccept[];
 
 extern const char kUpdateSkipUpdate[];
 
 extern const char kWizardAutoEnroll[];
+
+extern const char kEnrollmentLicenseType[];
+extern const char kEnrollmentAssetId[];
+extern const char kEnrollmentLocation[];
+extern const char kEnrollmentAutoAttributes[];
 
 enum class ConfigurationHandlerSide : unsigned int {
   HANDLER_JS,    // Handled by JS code
@@ -40,7 +46,6 @@ bool ValidateConfiguration(const base::Value& configuration);
 void FilterConfiguration(const base::Value& configuration,
                          ConfigurationHandlerSide side,
                          base::Value& filtered_result);
-
 }  // namespace configuration
 }  // namespace chromeos
 

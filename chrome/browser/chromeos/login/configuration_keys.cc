@@ -44,6 +44,27 @@ const char kUpdateSkipUpdate[] = "updateSkip";
 // enrollment at appropriate moment.
 const char kWizardAutoEnroll[] = "wizardAutoEnroll";
 
+// String value, containing device requisition parameter.
+const char kDeviceRequisition[] = "deviceRequisition";
+
+// == Enrollment screen
+
+// String value indicating which license type should automatically be used if
+// license selection is done on a client side.
+const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
+
+// String value indicating what value would be propagated to Asset ID field
+// on Device Attributes step.
+const char kEnrollmentAssetId[] = "enrollmentAssetId";
+
+// String value indicating what value would be propagated to Location field
+// on Device Attributes step.
+const char kEnrollmentLocation[] = "enrollmentLocation";
+
+// Boolean value, controls if device attributes step should proceed with preset
+// values.
+const char kEnrollmentAutoAttributes[] = "enrollmentAutoAttributes";
+
 using ValueType = base::Value::Type;
 
 constexpr struct {
@@ -60,6 +81,14 @@ constexpr struct {
     {kUpdateSkipUpdate, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kWizardAutoEnroll, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kDeviceRequisition, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnrollmentLicenseType, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnrollmentLocation, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnrollmentLocation, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {"desc", ValueType::STRING, ConfigurationHandlerSide::HANDLER_DOC},
     {"testValue", ValueType::STRING, ConfigurationHandlerSide::HANDLER_BOTH},
