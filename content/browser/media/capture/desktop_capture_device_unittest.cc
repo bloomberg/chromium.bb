@@ -236,12 +236,6 @@ class DesktopCaptureDeviceTest : public testing::Test {
               EXPECT_TRUE(format == media::PIXEL_FORMAT_I420);
               return media::VideoCaptureDevice::Client::Buffer();
             }));
-    ON_CALL(*result, ResurrectLastOutputBuffer(_, _, _))
-        .WillByDefault(
-            Invoke([](const gfx::Size&, media::VideoPixelFormat format, int) {
-              EXPECT_TRUE(format == media::PIXEL_FORMAT_I420);
-              return media::VideoCaptureDevice::Client::Buffer();
-            }));
     return result;
   }
 

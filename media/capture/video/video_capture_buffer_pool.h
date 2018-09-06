@@ -81,17 +81,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   // of ReserveForProducer().
   virtual void RelinquishProducerReservation(int buffer_id) = 0;
 
-  // Attempt to reserve the same buffer that was relinquished in the last call
-  // to RelinquishProducerReservation(). If the buffer is not still being
-  // consumed, and has not yet been re-used since being consumed, and the
-  // specified |dimensions|, |format|, and |storage| agree with its last
-  // reservation, this will succeed. Otherwise, |kInvalidId| will be returned.
-  //
-  // A producer may assume the content of the buffer has been preserved and may
-  // also make modifications.
-  virtual int ResurrectLastForProducer(const gfx::Size& dimensions,
-                                       VideoPixelFormat format) = 0;
-
   // Returns a snapshot of the current number of buffers in-use divided by the
   // maximum |count_|.
   virtual double GetBufferPoolUtilization() const = 0;

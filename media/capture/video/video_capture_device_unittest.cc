@@ -258,7 +258,6 @@ class VideoCaptureDeviceTest
     auto result = std::make_unique<MockVideoCaptureDeviceClient>();
     ON_CALL(*result, OnError(_, _, _)).WillByDefault(Invoke(DumpError));
     EXPECT_CALL(*result, ReserveOutputBuffer(_, _, _)).Times(0);
-    EXPECT_CALL(*result, ResurrectLastOutputBuffer(_, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
         .Times(0);
