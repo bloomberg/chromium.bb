@@ -123,7 +123,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // one of the roots.
   bool HasAtLeastOneRootWithCompositorFrameSink();
 
-  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+  // Returns true if |window| has been exposed to this client. A client
+  // typically only sees a limited set of windows that may exist. The set of
+  // windows exposed to the client are referred to as the known windows.
+  bool IsWindowKnown(aura::Window* window) const;
+
+  ClientWindowId ClientWindowIdForWindow(aura::Window* window) const;
 
  private:
   friend class ClientRoot;
@@ -161,6 +166,22 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
     kDestructor,
   };
 
+  // Used to track every window known to the client.
+  struct KnownWindow {
+    KnownWindow();
+    ~KnownWindow();
+
+    // Id for the window.
+    ClientWindowId client_window_id;
+
+    // If non-null, the client created the window and owns it. During window
+    // destruction this may be destroyed before the entry is moved. If you need
+    // to know if the client created the window, use the |is_client_created|.
+    std::unique_ptr<aura::Window> owned_window;
+
+    bool is_client_created = false;
+  };
+
   // Creates a new ClientRoot. The returned ClientRoot is owned by this.
   // |is_top_level| is true if this is called from
   // WindowTree::NewTopLevelWindow().
@@ -181,10 +202,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ClientRoots::iterator FindClientRootWithRoot(aura::Window* window);
 
-  // Returns true if |window| has been exposed to this client. A client
-  // typically only sees a limited set of windows that may exist. The set of
-  // windows exposed to the client are referred to as the known windows.
-  bool IsWindowKnown(aura::Window* window) const;
   bool IsWindowRootOfAnotherClient(aura::Window* window) const;
 
   // Called when one of the windows known to the client loses capture.
@@ -213,6 +230,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // fails or gets canceled).
   void OnPerformDragDropDone(uint32_t change_id, int drag_result);
 
+  // Returns the first window in |known_windows_map_| that was created by
+  // the client; null if the client did not create an windows.
+  aura::Window* FindFirstClientCreatedWindow();
+
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
       const ClientWindowId& id,
@@ -221,7 +242,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Adds/removes a Window from the set of windows known to the client. This
   // also adds or removes any observers that may need to be installed.
-  void AddWindowToKnownWindows(aura::Window* window, const ClientWindowId& id);
+  void AddWindowToKnownWindows(aura::Window* window,
+                               const ClientWindowId& id,
+                               std::unique_ptr<aura::Window> owned_window);
 
   // |delete_if_owned| indicates if |window| should be deleted if this client
   // created it. |delete_if_owned| is false only if the window was externally
@@ -457,20 +480,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   ClientRoots client_roots_;
 
-  // Set of windows this client created. The values are the same as key, but
-  // put inside a unique_ptr to reinforce this class owns these Windows.
-  // Ideally set would be used, but sets have some painful restrictions
-  // (c++17's set::extract() may make it possible to use a set again).
-  std::unordered_map<aura::Window*, std::unique_ptr<aura::Window>>
-      client_created_windows_;
-
-  // These contain mappings for known windows. At a minimum this contains the
-  // windows in |client_created_windows_|. It will also contain any windows
-  // that are exposed (known) to this client for various reasons. For example,
-  // if this client is the result of an embedding then the window at the embed
-  // point (the root window of the ClientRoot) was not created by this client,
-  // but is known and in these mappings.
-  std::map<aura::Window*, ClientWindowId> window_to_client_window_id_map_;
+  // These contain mappings for known windows, see KnownWindow for details on
+  // it. This contains all windows created by the client, as well as windows
+  // known to the client. For example,if this client is the result of an
+  // embedding then the window at the embed point (the root window of the
+  // ClientRoot) was not created by this client, but is known and in these
+  // mappings.
+  std::map<aura::Window*, KnownWindow> known_windows_map_;
   std::unordered_map<ClientWindowId, aura::Window*, ClientWindowIdHash>
       client_window_id_to_window_map_;
 
