@@ -70,6 +70,8 @@ class DocumentProvider : public AutocompleteProvider {
                            ParseDocumentSearchResultsWithBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsWithIneligibleFlag);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, GenerateLastModifiedString);
+
   DocumentProvider(AutocompleteProviderClient* client,
                    AutocompleteProviderListener* listener);
 
@@ -104,6 +106,14 @@ class DocumentProvider : public AutocompleteProvider {
   // Returns true if |matches| was populated with fresh suggestions.
   bool ParseDocumentSearchResults(const base::Value& root_val,
                                   ACMatches* matches);
+
+  // Generates the localized last-modified timestamp to present to the user.
+  // Full date for old files, mm/dd within the same calendar year, or time-of-
+  // day if a file was modified on the same date.
+  // |now| should generally be base::Time::Now() but is passed in for testing.
+  static base::string16 GenerateLastModifiedString(
+      const std::string& modified_timestamp_string,
+      base::Time now);
 
   // Whether the server has instructed us to backoff for this session (in
   // cases where the corpus is uninteresting).

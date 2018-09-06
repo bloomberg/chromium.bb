@@ -119,7 +119,8 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
     DCHECK_EQ(AutocompleteMatch::SanitizeString(i.description),
               i.description);
     matches_.push_back(i);
-    if (!AutocompleteMatch::IsSearchType(i.type)) {
+    if (!AutocompleteMatch::IsSearchType(i.type) &&
+        i.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
       const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
           OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input));
       bool emphasize = false;
