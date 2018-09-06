@@ -38131,6 +38131,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="Password Alert mode: no need to send ping"/>
   <int value="19" label="Turned off by enterprise admin"/>
   <int value="20" label="SafeBrowsing disabled"/>
+  <int value="21" label="User not signed in"/>
 </enum>
 
 <enum name="PasswordProtectionSyncAccountType">

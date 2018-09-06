@@ -303,62 +303,121 @@ TEST_F(ChromePasswordProtectionServiceTest,
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &reason));
   EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyUserPopulationForProtectedPasswordEntryPing) {
+       VerifyUserPopulationForSavedPasswordEntryPing) {
+  RequestOutcome reason;
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SAVED_PASSWORD, &reason));
+
+  service_->ConfigService(false /*incognito*/, true /*SBER*/);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SAVED_PASSWORD, &reason));
+
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SAVED_PASSWORD, &reason));
+
+  service_->ConfigService(true /*incognito*/, true /*SBER*/);
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SAVED_PASSWORD, &reason));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyUserPopulationForSyncPasswordEntryPing) {
+  // If user is not signed in, no ping should be sent.
+  RequestOutcome reason;
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
+  EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
+
+  service_->ConfigService(false /*incognito*/, true /*SBER*/);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
+  EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
+
+  service_->ConfigService(true /*incognito*/, false /*SBER*/);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
+  EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
+
+  service_->ConfigService(true /*incognito*/, true /*SBER*/);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
+  EXPECT_EQ(RequestOutcome::USER_NOT_SIGNED_IN, reason);
+
   SigninManagerFactory::GetForProfile(profile())->SetAuthenticatedAccountInfo(
       kTestGaiaID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
                    std::string(kTestGaiaID), std::string(kTestEmail));
 
-  // Protected password entry pinging is enabled by default.
-  RequestOutcome reason;
+  // Sync password entry pinging is enabled by default.
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
 
-  // If password protection pinging is disabled by policy,
+  // If sync password entry pinging is disabled by policy,
   // |IsPingingEnabled(..)| should return false.
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_PROTECTION_OFF);
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
   EXPECT_EQ(RequestOutcome::TURNED_OFF_BY_ADMIN, reason);
 
   profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
                                     PASSWORD_REUSE);
   EXPECT_FALSE(service_->IsPingingEnabled(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
   EXPECT_EQ(RequestOutcome::PASSWORD_ALERT_MODE, reason);
 }
 
@@ -1114,7 +1173,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifySendsPingForAboutBlank) {
   RequestOutcome reason;
   EXPECT_TRUE(service_->CanSendPing(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, GURL("about:blank"),
-      PasswordReuseEvent::SIGN_IN_PASSWORD, &reason));
+      PasswordReuseEvent::SAVED_PASSWORD, &reason));
 }
 
 }  // namespace safe_browsing
