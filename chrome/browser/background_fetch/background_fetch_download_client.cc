@@ -77,7 +77,8 @@ void BackgroundFetchDownloadClient::OnDownloadSucceeded(
     const std::string& guid,
     const download::CompletionInfo& info) {
   if (delegate_)
-    delegate_->OnDownloadSucceeded(guid, info.path, info.bytes_downloaded);
+    delegate_->OnDownloadSucceeded(guid, info.path, info.blob_handle,
+                                   info.bytes_downloaded);
 }
 
 bool BackgroundFetchDownloadClient::CanServiceRemoveDownloadedFile(
