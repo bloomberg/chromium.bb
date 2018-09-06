@@ -88,6 +88,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testHoverOverElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2575
+    'ChromeDriverTest.testTakeElementScreenshotInIframe',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -1698,17 +1700,31 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testTakeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
-                      '/chromedriver/page_with_redBox.html'))
+                      '/chromedriver/page_with_redbox.html'))
     elementScreenshot = self._driver.FindElement(
         'id', 'box').TakeElementScreenshot()
     self.assertIsNotNone(elementScreenshot)
     dataActualScreenshot = base64.b64decode(elementScreenshot)
     filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
                                               'chromedriver/goldenScreenshots',
-                                              'redBoxScreenshot.png')
+                                              'redboxScreenshot.png')
     imageGoldenScreenshot = open(filenameOfGoldenScreenshot, 'rb').read()
     self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
 
+  def testTakeElementScreenshotInIframe(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+                      '/chromedriver/page_with_iframe_redbox.html'))
+    frame = self._driver.FindElement('id', 'frm')
+    self._driver.SwitchToFrame(frame)
+    elementScreenshot = self._driver.FindElement(
+        'id', 'box').TakeElementScreenshot()
+    self.assertIsNotNone(elementScreenshot)
+    dataActualScreenshot = base64.b64decode(elementScreenshot)
+    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
+                                            'chromedriver/goldenScreenshots',
+                                            'redboxScreenshot.png')
+    imageGoldenScreenshot= open(filenameOfGoldenScreenshot, 'rb').read()
+    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
