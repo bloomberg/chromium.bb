@@ -62,7 +62,7 @@
 @synthesize suggestions = _suggestions;
 @synthesize suggestionRetrievalComplete = _suggestionRetrievalComplete;
 
-- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState {
   self.suggestionRetrievalComplete = NO;
   [super retrieveSuggestionsForForm:params webState:webState];

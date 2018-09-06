@@ -10,18 +10,19 @@
 #include "base/macros.h"
 
 namespace web {
-struct FormActivityParams;
 class WebState;
 }  // namespace web
 
 namespace autofill {
+
+struct FormActivityParams;
 
 class TestFormActivityTabHelper {
  public:
   explicit TestFormActivityTabHelper(web::WebState* web_state);
   ~TestFormActivityTabHelper();
 
-  void FormActivityRegistered(const web::FormActivityParams& params);
+  void FormActivityRegistered(const FormActivityParams& params);
   void DocumentSubmitted(const std::string& form_name,
                          bool has_user_gesture,
                          bool form_in_main_frame);

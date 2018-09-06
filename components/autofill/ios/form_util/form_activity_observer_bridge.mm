@@ -26,7 +26,7 @@ FormActivityObserverBridge::~FormActivityObserverBridge() {
 
 void FormActivityObserverBridge::FormActivityRegistered(
     web::WebState* web_state,
-    const web::FormActivityParams& params) {
+    const FormActivityParams& params) {
   DCHECK_EQ(web_state, web_state_);
   if ([owner_
           respondsToSelector:@selector(webState:didRegisterFormActivity:)]) {

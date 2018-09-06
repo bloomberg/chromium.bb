@@ -1,12 +1,12 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_FORM_ACTIVITY_PARAMS_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_FORM_ACTIVITY_PARAMS_H_
+#ifndef COMPONENTS_AUTOFILL_IOS_FORM_UTIL_FORM_ACTIVITY_PARAMS_H_
+#define COMPONENTS_AUTOFILL_IOS_FORM_UTIL_FORM_ACTIVITY_PARAMS_H_
 
 #include <string>
 
-namespace web {
+namespace autofill {
 
 // Wraps information about event happening in a form.
 // Example HTML
@@ -48,6 +48,6 @@ struct FormActivityParams {
   bool has_user_gesture = false;
 };
 
-}  // namespace web
+}  // namespace autofill
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_FORM_ACTIVITY_PARAMS_H_
+#endif  // COMPONENTS_AUTOFILL_IOS_FORM_UTIL_FORM_ACTIVITY_PARAMS_H_

@@ -50,7 +50,7 @@
 }
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params {
   _formActivityInfo = std::make_unique<autofill::TestFormActivityInfo>();
   _formActivityInfo->web_state = webState;
   _formActivityInfo->form_activity = params;
@@ -91,7 +91,7 @@ TEST_F(FormActivityObserverBridgeTest, DocumentSubmitted) {
 TEST_F(FormActivityObserverBridgeTest, FormActivityRegistered) {
   ASSERT_FALSE([observer_ formActivityInfo]);
 
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form-name";
   params.field_name = "field-name";
   params.field_type = "field-type";

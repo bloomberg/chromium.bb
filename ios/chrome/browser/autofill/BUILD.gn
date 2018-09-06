@@ -52,6 +52,7 @@ source_set("autofill") {
     "//base:i18n",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/form_util",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/prefs",

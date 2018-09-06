@@ -14,9 +14,12 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
+namespace autofill {
+struct FormActivityParams;
+}
+
 namespace web {
 class WebState;
-struct FormActivityParams;
 }
 
 @protocol CRWWebViewProxy;
@@ -38,7 +41,7 @@ struct FormActivityParams;
 
 // Finds a FormSuggestionProvider that can supply suggestions for the specified
 // form, requests them, and updates the view accordingly.
-- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState;
 
 // Instructs the controller to detach itself from the WebState.

@@ -13,6 +13,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
@@ -20,7 +21,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
@@ -259,7 +259,7 @@ TEST_F(FormSuggestionControllerTest,
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
 
   // Trigger form activity, which should set up the suggestions view.
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";
@@ -278,7 +278,7 @@ TEST_F(FormSuggestionControllerTest,
 
 // Tests that "blur" events are ignored.
 TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";
@@ -296,7 +296,7 @@ TEST_F(FormSuggestionControllerTest,
   // Set up the controller without any providers.
   SetUpController(@[]);
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";
@@ -325,7 +325,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
 
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";
@@ -375,7 +375,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
 
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";
@@ -415,7 +415,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
       [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
   SetUpController(@[ provider ]);
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
-  web::FormActivityParams params;
+  autofill::FormActivityParams params;
   params.form_name = "form";
   params.field_name = "field";
   params.field_identifier = "field_id";

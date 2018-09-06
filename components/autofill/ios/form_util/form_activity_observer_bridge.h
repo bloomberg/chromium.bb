@@ -14,7 +14,7 @@
 @optional
 // Invoked by WebStateObserverBridge::FormActivity.
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params;
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params;
 
 // Invoked by WebStateObserverBridge::DidSubmitDocument.
 - (void)webState:(web::WebState*)webState
@@ -41,8 +41,9 @@ class FormActivityObserverBridge : public FormActivityObserver {
   ~FormActivityObserverBridge() override;
 
   // FormActivityObserver overrides:
-  void FormActivityRegistered(web::WebState* web_state,
-                              const web::FormActivityParams& params) override;
+  void FormActivityRegistered(
+      web::WebState* web_state,
+      const FormActivityParams& params) override;
 
   void DocumentSubmitted(web::WebState* web_state,
                          const std::string& form_name,

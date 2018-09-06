@@ -65,7 +65,6 @@ source_set("public") {
     "web_client.h",
     "web_kit_constants.h",
     "web_state/context_menu_params.h",
-    "web_state/form_activity_params.h",
     "web_state/global_web_state_observer.h",
     "web_state/js/crw_js_injection_evaluator.h",
     "web_state/js/crw_js_injection_manager.h",
