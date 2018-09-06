@@ -292,13 +292,18 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
         suggestion.suggestion().substr(input.text().length());
     match.allowed_to_be_default_match = true;
   }
-  match.fill_into_edit.append(suggestion.suggestion());
 
   const TemplateURLRef& search_url = template_url->url_ref();
   DCHECK(search_url.SupportsReplacement(search_terms_data));
-  match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
-  match.search_terms_args->original_query = input.text();
+  base::string16 query(suggestion.suggestion());
+  base::string16 original_query(input.text());
+  if (suggestion.type() == AutocompleteMatchType::CALCULATOR) {
+    query = original_query;
+    original_query.clear();
+  }
+  match.fill_into_edit.append(query);
+  match.search_terms_args.reset(new TemplateURLRef::SearchTermsArgs(query));
+  match.search_terms_args->original_query = original_query;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->additional_query_params =
       suggestion.additional_query_params();
