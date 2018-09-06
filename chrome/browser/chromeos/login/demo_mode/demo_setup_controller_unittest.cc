@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -247,6 +248,24 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
+  tested_controller_->Enroll(
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
+                     base::Unretained(helper_.get())),
+      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
+                     base::Unretained(helper_.get())));
+
+  EXPECT_TRUE(helper_->WaitResult(false));
+  EXPECT_FALSE(helper_->IsErrorFatal());
+}
+
+TEST_F(DemoSetupControllerTest, OnlineComponentError) {
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
+  tested_controller_->SetCrOSComponentLoadErrorForTest(
+      component_updater::CrOSComponentManager::Error::
+          COMPATIBILITY_CHECK_FAILED);
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
