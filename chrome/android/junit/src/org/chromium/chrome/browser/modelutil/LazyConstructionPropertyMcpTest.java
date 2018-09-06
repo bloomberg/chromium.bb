@@ -57,6 +57,7 @@ public class LazyConstructionPropertyMcpTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mModel = new PropertyModel(ALL_PROPERTIES);
+        mModel.set(VISIBILITY, false);
         mViewProvider = new FakeViewProvider<>();
         mModel.addObserver((source, propertyKey) -> {
             // Forward model changes to the model observer if it exists. It's important for the test
@@ -70,7 +71,7 @@ public class LazyConstructionPropertyMcpTest {
         LazyConstructionPropertyMcp.create(mModel, VISIBILITY, mViewProvider, mViewBinder);
         assertFalse(mViewProvider.inflationHasStarted());
 
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(VISIBILITY, true);
 
         assertTrue(mViewProvider.inflationHasStarted());
         mViewProvider.finishInflation(mView);
@@ -82,8 +83,8 @@ public class LazyConstructionPropertyMcpTest {
     @Test
     public void testUpdatesBeforeInflation() {
         LazyConstructionPropertyMcp.create(mModel, VISIBILITY, mViewProvider, mViewBinder);
-        mModel.setValue(STRING_PROPERTY, "foo");
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(STRING_PROPERTY, "foo");
+        mModel.set(VISIBILITY, true);
         assertTrue(mViewProvider.inflationHasStarted());
         mViewProvider.finishInflation(mView);
         ShadowLooper.idleMainLooper();
@@ -95,17 +96,17 @@ public class LazyConstructionPropertyMcpTest {
         LazyConstructionPropertyMcp.create(mModel, VISIBILITY, mViewProvider, mViewBinder);
 
         // Show the view and pump the looper to do the initial bind.
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(VISIBILITY, true);
         assertTrue(mViewProvider.inflationHasStarted());
         mViewProvider.finishInflation(mView);
         ShadowLooper.idleMainLooper();
         verifyBind(VISIBILITY);
         Mockito.<ViewBinder>reset(mViewBinder);
 
-        mModel.setValue(INT_PROPERTY, 42);
+        mModel.set(INT_PROPERTY, 42);
         verifyBind(INT_PROPERTY);
 
-        mModel.setValue(VISIBILITY, false);
+        mModel.set(VISIBILITY, false);
         verifyBind(VISIBILITY);
     }
 
@@ -114,48 +115,49 @@ public class LazyConstructionPropertyMcpTest {
         LazyConstructionPropertyMcp.create(mModel, VISIBILITY, mViewProvider, mViewBinder);
 
         // Show the view and pump the looper to do the initial bind, then hide the view again.
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(VISIBILITY, true);
         assertTrue(mViewProvider.inflationHasStarted());
         mViewProvider.finishInflation(mView);
         ShadowLooper.idleMainLooper();
         verifyBind(VISIBILITY);
 
-        mModel.setValue(VISIBILITY, false);
+        mModel.set(VISIBILITY, false);
         verify(mViewBinder, times(2)).bind(eq(mModel), eq(mView), eq(VISIBILITY));
         Mockito.<ViewBinder>reset(mViewBinder);
 
         // While the view is hidden, the binder should not be invoked.
-        mModel.setValue(STRING_PROPERTY, "foo");
-        mModel.setValue(STRING_PROPERTY, "bar");
+        mModel.set(STRING_PROPERTY, "foo");
+        mModel.set(STRING_PROPERTY, "bar");
         verify(mViewBinder, never())
                 .bind(any(PropertyModel.class), any(View.class), any(PropertyKey.class));
 
         // When the view is shown, all pending updates should be dispatched, coalescing updates to
         // the same property.
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(VISIBILITY, true);
         verifyBind(VISIBILITY, STRING_PROPERTY);
     }
 
     @Test
     public void testReentrantUpdates() {
+        mModel.set(INT_PROPERTY, 0);
         LazyConstructionPropertyMcp.create(mModel, VISIBILITY, mViewProvider, mViewBinder);
 
         // Increase INT_PROPERTY any time visibility changes.
         mModelObserver = (source, propertyKey) -> {
             if (propertyKey != VISIBILITY) return;
-            mModel.setValue(INT_PROPERTY, mModel.getValue(INT_PROPERTY) + 1);
+            mModel.set(INT_PROPERTY, mModel.get(INT_PROPERTY) + 1);
         };
 
-        mModel.setValue(VISIBILITY, true);
+        mModel.set(VISIBILITY, true);
         mViewProvider.finishInflation(mView);
         ShadowLooper.idleMainLooper();
         verifyBind(VISIBILITY, INT_PROPERTY);
-        assertThat(mModel.getValue(INT_PROPERTY), is(1));
+        assertThat(mModel.get(INT_PROPERTY), is(1));
         Mockito.<ViewBinder>reset(mViewBinder);
 
-        mModel.setValue(VISIBILITY, false);
+        mModel.set(VISIBILITY, false);
         verifyBind(INT_PROPERTY, VISIBILITY);
-        assertThat(mModel.getValue(INT_PROPERTY), is(2));
+        assertThat(mModel.get(INT_PROPERTY), is(2));
     }
 
     private void verifyBind(PropertyKey... properties) {

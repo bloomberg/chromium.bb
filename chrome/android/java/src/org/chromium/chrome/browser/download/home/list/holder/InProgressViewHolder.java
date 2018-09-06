@@ -53,8 +53,8 @@ public class InProgressViewHolder extends ListItemViewHolder {
     public void bind(PropertyModel properties, ListItem item) {
         ListItem.OfflineItemListItem offlineItem = (ListItem.OfflineItemListItem) item;
         mTitle.setText(offlineItem.item.title);
-        mCancelButton.setOnClickListener(v
-                -> properties.getValue(ListProperties.CALLBACK_CANCEL).onResult(offlineItem.item));
+        mCancelButton.setOnClickListener(
+                v -> properties.get(ListProperties.CALLBACK_CANCEL).onResult(offlineItem.item));
 
         if (offlineItem.item.state == OfflineItemState.PAUSED) {
             mPauseResumeButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
@@ -70,9 +70,9 @@ public class InProgressViewHolder extends ListItemViewHolder {
         mCaption.setText(DownloadUtils.getProgressTextForNotification(offlineItem.item.progress));
         mPauseResumeButton.setOnClickListener(view -> {
             if (offlineItem.item.state == OfflineItemState.PAUSED) {
-                properties.getValue(ListProperties.CALLBACK_RESUME).onResult(offlineItem.item);
+                properties.get(ListProperties.CALLBACK_RESUME).onResult(offlineItem.item);
             } else {
-                properties.getValue(ListProperties.CALLBACK_PAUSE).onResult(offlineItem.item);
+                properties.get(ListProperties.CALLBACK_PAUSE).onResult(offlineItem.item);
             }
         });
 

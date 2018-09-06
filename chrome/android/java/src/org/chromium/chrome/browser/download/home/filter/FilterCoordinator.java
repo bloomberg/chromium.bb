@@ -52,10 +52,10 @@ public class FilterCoordinator {
         mView = new FilterView(context);
         PropertyModelChangeProcessor.create(mModel, mView, new FilterViewBinder());
 
-        mModel.setValue(FilterProperties.CHANGE_LISTENER, this::handleTabSelected);
+        mModel.set(FilterProperties.CHANGE_LISTENER, this::handleTabSelected);
         selectTab(TabType.FILES);
 
-        mModel.setValue(FilterProperties.SHOW_TABS, prefetchStatusProvider.enabled());
+        mModel.set(FilterProperties.SHOW_TABS, prefetchStatusProvider.enabled());
     }
 
     /** @return The {@link View} representing this widget. */
@@ -87,12 +87,12 @@ public class FilterCoordinator {
     }
 
     private void selectTab(@TabType int selectedTab) {
-        mModel.setValue(FilterProperties.SELECTED_TAB, selectedTab);
+        mModel.set(FilterProperties.SELECTED_TAB, selectedTab);
 
         if (selectedTab == TabType.FILES) {
-            mModel.setValue(FilterProperties.CONTENT_VIEW, mChipsCoordinator.getView());
+            mModel.set(FilterProperties.CONTENT_VIEW, mChipsCoordinator.getView());
         } else if (selectedTab == TabType.PREFETCH) {
-            mModel.setValue(FilterProperties.CONTENT_VIEW, null);
+            mModel.set(FilterProperties.CONTENT_VIEW, null);
         }
     }
 
@@ -115,6 +115,6 @@ public class FilterCoordinator {
     }
 
     private void handleChipSelected() {
-        handleTabSelected(mModel.getValue(FilterProperties.SELECTED_TAB));
+        handleTabSelected(mModel.get(FilterProperties.SELECTED_TAB));
     }
 }

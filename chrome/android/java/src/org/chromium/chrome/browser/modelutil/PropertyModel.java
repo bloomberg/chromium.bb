@@ -58,7 +58,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Get the current value from the float based key.
      */
-    public float getValue(FloatPropertyKey key) {
+    public float get(FloatPropertyKey key) {
         validateKey(key);
         FloatContainer container = (FloatContainer) mData.get(key);
         return container == null ? 0f : container.value;
@@ -67,7 +67,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Set the value for the float based key.
      */
-    public void setValue(FloatPropertyKey key, float value) {
+    public void set(FloatPropertyKey key, float value) {
         validateKey(key);
         FloatContainer container = (FloatContainer) mData.get(key);
         if (container == null) {
@@ -83,7 +83,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Get the current value from the int based key.
      */
-    public int getValue(IntPropertyKey key) {
+    public int get(IntPropertyKey key) {
         validateKey(key);
         IntContainer container = (IntContainer) mData.get(key);
         return container == null ? 0 : container.value;
@@ -92,7 +92,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Set the value for the int based key.
      */
-    public void setValue(IntPropertyKey key, int value) {
+    public void set(IntPropertyKey key, int value) {
         validateKey(key);
         IntContainer container = (IntContainer) mData.get(key);
         if (container == null) {
@@ -108,7 +108,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Get the current value from the boolean based key.
      */
-    public boolean getValue(BooleanPropertyKey key) {
+    public boolean get(BooleanPropertyKey key) {
         validateKey(key);
         BooleanContainer container = (BooleanContainer) mData.get(key);
         return container == null ? false : container.value;
@@ -117,7 +117,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     /**
      * Set the value for the boolean based key.
      */
-    public void setValue(BooleanPropertyKey key, boolean value) {
+    public void set(BooleanPropertyKey key, boolean value) {
         validateKey(key);
         BooleanContainer container = (BooleanContainer) mData.get(key);
         if (container == null) {
@@ -134,7 +134,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      * Get the current value from the object based key.
      */
     @SuppressWarnings("unchecked")
-    public <T> T getValue(ObjectPropertyKey<T> key) {
+    public <T> T get(ObjectPropertyKey<T> key) {
         validateKey(key);
         ObjectContainer<T> container = (ObjectContainer<T>) mData.get(key);
         return container == null ? null : container.value;
@@ -144,7 +144,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      * Set the value for the Object based key.
      */
     @SuppressWarnings("unchecked")
-    public <T> void setValue(ObjectPropertyKey<T> key, T value) {
+    public <T> void set(ObjectPropertyKey<T> key, T value) {
         validateKey(key);
         ObjectContainer<T> container = (ObjectContainer<T>) mData.get(key);
         if (container == null) {

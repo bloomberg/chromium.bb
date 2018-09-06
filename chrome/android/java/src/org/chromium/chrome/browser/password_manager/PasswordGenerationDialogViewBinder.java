@@ -46,11 +46,11 @@ public class PasswordGenerationDialogViewBinder {
     public static void bind(
             PasswordGenerationDialogModel model, PasswordGenerationDialogViewHolder viewHolder) {
         viewHolder.setController(new PasswordGenerationDialogController(
-                model.getValue(PasswordGenerationDialogModel.PASSWORD_ACTION_CALLBACK)));
+                model.get(PasswordGenerationDialogModel.PASSWORD_ACTION_CALLBACK)));
         viewHolder.setGeneratedPassword(
-                model.getValue(PasswordGenerationDialogModel.GENERATED_PASSWORD));
+                model.get(PasswordGenerationDialogModel.GENERATED_PASSWORD));
         viewHolder.setSaveExplanationText(
-                model.getValue(PasswordGenerationDialogModel.SAVE_EXPLANATION_TEXT));
+                model.get(PasswordGenerationDialogModel.SAVE_EXPLANATION_TEXT));
         viewHolder.initializeView();
     }
 }

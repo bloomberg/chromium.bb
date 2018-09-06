@@ -63,7 +63,7 @@ public class LazyConstructionPropertyMcp<M extends PropertyObservable<P>, V exte
                     ViewProvider<V> viewFactory,
                     PropertyModelChangeProcessor.ViewBinder<M, V, PropertyKey> viewBinder) {
         return new LazyConstructionPropertyMcp<>(model, visibilityProperty,
-                item -> item.getValue(visibilityProperty), viewFactory, viewBinder);
+                item -> item.get(visibilityProperty), viewFactory, viewBinder);
     }
 
     private void flushPendingUpdates() {

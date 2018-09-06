@@ -79,19 +79,17 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
         mFirstSlotData = firstSlotData;
         mSecondSlotData = secondSlotData;
 
-        mModel.setValue(BottomToolbarModel.PRIMARY_COLOR, primaryColor);
+        mModel.set(BottomToolbarModel.PRIMARY_COLOR, primaryColor);
 
-        mModel.setValue(
-                BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.browsingModeButtonData);
-        mModel.setValue(
-                BottomToolbarModel.SECOND_BUTTON_DATA, mSecondSlotData.browsingModeButtonData);
+        mModel.set(BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.browsingModeButtonData);
+        mModel.set(BottomToolbarModel.SECOND_BUTTON_DATA, mSecondSlotData.browsingModeButtonData);
     }
 
     /**
      * @param swipeHandler The handler that controls the toolbar swipe behavior.
      */
     void setToolbarSwipeHandler(EdgeSwipeHandler swipeHandler) {
-        mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER, swipeHandler);
+        mModel.set(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER, swipeHandler);
     }
 
     /**
@@ -101,8 +99,8 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
         mFullscreenManager.removeListener(this);
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
         if (mWindowAndroid != null) mWindowAndroid.removeKeyboardVisibilityListener(this);
-        if (mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER) != null) {
-            LayoutManager manager = mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER);
+        if (mModel.get(BottomToolbarModel.LAYOUT_MANAGER) != null) {
+            LayoutManager manager = mModel.get(BottomToolbarModel.LAYOUT_MANAGER);
             manager.getOverlayPanelManager().removeObserver(this);
             manager.removeSceneChangeObserver(this);
         }
@@ -113,9 +111,9 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
 
     @Override
     public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
-        mModel.setValue(BottomToolbarModel.Y_OFFSET, (int) bottomOffset);
+        mModel.set(BottomToolbarModel.Y_OFFSET, (int) bottomOffset);
         if (bottomOffset > 0 || mFullscreenManager.getBottomControlsHeight() == 0) {
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+            mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
         } else {
             tryShowingAndroidView();
         }
@@ -129,9 +127,8 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
 
     @Override
     public void onOverviewModeStartedShowing(boolean showToolbar) {
-        mModel.setValue(
-                BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.tabSwitcherModeButtonData);
-        mModel.setValue(
+        mModel.set(BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.tabSwitcherModeButtonData);
+        mModel.set(
                 BottomToolbarModel.SECOND_BUTTON_DATA, mSecondSlotData.tabSwitcherModeButtonData);
     }
 
@@ -140,10 +137,8 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
 
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-        mModel.setValue(
-                BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.browsingModeButtonData);
-        mModel.setValue(
-                BottomToolbarModel.SECOND_BUTTON_DATA, mSecondSlotData.browsingModeButtonData);
+        mModel.set(BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.browsingModeButtonData);
+        mModel.set(BottomToolbarModel.SECOND_BUTTON_DATA, mSecondSlotData.browsingModeButtonData);
     }
 
     @Override
@@ -151,7 +146,7 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
 
     @Override
     public void onOverlayPanelShown() {
-        mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+        mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
     }
 
     @Override
@@ -165,15 +160,15 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
         // the bottom toolbar view to visible or invisible regardless of the previous state.
         if (isShowing) {
             mBottomToolbarHeightBeforeHide = mFullscreenManager.getBottomControlsHeight();
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
-            mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, false);
+            mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+            mModel.set(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, false);
             mFullscreenManager.setBottomControlsHeight(0);
         } else {
             mFullscreenManager.setBottomControlsHeight(mBottomToolbarHeightBeforeHide);
             tryShowingAndroidView();
-            mModel.setValue(
+            mModel.set(
                     BottomToolbarModel.Y_OFFSET, (int) mFullscreenManager.getBottomControlOffset());
-            mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, true);
+            mModel.set(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, true);
         }
     }
 
@@ -184,12 +179,12 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
      */
     private void tryShowingAndroidView() {
         if (mFullscreenManager.getBottomControlOffset() > 0) return;
-        if (mModel.getValue(BottomToolbarModel.Y_OFFSET) != 0) return;
-        mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+        if (mModel.get(BottomToolbarModel.Y_OFFSET) != 0) return;
+        mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
 
     void setLayoutManager(LayoutManager layoutManager) {
-        mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
+        mModel.set(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
         layoutManager.addSceneChangeObserver(this);
         layoutManager.getOverlayPanelManager().addObserver(this);
     }
@@ -201,16 +196,16 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
     public void onSceneChange(Layout layout) {
         if (layout instanceof ToolbarSwipeLayout) {
             mIsInSwipeLayout = true;
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+            mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
         } else if (mIsInSwipeLayout) {
             // Only change to visible if leaving the swipe layout.
             mIsInSwipeLayout = false;
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+            mModel.set(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
         }
     }
 
     void setResourceManager(ResourceManager resourceManager) {
-        mModel.setValue(BottomToolbarModel.RESOURCE_MANAGER, resourceManager);
+        mModel.set(BottomToolbarModel.RESOURCE_MANAGER, resourceManager);
     }
 
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
@@ -219,7 +214,7 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
     }
 
     void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
-        mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT, layout);
+        mModel.set(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT, layout);
     }
 
     void setWindowAndroid(WindowAndroid windowAndroid) {
@@ -235,14 +230,14 @@ class BottomToolbarMediator implements FullscreenListener, KeyboardVisibilityLis
         mSecondSlotData.tabSwitcherModeButtonData = secondSlotButtonData;
 
         if (mOverviewModeBehavior.overviewVisible()) {
-            mModel.setValue(
+            mModel.set(
                     BottomToolbarModel.FIRST_BUTTON_DATA, mFirstSlotData.tabSwitcherModeButtonData);
-            mModel.setValue(BottomToolbarModel.SECOND_BUTTON_DATA,
+            mModel.set(BottomToolbarModel.SECOND_BUTTON_DATA,
                     mSecondSlotData.tabSwitcherModeButtonData);
         }
     }
 
     void setPrimaryColor(int color) {
-        mModel.setValue(BottomToolbarModel.PRIMARY_COLOR, color);
+        mModel.set(BottomToolbarModel.PRIMARY_COLOR, color);
     }
 }

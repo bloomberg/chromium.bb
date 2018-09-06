@@ -36,12 +36,12 @@ public class StorageCoordinator {
     }
 
     private void onStorageInfoUpdated(String storageInfoText) {
-        mModel.setValue(StorageProperties.STORAGE_INFO_TEXT, storageInfoText);
+        mModel.set(StorageProperties.STORAGE_INFO_TEXT, storageInfoText);
     }
 
     private void bind(PropertyModel model, TextView view, PropertyKey propertyKey) {
         if (propertyKey == StorageProperties.STORAGE_INFO_TEXT) {
-            view.setText(model.getValue(StorageProperties.STORAGE_INFO_TEXT));
+            view.setText(model.get(StorageProperties.STORAGE_INFO_TEXT));
         }
     }
 

@@ -44,9 +44,9 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
     public UrlBarMediator(PropertyModel model) {
         mModel = model;
 
-        mModel.setValue(UrlBarProperties.FOCUS_CHANGE_CALLBACK, this::onUrlFocusChange);
-        mModel.setValue(UrlBarProperties.SHOW_CURSOR, false);
-        mModel.setValue(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
+        mModel.set(UrlBarProperties.FOCUS_CHANGE_CALLBACK, this::onUrlFocusChange);
+        mModel.set(UrlBarProperties.SHOW_CURSOR, false);
+        mModel.set(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
         setUseDarkTextColors(true);
     }
 
@@ -54,7 +54,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
      * Set the primary delegate for the UrlBar view.
      */
     public void setDelegate(UrlBarDelegate delegate) {
-        mModel.setValue(UrlBarProperties.DELEGATE, delegate);
+        mModel.set(UrlBarProperties.DELEGATE, delegate);
     }
 
     /**
@@ -73,7 +73,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
 
         // Do not scroll to the end of the host for URLs such as data:, javascript:, etc...
         if (data.url != null && data.originEndIndex == data.url.length()) {
-            Uri uri = Uri.parse(data.url.toString());
+            Uri uri = Uri.parse(data.url);
             String scheme = uri.getScheme();
             if (!TextUtils.isEmpty(scheme)
                     && UrlBarData.UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
@@ -102,7 +102,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
 
         UrlBarTextState state =
                 new UrlBarTextState(text, scrollType, mUrlBarData.originEndIndex, mSelectionState);
-        mModel.setValue(UrlBarProperties.TEXT_STATE, state);
+        mModel.set(UrlBarProperties.TEXT_STATE, state);
     }
 
     @VisibleForTesting
@@ -162,7 +162,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
             assert false : "Should not update autocomplete text when not focused";
             return;
         }
-        mModel.setValue(UrlBarProperties.AUTOCOMPLETE_TEXT,
+        mModel.set(UrlBarProperties.AUTOCOMPLETE_TEXT,
                 new AutocompleteText(userText, autocompleteText));
     }
 
@@ -178,14 +178,14 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
     private void onUrlFocusChange(boolean focus) {
         mHasFocus = focus;
 
-        if (mModel.getValue(UrlBarProperties.ALLOW_FOCUS)) {
-            mModel.setValue(UrlBarProperties.SHOW_CURSOR, mHasFocus);
+        if (mModel.get(UrlBarProperties.ALLOW_FOCUS)) {
+            mModel.set(UrlBarProperties.SHOW_CURSOR, mHasFocus);
         }
 
-        UrlBarTextState preCallbackState = mModel.getValue(UrlBarProperties.TEXT_STATE);
+        UrlBarTextState preCallbackState = mModel.get(UrlBarProperties.TEXT_STATE);
         if (mOnFocusChangeCallback != null) mOnFocusChangeCallback.onResult(focus);
         boolean textChangedInFocusCallback =
-                mModel.getValue(UrlBarProperties.TEXT_STATE) != preCallbackState;
+                mModel.get(UrlBarProperties.TEXT_STATE) != preCallbackState;
         if (mUrlBarData != null && !textChangedInFocusCallback) {
             pushTextToModel();
         }
@@ -197,8 +197,9 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
      * @return Whether this resulted in a change from the previous value.
      */
     public boolean setUseDarkTextColors(boolean useDarkColors) {
-        boolean previousValue = mModel.getValue(UrlBarProperties.USE_DARK_TEXT_COLORS);
-        mModel.setValue(UrlBarProperties.USE_DARK_TEXT_COLORS, useDarkColors);
+        // TODO(bauerb): Make clients observe the property instead of checking the return value.
+        boolean previousValue = mModel.get(UrlBarProperties.USE_DARK_TEXT_COLORS);
+        mModel.set(UrlBarProperties.USE_DARK_TEXT_COLORS, useDarkColors);
         return previousValue != useDarkColors;
     }
 
@@ -206,9 +207,9 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
      * Sets whether the view allows user focus.
      */
     public void setAllowFocus(boolean allowFocus) {
-        mModel.setValue(UrlBarProperties.ALLOW_FOCUS, allowFocus);
+        mModel.set(UrlBarProperties.ALLOW_FOCUS, allowFocus);
         if (allowFocus) {
-            mModel.setValue(UrlBarProperties.SHOW_CURSOR, mHasFocus);
+            mModel.set(UrlBarProperties.SHOW_CURSOR, mHasFocus);
         }
     }
 
@@ -216,21 +217,21 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
      * Set the listener to be notified for URL direction changes.
      */
     public void setUrlDirectionListener(UrlDirectionListener listener) {
-        mModel.setValue(UrlBarProperties.URL_DIRECTION_LISTENER, listener);
+        mModel.set(UrlBarProperties.URL_DIRECTION_LISTENER, listener);
     }
 
     /**
      * Set the delegate that provides Window capabilities.
      */
     public void setWindowDelegate(WindowDelegate windowDelegate) {
-        mModel.setValue(UrlBarProperties.WINDOW_DELEGATE, windowDelegate);
+        mModel.set(UrlBarProperties.WINDOW_DELEGATE, windowDelegate);
     }
 
     /**
      * Set the callback to handle contextual Action Modes.
      */
     public void setActionModeCallback(ActionMode.Callback callback) {
-        mModel.setValue(UrlBarProperties.ACTION_MODE_CALLBACK, callback);
+        mModel.set(UrlBarProperties.ACTION_MODE_CALLBACK, callback);
     }
 
     @Override
