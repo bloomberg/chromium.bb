@@ -117,14 +117,14 @@ TEST_F(CollectionViewControllerTest, InitDefaultStyle) {
   CollectionViewController* controller = [[CollectionViewController alloc]
       initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
                style:CollectionViewControllerStyleDefault];
-  EXPECT_EQ(nil, controller.appBar);
+  EXPECT_EQ(nil, controller.appBarViewController);
 }
 
 TEST_F(CollectionViewControllerTest, InitAppBarStyle) {
   CollectionViewController* controller = [[CollectionViewController alloc]
       initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
                style:CollectionViewControllerStyleAppBar];
-  EXPECT_NE(nil, controller.appBar);
+  EXPECT_NE(nil, controller.appBarViewController);
 }
 
 TEST_F(CollectionViewControllerTest, CellForItemAtIndexPath) {

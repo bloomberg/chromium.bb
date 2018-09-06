@@ -398,8 +398,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
        shouldReceiveTouch:(UITouch*)touch {
   // Prevent the context menu to be displayed if the long press is done on the
   // App Bar.
-  CGPoint location = [touch locationInView:self.appBar.navigationBar];
-  return !CGRectContainsPoint(self.appBar.navigationBar.frame, location);
+  CGPoint location =
+      [touch locationInView:self.appBarViewController.navigationBar];
+  return !CGRectContainsPoint(self.appBarViewController.navigationBar.frame,
+                              location);
 }
 
 #pragma mark - Private methods
