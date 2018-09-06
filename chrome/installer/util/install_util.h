@@ -193,6 +193,9 @@ class InstallUtil {
   // be enrolled.
   static std::wstring GetMachineLevelUserCloudPolicyEnrollmentToken();
 
+  // Returns the localized name of the browser.
+  static base::string16 GetDisplayName();
+
   // Returns the app description for shortcuts.
   static base::string16 GetAppDescription();
 

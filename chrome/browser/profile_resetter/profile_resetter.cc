@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -57,14 +56,12 @@ void ResetShortcutsOnBlockingThread() {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
        location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
         static_cast<ShellUtil::ShortcutLocation>(location),
-        dist,
         ShellUtil::CURRENT_USER,
         chrome_exe,
         true,
@@ -358,7 +355,6 @@ std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return std::vector<ShortcutCommand>();
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::vector<ShortcutCommand> shortcuts;
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
        location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
@@ -366,7 +362,6 @@ std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
       break;
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
         static_cast<ShellUtil::ShortcutLocation>(location),
-        dist,
         ShellUtil::CURRENT_USER,
         chrome_exe,
         false,

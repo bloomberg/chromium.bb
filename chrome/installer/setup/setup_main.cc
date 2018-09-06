@@ -576,8 +576,7 @@ installer::InstallStatus UninstallProduct(
     VLOG(1) << "version on the system: "
             << product_state->version().GetString();
   } else if (!force_uninstall) {
-    LOG(ERROR) << product.distribution()->GetDisplayName()
-               << " not found for uninstall.";
+    LOG(ERROR) << "Chrome not found for uninstall.";
     return installer::CHROME_NOT_INSTALLED;
   }
 
@@ -718,7 +717,7 @@ installer::InstallStatus ShowEULADialog(const base::string16& inner_frame) {
 
 // Creates the sentinel indicating that the EULA was required and has been
 // accepted.
-bool CreateEULASentinel(BrowserDistribution* dist) {
+bool CreateEULASentinel() {
   base::FilePath eula_sentinel;
   if (!InstallUtil::GetEULASentinelFilePath(&eula_sentinel))
     return false;
@@ -743,7 +742,7 @@ installer::InstallStatus RegisterDevChrome(
     static const wchar_t kPleaseUninstallYourChromeMessage[] =
         L"You already have a full-installation (non-dev) of %1ls, please "
         L"uninstall it first using Add/Remove Programs in the control panel.";
-    base::string16 name(chrome_dist->GetDisplayName());
+    base::string16 name(InstallUtil::GetDisplayName());
     base::string16 message(
         base::StringPrintf(kPleaseUninstallYourChromeMessage, name.c_str()));
 
@@ -769,8 +768,8 @@ installer::InstallStatus RegisterDevChrome(
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &shortcut_properties);
     shortcut_properties.set_pin_to_taskbar(true);
     ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, chrome_dist,
-        shortcut_properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, shortcut_properties,
+        ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
 
     // Register Chrome at user-level and make it default.
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
@@ -860,7 +859,7 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
     if (installer::EULA_REJECTED != *exit_code) {
       if (GoogleUpdateSettings::SetEULAConsent(
               *original_state, BrowserDistribution::GetDistribution(), true)) {
-        CreateEULASentinel(BrowserDistribution::GetDistribution());
+        CreateEULASentinel();
       }
     }
   } else if (cmd_line.HasSwitch(installer::switches::kConfigureUserSettings)) {
@@ -1159,14 +1158,11 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     bool proceed_with_installation = true;
 
     if (!IsDowngradeAllowed(prefs)) {
-      const Product& product = installer_state.product();
       const ProductState* product_state =
           original_state.GetProductState(system_install);
       if (product_state != NULL &&
           (product_state->version().CompareTo(*installer_version) > 0)) {
-        LOG(ERROR) << "Higher version of "
-                   << product.distribution()->GetDisplayName()
-                   << " is already installed.";
+        LOG(ERROR) << "Higher version of Chrome is already installed.";
         int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
         proceed_with_installation = false;
         install_status = HIGHER_VERSION_EXISTS;

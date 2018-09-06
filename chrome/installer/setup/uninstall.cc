@@ -161,7 +161,6 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
     NOTREACHED();
     return;
   }
-  BrowserDistribution* dist = product.distribution();
   ShellUtil::ShellChange install_level = ShellUtil::CURRENT_USER;
 
   // Retarget all shortcuts that point to |old_target_exe| from all
@@ -170,8 +169,8 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     if (!ShellUtil::RetargetShortcutsWithArgs(
-            static_cast<ShellUtil::ShortcutLocation>(location), dist,
-            install_level, old_target_exe, new_target_exe)) {
+            static_cast<ShellUtil::ShortcutLocation>(location), install_level,
+            old_target_exe, new_target_exe)) {
       LOG(WARNING) << "Failed to retarget shortcuts in ShortcutLocation: "
                    << location;
     }
@@ -184,8 +183,6 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
 void DeleteShortcuts(const InstallerState& installer_state,
                      const Product& product,
                      const base::FilePath& target_exe) {
-  BrowserDistribution* dist = product.distribution();
-
   // The per-user shortcut for this user, if present on a system-level install,
   // has already been deleted in chrome_browser_main_win.cc::DoUninstallTasks().
   ShellUtil::ShellChange install_level = installer_state.system_install() ?
@@ -197,8 +194,8 @@ void DeleteShortcuts(const InstallerState& installer_state,
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
        location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     if (!ShellUtil::RemoveShortcuts(
-            static_cast<ShellUtil::ShortcutLocation>(location), dist,
-            install_level, target_exe)) {
+            static_cast<ShellUtil::ShortcutLocation>(location), install_level,
+            target_exe)) {
       LOG(WARNING) << "Failed to delete shortcuts in ShortcutLocation: "
                    << location;
     }
@@ -792,10 +789,9 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   }
 }
 
-void UninstallFirewallRules(BrowserDistribution* dist,
-                            const base::FilePath& chrome_exe) {
+void UninstallFirewallRules(const base::FilePath& chrome_exe) {
   std::unique_ptr<FirewallManager> manager =
-      FirewallManager::Create(dist, chrome_exe);
+      FirewallManager::Create(chrome_exe);
   if (manager)
     manager->RemoveFirewallRules();
 }
@@ -812,7 +808,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
 
-  VLOG(1) << "UninstallProduct: " << browser_dist->GetDisplayName();
+  VLOG(1) << "UninstallProduct: Chrome";
 
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
@@ -963,7 +959,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   UninstallActiveSetupEntries(installer_state);
 
-  UninstallFirewallRules(browser_dist, chrome_exe);
+  UninstallFirewallRules(chrome_exe);
 
   RemoveBlacklistState();
 

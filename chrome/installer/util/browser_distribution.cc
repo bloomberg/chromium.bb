@@ -12,10 +12,8 @@
 #include <utility>
 
 #include "base/atomicops.h"
-#include "base/logging.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 
 namespace {
@@ -78,8 +76,4 @@ base::string16 BrowserDistribution::GetStateMediumKey() const {
 
 base::string16 BrowserDistribution::GetVersionKey() const {
   return app_reg_data_->GetVersionKey();
-}
-
-base::string16 BrowserDistribution::GetDisplayName() {
-  return InstallUtil::GetShortcutName();
 }

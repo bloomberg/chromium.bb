@@ -26,9 +26,6 @@ class BrowserDistribution {
   base::string16 GetStateMediumKey() const;
   base::string16 GetVersionKey() const;
 
-  // Returns the localized display name of this distribution.
-  virtual base::string16 GetDisplayName();
-
  protected:
   explicit BrowserDistribution(
       std::unique_ptr<AppRegistrationData> app_reg_data);

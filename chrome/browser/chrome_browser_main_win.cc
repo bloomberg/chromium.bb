@@ -63,7 +63,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/install_static/install_details.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
@@ -438,10 +437,9 @@ int DoUninstallTasks(bool chrome_still_running) {
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
       };
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
-        if (!ShellUtil::RemoveShortcuts(user_shortcut_locations[i], dist,
-                ShellUtil::CURRENT_USER, chrome_exe)) {
+        if (!ShellUtil::RemoveShortcuts(user_shortcut_locations[i],
+                                        ShellUtil::CURRENT_USER, chrome_exe)) {
           VLOG(1) << "Failed to delete shortcut at location "
                   << user_shortcut_locations[i];
         }

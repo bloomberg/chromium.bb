@@ -33,7 +33,6 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_util_strings.h"
@@ -311,14 +310,13 @@ bool InstallUtil::IsFirstRunSentinelPresent() {
 
 // static
 bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::FilePath shortcut_path;
 
-  if (!ShellUtil::GetShortcutPath(
-          ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
-          install_static::IsSystemInstall() ? ShellUtil::SYSTEM_LEVEL
-                                            : ShellUtil::CURRENT_USER,
-          &shortcut_path)) {
+  if (!ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+                                  install_static::IsSystemInstall()
+                                      ? ShellUtil::SYSTEM_LEVEL
+                                      : ShellUtil::CURRENT_USER,
+                                  &shortcut_path)) {
     LogStartMenuShortcutStatus(StartMenuShortcutStatus::kGetShortcutPathFailed);
     return false;
   }
@@ -685,6 +683,11 @@ std::wstring InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   }
 
   return value;
+}
+
+// static
+base::string16 InstallUtil::GetDisplayName() {
+  return GetShortcutName();
 }
 
 // static
