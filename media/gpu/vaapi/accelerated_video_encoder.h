@@ -136,7 +136,7 @@ class AcceleratedVideoEncoder {
 
   // Returns minimum size in bytes for bitstream buffers required to fit output
   // stream buffers produced.
-  virtual size_t GetBitstreamBufferSize() const = 0;
+  virtual size_t GetBitstreamBufferSize() const;
 
   // Returns maximum number of reference frames that may be used by the
   // encoder to encode one frame. The client should be able to provide up to
