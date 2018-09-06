@@ -39,6 +39,12 @@ const char kAccountChildAccountStatusPath[] = "is_child_account";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
 
+// Account folders used for storing account related data at disk.
+const base::FilePath::CharType kAccountsFolder[] =
+    FILE_PATH_LITERAL("Accounts");
+const base::FilePath::CharType kAvatarImagesFolder[] =
+    FILE_PATH_LITERAL("Avatar Images");
+
 // TODO(M48): Remove deprecated preference migration.
 const char kAccountServiceFlagsPath[] = "service_flags";
 
@@ -101,9 +107,6 @@ const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
-const char AccountTrackerService::kAccountsFolder[] = "Accounts";
-const char AccountTrackerService::kAvatarImagesFolder[] = "Avatar Images";
-
 AccountTrackerService::AccountTrackerService() : weak_factory_(this) {}
 
 AccountTrackerService::~AccountTrackerService() {
@@ -149,23 +152,17 @@ void AccountTrackerService::RemoveObserver(Observer* observer) {
 
 std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
   std::vector<AccountInfo> accounts;
-
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end();
-       ++it) {
-    const AccountState& state = it->second;
-    accounts.push_back(state.info);
+  for (const auto& pair : accounts_) {
+    accounts.push_back(pair.second.info);
   }
   return accounts;
 }
 
 AccountInfo AccountTrackerService::GetAccountInfo(
     const std::string& account_id) const {
-  std::map<std::string, AccountState>::const_iterator it =
-      accounts_.find(account_id);
-  if (it != accounts_.end())
-    return it->second.info;
+  const auto iterator = accounts_.find(account_id);
+  if (iterator != accounts_.end())
+    return iterator->second.info;
 
   return AccountInfo();
 }
@@ -173,14 +170,12 @@ AccountInfo AccountTrackerService::GetAccountInfo(
 AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
     const std::string& gaia_id) const {
   if (!gaia_id.empty()) {
-    for (std::map<std::string, AccountState>::const_iterator it =
-             accounts_.begin();
-         it != accounts_.end();
-         ++it) {
-      const AccountState& state = it->second;
-      if (state.info.gaia == gaia_id)
-        return state.info;
-    }
+    const auto iterator = std::find_if(
+        accounts_.begin(), accounts_.end(), [&gaia_id](const auto& pair) {
+          return pair.second.info.gaia == gaia_id;
+        });
+    if (iterator != accounts_.end())
+      return iterator->second.info;
   }
 
   return AccountInfo();
@@ -189,14 +184,12 @@ AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
 AccountInfo AccountTrackerService::FindAccountInfoByEmail(
     const std::string& email) const {
   if (!email.empty()) {
-    for (std::map<std::string, AccountState>::const_iterator it =
-             accounts_.begin();
-         it != accounts_.end();
-         ++it) {
-      const AccountState& state = it->second;
-      if (gaia::AreEmailsSame(state.info.email, email))
-        return state.info;
-    }
+    const auto iterator = std::find_if(
+        accounts_.begin(), accounts_.end(), [&email](const auto& pair) {
+          return gaia::AreEmailsSame(pair.second.info.email, email);
+        });
+    if (iterator != accounts_.end())
+      return iterator->second.info;
   }
 
   return AccountInfo();
@@ -204,8 +197,11 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
 
 gfx::Image AccountTrackerService::GetAccountImage(
     const std::string& account_id) {
-  return base::ContainsKey(accounts_, account_id) ? accounts_[account_id].image
-                                                  : gfx::Image();
+  const auto iterator = accounts_.find(account_id);
+  if (iterator != accounts_.end())
+    return iterator->second.image;
+
+  return gfx::Image();
 }
 
 // static
@@ -300,7 +296,7 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
     user_info->GetString("locale", &state.info.locale);
 
     std::string picture_url;
-    if(user_info->GetString("picture", &picture_url)) {
+    if (user_info->GetString("picture", &picture_url)) {
       state.info.picture_url = picture_url;
     } else {
       state.info.picture_url = kNoPictureURLFound;
@@ -435,8 +431,8 @@ AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
 
 base::FilePath AccountTrackerService::GetImagePathFor(
     const std::string& account_id) {
-  return user_data_dir_.AppendASCII(kAccountsFolder)
-      .AppendASCII(kAvatarImagesFolder)
+  return user_data_dir_.Append(kAccountsFolder)
+      .Append(kAvatarImagesFolder)
       .AppendASCII(account_id);
 }
 
@@ -452,8 +448,8 @@ void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
 void AccountTrackerService::LoadAccountImagesFromDisk() {
   if (!image_storage_task_runner_)
     return;
-  for (const std::pair<std::string, AccountState>& account : accounts_) {
-    const std::string& account_id = account.second.info.account_id;
+  for (const auto& pair : accounts_) {
+    const std::string& account_id = pair.second.info.account_id;
     PostTaskAndReplyWithResult(
         image_storage_task_runner_.get(), FROM_HERE,
         base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
@@ -624,7 +620,7 @@ void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
 
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
   ListPrefUpdate update(pref_service_, kAccountInfoPref);
-  for(size_t i = 0; i < update->GetSize(); ++i) {
+  for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
@@ -648,14 +644,15 @@ std::string AccountTrackerService::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) {
   DCHECK(!gaia.empty() ||
-      GetMigrationState(pref_service) == MIGRATION_NOT_STARTED);
+         GetMigrationState(pref_service) == MIGRATION_NOT_STARTED);
   DCHECK(!email.empty());
-  switch(GetMigrationState(pref_service)) {
+  switch (GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
       // Some tests don't use a real email address.  To support these cases,
       // don't try to canonicalize these strings.
-      return (email.find('@') == std::string::npos) ? email :
-          gaia::CanonicalizeEmail(email);
+      return (email.find('@') == std::string::npos)
+                 ? email
+                 : gaia::CanonicalizeEmail(email);
     case MIGRATION_IN_PROGRESS:
     case MIGRATION_DONE:
       return gaia;
@@ -677,8 +674,7 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   SaveToPrefs(state);
 
   DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
-           << " account_id=" << account_id
-           << " gaia_id=" << gaia
+           << " account_id=" << account_id << " gaia_id=" << gaia
            << " email=" << email;
 
   return account_id;
