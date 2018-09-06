@@ -220,7 +220,13 @@ HostResolver::RequestInfoToResolveHostParameters(
 
 // static
 HostResolverSource HostResolver::FlagsToSource(HostResolverFlags flags) {
-  if (flags & HOST_RESOLVER_SYSTEM_ONLY)
+  // To counter the lack of CNAME support in the async host resolver, SYSTEM is
+  // forced when CANONNAME flags is present. This restriction can be removed
+  // once CNAME support is added to the async resolver.  See
+  // https://crbug.com/872665
+  //
+  // It is intentional that the presence of either flag forces SYSTEM.
+  if (flags & (HOST_RESOLVER_SYSTEM_ONLY | HOST_RESOLVER_CANONNAME))
     return HostResolverSource::SYSTEM;
 
   return HostResolverSource::ANY;
