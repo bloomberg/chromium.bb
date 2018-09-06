@@ -31,10 +31,16 @@ MediaEngagementWebUIBrowserTest.prototype = {
     GEN('MediaEngagementService* service =');
     GEN('  MediaEngagementServiceFactory::GetForProfile(');
     GEN('    browser()->profile());');
-    GEN('service->RecordVisit(GURL("' + EXAMPLE_URL_1 + '"));');
-    GEN('service->RecordVisit(GURL("' + EXAMPLE_URL_2 + '"));');
-    GEN('service->RecordPlayback(GURL("' + EXAMPLE_URL_1 + '"));');
-    GEN('service->RecordPlayback(GURL("' + EXAMPLE_URL_2 + '"));');
+    GEN('MediaEngagementScore score1 =');
+    GEN('     service->CreateEngagementScore(GURL("' + EXAMPLE_URL_1 + '"));');
+    GEN('score1.IncrementVisits();');
+    GEN('score1.IncrementMediaPlaybacks();');
+    GEN('score1.Commit();');
+    GEN('MediaEngagementScore score2 =');
+    GEN('     service->CreateEngagementScore(GURL("' + EXAMPLE_URL_2 + '"));');
+    GEN('score2.IncrementVisits();');
+    GEN('score2.IncrementMediaPlaybacks();');
+    GEN('score2.Commit();');
   },
 
   extraLibraries: [

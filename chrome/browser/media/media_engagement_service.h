@@ -65,9 +65,6 @@ class MediaEngagementService : public KeyedService,
   // Record a visit of a |url|.
   void RecordVisit(const GURL& url);
 
-  // Record a media playback on a |url|.
-  void RecordPlayback(const GURL& url);
-
   // Returns an array of engagement score details for all origins which
   // have a score.
   std::vector<media::mojom::MediaEngagementScoreDetailsPtr> GetAllScoreDetails()
@@ -102,6 +99,8 @@ class MediaEngagementService : public KeyedService,
   // The name of the histogram that records the reason why the engagement was
   // cleared, either partially or fully.
   static const char kHistogramClearName[];
+
+  const base::Clock* clock() const { return clock_; }
 
  private:
   friend class MediaEngagementBrowserTest;

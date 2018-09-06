@@ -39,6 +39,10 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   void DidUpdateAudioMutingState(bool muted) override;
   void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) override;
   void MediaResized(const gfx::Size& size, const MediaPlayerId& id) override;
+  void AudioContextPlaybackStarted(
+      const AudioContextId& audio_context_id) override;
+  void AudioContextPlaybackStopped(
+      const AudioContextId& audio_context_id) override;
 
   static const gfx::Size kSignificantSize;
   static const char* const kHistogramScoreAtPlaybackName;
@@ -96,9 +100,14 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
   void OnSignificantMediaPlaybackTimeForPlayer(const MediaPlayerId& id);
   void OnSignificantMediaPlaybackTimeForPage();
+  void OnSignificantAudioContextPlaybackTimeForPage();
+
   void UpdatePlayerTimer(const MediaPlayerId&);
   void UpdatePageTimer();
+  void UpdateAudioContextTimer();
+
   bool AreConditionsMet() const;
+  bool AreAudioContextConditionsMet() const;
 
   void SetTaskRunnerForTest(scoped_refptr<base::SequencedTaskRunner>);
 
@@ -113,6 +122,13 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // words, whether this set is empty can be used to know if there is a
   // significant playback.
   std::set<MediaPlayerId> significant_players_;
+
+  // Timer that will fire when the playback time of any audio context reaches
+  // the minimum for significant media playback.
+  base::OneShotTimer audio_context_timer_;
+
+  // Set of active audio contexts that can produce a significant playback.
+  std::set<AudioContextId> audio_context_players_;
 
   // Measures playback time for a player.
   class PlaybackTimer {

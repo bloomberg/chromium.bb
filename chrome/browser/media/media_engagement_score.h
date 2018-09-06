@@ -86,9 +86,12 @@ class MediaEngagementScore final {
   int media_playbacks() const { return media_playbacks_; }
   void IncrementMediaPlaybacks();
 
-  // Get the last time media was played on this origin.
+  // Gets/sets the last time media was played on this origin.
   base::Time last_media_playback_time() const {
     return last_media_playback_time_;
+  }
+  void set_last_media_playback_time(base::Time new_time) {
+    last_media_playback_time_ = new_time;
   }
 
   // Get/increment the number of audible media playbacks this origin had.
@@ -151,9 +154,6 @@ class MediaEngagementScore final {
   }
   void set_visits_with_media_tag(int visits) {
     visits_with_media_tag_ = visits;
-  }
-  void set_last_media_playback_time(base::Time new_time) {
-    last_media_playback_time_ = new_time;
   }
   void set_media_element_playbacks(int playbacks) {
     media_element_playbacks_ = playbacks;

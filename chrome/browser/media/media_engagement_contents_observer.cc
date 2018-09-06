@@ -122,6 +122,8 @@ void MediaEngagementContentsObserver::ClearPlayerStates() {
   playback_timer_.Stop();
   player_states_.clear();
   significant_players_.clear();
+  audio_context_players_.clear();
+  audio_context_timer_.Stop();
 }
 
 void MediaEngagementContentsObserver::RegisterAudiblePlayersWithSession() {
@@ -270,8 +272,21 @@ void MediaEngagementContentsObserver::MediaStoppedPlaying(
   UpdatePlayerTimer(media_player_id);
 }
 
+void MediaEngagementContentsObserver::AudioContextPlaybackStarted(
+    const AudioContextId& audio_context_id) {
+  audio_context_players_.insert(audio_context_id);
+  UpdateAudioContextTimer();
+}
+
+void MediaEngagementContentsObserver::AudioContextPlaybackStopped(
+    const AudioContextId& audio_context_id) {
+  audio_context_players_.erase(audio_context_id);
+  UpdateAudioContextTimer();
+}
+
 void MediaEngagementContentsObserver::DidUpdateAudioMutingState(bool muted) {
   UpdatePageTimer();
+  UpdateAudioContextTimer();
 }
 
 std::vector<MediaEngagementContentsObserver::InsignificantPlaybackReason>
@@ -330,7 +345,7 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPlayer(
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPage() {
   DCHECK(session_);
 
-  if (session_->significant_playback_recorded())
+  if (session_->significant_media_element_playback_recorded())
     return;
 
   // Do not record significant playback if the tab did not make
@@ -339,7 +354,23 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPage() {
   if (!audible_helper->WasRecentlyAudible())
     return;
 
-  session_->RecordSignificantPlayback();
+  session_->RecordSignificantMediaElementPlayback();
+}
+
+void MediaEngagementContentsObserver::
+    OnSignificantAudioContextPlaybackTimeForPage() {
+  DCHECK(session_);
+
+  if (session_->significant_audio_context_playback_recorded())
+    return;
+
+  // Do not record significant playback if the tab did not make
+  // a sound recently.
+  auto* audible_helper = RecentlyAudibleHelper::FromWebContents(web_contents());
+  if (!audible_helper->WasRecentlyAudible())
+    return;
+
+  session_->RecordSignificantAudioContextPlayback();
 }
 
 void MediaEngagementContentsObserver::RecordInsignificantReasons(
@@ -474,7 +505,7 @@ bool MediaEngagementContentsObserver::AreConditionsMet() const {
 }
 
 void MediaEngagementContentsObserver::UpdatePageTimer() {
-  if (!session_ || session_->significant_playback_recorded())
+  if (!session_ || session_->significant_media_element_playback_recorded())
     return;
 
   if (AreConditionsMet()) {
@@ -494,6 +525,35 @@ void MediaEngagementContentsObserver::UpdatePageTimer() {
     if (!playback_timer_.IsRunning())
       return;
     playback_timer_.Stop();
+  }
+}
+
+bool MediaEngagementContentsObserver::AreAudioContextConditionsMet() const {
+  if (audio_context_players_.empty())
+    return false;
+
+  return !web_contents()->IsAudioMuted();
+}
+
+void MediaEngagementContentsObserver::UpdateAudioContextTimer() {
+  if (!session_ || session_->significant_audio_context_playback_recorded())
+    return;
+
+  if (AreAudioContextConditionsMet()) {
+    if (audio_context_timer_.IsRunning())
+      return;
+
+    if (task_runner_)
+      audio_context_timer_.SetTaskRunner(task_runner_);
+
+    audio_context_timer_.Start(
+        FROM_HERE,
+        MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
+        base::Bind(&MediaEngagementContentsObserver::
+                       OnSignificantAudioContextPlaybackTimeForPage,
+                   base::Unretained(this)));
+  } else if (audio_context_timer_.IsRunning()) {
+    audio_context_timer_.Stop();
   }
 }
 

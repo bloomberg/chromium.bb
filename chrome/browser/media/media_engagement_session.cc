@@ -49,21 +49,22 @@ bool MediaEngagementSession::IsSameOriginWith(const url::Origin& origin) const {
   return origin_.IsSameOriginWith(origin);
 }
 
-void MediaEngagementSession::RecordSignificantPlayback() {
-  DCHECK(!significant_playback_recorded_);
+void MediaEngagementSession::RecordSignificantMediaElementPlayback() {
+  DCHECK(!significant_media_element_playback_recorded_);
 
-  significant_playback_recorded_ = true;
-  pending_data_to_commit_.playback = true;
+  significant_media_element_playback_recorded_ = true;
+  pending_data_to_commit_.media_element_playback = true;
 
-  // When a session was restored, visits are only recorded when there was a
-  // playback. Add back the visit now as this code can only be executed once
-  // per session.
-  if (restore_status_ == RestoreType::kRestored)
-    pending_data_to_commit_.visit = true;
+  RecordSignificantPlayback();
+}
 
-  // When playback has happened, the visit can be recorded as there will be no
-  // further changes.
-  CommitPendingData();
+void MediaEngagementSession::RecordSignificantAudioContextPlayback() {
+  DCHECK(!significant_audio_context_playback_recorded_);
+
+  significant_audio_context_playback_recorded_ = true;
+  pending_data_to_commit_.audio_context_playback = true;
+
+  RecordSignificantPlayback();
 }
 
 void MediaEngagementSession::RecordShortPlaybackIgnored(int length_msec) {
@@ -89,8 +90,19 @@ void MediaEngagementSession::RegisterAudiblePlayers(
   significant_players_delta_ += significant_players;
 }
 
-bool MediaEngagementSession::significant_playback_recorded() const {
-  return significant_playback_recorded_;
+bool MediaEngagementSession::WasSignificantPlaybackRecorded() const {
+  return significant_media_element_playback_recorded_ ||
+         significant_audio_context_playback_recorded_;
+}
+
+bool MediaEngagementSession::significant_media_element_playback_recorded()
+    const {
+  return significant_media_element_playback_recorded_;
+}
+
+bool MediaEngagementSession::significant_audio_context_playback_recorded()
+    const {
+  return significant_audio_context_playback_recorded_;
 }
 
 const url::Origin& MediaEngagementSession::origin() const {
@@ -104,7 +116,7 @@ MediaEngagementSession::~MediaEngagementSession() {
   if (HasPendingDataToCommit()) {
     CommitPendingData();
   } else if ((restore_status_ == RestoreType::kRestored) &&
-             !significant_playback_recorded_) {
+             !WasSignificantPlaybackRecorded()) {
     RecordStatusHistograms();
   }
 
@@ -122,6 +134,21 @@ ukm::UkmRecorder* MediaEngagementSession::GetUkmRecorder() {
   }
 
   return ukm_recorder;
+}
+
+void MediaEngagementSession::RecordSignificantPlayback() {
+  DCHECK(WasSignificantPlaybackRecorded());
+
+  // If this was the first time we recorded significant playback then we should
+  // record the playback time.
+  if (first_significant_playback_time_.is_null())
+    first_significant_playback_time_ = service_->clock()->Now();
+
+  // When a session was restored, visits are only recorded when there was a
+  // playback. Add back the visit now as this code can only be executed once
+  // per session.
+  if (restore_status_ == RestoreType::kRestored)
+    pending_data_to_commit_.visit = true;
 }
 
 void MediaEngagementSession::RecordUkmMetrics() {
@@ -142,7 +169,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
       .SetPlaybacks_Total(score.media_playbacks())
       .SetVisits_Total(score.visits())
       .SetEngagement_Score(round(score.actual_score() * 100))
-      .SetPlaybacks_Delta(significant_playback_recorded_)
+      .SetPlaybacks_Delta(significant_media_element_playback_recorded_)
       .SetEngagement_IsHigh(score.high_score())
       .SetEngagement_IsHigh_Changed(high_score_changed_)
       .SetEngagement_IsHigh_Changes(score.high_score_changes())
@@ -155,9 +182,14 @@ void MediaEngagementSession::RecordUkmMetrics() {
       .Record(ukm_recorder);
 }
 
+bool MediaEngagementSession::HasPendingPlaybackToCommit() const {
+  return pending_data_to_commit_.audio_context_playback ||
+         pending_data_to_commit_.media_element_playback;
+}
+
 bool MediaEngagementSession::HasPendingDataToCommit() const {
-  return pending_data_to_commit_.visit || pending_data_to_commit_.playback ||
-         pending_data_to_commit_.players;
+  return pending_data_to_commit_.visit || pending_data_to_commit_.players ||
+         HasPendingPlaybackToCommit();
 }
 
 void MediaEngagementSession::RecordStatusHistograms() const {
@@ -165,12 +197,12 @@ void MediaEngagementSession::RecordStatusHistograms() const {
          (restore_status_ == RestoreType::kRestored));
 
   RecordSessionStatus(SessionStatus::kCreated);
-  if (pending_data_to_commit_.playback)
+  if (HasPendingPlaybackToCommit())
     RecordSessionStatus(SessionStatus::kSignificantPlayback);
 
   if (restore_status_ == RestoreType::kRestored) {
     RecordRestoredSessionStatus(SessionStatus::kCreated);
-    if (pending_data_to_commit_.playback)
+    if (HasPendingPlaybackToCommit())
       RecordRestoredSessionStatus(SessionStatus::kSignificantPlayback);
   }
 }
@@ -187,10 +219,19 @@ void MediaEngagementSession::CommitPendingData() {
   if (pending_data_to_commit_.visit)
     score.IncrementVisits();
 
-  if (significant_playback_recorded_ && pending_data_to_commit_.playback) {
+  if (WasSignificantPlaybackRecorded() && HasPendingPlaybackToCommit()) {
     const base::Time old_time = score.last_media_playback_time();
 
     score.IncrementMediaPlaybacks();
+
+    if (pending_data_to_commit_.audio_context_playback)
+      score.IncrementAudioContextPlaybacks();
+
+    if (pending_data_to_commit_.media_element_playback)
+      score.IncrementMediaElementPlaybacks();
+
+    // Use the stored significant playback time.
+    score.set_last_media_playback_time(first_significant_playback_time_);
 
     // This code should be reached once and |time_since_playback_for_ukm_| can't
     // be set.
@@ -221,6 +262,7 @@ void MediaEngagementSession::CommitPendingData() {
   // If the high state has changed store that in a bool.
   high_score_changed_ = previous_high_value != score.high_score();
 
-  pending_data_to_commit_.visit = pending_data_to_commit_.playback =
-      pending_data_to_commit_.players = false;
+  pending_data_to_commit_.visit = pending_data_to_commit_.players =
+      pending_data_to_commit_.audio_context_playback =
+          pending_data_to_commit_.media_element_playback = false;
 }
