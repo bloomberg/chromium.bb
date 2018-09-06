@@ -231,6 +231,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietAssetProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietCustomElementProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/piet/PietHostBindingProvider.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/removetrackingfactory/StreamRemoveTrackingFactory.java",
 ]
 
 feed_conformance_test_lib_sources = [
