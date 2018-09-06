@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -92,7 +91,6 @@ public class InterstitialPageTest {
     @LargeTest
     @Feature({"Navigation"})
     @RetryOnFailure
-    @FlakyTest(message = "crbug.com/879757")
     public void testCloseInterstitial() throws ExecutionException {
         final String proceedCommand = "PROCEED";
         final String htmlContent = "<html>"
