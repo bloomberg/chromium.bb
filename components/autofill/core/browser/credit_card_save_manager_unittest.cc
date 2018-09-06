@@ -2347,7 +2347,28 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_NoUpload) {
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_NothingIfNothingFound) {
+// This class is parametrized to allow running all the inheriting tests with and
+// without a specific feature enabled. See INSTANTIATE_TEST_CASE_P.
+class CreditCardSaveManagerGetDetectedValuesTest
+    : public CreditCardSaveManagerTest,
+      public ::testing::WithParamInterface<
+          /*enable_send_only_country_in_get_upload_details=*/bool> {
+ public:
+  CreditCardSaveManagerGetDetectedValuesTest() {}
+  ~CreditCardSaveManagerGetDetectedValuesTest() override {}
+
+  void SetUp() override {
+    CreditCardSaveManagerTest::SetUp();
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillSendOnlyCountryInGetUploadDetails,
+        /*enable_send_only_country_in_get_upload_details=*/GetParam());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CreditCardSaveManagerGetDetectedValuesTest);
+};
+
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, NothingIfNothingFound) {
   // Set up our credit card form data.
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
@@ -2365,7 +2386,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_NothingIfNothingFound) {
   EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectCvc) {
   // Set up our credit card form data.
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
@@ -2384,7 +2405,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
             CreditCardSaveManager::DetectedValue::CVC);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectCardholderName) {
   // Set up our credit card form data.
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
@@ -2403,7 +2424,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
             CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectAddressName) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2428,8 +2449,8 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
             CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectCardholderAndAddressNameIfMatching) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectCardholderAndAddressNameIfMatching) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2455,8 +2476,8 @@ TEST_F(CreditCardSaveManagerTest,
                 CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectNoUniqueNameIfNamesConflict) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectNoUniqueNameIfNamesConflict) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2480,7 +2501,7 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectPostalCode) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2505,8 +2526,8 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
             CreditCardSaveManager::DetectedValue::POSTAL_CODE);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectNoUniquePostalCodeIfZipsConflict) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectNoUniquePostalCodeIfZipsConflict) {
   // Set up two new address profiles with conflicting postal codes.
   AutofillProfile profile1;
   profile1.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2534,7 +2555,7 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectAddressLine) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2559,7 +2580,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
             CreditCardSaveManager::DetectedValue::ADDRESS_LINE);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectLocality) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2584,7 +2605,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
             CreditCardSaveManager::DetectedValue::LOCALITY);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectAdministrativeArea) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2609,7 +2630,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
             CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectCountryCode) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2634,8 +2655,8 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
             CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectHasGooglePaymentAccount) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectHasGooglePaymentAccount) {
   // Set the billing_customer_number Priority Preference to designate existence
   // of a Payments account.
   autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
@@ -2659,7 +2680,7 @@ TEST_F(CreditCardSaveManagerTest,
             CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT);
 }
 
-TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest, DetectEverythingAtOnce) {
   // Set up a new address profile.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2696,8 +2717,8 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
                 CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
 }
 
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectSubsetOfPossibleFields) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectSubsetOfPossibleFields) {
   // Set up a new address profile, taking out address line and state.
   AutofillProfile profile;
   profile.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2731,8 +2752,8 @@ TEST_F(CreditCardSaveManagerTest,
 // This test checks that ADDRESS_LINE, LOCALITY, ADMINISTRATIVE_AREA, and
 // COUNTRY_CODE don't care about possible conflicts or consistency and are
 // populated if even one address profile contains it.
-TEST_F(CreditCardSaveManagerTest,
-       GetDetectedValues_DetectAddressComponentsAcrossProfiles) {
+TEST_P(CreditCardSaveManagerGetDetectedValuesTest,
+       DetectAddressComponentsAcrossProfiles) {
   // Set up four new address profiles, each with a different address component.
   AutofillProfile profile1;
   profile1.set_guid("00000000-0000-0000-0000-000000000200");
@@ -2772,6 +2793,15 @@ TEST_F(CreditCardSaveManagerTest,
                 CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
                 CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
 }
+
+// Every test will appear with suffix /0 (param false) and /1 (param true), e.g.
+//  CreditCardSaveManagerGetDetectedValuesTest.NothingIfNothingFound/0:
+//    Feature disabled
+//  CreditCardSaveManagerGetDetectedValuesTest.NothingIfNothingFound/1:
+//    Feature enabled.
+INSTANTIATE_TEST_CASE_P(,  // Empty instatiation name.
+                        CreditCardSaveManagerGetDetectedValuesTest,
+                        ::testing::Values(false, true));
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_LogAdditionalErrorsWithUploadDetailsFailure) {
