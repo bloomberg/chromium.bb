@@ -92,8 +92,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     } else if (box.ContainingBlock()) {
       if (parallel_containing_block) {
         available_logical_height =
-            box.ContainingBlock()
-                ->AvailableLogicalHeightForPercentageComputation();
+            box.ContainingBlockLogicalHeightForPercentageResolution();
       } else {
         available_logical_height = box.ContainingBlockLogicalWidthForContent();
       }

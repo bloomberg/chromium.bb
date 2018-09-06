@@ -3402,8 +3402,9 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
          containing_block->StyleRef().LogicalHeight().IsAuto();
 }
 
-LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
-    const Length& height) const {
+LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPercentageResolution(
+    LayoutBlock** out_cb,
+    bool* out_skipped_auto_height_containing_block) const {
   LayoutBlock* cb = ContainingBlock();
   const LayoutBox* containing_block_child = this;
   bool skipped_auto_height_containing_block = false;
@@ -3419,7 +3420,14 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
     containing_block_child = cb;
     cb = cb->ContainingBlock();
   }
-  cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
+
+  if (out_cb)
+    *out_cb = cb;
+
+  if (out_skipped_auto_height_containing_block) {
+    *out_skipped_auto_height_containing_block =
+        skipped_auto_height_containing_block;
+  }
 
   LayoutUnit available_height(-1);
   if (IsHorizontalWritingMode() != cb->IsHorizontalWritingMode()) {
@@ -3465,7 +3473,25 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
   if (IsTable() && IsOutOfFlowPositioned())
     available_height += cb->PaddingLogicalHeight();
 
+  return available_height;
+}
+
+LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
+    const Length& height) const {
+  bool skipped_auto_height_containing_block = false;
+  LayoutBlock* cb = nullptr;
+  LayoutUnit available_height =
+      ContainingBlockLogicalHeightForPercentageResolution(
+          &cb, &skipped_auto_height_containing_block);
+
+  DCHECK(cb);
+  cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(this));
+
+  if (available_height == -1)
+    return available_height;
+
   LayoutUnit result = ValueForLength(height, available_height);
+
   // |OverrideLogicalHeight| is the maximum height made available by the
   // cell to its percent height children when we decide they can determine the
   // height of the cell. If the percent height child is box-sizing:content-box
