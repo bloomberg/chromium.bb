@@ -35,8 +35,13 @@ def RunSteps(api):
   api.gclient.c.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
                                                  'HEAD')
-  api.gclient.c.repo_path_map['https://webrtc.googlesource.com/src'] = (
-      'src/third_party/webrtc', 'HEAD')
+  api.gclient.c.patch_projects['webrtc'] = ('src/third_party/webrtc', 'HEAD')
+  api.gclient.c.repo_path_map.update({
+      'https://chromium.googlesource.com/angle/angle': (
+          'src/third_party/angle', 'HEAD'),
+      'https://chromium.googlesource.com/v8/v8': ('src/v8', 'HEAD'),
+      'https://webrtc.googlesource.com/src': ('src/third_party/webrtc', 'HEAD'),
+  })
 
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
@@ -144,21 +149,25 @@ def GenTests(api):
       gerrit_no_rebase_patch_ref=True
   )
   yield api.test('tryjob_v8') + api.properties(
+      repository='https://chromium.googlesource.com/v8/v8',
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
       patch_project='v8',
-      revisions={'src/v8': 'abc'}
+      revisions={'src/v8': 'abc'},
   )
   yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/v8/v8',
       patch_project='v8',
   )
   yield api.test('tryjob_gerrit_angle') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/angle/angle',
       gerrit_project='angle/angle',
       patch_issue=338811,
       patch_set=3,
   )
   yield api.test('no_apply_patch_on_gclient') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/angle/angle',
       gerrit_project='angle/angle',
       patch_issue=338811,
       patch_set=3,
@@ -166,11 +175,13 @@ def GenTests(api):
       apply_patch_on_gclient=False,
   )
   yield api.test('tryjob_gerrit_v8') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/v8/v8',
       gerrit_project='v8/v8',
       patch_issue=338811,
       patch_set=3,
   )
   yield api.test('tryjob_gerrit_v8_feature_branch') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/v8/v8',
       gerrit_project='v8/v8',
       patch_issue=338811,
       patch_set=3,
@@ -180,6 +191,7 @@ def GenTests(api):
   )
   yield api.test('tryjob_gerrit_feature_branch') + api.properties.tryserver(
       buildername='feature_rel',
+      repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='chromium/src',
       patch_issue=338811,
       patch_set=3,
@@ -188,6 +200,7 @@ def GenTests(api):
       api.gerrit.get_one_change_response_data(branch='experimental/feature'),
   )
   yield api.test('tryjob_gerrit_branch_heads') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='chromium/src',
       patch_issue=338811,
       patch_set=3,
@@ -196,6 +209,7 @@ def GenTests(api):
       api.gerrit.get_one_change_response_data(branch='refs/branch-heads/67'),
   )
   yield api.test('tryjob_gerrit_webrtc') + api.properties.tryserver(
+      repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='src',
       git_url='https://webrtc.googlesource.com/src',
       patch_issue=338811,

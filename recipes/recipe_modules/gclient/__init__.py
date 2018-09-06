@@ -1,5 +1,6 @@
 DEPS = [
   'infra_paths',
+  'gitiles',
   'recipe_engine/context',
   'recipe_engine/json',
   'recipe_engine/path',

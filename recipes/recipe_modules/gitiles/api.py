@@ -209,6 +209,19 @@ class Gitiles(recipe_api.RecipeApi):
     """
     return parse_repo_url(repo_url)
 
+  def unparse_repo_url(self, host, project):
+    """Generates a Gitiles repo URL. See also parse_repo_url."""
+    return unparse_repo_url(host, project)
+
+  def canonicalize_repo_url(self, repo_url):
+    """Returns a canonical form of repo_url. If not recognized, returns as is.
+    """
+    if repo_url:
+      host, project = parse_repo_url(repo_url)
+      if host and project:
+        repo_url = unparse_repo_url(host, project)
+    return repo_url
+
 
 def parse_http_host_and_path(url):
   # Copied from https://chromium.googlesource.com/infra/luci/recipes-py/+/809e57935211b3fcb802f74a7844d4f36eff6b87/recipe_modules/buildbucket/util.py
@@ -238,3 +251,7 @@ def parse_repo_url(repo_url):
   if project.endswith('.git'):
     project = project[:-len('.git')]
   return host, project
+
+
+def unparse_repo_url(host, project):
+  return 'https://%s/%s' % (host, project)

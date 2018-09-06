@@ -235,7 +235,7 @@ Returns (Path): The "depot_tools" root directory.
 &emsp; **@property**<br>&mdash; **def [upload\_to\_google\_storage\_path](/recipes/recipe_modules/depot_tools/api.py#17)(self):**
 ### *recipe_modules* / [gclient](/recipes/recipe_modules/gclient)
 
-[DEPS](/recipes/recipe_modules/gclient/__init__.py#1): [infra\_paths](#recipe_modules-infra_paths), [tryserver](#recipe_modules-tryserver), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/gclient/__init__.py#1): [gitiles](#recipe_modules-gitiles), [infra\_paths](#recipe_modules-infra_paths), [tryserver](#recipe_modules-tryserver), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 #### **class [GclientApi](/recipes/recipe_modules/gclient/api.py#65)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
@@ -248,9 +248,11 @@ Wrapper for easy calling of gclient steps.
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#305)(self, patch_project, gclient_config=None, patch_repo=None):**
+&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#339)(self, patch_project, gclient_config=None, patch_repo=None):**
 
 Returns path where a patch should be applied to based patch_project.
+
+TODO(nodir): delete this function in favor of get_repo_path.
 
 Maps the patch's repo to a path of directories relative to checkout's root,
 which describe where to place the patch. If no mapping is found for the
@@ -274,6 +276,14 @@ Return a step generator function for gclient checkouts.
 &emsp; **@staticmethod**<br>&mdash; **def [config\_to\_pythonish](/recipes/recipe_modules/gclient/api.py#120)(cfg):**
 
 &mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#114)(self):**
+
+&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#309)(self, repo_url, gclient_config=None):**
+
+Returns local path to the repo checkout given its url.
+
+Consults cfg.repo_path_map and fallbacks to urls in configured solutions.
+
+Returns None if not found.
 
 &emsp; **@staticmethod**<br>&mdash; **def [got\_revision\_reverse\_mapping](/recipes/recipe_modules/gclient/api.py#125)(cfg):**
 
@@ -306,7 +316,7 @@ Chromium config. This may happen for one of two reasons:
 
 &mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#337)(self, patch_project, gclient_config=None):**
+&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#376)(self, patch_project, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
@@ -539,6 +549,11 @@ DEPRECATED. Consider using gerrit.get_change_description instead.
 
 Module for polling a git repository using the Gitiles web interface.
 
+&mdash; **def [canonicalize\_repo\_url](/recipes/recipe_modules/gitiles/api.py#216)(self, repo_url):**
+
+Returns a canonical form of repo_url. If not recognized, returns as is.
+    
+
 &mdash; **def [commit\_log](/recipes/recipe_modules/gitiles/api.py#114)(self, url, commit, step_name=None, attempts=None):**
 
 Returns: (dict) the Gitiles commit log structure for a given commit.
@@ -611,6 +626,10 @@ Returns (None, None) if repo_url is not recognized.
 &mdash; **def [refs](/recipes/recipe_modules/gitiles/api.py#56)(self, url, step_name='refs', attempts=None):**
 
 Returns a list of refs in the remote repository.
+
+&mdash; **def [unparse\_repo\_url](/recipes/recipe_modules/gitiles/api.py#212)(self, host, project):**
+
+Generates a Gitiles repo URL. See also parse_repo_url.
 ### *recipe_modules* / [gsutil](/recipes/recipe_modules/gsutil)
 
 [DEPS](/recipes/recipe_modules/gsutil/__init__.py#1): [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python]

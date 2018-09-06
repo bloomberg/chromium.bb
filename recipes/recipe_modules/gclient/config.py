@@ -82,6 +82,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     #     'angle/angle': ('src/third_party/angle', 'HEAD')
     # then a patch to Angle project can be applied to a chromium src's
     # checkout after first updating Angle's repo to its master's HEAD.
+    # TODO(nodir): remove patch_projects in favor of repo_path_map.
     patch_projects = Dict(value_type=tuple, hidden=True),
     # Same as the above, except the keys are full repo URLs.
     repo_path_map = Dict(value_type=tuple, hidden=True),
@@ -303,6 +304,16 @@ def infra(c):
   # TODO(phajdan.jr): remove recipes-py when it's not used for project name.
   p['infra/luci/recipes-py'] = ('infra/recipes-py', 'HEAD')
   p['recipe_engine'] = ('infra/recipes-py', 'HEAD')
+  c.repo_path_map.update({
+      'https://chromium.googlesource.com/infra/luci/gae': (
+          'infra/go/src/go.chromium.org/gae', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/luci-py': (
+          'infra/luci', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/luci-go': (
+          'infra/go/src/go.chromium.org/luci', 'HEAD'),
+      'https://chromium.googlesource.com/infra/luci/recipes-py': (
+          'infra/recipes-py', 'HEAD')
+  })
 
 @config_ctx()
 def infra_internal(c):  # pragma: no cover
@@ -338,7 +349,6 @@ def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
   c.revisions['infra'] = 'origin/master'
-  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/luci'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
@@ -348,7 +358,6 @@ def luci_py(c):
 @config_ctx(includes=['infra'])
 def recipes_py(c):
   c.revisions['infra'] = 'origin/master'
-  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/recipes-py'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping

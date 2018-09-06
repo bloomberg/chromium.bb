@@ -302,9 +302,45 @@ class GclientApi(recipe_api.RecipeApi):
       infra_step=True,
     )
 
+  def _canonicalize_repo_url(self, repo_url):
+    """Attempts to make repo_url canonical. Supports Gitiles URL."""
+    return self.m.gitiles.canonicalize_repo_url(repo_url)
+
+  def get_repo_path(self, repo_url, gclient_config=None):
+    """Returns local path to the repo checkout given its url.
+
+    Consults cfg.repo_path_map and fallbacks to urls in configured solutions.
+
+    Returns None if not found.
+    """
+    rel_path = self._get_repo_path(repo_url, gclient_config=gclient_config)
+    if rel_path:
+      return self.m.path.join(*rel_path.split('/'))
+    return None
+
+  def _get_repo_path(self, repo_url, gclient_config=None):
+    repo_url = self._canonicalize_repo_url(repo_url)
+    cfg = gclient_config or self.c
+    rel_path, _ = cfg.repo_path_map.get(repo_url, ('', ''))
+    if rel_path:
+      return rel_path
+
+    # repo_path_map keys may be non-canonical.
+    for key, (rel_path, _) in cfg.repo_path_map.iteritems():
+      if self._canonicalize_repo_url(key) == repo_url:
+        return rel_path
+
+    for s in cfg.solutions:
+      if self._canonicalize_repo_url(s.url) == repo_url:
+        return s.name
+
+    return None
+
   def calculate_patch_root(self, patch_project, gclient_config=None,
                            patch_repo=None):
     """Returns path where a patch should be applied to based patch_project.
+
+    TODO(nodir): delete this function in favor of get_repo_path.
 
     Maps the patch's repo to a path of directories relative to checkout's root,
     which describe where to place the patch. If no mapping is found for the
@@ -321,10 +357,13 @@ class GclientApi(recipe_api.RecipeApi):
       If patch_project is not given or not recognized, it'll be just first
       solution root.
     """
+    if patch_repo:
+      path = self.get_repo_path(patch_repo, gclient_config=gclient_config)
+      if path is not None:
+        return path
+
     cfg = gclient_config or self.c
-    root, _ = cfg.repo_path_map.get(patch_repo, ('', ''))
-    if not root:
-      root, _ = cfg.patch_projects.get(patch_project, ('', ''))
+    root, _ = cfg.patch_projects.get(patch_project, ('', ''))
     if not root:
       # Failure case - assume patch is for first solution, as this is what most
       # projects rely on.

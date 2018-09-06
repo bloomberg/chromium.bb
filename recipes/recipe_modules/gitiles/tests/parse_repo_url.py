@@ -10,21 +10,40 @@ DEPS = [
 
 
 def RunSteps(api):
-  repo_url = api.properties['repo_url']
-  host, project = api.gitiles.parse_repo_url(repo_url)
-  api.step('build', ['echo', str(host), str(project)])
+  valid_urls = [
+    'https://host/path/to/project',
+    'http://host/path/to/project',
+    'https://host/a/path/to/project',
+    'https://host/path/to/project.git',
+    'http://host/a/path/to/project',
+    'host/a/path/to/project',
+  ]
+  for repo_url in valid_urls:
+    host, project = api.gitiles.parse_repo_url(repo_url)
+    assert host == 'host', host
+    assert project == 'path/to/project', project
+
+  invalid_urls = [
+    'https://host/a/path/to/project?a=b',
+    'https://host/path/to/project/+/master',
+  ]
+  for repo_url in invalid_urls:
+    host, project = api.gitiles.parse_repo_url(repo_url)
+    assert host is None
+    assert project is None
+
+  actual = api.gitiles.unparse_repo_url('host', 'path/to/project')
+  expected = 'https://host/path/to/project'
+  assert actual == expected
+
+  actual = api.gitiles.canonicalize_repo_url('http://host/path/to/project')
+  expected = 'https://host/path/to/project'
+  assert actual == expected
+
+  actual = api.gitiles.canonicalize_repo_url('http://unrecognized')
+  expected = 'http://unrecognized'
+  assert actual == expected
 
 
 def GenTests(api):
-
-  def case(name, repo_url):
-    return api.test(name) + api.properties(repo_url=repo_url)
-
-  yield case('basic', 'https://host/path/to/project')
-  yield case('http', 'http://host/path/to/project')
-  yield case('a prefix', 'https://host/a/path/to/project')
-  yield case('git suffix', 'https://host/path/to/project.git')
-  yield case('http and a prefix', 'http://host/a/path/to/project')
-  yield case('no scheme', 'host/a/path/to/project')
-  yield case('query string param', 'https://host/a/path/to/project?a=b')
-  yield case('plus', 'https://host/path/to/project/+/master')
+  yield api.test('basic')
