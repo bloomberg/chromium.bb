@@ -91,6 +91,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;
+  bool OOPIFHasPointerEventsNone() const override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   RemoteFrame* GetFrame() const { return frame_.Get(); }
