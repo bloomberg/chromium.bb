@@ -304,8 +304,7 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
 void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  viz::BeginFrameAck current_begin_frame_ack =
-      viz::BeginFrameAck(args.source_id, args.sequence_number, false);
+  viz::BeginFrameAck current_begin_frame_ack(args, false);
   if (args.type == viz::BeginFrameArgs::MISSED) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;

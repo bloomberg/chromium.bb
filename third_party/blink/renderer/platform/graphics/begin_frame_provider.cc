@@ -106,11 +106,7 @@ void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
     }
   }
 
-  viz::BeginFrameAck ack;
-  ack.source_id = args.source_id;
-  ack.sequence_number = args.sequence_number;
-  ack.has_damage = false;
-  compositor_frame_sink_->DidNotProduceFrame(ack);
+  compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
 }
 
 }  // namespace blink
