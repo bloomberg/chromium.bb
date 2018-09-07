@@ -320,18 +320,18 @@ template("write_build_config") {
 
     if (defined(invoker.apk_path)) {
       _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
+      _rebased_incremental_apk_path =
+          rebase_path(invoker.incremental_apk_path, root_build_dir)
+      _rebased_incremental_install_json_path =
+          rebase_path(invoker.incremental_install_json_path, root_build_dir)
       _incremental_allowed =
           defined(invoker.incremental_allowed) && invoker.incremental_allowed
       args += [ "--apk-path=$_rebased_apk_path" ]
+      args += [ "--incremental-install-json-path=$_rebased_incremental_install_json_path" ]
+
+      assert(_rebased_incremental_apk_path != "")  # Mark as used.
       if (_incremental_allowed) {
-        _rebased_incremental_apk_path =
-            rebase_path(invoker.incremental_apk_path, root_build_dir)
-        _rebased_incremental_install_json_path =
-            rebase_path(invoker.incremental_install_json_path, root_build_dir)
-        args += [
-          "--incremental-install-json-path=$_rebased_incremental_install_json_path",
-          "--incremental-apk-path=$_rebased_incremental_apk_path",
-        ]
+        args += [ "--incremental-apk-path=$_rebased_incremental_apk_path" ]
       }
     }
 
