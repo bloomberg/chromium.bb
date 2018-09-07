@@ -77,8 +77,10 @@ class PaymentsClientTest : public testing::Test {
     client_ = std::make_unique<PaymentsClient>(
         test_shared_loader_factory_, &pref_service_,
         identity_test_env_.identity_manager(), &test_personal_data_);
-    test_personal_data_.SetAccountInfoForPayments(
-        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com"));
+    const std::string& account_id =
+        identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com")
+            .account_id;
+    test_personal_data_.SetActiveAccountId(account_id);
   }
 
   void TearDown() override { client_.reset(); }
@@ -449,16 +451,16 @@ TEST_F(PaymentsClientTest,
 TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
   EnableAutofillGetPaymentsIdentityFromSync();
   // Set up a different account.
-  const AccountInfo& secondary_account_info =
-      identity_test_env_.MakeAccountAvailable("secondary@gmail.com");
-  test_personal_data_.SetAccountInfoForPayments(secondary_account_info);
+  const std::string& secondary_account_id =
+      identity_test_env_.MakeAccountAvailable("secondary@gmail.com").account_id;
+  test_personal_data_.SetActiveAccountId(secondary_account_id);
 
   StartUploading(/*include_cvc=*/true);
   ReturnResponse(net::HTTP_OK, "{}");
 
   // Issue a token for the secondary account.
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      secondary_account_info.account_id, "secondary_account_token",
+      secondary_account_id, "secondary_account_token",
       base::Time::Now() + base::TimeDelta::FromDays(10));
 
   // Verify the auth header.

@@ -222,8 +222,8 @@ bool TestPersonalDataManager::IsSyncFeatureEnabled() const {
   return sync_feature_enabled_;
 }
 
-AccountInfo TestPersonalDataManager::GetAccountInfoForPaymentsServer() const {
-  return account_info_;
+std::string TestPersonalDataManager::GetActiveSignedInAccountId() const {
+  return account_id_;
 }
 
 void TestPersonalDataManager::ClearProfiles() {

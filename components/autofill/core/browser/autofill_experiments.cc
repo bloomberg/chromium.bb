@@ -131,7 +131,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // Check that the user is logged into a supported domain.
   if (user_email.empty())
     return false;
-
   std::string domain = gaia::ExtractDomainName(user_email);
   // If the "allow all email domains" flag is off, restrict credit card upload
   // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
