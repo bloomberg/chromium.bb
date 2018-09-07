@@ -76,7 +76,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                  smbprovider::kMountMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
-    writer.AppendFileDescriptor(password_fd.release());
+    writer.AppendFileDescriptor(password_fd.get());
     CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
                &callback);
   }
@@ -97,7 +97,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                  smbprovider::kRemountMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
-    writer.AppendFileDescriptor(password_fd.release());
+    writer.AppendFileDescriptor(password_fd.get());
 
     CallDefaultMethod(&method_call, &callback);
   }
@@ -214,7 +214,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                  smbprovider::kWriteFileMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
-    writer.AppendFileDescriptor(temp_fd.release());
+    writer.AppendFileDescriptor(temp_fd.get());
     CallDefaultMethod(&method_call, &callback);
   }
 
