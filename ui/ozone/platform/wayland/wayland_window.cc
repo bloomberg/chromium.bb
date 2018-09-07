@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
@@ -508,6 +510,31 @@ void WaylandWindow::OnCloseRequest() {
   // only then call OnCloseRequest().
   DCHECK(!xdg_popup_);
   delegate_->OnCloseRequest();
+}
+
+void WaylandWindow::OnDragEnter(const gfx::PointF& point,
+                                std::unique_ptr<OSExchangeData> data,
+                                int operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+int WaylandWindow::OnDragMotion(const gfx::PointF& point,
+                                uint32_t time,
+                                int operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return 0;
+}
+
+void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::OnDragLeave() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool WaylandWindow::IsMinimized() const {

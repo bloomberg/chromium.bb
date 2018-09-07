@@ -24,7 +24,10 @@ struct wl_resource;
 namespace wl {
 
 constexpr char kTextMimeTypeUtf8[] = "text/plain;charset=utf-8";
+constexpr char kTextMimeTypeText[] = "text/plain";
 constexpr char kSampleClipboardText[] = "This is a sample text for clipboard.";
+constexpr char kSampleTextForDragAndDrop[] =
+    "This is a sample text for drag-and-drop.";
 
 // Base class for managing the life cycle of server objects.
 class ServerObject {
@@ -222,6 +225,14 @@ class MockDataDevice : public ServerObject {
   void SetSelection(MockDataSource* data_source, uint32_t serial);
 
   MockDataOffer* OnDataOffer();
+  void OnEnter(uint32_t serial,
+               wl_resource* surface,
+               wl_fixed_t x,
+               wl_fixed_t y,
+               MockDataOffer& data_offer);
+  void OnLeave();
+  void OnMotion(uint32_t time, wl_fixed_t x, wl_fixed_t y);
+  void OnDrop();
   void OnSelection(MockDataOffer& data_offer);
 
  private:

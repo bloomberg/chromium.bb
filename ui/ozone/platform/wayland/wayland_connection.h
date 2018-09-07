@@ -94,6 +94,8 @@ class WaylandConnection : public PlatformEventSource,
   // Returns the current pointer, which may be null.
   WaylandPointer* pointer() { return pointer_.get(); }
 
+  WaylandDataSource* drag_data_source() { return drag_data_source_.get(); }
+
   // Clipboard implementation.
   ClipboardDelegate* GetClipboardDelegate();
   void DataSourceCancelled();
@@ -119,6 +121,23 @@ class WaylandConnection : public PlatformEventSource,
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
+
+  // Starts drag with |data| to be delivered, |operation| supported by the
+  // source side initiated the dragging.
+  void StartDrag(const ui::OSExchangeData& data, int operation);
+  // Finishes drag and drop session. It happens when WaylandDataSource gets
+  // 'OnDnDFinished' or 'OnCancel', which means the drop is performed or
+  // canceled on others.
+  void FinishDragSession(uint32_t dnd_action, WaylandWindow* source_window);
+  // Delivers the data owned by Chromium which initiates drag-and-drop. |buffer|
+  // is an output parameter and it should be filled with the data corresponding
+  // to mime_type.
+  void DeliverDragData(const std::string& mime_type, std::string* buffer);
+  // Requests the data to the platform when Chromium gets drag-and-drop started
+  // by others. Once reading the data from platform is done, |callback| should
+  // be called with the data.
+  void RequestDragData(const std::string& mime_type,
+                       base::OnceCallback<void(const std::string&)> callback);
 
  private:
   void Flush();
@@ -166,6 +185,7 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandDataSource> data_source_;
+  std::unique_ptr<WaylandDataSource> drag_data_source_;
   std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandKeyboard> keyboard_;
   std::unique_ptr<WaylandTouch> touch_;

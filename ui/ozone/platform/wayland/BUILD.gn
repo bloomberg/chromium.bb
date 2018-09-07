@@ -157,6 +157,7 @@ source_set("wayland_unittests") {
     "//testing/gtest",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/base",
     "//ui/base:ui_features",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/ozone:platform",

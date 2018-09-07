@@ -290,6 +290,15 @@ const struct zxdg_positioner_v6_interface zxdg_positioner_v6_impl = {
 
 // wl_data_device
 
+void DataDeviceStartDrag(wl_client* client,
+                         wl_resource* resource,
+                         wl_resource* source,
+                         wl_resource* origin,
+                         wl_resource* icon,
+                         uint32_t serial) {
+  NOTIMPLEMENTED();
+}
+
 void DataDeviceSetSelection(wl_client* client,
                             wl_resource* resource,
                             wl_resource* data_source,
@@ -304,8 +313,7 @@ void DataDeviceRelease(wl_client* client, wl_resource* resource) {
 }
 
 const struct wl_data_device_interface data_device_impl = {
-    nullptr /*data_device_start_drag*/, &DataDeviceSetSelection,
-    &DataDeviceRelease};
+    &DataDeviceStartDrag, &DataDeviceSetSelection, &DataDeviceRelease};
 
 // wl_data_device_manager
 
@@ -347,6 +355,13 @@ const struct wl_data_device_manager_interface data_device_manager_impl = {
 
 // wl_data_offer
 
+void DataOfferAccept(wl_client* client,
+                     wl_resource* resource,
+                     uint32_t serial,
+                     const char* mime_type) {
+  NOTIMPLEMENTED();
+}
+
 void DataOfferReceive(wl_client* client,
                       wl_resource* resource,
                       const char* mime_type,
@@ -359,10 +374,20 @@ void DataOfferDestroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void DataOfferFinish(wl_client* client, wl_resource* resource) {
+  NOTIMPLEMENTED();
+}
+
+void DataOfferSetActions(wl_client* client,
+                         wl_resource* resource,
+                         uint32_t dnd_actions,
+                         uint32_t preferred_action) {
+  NOTIMPLEMENTED();
+}
+
 const struct wl_data_offer_interface data_offer_impl = {
-    nullptr /* data_offer_accept*/, DataOfferReceive,
-    nullptr /*data_offer_finish*/, DataOfferDestroy,
-    nullptr /*data_offer_set_actions*/};
+    DataOfferAccept, DataOfferReceive, DataOfferDestroy, DataOfferFinish,
+    DataOfferSetActions};
 
 // wl_data_source
 
@@ -376,8 +401,14 @@ void DataSourceDestroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void SetActions(wl_client* client,
+                wl_resource* resource,
+                uint32_t dnd_actions) {
+  NOTIMPLEMENTED();
+}
+
 const struct wl_data_source_interface data_source_impl = {
-    DataSourceOffer, DataSourceDestroy, nullptr /*data_source_set_actions*/};
+    DataSourceOffer, DataSourceDestroy, SetActions};
 
 // wl_seat
 
@@ -784,10 +815,15 @@ MockDataOffer::~MockDataOffer() {}
 
 void MockDataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
   DCHECK(fd.is_valid());
-  std::string text_utf8(kSampleClipboardText);
+  std::string text_data;
+  if (mime_type == kTextMimeTypeUtf8)
+    text_data = kSampleClipboardText;
+  else if (mime_type == kTextMimeTypeText)
+    text_data = kSampleTextForDragAndDrop;
+
   io_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&WriteDataOnWorkerThread, std::move(fd), text_utf8));
+      base::BindOnce(&WriteDataOnWorkerThread, std::move(fd), text_data));
 }
 
 void MockDataOffer::OnOffer(const std::string& mime_type) {
@@ -814,6 +850,27 @@ MockDataOffer* MockDataDevice::OnDataOffer() {
   wl_data_device_send_data_offer(resource(), data_offer_resource);
 
   return GetUserDataAs<MockDataOffer>(data_offer_resource);
+}
+
+void MockDataDevice::OnEnter(uint32_t serial,
+                             wl_resource* surface,
+                             wl_fixed_t x,
+                             wl_fixed_t y,
+                             MockDataOffer& data_offer) {
+  wl_data_device_send_enter(resource(), serial, surface, x, y,
+                            data_offer.resource());
+}
+
+void MockDataDevice::OnLeave() {
+  wl_data_device_send_leave(resource());
+}
+
+void MockDataDevice::OnMotion(uint32_t time, wl_fixed_t x, wl_fixed_t y) {
+  wl_data_device_send_motion(resource(), time, x, y);
+}
+
+void MockDataDevice::OnDrop() {
+  wl_data_device_send_drop(resource());
 }
 
 void MockDataDevice::OnSelection(MockDataOffer& data_offer) {
