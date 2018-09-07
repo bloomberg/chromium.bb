@@ -338,10 +338,17 @@ public class OfflineIndicatorControllerTest {
                     }
 
                     private boolean isShowingOfflineIndicator() {
-                        SnackbarManager snackbarManager = activity.getSnackbarManager();
-                        if (!snackbarManager.isShowing()) return false;
-                        return snackbarManager.getCurrentSnackbarForTesting().getController()
-                                == OfflineIndicatorController.getInstance();
+                        if (OfflineIndicatorController.isUsingTopSnackbar()) {
+                            TopSnackbarManager snackbarManager =
+                                    OfflineIndicatorController.getInstance()
+                                            .getTopSnackbarManagerForTesting();
+                            return snackbarManager.isShowing();
+                        } else {
+                            SnackbarManager snackbarManager = activity.getSnackbarManager();
+                            if (!snackbarManager.isShowing()) return false;
+                            return snackbarManager.getCurrentSnackbarForTesting().getController()
+                                    == OfflineIndicatorController.getInstance();
+                        }
                     }
                 });
     }

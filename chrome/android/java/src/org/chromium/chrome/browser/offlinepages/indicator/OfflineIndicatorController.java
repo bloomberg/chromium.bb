@@ -12,13 +12,13 @@ import android.os.SystemClock;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -34,8 +34,9 @@ import org.chromium.content_public.common.ContentUrlConstants;
 /**
  * Class that controls when to show the offline indicator.
  */
-public class OfflineIndicatorController
-        implements ConnectivityDetector.Observer, SnackbarController {
+public class OfflineIndicatorController implements ConnectivityDetector.Observer,
+                                                   SnackbarController,
+                                                   ApplicationStatus.ApplicationStateListener {
     // OfflineIndicatorCTREvent defined in tools/metrics/histograms/enums.xml.
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
@@ -43,7 +44,7 @@ public class OfflineIndicatorController
     public static final int OFFLINE_INDICATOR_CTR_CLICKED = 1;
     public static final int OFFLINE_INDICATOR_CTR_COUNT = 2;
 
-    private static final int DURATION_MS = 10000;
+    private static final int SNACKBAR_DURATION_MS = 10000;
 
     // Time in milliseconds to wait until the offline state is stablized in the case of flaky
     // connections.
@@ -60,12 +61,18 @@ public class OfflineIndicatorController
     private ConnectivityDetector mConnectivityDetector;
     private ChromeActivity mObservedActivity = null;
 
-    private boolean mIsOnline = false;
+    private boolean mIsOnline;
     // Last time when the online state is detected. It is recorded as milliseconds since boot.
-    private long mLastOnlineTime = 0;
+    private long mLastOnlineTime;
+
+    private TopSnackbarManager mTopSnackbarManager;
 
     private OfflineIndicatorController() {
+        if (isUsingTopSnackbar()) {
+            mTopSnackbarManager = new TopSnackbarManager();
+        }
         mConnectivityDetector = new ConnectivityDetector(this);
+        ApplicationStatus.registerApplicationStateListener(this);
     }
 
     /**
@@ -88,15 +95,6 @@ public class OfflineIndicatorController
         return sInstance;
     }
 
-    /**
-     * Called to update the offline indicator per current connection state when the activity is
-     * running in foreground now or the tab is being shown.
-     */
-    public static void onUpdate() {
-        if (sInstance == null) return;
-        sInstance.mConnectivityDetector.detect();
-    }
-
     @Override
     public void onConnectionStateChanged(
             @ConnectivityDetector.ConnectionState int connectionState) {
@@ -117,6 +115,16 @@ public class OfflineIndicatorController
         mIsShowingOfflineIndicator = false;
     }
 
+    @Override
+    public void onApplicationStateChange(int newState) {
+        // If the application is resumed, update the connection state and show indicator if needed.
+        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            mConnectivityDetector.detect();
+            updateOfflineIndicator(mConnectivityDetector.getConnectionState()
+                    == ConnectivityDetector.ConnectionState.VALIDATED);
+        }
+    }
+
     private void updateOfflineIndicator(boolean isOnline) {
         if (isOnline != mIsOnline) {
             if (isOnline) {
@@ -125,32 +133,30 @@ public class OfflineIndicatorController
             mIsOnline = isOnline;
         }
 
+        if (ApplicationStatus.getStateForApplication() != ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            return;
+        }
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof SnackbarManageable)) return;
-        SnackbarManager snackbarManager = ((SnackbarManageable) activity).getSnackbarManager();
-        if (snackbarManager == null) return;
+        if (activity == null) return;
 
         if (isOnline) {
-            hideOfflineIndicator(snackbarManager);
+            hideOfflineIndicator(activity);
         } else {
-            showOfflineIndicator(activity, snackbarManager);
+            showOfflineIndicator(activity);
         }
     }
 
     private boolean canShowOfflineIndicator(Activity activity) {
-        // No need to show offline indicator since Downloads home is already home of the offline
-        // content.
-        if (activity instanceof DownloadActivity) return false;
+        // For now, we only support ChromeActivity.
+        if (!(activity instanceof ChromeActivity)) return false;
 
-        if (activity instanceof ChromeActivity) {
-            ChromeActivity chromeActivity = (ChromeActivity) activity;
-            Tab tab = chromeActivity.getActivityTab();
-            if (tab == null) return false;
-            if (tab.isShowingErrorPage()) return false;
-            if (OfflinePageUtils.isOfflinePage(tab)) return false;
-            if (TextUtils.equals(tab.getUrl(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-                return false;
-            }
+        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        Tab tab = chromeActivity.getActivityTab();
+        if (tab == null) return false;
+        if (tab.isShowingErrorPage()) return false;
+        if (OfflinePageUtils.isOfflinePage(tab)) return false;
+        if (TextUtils.equals(tab.getUrl(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+            return false;
         }
 
         return true;
@@ -205,22 +211,22 @@ public class OfflineIndicatorController
         return true;
     }
 
-    private void showOfflineIndicator(Activity activity, SnackbarManager snackbarManager) {
-        if (mIsShowingOfflineIndicator) return;
+    private void showOfflineIndicator(Activity activity) {
+        if (mIsShowingOfflineIndicator || !canShowOfflineIndicator(activity)) return;
 
         if (delayShowingOfflineIndicatorIfNeeded(activity)) return;
-
-        if (!canShowOfflineIndicator(activity)) return;
 
         // If this is the first time to show offline indicator, show it. Otherwise, it will only
         // be shown if the user has been continuously online for the required duration, then goes
         // back to being offline.
+        // TODO(jianli): keep these values in shared prefernces. (http://crbug.com/879725)
         if (mHasOfflineIndicatorShown
                 && SystemClock.elapsedRealtime() - mLastOnlineTime < sTimeToWaitForStableOffline) {
             return;
         }
 
-        Drawable icon = AppCompatResources.getDrawable(activity, R.drawable.ic_offline_pin_white);
+        Drawable icon =
+                AppCompatResources.getDrawable(activity, R.drawable.ic_offline_pin_blue_white);
         Snackbar snackbar =
                 Snackbar.make(activity.getString(R.string.offline_indicator_offline_title), this,
                                 Snackbar.TYPE_ACTION, Snackbar.UMA_OFFLINE_INDICATOR)
@@ -228,25 +234,50 @@ public class OfflineIndicatorController
                         .setProfileImage(icon)
                         .setBackgroundColor(Color.BLACK)
                         .setTextAppearance(R.style.WhiteBody)
+                        .setDuration(SNACKBAR_DURATION_MS)
                         .setAction(
                                 activity.getString(R.string.offline_indicator_view_offline_content),
                                 null);
-        snackbar.setDuration(DURATION_MS);
-        snackbarManager.showSnackbar(snackbar);
+        if (isUsingTopSnackbar()) {
+            mTopSnackbarManager.show(snackbar, activity);
+        } else {
+            // Show a bottom snackbar via SnackbarManager.
+            assert activity instanceof SnackbarManageable;
+            SnackbarManager snackbarManager = ((SnackbarManageable) activity).getSnackbarManager();
+            snackbarManager.showSnackbar(snackbar);
+        }
+
         RecordHistogram.recordEnumeratedHistogram("OfflineIndicator.CTR",
                 OFFLINE_INDICATOR_CTR_DISPLAYED, OFFLINE_INDICATOR_CTR_COUNT);
         mIsShowingOfflineIndicator = true;
         mHasOfflineIndicatorShown = true;
     }
 
-    private void hideOfflineIndicator(SnackbarManager snackbarManager) {
+    private void hideOfflineIndicator(Activity activity) {
         if (!mIsShowingOfflineIndicator) return;
-        snackbarManager.dismissSnackbars(this);
+
+        if (isUsingTopSnackbar()) {
+            mTopSnackbarManager.hide();
+        } else {
+            assert activity instanceof SnackbarManageable;
+            SnackbarManager snackbarManager = ((SnackbarManageable) activity).getSnackbarManager();
+            snackbarManager.dismissSnackbars(this);
+        }
     }
 
     @VisibleForTesting
-    public ConnectivityDetector getConnectivityDetectorForTesting() {
+    static boolean isUsingTopSnackbar() {
+        return true;
+    }
+
+    @VisibleForTesting
+    ConnectivityDetector getConnectivityDetectorForTesting() {
         return mConnectivityDetector;
+    }
+
+    @VisibleForTesting
+    TopSnackbarManager getTopSnackbarManagerForTesting() {
+        return mTopSnackbarManager;
     }
 
     @VisibleForTesting

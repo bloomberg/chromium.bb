@@ -213,7 +213,7 @@ public class Snackbar {
         return mSingleLine;
     }
 
-    int getDuration() {
+    public int getDuration() {
         return mDurationMs;
     }
 
