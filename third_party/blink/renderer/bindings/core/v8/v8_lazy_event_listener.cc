@@ -60,7 +60,7 @@ V8LazyEventListener::V8LazyEventListener(
     const String source_url,
     const TextPosition& position,
     Node* node)
-    : V8AbstractEventHandler(isolate, true, DOMWrapperWorld::MainWorld()),
+    : V8AbstractEventListener(isolate, true, DOMWrapperWorld::MainWorld()),
       was_compilation_failed_(false),
       function_name_(function_name),
       event_parameter_name_(event_parameter_name),

@@ -17,8 +17,6 @@ This bug was a combination of 2 things:
 <iframe id=html_iframe></iframe>
 <div id=html_div></div>
 <script>
-setup({ allow_uncaught_exception: true });
-
 function reactToWidthChange() {
   // null the body
   html_div.appendChild(html_iframe.contentDocument.body);
