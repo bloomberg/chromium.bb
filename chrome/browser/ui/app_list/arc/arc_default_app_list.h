@@ -86,8 +86,10 @@ class ArcDefaultAppList {
   }
 
  private:
-  // Called when default apps are ready.
-  void OnAppsReady(std::unique_ptr<AppInfoMap> apps);
+  // Called when default apps are read from the provided source.
+  void OnAppsRead(std::unique_ptr<AppInfoMap> apps);
+  // Called when default apps from all sources are read.
+  void OnAppsReady();
 
   // Unowned pointer.
   Profile* profile_;
@@ -100,6 +102,8 @@ class ArcDefaultAppList {
   AppInfoMap visible_apps_;
   // Keeps hidden apps.
   AppInfoMap hidden_apps_;
+  // To wait until all sources with apps are loaded.
+  base::RepeatingClosure barrier_closure_;
 
   base::WeakPtrFactory<ArcDefaultAppList> weak_ptr_factory_;
 
