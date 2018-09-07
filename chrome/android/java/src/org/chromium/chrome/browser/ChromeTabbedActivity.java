@@ -118,6 +118,7 @@ import org.chromium.chrome.browser.survey.ChromeSurveyController;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -1235,7 +1236,7 @@ public class ChromeTabbedActivity
                     // can be handled by other applications (e.g. www.youtube.com links).
                     Tab currentTab = getActivityTab();
                     if (currentTab != null) {
-                        currentTab.getTabRedirectHandler().updateIntent(intent);
+                        TabRedirectHandler.from(currentTab).updateIntent(intent);
                         int transitionType = PageTransition.LINK | PageTransition.FROM_API;
                         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
                         loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);

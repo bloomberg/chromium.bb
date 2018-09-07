@@ -12,6 +12,8 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
 
+import org.chromium.base.UserData;
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -25,7 +27,8 @@ import java.util.List;
 /**
  * This class contains the logic to determine effective navigation/redirect.
  */
-public class TabRedirectHandler {
+public class TabRedirectHandler extends EmptyTabObserver implements UserData {
+    private static final Class<TabRedirectHandler> USER_DATA_KEY = TabRedirectHandler.class;
     /**
      * An invalid entry index.
      */
@@ -54,8 +57,54 @@ public class TabRedirectHandler {
 
     private final Context mContext;
 
-    public TabRedirectHandler(Context context) {
+    /**
+     * Returns {@link TabRedirectHandler} that hangs on to a given {@link Tab}.
+     * If not present, creates a new instance and associate it with the {@link UserDataHost}
+     * that the {@link Tab} manages.
+     * @param tab Tab instance that the TabRedirectHandler hangs on to.
+     * @return TabRedirectHandler for a given Tab.
+     */
+    public static TabRedirectHandler from(Tab tab) {
+        UserDataHost host = tab.getUserDataHost();
+        TabRedirectHandler handler = host.getUserData(USER_DATA_KEY);
+        if (handler == null) {
+            handler = new TabRedirectHandler(tab.getContext());
+            host.setUserData(USER_DATA_KEY, handler);
+            tab.addObserver(handler);
+        }
+        return handler;
+    }
+
+    /**
+     * @return {@link TabRedirectHandler} hanging to the given {@link Tab},
+     *     or {@code null} if there is no instance available.
+     */
+    public static TabRedirectHandler getOrNull(Tab tab) {
+        return tab.getUserDataHost().getUserData(USER_DATA_KEY);
+    }
+
+    /**
+     * Replace {@link TabRedirectHandler} instance for the Tab with the new one.
+     * @return Old {@link TabRedirectHandler} associated with the Tab. Could be {@code null}.
+     */
+    public static TabRedirectHandler swapFor(Tab tab, TabRedirectHandler newHandler) {
+        UserDataHost host = tab.getUserDataHost();
+        TabRedirectHandler oldHandler = host.getUserData(TabRedirectHandler.class);
+        host.setUserData(TabRedirectHandler.class, newHandler);
+        return oldHandler;
+    }
+
+    public static TabRedirectHandler create(Context context) {
+        return new TabRedirectHandler(context);
+    }
+
+    protected TabRedirectHandler(Context context) {
         mContext = context;
+    }
+
+    @Override
+    public void onHidden(Tab tab) {
+        clear();
     }
 
     /**

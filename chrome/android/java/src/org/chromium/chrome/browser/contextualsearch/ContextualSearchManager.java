@@ -275,7 +275,7 @@ public class ContextualSearchManager
 
         mInProductHelp.setParentView(parentView);
 
-        mTabRedirectHandler = new TabRedirectHandler(mActivity);
+        mTabRedirectHandler = TabRedirectHandler.create(mActivity);
 
         mPolicy.initialize();
 

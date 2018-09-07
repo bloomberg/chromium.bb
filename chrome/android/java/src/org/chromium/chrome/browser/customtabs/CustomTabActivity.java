@@ -84,6 +84,7 @@ import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -755,7 +756,7 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     private void initializeMainTab(Tab tab) {
-        tab.getTabRedirectHandler().updateIntent(getIntent());
+        TabRedirectHandler.from(tab).updateIntent(getIntent());
         tab.getView().requestFocus();
 
         mTabObserver = new CustomTabObserver(

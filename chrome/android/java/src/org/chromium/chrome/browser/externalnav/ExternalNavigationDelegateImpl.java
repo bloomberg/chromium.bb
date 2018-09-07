@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -641,9 +642,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (!hasValidTab() || mTab.getWebContents() == null) return false;
 
         InstantAppsHandler handler = InstantAppsHandler.getInstance();
-        Intent intent = mTab.getTabRedirectHandler() != null
-                ? mTab.getTabRedirectHandler().getInitialIntent()
-                : null;
+        TabRedirectHandler redirect = TabRedirectHandler.getOrNull(mTab);
+        Intent intent = redirect != null ? redirect.getInitialIntent() : null;
         // TODO(mariakhomenko): consider also handling NDEF_DISCOVER action redirects.
         if (isIncomingRedirect && intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
             // Set the URL the redirect was resolved to for checking the existence of the
