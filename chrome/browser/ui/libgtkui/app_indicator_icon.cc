@@ -274,15 +274,16 @@ AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread(
   std::string icon_name = base::StringPrintf(
       "chrome_app_indicator2_%s", base::MD5DigestToBase16(digest).c_str());
 
-  // If |bitmap| is not 22x22, KDE does some really ugly resizing. Pad |bitmap|
-  // with transparent pixels to make it 22x22.
-  const int kDesiredSize = 22;
+  // If |bitmap| is smaller than 22x22, KDE does some really ugly resizing.
+  // Pad |bitmap| with transparent pixels to make it 22x22.
+  const int kMinimalSize = 22;
   SkBitmap scaled_bitmap;
-  scaled_bitmap.allocN32Pixels(kDesiredSize, kDesiredSize);
+  scaled_bitmap.allocN32Pixels(std::max(bitmap.width(), kMinimalSize),
+                               std::max(bitmap.height(), kMinimalSize));
   scaled_bitmap.eraseARGB(0, 0, 0, 0);
   SkCanvas canvas(scaled_bitmap);
-  canvas.drawBitmap(bitmap, (kDesiredSize - bitmap.width()) / 2,
-                    (kDesiredSize - bitmap.height()) / 2);
+  canvas.drawBitmap(bitmap, (scaled_bitmap.width() - bitmap.width()) / 2,
+                    (scaled_bitmap.height() - bitmap.height()) / 2);
 
   base::FilePath image_path = image_dir.Append(icon_name + ".png");
   if (!WriteFile(image_path, scaled_bitmap))
