@@ -74,10 +74,10 @@ void BackgroundFetchContext::DidGetInitializationData(
     blink::mojom::BackgroundFetchError error,
     std::vector<background_fetch::BackgroundFetchInitializationData>
         initialization_data) {
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    // TODO(crbug.com/780025): Log failures to UMA.
+  if (error != blink::mojom::BackgroundFetchError::NONE)
     return;
-  }
+
+  background_fetch::RecordRegistrationsOnStartup(initialization_data.size());
 
   for (auto& data : initialization_data) {
     CreateController(data.registration_id, data.registration, data.options,

@@ -24,6 +24,10 @@ void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error);
 // associated with a registration has been completely deleted.
 void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error);
 
+// Records the number of registrations that have unfinished fetches found on
+// start-up.
+void RecordRegistrationsOnStartup(int num_registrations);
+
 // Records the BackgroundFetch UKM event. Must be called before a Background
 // Fetch registration has been created. Will be a no-op if |frame_tree_node_id|
 // does not identify a valid, live frame.

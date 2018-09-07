@@ -31,6 +31,11 @@ void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error) {
   UMA_HISTOGRAM_ENUMERATION("BackgroundFetch.RegistrationDeletedError", error);
 }
 
+void RecordRegistrationsOnStartup(int num_registrations) {
+  UMA_HISTOGRAM_COUNTS_100("BackgroundFetch.IncompleteFetchesOnStartup",
+                           num_registrations);
+}
+
 void RecordBackgroundFetchUkmEvent(
     const url::Origin& origin,
     const std::vector<ServiceWorkerFetchRequest>& requests,
