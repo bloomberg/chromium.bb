@@ -848,14 +848,12 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
-  EXPECT_TRUE(
-      GetDocument().GetStyleEngine().HasViewportDependentMediaQueries());
+  EXPECT_TRUE(GetStyleEngine().HasViewportDependentMediaQueries());
 
   GetDocument().body()->RemoveChild(style_element);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(
-      GetDocument().GetStyleEngine().HasViewportDependentMediaQueries());
+  EXPECT_FALSE(GetStyleEngine().HasViewportDependentMediaQueries());
 }
 
 TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
@@ -1482,7 +1480,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  StyleEngine& engine = GetDocument().GetStyleEngine();
+  StyleEngine& engine = GetStyleEngine();
   engine.SetStatsEnabled(true);
 
   StyleResolverStats* stats = engine.Stats();
@@ -1493,7 +1491,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   div->SetInlineStyleProperty(CSSPropertyColor, "green");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kNoChange);
+  GetStyleEngine().RecalcStyle(kNoChange);
 
   // Should fast reject ".not-in-filter div::before {}" for both the div and its
   // ::before pseudo element.
@@ -1514,35 +1512,35 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d1->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d1));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d2->firstChild()->remove();
   d2->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d2));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d2));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   d3->firstChild()->remove();
-  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(d3));
+  EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().GetStyleEngine().MarkForWhitespaceReattachment();
+  GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_TRUE(GetDocument().ChildNeedsReattachLayoutTree());
 }
 

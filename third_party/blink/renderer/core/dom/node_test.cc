@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -37,7 +38,7 @@ class NodeTest : public EditingTestBase {
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-    GetDocument().documentElement()->RecalcStyle(kNoChange);
+    GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
     PushSelectorFilterAncestors(
         GetDocument().EnsureStyleResolver().GetSelectorFilter(), node);
     ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
