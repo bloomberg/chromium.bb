@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_FIELD_TRIAL_CREATOR_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_FIELD_TRIAL_CREATOR_H_
 
+#include <memory>
+
 #include "android_webview/browser/aw_field_trials.h"
 #include "android_webview/browser/aw_variations_service_client.h"
 #include "base/metrics/field_trial.h"
@@ -23,11 +25,10 @@ class AwFieldTrialCreator {
   ~AwFieldTrialCreator();
 
   // Sets up the field trials and related initialization.
-  void SetUpFieldTrials();
+  void SetUpFieldTrials(PrefService* pref_service);
 
  private:
-  void DoSetUpFieldTrials();
-  PrefService* GetLocalState();
+  void DoSetUpFieldTrials(PrefService* pref_service);
 
   // Stores the seed. VariationsSeedStore keeps a raw pointer to this, so it
   // must persist for the process lifetime. Not persisted accross runs.

@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -45,6 +46,7 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/features.h"
@@ -214,12 +216,15 @@ AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
 
-AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
+AwBrowserContext* AwContentBrowserClient::InitBrowserContext(
+    std::unique_ptr<PrefService> pref_service,
+    std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector) {
   base::FilePath user_data_dir;
   if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
-  browser_context_.reset(new AwBrowserContext(user_data_dir));
+  browser_context_ = std::make_unique<AwBrowserContext>(
+      user_data_dir, std::move(pref_service), std::move(policy_connector));
   return browser_context_.get();
 }
 
