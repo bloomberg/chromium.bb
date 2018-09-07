@@ -58,6 +58,7 @@ void MakeCredentialTask::StartTask() {
       IsClientPinOptionCompatible(device(), request_parameter_)) {
     MakeCredential();
   } else {
+    device()->set_supported_protocol(ProtocolVersion::kU2f);
     U2fRegister();
   }
 }
@@ -77,6 +78,7 @@ void MakeCredentialTask::U2fRegister() {
     return;
   }
 
+  DCHECK_EQ(ProtocolVersion::kU2f, device()->supported_protocol());
   register_operation_ = std::make_unique<U2fRegisterOperation>(
       device(), request_parameter_, std::move(callback_));
   register_operation_->Start();
