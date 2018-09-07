@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -834,6 +835,32 @@ class HostedAppNonClientFrameViewAshTest
 };
 
 }  // namespace
+
+// Tests that the page info dialog doesn't anchor in a way that puts it outside
+// of hosted app windows. This is important as some platforms don't support
+// bubble anchor adjustment (see |BubbleDialogDelegateView::CreateBubble()|).
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       PageInfoBubblePosition) {
+  // Resize app window to only take up the left half of the screen.
+  views::Widget* widget = browser_view_->GetWidget();
+  gfx::Size screen_size =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(widget->GetNativeWindow())
+          .work_area_size();
+  widget->SetBounds(
+      gfx::Rect(0, 0, screen_size.width() / 2, screen_size.height()));
+
+  // Show page info dialog (currently PWAs use page info in place of an actual
+  // app info dialog).
+  chrome::ExecuteCommand(app_browser_, IDC_HOSTED_APP_MENU_APP_INFO);
+
+  // Check the bubble anchors inside the main app window even if there's space
+  // available outside the main app window.
+  gfx::Rect page_info_bounds = PageInfoBubbleViewBase::GetPageInfoBubble()
+                                   ->GetWidget()
+                                   ->GetWindowBoundsInScreen();
+  EXPECT_TRUE(widget->GetWindowBoundsInScreen().Contains(page_info_bounds));
+}
 
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
   EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
