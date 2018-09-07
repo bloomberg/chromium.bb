@@ -60,8 +60,14 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
         // check is needed.
         prefix = ReplacementCharacterInUtf8();
       }
+      // Note that the third argument here is ignored since the encoding is
+      // UTF-8, which will use U+FFFD-replacement rather than ASCII fallback
+      // substitution when unencodable sequences (for instance, unpaired UTF-16
+      // surrogates) are present in the input.
+      // TODO(ricea): Add WTF::kNoUnencodables enum value to make this
+      // behaviour explicit for UTF-N encodings.
       result = encoder_->Encode(input.Characters8(), input.length(),
-                                WTF::kNoUnencodables);
+                                WTF::kEntitiesForUnencodables);
     } else {
       bool have_output =
           Encode16BitString(input, high_surrogate, &prefix, &result);
@@ -128,7 +134,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
         // Third argument is ignored, as above.
         *prefix =
             encoder_->Encode(astral_character, base::size(astral_character),
-                             WTF::kNoUnencodables);
+                             WTF::kEntitiesForUnencodables);
         ++begin;
         if (begin == end)
           return true;

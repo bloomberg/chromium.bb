@@ -475,7 +475,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
 
 FormDataBytesConsumer::FormDataBytesConsumer(const String& string)
     : impl_(new SimpleFormDataBytesConsumer(EncodedFormData::Create(
-          UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
+          UTF8Encoding().Encode(string, WTF::kEntitiesForUnencodables)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
     : FormDataBytesConsumer(buffer->Data(), buffer->ByteLength()) {}

@@ -215,7 +215,8 @@ void BlobData::AppendText(const String& text,
                           bool do_normalize_line_endings_to_native) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  CString utf8_text = UTF8Encoding().Encode(text, WTF::kNoUnencodables);
+  CString utf8_text =
+      UTF8Encoding().Encode(text, WTF::kEntitiesForUnencodables);
 
   if (do_normalize_line_endings_to_native) {
     if (utf8_text.length() >

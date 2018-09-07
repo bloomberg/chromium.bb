@@ -632,8 +632,8 @@ String DecodeURLEscapeSequences(const String& string,
 }
 
 String EncodeWithURLEscapeSequences(const String& not_encoded_string) {
-  CString utf8 =
-      UTF8Encoding().Encode(not_encoded_string, WTF::kNoUnencodables);
+  CString utf8 = UTF8Encoding().Encode(not_encoded_string,
+                                       WTF::kURLEncodedEntitiesForUnencodables);
 
   url::RawCanonOutputT<char> buffer;
   int input_length = utf8.length();

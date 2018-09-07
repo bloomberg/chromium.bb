@@ -43,7 +43,7 @@ PushMessageData* PushMessageData::Create(
 
   if (message_data.IsUSVString()) {
     CString encoded_string = UTF8Encoding().Encode(
-        message_data.GetAsUSVString(), WTF::kNoUnencodables);
+        message_data.GetAsUSVString(), WTF::kEntitiesForUnencodables);
     return new PushMessageData(encoded_string.data(), encoded_string.length());
   }
 

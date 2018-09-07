@@ -52,10 +52,6 @@ enum UnencodableHandling {
   // Encodes the character as a CSS entity.  For example U+06DE
   // would be \06de.  See: https://www.w3.org/TR/css-syntax-3/#escaping
   kCSSEncodedEntitiesForUnencodables,
-
-  // Used when all characters can be encoded in the character set. Only
-  // applicable to UTF-N encodings.
-  kNoUnencodables,
 };
 
 typedef char UnencodableReplacementArray[32];

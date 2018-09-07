@@ -48,9 +48,6 @@ uint32_t TextCodec::GetUnencodableReplacement(
       snprintf(replacement, sizeof(UnencodableReplacementArray), "\\%x ",
                code_point);
       return static_cast<uint32_t>(strlen(replacement));
-
-    case kNoUnencodables:
-      break;
   }
   NOTREACHED();
   replacement[0] = 0;
