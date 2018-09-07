@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_RUNNER_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_RUNNER_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_RUNNER_H_
+#define COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_RUNNER_H_
 
 #include <memory>
 
@@ -39,4 +39,4 @@ class TestTaskRunner {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_RUNNER_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_RUNNER_H_

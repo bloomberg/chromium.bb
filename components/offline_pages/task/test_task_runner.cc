@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/test_task_runner.h"
+#include "components/offline_pages/task/test_task_runner.h"
 
 #include "base/bind.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {

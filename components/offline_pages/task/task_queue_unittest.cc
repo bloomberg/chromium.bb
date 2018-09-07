@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/task_queue.h"
+#include "components/offline_pages/task/task_queue.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/test_task.h"
+#include "components/offline_pages/task/test_task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/test_task.h"
+#include "components/offline_pages/task/test_task.h"
 
 #include "base/bind.h"
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASK_TEST_BASE_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TASK_TEST_BASE_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_TASK_TASK_TEST_BASE_H_
+#define COMPONENTS_OFFLINE_PAGES_TASK_TASK_TEST_BASE_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/task.h"
-#include "components/offline_pages/core/test_task_runner.h"
+#include "components/offline_pages/task/task.h"
+#include "components/offline_pages/task/test_task_runner.h"
 
 namespace offline_pages {
 
@@ -43,4 +43,4 @@ class TaskTestBase : public testing::Test {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TASK_TEST_BASE_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_TASK_TASK_TEST_BASE_H_

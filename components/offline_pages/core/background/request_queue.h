@@ -24,7 +24,7 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/task_queue.h"
+#include "components/offline_pages/task/task_queue.h"
 
 namespace offline_pages {
 

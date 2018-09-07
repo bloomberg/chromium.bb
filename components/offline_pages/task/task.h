@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_TASK_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_TASK_TASK_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -79,4 +79,4 @@ class Task {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TASK_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_TASK_TASK_H_

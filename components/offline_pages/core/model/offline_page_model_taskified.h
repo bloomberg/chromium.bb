@@ -23,7 +23,7 @@
 #include "components/offline_pages/core/offline_page_model_event_logger.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/task_queue.h"
+#include "components/offline_pages/task/task_queue.h"
 
 class GURL;
 namespace base {

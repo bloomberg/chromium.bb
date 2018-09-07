@@ -12,7 +12,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
-#include "components/offline_pages/core/task_test_base.h"
+#include "components/offline_pages/task/task_test_base.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 
 namespace offline_pages {

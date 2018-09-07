@@ -6,7 +6,7 @@
 
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/task_test_base.h"
+#include "components/offline_pages/task/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
