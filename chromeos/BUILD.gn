@@ -30,6 +30,7 @@ component("chromeos") {
     ":cryptohome_proto",
     ":login_manager_proto",
     ":media_perception_proto",
+    ":metrics_event_proto",
     ":power_manager_proto",
     ":seneschal_proto",
     ":smbprovider_proto",
@@ -878,6 +879,14 @@ proto_library("power_manager_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/power_manager"
+}
+
+proto_library("metrics_event_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/metrics_event"
 }
 
 proto_library("attestation_proto") {
