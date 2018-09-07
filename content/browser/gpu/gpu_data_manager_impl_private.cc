@@ -705,8 +705,8 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
   return true;
 }
 
-void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
-    const GURL& url, GpuDataManagerImpl::DomainGuilt guilt) {
+void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(const GURL& url,
+                                                      gpu::DomainGuilt guilt) {
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());
 }
 
@@ -715,7 +715,7 @@ bool GpuDataManagerImplPrivate::Are3DAPIsBlocked(const GURL& top_origin_url,
                                                  int render_frame_id,
                                                  ThreeDAPIType requester) {
   return Are3DAPIsBlockedAtTime(top_origin_url, base::Time::Now()) !=
-         GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
+         DomainBlockStatus::kNotBlocked;
 }
 
 void GpuDataManagerImplPrivate::DisableDomainBlockingFor3DAPIsForTesting() {
@@ -755,35 +755,33 @@ std::string GpuDataManagerImplPrivate::GetDomainFromURL(const GURL& url) const {
 
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIsAtTime(
     const GURL& url,
-    GpuDataManagerImpl::DomainGuilt guilt,
+    gpu::DomainGuilt guilt,
     base::Time at_time) {
   if (!domain_blocking_enabled_)
     return;
 
   std::string domain = GetDomainFromURL(url);
 
-  DomainBlockEntry& entry = blocked_domains_[domain];
-  entry.last_guilt = guilt;
+  blocked_domains_[domain] = guilt;
   timestamps_of_gpu_resets_.push_back(at_time);
 }
 
-GpuDataManagerImpl::DomainBlockStatus
-GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
-    const GURL& url, base::Time at_time) const {
+GpuDataManagerImplPrivate::DomainBlockStatus
+GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(const GURL& url,
+                                                  base::Time at_time) const {
   if (!domain_blocking_enabled_)
-    return GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
+    return DomainBlockStatus::kNotBlocked;
 
   // Note: adjusting the policies in this code will almost certainly
   // require adjusting the associated unit tests.
   std::string domain = GetDomainFromURL(url);
 
   {
-    DomainBlockMap::const_iterator iter = blocked_domains_.find(domain);
-    if (iter != blocked_domains_.end()) {
+    if (blocked_domains_.find(domain) != blocked_domains_.end()) {
       // Err on the side of caution, and assume that if a particular
       // domain shows up in the block map, it's there for a good
       // reason and don't let its presence there automatically expire.
-      return GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_BLOCKED;
+      return DomainBlockStatus::kBlocked;
     }
   }
 
@@ -816,7 +814,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
                                 BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
                                 BLOCK_STATUS_MAX);
 
-      return GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_ALL_DOMAINS_BLOCKED;
+      return DomainBlockStatus::kAllDomainsBlocked;
     }
   }
 
@@ -824,7 +822,7 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(
                             BLOCK_STATUS_NOT_BLOCKED,
                             BLOCK_STATUS_MAX);
 
-  return GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
+  return DomainBlockStatus::kNotBlocked;
 }
 
 int64_t GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {

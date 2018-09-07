@@ -187,7 +187,7 @@ void GpuHostImpl::BlockLiveOffscreenContexts() {
 
   for (auto iter = urls_with_live_offscreen_contexts_.begin();
        iter != urls_with_live_offscreen_contexts_.end(); ++iter) {
-    delegate_->BlockDomainFrom3DAPIs(*iter, Delegate::DomainGuilt::kUnknown);
+    delegate_->BlockDomainFrom3DAPIs(*iter, gpu::DomainGuilt::kUnknown);
   }
 }
 
@@ -499,10 +499,10 @@ void GpuHostImpl::DidLoseContext(bool offscreen,
     return;
   }
 
-  Delegate::DomainGuilt guilt = Delegate::DomainGuilt::kUnknown;
+  gpu::DomainGuilt guilt = gpu::DomainGuilt::kUnknown;
   switch (reason) {
     case gpu::error::kGuilty:
-      guilt = Delegate::DomainGuilt::kKnown;
+      guilt = gpu::DomainGuilt::kKnown;
       break;
     // Treat most other error codes as though they had unknown provenance.
     // In practice this doesn't affect the user experience. A lost context

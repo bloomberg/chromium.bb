@@ -162,8 +162,8 @@ void GpuDataManagerImpl::HandleGpuSwitch() {
   private_->HandleGpuSwitch();
 }
 
-void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
-    const GURL& url, DomainGuilt guilt) {
+void GpuDataManagerImpl::BlockDomainFrom3DAPIs(const GURL& url,
+                                               gpu::DomainGuilt guilt) {
   base::AutoLock auto_lock(lock_);
   private_->BlockDomainFrom3DAPIs(url, guilt);
 }
