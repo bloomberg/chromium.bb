@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/account_info_getter.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
@@ -225,13 +226,6 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
 
   request_dict->Set("active_chrome_experiments",
                     std::move(active_chrome_experiments));
-}
-
-bool ShouldUseActiveSignedInAccount() {
-  return base::FeatureList::IsEnabled(
-             features::kAutofillEnableAccountWalletStorage) ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillGetPaymentsIdentityFromSync);
 }
 
 class UnmaskCardRequest : public PaymentsRequest {
@@ -897,9 +891,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
   OAuth2TokenService::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
   std::string account_id =
-      ShouldUseActiveSignedInAccount()
-          ? account_info_getter_->GetActiveSignedInAccountId()
-          : identity_manager_->GetPrimaryAccountInfo().account_id;
+      account_info_getter_->GetAccountInfoForPaymentsServer().account_id;
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
     identity_manager_->RemoveAccessTokenFromCache(account_id, payments_scopes,
