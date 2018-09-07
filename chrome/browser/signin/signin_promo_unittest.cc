@@ -13,14 +13,12 @@ class SigninPromoTest : public ::testing::Test {};
 
 TEST_F(SigninPromoTest, TestPromoURL) {
   GURL expected_url_1(
-      "chrome://chrome-signin/"
-      "?access_point=0&reason=0&auto_close=1&constrained=1");
+      "chrome://chrome-signin/?access_point=0&reason=0&auto_close=1");
   EXPECT_EQ(expected_url_1,
             GetPromoURLForDialog(
                 signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
                 signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true));
-  GURL expected_url_2(
-      "chrome://chrome-signin/?access_point=15&reason=3&constrained=1");
+  GURL expected_url_2("chrome://chrome-signin/?access_point=15&reason=3");
   EXPECT_EQ(expected_url_2,
             GetPromoURLForDialog(
                 signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
@@ -30,8 +28,8 @@ TEST_F(SigninPromoTest, TestPromoURL) {
 TEST_F(SigninPromoTest, TestReauthURL) {
   GURL expected_url_1(
       "chrome://chrome-signin/"
-      "?access_point=0&reason=0&auto_close=1&constrained=1&email=example%"
-      "40domain.com&validateEmail=1&readOnlyEmail=1");
+      "?access_point=0&reason=0&auto_close=1&email=example%40domain.com"
+      "&validateEmail=1&readOnlyEmail=1");
   EXPECT_EQ(expected_url_1,
             GetReauthURLWithEmailForDialog(
                 signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
