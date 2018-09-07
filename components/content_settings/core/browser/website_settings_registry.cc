@@ -15,7 +15,7 @@
 namespace {
 
 base::LazyInstance<content_settings::WebsiteSettingsRegistry>::DestructorAtExit
-    g_instance = LAZY_INSTANCE_INITIALIZER;
+    g_website_settings_registry_instance = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -23,7 +23,7 @@ namespace content_settings {
 
 // static
 WebsiteSettingsRegistry* WebsiteSettingsRegistry::GetInstance() {
-  return g_instance.Pointer();
+  return g_website_settings_registry_instance.Pointer();
 }
 
 WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
