@@ -42,6 +42,7 @@ static_assert(kInvalidWebRtcEventLogWebAppId < kMinWebRtcEventLogWebAppId ||
 
 const char kRemoteBoundWebRtcEventLogFileNamePrefix[] = "webrtc_event_log";
 
+// Important! These values may be relied on by web-apps. Do not change.
 const char kStartRemoteLoggingFailureFeatureDisabled[] = "Feature disabled.";
 const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[] =
     "Unlimited size disallowed.";
