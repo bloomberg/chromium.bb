@@ -664,8 +664,13 @@ void ScreenLocker::ScreenLockReady() {
       ->GetActiveIMEState()
       ->EnableLockScreenLayouts();
 
-  if (IsFingerprintAuthenticationAvailableForUsers(users_))
+  if (IsFingerprintAuthenticationAvailableForUsers(users_)) {
+    VLOG(1) << "Fingerprint is available on lock screen, start fingerprint "
+            << "auth session now.";
     fp_service_->StartAuthSession();
+  } else {
+    VLOG(1) << "Fingerprint is not available on lock screen";
+  }
 }
 
 bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
