@@ -28,12 +28,18 @@
 
     'zucchini_apply_fuzzer_seed_corpus.zip',
 
-    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
+    'browser_tests.isolated',
+
+    'mr_extension',
+    'mr_extension/release',
+  ],
+
+  'linux_component': [
+   # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
     'v8_context_snapshot.bin',
 
     'app_shell_unittests.isolated',
     'blink_heap_unittests.isolated',
-    'browser_tests.isolated',
     'chrome_app_unittests.isolated',
     'chromedriver_py_tests.isolated',
     'components_browsertests.isolated',
@@ -64,19 +70,6 @@
     'webkit_layout_tests.isolated',
     'webkit_layout_tests_exparchive.isolated',
     'webkit_unit_tests.isolated',
-
-    'chrome_100_percent.pak',
-    'chrome_200_percent.pak',
-    'components_tests_resources.pak',
-    'content_shell.pak',
-    'extensions_shell_and_test.pak',
-    'headless_lib.pak',
-    'mr_extension',
-    'mr_extension/release',
-    'resources.pak',
-    'ui/en-US.pak',
-    'ui_test.pak',
-    'vr_test.pak',
   ],
 
   # https://crbug.com/330262
