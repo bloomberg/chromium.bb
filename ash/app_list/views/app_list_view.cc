@@ -96,11 +96,7 @@ constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 constexpr float kAppListOpacityInTabletMode = 0.4;
 
 // The background corner radius in peeking and fullscreen state.
-constexpr int kAppListPeekingBackgroundRadius = 28;
-constexpr int kAppListFullscreenBackgroundRadius = 0;
-
-// The threshold beyond which the background radius starts transition.
-constexpr int kAppListBackgroundTransitionThreshold = 156;
+constexpr int kAppListBackgroundRadius = 28;
 
 // Set animation durations to 0 for testing.
 static bool short_animations_for_testing;
@@ -498,6 +494,12 @@ void AppListView::InitContents(int initial_apps_page) {
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity);
   SetBackgroundShieldColor();
   if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode()) {
+    app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
+        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                    kAppListBlurRadius));
+    app_list_background_shield_mask_->layer()->SetFillsBoundsOpaquely(false);
+    app_list_background_shield_->layer()->SetMaskLayer(
+        app_list_background_shield_mask_->layer());
     app_list_background_shield_->layer()->SetBackgroundBlur(kAppListBlurRadius);
   }
   AddChildView(app_list_background_shield_);
@@ -1113,8 +1115,22 @@ void AppListView::Layout() {
   app_list_main_view_->SetBoundsRect(centered_bounds);
 
   contents_view->Layout();
-  app_list_background_shield_->SetBoundsRect(contents_bounds);
-  UpdateBackgroundRadius();
+
+  gfx::Rect app_list_background_shield_bounds = contents_bounds;
+  // Inset by |kAppListBackgroundRadius| to account for the rounded corners
+  // on the top and bottom of the |app_list_background_shield_|, and offset by
+  // |kAppListBackgroundRadius| to center |app_list_background_shield_|.
+  app_list_background_shield_bounds.Inset(0, -kAppListBackgroundRadius);
+  app_list_background_shield_->SetBoundsRect(app_list_background_shield_bounds);
+  app_list_background_shield_->UpdateCornerRadius(kAppListBackgroundRadius);
+  if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode() &&
+      app_list_background_shield_->layer()->size() !=
+          app_list_background_shield_mask_->layer()->size()) {
+    // Update the blur mask for the |app_list_background_shield_| with same
+    // shape and size if their bounds don't match.
+    app_list_background_shield_mask_->layer()->SetBounds(
+        app_list_background_shield_bounds);
+  }
 }
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1563,8 +1579,7 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
   // Set the |fullscreen_widget_| size to fit the new display metrics.
-  gfx::Size size = GetDisplayNearestView().size();
-  fullscreen_widget_->SetSize(size);
+  fullscreen_widget_->SetSize(GetDisplayNearestView().size());
 
   // Update the |fullscreen_widget_| bounds to accomodate the new work
   // area.
@@ -1632,25 +1647,6 @@ bool AppListView::ShouldIgnoreScrollEvents() {
   // changes or transtions.
   return fullscreen_widget_->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
-}
-
-void AppListView::UpdateBackgroundRadius() {
-  if (!is_new_style_launcher_enabled_)
-    return;
-
-  const int current_height = GetCurrentAppListHeight();
-  const int fullscreen_height = GetDisplayNearestView().size().height();
-  const int threshold_height =
-      fullscreen_height - kAppListBackgroundTransitionThreshold;
-  int background_radius = kAppListPeekingBackgroundRadius;
-  if (current_height > threshold_height) {
-    background_radius = gfx::Tween::IntValueBetween(
-        static_cast<double>(current_height - threshold_height) /
-            kAppListBackgroundTransitionThreshold,
-        kAppListPeekingBackgroundRadius, kAppListFullscreenBackgroundRadius);
-  }
-
-  app_list_background_shield_->UpdateCornerRadius(background_radius);
 }
 
 }  // namespace app_list
