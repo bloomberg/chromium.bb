@@ -24,6 +24,7 @@ cr.define('multidevice_setup', () => {
        */
       let backwardButton;
 
+      const PASSWORD = 'password-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
 
@@ -70,12 +71,14 @@ cr.define('multidevice_setup', () => {
       });
 
       test(
-          'StartSetupPage forward button sets host in backround and ' +
-              'continues OOBE (OOBE).',
+          'StartSetupPage forward button sets host in background and ' +
+              'goes to PasswordPage (OOBE).',
           done => {
-            multiDeviceSetupElement.addEventListener('setup-exited', () => {
-              done();
-            });
+            multiDeviceSetupElement.addEventListener(
+                'visible-page-name_-changed', () => {
+                  if (multiDeviceSetupElement.visiblePageName_ == PASSWORD)
+                    done();
+                });
 
             setVisiblePage(START);
             multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
@@ -97,8 +100,18 @@ cr.define('multidevice_setup', () => {
         backwardButton.click();
       });
 
+      test('PasswordPage backward button closes UI (post-OOBE)', done => {
+        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
+
+        setVisiblePage(PASSWORD);
+        multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed = true;
+        multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
+
+        backwardButton.click();
+      });
+
       test(
-          'StartSetupPage forward button goes to success page if mojo works ' +
+          'PasswordPage forward button goes to success page if mojo works ' +
               '(post-OOBE)',
           done => {
             multiDeviceSetupElement.addEventListener(
@@ -107,7 +120,7 @@ cr.define('multidevice_setup', () => {
                     done();
                 });
 
-            setVisiblePage(START);
+            setVisiblePage(PASSWORD);
             multiDeviceSetupElement.multideviceSetup.shouldSetHostSucceed =
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
