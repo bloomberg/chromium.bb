@@ -14,7 +14,7 @@ specific_include_rules = {
     "+third_party/skia",
   ],
   # DEPS for GLHelper and friends which are in the root common/ directory.
-  "(yuv_readback|gl_helper).*\.(cc|h)": [
+  "(yuv_readback|gl_helper|gl_scaler).*\.(cc|h)": [
     "+gpu/GLES2",
     "+gpu/command_buffer/client",
     "+gpu/command_buffer/common",
