@@ -56,7 +56,10 @@ issues]].
 - Significant changes to Bopomofo-based Chinese Braille. Among other
   things there is now complete the support of /CJK Unified Ideographs
   Extension A/ and some symbols were added for Nemeth. Thanks to
-  Sponge Jhan and 黃偉豪.
+  Sponge Jhan and 黃偉豪. With this change we can now properly handle
+  duoyinzi, Chinese words that have more than one pronunciation. The
+  granularity of the cursor movement can now reflect positions of all
+  Chinese characters.
 
 ** Other changes
 - Added documentation of opcodes which were previously introduced as
