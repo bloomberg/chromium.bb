@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -18,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -174,4 +176,16 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, Incognito) {
   EXPECT_TRUE(CheckPermission(GetRenderFrameHost(browser)));
   EXPECT_EQ("granted",
             CheckPermissionUsingPermissionApi(GetRenderFrameHost(browser)));
+}
+
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, SessionOnly) {
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+                                 CONTENT_SETTING_SESSION_ONLY);
+  Bookmark();
+  ui_test_utils::NavigateToURL(browser(), url_);
+
+  EXPECT_FALSE(RequestPermission());
+  EXPECT_FALSE(CheckPermission());
+  EXPECT_EQ("prompt", CheckPermissionUsingPermissionApi());
 }

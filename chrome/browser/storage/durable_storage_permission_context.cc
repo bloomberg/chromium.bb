@@ -57,10 +57,13 @@ void DurableStoragePermissionContext::DecidePermission(
     return;
   }
 
-  // Don't grant durable if we can't write cookies.
   scoped_refptr<content_settings::CookieSettings> cookie_settings =
       CookieSettingsFactory::GetForProfile(profile());
-  if (!cookie_settings->IsCookieAccessAllowed(requesting_origin,
+
+  // Don't grant durable for session-only storage, since it won't be persisted
+  // anyway. Don't grant durable if we can't write cookies.
+  if (cookie_settings->IsCookieSessionOnly(requesting_origin) ||
+      !cookie_settings->IsCookieAccessAllowed(requesting_origin,
                                               requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_DEFAULT);
