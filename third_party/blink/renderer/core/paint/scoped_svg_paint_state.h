@@ -22,11 +22,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_
 
 #include <memory>
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -42,13 +41,13 @@ class LayoutSVGResourceMasker;
 class SVGResources;
 
 // Hooks up the correct paint property transform node.
-class SVGTransformContext {
+class ScopedSVGTransformState {
   STACK_ALLOCATED();
 
  public:
-  SVGTransformContext(const PaintInfo& paint_info,
-                      const LayoutObject& object,
-                      const AffineTransform& transform) {
+  ScopedSVGTransformState(const PaintInfo& paint_info,
+                          const LayoutObject& object,
+                          const AffineTransform& transform) {
     DCHECK(object.IsSVGChild());
 
     const auto* fragment = paint_info.FragmentToPaint(object);
@@ -70,17 +69,17 @@ class SVGTransformContext {
   base::Optional<ScopedPaintChunkProperties> transform_property_scope_;
 };
 
-class SVGPaintContext {
+class ScopedSVGPaintState {
   STACK_ALLOCATED();
 
  public:
-  SVGPaintContext(const LayoutObject& object, const PaintInfo& paint_info)
+  ScopedSVGPaintState(const LayoutObject& object, const PaintInfo& paint_info)
       : object_(object),
         paint_info_(paint_info),
         filter_(nullptr),
         masker_(nullptr) {}
 
-  ~SVGPaintContext();
+  ~ScopedSVGPaintState();
 
   PaintInfo& GetPaintInfo() {
     return filter_paint_info_ ? *filter_paint_info_ : paint_info_;
@@ -89,18 +88,6 @@ class SVGPaintContext {
   // Return true if these operations aren't necessary or if they are
   // successfully applied.
   bool ApplyClipMaskAndFilterIfNecessary();
-
-  static void PaintResourceSubtree(GraphicsContext&, const LayoutObject*);
-
-  // TODO(fs): This functions feels a bit misplaced (we don't want this to
-  // turn into the new kitchen sink). Move it if a better location surfaces.
-  static bool PaintForLayoutObject(
-      const PaintInfo&,
-      const ComputedStyle&,
-      const LayoutObject&,
-      LayoutSVGResourceMode,
-      PaintFlags&,
-      const AffineTransform* additional_paint_server_transform = nullptr);
 
  private:
   void ApplyPaintPropertyState();
@@ -129,4 +116,4 @@ class SVGPaintContext {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_

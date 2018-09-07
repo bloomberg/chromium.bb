@@ -22,7 +22,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
@@ -33,7 +33,7 @@
 
 namespace blink {
 
-SVGPaintContext::~SVGPaintContext() {
+ScopedSVGPaintState::~ScopedSVGPaintState() {
   if (filter_) {
     DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(object_));
     DCHECK(
@@ -56,7 +56,7 @@ SVGPaintContext::~SVGPaintContext() {
   }
 }
 
-bool SVGPaintContext::ApplyClipMaskAndFilterIfNecessary() {
+bool ScopedSVGPaintState::ApplyClipMaskAndFilterIfNecessary() {
 #if DCHECK_IS_ON()
   DCHECK(!apply_clip_mask_and_filter_if_necessary_called_);
   apply_clip_mask_and_filter_if_necessary_called_ = true;
@@ -103,7 +103,7 @@ bool SVGPaintContext::ApplyClipMaskAndFilterIfNecessary() {
   return true;
 }
 
-void SVGPaintContext::ApplyPaintPropertyState() {
+void ScopedSVGPaintState::ApplyPaintPropertyState() {
   // SVGRoot works like normal CSS replaced element and its effects are
   // applied as stacking context effect by PaintLayerPainter.
   if (object_.IsSVGRoot())
@@ -130,12 +130,12 @@ void SVGPaintContext::ApplyPaintPropertyState() {
       DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
 }
 
-void SVGPaintContext::ApplyClipIfNecessary() {
+void ScopedSVGPaintState::ApplyClipIfNecessary() {
   if (object_.StyleRef().ClipPath())
     clip_path_clipper_.emplace(GetPaintInfo().context, object_, LayoutPoint());
 }
 
-bool SVGPaintContext::ApplyMaskIfNecessary(SVGResources* resources) {
+bool ScopedSVGPaintState::ApplyMaskIfNecessary(SVGResources* resources) {
   if (LayoutSVGResourceMasker* masker =
           resources ? resources->Masker() : nullptr) {
     if (!SVGMaskPainter(*masker).PrepareEffect(object_, GetPaintInfo().context))
@@ -154,7 +154,7 @@ static bool HasReferenceFilterOnly(const ComputedStyle& style) {
   return operations.at(0)->GetType() == FilterOperation::REFERENCE;
 }
 
-bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
+bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!resources)
     return !HasReferenceFilterOnly(object_.StyleRef());
 
@@ -178,64 +178,6 @@ bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
   // invalidation rect changes, we need to paint the entire filter region
   // so elements outside the initial paint (due to scrolling, etc) paint.
   filter_paint_info_->cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
-  return true;
-}
-
-void SVGPaintContext::PaintResourceSubtree(GraphicsContext& context,
-                                           const LayoutObject* item) {
-  DCHECK(item);
-  DCHECK(!item->NeedsLayout());
-
-  PaintInfo info(context, LayoutRect::InfiniteIntRect(),
-                 PaintPhase::kForeground, kGlobalPaintNormalPhase,
-                 kPaintLayerPaintingRenderingResourceSubtree);
-  item->Paint(info);
-}
-
-bool SVGPaintContext::PaintForLayoutObject(
-    const PaintInfo& paint_info,
-    const ComputedStyle& style,
-    const LayoutObject& layout_object,
-    LayoutSVGResourceMode resource_mode,
-    PaintFlags& flags,
-    const AffineTransform* additional_paint_server_transform) {
-  if (paint_info.IsRenderingClipPathAsMaskImage()) {
-    if (resource_mode == kApplyToStrokeMode)
-      return false;
-    flags.setColor(SK_ColorBLACK);
-    flags.setShader(nullptr);
-    return true;
-  }
-
-  SVGPaintServer paint_server = SVGPaintServer::RequestForLayoutObject(
-      layout_object, style, resource_mode);
-  if (!paint_server.IsValid())
-    return false;
-
-  if (additional_paint_server_transform && paint_server.IsTransformDependent())
-    paint_server.PrependTransform(*additional_paint_server_transform);
-
-  const SVGComputedStyle& svg_style = style.SvgStyle();
-  float alpha = resource_mode == kApplyToFillMode ? svg_style.FillOpacity()
-                                                  : svg_style.StrokeOpacity();
-  paint_server.ApplyToPaintFlags(flags, alpha);
-
-  // We always set filter quality to 'low' here. This value will only have an
-  // effect for patterns, which are SkPictures, so using high-order filter
-  // should have little effect on the overall quality.
-  flags.setFilterQuality(kLow_SkFilterQuality);
-
-  // TODO(fs): The color filter can set when generating a picture for a mask -
-  // due to color-interpolation. We could also just apply the
-  // color-interpolation property from the the shape itself (which could mean
-  // the paintserver if it has it specified), since that would be more in line
-  // with the spec for color-interpolation. For now, just steal it from the GC
-  // though.
-  // Additionally, it's not really safe/guaranteed to be correct, as
-  // something down the flags pipe may want to farther tweak the color
-  // filter, which could yield incorrect results. (Consider just using
-  // saveLayer() w/ this color filter explicitly instead.)
-  flags.setColorFilter(sk_ref_sp(paint_info.context.GetColorFilter()));
   return true;
 }
 
