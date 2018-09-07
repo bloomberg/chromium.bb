@@ -354,3 +354,28 @@ class ZoomBubbleDialogTest : public DialogBrowserTest {
 IN_PROC_BROWSER_TEST_F(ZoomBubbleDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
+
+// If a key event causes the zoom bubble to gain focus, it shouldn't close
+// automatically. This allows keyboard-only users to interact with the bubble.
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, FocusPreventsClose) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView* bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(bubble);
+  // |auto_close_timer_| is running so that the bubble is closed at the end.
+  EXPECT_TRUE(bubble->auto_close_timer_.IsRunning());
+
+  views::FocusManager* focus_manager = bubble->GetFocusManager();
+  // The bubble must have an associated Widget from which to get a FocusManager.
+  ASSERT_TRUE(focus_manager);
+
+  // Focus is usually gained via a key combination like alt+shift+a. The test
+  // simulates this by focusing the bubble and then sending an empty KeyEvent.
+  focus_manager->SetFocusedView(bubble->GetInitiallyFocusedView());
+  bubble->OnKeyEvent(nullptr);
+  // |auto_close_timer_| should not be running since focus should prevent the
+  // bubble from closing.
+  EXPECT_FALSE(bubble->auto_close_timer_.IsRunning());
+}

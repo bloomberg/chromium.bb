@@ -120,7 +120,8 @@ bool IsBrowserFullscreen(Browser* browser) {
   return browser->window()->IsFullscreen();
 }
 
-views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
+PageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser,
+                                                     bool is_fullscreen) {
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
@@ -138,7 +139,7 @@ views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
 #endif
 }
 
-views::View* GetAnchorViewForBrowser(Browser* browser) {
+PageActionIconContainerView* GetAnchorViewForBrowser(Browser* browser) {
   const bool is_fullscreen = IsBrowserFullscreen(browser);
   return GetAnchorViewForBrowser(browser, is_fullscreen);
 }
@@ -345,8 +346,40 @@ ZoomBubbleView::~ZoomBubbleView() {
     immersive_mode_controller_->RemoveObserver(this);
 }
 
+base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  PageActionIconContainerView* page_action_icon_container_view =
+      GetAnchorViewForBrowser(browser);
+  if (!page_action_icon_container_view)
+    return base::string16();
+
+  PageActionIconView* zoom_view =
+      page_action_icon_container_view->GetPageActionIconView(
+          PageActionIconType::kZoom);
+  return zoom_view->GetTextForTooltipAndAccessibleName();
+}
+
+views::View* ZoomBubbleView::GetInitiallyFocusedView() {
+  return reset_button_;
+}
+
 int ZoomBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void ZoomBubbleView::OnFocus() {
+  LocationBarBubbleDelegateView::OnFocus();
+  StopTimer();
+}
+
+void ZoomBubbleView::OnBlur() {
+  LocationBarBubbleDelegateView::OnBlur();
+
+  const views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && Contains(focus_manager->GetFocusedView()))
+    return;
+
+  StartTimerIfNecessary();
 }
 
 void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
@@ -358,6 +391,17 @@ void ZoomBubbleView::OnGestureEvent(ui::GestureEvent* event) {
   auto_close_ = false;
   StopTimer();
   event->SetHandled();
+}
+
+void ZoomBubbleView::OnKeyEvent(ui::KeyEvent* event) {
+  if (!zoom_bubble_ || !zoom_bubble_->auto_close_)
+    return;
+
+  const views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager && Contains(focus_manager->GetFocusedView()))
+    StopTimer();
+  else
+    StartTimerIfNecessary();
 }
 
 void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -574,12 +618,12 @@ void ZoomBubbleView::StartTimerIfNecessary() {
   if (!auto_close_)
     return;
 
-  timer_.Start(FROM_HERE, auto_close_duration_, this,
-               &ZoomBubbleView::CloseBubble);
+  auto_close_timer_.Start(FROM_HERE, auto_close_duration_, this,
+                          &ZoomBubbleView::CloseBubble);
 }
 
 void ZoomBubbleView::StopTimer() {
-  timer_.Stop();
+  auto_close_timer_.Stop();
 }
 
 ZoomBubbleView::ZoomBubbleExtensionInfo::ZoomBubbleExtensionInfo() {}
