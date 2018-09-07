@@ -86,14 +86,6 @@ void SurfaceLayerImpl::SetSurfaceHitTestable(bool surface_hit_testable) {
   NoteLayerPropertyChanged();
 }
 
-void SurfaceLayerImpl::SetHasPointerEventsNone(bool has_pointer_events_none) {
-  if (has_pointer_events_none_ == has_pointer_events_none)
-    return;
-
-  has_pointer_events_none_ = has_pointer_events_none;
-  NoteLayerPropertyChanged();
-}
-
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
@@ -103,7 +95,6 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
-  layer_impl->SetHasPointerEventsNone(has_pointer_events_none_);
 }
 
 bool SurfaceLayerImpl::WillDraw(

@@ -229,8 +229,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
                 bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
 
-  bool HasPointerEventsNone() override;
-
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents and is ready to receive IPCs.
   bool attached_;

@@ -881,8 +881,4 @@ SkBitmap* BrowserPlugin::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
 }
 
-bool BrowserPlugin::HasPointerEventsNone() {
-  return false;
-}
-
 }  // namespace content

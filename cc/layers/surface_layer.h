@@ -39,8 +39,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
   }
 
   void SetSurfaceHitTestable(bool surface_hit_testable);
-
-  void SetHasPointerEventsNone(bool has_pointer_events_none);
+  bool surface_hit_testable() const { return surface_hit_testable_; }
 
   void SetMayContainVideo(bool);
 
@@ -84,12 +83,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // being hit testable in the renderer, a hit testable surface layer may not
   // be surface hit testable (e.g., a surface layer created by video).
   bool surface_hit_testable_ = false;
-
-  // Whether or not the surface can accept pointer events. It is set to true if
-  // the frame owner has pointer-events: none property.
-  // TODO(sunxd): consider renaming it to oopif_has_pointer_events_none_ for
-  // disambiguation.
-  bool has_pointer_events_none_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };

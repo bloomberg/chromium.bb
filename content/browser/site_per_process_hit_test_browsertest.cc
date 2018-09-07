@@ -2172,31 +2172,32 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       SurfaceHitTestPointerEventsNoneChanged) {
-  // In /2 hit testing, OOPIFs with pointer-events: none are ignored and no hit
-  // test data is submitted. To make sure we wait enough time until child frame
-  // fully loaded, we add a 1x1 pixel OOPIF for the test to track the process of
-  // /2 hit testing.
+                       SurfaceHitTestPointerEventsNone) {
+  // TODO(sunxd): Fix pointer-events none for surface layer viz hit testing. See
+  // https://crbug.com/841358.
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    LOG(INFO) << "Skipping test due to https://crbug.com/841358";
+    return;
+  }
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  ASSERT_EQ(2U, root->child_count());
+  ASSERT_EQ(1U, root->child_count());
 
-  FrameTreeNode* child_node1 = root->child_at(0);
-  FrameTreeNode* child_node2 = root->child_at(1);
-  GURL site_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
-  EXPECT_EQ(site_url, child_node2->current_url());
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            child_node2->current_frame_host()->GetSiteInstance());
+            child_node->current_frame_host()->GetSiteInstance());
 
   // Create listeners for mouse events.
   RenderWidgetHostMouseEventMonitor main_frame_monitor(
       root->current_frame_host()->GetRenderWidgetHost());
   RenderWidgetHostMouseEventMonitor child_frame_monitor(
-      child_node1->current_frame_host()->GetRenderWidgetHost());
+      child_node->current_frame_host()->GetRenderWidgetHost());
 
   RenderWidgetHostInputEventRouter* router =
       web_contents()->GetInputEventRouter();
@@ -2204,9 +2205,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(child_node2->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
 
-  // Target input event to child1 frame.
+  // Target input event to child frame.
   blink::WebMouseEvent child_event(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
@@ -2224,43 +2225,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x, 2);
   EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y, 2);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
-
-  // Surface hit test can only learn about pointer-events changes when
-  // submitting compositing frame, so we disable the second half of the test for
-  // surface hit test.
-  if (!features::IsVizHitTestingEnabled())
-    return;
-
-  // Remove pointer-events: none property from iframe, also remove child2 to
-  // properly notify the observer the update.
-  // Wait for the confirmation of the deletion so that surface hit test is aware
-  // of the change of pointer-events property. When viz hit testing is enabled,
-  // we do not need to wait.
-  EXPECT_TRUE(ExecuteScript(web_contents(),
-                            "document.getElementsByTagName('iframe')[0].style."
-                            "pointerEvents = 'auto';\n"));
-
-  ASSERT_EQ(2U, root->child_count());
-
-  {
-    MainThreadFrameObserver observer(
-        root->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-
-  WaitForHitTestDataOrChildSurfaceReady(child_node1->current_frame_host());
-  WaitForHitTestDataOrChildSurfaceReady(child_node2->current_frame_host());
-  main_frame_monitor.ResetEventReceived();
-  child_frame_monitor.ResetEventReceived();
-  InputEventAckWaiter child_waiter(
-      child_node1->current_frame_host()->GetRenderWidgetHost(),
-      blink::WebInputEvent::kMouseDown);
-  router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
-  child_waiter.Wait();
-
-  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().x, 2);
-  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().y, 2);
 }
 
 // Verify that an event is properly retargeted to the main frame when an
@@ -4917,8 +4881,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
  protected:
   // Load the page |host_name| and retrieve the hit test data from HitTestQuery.
   std::vector<viz::AggregatedHitTestRegion> SetupAndGetHitTestData(
-      const std::string& host_name,
-      unsigned skipped_child = -1) {
+      const std::string& host_name) {
     GURL main_url(embedded_test_server()->GetURL(host_name));
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -4931,12 +4894,8 @@ class SitePerProcessHitTestDataGenerationBrowserTest
             root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
     for (unsigned i = 0; i < root->child_count(); i++) {
-      // Child with pointer-events: none property will never submit a hit test
-      // region in /2 hit testing.
-      if (i != skipped_child) {
-        WaitForHitTestDataOrChildSurfaceReady(
-            root->child_at(i)->current_frame_host());
-      }
+      WaitForHitTestDataOrChildSurfaceReady(
+          root->child_at(i)->current_frame_host());
     }
 
     HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
@@ -5242,69 +5201,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
-}
-
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
-                       PointerEventsNoneOOPIF) {
-  if (!features::IsVizHitTestingSurfaceLayerEnabled())
-    return;
-  auto hit_test_data = SetupAndGetHitTestData(
-      "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
-  float device_scale_factor = current_device_scale_factor();
-  gfx::Transform expected_transform;
-  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
-      gfx::Rect(1, 1), device_scale_factor, device_scale_factor);
-  expected_transform.Translate(-2 * device_scale_factor,
-                               -2 * device_scale_factor);
-
-  // We should not submit hit test region for iframes with pointer-events: none
-  // in /2 hit testing.
-  DCHECK(hit_test_data.size() == 3);
-  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
-  EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
-
-  // Check that an update on the css property can trigger an update in submitted
-  // hit test data.
-  EXPECT_TRUE(ExecuteScript(web_contents(),
-                            "document.getElementsByTagName('iframe')[0].style."
-                            "pointerEvents = 'auto';\n"));
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  ASSERT_EQ(2U, root->child_count());
-  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
-      root->current_frame_host()->GetRenderWidgetHost()->GetView());
-
-  {
-    MainThreadFrameObserver observer(
-        root->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-
-  HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
-  observer.WaitForHitTestData();
-  hit_test_data = observer.GetHitTestData();
-
-  gfx::Rect expected_region2 = gfx::ScaleToEnclosingRect(
-      gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
-  gfx::Transform expected_transform2;
-  expected_transform2.Translate(-52 * device_scale_factor,
-                                -52 * device_scale_factor);
-
-  DCHECK(hit_test_data.size() == 4);
-  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
-  EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
-
-  EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
-  EXPECT_TRUE(
-      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
-  EXPECT_EQ(kFastHitTestFlags, hit_test_data[3].flags);
 }
 
 static const int kHitTestOption[] = {0, 1, 2};

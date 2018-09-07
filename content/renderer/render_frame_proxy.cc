@@ -838,10 +838,6 @@ void RenderFrameProxy::SetInheritedEffectiveTouchAction(
                                                          touch_action));
 }
 
-void RenderFrameProxy::PointerEventsChanged() {
-  compositing_helper_->SetHasPointerEventsNone(HasPointerEventsNone());
-}
-
 void RenderFrameProxy::UpdateRenderThrottlingStatus(bool is_throttled,
                                                     bool subtree_throttled) {
   Send(new FrameHostMsg_UpdateRenderThrottlingStatus(routing_id_, is_throttled,
@@ -908,10 +904,6 @@ void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
 
 SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
-}
-
-bool RenderFrameProxy::HasPointerEventsNone() {
-  return web_frame()->OOPIFHasPointerEventsNone();
 }
 
 uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,

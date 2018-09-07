@@ -82,8 +82,6 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   surface_layer_ = cc::SurfaceLayer::Create();
   surface_layer_->SetMasksToBounds(true);
   surface_layer_->SetSurfaceHitTestable(true);
-  surface_layer_->SetHasPointerEventsNone(
-      child_frame_compositor_->HasPointerEventsNone());
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   surface_layer_->SetPrimarySurfaceId(surface_id, deadline);
@@ -118,14 +116,6 @@ void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   cc::Layer* layer = child_frame_compositor_->GetLayer();
   if (layer)
     layer->SetIsDrawable(visible);
-}
-
-void ChildFrameCompositingHelper::SetHasPointerEventsNone(
-    bool has_pointer_events_none) {
-  cc::SurfaceLayer* layer =
-      static_cast<cc::SurfaceLayer*>(child_frame_compositor_->GetLayer());
-  if (layer)
-    layer->SetHasPointerEventsNone(has_pointer_events_none);
 }
 
 }  // namespace content

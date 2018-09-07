@@ -24,13 +24,11 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/html/lazy_load_frame_observer.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -237,12 +235,6 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   }
 }
 
-void HTMLFrameOwnerElement::PointerEventsChanged() {
-  if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
-    ToRemoteFrame(ContentFrame())->PointerEventsChanged();
-  }
-}
-
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
@@ -437,12 +429,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       FrameLoadRequest(&GetDocument(), request), child_load_type);
 
   return true;
-}
-
-bool HTMLFrameOwnerElement::HasPointerEventsNone() const {
-  return GetComputedStyle()
-             ? GetComputedStyle()->PointerEvents() == EPointerEvents::kNone
-             : false;
 }
 
 void HTMLFrameOwnerElement::CancelPendingLazyLoad() {
