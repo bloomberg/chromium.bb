@@ -2783,6 +2783,8 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-contain/contain-size-baseline-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-contain/contain-layout-baseline-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legend/first-input-inside-legend-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legend/first-input-after-legend-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legend/input-outside-fieldset-manual.html [ Skip ]
