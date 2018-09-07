@@ -64,6 +64,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   }
 
  protected:
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
  private:
