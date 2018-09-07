@@ -55,6 +55,12 @@ enum class InstallLinuxPackageProgressStatus {
   INSTALLING,
 };
 
+enum class VmState {
+  STARTING,
+  STARTED,
+  STOPPING,
+};
+
 // Return type when getting app icons from within a container.
 struct Icon {
   std::string desktop_file_id;
@@ -347,7 +353,9 @@ class CrostiniManager : public KeyedService,
                       std::string container_name,
                       RemoveCrostiniCallback callback);
 
+  void SetVmState(std::string vm_name, VmState vm_state);
   bool IsVmRunning(std::string vm_name);
+
   // Returns null if VM is not running.
   base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(std::string vm_name);
   void AddRunningVmForTesting(std::string vm_name,
@@ -381,8 +389,9 @@ class CrostiniManager : public KeyedService,
       base::Optional<vm_tools::concierge::ListVmDisksResponse> reply);
 
   // Callback for ConciergeClient::StartTerminaVm. Called after the Concierge
-  // service method finishes. |callback| is called if the container has already
-  // been started, otherwise it is passed to OnStartTremplin.
+  // service method finishes.  Updates running containers list then calls the
+  // |callback| if the container has already been started, otherwise passes the
+  // callback to OnStartTremplin.
   void OnStartTerminaVm(
       std::string vm_name,
       StartTerminaVmCallback callback,
@@ -392,7 +401,6 @@ class CrostiniManager : public KeyedService,
   // Tremplin service starts. Updates running containers list and then calls the
   // |callback|.
   void OnStartTremplin(std::string vm_name,
-                       vm_tools::concierge::VmInfo vm_info,
                        StartTerminaVmCallback callback,
                        ConciergeClientResult result);
 
@@ -506,7 +514,8 @@ class CrostiniManager : public KeyedService,
   // start.
   std::multimap<std::string, base::OnceClosure> tremplin_started_callbacks_;
 
-  std::map<std::string, vm_tools::concierge::VmInfo> running_vms_;
+  std::map<std::string, std::pair<VmState, vm_tools::concierge::VmInfo>>
+      running_vms_;
 
   // Running containers as keyed by vm name.
   std::multimap<std::string, std::string> running_containers_;
