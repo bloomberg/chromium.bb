@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
@@ -55,7 +56,7 @@ RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
 
 RTCIceTransport::RTCIceTransport(ExecutionContext* context)
     : ContextLifecycleObserver(context) {
-  Document* document = ToDocument(GetExecutionContext());
+  Document* document = ToDocument(context);
   LocalFrame* frame = document->GetFrame();
   DCHECK(frame);
 
@@ -187,6 +188,17 @@ ConvertIceServers(const HeapVector<RTCIceServer>& ice_servers) {
   return converted_ice_servers;
 }
 
+static IceTransportPolicy IceTransportPolicyFromString(const String& str) {
+  if (str == "relay") {
+    return IceTransportPolicy::kRelay;
+  }
+  if (str == "all") {
+    return IceTransportPolicy::kAll;
+  }
+  NOTREACHED();
+  return IceTransportPolicy::kAll;
+}
+
 void RTCIceTransport::gather(const RTCIceGatherOptions& options,
                              ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
@@ -214,14 +226,9 @@ void RTCIceTransport::gather(const RTCIceGatherOptions& options,
     return;
   }
   gathering_state_ = cricket::kIceGatheringGathering;
-  uint32_t candidate_filter = cricket::CF_ALL;
-  if (options.gatherPolicy() == "relay") {
-    candidate_filter = cricket::CF_RELAY;
-  } else {
-    DCHECK_EQ(options.gatherPolicy(), "all");
-  }
   proxy_->StartGathering(ConvertIceParameters(local_parameters_), stun_servers,
-                         turn_servers, candidate_filter);
+                         turn_servers,
+                         IceTransportPolicyFromString(options.gatherPolicy()));
 }
 
 static cricket::IceRole IceRoleFromString(const String& role_string) {
@@ -267,21 +274,23 @@ void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
   }
   if (!remote_parameters_) {
     // Calling start() for the first time.
-    proxy_->SetRole(role);
     role_ = role;
     if (remote_candidates_.size() > 0) {
-      for (RTCIceCandidate* remote_candidate : remote_candidates_) {
-        // This conversion is safe since we throw an exception in
-        // addRemoteCandidate on malformed ICE candidates.
-        proxy_->AddRemoteCandidate(
-            *ConvertToCricketIceCandidate(*remote_candidate));
-      }
       state_ = RTCIceTransportState::kChecking;
     }
+    std::vector<cricket::Candidate> initial_remote_candidates;
+    for (RTCIceCandidate* remote_candidate : remote_candidates_) {
+      // This conversion is safe since we throw an exception in
+      // addRemoteCandidate on malformed ICE candidates.
+      initial_remote_candidates.push_back(
+          *ConvertToCricketIceCandidate(*remote_candidate));
+    }
+    proxy_->Start(ConvertIceParameters(remote_parameters), role,
+                  initial_remote_candidates);
   } else {
-    proxy_->ClearRemoteCandidates();
     remote_candidates_.clear();
     state_ = RTCIceTransportState::kNew;
+    proxy_->HandleRemoteRestart(ConvertIceParameters(remote_parameters));
   }
   remote_parameters_ = remote_parameters;
 }

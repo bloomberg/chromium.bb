@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
 
@@ -60,17 +61,17 @@ class IceTransportProxy final {
                     std::unique_ptr<cricket::PortAllocator> port_allocator);
   ~IceTransportProxy();
 
+  // These methods are proxied to an IceTransportAdapter instance.
   void StartGathering(
       const cricket::IceParameters& local_parameters,
       const cricket::ServerAddresses& stun_servers,
       const std::vector<cricket::RelayServerConfig>& turn_servers,
-      int32_t candidate_filter);
-
-  void SetRole(cricket::IceRole role);
-  void SetRemoteParameters(const cricket::IceParameters& remote_parameters);
-
+      IceTransportPolicy policy);
+  void Start(const cricket::IceParameters& remote_parameters,
+             cricket::IceRole role,
+             const std::vector<cricket::Candidate>& initial_remote_candidates);
+  void HandleRemoteRestart(const cricket::IceParameters& new_remote_parameters);
   void AddRemoteCandidate(const cricket::Candidate& candidate);
-  void ClearRemoteCandidates();
 
  private:
   // Callbacks from RTCIceTransportHost.

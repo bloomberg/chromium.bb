@@ -43,7 +43,7 @@ class MODULES_EXPORT RTCIceTransport final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RTCIceTransport>,
       public ContextLifecycleObserver,
-      private IceTransportProxy::Delegate {
+      public IceTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
 
