@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 

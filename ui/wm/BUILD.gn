@@ -98,7 +98,7 @@ jumbo_component("wm") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "test/testing_cursor_client_observer.cc",

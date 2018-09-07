@@ -115,7 +115,7 @@ jumbo_component("compositor") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "test/context_factories_for_test.cc",
