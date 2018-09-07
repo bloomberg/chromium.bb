@@ -159,8 +159,6 @@ jumbo_static_library("browser") {
     "webdata/logins_table.cc",
     "webdata/logins_table.h",
     "webdata/logins_table_win.cc",
-    "webdata/password_web_data_service_win.cc",
-    "webdata/password_web_data_service_win.h",
   ]
 
   if (password_reuse_detection_support) {

@@ -22,10 +22,6 @@
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_WIN)
-#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -150,20 +146,6 @@ scoped_refptr<TokenWebData> WebDataServiceFactory::GetTokenWebDataForProfile(
   return wrapper ? wrapper->GetTokenWebData()
                  : scoped_refptr<TokenWebData>(nullptr);
 }
-
-#if defined(OS_WIN)
-// static
-scoped_refptr<PasswordWebDataService>
-WebDataServiceFactory::GetPasswordWebDataForProfile(
-    Profile* profile,
-    ServiceAccessType access_type) {
-  WebDataServiceWrapper* wrapper =
-      WebDataServiceFactory::GetForProfile(profile, access_type);
-  // |wrapper| can be null in Incognito mode.
-  return wrapper ? wrapper->GetPasswordWebData()
-                 : scoped_refptr<PasswordWebDataService>(nullptr);
-}
-#endif
 
 // static
 scoped_refptr<payments::PaymentManifestWebDataService>
