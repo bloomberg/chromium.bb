@@ -208,15 +208,22 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 
   // Use the previous window origin location, if exists.
   gfx::Point origin = window_bounds_.origin();
-  if (!has_been_shown_) {
-    int window_diff_width = work_area.right() - window_size.width();
-    int window_diff_height = work_area.bottom() - window_size.height();
 
-    // Keep a margin distance of 2% the average of the two window size
-    // differences, keeping the margins consistent.
-    int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-    origin =
-        gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
+  int window_diff_width = work_area.right() - window_size.width();
+  int window_diff_height = work_area.bottom() - window_size.height();
+
+  // Keep a margin distance of 2% the average of the two window size
+  // differences, keeping the margins consistent.
+  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
+
+  gfx::Point default_origin =
+      gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
+
+  if (has_been_shown_) {
+    // Make sure window is displayed entirely in the work area.
+    origin.SetToMin(default_origin);
+  } else {
+    origin = default_origin;
   }
 
   window_bounds_ = gfx::Rect(origin, window_size);
@@ -492,9 +499,6 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   DCHECK(!natural_size.IsEmpty());
   natural_size_ = natural_size;
   SetAspectRatio(gfx::SizeF(natural_size_));
-
-  if (IsVisible())
-    return;
 
   // Update the views::Widget bounds to adhere to sizing spec. This will also
   // update the layout of the controls.
