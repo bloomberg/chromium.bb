@@ -154,7 +154,7 @@ class ShieldButton : public views::Button {
 
   // views::Button:
   bool OnMousePressed(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandlePressEvent(location);
@@ -164,7 +164,7 @@ class ShieldButton : public views::Button {
   }
 
   void OnMouseReleased(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandleReleaseEvent(location);
@@ -174,7 +174,7 @@ class ShieldButton : public views::Button {
   }
 
   bool OnMouseDragged(const ui::MouseEvent& event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event.location());
       views::View::ConvertPointToScreen(this, &location);
       listener()->HandleDragEvent(location);
@@ -184,7 +184,7 @@ class ShieldButton : public views::Button {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (listener() && SplitViewController::ShouldAllowSplitView()) {
+    if (listener()) {
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(this, &location);
       switch (event->type()) {
@@ -841,6 +841,9 @@ void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
 
 void WindowSelectorItem::HandleLongPressEvent(
     const gfx::Point& location_in_screen) {
+  if (!SplitViewController::ShouldAllowSplitView())
+    return;
+
   window_selector_->StartSplitViewDragMode(location_in_screen);
 }
 
