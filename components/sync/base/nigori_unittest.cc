@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -242,6 +243,29 @@ TEST(SyncNigoriTest,
   Nigori nigori;
   EXPECT_FALSE(nigori.InitByDerivation(
       KeyDerivationParams::CreateWithUnsupportedMethod(), "Passphrase!"));
+}
+
+// TODO(davidovic): Use an injected clock in the following tests in order to
+// verify that the duration is computed correctly.
+TEST(SyncNigoriTest, InitByDerivationShouldReportPbkdf2DurationInHistogram) {
+  Nigori nigori;
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(nigori.InitByDerivation(
+      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+      "Passphrase!"));
+
+  histogram_tester.ExpectTotalCount(
+      "Sync.Crypto.NigoriKeyDerivationDuration.Pbkdf2", /*count=*/1);
+}
+
+TEST(SyncNigoriTest, InitByDerivationShouldReportScryptDurationInHistogram) {
+  Nigori nigori;
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(nigori.InitByDerivation(
+      KeyDerivationParams::CreateForScrypt("somesalt"), "Passphrase!"));
+
+  histogram_tester.ExpectTotalCount(
+      "Sync.Crypto.NigoriKeyDerivationDuration.Scrypt8192", /*count=*/1);
 }
 
 TEST(SyncNigoriTest, GenerateScryptSaltShouldReturnSaltOfCorrectSize) {
