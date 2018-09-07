@@ -293,15 +293,17 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 #if !defined(OS_CHROMEOS)
-  if (profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  if (signin_manager && signin_manager->IsAuthenticated() &&
+      profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
     const bool should_show_sync_paused_ui =
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-        sync_ui_util::GetMessagesForAvatarSyncError(
-            profile_, *SigninManagerFactory::GetForProfile(profile_), &unused,
-            &unused) == sync_ui_util::AUTH_ERROR;
+        sync_ui_util::GetMessagesForAvatarSyncError(profile_, *signin_manager,
+                                                    &unused, &unused) ==
+            sync_ui_util::AUTH_ERROR;
     return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
   }
 #endif  // !defined(OS_CHROMEOS)

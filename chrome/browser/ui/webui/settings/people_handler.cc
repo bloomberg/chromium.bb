@@ -626,8 +626,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   // is disabled.
   // TODO(scottchen): finish the UI for signed-out users
   //    (https://crbug.com/800972).
-  if (unified_consent::IsUnifiedConsentFeatureEnabled() &&
-      (IsProfileAuthNeededOrHasErrors() || !service)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
 
@@ -711,9 +710,11 @@ void PeopleHandler::HandleRequestPinLoginState(const base::ListValue* args) {
 void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
   AllowJavascript();
 
-  // Should only be called if the user is not already signed in or has an auth
-  // error.
-  DCHECK(IsProfileAuthNeededOrHasErrors());
+  // Should only be called if the user is not already signed in, has a auth
+  // error, or a unrecoverable sync error requiring re-auth.
+  ProfileSyncService* service = GetSyncService();
+  DCHECK(IsProfileAuthNeededOrHasErrors() ||
+         (service && service->HasUnrecoverableError()));
 
   DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 }
