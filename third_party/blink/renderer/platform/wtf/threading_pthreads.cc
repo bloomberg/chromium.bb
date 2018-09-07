@@ -70,9 +70,7 @@ MutexBase::MutexBase(bool recursive) {
 
   int result = pthread_mutex_init(&mutex_.internal_mutex_, &attr);
   DCHECK_EQ(result, 0);
-#if DCHECK_IS_ON()
   mutex_.recursion_count_ = 0;
-#endif
 
   pthread_mutexattr_destroy(&attr);
 }
@@ -85,18 +83,14 @@ MutexBase::~MutexBase() {
 void MutexBase::lock() {
   int result = pthread_mutex_lock(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
-#if DCHECK_IS_ON()
-  DCHECK(!mutex_.recursion_count_)
+  CHECK(!mutex_.recursion_count_)
       << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
-#endif
 }
 
 void MutexBase::unlock() {
-#if DCHECK_IS_ON()
   DCHECK(mutex_.recursion_count_);
   --mutex_.recursion_count_;
-#endif
   int result = pthread_mutex_unlock(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
 }
@@ -109,13 +103,11 @@ void MutexBase::unlock() {
 bool Mutex::TryLock() {
   int result = pthread_mutex_trylock(&mutex_.internal_mutex_);
   if (result == 0) {
-#if DCHECK_IS_ON()
     // The Mutex class is not recursive, so the recursionCount should be
     // zero after getting the lock.
-    DCHECK(!mutex_.recursion_count_)
+    CHECK(!mutex_.recursion_count_)
         << "WTF does not support recursive mutex acquisition!";
     ++mutex_.recursion_count_;
-#endif
     return true;
   }
   if (result == EBUSY)
@@ -128,11 +120,9 @@ bool Mutex::TryLock() {
 bool RecursiveMutex::TryLock() {
   int result = pthread_mutex_trylock(&mutex_.internal_mutex_);
   if (result == 0) {
-#if DCHECK_IS_ON()
-    DCHECK(!mutex_.recursion_count_)
+    CHECK(!mutex_.recursion_count_)
         << "WTF does not support recursive mutex acquisition!";
     ++mutex_.recursion_count_;
-#endif
     return true;
   }
   if (result == EBUSY)
@@ -152,14 +142,10 @@ ThreadCondition::~ThreadCondition() {
 
 void ThreadCondition::Wait() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-#if DCHECK_IS_ON()
   --mutex_.recursion_count_;
-#endif
   int result = pthread_cond_wait(&condition_, &mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
-#if DCHECK_IS_ON()
   ++mutex_.recursion_count_;
-#endif
 }
 
 void ThreadCondition::Signal() {
