@@ -45,6 +45,12 @@ struct CrossThreadCopier<std::vector<cricket::RelayServerConfig>>
 };
 
 template <>
+struct CrossThreadCopier<std::vector<cricket::Candidate>>
+    : public CrossThreadCopierPassThrough<std::vector<cricket::Candidate>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
 struct CrossThreadCopier<cricket::Candidate>
     : public CrossThreadCopierPassThrough<cricket::Candidate> {
   STATIC_ONLY(CrossThreadCopier);

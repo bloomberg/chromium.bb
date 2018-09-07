@@ -32,12 +32,13 @@ IceTransportProxy::IceTransportProxy(
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(new IceTransportHost(proxy_thread, weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(port_allocator)));
+  host_.reset(
+      new IceTransportHost(proxy_thread, weak_ptr_factory_.GetWeakPtr()));
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,
       CrossThreadBind(&IceTransportHost::Initialize,
                       CrossThreadUnretained(host_.get()),
+                      WTF::Passed(std::move(port_allocator)),
                       CrossThreadUnretained(host_thread_rtc_thread)));
 }
 
@@ -50,30 +51,34 @@ void IceTransportProxy::StartGathering(
     const cricket::IceParameters& local_parameters,
     const cricket::ServerAddresses& stun_servers,
     const std::vector<cricket::RelayServerConfig>& turn_servers,
-    int32_t candidate_filter) {
+    IceTransportPolicy policy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,
       CrossThreadBind(&IceTransportHost::StartGathering,
                       CrossThreadUnretained(host_.get()), local_parameters,
-                      stun_servers, turn_servers, candidate_filter));
+                      stun_servers, turn_servers, policy));
 }
 
-void IceTransportProxy::SetRole(cricket::IceRole role) {
+void IceTransportProxy::Start(
+    const cricket::IceParameters& remote_parameters,
+    cricket::IceRole role,
+    const std::vector<cricket::Candidate>& initial_remote_candidates) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::SetRole,
-                      CrossThreadUnretained(host_.get()), role));
+      CrossThreadBind(&IceTransportHost::Start,
+                      CrossThreadUnretained(host_.get()), remote_parameters,
+                      role, initial_remote_candidates));
 }
 
-void IceTransportProxy::SetRemoteParameters(
-    const cricket::IceParameters& remote_parameters) {
+void IceTransportProxy::HandleRemoteRestart(
+    const cricket::IceParameters& new_remote_parameters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::SetRemoteParameters,
-                      CrossThreadUnretained(host_.get()), remote_parameters));
+  PostCrossThreadTask(*host_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportHost::HandleRemoteRestart,
+                                      CrossThreadUnretained(host_.get()),
+                                      new_remote_parameters));
 }
 
 void IceTransportProxy::AddRemoteCandidate(
@@ -83,13 +88,6 @@ void IceTransportProxy::AddRemoteCandidate(
       *host_thread_, FROM_HERE,
       CrossThreadBind(&IceTransportHost::AddRemoteCandidate,
                       CrossThreadUnretained(host_.get()), candidate));
-}
-
-void IceTransportProxy::ClearRemoteCandidates() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*host_thread_, FROM_HERE,
-                      CrossThreadBind(&IceTransportHost::ClearRemoteCandidates,
-                                      CrossThreadUnretained(host_.get())));
 }
 
 void IceTransportProxy::OnGatheringStateChanged(
