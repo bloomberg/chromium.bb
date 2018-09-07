@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import org.junit.Before;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -50,10 +52,15 @@ public class GoogleSearchRestrictionTest {
 
     @Before
     public void setUp() {
-        mFetchHelper = spy(new FetchHelper(null, null) {
+        mFetchHelper = spy(new FetchHelper(null, mock(TabModelSelector.class)) {
             @Override
-            public void initialize() {
-                // Intentionally do nothing.
+            boolean requireCurrentPageFromSRP() {
+                return false;
+            }
+
+            @Override
+            boolean requireNavChainFromSRP() {
+                return false;
             }
         });
 

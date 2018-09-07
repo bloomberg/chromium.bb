@@ -228,6 +228,20 @@ public class CallbackHelper {
     }
 
     /**
+     * @see #waitForCallback(String, int, int, long, TimeUnit)
+     */
+    public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
+        waitForCallback(msg, getCallCount());
+    }
+
+    /**
+     * @see #waitForCallback(String, int, int, long, TimeUnit)
+     */
+    public void waitForCallback() throws InterruptedException, TimeoutException {
+        waitForCallback(getCallCount());
+    }
+
+    /**
      * Should be called when the callback associated with this helper object is called.
      */
     public void notifyCalled() {

@@ -210,6 +210,7 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
             mName = name;
         }
 
+        @Override
         public void waitForCallback() {
             try {
                 super.waitForCallback(mName + " not called.", mVerifiedCallCount);

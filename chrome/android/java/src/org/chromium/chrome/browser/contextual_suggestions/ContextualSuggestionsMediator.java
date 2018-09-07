@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.LAST_USED_PROFILE;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -16,6 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge.ContextualSuggestionsResult;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -42,11 +45,16 @@ import org.chromium.ui.widget.ViewRectProvider;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
 /**
  * A mediator for the contextual suggestions UI component responsible for interacting with
  * the contextual suggestions C++ components (via a bridge), updating the model, and communicating
  * with the component coordinator(s).
  */
+@ActivityScope
 class ContextualSuggestionsMediator
         implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
     private static final float INVALID_PERCENTAGE = -1f;
@@ -55,15 +63,17 @@ class ContextualSuggestionsMediator
 
     private final Profile mProfile;
     private final TabModelSelector mTabModelSelector;
-    private final ContextualSuggestionsCoordinator mCoordinator;
     private final ContextualSuggestionsModel mModel;
     private final ChromeFullscreenManager mFullscreenManager;
-    private final View mIphParentView;
     private final ToolbarManager mToolbarManager;
     private final EnabledStateMonitor mEnabledStateMonitor;
     private final Handler mHandler = new Handler();
-    private final int mToolbarTransitionDuration;
+    private final Provider<ContextualSuggestionsSource> mSuggestionSourceProvider;
     private final boolean mToolbarButtonEnabled;
+
+    private ContextualSuggestionsCoordinator mCoordinator;
+    private View mIphParentView;
+    private int mToolbarTransitionDuration;
 
     private @Nullable GestureStateListener mGestureStateListener;
     private @Nullable ContextualSuggestionsSource mSuggestionsSource;
@@ -90,40 +100,41 @@ class ContextualSuggestionsMediator
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
-     * @param profile The regular {@link Profile}.
+     * @param profile The last used {@link Profile}.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param fullscreenManager The {@link ChromeFullscreenManager} to listen for browser controls
-     *                          events.
-     * @param coordinator The {@link ContextualSuggestionsCoordinator} for the component.
+     *         events.
      * @param model The {@link ContextualSuggestionsModel} for the component.
-     * @param iphParentView The parent {@link View} used to anchor an in-product help bubble.
      * @param toolbarManager The {@link ToolbarManager} for the containing activity.
+     * @param enabledStateMonitor The state monitor that will alert the mediator if the enabled
+     *         state for contextual suggestions changes.
+     * @param suggestionSourceProvider The provider of {@link ContextualSuggestionsSource} instances.
      */
-    ContextualSuggestionsMediator(Profile profile, TabModelSelector tabModelSelector,
-            ChromeFullscreenManager fullscreenManager, ContextualSuggestionsCoordinator coordinator,
-            ContextualSuggestionsModel model, View iphParentView, ToolbarManager toolbarManager) {
-        mProfile = profile;
+    @Inject
+    ContextualSuggestionsMediator(@Named(LAST_USED_PROFILE) Profile profile,
+            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
+            ContextualSuggestionsModel model, ToolbarManager toolbarManager,
+            EnabledStateMonitor enabledStateMonitor,
+            Provider<ContextualSuggestionsSource> suggestionSourceProvider) {
+        mProfile = profile.getOriginalProfile();
         mTabModelSelector = tabModelSelector;
-        mCoordinator = coordinator;
         mModel = model;
         mFullscreenManager = fullscreenManager;
-        mIphParentView = iphParentView;
+
         mToolbarManager = toolbarManager;
         mToolbarButtonEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON);
+        mSuggestionSourceProvider = suggestionSourceProvider;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI)) {
             mModel.setSlimPeekEnabled(true);
         }
-        mToolbarTransitionDuration =
-                iphParentView.getContext().getResources().getDimensionPixelSize(
-                        R.dimen.contextual_suggestions_toolbar_animation_duration);
 
-        // Create a state monitor that will alert this mediator if the enabled state for contextual
-        // suggestions changes.
-        mEnabledStateMonitor =
-                ContextualSuggestionsDependencyFactory.getInstance().createEnabledStateMonitor(
-                        this);
+        mEnabledStateMonitor = enabledStateMonitor;
+        mEnabledStateMonitor.addObserver(this);
+        if (mEnabledStateMonitor.getEnabledState()) {
+            enable();
+        }
 
         if (!mToolbarButtonEnabled) {
             mGestureStateListener = new GestureStateListener() {
@@ -147,7 +158,7 @@ class ContextualSuggestionsMediator
             };
         }
 
-        fullscreenManager.addListener(new FullscreenListener() {
+        mFullscreenManager.addListener(new FullscreenListener() {
             @Override
             public void onContentOffsetChanged(float offset) {}
 
@@ -169,10 +180,26 @@ class ContextualSuggestionsMediator
         });
     }
 
+    /**
+     * Sets the {@link ContextualSuggestionsCoordinator} for bidirectional communication,
+     * and the {@link View} used to anchor an in-product help bubble.
+     */
+    void initialize(ContextualSuggestionsCoordinator coordinator, View iphParentView) {
+        // TODO(pshmakov): get rid of this circular dependency by establishing an observer-observable
+        // relationship between Mediator and Coordinator;
+        mCoordinator = coordinator;
+
+        // TODO(twellington): The mediator shouldn't need to directly access other UI components or
+        // views. Make IPH implementation better adhere to MVC model.
+        mIphParentView = iphParentView;
+
+        mToolbarTransitionDuration =
+                mIphParentView.getContext().getResources().getDimensionPixelSize(
+                        R.dimen.contextual_suggestions_toolbar_animation_duration);
+    }
+
     /** Destroys the mediator. */
     void destroy() {
-        mEnabledStateMonitor.destroy();
-
         if (mFetchHelper != null) {
             mFetchHelper.destroy();
             mFetchHelper = null;
@@ -190,6 +217,7 @@ class ContextualSuggestionsMediator
                     .removeListener(mGestureStateListener);
             mCurrentWebContents = null;
         }
+        mEnabledStateMonitor.removeObserver(this);
     }
 
     /** Called when accessibility mode changes. */
@@ -209,23 +237,28 @@ class ContextualSuggestionsMediator
     @Override
     public void onEnabledStateChanged(boolean enabled) {
         if (enabled) {
-            mSuggestionsSource = ContextualSuggestionsDependencyFactory.getInstance()
-                                         .createContextualSuggestionsSource(mProfile);
-            mFetchHelper = ContextualSuggestionsDependencyFactory.getInstance().createFetchHelper(
-                    this, mTabModelSelector);
-            mFetchHelper.initialize();
+            enable();
         } else {
-            clearSuggestions();
+            disable();
+        }
+    }
 
-            if (mFetchHelper != null) {
-                mFetchHelper.destroy();
-                mFetchHelper = null;
-            }
+    private void enable() {
+        mSuggestionsSource = mSuggestionSourceProvider.get();
+        mFetchHelper = new FetchHelper(this, mTabModelSelector);
+    }
 
-            if (mSuggestionsSource != null) {
-                mSuggestionsSource.destroy();
-                mSuggestionsSource = null;
-            }
+    private void disable() {
+        clearSuggestions();
+
+        if (mFetchHelper != null) {
+            mFetchHelper.destroy();
+            mFetchHelper = null;
+        }
+
+        if (mSuggestionsSource != null) {
+            mSuggestionsSource.destroy();
+            mSuggestionsSource = null;
         }
     }
 

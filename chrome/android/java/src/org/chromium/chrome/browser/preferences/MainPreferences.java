@@ -17,7 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
@@ -191,9 +191,10 @@ public class MainPreferences extends PreferenceFragment
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)
                 && FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
-                && EnabledStateMonitor.shouldShowSettings()) {
-            Preference contextualSuggesitons = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
-            setOnOffSummary(contextualSuggesitons, EnabledStateMonitor.getEnabledState());
+                && ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
+            Preference contextualSuggestions = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
+            setOnOffSummary(contextualSuggestions,
+                    ContextualSuggestionsEnabledStateUtils.getEnabledState());
         } else {
             removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
         }

@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ContextualSuggestionsPreference;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -23,6 +24,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 
+import javax.inject.Inject;
+
 /**
  * The coordinator for the contextual suggestions UI component. Manages communication with other
  * parts of the UI-layer and lifecycle of shared component objects.
@@ -31,11 +34,12 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
  * and {@link ToolbarCoordinator}. These sub-components each have their own views and view binders.
  * They share a {@link ContextualSuggestionsMediator} and {@link ContextualSuggestionsModel}.
  */
+@ActivityScope
 public class ContextualSuggestionsCoordinator {
     private static final String FEEDBACK_CONTEXT = "contextual_suggestions";
 
     private final Profile mProfile = Profile.getLastUsedProfile().getOriginalProfile();
-    private final ContextualSuggestionsModel mModel = new ContextualSuggestionsModel();
+    private final ContextualSuggestionsModel mModel;
     private final ChromeActivity mActivity;
     private final BottomSheetController mBottomSheetController;
     private final TabModelSelector mTabModelSelector;
@@ -46,20 +50,22 @@ public class ContextualSuggestionsCoordinator {
     private @Nullable ContextualSuggestionsBottomSheetContent mBottomSheetContent;
 
     /**
-     * Construct a new {@link ContextualSuggestionsCoordinator}.
      * @param activity The containing {@link ChromeActivity}.
      * @param bottomSheetController The {@link BottomSheetController} to request content be shown.
      * @param tabModelSelector The {@link TabModelSelector} for the activity.
+     * @param model The model of the component.
+     * @param mediator The mediator of the component
      */
-    public ContextualSuggestionsCoordinator(ChromeActivity activity,
-            BottomSheetController bottomSheetController, TabModelSelector tabModelSelector) {
+    @Inject
+    ContextualSuggestionsCoordinator(ChromeActivity activity,
+            BottomSheetController bottomSheetController, TabModelSelector tabModelSelector,
+            ContextualSuggestionsModel model, ContextualSuggestionsMediator mediator) {
         mActivity = activity;
+        mModel = model;
         mBottomSheetController = bottomSheetController;
         mTabModelSelector = tabModelSelector;
-
-        mMediator = new ContextualSuggestionsMediator(mProfile, tabModelSelector,
-                activity.getFullscreenManager(), this, mModel,
-                mBottomSheetController.getBottomSheet(), activity.getToolbarManager());
+        mMediator = mediator;
+        mediator.initialize(this, bottomSheetController.getBottomSheet());
     }
 
     /** Called when the containing activity is destroyed. */

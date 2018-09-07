@@ -152,7 +152,6 @@ class FetchHelper {
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabObserver mTabObserver;
     private boolean mFetchRequestedForCurrentTab;
-    private boolean mIsInitialized;
 
     private boolean mRequireCurrentPageFromSRP;
     private boolean mRequireNavChainFromSRP;
@@ -168,14 +167,6 @@ class FetchHelper {
     FetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
         mDelegate = delegate;
         mTabModelSelector = tabModelSelector;
-    }
-
-    /**
-     * Initializes the FetchHelper to listen for notifications.
-     */
-    protected void initialize() {
-        assert !mIsInitialized;
-        mIsInitialized = true;
 
         mTabObserver = new EmptyTabObserver() {
             @Override

@@ -69,10 +69,14 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsCoordinator;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager.ContextualSearchTabPromotionDelegate;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
+import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerUIUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -174,10 +178,12 @@ import javax.annotation.Nullable;
 /**
  * A {@link AsyncInitializationActivity} that builds and manages a {@link CompositorViewHolder}
  * and associated classes.
+ * @param <C> - type of associated Dagger component.
  */
-public abstract class ChromeActivity extends AsyncInitializationActivity
+public abstract class ChromeActivity<C extends ChromeActivityComponent>
+        extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
-        ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver {
+                   ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver {
     /**
      * Factory which creates the AppMenuHandler.
      */
@@ -209,6 +215,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private static AppMenuHandlerFactory sAppMenuHandlerFactory =
             (activity, delegate, menuResourceId) -> new AppMenuHandler(activity, delegate,
                     menuResourceId);
+
+    private C mComponent;
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -321,6 +329,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
+        mComponent = createComponent();
+
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
@@ -334,6 +344,52 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         mFullscreenManager = createFullscreenManager();
         mCreatedFullscreenManager = true;
+    }
+
+    private C createComponent() {
+        ChromeActivityCommonsModule.Factory overridenCommonsFactory =
+                ModuleFactoryOverrides.getOverrideFor(ChromeActivityCommonsModule.Factory.class);
+
+        ChromeActivityCommonsModule commonsModule = overridenCommonsFactory == null
+                ? new ChromeActivityCommonsModule(this)
+                : overridenCommonsFactory.create(this);
+
+        ContextualSuggestionsModule.Factory overridenSuggestionsFactory =
+                ModuleFactoryOverrides.getOverrideFor(ContextualSuggestionsModule.Factory.class);
+
+        ContextualSuggestionsModule suggestionsModule = overridenSuggestionsFactory == null
+                ? new ContextualSuggestionsModule()
+                : overridenSuggestionsFactory.create();
+
+        return createComponent(commonsModule, suggestionsModule);
+    }
+
+    /**
+     * Override this to create a component that represents a richer dependency graph for a
+     * particular subclass of ChromeActivity. The specialized component should be activity-scoped
+     * and include all modules for ChromeActivityComponent, such as
+     * {@link ChromeActivityCommonsModule}, along with any additional modules.
+     *
+     * Example:
+     *
+     * @Subcomponent(modules = {ChromeActivityCommonsModule.class, ChromeTabbedActivityModule.class})
+     * @ActivityScope
+     * public interface ChromeTabbedActivityComponent extends ChromeActivityComponent {
+     *     SomeTabbedActivityClass getSomeTabbedActivityClass();
+     * }
+     */
+    @SuppressWarnings("unchecked")
+    protected C createComponent(ChromeActivityCommonsModule commonsModule,
+            ContextualSuggestionsModule contextualSuggestionsModule) {
+        return (C) ChromeApplication.getComponent().createChromeActivityComponent(
+                commonsModule, contextualSuggestionsModule);
+    }
+
+    /**
+     * @return the activity-scoped component associated with this instance of activity.
+     */
+    public final C getComponent() {
+        return mComponent;
     }
 
     @SuppressLint("NewApi")
@@ -1408,8 +1464,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
 
-            mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
-                    this, mBottomSheetController, getTabModelSelector());
+            mContextualSuggestionsCoordinator = mComponent.getContextualSuggestionsCoordinator();
         }
     }
 
@@ -2515,11 +2570,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return mDensityDpi;
     }
 
-    @VisibleForTesting
-    public ContextualSuggestionsCoordinator getContextualSuggestionsCoordinatorForTesting() {
-        return mContextualSuggestionsCoordinator;
-    }
-
     /**
      * Create a PageViewTimer that's compatible with this activity. Override in subclasses to
      * specialize behavior.
@@ -2527,5 +2577,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected PageViewTimer createPageViewTimer() {
         return new PageViewTimer(mTabModelSelector);
+    }
+
+    /** Returns {@link BottomSheetController}, if present. */
+    @Nullable
+    public BottomSheetController getBottomSheetController() {
+        return mBottomSheetController;
     }
 }

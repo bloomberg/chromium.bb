@@ -44,6 +44,8 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.PropertyKey;
+import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
+import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -53,6 +55,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.test.ScreenShooter;
@@ -100,9 +103,6 @@ public class ContextualSuggestionsTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
-    public ContextualSuggestionsDependenciesRule mContextualSuggestionsDeps =
-            new ContextualSuggestionsDependenciesRule();
-    @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
     @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
@@ -121,7 +121,9 @@ public class ContextualSuggestionsTest {
     private static final String TEST_PAGE =
             "/chrome/test/data/android/contextual_suggestions/contextual_suggestions_test.html";
 
-    private FakeContextualSuggestionsSource mFakeSource;
+    private final FakeContextualSuggestionsSource mFakeSource =
+            new FakeContextualSuggestionsSource();
+
     private EmbeddedTestServer mTestServer;
     private ContextualSuggestionsCoordinator mCoordinator;
     private ContextualSuggestionsMediator mMediator;
@@ -134,7 +136,7 @@ public class ContextualSuggestionsTest {
     private ContextualSuggestionsModel mModel2;
     private BottomSheet mBottomSheet2;
 
-    private CallbackHelper mToolbarShadowVisibleCallback = new CallbackHelper();
+    private int mNumberOfSourcesCreated = 0;
 
     @ParameterAnnotations.UseMethodParameterBefore(SlimPeekUIParams.class)
     public void setupSlimPeekUI(boolean slimPeekUIEnabled) {
@@ -146,36 +148,61 @@ public class ContextualSuggestionsTest {
         }
     }
 
+    private class ContextualSuggestionsModuleForTest extends ContextualSuggestionsModule {
+        @Override
+        public ContextualSuggestionsSource provideContextualSuggestionsSource(Profile profile) {
+            mNumberOfSourcesCreated++;
+            return mFakeSource;
+        }
+    }
+
+    private class ChromeAppModuleForTest extends ChromeAppModule {
+        @Override
+        public EnabledStateMonitor provideEnabledStateMonitor() {
+            return new EmptyEnabledStateMonitor() {
+                @Override
+                public boolean getSettingsEnabled() {
+                    return true;
+                }
+
+                @Override
+                public boolean getEnabledState() {
+                    return true;
+                }
+            };
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
-        mFakeSource = new FakeContextualSuggestionsSource();
-        mContextualSuggestionsDeps.getFactory().suggestionsSource = mFakeSource;
+        ModuleFactoryOverrides.setOverride(ContextualSuggestionsModuleForTest.Factory.class,
+                ContextualSuggestionsModuleForTest::new);
+        ModuleFactoryOverrides.setOverride(
+                ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
+
         FetchHelper.setDisableDelayForTesting(true);
         ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(true);
-
-        FakeEnabledStateMonitor stateMonitor = new FakeEnabledStateMonitor();
-        mContextualSuggestionsDeps.getFactory().enabledStateMonitor = new FakeEnabledStateMonitor();
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
         final CallbackHelper waitForSuggestionsHelper = new CallbackHelper();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mCoordinator =
-                    mActivityTestRule.getActivity().getContextualSuggestionsCoordinatorForTesting();
+            mCoordinator = mActivityTestRule.getActivity()
+                                   .getComponent()
+                                   .getContextualSuggestionsCoordinator();
             mMediator = mCoordinator.getMediatorForTesting();
             mModel = mCoordinator.getModelForTesting();
-            stateMonitor.setObserver(mMediator);
 
-            mModel.addObserver((source, propertyKey) -> {
-                if (propertyKey == PropertyKey.TOOLBAR_SHADOW_VISIBILITY
-                        && mModel.getToolbarShadowVisibility()) {
-                    mToolbarShadowVisibleCallback.notifyCalled();
-                }
-                if (propertyKey == PropertyKey.TITLE && mModel.getTitle() != null) {
-                    waitForSuggestionsHelper.notifyCalled();
-                }
-            });
+            if (mModel.getTitle() != null) {
+                waitForSuggestionsHelper.notifyCalled();
+            } else {
+                mModel.addObserver((source, propertyKey) -> {
+                    if (propertyKey == PropertyKey.TITLE && mModel.getTitle() != null) {
+                        waitForSuggestionsHelper.notifyCalled();
+                    }
+                });
+            }
         });
 
         waitForSuggestionsHelper.waitForCallback(0);
@@ -187,6 +214,7 @@ public class ContextualSuggestionsTest {
         mTestServer.stopAndDestroyServer();
         FetchHelper.setDisableDelayForTesting(false);
         ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(false);
+        ModuleFactoryOverrides.clearOverrides();
     }
 
     @Test
@@ -414,17 +442,22 @@ public class ContextualSuggestionsTest {
 
         assertFalse("Shadow shouldn't be visible.", mModel.getToolbarShadowVisibility());
 
-        int currentCallCount = mToolbarShadowVisibleCallback.getCallCount();
+        CallbackHelper shadowVisibilityCallback = new CallbackHelper();
+
+        mModel.addObserver((source, propertyKey) -> {
+            if (propertyKey == PropertyKey.TOOLBAR_SHADOW_VISIBILITY
+                    && mModel.getToolbarShadowVisibility()) {
+                shadowVisibilityCallback.notifyCalled();
+            }
+        });
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             RecyclerView view =
                     (RecyclerView) mBottomSheet.getCurrentSheetContent().getContentView();
-            view.scrollToPosition(5);
+            view.smoothScrollToPosition(5);
         });
 
-        mToolbarShadowVisibleCallback.waitForCallback(currentCallCount);
-
-        assertTrue("Shadow should be visible.", mModel.getToolbarShadowVisibility());
+        shadowVisibilityCallback.waitForCallback("Shadow should be visible");
     }
 
     @Test
@@ -459,7 +492,7 @@ public class ContextualSuggestionsTest {
 
         CallbackHelper allItemsInsertedCallback = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mCoordinator2 = activity2.getContextualSuggestionsCoordinatorForTesting();
+            mCoordinator2 = activity2.getComponent().getContextualSuggestionsCoordinator();
             mMediator2 = mCoordinator2.getMediatorForTesting();
             mModel2 = mCoordinator2.getModelForTesting();
             mBottomSheet2 = activity2.getBottomSheet();
@@ -476,17 +509,13 @@ public class ContextualSuggestionsTest {
                     }
                 }
             });
-
-            mMediator2.onEnabledStateChanged(true);
         });
 
         assertNotEquals("There should be two coordinators.", mCoordinator, mCoordinator2);
         assertNotEquals("There should be two mediators.", mMediator, mMediator2);
         assertNotEquals("There should be two models.", mModel, mModel2);
         assertEquals("There should have been two requests to create a ContextualSuggestionsSource",
-                2,
-                mContextualSuggestionsDeps.getFactory()
-                        .createSuggestionsSourceCallback.getCallCount());
+                2, mNumberOfSourcesCreated);
 
         allItemsInsertedCallback.waitForCallback(0);
 

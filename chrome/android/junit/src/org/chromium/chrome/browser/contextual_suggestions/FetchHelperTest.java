@@ -12,8 +12,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,22 +57,6 @@ import java.util.function.Consumer;
 public final class FetchHelperTest {
     private static final String STARTING_URL = "https://starting.url";
     private static final String DIFFERENT_URL = "https://different.url";
-
-    private class TestFetchHelper extends FetchHelper {
-        public TestFetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
-            super(delegate, tabModelSelector);
-        }
-
-        @Override
-        boolean requireCurrentPageFromSRP() {
-            return false;
-        }
-
-        @Override
-        boolean requireNavChainFromSRP() {
-            return false;
-        }
-    }
 
     @Mock
     private TabModelSelector mTabModelSelector;
@@ -485,8 +471,9 @@ public final class FetchHelperTest {
     }
 
     private FetchHelper createFetchHelper() {
-        FetchHelper helper = new TestFetchHelper(mDelegate, mTabModelSelector);
-        helper.initialize();
+        FetchHelper helper = spy(new FetchHelper(mDelegate, mTabModelSelector));
+        when(helper.requireCurrentPageFromSRP()).thenReturn(false);
+        when(helper.requireNavChainFromSRP()).thenReturn(false);
 
         if (mTabModelSelector.getCurrentTab() != null && !mTab.isIncognito()) {
             verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());

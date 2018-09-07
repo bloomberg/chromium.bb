@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.SEARCH_ENGINE_PROMO_EXISTING_DEVICE;
 
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -18,7 +19,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.contextual_suggestions.FakeEnabledStateMonitor;
+import org.chromium.chrome.browser.contextual_suggestions.EmptyEnabledStateMonitor;
+import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
+import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
+import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -33,19 +37,65 @@ public class ContextualSuggestionsPreferenceTest {
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private ContextualSuggestionsPreference mFragment;
-    private FakeEnabledStateMonitor mTestMonitor;
+
+    private FakeEnabledStateMonitor mEnabledStateMonitor = new FakeEnabledStateMonitor();
+
     private ChromeSwitchPreference mSwitch;
     private boolean mInitialSwitchState;
 
+    private class FakeEnabledStateMonitor extends EmptyEnabledStateMonitor {
+        @Nullable
+        private EnabledStateMonitor.Observer mObserver;
+
+        private boolean mEnabledInSettings;
+
+        @Override
+        public void addObserver(Observer observer) {
+            mObserver = observer;
+        }
+
+        @Override
+        public void removeObserver(Observer observer) {
+            mObserver = null;
+        }
+
+        @Override
+        public boolean getSettingsEnabled() {
+            return mEnabledInSettings;
+        }
+
+        @Override
+        public boolean getEnabledState() {
+            // Mirroring the behavior of EnabledStateMonitorImpl
+            return PrefServiceBridge.getInstance().getBoolean(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED)
+                    && mEnabledInSettings;
+        }
+
+        public void setSettingsEnabled(boolean enabled) {
+            mEnabledInSettings = enabled;
+
+            if (mObserver != null) {
+                mObserver.onSettingsStateChanged(enabled);
+            }
+        }
+    }
+
+    private class ChromeAppModuleForTest extends ChromeAppModule {
+        @Override
+        public EnabledStateMonitor provideEnabledStateMonitor() {
+            return mEnabledStateMonitor;
+        }
+    }
+
     @Before
     public void setUp() {
-        mTestMonitor = new FakeEnabledStateMonitor();
-        ContextualSuggestionsPreference.setEnabledStateMonitorForTesting(mTestMonitor);
+        ModuleFactoryOverrides.setOverride(
+                ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
+
         Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         ContextualSuggestionsPreference.class.getName());
         mFragment = (ContextualSuggestionsPreference) preferences.getFragmentForTest();
-        mTestMonitor.setObserver(mFragment);
         mSwitch = (ChromeSwitchPreference) mFragment.findPreference(
                 ContextualSuggestionsPreference.PREF_CONTEXTUAL_SUGGESTIONS_SWITCH);
         mInitialSwitchState = mSwitch.isChecked();
@@ -54,7 +104,7 @@ public class ContextualSuggestionsPreferenceTest {
     @After
     public void tearDown() {
         ThreadUtils.runOnUiThreadBlocking(() -> setSwitchState(mInitialSwitchState));
-        ContextualSuggestionsPreference.setEnabledStateMonitorForTesting(null);
+        ModuleFactoryOverrides.clearOverrides();
     }
 
     @Test
@@ -62,7 +112,7 @@ public class ContextualSuggestionsPreferenceTest {
     @Feature({"ContextualSuggestions"})
     public void testSwitch_Toggle() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestMonitor.onSettingsStateChanged(true);
+            mEnabledStateMonitor.setSettingsEnabled(true);
 
             // Check initial state matches preference.
             setSwitchState(true);
@@ -93,13 +143,13 @@ public class ContextualSuggestionsPreferenceTest {
     public void testSwitch_SettingsStateChanged() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure switch is checked.
-            mTestMonitor.onSettingsStateChanged(true);
+            mEnabledStateMonitor.setSettingsEnabled(true);
             setSwitchState(true);
             Assert.assertTrue(mSwitch.isEnabled());
             Assert.assertTrue(mSwitch.isChecked());
 
             // Simulate settings are disabled.
-            mTestMonitor.onSettingsStateChanged(false);
+            mEnabledStateMonitor.setSettingsEnabled(false);
             Assert.assertFalse(mSwitch.isEnabled());
             Assert.assertFalse(mSwitch.isChecked());
         });

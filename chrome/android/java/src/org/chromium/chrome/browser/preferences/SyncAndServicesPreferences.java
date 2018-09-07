@@ -38,7 +38,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -221,7 +221,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
         if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
-                || !EnabledStateMonitor.shouldShowSettings()) {
+                || !ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
             removePreference(mSyncGroup, mContextualSuggestions);
             mContextualSuggestions = null;
         }
@@ -860,7 +860,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         if (mContextualSuggestions != null) {
             mContextualSuggestions.setSummary(
-                    EnabledStateMonitor.getEnabledState() ? R.string.text_on : R.string.text_off);
+                    ContextualSuggestionsEnabledStateUtils.getEnabledState()
+                            ? R.string.text_on
+                            : R.string.text_off);
         }
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
