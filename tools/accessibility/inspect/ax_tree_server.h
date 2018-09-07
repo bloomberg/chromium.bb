@@ -20,16 +20,19 @@ namespace content {
 class AXTreeServer final {
  public:
   AXTreeServer(base::ProcessId pid,
-               base::string16& filters_path,
+               const base::FilePath& filters_path,
                bool use_json);
   AXTreeServer(gfx::AcceleratedWidget widget,
-               base::string16& filters_path,
+               const base::FilePath& filters_path,
+               bool use_json);
+  AXTreeServer(const base::StringPiece& pattern,
+               const base::FilePath& filters_path,
                bool use_json);
 
  private:
   void Format(AccessibilityTreeFormatter& formatter,
-              base::DictionaryValue& dict,
-              base::string16& filters_path,
+              const base::DictionaryValue& dict,
+              const base::FilePath& filters_path,
               bool use_json);
 
 #if defined(OS_WIN)

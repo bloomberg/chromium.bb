@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <wrl/client.h>
 
+#include <iostream>
 #include <string>
 #include <utility>
 
@@ -70,6 +71,8 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       gfx::AcceleratedWidget hwnd) override;
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForProcess(
       base::ProcessId pid) override;
+  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForPattern(
+      const base::StringPiece& pattern) override;
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       Microsoft::WRL::ComPtr<IAccessible> start,
       LONG window_x = 0,
@@ -279,6 +282,14 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTreeForProcess(
   // Get HWND for process id.
   HWND hwnd = GetHwndForProcess(pid);
   return BuildAccessibilityTreeForWindow(hwnd);
+}
+
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatterWin::BuildAccessibilityTreeForPattern(
+    const base::StringPiece& pattern) {
+  LOG(ERROR) << "Windows does not yet support building accessibility trees for "
+                "patterns";
+  return nullptr;
 }
 
 void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
