@@ -112,7 +112,8 @@ void ServiceWorkerWriteToCacheJob::StartAsync() {
   }
   cache_writer_ = std::make_unique<ServiceWorkerCacheWriter>(
       std::move(compare_reader), std::move(copy_reader),
-      context_->storage()->CreateResponseWriter(resource_id_));
+      context_->storage()->CreateResponseWriter(resource_id_),
+      false /* pause_when_not_identical */);
 
   version_->script_cache_map()->NotifyStartedCaching(url_, resource_id_);
   did_notify_started_ = true;
