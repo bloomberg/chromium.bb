@@ -30,10 +30,10 @@
 #import "third_party/blink/renderer/platform/fonts/font.h"
 #import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #import "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
-#import "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #import "third_party/blink/renderer/platform/layout_test_support.h"
 #import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#import "third_party/skia/include/core/SkStream.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace blink {

@@ -34,8 +34,6 @@
 #include <windows.h>
 #include "SkTypeface.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
