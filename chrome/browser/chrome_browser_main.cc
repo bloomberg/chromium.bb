@@ -1928,14 +1928,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate(profile_->GetPrefs());
 
-#if defined(OS_ANDROID)
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
-  if (variations_service) {
-    // Just initialize the policy prefs service here. Variations seed fetching
-    // will be initialized when the app enters foreground mode.
-    variations_service->set_policy_pref_service(profile_->GetPrefs());
-  }
+  if (should_call_pre_main_loop_start_startup_on_variations_service_)
+    variations_service->PerformPreMainMessageLoopStartup();
+
+#if defined(OS_ANDROID)
+  // Just initialize the policy prefs service here. Variations seed fetching
+  // will be initialized when the app enters foreground mode.
+  variations_service->set_policy_pref_service(profile_->GetPrefs());
 
 #else
   // Most general initialization is behind us, but opening a
@@ -1994,14 +1995,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     const base::TimeDelta delta = base::TimeTicks::Now() - browser_open_start;
     startup_metric_utils::RecordBrowserOpenTabsDelta(delta);
-
-    if (should_call_pre_main_loop_start_startup_on_variations_service_) {
-      // Request new variations seed information from server.
-      variations::VariationsService* variations_service =
-          browser_process_->variations_service();
-      if (variations_service)
-        variations_service->PerformPreMainMessageLoopStartup();
-    }
   }
   run_message_loop_ = started;
   browser_creator_.reset();
