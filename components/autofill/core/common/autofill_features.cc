@@ -47,10 +47,10 @@ const base::Feature kAutofillCreditCardLocalCardMigration{
     "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillDeleteDisusedAddresses{
-    "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillDeleteDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillDeleteDisusedCreditCards{
-    "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillDeleteDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the credit card downstream keyboard accessory shows
 // the Google Pay logo animation on iOS.
