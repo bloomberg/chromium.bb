@@ -1331,6 +1331,10 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
     }
   }
 
+  // OUTPUT queue must be started before CAPTURE queue as per codec API.
+  if (!input_streamon_)
+    return;
+
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_buffer_queued_count_;
   while (!free_output_buffers_.empty()) {
