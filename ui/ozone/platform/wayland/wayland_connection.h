@@ -61,6 +61,7 @@ class WaylandConnection : public PlatformEventSource,
   // WaylandWindow with the specified |widget|.
   void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
+                          const gfx::Rect& damage_region,
                           ScheduleBufferSwapCallback callback) override;
 
   // Schedules a flush of the Wayland connection.

@@ -69,8 +69,7 @@ bool GbmSurfacelessWayland::SupportsAsyncSwap() {
 }
 
 bool GbmSurfacelessWayland::SupportsPostSubBuffer() {
-  // TODO(msisov): figure out how to enable subbuffers with wayland/dmabuf.
-  return false;
+  return true;
 }
 
 gfx::SwapResult GbmSurfacelessWayland::PostSubBuffer(
@@ -135,8 +134,10 @@ void GbmSurfacelessWayland::PostSubBufferAsync(
     int height,
     const SwapCompletionCallback& completion_callback,
     const PresentationCallback& presentation_callback) {
-  // See the comment in SupportsPostSubBuffer.
-  NOTREACHED();
+  PendingFrame* frame = unsubmitted_frames_.back().get();
+  frame->damage_region_ = gfx::Rect(x, y, width, height);
+
+  SwapBuffersAsync(completion_callback, presentation_callback);
 }
 
 EGLConfig GbmSurfacelessWayland::GetConfig() {
@@ -203,6 +204,7 @@ void GbmSurfacelessWayland::SubmitFrame() {
                        weak_factory_.GetWeakPtr());
     uint32_t buffer_id = planes_.back().pixmap->GetUniqueId();
     surface_factory_->ScheduleBufferSwap(widget_, buffer_id,
+                                         submitted_frame_->damage_region_,
                                          std::move(callback));
   }
 }

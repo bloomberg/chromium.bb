@@ -117,6 +117,7 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
 // TODO(msisov): handle buffer swap failure or success.
 bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                                               uint32_t buffer_id,
+                                              const gfx::Rect& damage_region,
                                               wl::BufferSwapCallback callback) {
   TRACE_EVENT1("Wayland", "WaylandBufferManager::ScheduleSwapBuffer",
                "Buffer id", buffer_id);
@@ -138,6 +139,7 @@ bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
   // WaylandWindow.
   buffer->widget = widget;
   buffer->buffer_swap_callback = std::move(callback);
+  buffer->damage_region = damage_region;
 
   if (buffer->wl_buffer) {
     // A wl_buffer might not exist by this time. Silently return.
@@ -186,10 +188,9 @@ bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
     return false;
   }
 
-  // TODO(msisov): it would be beneficial to use real damage regions to improve
-  // performance.
-  wl_surface_damage(window->surface(), 0, 0, window->GetBounds().width(),
-                    window->GetBounds().height());
+  wl_surface_damage(window->surface(), buffer->damage_region.x(),
+                    buffer->damage_region.y(), buffer->damage_region.width(),
+                    buffer->damage_region.height());
   wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
 
   static const wl_callback_listener frame_listener = {
