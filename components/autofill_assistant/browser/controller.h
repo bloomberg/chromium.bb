@@ -52,6 +52,7 @@ class Controller : public ScriptExecutorDelegate,
   // Overrides content::UiDelegate:
   void OnClickOverlay() override;
   void OnDestroy() override;
+  void OnScriptSelected(const std::string& script_path) override;
 
   // Overrides ScriptTracker::Listener:
   void OnRunnableScriptsChanged(

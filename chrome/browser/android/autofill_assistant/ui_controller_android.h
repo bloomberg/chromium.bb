@@ -38,6 +38,10 @@ class UiControllerAndroid : public UiController, public Client {
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnScriptSelected(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jscript_path);
 
  private:
   // Java-side AutofillAssistantUiController object.

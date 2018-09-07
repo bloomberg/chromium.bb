@@ -77,6 +77,10 @@ void Controller::OnClickOverlay() {
   // TODO(crbug.com/806868): Stop executing scripts.
 }
 
+void Controller::OnScriptSelected(const std::string& script_path) {
+  // TODO(crbug.com/806868): Forward to the execution engine.
+}
+
 void Controller::OnDestroy() {
   delete this;
 }

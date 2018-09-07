@@ -75,6 +75,15 @@ void UiControllerAndroid::UpdateScripts(
       env, java_autofill_assistant_ui_controller_, jscripts);
 }
 
+void UiControllerAndroid::OnScriptSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jscript_path) {
+  std::string script_path;
+  base::android::ConvertJavaStringToUTF8(env, jscript_path, &script_path);
+  ui_delegate_->OnScriptSelected(script_path);
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   // TODO(crbug.com/806868): Implement ChooseAddress.
