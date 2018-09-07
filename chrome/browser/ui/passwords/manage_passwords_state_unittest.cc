@@ -385,34 +385,33 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   test_stored_forms().push_back(&test_psl_form());
+  test_stored_forms().push_back(&test_local_form());
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
-  test_form_manager->ProvisionallySave(test_submitted_form());
 
   passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, passwords_data().state());
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
   ASSERT_TRUE(passwords_data().form_manager());
-  EXPECT_EQ(test_submitted_form(),
-            passwords_data().form_manager()->GetPendingCredentials());
   TestAllUpdates();
 
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
-              ElementsAre(Pointee(test_submitted_form())));
+              ElementsAre(Pointee(test_local_form())));
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
   EXPECT_EQ(test_submitted_form().origin, passwords_data().origin());
   TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveWithFederations) {
+  test_stored_forms().push_back(&test_local_form());
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManagerWithFederation());
   test_form_manager->ProvisionallySave(test_submitted_form());
 
   passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
   EXPECT_THAT(passwords_data().GetCurrentForms(),
-              UnorderedElementsAre(Pointee(test_submitted_form()),
+              UnorderedElementsAre(Pointee(test_local_form()),
                                    Pointee(test_local_federated_form())));
 }
 

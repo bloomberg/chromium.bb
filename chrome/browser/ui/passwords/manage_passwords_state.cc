@@ -130,23 +130,11 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_.reserve(form_manager_->GetBestMatches().size());
-  bool updated = false;
   for (const auto& form : form_manager_->GetBestMatches()) {
     if (form.second->is_public_suffix_match)
       continue;
-    if (form_manager_->GetPendingCredentials().username_value == form.first) {
-      local_credentials_forms_.push_back(
-          std::make_unique<autofill::PasswordForm>(
-              form_manager_->GetPendingCredentials()));
-      updated = true;
-    } else {
-      local_credentials_forms_.push_back(
-          std::make_unique<autofill::PasswordForm>(*form.second));
-    }
-  }
-  if (!updated) {
-    local_credentials_forms_.push_back(std::make_unique<autofill::PasswordForm>(
-        form_manager_->GetPendingCredentials()));
+    local_credentials_forms_.push_back(
+        std::make_unique<autofill::PasswordForm>(*form.second));
   }
   AppendDeepCopyVector(form_manager_->GetFormFetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);

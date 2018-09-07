@@ -1180,7 +1180,8 @@ TEST_F(ManagePasswordsUIControllerTest,
     SCOPED_TRACE(testing::Message("user_closed_bubble = ")
                  << user_closed_bubble);
     std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-        CreateFormManager());
+        CreateFormManagerWithBestMatches(test_local_form(),
+                                         {&test_local_form()}, nullptr));
     test_form_manager->ProvisionallySave(test_local_form());
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
     controller()->OnShowManualFallbackForSaving(
