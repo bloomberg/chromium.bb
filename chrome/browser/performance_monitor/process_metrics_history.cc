@@ -40,11 +40,6 @@ void ProcessMetricsHistory::Initialize(
   process_metrics_ =
       base::ProcessMetrics::CreateProcessMetrics(process_data_.handle);
 #endif
-
-  // Take the initial sample at the beginning of the first internal. This is
-  // required for metrics that are using the previous sample to compute their
-  // value.
-  SampleMetrics();
 }
 
 void ProcessMetricsHistory::SampleMetrics() {
