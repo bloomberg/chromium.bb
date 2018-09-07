@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from pylib.base import test_instance
+from pylib.utils import test_filter
 
 
 class JunitTestInstance(test_instance.TestInstance):
@@ -18,7 +19,7 @@ class JunitTestInstance(test_instance.TestInstance):
     self._resource_zips = args.resource_zips
     self._robolectric_runtime_deps_dir = args.robolectric_runtime_deps_dir
     self._runner_filter = args.runner_filter
-    self._test_filter = args.test_filter
+    self._test_filter = test_filter.InitializeFilterFromArgs(args)
     self._test_suite = args.test_suite
 
   #override

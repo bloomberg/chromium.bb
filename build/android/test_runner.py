@@ -47,6 +47,7 @@ from pylib.results import report_results
 from pylib.results.presentation import test_results_presentation
 from pylib.utils import logdog_helper
 from pylib.utils import logging_utils
+from pylib.utils import test_filter
 
 from py_utils import contextlib_ext
 
@@ -91,6 +92,8 @@ def AddTestLauncherOptions(parser):
       '--test-launcher-total-shards',
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
+
+  test_filter.AddFilterOptions(parser)
 
   return parser
 
@@ -357,21 +360,6 @@ def AddGTestOptions(parser):
       help='Wait for java debugger to attach before running any application '
            'code. Also disables test timeouts and sets retries=0.')
 
-  filter_group = parser.add_mutually_exclusive_group()
-  filter_group.add_argument(
-      '-f', '--gtest_filter', '--gtest-filter',
-      dest='test_filter',
-      help='googletest-style filter string.',
-      default=os.environ.get('GTEST_FILTER'))
-  filter_group.add_argument(
-      # Deprecated argument.
-      '--gtest-filter-file',
-      # New argument.
-      '--test-launcher-filter-file',
-      dest='test_filter_file', type=os.path.realpath,
-      help='Path to file that contains googletest-style filter strings. '
-           'See also //testing/buildbot/filters/README.md.')
-
 
 def AddInstrumentationTestOptions(parser):
   """Adds Instrumentation test options to |parser|."""
@@ -418,11 +406,6 @@ def AddInstrumentationTestOptions(parser):
       dest='exclude_annotation_str',
       help='Comma-separated list of annotations. Exclude tests with these '
            'annotations.')
-  parser.add_argument(
-      '-f', '--test-filter', '--gtest_filter', '--gtest-filter',
-      dest='test_filter',
-      help='Test filter (if not fully qualified, will run all matches).',
-      default=os.environ.get('GTEST_FILTER'))
   parser.add_argument(
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       dest='run_disabled', action='store_true',
@@ -522,9 +505,6 @@ def AddJUnitTestOptions(parser):
       '--runner-filter',
       help='Filters tests by runner class. Must be fully qualified.')
   parser.add_argument(
-      '-f', '--test-filter',
-      help='Filters tests googletest-style.')
-  parser.add_argument(
       '-s', '--test-suite', required=True,
       help='JUnit test suite to run.')
   debug_group = parser.add_mutually_exclusive_group()
@@ -557,11 +537,6 @@ def AddLinkerTestOptions(parser):
 
   parser.add_argument_group('linker arguments')
 
-  parser.add_argument(
-      '-f', '--gtest-filter',
-      dest='test_filter',
-      help='googletest-style filter string.',
-      default=os.environ.get('GTEST_FILTER'))
   parser.add_argument(
       '--test-apk',
       type=os.path.realpath,
@@ -676,9 +651,6 @@ def AddPerfTestOptions(parser):
       help='Writes a JSON list of information for each --steps into the given '
            'file. Information includes runtime and device affinity for each '
            '--steps.')
-  parser.add_argument(
-      '-f', '--test-filter',
-      help='Test filter (will match against the names listed in --steps).')
   parser.add_argument(
       '--write-buildbot-json',
       action='store_true',
