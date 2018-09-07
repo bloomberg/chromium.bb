@@ -227,8 +227,12 @@ void TranslateLanguageList::RequestLanguageList() {
     NotifyEvent(__LINE__, message);
 
     bool result = language_list_fetcher_->Request(
-        url, base::BindOnce(&TranslateLanguageList::OnLanguageListFetchComplete,
-                            base::Unretained(this)));
+        url,
+        base::BindOnce(&TranslateLanguageList::OnLanguageListFetchComplete,
+                       base::Unretained(this)),
+        // Use the strictest mode for request headers, since incognito state is
+        // not known.
+        /*is_incognito=*/true);
     if (!result)
       NotifyEvent(__LINE__, "Request is omitted due to retry limit");
   }
