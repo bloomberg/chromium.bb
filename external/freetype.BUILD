@@ -104,7 +104,7 @@ cc_library(
         "src/**/*.h",
         "include/**/*.h",
     ]),
-    copts = ["-DFT2_BUILD_LIBRARY"],
+    copts = ["-DFT2_BUILD_LIBRARY", "-UDEBUG"],
     includes = ["include"],
     textual_hdrs = glob(["src/**/*.c"]),
     visibility = ["//visibility:public"],

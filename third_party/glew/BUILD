@@ -26,6 +26,9 @@ cc_library(
     srcs = ["src/glew.c"],
     hdrs = glob(["include/GL/*.h"]),
     includes = ["include"],
-    linkopts = ["-lGL"],
+    linkopts = select({
+        "//buildenv:linux": ["-lGL"],
+        "//buildenv:osx": ["-framework OpenGL"],
+    }),
     visibility = ["//visibility:public"],
 )
