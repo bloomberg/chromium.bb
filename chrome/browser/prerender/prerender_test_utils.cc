@@ -629,7 +629,8 @@ PrerenderInProcessBrowserTest::GetFakeSafeBrowsingDatabaseManager() {
           .get());
 }
 
-void PrerenderInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
+void PrerenderInProcessBrowserTest::CreatedBrowserMainParts(
+    content::BrowserMainParts* browser_main_parts) {
   safe_browsing_factory_->SetTestDatabaseManager(
       new test_utils::FakeSafeBrowsingDatabaseManager());
   safe_browsing::SafeBrowsingService::RegisterFactory(
