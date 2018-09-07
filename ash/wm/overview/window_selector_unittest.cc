@@ -762,26 +762,22 @@ TEST_F(WindowSelectorTest, ClickOnWindowDuringTouch) {
                                            window1_bounds.CenterPoint());
 
   // Clicking on |window2| while touching on |window1| should not cause a
-  // crash, overview mode should be disengaged and |window2| should be active.
+  // crash, it should do nothing since overview only handles one click or touch
+  // at a time.
   const int kTouchId = 19;
   event_generator.PressTouchId(kTouchId);
   event_generator.MoveMouseToCenterOf(window2.get());
   event_generator.ClickLeftButton();
-  EXPECT_FALSE(IsSelecting());
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-  event_generator.ReleaseTouchId(kTouchId);
-
-  ToggleOverview();
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
 
   // Clicking on |window1| while touching on |window1| should not cause
   // a crash, overview mode should be disengaged, and |window1| should
   // be active.
   event_generator.MoveMouseToCenterOf(window1.get());
-  event_generator.PressTouchId(kTouchId);
   event_generator.ClickLeftButton();
   EXPECT_FALSE(IsSelecting());
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
   event_generator.ReleaseTouchId(kTouchId);
 }
 
