@@ -82,6 +82,7 @@ class UkmRecorderImpl : public UkmRecorder {
   }
 
   // UkmRecorder:
+  void AddEntry(mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void UpdateAppURL(SourceId source_id, const GURL& url) override;
   void RecordNavigation(
@@ -125,8 +126,6 @@ class UkmRecorderImpl : public UkmRecorder {
   bool ShouldRecordUrl(SourceId source_id, const GURL& sanitized_url) const;
 
   void RecordSource(std::unique_ptr<UkmSource> source);
-
-  void AddEntry(mojom::UkmEntryPtr entry) override;
 
   // Load sampling configurations from field-trial information.
   void LoadExperimentSamplingInfo();
