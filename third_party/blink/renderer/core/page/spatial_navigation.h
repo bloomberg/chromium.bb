@@ -142,14 +142,17 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
 void DistanceDataForNode(WebFocusType,
                          const FocusCandidate& current,
                          FocusCandidate&);
-LayoutRect NodeRectInRootFrame(const Node*, bool ignore_border = false);
-LayoutRect VirtualRectForDirection(WebFocusType,
-                                   const LayoutRect& starting_rect,
-                                   LayoutUnit width = LayoutUnit());
-LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement&,
-                                                 WebFocusType);
+CORE_EXPORT LayoutRect NodeRectInRootFrame(const Node*,
+                                           bool ignore_border = false);
+CORE_EXPORT LayoutRect OppositeEdge(WebFocusType side,
+                                    const LayoutRect& box,
+                                    LayoutUnit thickness = LayoutUnit());
+CORE_EXPORT LayoutRect RootViewport(const LocalFrame*);
+LayoutRect StartEdgeForAreaElement(const HTMLAreaElement&, WebFocusType);
 HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate&);
-LayoutRect FindSearchStartPoint(const LocalFrame*, WebFocusType);
+CORE_EXPORT LayoutRect SearchOrigin(const LayoutRect,
+                                    Node*,
+                                    const WebFocusType);
 
 }  // namespace blink
 

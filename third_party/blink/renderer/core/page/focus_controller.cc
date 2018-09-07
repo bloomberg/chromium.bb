@@ -1444,14 +1444,15 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
   if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
 
-  const LayoutRect starting_rect =
-      FindSearchStartPoint(current_frame, direction);
-  Node* pruned_sub_tree_root = nullptr;
-  bool consumed = false;
+  const LayoutRect visible_rect = RootViewport(current_frame);
+  const LayoutRect start_box =
+      SearchOrigin(visible_rect, focused_element, direction);
 
-  while (!consumed && container) {
+  bool consumed = false;
+  Node* pruned_sub_tree_root = nullptr;
+  while (container) {
     consumed = AdvanceFocusDirectionallyInContainer(
-        container, starting_rect, direction, pruned_sub_tree_root);
+        container, start_box, direction, pruned_sub_tree_root);
     if (consumed)
       break;
 
