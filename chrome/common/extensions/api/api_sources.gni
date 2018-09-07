@@ -22,7 +22,6 @@ schema_sources_ = [
   "bookmark_manager_private.json",
   "bookmarks.json",
   "braille_display_private.idl",
-  "browser.idl",
   "chrome_web_view_internal.json",
   "command_line_private.json",
   "content_settings.json",

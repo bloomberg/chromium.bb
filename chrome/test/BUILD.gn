@@ -1200,6 +1200,7 @@ test("browser_tests") {
     if (enable_extensions) {
       sources += [
         "../browser/accessibility/accessibility_extension_api_browsertest.cc",
+        "../browser/apps/platform_apps/api/browser/browser_apitest.cc",
         "../browser/apps/platform_apps/app_browsertest_util.cc",
         "../browser/apps/platform_apps/app_browsertest_util.h",
         "../browser/extensions/active_tab_apitest.cc",
@@ -1215,7 +1216,6 @@ test("browser_tests") {
         "../browser/extensions/api/braille_display_private/braille_display_private_apitest.cc",
         "../browser/extensions/api/braille_display_private/mock_braille_controller.cc",
         "../browser/extensions/api/braille_display_private/mock_braille_controller.h",
-        "../browser/extensions/api/browser/browser_apitest.cc",
         "../browser/extensions/api/browsing_data/browsing_data_test.cc",
         "../browser/extensions/api/cast_streaming/cast_streaming_apitest.cc",
         "../browser/extensions/api/command_line_private/command_line_private_apitest.cc",

@@ -373,6 +373,7 @@ static_library("common") {
       "initialize_extensions_client.cc",
       "initialize_extensions_client.h",
     ]
+    deps += [ "//chrome/common/apps/platform_apps" ]
     public_deps += [
       "//chrome/common/extensions:mojo_bindings",
       "//chrome/common/extensions/api",

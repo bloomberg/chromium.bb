@@ -20,6 +20,8 @@ source_set("platform_apps") {
     "app_window_registry_util.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
+    "chrome_apps_browser_api_provider.cc",
+    "chrome_apps_browser_api_provider.h",
     "install_chrome_app.cc",
     "install_chrome_app.h",
     "platform_app_launch.cc",
@@ -36,6 +38,9 @@ source_set("platform_apps") {
 
   public_deps = [
     "//apps",
+    "//chrome/browser/apps/platform_apps/api",
+    "//chrome/browser/apps/platform_apps/api:api_registration",
+    "//chrome/common/apps/platform_apps/api",
   ]
 
   deps = [

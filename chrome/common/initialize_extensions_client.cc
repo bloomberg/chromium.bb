@@ -4,7 +4,10 @@
 
 #include "chrome/common/initialize_extensions_client.h"
 
+#include <memory>
+
 #include "base/no_destructor.h"
+#include "chrome/common/apps/platform_apps/chrome_apps_api_provider.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "extensions/common/extensions_client.h"
 
@@ -16,6 +19,8 @@ void EnsureExtensionsClientInitialized() {
 
   if (!initialized) {
     initialized = true;
+    extensions_client->AddAPIProvider(
+        std::make_unique<apps::ChromeAppsAPIProvider>());
     extensions::ExtensionsClient::Set(extensions_client.get());
   }
 

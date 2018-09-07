@@ -75,8 +75,6 @@ jumbo_static_library("extensions") {
     "api/braille_display_private/braille_display_private_api.h",
     "api/braille_display_private/stub_braille_controller.cc",
     "api/braille_display_private/stub_braille_controller.h",
-    "api/browser/browser_api.cc",
-    "api/browser/browser_api.h",
     "api/browsing_data/browsing_data_api.cc",
     "api/browsing_data/browsing_data_api.h",
     "api/chrome_device_permissions_prompt.h",

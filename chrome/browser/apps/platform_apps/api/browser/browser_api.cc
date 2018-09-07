@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/browser/browser_api.h"
+#include "chrome/browser/apps/platform_apps/api/browser/browser_api.h"
+
+#include <memory>
+#include <string>
 
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/common/extensions/api/browser.h"
+#include "chrome/common/apps/platform_apps/api/browser.h"
 
-namespace extensions {
+namespace apps {
 namespace api {
 
-BrowserOpenTabFunction::~BrowserOpenTabFunction() {
-}
+BrowserOpenTabFunction::~BrowserOpenTabFunction() {}
 
 ExtensionFunction::ResponseAction BrowserOpenTabFunction::Run() {
   std::unique_ptr<browser::OpenTab::Params> params(
       browser::OpenTab::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionTabUtil::OpenTabParams options;
+  extensions::ExtensionTabUtil::OpenTabParams options;
   options.create_browser_if_needed = true;
   options.url.reset(new std::string(params->options.url));
 
   std::string error;
   std::unique_ptr<base::DictionaryValue> result(
-      ExtensionTabUtil::OpenTab(this, options, user_gesture(), &error));
+      extensions::ExtensionTabUtil::OpenTab(this, options, user_gesture(),
+                                            &error));
   if (!result)
     return RespondNow(Error(error));
 
@@ -32,4 +35,4 @@ ExtensionFunction::ResponseAction BrowserOpenTabFunction::Run() {
 }
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace apps
