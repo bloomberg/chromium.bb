@@ -14,6 +14,8 @@
 
 #include "tools/render/axis_renderer.h"
 
+#include <array>
+
 #include "tools/render/layout_constants.h"
 
 namespace quic_trace {

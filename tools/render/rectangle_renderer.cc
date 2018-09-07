@@ -14,6 +14,8 @@
 
 #include "tools/render/rectangle_renderer.h"
 
+#include <array>
+
 #include "absl/algorithm/container.h"
 
 namespace quic_trace {

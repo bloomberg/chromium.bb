@@ -93,7 +93,7 @@ ProcessedTrace::ProcessedTrace(std::unique_ptr<Trace> trace,
     if (event.event_type() == PACKET_SENT) {
       Interval mapped = numbering.AssignTraceNumbering(event);
       AddPacket(renderer, event, mapped, PacketType::SENT);
-      largest_sent = std::max(mapped.offset + mapped.size, largest_sent);
+      largest_sent = std::max<size_t>(mapped.offset + mapped.size, largest_sent);
     }
     if (event.event_type() == PACKET_RECEIVED) {
       for (const Frame& frame : event.frames()) {
