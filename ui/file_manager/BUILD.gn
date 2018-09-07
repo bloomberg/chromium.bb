@@ -52,5 +52,6 @@ group("unit_test_data") {
   deps = [
     "gallery/js:unit_tests",
     "gallery/js/image_editor:unit_tests",
+    "image_loader:unit_tests",
   ]
 }

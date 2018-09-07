@@ -8,7 +8,11 @@ chrome.fileManagerPrivate = {
   }
 };
 
-var MockModule = cr.ui.define('div');
+/**
+ * @constructor
+ * @extends {HTMLDivElement}
+ */
+var MockModule = /** @type{function(new:MockModule)}*/ (cr.ui.define('div'));
 MockModule.prototype = Object.create(HTMLDivElement.prototype);
 MockModule.prototype.constructor = MockModule;
 
@@ -70,7 +74,7 @@ function testUnloadingAfterTimeout(callback) {
               assertEquals('thumbnail-data', data.thumbnail);
               assertEquals(0, unloadCount);
               assertEquals(1, loadCount);
-              return loader.load('http://foobar/another.raw')
+              return loader.load('http://foobar/another.raw');
             })
             .then(function(data) {
               // The NaCl module is not unloaded, as the next request came
@@ -85,7 +89,7 @@ function testUnloadingAfterTimeout(callback) {
               // unload the NaCl module.
               loader.simulateIdleTimeoutPassedForTests();
               assertEquals(1, unloadCount);
-              return loader.load('http://foobar/chocolate.raw')
+              return loader.load('http://foobar/chocolate.raw');
             })
             .then(function(data) {
               // Following requests should reload the NaCl module.
@@ -97,4 +101,4 @@ function testUnloadingAfterTimeout(callback) {
         unloadPromise
       ]),
       callback);
-};
+}

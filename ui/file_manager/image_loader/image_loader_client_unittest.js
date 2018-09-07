@@ -4,19 +4,19 @@
 
 'use strict';
 
-var chrome = {
-  metricsPrivate: {
-    MetricTypeType: {
-      HISTOGRAM_LOG: 'histogram-log',
-      HISTOGRAM_LINEAR: 'histogram-linear'
-    },
+/** @suppress {const|checkTypes} */
+function setUp() {
+  chrome.metricsPrivate = {
+    MetricTypeType:
+        {HISTOGRAM_LOG: 'histogram-log', HISTOGRAM_LINEAR: 'histogram-linear'},
     recordPercentage: function() {},
     recordValue: function() {}
-  },
-  i18n: {
-    getMessage: function() {}
-  }
-};
+  };
+
+  chrome.i18n = {
+    getMessage: function() {},
+  };
+}
 
 /**
  * Lets the client to load URL and returns the local cache (not caches in the
@@ -30,6 +30,7 @@ var chrome = {
 function loadAndCheckCacheUsed(client, url, options) {
   var cacheUsed = true;
 
+  /** @suppress {accessControls} */
   ImageLoaderClient.sendMessage_ = function(message, callback) {
     cacheUsed = false;
     if (callback)
