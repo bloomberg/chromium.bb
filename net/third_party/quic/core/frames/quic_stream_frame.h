@@ -29,9 +29,14 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                                       const QuicStreamFrame& s);
 
-  QuicStreamId stream_id;
+  // The union in QuicFrame requires the QuicStreamFrame |type| field to be the
+  // first field in the frame.
+  QuicFrameType type;
+
+  // QuicStreamFrame fields.
   bool fin;
   QuicPacketLength data_length;
+  QuicStreamId stream_id;
   const char* data_buffer;  // Not owned.
   QuicStreamOffset offset;  // Location of this data in the stream.
 

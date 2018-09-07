@@ -912,8 +912,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
     }
     reset.SetStringPiece(kCADR, serialized_address);
   }
-  const QuicData& reset_serialized =
-      reset.GetSerialized(Perspective::IS_SERVER);
+  const QuicData& reset_serialized = reset.GetSerialized();
 
   size_t len =
       kPublicFlagsSize + PACKET_8BYTE_CONNECTION_ID + reset_serialized.length();
@@ -1359,7 +1358,7 @@ bool QuicFramer::ProcessPublicResetPacket(QuicDataReader* reader,
   QuicPublicResetPacket packet(header.destination_connection_id);
 
   std::unique_ptr<CryptoHandshakeMessage> reset(
-      CryptoFramer::ParseMessage(reader->ReadRemainingPayload(), perspective_));
+      CryptoFramer::ParseMessage(reader->ReadRemainingPayload()));
   if (!reset.get()) {
     set_detailed_error("Unable to read reset message.");
     return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);

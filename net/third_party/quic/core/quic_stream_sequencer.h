@@ -97,6 +97,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // Number of bytes has been consumed.
   QuicStreamOffset NumBytesConsumed() const;
 
+  QuicStreamOffset close_offset() const { return close_offset_; }
+
   int num_frames_received() const { return num_frames_received_; }
 
   int num_duplicate_frames_received() const {
@@ -154,6 +156,12 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // If false, only call OnDataAvailable() when it becomes newly unblocked.
   // Otherwise, call OnDataAvailable() when number of readable bytes changes.
   bool level_triggered_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_stop_reading_when_level_triggered.  When true,
+  // the sequencer will discard incoming data (but not FIN bits) after
+  // StopReading is called, even in level_triggered_ mode.
+  const bool stop_reading_when_level_triggered_;
 };
 
 }  // namespace quic

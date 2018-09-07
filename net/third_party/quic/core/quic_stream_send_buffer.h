@@ -119,6 +119,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
     return bytes_acked_;
   }
 
+  const QuicIntervalSet<QuicStreamOffset>& pending_retransmissions() const {
+    return pending_retransmissions_;
+  }
+
  private:
   friend class test::QuicStreamSendBufferPeer;
   friend class test::QuicStreamPeer;

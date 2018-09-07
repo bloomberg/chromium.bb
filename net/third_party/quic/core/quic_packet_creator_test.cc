@@ -955,8 +955,7 @@ TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
   message.set_minimum_size(kMaxPacketSize);
   CryptoFramer framer;
   std::unique_ptr<QuicData> message_data;
-  message_data.reset(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_CLIENT));
+  message_data.reset(framer.ConstructHandshakeMessage(message));
 
   struct iovec iov;
   MakeIOVector(QuicStringPiece(message_data->data(), message_data->length()),

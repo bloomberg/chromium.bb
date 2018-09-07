@@ -46,6 +46,25 @@ inline bool HasCryptoHandshake(const QuicTransmissionInfo& transmission_info) {
   return transmission_info.has_crypto_handshake;
 }
 
+// Returns true if retransmissions the specified type leave the data in flight.
+inline bool RetransmissionLeavesBytesInFlight(
+    TransmissionType transmission_type) {
+  // Both TLP and the new RTO leave the packets in flight and let the loss
+  // detection decide if packets are lost.
+  return transmission_type == TLP_RETRANSMISSION ||
+         transmission_type == PROBING_RETRANSMISSION ||
+         transmission_type == RTO_RETRANSMISSION;
+}
+
+// Returns true of retransmissions of the specified type should retransmit
+// the frames directly (as opposed to resulting in a loss notification).
+inline bool ShouldForceRetransmission(TransmissionType transmission_type) {
+  return transmission_type == HANDSHAKE_RETRANSMISSION ||
+         transmission_type == TLP_RETRANSMISSION ||
+         transmission_type == PROBING_RETRANSMISSION ||
+         transmission_type == RTO_RETRANSMISSION;
+}
+
 }  // namespace
 
 #define ENDPOINT \
@@ -226,6 +245,9 @@ void QuicSentPacketManager::AdjustNetworkParameters(QuicBandwidth bandwidth,
     SetInitialRtt(rtt);
   }
   send_algorithm_->AdjustNetworkParameters(bandwidth, rtt);
+  if (debug_delegate_ != nullptr) {
+    debug_delegate_->OnAdjustNetworkParameters(bandwidth, rtt);
+  }
 }
 
 void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
@@ -372,55 +394,55 @@ void QuicSentPacketManager::MarkForRetransmission(
   // Handshake packets should never be sent as probing retransmissions.
   DCHECK(!transmission_info->has_crypto_handshake ||
          transmission_type != PROBING_RETRANSMISSION);
-  // Both TLP and the new RTO leave the packets in flight and let the loss
-  // detection decide if packets are lost.
-  if (transmission_type != TLP_RETRANSMISSION &&
-      transmission_type != PROBING_RETRANSMISSION &&
-      transmission_type != RTO_RETRANSMISSION) {
+  if (!RetransmissionLeavesBytesInFlight(transmission_type)) {
     unacked_packets_.RemoveFromInFlight(packet_number);
   }
-  if (session_decides_what_to_write()) {
-    if (transmission_type == HANDSHAKE_RETRANSMISSION ||
-        transmission_type == TLP_RETRANSMISSION ||
-        transmission_type == PROBING_RETRANSMISSION ||
-        transmission_type == RTO_RETRANSMISSION) {
-      // TODO(fayang): Consider to make RTO and PROBING retransmission
-      // strategies be configurable by applications. Today, TLP, RTO and PROBING
-      // retransmissions are handled similarly, i.e., always retranmist the
-      // oldest outstanding data. This is not ideal in general because different
-      // applications may want different strategies. For example, some
-      // applications may want to use higher priority stream data for bandwidth
-      // probing, and some applications want to consider RTO is an indication of
-      // loss, etc.
-      unacked_packets_.RetransmitFrames(*transmission_info, transmission_type);
-    } else {
-      unacked_packets_.NotifyFramesLost(*transmission_info, transmission_type);
-      if (unacked_packets_.fix_is_useful_for_retransmission()) {
-        if (transmission_type == LOSS_RETRANSMISSION) {
-          // Record the first packet sent after loss, which allows to wait 1
-          // more RTT before giving up on this lost packet.
-          transmission_info->retransmission =
-              unacked_packets_.largest_sent_packet() + 1;
-        } else {
-          // Clear the recorded first packet sent after loss when version or
-          // encryption changes.
-          transmission_info->retransmission = 0;
-        }
-      }
+
+  if (!session_decides_what_to_write()) {
+    if (!QuicContainsKey(pending_retransmissions_, packet_number)) {
+      pending_retransmissions_[packet_number] = transmission_type;
     }
-    // Update packet state according to transmission type.
-    transmission_info->state =
-        QuicUtils::RetransmissionTypeToPacketState(transmission_type);
-
-    return;
-  }
-  // TODO(ianswett): Currently the RTO can fire while there are pending NACK
-  // retransmissions for the same data, which is not ideal.
-  if (QuicContainsKey(pending_retransmissions_, packet_number)) {
     return;
   }
 
-  pending_retransmissions_[packet_number] = transmission_type;
+  HandleRetransmission(transmission_type, transmission_info);
+
+  // Update packet state according to transmission type.
+  transmission_info->state =
+      QuicUtils::RetransmissionTypeToPacketState(transmission_type);
+}
+
+void QuicSentPacketManager::HandleRetransmission(
+    TransmissionType transmission_type,
+    QuicTransmissionInfo* transmission_info) {
+  if (ShouldForceRetransmission(transmission_type)) {
+    // TODO(fayang): Consider to make RTO and PROBING retransmission
+    // strategies be configurable by applications. Today, TLP, RTO and PROBING
+    // retransmissions are handled similarly, i.e., always retranmist the
+    // oldest outstanding data. This is not ideal in general because different
+    // applications may want different strategies. For example, some
+    // applications may want to use higher priority stream data for bandwidth
+    // probing, and some applications want to consider RTO is an indication of
+    // loss, etc.
+    unacked_packets_.RetransmitFrames(*transmission_info, transmission_type);
+    return;
+  }
+
+  unacked_packets_.NotifyFramesLost(*transmission_info, transmission_type);
+  if (!unacked_packets_.fix_is_useful_for_retransmission()) {
+    return;
+  }
+
+  if (transmission_type == LOSS_RETRANSMISSION) {
+    // Record the first packet sent after loss, which allows to wait 1
+    // more RTT before giving up on this lost packet.
+    transmission_info->retransmission =
+        unacked_packets_.largest_sent_packet() + 1;
+  } else {
+    // Clear the recorded first packet sent after loss when version or
+    // encryption changes.
+    transmission_info->retransmission = 0;
+  }
 }
 
 void QuicSentPacketManager::RecordOneSpuriousRetransmission(
@@ -1104,6 +1126,9 @@ void QuicSentPacketManager::OnApplicationLimited() {
     pacing_sender_.OnApplicationLimited();
   }
   send_algorithm_->OnApplicationLimited(unacked_packets_.bytes_in_flight());
+  if (debug_delegate_ != nullptr) {
+    debug_delegate_->OnApplicationLimited();
+  }
 }
 
 QuicTime QuicSentPacketManager::GetNextReleaseTime() const {

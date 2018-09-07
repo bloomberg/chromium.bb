@@ -14,6 +14,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -29,7 +30,9 @@ QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream)
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
       ignore_read_data_(false),
-      level_triggered_(false) {}
+      level_triggered_(false),
+      stop_reading_when_level_triggered_(
+          GetQuicReloadableFlag(quic_stop_reading_when_level_triggered)) {}
 
 QuicStreamSequencer::~QuicStreamSequencer() {}
 
@@ -75,7 +78,13 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     if (buffered_frames_.ReadableBytes() > previous_readable_bytes) {
       // Readable bytes has changed, let stream decide if to inform application
       // or not.
-      stream_->OnDataAvailable();
+      if (stop_reading_when_level_triggered_ && ignore_read_data_) {
+        QUIC_FLAG_COUNT(
+            quic_reloadable_flag_quic_stop_reading_when_level_triggered);
+        FlushBufferedFrames();
+      } else {
+        stream_->OnDataAvailable();
+      }
     }
     return;
   }

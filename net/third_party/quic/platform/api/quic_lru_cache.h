@@ -16,11 +16,11 @@ namespace quic {
 // Value* returned by Lookup() can be invalid if the entry is evicted by other
 // threads.
 template <class K, class V>
-class QuicLRUCache {
+class QuicLRUCacheOld {
  public:
-  explicit QuicLRUCache(int64_t total_units) : impl_(total_units) {}
-  QuicLRUCache(const QuicLRUCache&) = delete;
-  QuicLRUCache& operator=(const QuicLRUCache&) = delete;
+  explicit QuicLRUCacheOld(int64_t total_units) : impl_(total_units) {}
+  QuicLRUCacheOld(const QuicLRUCacheOld&) = delete;
+  QuicLRUCacheOld& operator=(const QuicLRUCacheOld&) = delete;
 
   // Inserts one unit of |key|, |value| pair to the cache. Cache takes ownership
   // of inserted |value|.

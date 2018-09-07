@@ -364,6 +364,16 @@ void QuicSpdySession::OnStreamHeaderList(QuicStreamId stream_id,
                                          bool fin,
                                          size_t frame_len,
                                          const QuicHeaderList& header_list) {
+  if (GetQuicRestartFlag(quic_check_stream_nonstatic_on_header_list)) {
+    QUIC_FLAG_COUNT(
+        quic_restart_flag_quic_check_stream_nonstatic_on_header_list);
+    if (QuicContainsKey(static_streams(), stream_id)) {
+      connection()->CloseConnection(
+          QUIC_INVALID_HEADERS_STREAM_DATA, "stream is static",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      return;
+    }
+  }
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
   if (stream == nullptr) {
     // The stream no longer exists, but trailing headers may contain the final

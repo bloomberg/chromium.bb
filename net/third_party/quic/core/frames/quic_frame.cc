@@ -17,7 +17,7 @@ QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
     : type(PADDING_FRAME), padding_frame(padding_frame) {}
 
 QuicFrame::QuicFrame(QuicStreamFrame stream_frame)
-    : type(STREAM_FRAME), stream_frame(stream_frame) {}
+    : stream_frame(stream_frame) {}
 
 QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
 

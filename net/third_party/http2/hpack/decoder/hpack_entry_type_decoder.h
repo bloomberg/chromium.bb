@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
-#include "net/third_party/http2/hpack/decoder/hpack_varint_decoder.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
+#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 

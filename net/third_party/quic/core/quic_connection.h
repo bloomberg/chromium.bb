@@ -738,6 +738,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   EncryptionLevel encryption_level() const { return encryption_level_; }
+  EncryptionLevel last_decrypted_level() const {
+    return last_decrypted_packet_level_;
+  }
 
   const QuicSocketAddress& last_packet_source_address() const {
     return last_packet_source_address_;
@@ -1104,10 +1107,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool ack_queued_;
   // How many retransmittable packets have arrived without sending an ack.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
-  // Whether there were missing packets in the last sent ack.
-  // TODO(ianswett): Deprecate with
-  // quic_reloadable_flag_quic_ack_reordered_packets.
-  bool last_ack_had_missing_packets_;
   // How many consecutive packets have arrived without sending an ack.
   QuicPacketCount num_packets_received_since_last_ack_sent_;
   // Indicates how many consecutive times an ack has arrived which indicates
@@ -1297,12 +1296,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
-
-  // Latched value of quic_reloadable_flag_quic_ack_reordered_packets.
-  const bool ack_reordered_packets_;
-
-  // Latched value of quic_reloadable_flag_quic_retransmissions_app_limited.
-  const bool retransmissions_app_limited_;
 
   // Latched value of
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update.

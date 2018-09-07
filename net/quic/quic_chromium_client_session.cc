@@ -1464,10 +1464,9 @@ void QuicChromiumClientSession::OnCryptoHandshakeMessageReceived(
     const quic::CryptoHandshakeMessage& message) {
   logger_->OnCryptoHandshakeMessageReceived(message);
   if (message.tag() == quic::kREJ || message.tag() == quic::kSREJ) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Net.QuicSession.RejectLength",
-        message.GetSerialized(quic::Perspective::IS_CLIENT).length(), 1000,
-        10000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.RejectLength",
+                                message.GetSerialized().length(), 1000, 10000,
+                                50);
     quic::QuicStringPiece proof;
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.RejectHasProof",
                           message.GetStringPiece(quic::kPROF, &proof));

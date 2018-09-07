@@ -26,7 +26,7 @@ class Curve25519KeyExchangeTest : public QuicTest {
     bool ok_ = false;
   };
 
-  // Key exchange callback which sets the result into the specificed
+  // Key exchange callback which sets the result into the specified
   // TestCallbackResult.
   class TestCallback : public KeyExchange::Callback {
    public:

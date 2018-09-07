@@ -116,7 +116,7 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
       QuicTextUtils::StartsWith(data, "CHLO")) {
     CryptoFramer crypto_framer;
     crypto_framer.set_visitor(this);
-    if (!crypto_framer.ProcessInput(data, Perspective::IS_SERVER)) {
+    if (!crypto_framer.ProcessInput(data)) {
       return false;
     }
     // Interrogate the crypto framer and see if there are any

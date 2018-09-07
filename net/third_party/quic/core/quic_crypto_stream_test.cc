@@ -77,15 +77,14 @@ class QuicCryptoStreamTest : public QuicTest {
     message_.set_tag(kSHLO);
     message_.SetStringPiece(1, "abc");
     message_.SetStringPiece(2, "def");
-    ConstructHandshakeMessage(Perspective::IS_SERVER);
+    ConstructHandshakeMessage();
   }
   QuicCryptoStreamTest(const QuicCryptoStreamTest&) = delete;
   QuicCryptoStreamTest& operator=(const QuicCryptoStreamTest&) = delete;
 
-  void ConstructHandshakeMessage(Perspective perspective) {
+  void ConstructHandshakeMessage() {
     CryptoFramer framer;
-    message_data_.reset(
-        framer.ConstructHandshakeMessage(message_, perspective));
+    message_data_.reset(framer.ConstructHandshakeMessage(message_));
   }
 
  protected:

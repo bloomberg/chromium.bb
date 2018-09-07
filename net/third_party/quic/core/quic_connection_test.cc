@@ -5101,9 +5101,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
     }
     EXPECT_FALSE(writer_->ack_frames().empty());
     EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-    if (!GetQuicReloadableFlag(quic_ack_reordered_packets)) {
-      break;
-    }
   }
 }
 
@@ -6599,8 +6596,7 @@ TEST_P(QuicConnectionTest, ServerReceivesChloOnNonCryptoStream) {
   CryptoHandshakeMessage message;
   CryptoFramer framer;
   message.set_tag(kCHLO);
-  std::unique_ptr<QuicData> data(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_CLIENT));
+  std::unique_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
   frame1_.stream_id = 10;
   frame1_.data_buffer = data->data();
   frame1_.data_length = data->length();
@@ -6616,8 +6612,7 @@ TEST_P(QuicConnectionTest, ClientReceivesRejOnNonCryptoStream) {
   CryptoHandshakeMessage message;
   CryptoFramer framer;
   message.set_tag(kREJ);
-  std::unique_ptr<QuicData> data(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_SERVER));
+  std::unique_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
   frame1_.stream_id = 10;
   frame1_.data_buffer = data->data();
   frame1_.data_length = data->length();
@@ -6683,9 +6678,6 @@ TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
 
   connection_.SendStreamData3();
 
-  if (!GetQuicReloadableFlag(quic_retransmissions_app_limited)) {
-    return;
-  }
   // Now unblock the writer, become congestion control blocked,
   // and ensure we become app-limited after writing.
   writer_->SetWritable();
@@ -6838,6 +6830,8 @@ TEST_P(QuicConnectionTest, SendProbingRetransmissions) {
         EXPECT_EQ(3 * (sent_count % 3), writer_->stream_frames()[0]->offset);
         sent_count++;
       }));
+  EXPECT_CALL(*send_algorithm_, ShouldSendProbingPacket())
+      .WillRepeatedly(Return(true));
 
   connection_.SendProbingRetransmissions();
 
@@ -6856,6 +6850,8 @@ TEST_P(QuicConnectionTest,
   MockQuicConnectionDebugVisitor debug_visitor;
   connection_.set_debug_visitor(&debug_visitor);
   EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _)).Times(0);
+  EXPECT_CALL(*send_algorithm_, ShouldSendProbingPacket())
+      .WillRepeatedly(Return(true));
 
   connection_.SendProbingRetransmissions();
 }

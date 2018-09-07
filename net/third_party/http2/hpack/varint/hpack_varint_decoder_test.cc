@@ -2,26 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/http2/hpack/decoder/hpack_varint_decoder.h"
+#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 
 // Tests of HpackVarintDecoder.
 
 #include <stddef.h>
 
-#include <ios>
 #include <iterator>
-#include <ostream>
 #include <set>
-#include <sstream>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,9 +38,8 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
  protected:
   DecodeStatus StartDecoding(DecodeBuffer* b) override {
     CHECK_LT(0u, b->Remaining());
-    CHECK_NE(0, prefix_mask_);
     uint8_t prefix = b->DecodeUInt8();
-    return decoder_.Start(prefix, prefix_mask_, b);
+    return decoder_.Start(prefix, prefix_length_, b);
   }
 
   DecodeStatus ResumeDecoding(DecodeBuffer* b) override {
@@ -94,10 +87,8 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
     buffer_ = bb.buffer();
     ASSERT_LT(0u, buffer_.size());
 
-    // Note: setting member variable prefix_mask_ here, which will be read
-    // in StartDecoding above.
-    prefix_mask_ = (1 << prefix_length_) - 1;
-    ASSERT_EQ(buffer_[0], buffer_[0] & prefix_mask_);
+    const uint8_t prefix_mask = (1 << prefix_length_) - 1;
+    ASSERT_EQ(buffer_[0], buffer_[0] & prefix_mask);
   }
 
   void Encode(uint32_t value, uint8_t prefix_length) {
@@ -105,7 +96,8 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
     // Add some random bits to the prefix (the first byte) above the mask.
     uint8_t prefix = buffer_[0];
     buffer_[0] = prefix | (Random().Rand8() << prefix_length);
-    ASSERT_EQ(prefix, buffer_[0] & prefix_mask_);
+    const uint8_t prefix_mask = (1 << prefix_length_) - 1;
+    ASSERT_EQ(prefix, buffer_[0] & prefix_mask);
   }
 
   // This is really a test of HpackBlockBuilder, making sure that the input to
@@ -118,7 +110,8 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
                         size_t expected_bytes) {
     ASSERT_EQ(expected_bytes, buffer_.size());
     if (expected_bytes > 1) {
-      EXPECT_EQ(prefix_mask_, buffer_[0] & prefix_mask_);
+      const uint8_t prefix_mask = (1 << prefix_length_) - 1;
+      EXPECT_EQ(prefix_mask, buffer_[0] & prefix_mask);
       size_t last = expected_bytes - 1;
       for (size_t ndx = 1; ndx < last; ++ndx) {
         // Before the last extension byte, we expect the high-bit set.
@@ -145,8 +138,9 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
         EXPECT_EQ(0x00, byte & 0x80);
       }
     } else {
-      EXPECT_EQ(value, static_cast<uint32_t>(buffer_[0] & prefix_mask_));
-      EXPECT_LT(value, static_cast<uint32_t>(prefix_mask_));
+      const uint8_t prefix_mask = (1 << prefix_length_) - 1;
+      EXPECT_EQ(value, static_cast<uint32_t>(buffer_[0] & prefix_mask));
+      EXPECT_LT(value, prefix_mask);
     }
   }
 
@@ -157,11 +151,11 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
     const uint32_t minimum = *values.begin();
     const uint32_t maximum = *values.rbegin();
     for (const uint32_t value : values) {
-      Encode(value, prefix_length);  // Sets prefix_mask_ and buffer_
+      Encode(value, prefix_length);  // Sets prefix_buffer_
 
       std::stringstream ss;
       ss << "value=" << value << " (0x" << std::hex << value
-         << "), prefix_length=" << std::dec << prefix_length
+         << "), prefix_length=" << prefix_length
          << ", expected_bytes=" << expected_bytes << "\n"
          << Http2HexDump(buffer_);
       Http2String msg(ss.str());
@@ -235,7 +229,6 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
 
   HpackVarintDecoder decoder_;
   Http2String buffer_;
-  uint8_t prefix_mask_ = 0;
   uint8_t prefix_length_ = 0;
 };
 
@@ -280,17 +273,16 @@ TEST_F(HpackVarintDecoderTest, Encode) {
 TEST_F(HpackVarintDecoderTest, FromSpec1337) {
   DecodeBuffer b(Http2StringPiece("\x1f\x9a\x0a"));
   uint32_t prefix_length = 5;
-  uint32_t prefix_mask = (1 << prefix_length) - 1;
   uint8_t p = b.DecodeUInt8();
   EXPECT_EQ(1u, b.Offset());
-  EXPECT_EQ(DecodeStatus::kDecodeDone, decoder_.Start(p, prefix_mask, &b));
+  EXPECT_EQ(DecodeStatus::kDecodeDone, decoder_.Start(p, prefix_length, &b));
   EXPECT_EQ(3u, b.Offset());
   EXPECT_EQ(1337u, decoder_.value());
 
   EncodeNoRandom(1337, prefix_length);
   EXPECT_EQ(3u, buffer_.size());
   EXPECT_EQ('\x1f', buffer_[0]);
-  EXPECT_EQ('\x9a', buffer_[1]);
+  EXPECT_EQ('\x9A', buffer_[1]);
   EXPECT_EQ('\x0a', buffer_[2]);
 }
 
@@ -347,7 +339,6 @@ TEST_F(HpackVarintDecoderTest, ValidateFourExtensionBytes) {
 TEST_F(HpackVarintDecoderTest, ValueTooLarge) {
   const uint32_t expected_offset = HpackVarintDecoder::MaxExtensionBytes() + 1;
   for (prefix_length_ = 3; prefix_length_ <= 7; ++prefix_length_) {
-    prefix_mask_ = (1 << prefix_length_) - 1;
     uint64_t too_large = HiValueOfExtensionBytes(
         HpackVarintDecoder::MaxExtensionBytes() + 3, prefix_length_);
     HpackBlockBuilder bb;

@@ -57,39 +57,50 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
 
-  QuicFrameType type;
-
-  // TODO(wub): These frames can also be inlined without increasing the size of
-  // QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame, QuicWindowUpdateFrame,
-  // QuicBlockedFrame, QuicPathResponseFrame, QuicPathChallengeFrame and
-  // QuicStopSendingFrame.
   union {
-    // Inlined frames.
-    QuicPaddingFrame padding_frame;
-    QuicMtuDiscoveryFrame mtu_discovery_frame;
-    QuicPingFrame ping_frame;
-    QuicMaxStreamIdFrame max_stream_id_frame;
-    QuicStreamIdBlockedFrame stream_id_blocked_frame;
+    // Overlapping inlined frames have a |type| field at the same 0 offset as
+    // QuicFrame does below, allowing use of the remaining 7 bytes after offset
+    // for frame-type specific fields.
     QuicStreamFrame stream_frame;
+    struct {
+      QuicFrameType type;
 
-    // Out of line frames.
-    QuicAckFrame* ack_frame;
-    QuicStopWaitingFrame* stop_waiting_frame;
-    QuicRstStreamFrame* rst_stream_frame;
-    QuicConnectionCloseFrame* connection_close_frame;
-    QuicGoAwayFrame* goaway_frame;
-    QuicWindowUpdateFrame* window_update_frame;
-    QuicBlockedFrame* blocked_frame;
-    QuicApplicationCloseFrame* application_close_frame;
-    QuicNewConnectionIdFrame* new_connection_id_frame;
-    QuicPathResponseFrame* path_response_frame;
-    QuicPathChallengeFrame* path_challenge_frame;
-    QuicStopSendingFrame* stop_sending_frame;
+      // TODO(wub): These frames can also be inlined without increasing the size
+      // of QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame,
+      // QuicWindowUpdateFrame, QuicBlockedFrame, QuicPathResponseFrame,
+      // QuicPathChallengeFrame and QuicStopSendingFrame.
+      union {
+        // Inlined frames.
+        QuicPaddingFrame padding_frame;
+        QuicMtuDiscoveryFrame mtu_discovery_frame;
+        QuicPingFrame ping_frame;
+        QuicMaxStreamIdFrame max_stream_id_frame;
+        QuicStreamIdBlockedFrame stream_id_blocked_frame;
+
+        // Out of line frames.
+        QuicAckFrame* ack_frame;
+        QuicStopWaitingFrame* stop_waiting_frame;
+        QuicRstStreamFrame* rst_stream_frame;
+        QuicConnectionCloseFrame* connection_close_frame;
+        QuicGoAwayFrame* goaway_frame;
+        QuicWindowUpdateFrame* window_update_frame;
+        QuicBlockedFrame* blocked_frame;
+        QuicApplicationCloseFrame* application_close_frame;
+        QuicNewConnectionIdFrame* new_connection_id_frame;
+        QuicPathResponseFrame* path_response_frame;
+        QuicPathChallengeFrame* path_challenge_frame;
+        QuicStopSendingFrame* stop_sending_frame;
+      };
+    };
   };
 };
 // In QuicFrame, QuicFrameType consumes 8 bytes with padding.
-static_assert(sizeof(QuicFrame) <= 32,
-              "Frames larger than 24 bytes should be referenced by pointer.");
+static_assert(sizeof(QuicFrame) <= 24,
+              "Frames larger than 16 bytes should be referenced by pointer.");
+static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
+              "Offset of |type| must match in QuicFrame and QuicStreamFrame");
+static_assert(offsetof(QuicStreamFrame, type) == 0,
+              "Illegal stream frame layout");
 
 typedef std::vector<QuicFrame> QuicFrames;
 

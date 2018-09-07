@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "net/third_party/quic/core/crypto/proof_source.h"
+#include "net/third_party/quic/core/quic_lru_cache.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
-#include "net/third_party/quic/platform/api/quic_lru_cache.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
 namespace quic {

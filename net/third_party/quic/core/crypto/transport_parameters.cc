@@ -167,7 +167,7 @@ bool SerializeTransportParameters(const TransportParameters& in,
   CBB google_quic_params;
   if (in.google_quic_params) {
     const QuicData& serialized_google_quic_params =
-        in.google_quic_params->GetSerialized(in.perspective);
+        in.google_quic_params->GetSerialized();
     if (!CBB_add_u16(&params, kGoogleQuicParamId) ||
         !CBB_add_u16_length_prefixed(&params, &google_quic_params) ||
         !CBB_add_bytes(&google_quic_params,
@@ -290,8 +290,7 @@ bool ParseTransportParameters(const uint8_t* in,
         has_google_quic_params = true;
         QuicStringPiece serialized_params(
             reinterpret_cast<const char*>(CBS_data(&value)), CBS_len(&value));
-        out->google_quic_params =
-            CryptoFramer::ParseMessage(serialized_params, perspective);
+        out->google_quic_params = CryptoFramer::ParseMessage(serialized_params);
     }
   }
   if ((present_params & kRequiredParamsMask) != kRequiredParamsMask) {

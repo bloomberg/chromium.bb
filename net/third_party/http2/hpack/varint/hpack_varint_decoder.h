@@ -24,8 +24,10 @@
 // and 4 bytes would cover any desire to support large (but not ridiculously
 // large) header values.
 
-#ifndef NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_VARINT_DECODER_H_
-#define NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_VARINT_DECODER_H_
+#ifndef NET_THIRD_PARTY_HTTP2_HPACK_VARINT_HPACK_VARINT_DECODER_H_
+#define NET_THIRD_PARTY_HTTP2_HPACK_VARINT_HPACK_VARINT_DECODER_H_
+
+#include <cstdint>
 
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
@@ -47,18 +49,18 @@ namespace http2 {
 class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
  public:
   // |prefix_value| is the first byte of the encoded varint.
-  // |prefix_mask| is the mask of the valid bits, i.e. without the top 1 to 5
-  // high-bits set, as appropriate for the item being decoded; must be a
-  // contiguous sequence of set bits, starting with the low-order bits.
+  // |prefix_length| is number of bits in the first byte that are used for
+  // encoding the integer.  |db| is the rest of the buffer,  that is, not
+  // including the first byte.
   DecodeStatus Start(uint8_t prefix_value,
-                     uint8_t prefix_mask,
+                     uint8_t prefix_length,
                      DecodeBuffer* db);
 
   // The caller has already determined that the encoding requires multiple
-  // bytes, i.e. that the 3 to 7 low-order bits (the number determined by the
-  // prefix length, a value not passed into this function) of the first byte are
-  // are all 1. The caller passes in |prefix_mask|, which is 2^prefix_length-1.
-  DecodeStatus StartExtended(uint8_t prefix_mask, DecodeBuffer* db);
+  // bytes, i.e. that the 3 to 7 low-order bits (the number determined by
+  // |prefix_length|) of the first byte are are all 1.  |db| is the rest of the
+  // buffer,  that is, not including the first byte.
+  DecodeStatus StartExtended(uint8_t prefix_length, DecodeBuffer* db);
 
   // Resume decoding a variable length integer after an earlier
   // call to Start or StartExtended returned kDecodeInProgress.
@@ -77,9 +79,9 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   // For benchmarking, these methods ensure the decoder
   // is NOT inlined into the caller.
   DecodeStatus StartForTest(uint8_t prefix_value,
-                            uint8_t prefix_mask,
+                            uint8_t prefix_length,
                             DecodeBuffer* db);
-  DecodeStatus StartExtendedForTest(uint8_t prefix_mask, DecodeBuffer* db);
+  DecodeStatus StartExtendedForTest(uint8_t prefix_length, DecodeBuffer* db);
   DecodeStatus ResumeForTest(DecodeBuffer* db);
 
   static constexpr uint32_t MaxExtensionBytes() { return 5; }
@@ -107,12 +109,12 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
     return 7 * (MaxExtensionBytes() - 1);
   }
 
-  // These fields are initialized just to keep memory corruption detectors
-  // happy about reading them from DebugString().
+  // These fields are initialized just to keep ASAN happy about reading
+  // them from DebugString().
   uint32_t value_ = 0;
   uint32_t offset_ = 0;
 };
 
 }  // namespace http2
 
-#endif  // NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_VARINT_DECODER_H_
+#endif  // NET_THIRD_PARTY_HTTP2_HPACK_VARINT_HPACK_VARINT_DECODER_H_

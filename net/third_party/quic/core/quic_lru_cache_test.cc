@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quic/platform/api/quic_lru_cache.h"
+#include "net/third_party/quic/core/quic_lru_cache.h"
 
 #include "net/third_party/quic/platform/api/quic_test.h"
 
@@ -16,10 +16,12 @@ struct CachedItem {
   uint32_t value;
 };
 
-class QuicLRUCacheTest : public QuicTest {};
+class QuicLRUCacheTest : public QuicTestWithParam<bool> {};
 
-TEST_F(QuicLRUCacheTest, InsertAndLookup) {
-  QuicLRUCache<int, CachedItem> cache(5);
+INSTANTIATE_TEST_CASE_P(QuicLRUCacheTests, QuicLRUCacheTest, testing::Bool());
+
+TEST_P(QuicLRUCacheTest, InsertAndLookup) {
+  QuicLRUCache<int, CachedItem> cache(5, GetParam());
   EXPECT_EQ(nullptr, cache.Lookup(1));
   EXPECT_EQ(0u, cache.Size());
   EXPECT_EQ(5u, cache.MaxSize());
@@ -46,8 +48,8 @@ TEST_F(QuicLRUCacheTest, InsertAndLookup) {
   EXPECT_EQ(0u, cache.Size());
 }
 
-TEST_F(QuicLRUCacheTest, Eviction) {
-  QuicLRUCache<int, CachedItem> cache(3);
+TEST_P(QuicLRUCacheTest, Eviction) {
+  QuicLRUCache<int, CachedItem> cache(3, GetParam());
 
   for (size_t i = 1; i <= 4; ++i) {
     std::unique_ptr<CachedItem> item(new CachedItem(10 + i));
