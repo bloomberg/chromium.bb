@@ -226,6 +226,79 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
 }
 
 // static
+int32_t V4L2Device::VideoCodecProfileToV4L2H264Profile(
+    VideoCodecProfile profile) {
+  switch (profile) {
+    case H264PROFILE_BASELINE:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE;
+    case H264PROFILE_MAIN:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_MAIN;
+    case H264PROFILE_EXTENDED:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_EXTENDED;
+    case H264PROFILE_HIGH:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_HIGH;
+    case H264PROFILE_HIGH10PROFILE:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_HIGH_10;
+    case H264PROFILE_HIGH422PROFILE:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_HIGH_422;
+    case H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_HIGH_444_PREDICTIVE;
+    case H264PROFILE_SCALABLEBASELINE:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_SCALABLE_BASELINE;
+    case H264PROFILE_SCALABLEHIGH:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_SCALABLE_HIGH;
+    case H264PROFILE_STEREOHIGH:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_STEREO_HIGH;
+    case H264PROFILE_MULTIVIEWHIGH:
+      return V4L2_MPEG_VIDEO_H264_PROFILE_MULTIVIEW_HIGH;
+    default:
+      DVLOGF(1) << "Add more cases as needed";
+      return -1;
+  }
+}
+
+// static
+int32_t V4L2Device::H264LevelIdcToV4L2H264Level(uint8_t level_idc) {
+  switch (level_idc) {
+    case 10:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_1_0;
+    case 9:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_1B;
+    case 11:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_1_1;
+    case 12:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_1_2;
+    case 13:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_1_3;
+    case 20:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_2_0;
+    case 21:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_2_1;
+    case 22:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_2_2;
+    case 30:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_3_0;
+    case 31:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_3_1;
+    case 32:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_3_2;
+    case 40:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
+    case 41:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_4_1;
+    case 42:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_4_2;
+    case 50:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_5_0;
+    case 51:
+      return V4L2_MPEG_VIDEO_H264_LEVEL_5_1;
+    default:
+      DVLOGF(1) << "Unrecognized level_idc: " << static_cast<int>(level_idc);
+      return -1;
+  }
+}
+
+// static
 gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   gfx::Size coded_size;
   gfx::Size visible_size;

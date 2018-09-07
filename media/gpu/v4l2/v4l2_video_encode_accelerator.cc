@@ -244,10 +244,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       free_image_processor_output_buffers_.push_back(i);
   }
 
-  // TODO(johnylin): pass |config.h264_output_level| to InitControl() for
-  //                 updating the correlative V4L2_CID_MPEG_VIDEO_H264_LEVEL
-  //                 ctrl value. https://crbug.com/863327
-  if (!InitControls())
+  if (!InitControls(config))
     return false;
 
   if (!CreateOutputBuffers())
@@ -259,8 +256,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   }
 
   RequestEncodingParametersChange(
-      config.initial_bitrate,
-      config.initial_framerate.value_or(kDefaultFramerate));
+      config.initial_bitrate, config.initial_framerate.value_or(
+                                  VideoEncodeAccelerator::kDefaultFramerate));
 
   encoder_state_ = kInitialized;
 
@@ -1205,7 +1202,7 @@ bool V4L2VideoEncodeAccelerator::SetExtCtrls(
   return device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
 }
 
-bool V4L2VideoEncodeAccelerator::InitControls() {
+bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
   std::vector<struct v4l2_ext_control> ctrls;
   struct v4l2_ext_control ctrl;
 
@@ -1257,10 +1254,29 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
     ctrl.value = 51;
     ctrls.push_back(ctrl);
 
-    // Use H.264 level 4.0 to match the supported max resolution.
+    // Set H.264 profile.
+    int32_t profile_value =
+        V4L2Device::VideoCodecProfileToV4L2H264Profile(config.output_profile);
+    if (profile_value < 0) {
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
+    memset(&ctrl, 0, sizeof(ctrl));
+    ctrl.id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+    ctrl.value = profile_value;
+    ctrls.push_back(ctrl);
+
+    // Set H.264 output level from config. Use Level 4.0 as fallback default.
+    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(
+        config.h264_output_level.value_or(
+            VideoEncodeAccelerator::kDefaultH264Level));
+    if (level_value < 0) {
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
-    ctrl.value = V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
+    ctrl.value = level_value;
     ctrls.push_back(ctrl);
 
     // Ask not to put SPS and PPS into separate bitstream buffers.

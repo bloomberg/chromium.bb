@@ -92,7 +92,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   };
 
   enum {
-    kDefaultFramerate = 30,
     // These are rather subjectively tuned.
     kInputBufferCount = 2,
     kOutputBufferCount = 2,
@@ -195,8 +194,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(VideoCodecProfile output_profile);
 
-  // Initialize device controls with default values.
-  bool InitControls();
+  // Initialize device controls with |config| or default values.
+  bool InitControls(const Config& config);
 
   // Create the buffers we need.
   bool CreateInputBuffers();

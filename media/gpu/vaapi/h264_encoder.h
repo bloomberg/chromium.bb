@@ -95,10 +95,7 @@ class H264Encoder : public AcceleratedVideoEncoder {
   ~H264Encoder() override;
 
   // AcceleratedVideoEncoder implementation.
-  bool Initialize(const gfx::Size& visible_size,
-                  VideoCodecProfile profile,
-                  uint32_t initial_bitrate,
-                  uint32_t initial_framerate) override;
+  bool Initialize(const VideoEncodeAccelerator::Config& config) override;
   bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;
@@ -115,6 +112,10 @@ class H264Encoder : public AcceleratedVideoEncoder {
   void GeneratePackedSPS();
   void GeneratePackedPPS();
 
+  // Check if |bitrate| and |framerate| and current coded size are supported by
+  // current profile and level.
+  bool CheckConfigValidity(uint32_t bitrate, uint32_t framerate);
+
   // Current SPS, PPS and their packed versions. Packed versions are NALUs
   // in AnnexB format *without* emulation prevention three-byte sequences
   // (those are expected to be added by the client as needed).
@@ -128,6 +129,9 @@ class H264Encoder : public AcceleratedVideoEncoder {
 
   // H264 profile currently used.
   media::VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+
+  // H264 level currently used.
+  uint8_t level_ = 0;
 
   // Current visible and coded sizes in pixels.
   gfx::Size visible_size_;
