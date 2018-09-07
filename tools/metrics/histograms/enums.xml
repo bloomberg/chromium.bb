@@ -4725,6 +4725,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BooleanPrecededByJsScroll">
+  <obsolete>
+    Removed in 2018-09.
+  </obsolete>
   <int value="0" label="Scroll restoration would succeed"/>
   <int value="1" label="Scroll restoration would be prevented"/>
 </enum>

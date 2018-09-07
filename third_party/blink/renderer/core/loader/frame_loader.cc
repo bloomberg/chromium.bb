@@ -530,7 +530,6 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader) {
 
 void FrameLoader::ClearInitialScrollState() {
   document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
-  document_loader_->GetInitialScrollState().was_scrolled_by_js = false;
 }
 
 void FrameLoader::LoadInSameDocument(
@@ -1309,8 +1308,6 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     return;
 
   if (should_restore_scroll) {
-    ScrollOffset previous_offset = view->LayoutViewport()->GetScrollOffset();
-
     // TODO(pnoland): attempt to restore the anchor in more places than this.
     // Anchor-based restore should allow for earlier restoration.
     bool did_restore =
@@ -1323,17 +1320,6 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     if (!did_restore) {
       view->LayoutViewport()->SetScrollOffset(view_state->scroll_offset_,
                                               kProgrammaticScroll);
-    }
-
-    did_restore |=
-        (previous_offset != view->LayoutViewport()->GetScrollOffset());
-
-    // Measure how many successful scroll restoration may impacted if we allow
-    // using js scroll to prevent browser scroll restoration.
-    if (did_restore) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "Layout.ScrollRestoration.PrecededByJsScroll",
-          GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_js);
     }
   }
 

@@ -125,7 +125,6 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -543,12 +542,6 @@ void Element::ScrollIntoViewNoVisualUpdate(
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetDocument().Loader())
-    GetDocument().Loader()->GetInitialScrollState().was_scrolled_by_js = true;
-
   ScrollBehavior behavior = (options.behavior() == "smooth")
                                 ? kScrollBehaviorSmooth
                                 : kScrollBehaviorAuto;
@@ -576,12 +569,6 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
 
   if (!GetLayoutObject())
     return;
-
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetDocument().Loader())
-    GetDocument().Loader()->GetInitialScrollState().was_scrolled_by_js = true;
 
   LayoutRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
@@ -1191,11 +1178,6 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   if (!viewport)
     return;
 
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.  if (GetDocument().Loader())
-  GetDocument().Loader()->GetInitialScrollState().was_scrolled_by_js = true;
-
   float new_scaled_left =
       left * frame->PageZoomFactor() + viewport->GetScrollOffset().Width();
   float new_scaled_top =
@@ -1228,12 +1210,6 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
   ScrollableArea* viewport = frame->View()->LayoutViewport();
   if (!viewport)
     return;
-
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetDocument().Loader())
-    GetDocument().Loader()->GetInitialScrollState().was_scrolled_by_js = true;
 
   float scaled_left = viewport->GetScrollOffset().Width();
   float scaled_top = viewport->GetScrollOffset().Height();
