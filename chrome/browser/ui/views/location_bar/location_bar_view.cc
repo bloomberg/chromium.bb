@@ -595,8 +595,8 @@ void LocationBarView::Layout() {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
                                        0, edge_padding, internal_padding,
                                        keyword_hint_view_);
-    keyword_hint_view_->SetKeyword(keyword, GetOmniboxPopupView()->IsOpen(),
-                                   tint());
+    keyword_hint_view_->SetKeyword(
+        keyword, GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint()));
   }
 
   add_trailing_decoration(clear_all_button_);

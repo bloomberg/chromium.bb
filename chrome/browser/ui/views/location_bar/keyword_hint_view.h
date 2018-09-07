@@ -35,9 +35,7 @@ class KeywordHintView : public views::Button {
                   OmniboxTint tint);
   ~KeywordHintView() override;
 
-  void SetKeyword(const base::string16& keyword,
-                  bool popup_open,
-                  OmniboxTint tint);
+  void SetKeyword(const base::string16& keyword, SkColor background_color);
 
   // views::View:
   gfx::Insets GetInsets() const override;
