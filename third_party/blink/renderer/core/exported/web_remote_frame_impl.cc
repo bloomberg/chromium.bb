@@ -446,11 +446,6 @@ WebRect WebRemoteFrameImpl::GetCompositingRect() {
   return GetFrame()->View()->GetCompositingRect();
 }
 
-bool WebRemoteFrameImpl::OOPIFHasPointerEventsNone() const {
-  DCHECK(GetFrame()->DeprecatedLocalOwner());
-  return GetFrame()->DeprecatedLocalOwner()->HasPointerEventsNone();
-}
-
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client)
     : WebRemoteFrame(scope),

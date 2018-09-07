@@ -27,8 +27,6 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
     layer_ = std::move(layer);
   }
 
-  bool HasPointerEventsNone() override { return false; }
-
   SkBitmap* GetSadPageBitmap() override { return &sad_page_bitmap_; }
 
  private:

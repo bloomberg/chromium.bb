@@ -199,10 +199,6 @@ void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
   ToHTMLFrameOwnerElement(Owner())->SetNeedsCompositingUpdate();
 }
 
-void RemoteFrame::PointerEventsChanged() {
-  Client()->PointerEventsChanged();
-}
-
 void RemoteFrame::AdvanceFocus(WebFocusType type, LocalFrame* source) {
   Client()->AdvanceFocus(type, source);
 }
