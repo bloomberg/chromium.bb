@@ -125,7 +125,7 @@ Refer to README.md for content description and update process.
  <item id="gcm_registration" hash_code="61656965" type="0" content_hash_code="113670632" os_list="linux,windows" file_path="google_apis/gcm/engine/registration_request.cc"/>
  <item id="gcm_subscription" hash_code="56434025" type="0" content_hash_code="61632174" os_list="linux,windows" file_path="components/ntp_snippets/breaking_news/subscription_json_request.cc"/>
  <item id="gcm_unregistration" hash_code="119542033" type="0" content_hash_code="30144127" os_list="linux,windows" file_path="google_apis/gcm/engine/unregistration_request.cc"/>
- <item id="geo_language_provider" hash_code="52821843" type="1" second_id="96590038" content_hash_code="104675663" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="components/language/content/browser/geo_language_provider.cc"/>
+ <item id="geo_language_provider" hash_code="52821843" type="1" second_id="96590038" content_hash_code="65327456" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="components/language/content/browser/geo_language_provider.cc"/>
  <item id="google_photos_album_names_download" hash_code="65075134" type="0" content_hash_code="124531309" os_list="linux,windows" file_path="chrome/browser/search/background/ntp_background_service.cc"/>
  <item id="google_photos_metadata_download" hash_code="93441068" type="0" content_hash_code="48786223" os_list="linux,windows" file_path="chrome/browser/search/background/ntp_background_service.cc"/>
  <item id="google_url_tracker" hash_code="5492492" type="0" content_hash_code="54474899" os_list="linux,windows" file_path="components/google/core/browser/google_url_tracker.cc"/>
