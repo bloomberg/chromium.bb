@@ -1663,6 +1663,7 @@ crbug.com/855582 http/tests/devtools/sources/debugger-ui/last-execution-context.
 crbug.com/v8/5537 external/wpt/background-fetch/fetch.https.window.html [ Failure Pass ]
 crbug.com/v8/5537 http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Failure Pass ]
 crbug.com/v8/5537 http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ Failure Pass ]
+crbug.com/v8/5537 http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Failure Pass ]
 crbug.com/v8/5537 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/animationworklet-origin-trial-interfaces-worklet-scope.html [ Failure Pass ]
 crbug.com/v8/5537 virtual/service-worker-servicification/http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ Failure Pass ]
 crbug.com/v8/5537 virtual/stable/http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ Failure Pass ]
@@ -5123,7 +5124,8 @@ crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autosc
 
 # Failures on 32-bit Android when using GPU instead of software rendering
 crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
-crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
+# TODO(mathias): Uncomment this line once `globalThis` ships.
+# crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
 
 # Does not set correct realm as scope in current implementation
 crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Timeout Pass ]
