@@ -86,7 +86,8 @@ SecureChannelImpl::SecureChannelImpl(
       pending_connection_manager_(
           PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
               this /* delegate */,
-              ble_connection_manager_.get())),
+              ble_connection_manager_.get(),
+              bluetooth_adapter_)),
       active_connection_manager_(
           ActiveConnectionManagerImpl::Factory::Get()->BuildInstance(
               this /* delegate */)) {}

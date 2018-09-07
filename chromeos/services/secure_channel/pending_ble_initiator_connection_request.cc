@@ -4,6 +4,8 @@
 
 #include "chromeos/services/secure_channel/pending_ble_initiator_connection_request.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -13,7 +15,9 @@ namespace chromeos {
 namespace secure_channel {
 
 namespace {
+
 const char kBleInitiatorReadableRequestTypeForLogging[] = "BLE Initiator";
+
 }  // namespace
 
 // The number of times to attempt to connect to a device without receiving any
@@ -60,20 +64,24 @@ std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
 PendingBleInitiatorConnectionRequest::Factory::BuildInstance(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionPriority connection_priority,
-    PendingConnectionRequestDelegate* delegate) {
+    PendingConnectionRequestDelegate* delegate,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   return base::WrapUnique(new PendingBleInitiatorConnectionRequest(
-      std::move(client_connection_parameters), connection_priority, delegate));
+      std::move(client_connection_parameters), connection_priority, delegate,
+      bluetooth_adapter));
 }
 
 PendingBleInitiatorConnectionRequest::PendingBleInitiatorConnectionRequest(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionPriority connection_priority,
-    PendingConnectionRequestDelegate* delegate)
-    : PendingConnectionRequestBase<BleInitiatorFailureType>(
+    PendingConnectionRequestDelegate* delegate,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
+    : PendingBleConnectionRequestBase<BleInitiatorFailureType>(
           std::move(client_connection_parameters),
           connection_priority,
           kBleInitiatorReadableRequestTypeForLogging,
-          delegate) {}
+          delegate,
+          std::move(bluetooth_adapter)) {}
 
 PendingBleInitiatorConnectionRequest::~PendingBleInitiatorConnectionRequest() =
     default;

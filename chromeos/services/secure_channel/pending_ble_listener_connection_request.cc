@@ -4,6 +4,8 @@
 
 #include "chromeos/services/secure_channel/pending_ble_listener_connection_request.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -43,20 +45,24 @@ std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
 PendingBleListenerConnectionRequest::Factory::BuildInstance(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionPriority connection_priority,
-    PendingConnectionRequestDelegate* delegate) {
+    PendingConnectionRequestDelegate* delegate,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
   return base::WrapUnique(new PendingBleListenerConnectionRequest(
-      std::move(client_connection_parameters), connection_priority, delegate));
+      std::move(client_connection_parameters), connection_priority, delegate,
+      bluetooth_adapter));
 }
 
 PendingBleListenerConnectionRequest::PendingBleListenerConnectionRequest(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionPriority connection_priority,
-    PendingConnectionRequestDelegate* delegate)
-    : PendingConnectionRequestBase<BleListenerFailureType>(
+    PendingConnectionRequestDelegate* delegate,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
+    : PendingBleConnectionRequestBase<BleListenerFailureType>(
           std::move(client_connection_parameters),
           connection_priority,
           kBleListenerReadableRequestTypeForLogging,
-          delegate) {}
+          delegate,
+          std::move(bluetooth_adapter)) {}
 
 PendingBleListenerConnectionRequest::~PendingBleListenerConnectionRequest() =
     default;

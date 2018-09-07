@@ -43,16 +43,19 @@ PendingConnectionManagerImpl::Factory::~Factory() = default;
 std::unique_ptr<PendingConnectionManager>
 PendingConnectionManagerImpl::Factory::BuildInstance(
     Delegate* delegate,
-    BleConnectionManager* ble_connection_manager) {
-  return base::WrapUnique(
-      new PendingConnectionManagerImpl(delegate, ble_connection_manager));
+    BleConnectionManager* ble_connection_manager,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
+  return base::WrapUnique(new PendingConnectionManagerImpl(
+      delegate, ble_connection_manager, bluetooth_adapter));
 }
 
 PendingConnectionManagerImpl::PendingConnectionManagerImpl(
     Delegate* delegate,
-    BleConnectionManager* ble_connection_manager)
+    BleConnectionManager* ble_connection_manager,
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter)
     : PendingConnectionManager(delegate),
-      ble_connection_manager_(ble_connection_manager) {}
+      ble_connection_manager_(ble_connection_manager),
+      bluetooth_adapter_(bluetooth_adapter) {}
 
 PendingConnectionManagerImpl::~PendingConnectionManagerImpl() = default;
 
@@ -174,7 +177,7 @@ void PendingConnectionManagerImpl::HandleBleInitiatorRequest(
   bool success = connection_attempt->AddPendingConnectionRequest(
       PendingBleInitiatorConnectionRequest::Factory::Get()->BuildInstance(
           std::move(client_connection_parameters), connection_priority,
-          connection_attempt.get() /* delegate */));
+          connection_attempt.get() /* delegate */, bluetooth_adapter_));
 
   if (!success) {
     PA_LOG(ERROR) << "PendingConnectionManagerImpl::"
@@ -207,7 +210,7 @@ void PendingConnectionManagerImpl::HandleBleListenerRequest(
   bool success = connection_attempt->AddPendingConnectionRequest(
       PendingBleListenerConnectionRequest::Factory::Get()->BuildInstance(
           std::move(client_connection_parameters), connection_priority,
-          connection_attempt.get() /* delegate */));
+          connection_attempt.get() /* delegate */, bluetooth_adapter_));
 
   if (!success) {
     PA_LOG(ERROR) << "PendingConnectionManagerImpl::"
