@@ -10,7 +10,7 @@
 #include "ash/ws/window_service_delegate_impl.h"
 #include "base/lazy_instance.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/window_service.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"

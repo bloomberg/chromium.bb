@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/content/content_gpu_interface_provider.h"
+#include "content/browser/gpu_interface_provider.h"
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/ref_counted.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_client.h"
+#include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/browser/gpu_service_registry.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
-namespace ash {
+namespace content {
 
 // InterfaceBinderImpl handles the actual binding. The binding has to happen on
 // the IO thread.
-class ContentGpuInterfaceProvider::InterfaceBinderImpl
+class GpuInterfaceProvider::InterfaceBinderImpl
     : public base::RefCountedThreadSafe<InterfaceBinderImpl> {
  public:
   InterfaceBinderImpl() = default;
@@ -55,12 +56,12 @@ class ContentGpuInterfaceProvider::InterfaceBinderImpl
   DISALLOW_COPY_AND_ASSIGN(InterfaceBinderImpl);
 };
 
-ContentGpuInterfaceProvider::ContentGpuInterfaceProvider()
+GpuInterfaceProvider::GpuInterfaceProvider()
     : interface_binder_impl_(base::MakeRefCounted<InterfaceBinderImpl>()) {}
 
-ContentGpuInterfaceProvider::~ContentGpuInterfaceProvider() = default;
+GpuInterfaceProvider::~GpuInterfaceProvider() = default;
 
-void ContentGpuInterfaceProvider::RegisterGpuInterfaces(
+void GpuInterfaceProvider::RegisterGpuInterfaces(
     service_manager::BinderRegistry* registry) {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(
@@ -76,11 +77,18 @@ void ContentGpuInterfaceProvider::RegisterGpuInterfaces(
       gpu_task_runner);
 }
 
-void ContentGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
+#if defined(USE_OZONE)
+void GpuInterfaceProvider::RegisterOzoneGpuInterfaces(
     service_manager::BinderRegistry* registry) {
   // Registers the gpu-related interfaces needed by Ozone.
   // TODO(rjkroege): Adjust when Ozone/DRM/Mojo is complete.
   NOTIMPLEMENTED();
 }
+#endif
 
-}  // namespace ash
+// Factory.
+std::unique_ptr<ws::GpuInterfaceProvider> CreateGpuInterfaceProvider() {
+  return std::make_unique<GpuInterfaceProvider>();
+}
+
+}  // namespace content

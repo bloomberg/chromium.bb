@@ -24,6 +24,7 @@ service("test_ws") {
     "//services/ws:lib",
     "//services/ws/gpu_host",
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
     "//ui/aura",
     "//ui/aura:test_support",

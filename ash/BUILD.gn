@@ -1393,6 +1393,7 @@ component("ash") {
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/ws/gpu_host",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/cpp/input_devices:input_device_controller",
     "//services/ws/public/mojom/input_devices",
 
@@ -1467,8 +1468,6 @@ component("ash") {
 component("ash_with_content") {
   sources = [
     "content/ash_with_content_export.h",
-    "content/content_gpu_interface_provider.cc",
-    "content/content_gpu_interface_provider.h",
     "content/keyboard_overlay/keyboard_overlay_delegate.cc",
     "content/keyboard_overlay/keyboard_overlay_delegate.h",
     "content/keyboard_overlay/keyboard_overlay_view.cc",

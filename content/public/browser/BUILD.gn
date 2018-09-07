@@ -100,7 +100,6 @@ jumbo_source_set("browser_sources") {
     "color_chooser.h",
     "content_browser_client.cc",
     "content_browser_client.h",
-    "context_factory.h",
     "cookie_store_factory.h",
     "delegate_to_browser_gpu_service_accelerator_factory.h",
     "desktop_capture.cc",
@@ -392,9 +391,16 @@ jumbo_source_set("browser_sources") {
     deps += [ "//ui/android" ]
   }
 
+  if (use_aura || is_mac) {
+    sources += [ "context_factory.h" ]
+  }
+
   if (use_aura) {
-    sources -= [ "context_factory.h" ]
-    deps += [ "//ui/aura" ]
+    sources += [ "gpu_interface_provider_factory.h" ]
+    deps += [
+      "//services/ws/public/cpp/host",
+      "//ui/aura",
+    ]
   }
 
   if (!is_android) {

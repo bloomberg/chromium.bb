@@ -2,38 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CONTENT_CONTENT_GPU_INTERFACE_PROVIDER_H_
-#define ASH_CONTENT_CONTENT_GPU_INTERFACE_PROVIDER_H_
+#ifndef CONTENT_BROWSER_GPU_INTERFACE_PROVIDER_H_
+#define CONTENT_BROWSER_GPU_INTERFACE_PROVIDER_H_
 
-#include "ash/content/ash_with_content_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "content/common/content_export.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 
-namespace ash {
+namespace content {
 
 // An implementation of GpuInterfaceProvider that forwards to the Gpu
 // implementation in content.
-class ASH_WITH_CONTENT_EXPORT ContentGpuInterfaceProvider
-    : public ws::GpuInterfaceProvider {
+class CONTENT_EXPORT GpuInterfaceProvider : public ws::GpuInterfaceProvider {
  public:
-  ContentGpuInterfaceProvider();
-  ~ContentGpuInterfaceProvider() override;
+  GpuInterfaceProvider();
+  ~GpuInterfaceProvider() override;
 
   // ws::GpuInterfaceProvider:
   void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
+#if defined(USE_OZONE)
   void RegisterOzoneGpuInterfaces(
       service_manager::BinderRegistry* registry) override;
+#endif
 
  private:
   class InterfaceBinderImpl;
 
   scoped_refptr<InterfaceBinderImpl> interface_binder_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentGpuInterfaceProvider);
+  DISALLOW_COPY_AND_ASSIGN(GpuInterfaceProvider);
 };
 
-}  // namespace ash
+}  // namespace content
 
-#endif  // ASH_CONTENT_CONTENT_GPU_INTERFACE_PROVIDER_H_
+#endif  // CONTENT_BROWSER_GPU_INTERFACE_PROVIDER_H_

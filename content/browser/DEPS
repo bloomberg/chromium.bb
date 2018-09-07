@@ -2,6 +2,7 @@ include_rules = [
   # Allow inclusion of specific components that we depend on.
   # See comment in content/DEPS for which components are allowed.
   "+components/discardable_memory/common",
+  "+components/discardable_memory/public",
   "+components/discardable_memory/service",
   "+components/download/database",
   "+components/download/public/common",
