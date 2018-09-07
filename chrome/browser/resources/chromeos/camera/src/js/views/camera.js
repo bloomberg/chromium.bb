@@ -249,16 +249,14 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.updateControls_ = function() {
-  // Update the shutter's label before enabling or disabling it.
   var [capturing, taking] = [this.capturing, this.taking];
-  this.updateShutterLabel_();
   this.shutterButton_.disabled = !capturing;
   this.options_.updateControls(capturing, taking);
   this.galleryButton_.disabled = !capturing || taking;
 };
 
 /**
- * Updates the shutter button's label.
+ * Updates the shutter button's label for taking/ticks state changes.
  * @private
  */
 camera.views.Camera.prototype.updateShutterLabel_ = function() {
@@ -266,7 +264,8 @@ camera.views.Camera.prototype.updateShutterLabel_ = function() {
   if (this.recordMode) {
     label = this.taking ? 'recordVideoStopButton' : 'recordVideoStartButton';
   } else {
-    label = this.taking ? 'takePhotoCancelButton' : 'takePhotoButton';
+    label = (this.taking && this.ticks_) ?
+        'takePhotoCancelButton' : 'takePhotoButton';
   }
   this.shutterButton_.setAttribute('i18n-label', label);
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
@@ -315,13 +314,11 @@ camera.views.Camera.prototype.showToastMessage_ = function(message, named) {
  */
 camera.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
+  this.ticks_ = this.options_.timerTicks();
+  this.updateShutterLabel_();
   this.updateControls_();
 
-  this.ticks_ = this.options_.timerTicks();
-  Promise.resolve(this.ticks_).finally(() => {
-    // The take once begun cannot be canceled after the timer ticks.
-    this.shutterButton_.disabled = true;
-  }).then(() => {
+  Promise.resolve(this.ticks_).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
     var delay = (this.recordMode && this.options_.playSound(
@@ -349,6 +346,7 @@ camera.views.Camera.prototype.beginTake_ = function() {
 camera.views.Camera.prototype.endTake_ = function() {
   if (this.ticks_) {
     this.ticks_.cancel();
+    this.ticks_ = null;
   }
   if (this.takeTimeout_) {
     clearTimeout(this.takeTimeout_);
@@ -359,18 +357,17 @@ camera.views.Camera.prototype.endTake_ = function() {
   }
 
   Promise.resolve(this.take_ || null).then(blob => {
-    if (blob == null) {
-      // There is no ongoing take.
-      return;
+    if (blob && !blob.handled) {
+      // Play a sound and save the result after a successful take.
+      blob.handled = true;
+      var recordMode = this.recordMode;
+      this.options_.playSound(recordMode ?
+          camera.views.camera.Options.Sound.RECORDEND :
+          camera.views.camera.Options.Sound.SHUTTER);
+      return this.model_.savePicture(blob, recordMode).catch(error => {
+        throw [error, 'errorMsgSaveFileFailed'];
+      });
     }
-    // Play a sound and save the result after a successful take.
-    var recordMode = this.recordMode;
-    this.options_.playSound(recordMode ?
-        camera.views.camera.Options.Sound.RECORDEND :
-        camera.views.camera.Options.Sound.SHUTTER);
-    return this.model_.savePicture(blob, recordMode).catch(error => {
-      throw [error, 'errorMsgSaveFileFailed'];
-    });
   }).catch(([error, toast]) => {
     console.error(error);
     this.showToastMessage_(toast, true);
@@ -378,6 +375,7 @@ camera.views.Camera.prototype.endTake_ = function() {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
     document.body.classList.remove('taking');
+    this.updateShutterLabel_();
     this.updateControls_();
   });
 };
@@ -419,8 +417,6 @@ camera.views.Camera.prototype.createRecordingBlob_ = function() {
     this.mediaRecorder_.start();
     this.options_.updateMicAudio();
     this.recordTime_.start();
-    // Re-enable the shutter button to stop recording.
-    this.shutterButton_.disabled = false;
   });
 };
 
