@@ -366,6 +366,18 @@ ShelfView::~ShelfView() {
 void ShelfView::Init() {
   model_->AddObserver(this);
 
+  // Add the background view behind the app list and back buttons first, so
+  // that other views will appear above it.
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    back_and_app_list_background_ = new views::View();
+    back_and_app_list_background_->SetBackground(
+        CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
+            kShelfControlPermanentHighlightBackground,
+            ShelfConstants::control_border_radius())));
+    ConfigureChildView(back_and_app_list_background_);
+    AddChildView(back_and_app_list_background_);
+  }
+
   const ShelfItems& items(model_->items());
   for (ShelfItems::const_iterator i = items.begin(); i != items.end(); ++i) {
     views::View* child = CreateViewForItem(*i);
@@ -1006,6 +1018,20 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     if (i == kAppListButtonIndex) {
       app_list_button_position = shelf_->PrimaryAxisValue(x, y);
       if (chromeos::switches::ShouldUseShelfNewUi()) {
+        // "Secondary" as in "orthogonal to the shelf primary axis".
+        const int control_secondary_padding =
+            (ShelfConstants::shelf_size() - kShelfControlSizeNewUi) / 2;
+        const int back_and_app_list_background_size =
+            kShelfControlSizeNewUi +
+            (IsTabletModeEnabled() ? kShelfControlSizeNewUi + 2 * button_spacing
+                                   : 0);
+        back_and_app_list_background_->SetBounds(
+            shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
+            shelf_->PrimaryAxisValue(control_secondary_padding, button_spacing),
+            shelf_->PrimaryAxisValue(back_and_app_list_background_size,
+                                     kShelfControlSizeNewUi),
+            shelf_->PrimaryAxisValue(kShelfControlSizeNewUi,
+                                     back_and_app_list_background_size));
         // In the new UI, a larger minimum padding after the app list button
         // is required: increment with the necessary extra amount.
         x += shelf_->PrimaryAxisValue(kAppListButtonMargin - button_spacing, 0);
@@ -1738,41 +1764,6 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
   if (IsShowingOverflowBubble())
     overflow_bubble_->Hide();
-}
-
-void ShelfView::OnPaint(gfx::Canvas* canvas) {
-  if (overflow_mode_)
-    return;
-
-  const int app_list_button_radius = ShelfConstants::app_list_button_radius();
-  cc::PaintFlags flags;
-  flags.setColor(shelf_item_background_color_);
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-
-  // Draws a round rect around the back button and app list button. This will
-  // just be a circle if the back button is hidden.
-  const gfx::PointF circle_center(
-      GetMirroredRect(GetAppListButton()->bounds()).origin() +
-      gfx::Vector2d(GetAppListButton()->GetCenterPoint().x(),
-                    GetAppListButton()->GetCenterPoint().y()));
-  if (GetBackButton()->layer()->opacity() <= 0.f) {
-    canvas->DrawCircle(circle_center, app_list_button_radius, flags);
-    return;
-  }
-
-  const int button_size = ShelfConstants::button_size();
-  const gfx::PointF back_center(
-      GetMirroredRect(GetBackButton()->bounds()).x() + button_size / 2,
-      GetBackButton()->bounds().y() + button_size / 2);
-  const gfx::RectF background_bounds(
-      std::min(back_center.x(), circle_center.x()) - app_list_button_radius,
-      back_center.y() - app_list_button_radius,
-      std::abs(circle_center.x() - back_center.x()) +
-          2 * app_list_button_radius,
-      2 * app_list_button_radius);
-
-  canvas->DrawRoundRect(background_bounds, app_list_button_radius, flags);
 }
 
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {

@@ -33,9 +33,8 @@ BackButton::BackButton() : views::ImageButton(nullptr) {
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 
-  const int shelf_size = ShelfConstants::shelf_size();
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
-  SetSize(gfx::Size(shelf_size, shelf_size));
+  SetSize(gfx::Size(kShelfControlSizeNewUi, kShelfControlSizeNewUi));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
