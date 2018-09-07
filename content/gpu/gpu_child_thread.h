@@ -50,7 +50,8 @@ class GpuChildThread : public ChildThreadImpl,
                        public viz::VizMainImpl::Delegate,
                        public base::MemoryCoordinatorClient {
  public:
-  GpuChildThread(std::unique_ptr<gpu::GpuInit> gpu_init,
+  GpuChildThread(base::RepeatingClosure quit_closure,
+                 std::unique_ptr<gpu::GpuInit> gpu_init,
                  viz::VizMainImpl::LogMessages deferred_messages);
 
   GpuChildThread(const InProcessChildThreadParams& params,
@@ -61,7 +62,8 @@ class GpuChildThread : public ChildThreadImpl,
   void Init(const base::Time& process_start_time);
 
  private:
-  GpuChildThread(const ChildThreadImpl::Options& options,
+  GpuChildThread(base::RepeatingClosure quit_closure,
+                 const ChildThreadImpl::Options& options,
                  std::unique_ptr<gpu::GpuInit> gpu_init);
 
   void CreateVizMainService(viz::mojom::VizMainAssociatedRequest request);
@@ -81,6 +83,7 @@ class GpuChildThread : public ChildThreadImpl,
   void OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) override;
   void PostCompositorThreadCreated(
       base::SingleThreadTaskRunner* task_runner) override;
+  void QuitMainMessageLoop() override;
 
   // ChildMemoryCoordinatorDelegate implementation.
   void OnTrimMemoryImmediately() override;

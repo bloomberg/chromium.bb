@@ -282,10 +282,10 @@ void VizMainImpl::ExitProcess() {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor
     // thread while the GPU thread is still running to avoid deadlock. Quit GPU
     // thread TaskRunner after cleanup on compositor thread is finished.
-    viz_compositor_thread_runner_->CleanupForShutdown(
-        base::BindOnce([]() { base::RunLoop::QuitCurrentDeprecated(); }));
+    viz_compositor_thread_runner_->CleanupForShutdown(base::BindOnce(
+        &Delegate::QuitMainMessageLoop, base::Unretained(delegate_)));
   } else {
-    base::RunLoop::QuitCurrentDeprecated();
+    delegate_->QuitMainMessageLoop();
   }
 }
 

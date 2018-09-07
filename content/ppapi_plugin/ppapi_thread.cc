@@ -94,8 +94,11 @@ namespace content {
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
-PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
-    : is_broker_(is_broker),
+PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
+                         const base::CommandLine& command_line,
+                         bool is_broker)
+    : ChildThreadImpl(std::move(quit_closure)),
+      is_broker_(is_broker),
       plugin_globals_(GetIOTaskRunner()),
       connect_instance_func_(nullptr),
       local_pp_module_(base::RandInt(0, std::numeric_limits<PP_Module>::max())),

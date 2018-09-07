@@ -679,7 +679,8 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder()
+    : ChildThreadImpl(base::DoNothing(),
+                      Options::Builder()
                           .InBrowserProcess(params)
                           .AutoStartServiceManagerConnection(false)
                           .ConnectToBrowser(true)
@@ -697,8 +698,10 @@ RenderThreadImpl::RenderThreadImpl(
 
 // Multi-process mode.
 RenderThreadImpl::RenderThreadImpl(
+    base::RepeatingClosure quit_closure,
     std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder()
+    : ChildThreadImpl(std::move(quit_closure),
+                      Options::Builder()
                           .AutoStartServiceManagerConnection(false)
                           .ConnectToBrowser(true)
                           .IPCTaskRunner(scheduler->IPCTaskRunner())

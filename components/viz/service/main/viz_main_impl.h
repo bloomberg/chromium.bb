@@ -57,6 +57,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     virtual void OnGpuServiceConnection(GpuServiceImpl* gpu_service) = 0;
     virtual void PostCompositorThreadCreated(
         base::SingleThreadTaskRunner* task_runner) = 0;
+    virtual void QuitMainMessageLoop() = 0;
   };
 
   struct ExternalDependencies {

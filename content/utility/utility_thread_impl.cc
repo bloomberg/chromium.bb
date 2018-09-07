@@ -59,15 +59,17 @@ void CreateResourceUsageReporter(mojom::ResourceUsageReporterRequest request) {
 }
 #endif  // !defined(OS_ANDROID)
 
-UtilityThreadImpl::UtilityThreadImpl()
-    : ChildThreadImpl(ChildThreadImpl::Options::Builder()
+UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
+    : ChildThreadImpl(std::move(quit_closure),
+                      ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
                           .Build()) {
   Init();
 }
 
 UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
-    : ChildThreadImpl(ChildThreadImpl::Options::Builder()
+    : ChildThreadImpl(base::DoNothing(),
+                      ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
                           .InBrowserProcess(params)
                           .Build()) {

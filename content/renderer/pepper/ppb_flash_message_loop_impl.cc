@@ -16,7 +16,7 @@ namespace content {
 class PPB_Flash_MessageLoop_Impl::State
     : public base::RefCounted<PPB_Flash_MessageLoop_Impl::State> {
  public:
-  State() : result_(PP_OK), run_called_(false), quit_called_(false) {}
+  explicit State() : result_(PP_OK), run_called_(false) {}
 
   int32_t result() const { return result_; }
   void set_result(int32_t result) { result_ = result; }
@@ -24,8 +24,10 @@ class PPB_Flash_MessageLoop_Impl::State
   bool run_called() const { return run_called_; }
   void set_run_called() { run_called_ = true; }
 
-  bool quit_called() const { return quit_called_; }
-  void set_quit_called() { quit_called_ = true; }
+  void set_quit_closure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
+  }
+  base::OnceClosure& quit_closure() { return quit_closure_; }
 
   const RunFromHostProxyCallback& run_callback() const { return run_callback_; }
   void set_run_callback(const RunFromHostProxyCallback& run_callback) {
@@ -38,7 +40,7 @@ class PPB_Flash_MessageLoop_Impl::State
 
   int32_t result_;
   bool run_called_;
-  bool quit_called_;
+  base::OnceClosure quit_closure_;
   RunFromHostProxyCallback run_callback_;
 };
 
@@ -82,13 +84,16 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
   state_->set_run_called();
   state_->set_run_callback(callback);
 
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  state_->set_quit_closure(run_loop.QuitClosure());
+
   // It is possible that the PPB_Flash_MessageLoop_Impl object has been
   // destroyed when the nested run loop exits.
   scoped_refptr<State> state_protector(state_);
   {
     blink::WebView::WillEnterModalLoop();
 
-    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
+    run_loop.Run();
 
     blink::WebView::DidExitModalLoop();
   }
@@ -98,12 +103,11 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
 }
 
 void PPB_Flash_MessageLoop_Impl::InternalQuit(int32_t result) {
-  if (!state_->run_called() || state_->quit_called())
+  if (!state_->run_called() || state_->quit_closure().is_null())
     return;
-  state_->set_quit_called();
   state_->set_result(result);
 
-  base::RunLoop::QuitCurrentDeprecated();
+  std::move(state_->quit_closure()).Run();
 
   if (!state_->run_callback().is_null())
     state_->run_callback().Run(result);
