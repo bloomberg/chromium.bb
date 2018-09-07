@@ -84,7 +84,8 @@ Polymer({
       value: null,
     },
 
-    /** Whether a managed network is available in the visible network list.
+    /**
+     * Whether a managed network is available in the visible network list.
      * @private {boolean}
      */
     managedNetworkAvailable: {
@@ -256,7 +257,9 @@ Polymer({
       // iron-list makes the correct timing to focus an item in the list
       // very complicated, and the item may not exist, so just focus the
       // entire list for now.
-      element = this.$$('settings-internet-subpage').$$('#networkList');
+      let subPage = this.$$('settings-internet-subpage');
+      if (subPage)
+        element = subPage.$$('#networkList');
     } else if (this.detailType_) {
       element = this.$$('network-summary')
                     .$$(`#${this.detailType_}`)
@@ -287,10 +290,14 @@ Polymer({
    */
   onShowConfig_: function(event) {
     const properties = event.detail;
-    let configAndConnect = !properties.GUID;  // New configuration
-    this.showConfig_(
-        configAndConnect, properties.Type, properties.GUID,
-        CrOnc.getNetworkName(properties));
+    if (!properties.GUID) {
+      // New configuration
+      this.showConfig_(true /* configAndConnect */, properties.Type);
+    } else {
+      this.showConfig_(
+          false /* configAndConnect */, properties.Type, properties.GUID,
+          CrOnc.getNetworkName(properties));
+    }
   },
 
   /**
