@@ -13,16 +13,22 @@ namespace extensions {
 
 namespace {
 
-// If successful, returns GUID of the external request.
-std::unique_ptr<std::string> StartExternalRequestOnIO(
+// Invokes |ui_callback| with the GUID of the external request if successful, or
+// else nullptr.
+void StartExternalRequestOnIO(
     content::ServiceWorkerContext* context,
     int64_t version_id,
-    int event_id) {
+    int event_id,
+    base::OnceCallback<void(std::unique_ptr<std::string>)> ui_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   auto request_uuid = std::make_unique<std::string>(base::GenerateGUID());
   if (!context->StartingExternalRequest(version_id, *request_uuid))
-    return nullptr;
-  return request_uuid;
+    request_uuid = nullptr;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(ui_callback), std::move(request_uuid)));
 }
 
 void FinishExternalRequestOnIO(content::ServiceWorkerContext* context,
@@ -46,13 +52,14 @@ void EventAckData::IncrementInflightEvent(
     int event_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(lazyboy): |context| isn't safe to access on IO thread inside
-  // StartExternalRequestOnIO, fix this once https://crbug.com/875376 is fixed.
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&StartExternalRequestOnIO, context, version_id, event_id),
-      base::BindOnce(&EventAckData::DidStartExternalRequest,
-                     weak_factory_.GetWeakPtr(), render_process_id, event_id));
+  content::ServiceWorkerContext::RunTask(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      FROM_HERE, context,
+      base::BindOnce(&StartExternalRequestOnIO, context, version_id, event_id,
+                     base::BindOnce(&EventAckData::DidStartExternalRequest,
+                                    weak_factory_.GetWeakPtr(),
+                                    render_process_id, event_id)));
 }
 
 void EventAckData::DecrementInflightEvent(
@@ -73,10 +80,10 @@ void EventAckData::DecrementInflightEvent(
   std::string request_uuid = request_info_iter->second.first;
   unacked_events_.erase(request_info_iter);
 
-  // TODO(lazyboy): |context| isn't safe to access on IO thread inside
-  // FinishExternalRequestOnIO, fix this once https://crbug.com/875376 is fixed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  content::ServiceWorkerContext::RunTask(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      FROM_HERE, context,
       base::BindOnce(&FinishExternalRequestOnIO, context, version_id,
                      request_uuid, std::move(failure_callback)));
 }
