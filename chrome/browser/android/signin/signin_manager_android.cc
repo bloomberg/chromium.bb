@@ -212,12 +212,14 @@ void SigninManagerAndroid::OnSignInCompleted(
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
-  // TODO(bauerb): This is not only called for a user-triggered signout.
-  // We should pass the reason in here from Java.
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                signin_metrics::SignoutDelete::IGNORE_METRIC);
+                                   const JavaParamRef<jobject>& obj,
+                                   jint signoutReason) {
+  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+      static_cast<signin_metrics::ProfileSignout>(signoutReason),
+      // Always use IGNORE_METRIC for the profile deletion argument. Chrome
+      // Android has just a single-profile which is never deleted upon
+      // sign-out.
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
 base::android::ScopedJavaLocalRef<jstring>

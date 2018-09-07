@@ -264,7 +264,7 @@ public class SigninTest {
             mSigninManager.removeSignInStateObserver(mTestSignInObserver);
 
             if (ChromeSigninController.get().isSignedIn()) {
-                mSigninManager.signOut(null, null);
+                mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
             }
 
             mBookmarks.destroy();
