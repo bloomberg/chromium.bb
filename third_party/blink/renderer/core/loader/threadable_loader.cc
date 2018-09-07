@@ -79,20 +79,14 @@ namespace {
 // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
 AtomicString CreateAccessControlRequestHeadersHeader(
     const HTTPHeaderMap& headers) {
-  Vector<String> filtered_headers;
-  for (const auto& header : headers) {
-    // Exclude CORS-safelisted headers.
-    if (CORS::IsCORSSafelistedHeader(header.key, header.value))
-      continue;
-    // Calling a deprecated function, but eventually this function,
-    // |CreateAccessControlRequestHeadersHeader| will be removed.
-    // When the request is from a Worker, referrer header was added by
-    // WorkerThreadableLoader. But it should not be added to
-    // Access-Control-Request-Headers header.
-    if (DeprecatedEqualIgnoringCase(header.key, "referer"))
-      continue;
-    filtered_headers.push_back(header.key.DeprecatedLower());
-  }
+  Vector<String> filtered_headers = CORS::CORSUnsafeRequestHeaderNames(headers);
+
+  // FetchManager may add a "referer" header.
+  // TODO(yhirano): Remove this.
+  auto it = filtered_headers.Find("referer");
+  if (it != kNotFound)
+    filtered_headers.EraseAt(it);
+
   if (!filtered_headers.size())
     return g_null_atom;
 
