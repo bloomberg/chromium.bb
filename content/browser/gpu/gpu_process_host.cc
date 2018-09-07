@@ -872,13 +872,6 @@ void GpuProcessHost::OnChannelConnected(int32_t peer_pid) {
   }
 }
 
-#if defined(OS_ANDROID)
-void GpuProcessHost::OnDestroyingVideoSurfaceAck() {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyingVideoSurfaceAck");
-  if (!send_destroying_video_surface_done_cb_.is_null())
-    base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
-}
-#endif
 
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
@@ -952,14 +945,13 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
 #endif
 }
 
-void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url,
-                                           Delegate::DomainGuilt guilt) {
+void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) {
   GpuDataManagerImpl::DomainGuilt gpu_data_manager_guilt;
   switch (guilt) {
-    case Delegate::DomainGuilt::kKnown:
+    case DomainGuilt::kKnown:
       gpu_data_manager_guilt = GpuDataManagerImpl::DOMAIN_GUILT_KNOWN;
       break;
-    case Delegate::DomainGuilt::kUnknown:
+    case DomainGuilt::kUnknown:
       gpu_data_manager_guilt = GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
   }
   GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
@@ -1118,9 +1110,6 @@ void GpuProcessHost::SendOutstandingReplies() {
 
   if (gpu_host_)
     gpu_host_->SendOutstandingReplies();
-
-  if (!send_destroying_video_surface_done_cb_.is_null())
-    base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
 }
 
 void GpuProcessHost::RecordProcessCrash() {

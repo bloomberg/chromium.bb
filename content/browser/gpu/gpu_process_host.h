@@ -144,8 +144,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
           gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
-  void BlockDomainFrom3DAPIs(const GURL& url,
-                             Delegate::DomainGuilt guilt) override;
+  void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) override;
   void DisableGpuCompositing() override;
   bool GpuAccessAllowed() const override;
   gpu::ShaderCacheFactory* GetShaderCacheFactory() override;
@@ -162,10 +161,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void SendGpuProcessMessage(IPC::Message* message) override;
 #endif
 
-// Message handlers.
-#if defined(OS_ANDROID)
-  void OnDestroyingVideoSurfaceAck();
-#endif
+  // Message handlers.
   void OnFieldTrialActivated(const std::string& trial_name);
 
   bool LaunchGpuProcess();
@@ -182,9 +178,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // GPU process id in case GPU is not in-process.
   base::ProcessId process_id_ = base::kNullProcessId;
-
-  // A callback to signal the completion of a SendDestroyingVideoSurface call.
-  base::Closure send_destroying_video_surface_done_cb_;
 
   // Qeueud messages to send when the process launches.
   base::queue<IPC::Message*> queued_messages_;

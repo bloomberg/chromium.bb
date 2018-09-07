@@ -368,9 +368,6 @@ std::string GpuHostImpl::GetShaderPrefixKey() {
 #if defined(OS_ANDROID)
     std::string build_fp =
         base::android::BuildInfo::GetInstance()->android_build_fp();
-    // TODO(ericrk): Remove this after it's up for a few days.
-    // https://crbug.com/699122.
-    CHECK(!build_fp.empty());
     shader_prefix_key_ += "-" + build_fp;
 #endif
   }
@@ -529,9 +526,9 @@ void GpuHostImpl::DisableGpuCompositing() {
   delegate_->DisableGpuCompositing();
 }
 
+#if defined(OS_WIN)
 void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
                                   gpu::SurfaceHandle child) {
-#if defined(OS_WIN)
   constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
   if (!params_.in_process) {
     DWORD parent_process_id = 0;
@@ -555,10 +552,8 @@ void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
                                                                  child)) {
     LOG(ERROR) << kBadMessageError;
   }
-#else
-  NOTREACHED();
-#endif
 }
+#endif  // defined(OS_WIN)
 
 void GpuHostImpl::StoreShaderToDisk(int32_t client_id,
                                     const std::string& key,
