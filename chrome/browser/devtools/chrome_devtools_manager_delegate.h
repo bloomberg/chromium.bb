@@ -65,7 +65,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   void DisposeBrowserContext(content::BrowserContext*,
                              DisposeCallback callback) override;
 
-  bool AllowInspectingWebContents(content::WebContents* web_contents) override;
+  bool AllowInspectingRenderFrameHost(content::RenderFrameHost* rfh) override;
   void ClientAttached(content::DevToolsAgentHost* agent_host,
                       content::DevToolsAgentHostClient* client) override;
   void ClientDetached(content::DevToolsAgentHost* agent_host,

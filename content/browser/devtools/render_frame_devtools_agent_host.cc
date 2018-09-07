@@ -427,14 +427,7 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 
 bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                                  TargetRegistry* registry) {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && web_contents()) {
-    if (!manager->delegate()->AllowInspectingWebContents(web_contents()))
-      return false;
-  }
-  const bool is_webui =
-      frame_host_ && (frame_host_->web_ui() || frame_host_->pending_web_ui());
-  if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
+  if (!ShouldAllowSession(session, frame_host_))
     return false;
 
   session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
@@ -599,14 +592,10 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   agent_ptr_.reset();
 
   std::vector<DevToolsSession*> restricted_sessions;
-  const bool is_webui =
-      frame_host && (frame_host->web_ui() || frame_host->pending_web_ui());
-
   for (DevToolsSession* session : sessions()) {
-    if (!session->client()->MayAttachToRenderer(frame_host, is_webui))
+    if (!ShouldAllowSession(session, frame_host))
       restricted_sessions.push_back(session);
   }
-
   if (!restricted_sessions.empty())
     ForceDetachRestrictedSessions(restricted_sessions);
 
@@ -957,6 +946,21 @@ bool RenderFrameDevToolsAgentHost::EnsureAgent() {
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
   return frame_tree_node_ && frame_tree_node_->parent();
+}
+
+bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
+    DevToolsSession* session,
+    RenderFrameHostImpl* frame_host) {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate() && frame_host) {
+    if (!manager->delegate()->AllowInspectingRenderFrameHost(frame_host))
+      return false;
+  }
+  const bool is_webui =
+      frame_host && (frame_host->web_ui() || frame_host->pending_web_ui());
+  if (!session->client()->MayAttachToRenderer(frame_host, is_webui))
+    return false;
+  return true;
 }
 
 }  // namespace content

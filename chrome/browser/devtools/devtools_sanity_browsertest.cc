@@ -1898,9 +1898,8 @@ class DevToolsSanityExtensionTest : public extensions::ExtensionBrowserTest {
   // Installs an extensions, emulating that it has been force-installed by
   // policy.
   // Contains assertions - callers should wrap calls of this method in
-  // |ASSERT_NO_FATAL_FAILURE|. Fills |*out_web_contents| with a |WebContents|
-  // that belongs to the force-installed extension.
-  void ForceInstallExtension(content::WebContents** out_web_contents) {
+  // |ASSERT_NO_FATAL_FAILURE|.
+  void ForceInstallExtension(std::string* extension_id) {
     base::FilePath crx_path;
     base::PathService::Get(chrome::DIR_TEST_DATA, &crx_path);
     crx_path = crx_path.AppendASCII("devtools")
@@ -1909,8 +1908,15 @@ class DevToolsSanityExtensionTest : public extensions::ExtensionBrowserTest {
     const Extension* extension = InstallExtension(
         crx_path, 1, extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
     ASSERT_TRUE(extension);
+    *extension_id = extension->id();
+  }
 
-    GURL url("chrome-extension://" + extension->id() + "/options.html");
+  // Same as above, but also fills |*out_web_contents| with a |WebContents|
+  // that has been navigated to the force-installed extension.
+  void ForceInstallExtensionAndOpen(content::WebContents** out_web_contents) {
+    std::string extension_id;
+    ForceInstallExtension(&extension_id);
+    GURL url("chrome-extension://" + extension_id + "/options.html");
     ui_test_utils::NavigateToURL(browser(), url);
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -1926,10 +1932,35 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityExtensionTest,
                            kDisallowedForForceInstalledExtensions));
 
   content::WebContents* web_contents = nullptr;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallExtension(&web_contents));
+  ASSERT_NO_FATAL_FAILURE(ForceInstallExtensionAndOpen(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DevToolsSanityExtensionTest,
+    PolicyDisallowedForForceInstalledExtensionsAfterNavigation) {
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDevToolsAvailability,
+      static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
+                           kDisallowedForForceInstalledExtensions));
+
+  std::string extension_id;
+  ASSERT_NO_FATAL_FAILURE(ForceInstallExtension(&extension_id));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  // It's possible to open DevTools for about:blank.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+
+  // Navigating to extension page should close DevTools.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome-extension://" + extension_id + "/options.html"));
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
@@ -1957,7 +1988,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
                            kDisallowedForForceInstalledExtensions));
 
   content::WebContents* web_contents = nullptr;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallExtension(&web_contents));
+  ASSERT_NO_FATAL_FAILURE(ForceInstallExtensionAndOpen(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
