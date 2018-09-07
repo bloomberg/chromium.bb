@@ -240,10 +240,13 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 #if !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
 
 // static
-bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 #if defined(OS_NACL)
   return false;
 #else
+  // TODO(fdoray): Also check if the target priority is within the range allowed
+  // by RLIMIT_NICE. https://crbug.com/816389
+
   // Only root can raise thread priority on POSIX environment. On Linux, users
   // who have CAP_SYS_NICE permission also can raise the thread priority, but
   // libcap.so would be needed to check the capability.

@@ -31,7 +31,7 @@ void PlatformThread::SetName(const std::string& name) {
 }
 
 // static
-bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
   return false;
 }
 
