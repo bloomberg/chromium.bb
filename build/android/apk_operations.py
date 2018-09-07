@@ -112,7 +112,7 @@ def _GenerateBundleApks(info):
   return info.bundle_apks_path
 
 
-def _InstallBundle(devices, bundle_apks):
+def _InstallBundle(devices, bundle_apks, modules):
   def install(device):
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
@@ -122,6 +122,8 @@ def _InstallBundle(devices, bundle_apks):
         '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
         '--device-id=' + device.serial
     ]
+    if modules:
+      cmd_args += ['--modules=' + ','.join(modules)]
     bundletool.RunBundleTool(cmd_args)
 
   logging.info('Installing bundle.')
@@ -991,10 +993,16 @@ class _InstallCommand(_Command):
   needs_apk_path = True
   supports_incremental = True
 
+  def _RegisterExtraArgs(self, group):
+    if self.is_bundle:
+      group.add_argument('-m', '--module', action='append',
+                         help='Module to install. Can be specified multiple '
+                              'times. One of them has to be \'base\'')
+
   def Run(self):
     if self.is_bundle:
       bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info)
-      _InstallBundle(self.devices, bundle_apks_path)
+      _InstallBundle(self.devices, bundle_apks_path, self.args.module)
     else:
       _InstallApk(self.devices, self.apk_helper, self.install_dict)
 
