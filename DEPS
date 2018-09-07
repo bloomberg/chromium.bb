@@ -574,6 +574,11 @@ deps = {
   'src/third_party/catapult':
     Var('chromium_git') + '/catapult.git' + '@' + Var('catapult_revision'),
 
+  'src/third_party/cct_dynamic_module/src': {
+      'url': Var('chromium_git') + '/dynamicmodule' + '@' + 'c6d37ea1003931dd44b78f936ca0882956aa3107',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/ced/src':
     Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '94c367a1fe3a13207f4b22604fcfd1d9f9ddf6d9',
 
@@ -611,11 +616,6 @@ deps = {
 
   'src/third_party/dom_distiller_js/dist':
     Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '3093c3e238768ab27ff756bd7563ccbb12129d9f',
-
-  'src/third_party/dynamicmodule': {
-      'url': Var('chromium_git') + '/dynamicmodule' + '@' + 'c6d37ea1003931dd44b78f936ca0882956aa3107',
-      'condition': 'checkout_android',
-  },
 
   'src/third_party/elfutils/src': {
       'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
