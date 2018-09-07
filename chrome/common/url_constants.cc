@@ -271,10 +271,10 @@ const char kInstantTetheringLearnMoreURL[] =
     "https://support.google.com/chromebook?p=instant_tethering";
 
 const char kMultiDeviceLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=multidevice-placeholder";
+    "https://support.google.com/pixelbook/?p=better_together";
 
 const char kAndroidMessagesLearnMoreURL[] =
-    "https://support.google.com/chromebook?p=messages-for-web-placeholder";
+    "https://support.google.com/pixelbook/?p=bettertogether_android_messages";
 
 const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chromebook/answer/1059490";
