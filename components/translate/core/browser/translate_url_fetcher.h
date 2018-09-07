@@ -52,8 +52,9 @@ class TranslateURLFetcher {
   // Requests to |url|. |callback| will be invoked when the function returns
   // true, and the request is finished asynchronously.
   // Returns false if the previous request is not finished, or the request
-  // is omitted due to retry limitation.
-  bool Request(const GURL& url, Callback callback);
+  // is omitted due to retry limitation. |is_incognito| is used during the fetch
+  // to determine which variations headers to add.
+  bool Request(const GURL& url, Callback callback, bool is_incognito);
 
   // Gets internal state.
   State state() { return state_; }

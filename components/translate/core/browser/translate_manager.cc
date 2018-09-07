@@ -369,7 +369,7 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
       base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
                  GetWeakPtr(), source_lang, target_lang);
 
-  script->Request(callback);
+  script->Request(callback, translate_driver_->IsIncognito());
 }
 
 void TranslateManager::RevertTranslation() {

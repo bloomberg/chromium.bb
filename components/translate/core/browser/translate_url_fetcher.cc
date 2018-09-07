@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -28,7 +29,8 @@ TranslateURLFetcher::TranslateURLFetcher()
 TranslateURLFetcher::~TranslateURLFetcher() {}
 
 bool TranslateURLFetcher::Request(const GURL& url,
-                                  TranslateURLFetcher::Callback callback) {
+                                  TranslateURLFetcher::Callback callback,
+                                  bool is_incognito) {
   // This function is not supposed to be called if the previous operation is not
   // finished.
   if (state_ == REQUESTING) {
@@ -98,8 +100,12 @@ bool TranslateURLFetcher::Request(const GURL& url,
   if (!extra_request_header_.empty())
     resource_request->headers.AddHeadersFromString(extra_request_header_);
 
-  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                    traffic_annotation);
+  simple_loader_ =
+      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+          std::move(resource_request),
+          is_incognito ? variations::InIncognito::kYes
+                       : variations::InIncognito::kNo,
+          traffic_annotation);
   // Set retry parameter for HTTP status code 5xx. This doesn't work against
   // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
   // TranslateLanguageList handles network status, and implements retry.
