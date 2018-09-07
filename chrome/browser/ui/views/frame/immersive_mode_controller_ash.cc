@@ -116,6 +116,13 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
       !features::IsUsingWindowService()
           ? browser_view_->GetNativeWindow()
           : browser_view_->GetNativeWindow()->GetRootWindow());
+
+  browser_view_->GetNativeWindow()->SetProperty(
+      ash::kImmersiveWindowType,
+      static_cast<int>(
+          browser_view_->browser()->is_app()
+              ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
+              : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER));
 }
 
 void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
@@ -130,11 +137,8 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
   }
 
-  controller_->SetEnabled(
-      browser_view_->browser()->is_app()
-          ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
-          : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER,
-      enabled);
+  ash::ImmersiveFullscreenController::EnableForWidget(browser_view_->frame(),
+                                                      enabled);
 }
 
 bool ImmersiveModeControllerAsh::IsEnabled() const {
@@ -189,11 +193,8 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 
   // Enable immersive mode if the widget is activated. Do not disable immersive
   // mode if the widget deactivates, but is not minimized.
-  controller_->SetEnabled(
-      browser_view_->browser()->is_app()
-          ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
-          : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER,
-      active || !widget->IsMinimized());
+  ash::ImmersiveFullscreenController::EnableForWidget(
+      browser_view_->frame(), active || !widget->IsMinimized());
 }
 
 void ImmersiveModeControllerAsh::LayoutBrowserRootView() {

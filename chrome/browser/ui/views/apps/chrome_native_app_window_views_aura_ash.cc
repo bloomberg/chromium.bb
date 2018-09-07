@@ -69,6 +69,10 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   aura::Window* window = GetNativeWindow();
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CHROME_APP));
+  window->SetProperty(
+      ash::kImmersiveWindowType,
+      static_cast<int>(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP));
   // Fullscreen doesn't always imply immersive mode (see
   // ShouldEnableImmersive()).
   window->SetProperty(ash::kImmersiveImpliedByFullscreen, false);

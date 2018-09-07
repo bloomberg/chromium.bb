@@ -134,6 +134,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
     kImmersiveTopContainerBoundsInScreen;
 
+// The type of window for logging immersive metrics. Type:
+// ImmersiveFullscreenController::WindowType.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int>* const
+    kImmersiveWindowType;
+
 // If true, the window is the target window for the tab-dragged window. The key
 // is used by overview to show a highlight indication to indicate which overview
 // window the dragged tabs will merge into when the user releases the pointer.

@@ -768,7 +768,7 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->in_immersive_mode());
 
-  controller.SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
+  ImmersiveFullscreenController::EnableForWidget(widget.get(), true);
   EXPECT_TRUE(header_view->in_immersive_mode());
   EXPECT_TRUE(wide_header_view->in_immersive_mode());
   // The height should be ~(33 *.5)
@@ -794,8 +794,7 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_TRUE(ImmersiveFullscreenControllerTestApi(&controller)
                   .IsTopEdgeHoverTimerRunning());
 
-  controller.SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-                        false);
+  ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
   EXPECT_FALSE(header_view->in_immersive_mode());
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   // visible fraction should be ignored in non immersive.

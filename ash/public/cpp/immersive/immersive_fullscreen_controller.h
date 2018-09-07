@@ -74,20 +74,13 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   ~ImmersiveFullscreenController() override;
 
   // Initializes the controller. Must be called prior to enabling immersive
-  // fullscreen via SetEnabled(). |top_container| is used to keep the
+  // fullscreen via EnableForWidget(). |top_container| is used to keep the
   // top-of-window views revealed when a child of |top_container| has focus.
   // |top_container| does not affect which mouse and touch events keep the
   // top-of-window views revealed. |widget| is the widget to make fullscreen.
   void Init(ImmersiveFullscreenControllerDelegate* delegate,
             views::Widget* widget,
             views::View* top_container);
-
-  // Enables or disables immersive fullscreen.
-  // |window_type| is the type of window which is put in immersive fullscreen.
-  // It is only used for histogramming.
-  // TODO(estade): make clients use kImmersiveIsActive key and move this method
-  // to private.
-  void SetEnabled(WindowType window_type, bool enable);
 
   // Returns true if in immersive fullscreen.
   bool IsEnabled() const;
@@ -242,6 +235,10 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
 
   // Test if the |widget| is the event target to control reveal state.
   bool IsTargetForWidget(views::Widget* widget) const;
+
+  // Enables or disables immersive fullscreen in accordance with the
+  // kImmersiveIsActive property.
+  void UpdateEnabled();
 
   // Not owned.
   ImmersiveFullscreenControllerDelegate* delegate_;

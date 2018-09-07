@@ -487,8 +487,7 @@ void ClientControlledShellSurface::UpdateAutoHideFrame() {
     bool enabled = (frame_type_ == SurfaceFrameType::AUTOHIDE &&
                     (GetWindowState()->IsMaximizedOrFullscreenOrPinned() ||
                      GetWindowState()->IsSnapped()));
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
+    ash::ImmersiveFullscreenController::EnableForWidget(widget_, enabled);
   }
 }
 
@@ -968,16 +967,14 @@ void ClientControlledShellSurface::UpdateFrame() {
       work_area.width() != geometry().width()) {
     if (!wide_frame_) {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
       wide_frame_->GetWidget()->Show();
       UpdateCaptionButtonModel();
     }
   } else {
     if (wide_frame_) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_.reset();
       GetFrameView()->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());

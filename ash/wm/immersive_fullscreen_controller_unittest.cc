@@ -193,8 +193,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 
   // Enables / disables immersive fullscreen.
   void SetEnabled(bool enabled) {
-    controller_->SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-                            enabled);
+    ImmersiveFullscreenController::EnableForWidget(widget_, enabled);
   }
 
   // Attempt to reveal the top-of-window views via |modality|.
