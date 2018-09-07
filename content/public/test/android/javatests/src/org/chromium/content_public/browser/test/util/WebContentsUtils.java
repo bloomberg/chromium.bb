@@ -8,8 +8,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Collection of test-only WebContents utilities.
@@ -53,6 +58,43 @@ public class WebContentsUtils {
     public static void simulateRendererKilled(WebContents webContents, boolean wasOomProtected) {
         ThreadUtils.runOnUiThreadBlocking(() ->
             ((WebContentsImpl) webContents).simulateRendererKilledForTesting(wasOomProtected));
+    }
+
+    /**
+     * Returns {@link ImeAdapter} instance associated with a given {@link WebContents}.
+     * @param webContents The WebContents in use.
+     */
+    public static ImeAdapter getImeAdapter(WebContents webContents) {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> ImeAdapter.fromWebContents(webContents));
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns {@link GestureListenerManager} instance associated with a given {@link WebContents}.
+     * @param webContents The WebContents in use.
+     */
+    public static GestureListenerManager getGestureListenerManager(WebContents webContents) {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> GestureListenerManager.fromWebContents(webContents));
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns {@link ViewEventSink} instance associated with a given {@link WebContents}.
+     * @param webContents The WebContents in use.
+     */
+    public static ViewEventSink getViewEventSink(WebContents webContents) {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> ViewEventSink.from(webContents));
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
 
     private static native void nativeReportAllFrameSubmissions(

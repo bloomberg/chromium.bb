@@ -27,7 +27,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.input.ImeTestUtils;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
-import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
@@ -107,8 +106,7 @@ public class ContentTextSelectionTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         mWebContents = mActivityTestRule.getWebContents();
-        mSelectionPopupController =
-                SelectionPopupControllerImpl.fromWebContents(mActivityTestRule.getWebContents());
+        mSelectionPopupController = mActivityTestRule.getSelectionPopupController();
         waitForSelectActionBarVisible(false);
         waitForPastePopupStatus(false);
     }
@@ -635,8 +633,7 @@ public class ContentTextSelectionTest {
 
     private CharSequence getTextBeforeCursor(final int length, final int flags) {
         final ChromiumBaseInputConnection connection =
-                (ChromiumBaseInputConnection) ImeAdapter
-                        .fromWebContents(mActivityTestRule.getWebContents())
+                (ChromiumBaseInputConnection) mActivityTestRule.getImeAdapter()
                         .getInputConnectionForTest();
         return ImeTestUtils.runBlockingOnHandlerNoException(
                 connection.getHandler(), new Callable<CharSequence>() {

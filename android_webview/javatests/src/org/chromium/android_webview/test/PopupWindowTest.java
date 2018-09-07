@@ -257,8 +257,8 @@ public class PopupWindowTest {
 
         // Now long press on some texts and see if the text handles show up.
         DOMUtils.longPressNode(popupContents.getWebContents(), "plain_text");
-        SelectionPopupController controller =
-                SelectionPopupController.fromWebContents(popupContents.getWebContents());
+        SelectionPopupController controller = ThreadUtils.runOnUiThreadBlocking(
+                () -> SelectionPopupController.fromWebContents(popupContents.getWebContents()));
         assertWaitForSelectActionBarStatus(true, controller);
         Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(() -> controller.hasSelection()));
 

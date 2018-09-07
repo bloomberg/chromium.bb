@@ -36,6 +36,7 @@ import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -51,7 +52,6 @@ import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
-import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
@@ -73,7 +73,7 @@ import java.util.List;
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         implements ImeEventObserver, SelectionPopupController, WindowEventObserver, HideablePopup,
-                   ContainerViewObserver {
+                   ContainerViewObserver, UserData {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -199,8 +199,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      *         {@link #create()} is not called yet.
      */
     public static SelectionPopupControllerImpl fromWebContents(WebContents webContents) {
-        return WebContentsUserData.fromWebContents(webContents, SelectionPopupControllerImpl.class,
-                UserDataFactoryLazyHolder.INSTANCE);
+        return ((WebContentsImpl) webContents)
+                .getOrSetUserData(
+                        SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
     /**

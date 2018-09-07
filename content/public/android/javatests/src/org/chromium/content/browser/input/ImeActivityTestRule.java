@@ -60,7 +60,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
 
     public void setUpForUrl(String url) throws Exception {
         launchContentShellWithUrlSync(url);
-        mSelectionPopupController = SelectionPopupControllerImpl.fromWebContents(getWebContents());
+        mSelectionPopupController = getSelectionPopupController();
 
         final ImeAdapter imeAdapter = getImeAdapter();
         InputConnectionProvider provider =
@@ -124,10 +124,6 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
 
         waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
         resetAllStates();
-    }
-
-    SelectionPopupControllerImpl getSelectionPopupController() {
-        return mSelectionPopupController;
     }
 
     TestCallbackHelperContainer getTestCallBackHelperContainer() {
@@ -305,10 +301,6 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
                         && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
             }
         });
-    }
-
-    ImeAdapterImpl getImeAdapter() {
-        return ImeAdapterImpl.fromWebContents(getWebContents());
     }
 
     ChromiumBaseInputConnection getInputConnection() {

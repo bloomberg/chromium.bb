@@ -111,7 +111,7 @@ GestureListenerManager::~GestureListenerManager() {
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_GestureListenerManagerImpl_onDestroy(env, j_obj);
+  Java_GestureListenerManagerImpl_onNativeDestroyed(env, j_obj);
 }
 
 void GestureListenerManager::ResetGestureDetection(
