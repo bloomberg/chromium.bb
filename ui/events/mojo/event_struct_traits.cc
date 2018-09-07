@@ -241,29 +241,34 @@ ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
   return ui::ET_UNKNOWN;
 }
 
+// static
 ui::mojom::EventType
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::action(
     const EventUniquePtr& event) {
   return mojo::ConvertTo<ui::mojom::EventType>(event->type());
 }
 
+// static
 int32_t StructTraits<ui::mojom::EventDataView, EventUniquePtr>::flags(
     const EventUniquePtr& event) {
   return event->flags();
 }
 
+// static
 base::TimeTicks
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::time_stamp(
     const EventUniquePtr& event) {
   return event->time_stamp();
 }
 
+// static
 const ui::LatencyInfo&
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::latency(
     const EventUniquePtr& event) {
   return *event->latency();
 }
 
+// static
 ui::mojom::KeyDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
     const EventUniquePtr& event) {
@@ -281,12 +286,10 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
       key_event->GetLocatedWindowsKeyboardCode());
   key_data->text = key_event->GetText();
   key_data->unmodified_text = key_event->GetUnmodifiedText();
-  if (key_event->properties())
-    key_data->properties = *(key_event->properties());
-
   return key_data;
 }
 
+// static
 ui::mojom::PointerDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
@@ -362,6 +365,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   return pointer_data;
 }
 
+// static
 ui::mojom::GestureDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::gesture_data(
     const EventUniquePtr& event) {
@@ -373,6 +377,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::gesture_data(
   return gesture_data;
 }
 
+// static
 ui::mojom::ScrollDataPtr
 StructTraits<ui::mojom::EventDataView, EventUniquePtr>::scroll_data(
     const EventUniquePtr& event) {
@@ -391,6 +396,14 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::scroll_data(
   return scroll_data;
 }
 
+// static
+base::flat_map<std::string, std::vector<uint8_t>>
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::properties(
+    const EventUniquePtr& event) {
+  return event->properties() ? *(event->properties()) : ui::Event::Properties();
+}
+
+// static
 bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     ui::mojom::EventDataView event,
     EventUniquePtr* out) {
@@ -420,8 +433,6 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
             static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
             time_stamp);
       }
-      if (key_data->properties)
-        (*out)->AsKeyEvent()->SetProperties(*key_data->properties);
       break;
     }
     case ui::mojom::EventType::POINTER_DOWN:
@@ -482,7 +493,16 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
   if (!out->get())
     return false;
 
-  return event.ReadLatency((*out)->latency());
+  if (!event.ReadLatency((*out)->latency()))
+    return false;
+
+  ui::Event::Properties properties;
+  if (!event.ReadProperties(&properties))
+    return false;
+  if (!properties.empty())
+    (*out)->SetProperties(properties);
+
+  return true;
 }
 
 }  // namespace mojo
