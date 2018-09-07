@@ -9,6 +9,7 @@
 #include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/feature_state_manager_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
@@ -54,10 +55,12 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate) {
+        android_sms_app_helper_delegate,
+    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, secure_channel_client,
-      auth_token_validator, std::move(android_sms_app_helper_delegate)));
+      auth_token_validator, std::move(android_sms_app_helper_delegate),
+      gcm_device_info_provider));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
@@ -66,7 +69,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate)
+        android_sms_app_helper_delegate,
+    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
     : android_sms_app_helper_delegate_(
           std::move(android_sms_app_helper_delegate)),
       eligible_host_devices_provider_(
@@ -102,6 +106,9 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
                               pref_service,
                               setup_flow_completion_recorder_.get(),
                               base::DefaultClock::GetInstance())),
+      device_reenroller_(DeviceReenroller::Factory::Get()->BuildInstance(
+          device_sync_client,
+          gcm_device_info_provider)),
       auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
   feature_state_manager_->AddObserver(this);

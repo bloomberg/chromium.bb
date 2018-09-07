@@ -44,10 +44,12 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate) {
+        android_sms_app_helper_delegate,
+    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
       pref_service, device_sync_client, secure_channel_client,
-      auth_token_validator, std::move(android_sms_app_helper_delegate)));
+      auth_token_validator, std::move(android_sms_app_helper_delegate),
+      gcm_device_info_provider));
 }
 
 MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
@@ -56,13 +58,15 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate)
+        android_sms_app_helper_delegate,
+    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
       auth_token_validator_(auth_token_validator),
       android_sms_app_helper_delegate_(
-          std::move(android_sms_app_helper_delegate)) {
+          std::move(android_sms_app_helper_delegate)),
+      gcm_device_info_provider_(gcm_device_info_provider) {
   if (device_sync_client_->is_ready()) {
     InitializeImplementation();
     return;
@@ -221,7 +225,8 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
 
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
       pref_service_, device_sync_client_, secure_channel_client_,
-      auth_token_validator_, std::move(android_sms_app_helper_delegate_));
+      auth_token_validator_, std::move(android_sms_app_helper_delegate_),
+      gcm_device_info_provider_);
 
   if (pending_delegate_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(

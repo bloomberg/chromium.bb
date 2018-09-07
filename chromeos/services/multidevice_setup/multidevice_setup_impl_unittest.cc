@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
+#include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
@@ -31,6 +32,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
+#include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -350,6 +352,36 @@ class FakeAccountStatusChangeDelegateNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(FakeAccountStatusChangeDelegateNotifierFactory);
 };
 
+class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
+ public:
+  FakeDeviceReenrollerFactory(
+      device_sync::FakeDeviceSyncClient* expected_device_sync_client,
+      const cryptauth::FakeGcmDeviceInfoProvider*
+          expected_gcm_device_info_provider)
+      : expected_device_sync_client_(expected_device_sync_client),
+        expected_gcm_device_info_provider_(expected_gcm_device_info_provider) {}
+
+  ~FakeDeviceReenrollerFactory() override = default;
+
+ private:
+  // DeviceReenroller::Factory:
+  std::unique_ptr<DeviceReenroller> BuildInstance(
+      device_sync::DeviceSyncClient* device_sync_client,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      std::unique_ptr<base::OneShotTimer> timer) override {
+    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
+    EXPECT_EQ(expected_gcm_device_info_provider_, gcm_device_info_provider);
+    // Only check inputs and return nullptr. We do not want to trigger the
+    // DeviceReenroller logic in these unit tests.
+    return nullptr;
+  }
+
+  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
+  const cryptauth::GcmDeviceInfoProvider* expected_gcm_device_info_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDeviceReenrollerFactory);
+};
+
 }  // namespace
 
 class MultiDeviceSetupImplTest : public testing::Test {
@@ -374,6 +406,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
         std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_app_helper_delegate_ =
         fake_android_sms_app_helper_delegate.get();
+
+    fake_gcm_device_info_provider_ =
+        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+            cryptauth::GcmDeviceInfo());
 
     fake_eligible_host_devices_provider_factory_ =
         std::make_unique<FakeEligibleHostDevicesProviderFactory>(
@@ -422,10 +458,18 @@ class MultiDeviceSetupImplTest : public testing::Test {
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         fake_account_status_change_delegate_notifier_factory_.get());
 
+    fake_device_reenroller_factory_ =
+        std::make_unique<FakeDeviceReenrollerFactory>(
+            fake_device_sync_client_.get(),
+            fake_gcm_device_info_provider_.get());
+    DeviceReenroller::Factory::SetFactoryForTesting(
+        fake_device_reenroller_factory_.get());
+
     multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_device_sync_client_.get(),
         fake_secure_channel_client_.get(), fake_auth_token_validator_.get(),
-        std::move(fake_android_sms_app_helper_delegate));
+        std::move(fake_android_sms_app_helper_delegate),
+        fake_gcm_device_info_provider_.get());
   }
 
   void TearDown() override {
@@ -437,6 +481,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
+    DeviceReenroller::Factory::SetFactoryForTesting(nullptr);
   }
 
   void CallSetAccountStatusChangeDelegate() {
@@ -685,6 +730,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
+  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+      fake_gcm_device_info_provider_;
 
   std::unique_ptr<FakeEligibleHostDevicesProviderFactory>
       fake_eligible_host_devices_provider_factory_;
@@ -699,6 +746,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
       fake_account_status_change_delegate_notifier_factory_;
+  std::unique_ptr<FakeDeviceReenrollerFactory> fake_device_reenroller_factory_;
   FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
 
   std::unique_ptr<FakeAccountStatusChangeDelegate>
