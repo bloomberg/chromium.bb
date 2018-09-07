@@ -587,7 +587,6 @@ _x86_internal_release_boards = frozenset([
     'link',
     'lulu',
     'mccloud',
-    'meowth',
     'monroe',
     'nami',
     'nautilus',
@@ -3940,10 +3939,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'nami-release': {
           'sign_types': ['recovery', 'factory'],
-      },
-
-      'meowth-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
 
       'nocturne-release': {
