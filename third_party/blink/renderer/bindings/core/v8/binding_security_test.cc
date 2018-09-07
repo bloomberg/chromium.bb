@@ -17,56 +17,97 @@ namespace blink {
 namespace {
 const char kMainFrame[] = "https://example.com/main.html";
 const char kSameOriginTarget[] = "https://example.com/target.html";
+const char kSameOriginDomainTarget[] = "https://sub.example.com/target.html";
 const char kCrossOriginTarget[] = "https://not-example.com/target.html";
+
+const char kTargetHTML[] =
+    "<!DOCTYPE html>"
+    "<script>"
+    "  (window.opener || window.top).postMessage('yay', '*');"
+    "</script>";
+const char kSameOriginDomainTargetHTML[] =
+    "<!DOCTYPE html>"
+    "<script>"
+    "  document.domain = 'example.com';"
+    "  (window.opener || window.top).postMessage('yay', '*');"
+    "</script>";
 }
 
 class BindingSecurityCounterTest
     : public SimTest,
       public testing::WithParamInterface<const char*> {
  public:
-  enum class OriginDisposition { CrossOrigin, SameOrigin };
+  enum class OriginDisposition { CrossOrigin, SameOrigin, SameOriginDomain };
 
   BindingSecurityCounterTest() = default;
 
   void LoadWindowAndAccessProperty(OriginDisposition which_origin,
                                    const String& property) {
+    const char* target_url;
+    const char* target_html;
+    switch (which_origin) {
+      case OriginDisposition::CrossOrigin:
+        target_url = kCrossOriginTarget;
+        target_html = kTargetHTML;
+        break;
+      case OriginDisposition::SameOrigin:
+        target_url = kSameOriginTarget;
+        target_html = kTargetHTML;
+        break;
+      case OriginDisposition::SameOriginDomain:
+        target_url = kSameOriginDomainTarget;
+        target_html = kSameOriginDomainTargetHTML;
+        break;
+    }
+
     SimRequest main(kMainFrame, "text/html");
-    SimRequest target(which_origin == OriginDisposition::CrossOrigin
-                          ? kCrossOriginTarget
-                          : kSameOriginTarget,
-                      "text/html");
+    SimRequest target(target_url, "text/html");
     const String& document = String::Format(
         "<!DOCTYPE html>"
         "<script>"
+        "  %s"
         "  window.addEventListener('message', e => {"
         "    window.other = e.source.%s;"
         "    console.log('yay');"
         "  });"
         "  var w = window.open('%s');"
         "</script>",
-        property.Utf8().data(),
-        which_origin == OriginDisposition::CrossOrigin ? kCrossOriginTarget
-                                                       : kSameOriginTarget);
+        which_origin == OriginDisposition::SameOriginDomain
+            ? "document.domain = 'example.com';"
+            : "",
+        property.Utf8().data(), target_url);
 
     LoadURL(kMainFrame);
     main.Complete(document);
-    target.Complete(
-        "<!DOCTYPE html>"
-        "<script>window.opener.postMessage('yay', '*');</script>");
+    target.Complete(target_html);
     test::RunPendingTasks();
   }
 
   void LoadFrameAndAccessProperty(OriginDisposition which_origin,
                                   const String& property) {
+    const char* target_url;
+    const char* target_html;
+    switch (which_origin) {
+      case OriginDisposition::CrossOrigin:
+        target_url = kCrossOriginTarget;
+        target_html = kTargetHTML;
+        break;
+      case OriginDisposition::SameOrigin:
+        target_url = kSameOriginTarget;
+        target_html = kTargetHTML;
+        break;
+      case OriginDisposition::SameOriginDomain:
+        target_url = kSameOriginDomainTarget;
+        target_html = kSameOriginDomainTargetHTML;
+        break;
+    }
     SimRequest main(kMainFrame, "text/html");
-    SimRequest target(which_origin == OriginDisposition::CrossOrigin
-                          ? kCrossOriginTarget
-                          : kSameOriginTarget,
-                      "text/html");
+    SimRequest target(target_url, "text/html");
     const String& document = String::Format(
         "<!DOCTYPE html>"
         "<body>"
         "<script>"
+        "  %s"
         "  var i = document.createElement('iframe');"
         "  window.addEventListener('message', e => {"
         "    window.other = e.source.%s;"
@@ -75,15 +116,14 @@ class BindingSecurityCounterTest
         "  i.src = '%s';"
         "  document.body.appendChild(i);"
         "</script>",
-        property.Utf8().data(),
-        which_origin == OriginDisposition::CrossOrigin ? kCrossOriginTarget
-                                                       : kSameOriginTarget);
+        which_origin == OriginDisposition::SameOriginDomain
+            ? "document.domain = 'example.com';"
+            : "",
+        property.Utf8().data(), target_url);
 
     LoadURL(kMainFrame);
     main.Complete(document);
-    target.Complete(
-        "<!DOCTYPE html>"
-        "<script>window.top.postMessage('yay', '*');</script>");
+    target.Complete(target_html);
     test::RunPendingTasks();
   }
 };
@@ -110,6 +150,8 @@ TEST_P(BindingSecurityCounterTest, CrossOriginWindow) {
       WebFeature::kCrossOriginPropertyAccess));
   EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginWindow) {
@@ -118,6 +160,18 @@ TEST_P(BindingSecurityCounterTest, SameOriginWindow) {
       WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
+}
+
+TEST_P(BindingSecurityCounterTest, SameOriginDomainWindow) {
+  LoadWindowAndAccessProperty(OriginDisposition::SameOriginDomain, GetParam());
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kCrossOriginPropertyAccess));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
 }
 
 TEST_P(BindingSecurityCounterTest, CrossOriginFrame) {
@@ -126,6 +180,8 @@ TEST_P(BindingSecurityCounterTest, CrossOriginFrame) {
       WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
 }
 
 TEST_P(BindingSecurityCounterTest, SameOriginFrame) {
@@ -134,6 +190,18 @@ TEST_P(BindingSecurityCounterTest, SameOriginFrame) {
       WebFeature::kCrossOriginPropertyAccess));
   EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
       WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
+}
+
+TEST_P(BindingSecurityCounterTest, SameOriginDomainFrame) {
+  LoadFrameAndAccessProperty(OriginDisposition::SameOriginDomain, GetParam());
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kCrossOriginPropertyAccess));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kCrossOriginPropertyAccessFromOpener));
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+      WebFeature::kDocumentDomainEnabledCrossOriginAccess));
 }
 
 }  // namespace
