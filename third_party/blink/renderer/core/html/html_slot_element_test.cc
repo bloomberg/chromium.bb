@@ -7,6 +7,7 @@
 #include <array>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
@@ -161,7 +162,7 @@ TEST_F(HTMLSlotElementReattachTest, RecalcAssignedNodeStyleForReattach) {
   shadow_span.setAttribute(HTMLNames::styleAttr, "display:block");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kNoChange);
+  GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
 
   EXPECT_TRUE(shadow_span.GetNonAttachedStyle());
   EXPECT_TRUE(span.GetNonAttachedStyle());

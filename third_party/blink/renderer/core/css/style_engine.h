@@ -319,6 +319,9 @@ class CORE_EXPORT StyleEngine final
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
 
+  void RecalcStyle(StyleRecalcChange change);
+  void RebuildLayoutTree();
+
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 

@@ -298,10 +298,8 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
   for (const LayoutObject* block : blocks_)
     ToElement(*block->GetNode()).LazyReattachIfAttached();
   state_ = State::kForcingLegacyLayout;
-  Element& document_element = *document_->documentElement();
-  document_element.RecalcStyle(kNoChange);
-  WhitespaceAttacher whitespace_attacher;
-  document_element.RebuildLayoutTree(whitespace_attacher);
+  document_->GetStyleEngine().RecalcStyle(kNoChange);
+  document_->GetStyleEngine().RebuildLayoutTree();
   state_ = State::kClosed;
 }
 

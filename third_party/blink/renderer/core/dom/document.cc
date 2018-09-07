@@ -2304,7 +2304,7 @@ void Document::UpdateStyle() {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
       Element* viewport_defining = ViewportDefiningElement();
-      document_element->RecalcStyle(change);
+      GetStyleEngine().RecalcStyle(change);
       if (viewport_defining != ViewportDefiningElement())
         ViewportDefiningElementDidChange();
     }
@@ -2315,8 +2315,7 @@ void Document::UpdateStyle() {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RebuildLayoutTreeTime");
       ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
-      WhitespaceAttacher whitespace_attacher;
-      document_element->RebuildLayoutTree(whitespace_attacher);
+      GetStyleEngine().RebuildLayoutTree();
       legacy_layout_objects.ForceLegacyLayoutIfNeeded();
     }
   }

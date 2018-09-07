@@ -1545,6 +1545,21 @@ DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
   return *environment_variables_.get();
 }
 
+void StyleEngine::RecalcStyle(StyleRecalcChange change) {
+  DCHECK(GetDocument().documentElement());
+  DCHECK(GetDocument().ChildNeedsStyleRecalc() || change == kForce);
+
+  GetDocument().documentElement()->RecalcStyle(change);
+}
+
+void StyleEngine::RebuildLayoutTree() {
+  DCHECK(GetDocument().documentElement());
+  DCHECK(GetDocument().ChildNeedsReattachLayoutTree());
+
+  WhitespaceAttacher whitespace_attacher;
+  GetDocument().documentElement()->RebuildLayoutTree(whitespace_attacher);
+}
+
 void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(injected_user_style_sheets_);
