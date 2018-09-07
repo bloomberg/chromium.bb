@@ -7655,7 +7655,8 @@ static int64_t build_and_cost_compound_type(
   if (have_newmv_in_inter_mode(this_mode) && compound_type == COMPOUND_WEDGE) {
     *out_rate_mv = interinter_compound_motion_search(cpi, x, cur_mv, bsize,
                                                      this_mode, mi_row, mi_col);
-    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
+    av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col, ctx,
+                                   bsize);
     model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
                                 &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
                                 &tmp_skip_sse_sb, NULL, NULL, NULL);
@@ -7911,7 +7912,8 @@ static INLINE int64_t interpolation_filter_rd(
 
   if (skip_pred != cpi->default_interp_skip_flags) {
     if (skip_pred != DEFAULT_LUMA_INTERP_SKIP_FLAG) {
-      av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+      av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                     orig_dst, bsize);
 #if CONFIG_COLLECT_RD_STATS == 3
       RD_STATS rd_stats_y;
       select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
@@ -7936,8 +7938,8 @@ static INLINE int64_t interpolation_filter_rd(
           mbmi->interp_filters = last_best;
           return 0;
         }
-        av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, orig_dst, bsize,
-                                       plane);
+        av1_build_inter_predictors_sbp(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                       orig_dst, bsize, plane);
         model_rd_fn[MODELRD_TYPE_INTERP_FILTER](
             cpi, bsize, x, xd, plane, plane, mi_row, mi_col, &tmp_rate_uv,
             &tmp_dist_uv, &tmp_skip_sb_uv, &tmp_skip_sse_uv, NULL, NULL, NULL);
@@ -8139,7 +8141,8 @@ static int64_t interpolation_filter_search(
   *switchable_rate =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
   if (!skip_build_pred)
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+    av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                  orig_dst, bsize);
 
 #if CONFIG_COLLECT_RD_STATS == 3
   RD_STATS rd_stats_y;
@@ -8281,7 +8284,8 @@ static int64_t interpolation_filter_search(
     // in either of the directions  Condition below is necessary, but not
     // sufficient
     assert((skip_hor == 1) || (skip_ver == 1));
-    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+    av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                   orig_dst, bsize);
   }
   *skip_txfm_sb = best_skip_txfm_sb[1];
   *skip_sse_sb = best_skip_sse_sb[1];
@@ -8461,7 +8465,8 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   mbmi->ref_frame[1] = NONE_FRAME;
   xd->plane[0].dst.buf = tmp_buf;
   xd->plane[0].dst.stride = bw;
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+  av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col, NULL,
+                                 bsize);
 
   restore_dst_buf(xd, *orig_dst, num_planes);
   mbmi->ref_frame[1] = INTRA_FRAME;
@@ -8530,8 +8535,8 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                       0);
         if (mbmi->mv[0].as_int != tmp_mv.as_int) {
           mbmi->mv[0].as_int = tmp_mv.as_int;
-          av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst,
-                                         bsize);
+          av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row,
+                                         mi_col, orig_dst, bsize);
           model_rd_fn[MODELRD_LEGACY](cpi, bsize, x, xd, 0, 0, mi_row, mi_col,
                                       &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
                                       &tmp_skip_sse_sb, NULL, NULL, NULL);
@@ -8558,14 +8563,16 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       } else {
         mbmi->use_wedge_interintra = 0;
         mbmi->mv[0].as_int = mv0.as_int;
-        av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+        av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                       orig_dst, bsize);
       }
     } else {
       mbmi->use_wedge_interintra = 0;
     }
   }  // if (is_interintra_wedge_used(bsize))
   if (num_planes > 1) {
-    av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, orig_dst, bsize);
+    av1_build_inter_predictors_sbuv(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                    orig_dst, bsize);
   }
   return 0;
 }
@@ -8660,7 +8667,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
       }
       if (mbmi->mv[0].as_int != cur_mv) {
-        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+        av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                      orig_dst, bsize);
       }
       av1_build_obmc_inter_prediction(
           cm, xd, mi_row, mi_col, args->above_pred_buf, args->above_pred_stride,
@@ -8720,7 +8728,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           }
         }
 
-        av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+        av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                      NULL, bsize);
       } else {
         continue;
       }
@@ -8913,7 +8922,8 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
-  av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+  av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                orig_dst, bsize);
 
   int64_t total_sse = 0;
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -9095,7 +9105,8 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       rs2 = masked_type_cost;
       const int64_t mode_rd = RDCOST(x->rdmult, rs2 + rd_stats->rate, 0);
       if (mode_rd < ref_best_rd) {
-        av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
+        av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                       orig_dst, bsize);
         int64_t est_rd =
             estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
                                 &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
@@ -9406,8 +9417,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         // compound types searching uses tmp_dst buffer
         if (mbmi->interinter_comp.type == COMPOUND_AVERAGE) {
           if (num_planes > 1)
-            av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, &orig_dst,
-                                            bsize);
+            av1_build_inter_predictors_sbuv(cm, x->tmp_conv_dst, xd, mi_row,
+                                            mi_col, &orig_dst, bsize);
           skip_build_pred = 1;
         }
       }
@@ -9665,7 +9676,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
     mbmi->skip = 0;
     x->skip = 0;
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+    av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col, NULL,
+                                  bsize);
 
     int *dvcost[2] = { (int *)&cpi->dv_cost[0][MV_MAX],
                        (int *)&cpi->dv_cost[1][MV_MAX] };
@@ -10046,9 +10058,10 @@ static void sf_refine_fast_tx_type_search(
     }
 
     if (is_inter_mode(mbmi->mode)) {
-      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+      av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                    NULL, bsize);
       if (mbmi->motion_mode == OBMC_CAUSAL)
-        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+        av1_build_obmc_inter_predictors_sb(cm, x, mi_row, mi_col);
 
       av1_subtract_plane(x, bsize, 0);
       if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
@@ -10212,10 +10225,10 @@ static void set_params_rd_pick_inter_mode(
 
   if (check_num_overlappable_neighbors(mbmi) &&
       is_motion_variation_allowed_bsize(bsize)) {
-    av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col,
+    av1_build_prediction_by_above_preds(cm, x, mi_row, mi_col,
                                         args->above_pred_buf, dst_width1,
                                         dst_height1, args->above_pred_stride);
-    av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
+    av1_build_prediction_by_left_preds(cm, x, mi_row, mi_col,
                                        args->left_pred_buf, dst_width2,
                                        dst_height2, args->left_pred_stride);
     av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
@@ -11524,9 +11537,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       RD_STATS rd_stats_y;
       RD_STATS rd_stats_uv;
 
-      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+      av1_build_inter_predictors_sb(cm, x->tmp_conv_dst, xd, mi_row, mi_col,
+                                    NULL, bsize);
       if (mbmi->motion_mode == OBMC_CAUSAL)
-        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+        av1_build_obmc_inter_predictors_sb(cm, x, mi_row, mi_col);
 
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, &rd_stats, &rd_stats_y,
                        &rd_stats_uv, mode_rate, search_state.best_rd)) {

@@ -915,7 +915,8 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
   unsigned int mse;
   unsigned int sse;
 
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
+  av1_build_inter_predictors_sby(cm, x->tmp_conv_dst, xd, mi_row, mi_col, NULL,
+                                 bsize);
   mse = vfp->vf(dst, dst_stride, src, src_stride, &sse);
   mse += mv_err_cost(this_mv, &ref_mv.as_mv, x->nmvjointcost, x->mvcost,
                      x->errorperbit);

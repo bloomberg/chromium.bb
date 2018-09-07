@@ -26,6 +26,7 @@
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/obmc.h"
+#include "av1/encoder/encoder.h"
 #include "av1/encoder/reconinter_enc.h"
 
 static INLINE void calc_subpel_params(
@@ -72,8 +73,10 @@ static INLINE void calc_subpel_params(
   }
 }
 
-static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                          int plane, const MB_MODE_INFO *mi,
+static INLINE void build_inter_predictors(const AV1_COMMON *cm,
+                                          CONV_BUF_TYPE *tmp_conv_dst,
+                                          MACROBLOCKD *xd, int plane,
+                                          const MB_MODE_INFO *mi,
                                           int build_for_obmc, int bw, int bh,
                                           int mi_x, int mi_y) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -134,11 +137,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       for (int x = 0; x < b8_w; x += b4_w) {
         MB_MODE_INFO *this_mbmi = xd->mi[row * xd->mi_stride + col];
         is_compound = has_second_ref(this_mbmi);
-        DECLARE_ALIGNED(32, CONV_BUF_TYPE, tmp_dst[8 * 8]);
         int tmp_dst_stride = 8;
         assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
-            0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
+            0, plane, tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         conv_params.use_jnt_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
@@ -193,9 +195,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   {
-    DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
     ConvolveParams conv_params = get_conv_params_no_round(
-        0, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
+        0, plane, tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
     av1_jnt_comp_weight_assign(cm, mi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
                                &conv_params.use_jnt_comp_avg, is_compound);
@@ -238,6 +239,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
+                                              CONV_BUF_TYPE *tmp_conv_dst,
                                               MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                               int mi_row, int mi_col,
                                               int plane_from, int plane_to) {
@@ -253,30 +255,36 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
                              pd->subsampling_y))
       continue;
 
-    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, mi_x, mi_y);
+    build_inter_predictors(cm, tmp_conv_dst, xd, plane, xd->mi[0], 0, bw, bh,
+                           mi_x, mi_y);
   }
 }
 
-void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize) {
-  av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize, 0);
+void av1_build_inter_predictors_sby(const AV1_COMMON *cm,
+                                    CONV_BUF_TYPE *tmp_conv_dst,
+                                    MACROBLOCKD *xd, int mi_row, int mi_col,
+                                    BUFFER_SET *ctx, BLOCK_SIZE bsize) {
+  av1_build_inter_predictors_sbp(cm, tmp_conv_dst, xd, mi_row, mi_col, ctx,
+                                 bsize, 0);
 }
 
-void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize) {
+void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm,
+                                     CONV_BUF_TYPE *tmp_conv_dst,
+                                     MACROBLOCKD *xd, int mi_row, int mi_col,
+                                     BUFFER_SET *ctx, BLOCK_SIZE bsize) {
   for (int plane_idx = 1; plane_idx < MAX_MB_PLANE; plane_idx++) {
-    av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize,
-                                   plane_idx);
+    av1_build_inter_predictors_sbp(cm, tmp_conv_dst, xd, mi_row, mi_col, ctx,
+                                   bsize, plane_idx);
   }
 }
 
-void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize, int plane_idx) {
-  build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, plane_idx,
-                                    plane_idx);
+void av1_build_inter_predictors_sbp(const AV1_COMMON *cm,
+                                    CONV_BUF_TYPE *tmp_conv_dst,
+                                    MACROBLOCKD *xd, int mi_row, int mi_col,
+                                    BUFFER_SET *ctx, BLOCK_SIZE bsize,
+                                    int plane_idx) {
+  build_inter_predictors_for_planes(cm, tmp_conv_dst, xd, bsize, mi_row, mi_col,
+                                    plane_idx, plane_idx);
 
   if (is_interintra_pred(xd->mi[0])) {
     BUFFER_SET default_ctx = { { NULL, NULL, NULL }, { 0, 0, 0 } };
@@ -291,13 +299,16 @@ void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_inter_predictors_sb(const AV1_COMMON *cm,
+                                   CONV_BUF_TYPE *tmp_conv_dst, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize) {
   const int num_planes = av1_num_planes(cm);
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
+  av1_build_inter_predictors_sby(cm, tmp_conv_dst, xd, mi_row, mi_col, ctx,
+                                 bsize);
   if (num_planes > 1)
-    av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, ctx, bsize);
+    av1_build_inter_predictors_sbuv(cm, tmp_conv_dst, xd, mi_row, mi_col, ctx,
+                                    bsize);
 }
 
 // TODO(sarahparker):
@@ -353,17 +364,19 @@ static INLINE void build_prediction_by_above_pred(
                    block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, above_mbmi, 1, bw, bh, mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, ctxt->tmp_conv_dst, xd, j, above_mbmi, 1,
+                           bw, bh, mi_x, mi_y);
   }
   *above_mbmi = backup_mbmi;
 }
 
-void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCK *x,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
                                          int tmp_width[MAX_MB_PLANE],
                                          int tmp_height[MAX_MB_PLANE],
                                          int tmp_stride[MAX_MB_PLANE]) {
+  MACROBLOCKD *const xd = &x->e_mbd;
   if (!xd->up_available) return;
 
   // Adjust mb_to_bottom_edge to have the correct value for the OBMC
@@ -373,10 +386,11 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int pred_height = AOMMIN(this_height / 2, 32);
   xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
 
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
-                                        tmp_width,  tmp_height,
-                                        tmp_stride, xd->mb_to_right_edge };
+  struct build_prediction_ctxt ctxt = {
+    cm,         x->tmp_conv_dst, mi_row,
+    mi_col,     tmp_buf,         tmp_width,
+    tmp_height, tmp_stride,      xd->mb_to_right_edge
+  };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_above(cm, xd, mi_col,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
@@ -408,17 +422,19 @@ static INLINE void build_prediction_by_left_pred(
     int bh = (left_mi_height << MI_SIZE_LOG2) >> pd->subsampling_y;
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, left_mbmi, 1, bw, bh, mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, ctxt->tmp_conv_dst, xd, j, left_mbmi, 1,
+                           bw, bh, mi_x, mi_y);
   }
   *left_mbmi = backup_mbmi;
 }
 
-void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCK *x,
                                         int mi_row, int mi_col,
                                         uint8_t *tmp_buf[MAX_MB_PLANE],
                                         int tmp_width[MAX_MB_PLANE],
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]) {
+  MACROBLOCKD *const xd = &x->e_mbd;
   if (!xd->left_available) return;
 
   // Adjust mb_to_right_edge to have the correct value for the OBMC
@@ -428,10 +444,11 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int pred_width = AOMMIN(this_width / 2, 32);
   xd->mb_to_right_edge += (this_width - pred_width) * 8;
 
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
-                                        tmp_width,  tmp_height,
-                                        tmp_stride, xd->mb_to_bottom_edge };
+  struct build_prediction_ctxt ctxt = {
+    cm,         x->tmp_conv_dst, mi_row,
+    mi_col,     tmp_buf,         tmp_width,
+    tmp_height, tmp_stride,      xd->mb_to_bottom_edge
+  };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_left(cm, xd, mi_row,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
@@ -442,11 +459,10 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 
-void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
+void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCK *x,
                                         int mi_row, int mi_col) {
+  MACROBLOCKD *const xd = &x->e_mbd;
   const int num_planes = av1_num_planes(cm);
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf1[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
-  DECLARE_ALIGNED(16, uint8_t, tmp_buf2[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_stride2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -457,23 +473,25 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
-    dst_buf1[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
-    dst_buf1[1] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * len);
-    dst_buf1[2] = CONVERT_TO_BYTEPTR(tmp_buf1 + MAX_SB_SQUARE * 2 * len);
-    dst_buf2[0] = CONVERT_TO_BYTEPTR(tmp_buf2);
-    dst_buf2[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
-    dst_buf2[2] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * 2 * len);
+    dst_buf1[0] = CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[0]);
+    dst_buf1[1] = CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[0] + MAX_SB_SQUARE * len);
+    dst_buf1[2] =
+        CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2 * len);
+    dst_buf2[0] = CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[1]);
+    dst_buf2[1] = CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[1] + MAX_SB_SQUARE * len);
+    dst_buf2[2] =
+        CONVERT_TO_BYTEPTR(x->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2 * len);
   } else {
-    dst_buf1[0] = tmp_buf1;
-    dst_buf1[1] = tmp_buf1 + MAX_SB_SQUARE;
-    dst_buf1[2] = tmp_buf1 + MAX_SB_SQUARE * 2;
-    dst_buf2[0] = tmp_buf2;
-    dst_buf2[1] = tmp_buf2 + MAX_SB_SQUARE;
-    dst_buf2[2] = tmp_buf2 + MAX_SB_SQUARE * 2;
+    dst_buf1[0] = x->tmp_obmc_bufs[0];
+    dst_buf1[1] = x->tmp_obmc_bufs[0] + MAX_SB_SQUARE;
+    dst_buf1[2] = x->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2;
+    dst_buf2[0] = x->tmp_obmc_bufs[1];
+    dst_buf2[1] = x->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
+    dst_buf2[2] = x->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
   }
-  av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col, dst_buf1,
+  av1_build_prediction_by_above_preds(cm, x, mi_row, mi_col, dst_buf1,
                                       dst_width1, dst_height1, dst_stride1);
-  av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
+  av1_build_prediction_by_left_preds(cm, x, mi_row, mi_col, dst_buf2,
                                      dst_width2, dst_height2, dst_stride2);
   av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, get_frame_new_buffer(cm),
                        mi_row, mi_col, 0, num_planes);

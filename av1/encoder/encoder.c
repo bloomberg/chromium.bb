@@ -534,6 +534,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
   aom_free(cpi->td.mb.palette_buffer);
 
+  aom_free(cpi->td.mb.tmp_conv_dst);
+  for (int j = 0; j < 2; ++j) {
+    aom_free(cpi->td.mb.tmp_obmc_bufs[j]);
+  }
+
 #if CONFIG_DENOISE
   if (cpi->denoise_and_model) {
     aom_denoise_and_model_free(cpi->denoise_and_model);
@@ -2389,6 +2394,20 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
   }
+
+  if (x->tmp_conv_dst == NULL) {
+    CHECK_MEM_ERROR(
+        cm, x->tmp_conv_dst,
+        aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE * sizeof(*x->tmp_conv_dst)));
+  }
+  for (int i = 0; i < 2; ++i) {
+    if (x->tmp_obmc_bufs[i] == NULL) {
+      CHECK_MEM_ERROR(cm, x->tmp_obmc_bufs[i],
+                      aom_memalign(16, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                           sizeof(*x->tmp_obmc_bufs[i])));
+    }
+  }
+
   av1_reset_segment_features(cm);
   set_high_precision_mv(cpi, 1, 0);
 
@@ -2961,14 +2980,19 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     // Deallocate allocated thread data.
     if (t < cpi->num_workers - 1) {
       aom_free(thread_data->td->palette_buffer);
+      aom_free(thread_data->td->tmp_conv_dst);
+      for (int j = 0; j < 2; ++j) {
+        aom_free(thread_data->td->tmp_obmc_bufs[j]);
+      }
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
       aom_free(thread_data->td->wsrc_buf);
-      for (int x = 0; x < 2; x++)
+      for (int x = 0; x < 2; x++) {
         for (int y = 0; y < 2; y++) {
           aom_free(thread_data->td->hash_value_buffer[x][y]);
           thread_data->td->hash_value_buffer[x][y] = NULL;
         }
+      }
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
       av1_free_pc_tree(thread_data->td, num_planes);

@@ -84,6 +84,7 @@ typedef struct SubpelParams {
 
 struct build_prediction_ctxt {
   const AV1_COMMON *cm;
+  CONV_BUF_TYPE *tmp_conv_dst;
   int mi_row;
   int mi_col;
   uint8_t **tmp_buf;

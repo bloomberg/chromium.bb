@@ -111,6 +111,17 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
           cm, thread_data->td->palette_buffer,
           aom_memalign(16, sizeof(*thread_data->td->palette_buffer)));
 
+      CHECK_MEM_ERROR(
+          cm, thread_data->td->tmp_conv_dst,
+          aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE *
+                               sizeof(*thread_data->td->tmp_conv_dst)));
+      for (int j = 0; j < 2; ++j) {
+        CHECK_MEM_ERROR(
+            cm, thread_data->td->tmp_obmc_bufs[j],
+            aom_memalign(16, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                 sizeof(*thread_data->td->tmp_obmc_bufs[j])));
+      }
+
       // Create threads
       if (!winterface->reset(worker))
         aom_internal_error(&cm->error, AOM_CODEC_ERROR,
@@ -181,7 +192,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       thread_data->td->mb.above_pred_buf = thread_data->td->above_pred_buf;
       thread_data->td->mb.left_pred_buf = thread_data->td->left_pred_buf;
       thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
-      for (int x = 0; x < 2; x++)
+      for (int x = 0; x < 2; x++) {
         for (int y = 0; y < 2; y++) {
           memcpy(thread_data->td->hash_value_buffer[x][y],
                  cpi->td.mb.hash_value_buffer[x][y],
@@ -190,14 +201,21 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
           thread_data->td->mb.hash_value_buffer[x][y] =
               thread_data->td->hash_value_buffer[x][y];
         }
+      }
       thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
     }
     if (thread_data->td->counts != &cpi->counts) {
       memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));
     }
 
-    if (i < num_workers - 1)
+    if (i < num_workers - 1) {
       thread_data->td->mb.palette_buffer = thread_data->td->palette_buffer;
+      thread_data->td->mb.tmp_conv_dst = thread_data->td->tmp_conv_dst;
+      for (int j = 0; j < 2; ++j) {
+        thread_data->td->mb.tmp_obmc_bufs[j] =
+            thread_data->td->tmp_obmc_bufs[j];
+      }
+    }
   }
 }
 
