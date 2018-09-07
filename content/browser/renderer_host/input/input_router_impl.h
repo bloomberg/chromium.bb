@@ -110,6 +110,9 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnHasTouchEventHandlersForTest(bool has_handlers);
+  int num_of_active_touches_for_test() {
+    return touch_action_filter_.num_of_active_touches_for_test();
+  }
 
  private:
   friend class InputRouterImplTest;
