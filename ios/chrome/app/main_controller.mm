@@ -126,6 +126,7 @@
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services_navigation_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
@@ -298,6 +299,7 @@ enum class ShowTabSwitcherSnapshotResult {
 }  // namespace
 
 @interface MainController ()<BrowserStateStorageSwitching,
+                             GoogleServicesNavigationCoordinatorDelegate,
                              PrefObserverDelegate,
                              SettingsNavigationControllerDelegate,
                              TabModelObserver,
@@ -325,6 +327,8 @@ enum class ShowTabSwitcherSnapshotResult {
 
   // Navigation View controller for the settings.
   SettingsNavigationController* _settingsNavigationController;
+  // Coordinator to display the Google services settings.
+  GoogleServicesNavigationCoordinator* _googleServicesNavigationCoordinator;
 
   // TabSwitcher object -- the stack view, tablet switcher, etc.
   id<TabSwitcher> _tabSwitcher;
@@ -1666,6 +1670,35 @@ enum class ShowTabSwitcherSnapshotResult {
                                  completion:nil];
 }
 
+// TODO(crbug.com/779791) : Remove show settings from MainController.
+- (void)showGoogleServicesSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (!baseViewController) {
+    DCHECK_EQ(self.currentBVC, self.viewControllerSwapper.activeViewController);
+    baseViewController = self.currentBVC;
+  }
+  DCHECK(![baseViewController presentedViewController]);
+  if ([self currentBrowserState]->IsOffTheRecord()) {
+    NOTREACHED();
+    return;
+  }
+  if (_settingsNavigationController) {
+    // Navigate to the Google services settings if the settings dialog is
+    // already opened.
+    [_settingsNavigationController
+        showGoogleServicesSettingsFromViewController:baseViewController];
+    return;
+  }
+  // If the settings dialog is not already opened, start a new
+  // GoogleServicesNavigationCoordinator.
+  _googleServicesNavigationCoordinator =
+      [[GoogleServicesNavigationCoordinator alloc]
+          initWithBaseViewController:baseViewController
+                        browserState:_mainBrowserState];
+  _googleServicesNavigationCoordinator.delegate = self;
+  [_googleServicesNavigationCoordinator start];
+}
+
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController {
@@ -2704,6 +2737,14 @@ enum class ShowTabSwitcherSnapshotResult {
                                              activeTabModel:self.currentTabModel
                                  applicationCommandEndpoint:self];
     }
+}
+
+#pragma mark - GoogleServicesNavigationCoordinatorDelegate
+
+- (void)googleServicesNavigationCoordinatorDidClose:
+    (GoogleServicesNavigationCoordinator*)coordinator {
+  DCHECK_EQ(_googleServicesNavigationCoordinator, coordinator);
+  _googleServicesNavigationCoordinator = nil;
 }
 
 @end

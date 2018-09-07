@@ -22,6 +22,10 @@
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Shows the Google services settings UI, presenting from |baseViewController|.
+- (void)showGoogleServicesSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the sync settings UI, presenting from |baseViewController|.
 - (void)showSyncSettingsFromViewController:
