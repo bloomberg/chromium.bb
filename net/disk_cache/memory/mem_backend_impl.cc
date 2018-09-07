@@ -76,12 +76,11 @@ MemBackendImpl::~MemBackendImpl() {
 
 // static
 std::unique_ptr<MemBackendImpl> MemBackendImpl::CreateBackend(
-    int max_bytes,
+    int64_t max_bytes,
     net::NetLog* net_log) {
   std::unique_ptr<MemBackendImpl> cache(
       std::make_unique<MemBackendImpl>(net_log));
-  cache->SetMaxSize(max_bytes);
-  if (cache->Init())
+  if (cache->SetMaxSize(max_bytes) && cache->Init())
     return cache;
 
   LOG(ERROR) << "Unable to create cache";
@@ -110,10 +109,8 @@ bool MemBackendImpl::Init() {
   return true;
 }
 
-bool MemBackendImpl::SetMaxSize(int max_bytes) {
-  static_assert(sizeof(max_bytes) == sizeof(max_size_),
-                "unsupported int model");
-  if (max_bytes < 0)
+bool MemBackendImpl::SetMaxSize(int64_t max_bytes) {
+  if (max_bytes < 0 || max_bytes > std::numeric_limits<int>::max())
     return false;
 
   // Zero size means use the default.
@@ -240,14 +237,15 @@ int MemBackendImpl::DoomEntriesSince(Time initial_time,
   return DoomEntriesBetween(initial_time, Time::Max(), std::move(callback));
 }
 
-int MemBackendImpl::CalculateSizeOfAllEntries(CompletionOnceCallback callback) {
+int64_t MemBackendImpl::CalculateSizeOfAllEntries(
+    Int64CompletionOnceCallback callback) {
   return current_size_;
 }
 
-int MemBackendImpl::CalculateSizeOfEntriesBetween(
+int64_t MemBackendImpl::CalculateSizeOfEntriesBetween(
     base::Time initial_time,
     base::Time end_time,
-    CompletionOnceCallback callback) {
+    Int64CompletionOnceCallback callback) {
   if (end_time.is_null())
     end_time = Time::Max();
   DCHECK_GE(end_time, initial_time);

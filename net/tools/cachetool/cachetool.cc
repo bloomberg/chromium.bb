@@ -110,6 +110,9 @@ class CommandMarshal {
   // Communicates back an integer.
   virtual void ReturnInt(int integer) = 0;
 
+  // Communicates back a 64-bit integer.
+  virtual void ReturnInt64(int64_t integer) = 0;
+
   // Communicates back a string.
   virtual void ReturnString(const std::string& string) = 0;
 
@@ -181,6 +184,12 @@ class ProgramArgumentCommandMarshal final : public CommandMarshal {
 
   // Implements CommandMarshal.
   void ReturnInt(int integer) override {
+    DCHECK(!has_failed());
+    std::cout << integer << std::endl;
+  }
+
+  // Implements CommandMarshal.
+  void ReturnInt64(int64_t integer) override {
     DCHECK(!has_failed());
     std::cout << integer << std::endl;
   }
@@ -265,6 +274,12 @@ class StreamCommandMarshal final : public CommandMarshal {
   }
 
   // Implements CommandMarshal.
+  void ReturnInt64(int64_t integer) override {
+    DCHECK(!has_failed());
+    std::cout.write(reinterpret_cast<char*>(&integer), sizeof(integer));
+  }
+
+  // Implements CommandMarshal.
   void ReturnString(const std::string& string) override {
     ReturnInt(string.size());
     std::cout.write(string.c_str(), string.size());
@@ -288,14 +303,14 @@ class StreamCommandMarshal final : public CommandMarshal {
 
 // Gets the cache's size.
 void GetSize(CommandMarshal* command_marshal) {
-  net::TestCompletionCallback cb;
-  int rv = command_marshal->cache_backend()->CalculateSizeOfAllEntries(
+  net::TestInt64CompletionCallback cb;
+  int64_t rv = command_marshal->cache_backend()->CalculateSizeOfAllEntries(
       cb.callback());
   rv = cb.GetResult(rv);
   if (rv < 0)
     return command_marshal->ReturnFailure("Couldn't get cache size.");
   command_marshal->ReturnSuccess();
-  command_marshal->ReturnInt(rv);
+  command_marshal->ReturnInt64(rv);
 }
 
 // Prints all of a cache's keys to stdout.
@@ -393,7 +408,7 @@ void ListDups(CommandMarshal* command_marshal) {
       command_marshal->cache_backend()->CreateIterator();
   Entry* entry = nullptr;
   net::TestCompletionCallback cb;
-  int rv = entry_iterator->OpenNextEntry(&entry, cb.callback());
+  int64_t rv = entry_iterator->OpenNextEntry(&entry, cb.callback());
   command_marshal->ReturnSuccess();
 
   std::unordered_map<std::string, std::vector<EntryData>> md5_entries;
@@ -457,9 +472,10 @@ void ListDups(CommandMarshal* command_marshal) {
   }
 
   // Print the stats.
+  net::TestInt64CompletionCallback size_cb;
   rv = command_marshal->cache_backend()->CalculateSizeOfAllEntries(
-      cb.callback());
-  rv = cb.GetResult(rv);
+      size_cb.callback());
+  rv = size_cb.GetResult(rv);
   LOG(ERROR) << "Wasted bytes = " << total_duped_bytes;
   LOG(ERROR) << "Wasted entries = " << total_duped_entries;
   LOG(ERROR) << "Total entries = " << total_entries;

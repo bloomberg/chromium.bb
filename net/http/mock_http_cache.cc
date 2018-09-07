@@ -533,7 +533,8 @@ int MockDiskCache::DoomEntriesSince(const base::Time initial_time,
   return ERR_NOT_IMPLEMENTED;
 }
 
-int MockDiskCache::CalculateSizeOfAllEntries(CompletionOnceCallback callback) {
+int64_t MockDiskCache::CalculateSizeOfAllEntries(
+    Int64CompletionOnceCallback callback) {
   return ERR_NOT_IMPLEMENTED;
 }
 

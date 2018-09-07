@@ -62,7 +62,7 @@ class Backend;
 NET_EXPORT int CreateCacheBackend(net::CacheType type,
                                   net::BackendType backend_type,
                                   const base::FilePath& path,
-                                  int max_bytes,
+                                  int64_t max_bytes,
                                   bool force,
                                   net::NetLog* net_log,
                                   std::unique_ptr<Backend>* backend,
@@ -81,7 +81,7 @@ NET_EXPORT int CreateCacheBackend(net::CacheType type,
 NET_EXPORT int CreateCacheBackend(net::CacheType type,
                                   net::BackendType backend_type,
                                   const base::FilePath& path,
-                                  int max_bytes,
+                                  int64_t max_bytes,
                                   bool force,
                                   net::NetLog* net_log,
                                   std::unique_ptr<Backend>* backend,
@@ -97,6 +97,7 @@ NET_EXPORT void FlushCacheThreadForTesting();
 class NET_EXPORT Backend {
  public:
   typedef net::CompletionOnceCallback CompletionOnceCallback;
+  typedef net::Int64CompletionOnceCallback Int64CompletionOnceCallback;
 
   class Iterator {
    public:
@@ -192,7 +193,8 @@ class NET_EXPORT Backend {
   // Calculate the total size of the cache. The return value is the size in
   // bytes or a net error code. If this method returns ERR_IO_PENDING,
   // the |callback| will be invoked when the operation completes.
-  virtual int CalculateSizeOfAllEntries(CompletionOnceCallback callback) = 0;
+  virtual int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) = 0;
 
   // Calculate the size of all cache entries accessed between |initial_time| and
   // |end_time|.
@@ -202,9 +204,10 @@ class NET_EXPORT Backend {
   // subset of the cache without reading the whole cache from disk.
   // If this method returns ERR_IO_PENDING, the |callback| will be invoked when
   // the operation completes.
-  virtual int CalculateSizeOfEntriesBetween(base::Time initial_time,
-                                            base::Time end_time,
-                                            CompletionOnceCallback callback);
+  virtual int64_t CalculateSizeOfEntriesBetween(
+      base::Time initial_time,
+      base::Time end_time,
+      Int64CompletionOnceCallback callback);
 
   // Returns an iterator which will enumerate all entries of the cache in an
   // undefined order.

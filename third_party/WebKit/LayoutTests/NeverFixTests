@@ -1896,3 +1896,6 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 
 # This test will only work in the "video-surface-layer" virtual test suite.
 media/picture-in-picture/picture-in-picture-interstitial-sizing.html [ WontFix ]
+
+# Tests that use too much storage for automation.
+http/tests/cachestorage/large-put.html [ WontFix ]

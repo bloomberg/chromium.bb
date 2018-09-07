@@ -110,7 +110,7 @@ void ConditionalCacheCountingHelper::CountHttpCacheOnIOThread() {
 // --> CacheState::PROCESS_MAIN --> CacheState::CREATE_MEDIA -->
 // CacheState::PROCESS_MEDIA --> CacheState::DONE.
 // On error, we jump directly to CacheState::DONE.
-void ConditionalCacheCountingHelper::DoCountCache(int rv) {
+void ConditionalCacheCountingHelper::DoCountCache(int64_t rv) {
   DCHECK_NE(CacheState::NONE, next_cache_state_);
   while (rv != net::ERR_IO_PENDING && next_cache_state_ != CacheState::NONE) {
     // On error, finish and return the error code. A valid result value might
@@ -142,9 +142,12 @@ void ConditionalCacheCountingHelper::DoCountCache(int rv) {
                                 : CacheState::COUNT_MEDIA;
 
         rv = http_cache->GetBackend(
-            &cache_,
-            base::BindOnce(&ConditionalCacheCountingHelper::DoCountCache,
-                           base::Unretained(this)));
+            &cache_, base::BindOnce(
+                         [](ConditionalCacheCountingHelper* self, int rv) {
+                           self->DoCountCache(static_cast<int64_t>(rv));
+                         },
+                         base::Unretained(this)));
+
         break;
       }
       case CacheState::COUNT_MAIN:
