@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -56,8 +57,18 @@ bool IsValidInput(const base::StringPiece& scheme,
       scheme.data(),
       Component(0, base::checked_cast<int>(scheme.length())),
       &scheme_type);
-  if (!is_standard)
+  if (!is_standard) {
+    // To be consistent with blink, local non-standard schemes are currently
+    // allowed to be tuple origins. Nonstandard schemes don't have hostnames,
+    // so their tuple is just ("protocol", "", 0).
+    //
+    // TODO: Migrate "content:" and "externalfile:" to be standard schemes, and
+    // remove this local scheme exception.
+    if (base::ContainsValue(GetLocalSchemes(), scheme) && host.empty() &&
+        port == 0)
+      return true;
     return false;
+  }
 
   switch (scheme_type) {
     case SCHEME_WITH_HOST_AND_PORT:
@@ -116,12 +127,15 @@ SchemeHostPort::SchemeHostPort(std::string scheme,
                                uint16_t port,
                                ConstructPolicy policy)
     : port_(0) {
-  if (!IsValidInput(scheme, host, port, policy))
+  if (!IsValidInput(scheme, host, port, policy)) {
+    DCHECK(IsInvalid());
     return;
+  }
 
   scheme_ = std::move(scheme);
   host_ = std::move(host);
   port_ = port;
+  DCHECK(!IsInvalid());
 }
 
 SchemeHostPort::SchemeHostPort(base::StringPiece scheme,
@@ -159,7 +173,11 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
 SchemeHostPort::~SchemeHostPort() = default;
 
 bool SchemeHostPort::IsInvalid() const {
-  return scheme_.empty() && host_.empty() && !port_;
+  // It suffices to just check |scheme_| for emptiness; the other fields are
+  // never present without it.
+  DCHECK(!scheme_.empty() || host_.empty());
+  DCHECK(!scheme_.empty() || port_ == 0);
+  return scheme_.empty();
 }
 
 std::string SchemeHostPort::Serialize() const {

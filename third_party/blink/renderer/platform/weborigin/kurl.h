@@ -135,9 +135,13 @@ class PLATFORM_EXPORT KURL {
   bool HasPath() const;
 
   // Returns true if you can set the host and port for the URL.
-  // Non-hierarchical URLs don't have a host and port.
+  // Non-hierarchical URLs don't have a host and port. This is equivalent to
+  // GURL::IsStandard().
+  //
+  // Note: this returns true for "filesystem" and false for "blob" currently,
+  // due to peculiarities of how schemes are registered in url/ -- neither
+  // of these schemes can have hostnames on the outer URL.
   bool CanSetHostOrPort() const { return IsHierarchical(); }
-
   bool CanSetPathname() const { return IsHierarchical(); }
   bool IsHierarchical() const;
 

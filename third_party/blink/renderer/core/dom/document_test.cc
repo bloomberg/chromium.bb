@@ -589,6 +589,8 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 
   // A unique origin does not bypass secure context checks unless it
   // is also potentially trustworthy.
+  url::AddStandardScheme("very-special-scheme",
+                         url::SchemeType::SCHEME_WITH_HOST);
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
       "very-special-scheme");
   origin =

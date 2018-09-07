@@ -588,6 +588,23 @@ void ChromeContentClient::AddContentDecryptionModules(
 #endif
 }
 
+// New schemes by which content can be retrieved should almost certainly be
+// marked as "standard" schemes, even if they're internal, chrome-only schemes.
+// "Standard" here just means that its URLs behave like 'normal' URL do.
+//   - Standard schemes get canonicalized like "new-scheme://hostname/[path]"
+//   - Whereas "new-scheme:hostname" is a valid nonstandard URL.
+//   - Thus, hostnames can't be extracted from non-standard schemes.
+//   - The presence of hostnames enables the same-origin policy. Resources like
+//     "new-scheme://foo/" are kept separate from "new-scheme://bar/". For
+//     a nonstandard scheme, every resource loaded from that scheme could
+//     have access to every other resource.
+//   - The same-origin policy is very important if webpages can be
+//     loaded via the scheme. Try to organize the URL space of any new scheme
+//     such that hostnames provide meaningful compartmentalization of
+//     privileges.
+//
+// Example standard schemes: https://, chrome-extension://, chrome://, file://
+// Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
     extensions::kExtensionScheme,
     chrome::kChromeNativeScheme,

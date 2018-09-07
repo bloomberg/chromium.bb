@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -396,12 +397,18 @@ TEST_F(SecurityOriginTest, CanonicalizeHost) {
 }
 
 TEST_F(SecurityOriginTest, UrlOriginConversions) {
+  url::AddLocalScheme("nonstandard-but-local");
+  SchemeRegistry::RegisterURLSchemeAsLocal("nonstandard-but-local");
   struct TestCases {
     const char* const url;
     const char* const scheme;
     const char* const host;
     uint16_t port;
+    bool opaque = false;
   } cases[] = {
+      // Nonstandard scheme registered as local scheme
+      {"nonstandard-but-local:really?really", "nonstandard-but-local", "", 0},
+
       // IP Addresses
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
       {"http://[2001:db8::1]/", "http", "[2001:db8::1]", 80},
@@ -419,6 +426,11 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
       {"http://example.com:123/?query", "http", "example.com", 123},
       {"https://example.com/#1234", "https", "example.com", 443},
       {"https://u:p@example.com:123/?query#1234", "https", "example.com", 123},
+
+      // Nonstandard schemes.
+      {"unrecognized-scheme://localhost/", "", "", 0, true},
+      {"mailto:localhost/", "", "", 0, true},
+      {"about:blank", "", "", 0, true},
 
       // Registered URLs
       {"ftp://example.com/", "ftp", "example.com", 21},
@@ -447,19 +459,61 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
   };
 
   for (const auto& test_case : cases) {
-    url::Origin url_origin1 = url::Origin::Create(GURL(test_case.url));
+    SCOPED_TRACE(test_case.url);
+    GURL gurl(test_case.url);
+    KURL kurl(String::FromUTF8(test_case.url));
+    EXPECT_TRUE(gurl.is_valid());
+    EXPECT_TRUE(kurl.IsValid());
+    url::Origin origin_via_gurl = url::Origin::Create(gurl);
+    scoped_refptr<const SecurityOrigin> security_origin_via_kurl =
+        SecurityOrigin::Create(kurl);
+    EXPECT_EQ(origin_via_gurl.scheme(), test_case.scheme);
 
     // Test CreateFromUrlOrigin
-    scoped_refptr<const SecurityOrigin> security_origin =
-        SecurityOrigin::CreateFromUrlOrigin(url_origin1);
-    EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
-        SecurityOrigin::Create(test_case.scheme, test_case.host, test_case.port)
-            .get()));
+    scoped_refptr<const SecurityOrigin> security_origin_via_gurl =
+        SecurityOrigin::CreateFromUrlOrigin(origin_via_gurl);
+    EXPECT_EQ(test_case.scheme, security_origin_via_gurl->Protocol());
+    EXPECT_EQ(test_case.scheme, security_origin_via_kurl->Protocol());
+    EXPECT_EQ(test_case.host, security_origin_via_gurl->Host());
+    EXPECT_EQ(test_case.host, security_origin_via_kurl->Host());
+    EXPECT_EQ(security_origin_via_gurl->Port(),
+              security_origin_via_kurl->Port());
+    EXPECT_EQ(test_case.port, security_origin_via_gurl->EffectivePort());
+    EXPECT_EQ(test_case.port, security_origin_via_kurl->EffectivePort());
+    EXPECT_EQ(test_case.opaque, security_origin_via_gurl->IsOpaque());
+    EXPECT_EQ(test_case.opaque, security_origin_via_kurl->IsOpaque());
+    EXPECT_EQ(!test_case.opaque, security_origin_via_kurl->IsSameSchemeHostPort(
+                                     security_origin_via_gurl.get()));
+    EXPECT_EQ(!test_case.opaque, security_origin_via_gurl->IsSameSchemeHostPort(
+                                     security_origin_via_kurl.get()));
+
+    if (!test_case.opaque) {
+      scoped_refptr<const SecurityOrigin> security_origin =
+          SecurityOrigin::Create(test_case.scheme, test_case.host,
+                                 test_case.port);
+      EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
+          security_origin_via_gurl.get()));
+      EXPECT_TRUE(security_origin->IsSameSchemeHostPort(
+          security_origin_via_kurl.get()));
+      EXPECT_TRUE(security_origin_via_gurl->IsSameSchemeHostPort(
+          security_origin.get()));
+      EXPECT_TRUE(security_origin_via_kurl->IsSameSchemeHostPort(
+          security_origin.get()));
+    }
 
     // Test ToUrlOrigin
-    url::Origin url_origin2 = security_origin->ToUrlOrigin();
-    EXPECT_TRUE(url_origin1.IsSameOriginWith(url_origin2))
-        << test_case.url << " : " << url_origin2.Serialize();
+    url::Origin origin_roundtrip_via_kurl =
+        security_origin_via_kurl->ToUrlOrigin();
+    url::Origin origin_roundtrip_via_gurl =
+        security_origin_via_gurl->ToUrlOrigin();
+
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_kurl.unique());
+    EXPECT_EQ(test_case.opaque, origin_roundtrip_via_gurl.unique());
+    if (!test_case.opaque) {
+      EXPECT_EQ(origin_via_gurl, origin_roundtrip_via_kurl);
+      EXPECT_EQ(origin_roundtrip_via_kurl, origin_roundtrip_via_gurl);
+      EXPECT_EQ(origin_roundtrip_via_gurl, origin_via_gurl);
+    }
   }
 }
 
