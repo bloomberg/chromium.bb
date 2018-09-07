@@ -80,6 +80,16 @@ class OSCrypt {
   // mock Keychain. Use OSCryptMocker, instead of calling this method directly.
   static COMPONENT_EXPORT(OS_CRYPT) void UseLockedMockKeychainForTesting(
       bool use_locked);
+
+  // Get the raw encryption key to be used for all AES encryption. Returns an
+  // empty string in the case password access is denied or key generation error
+  // occurs. This method is thread-safe.
+  static COMPONENT_EXPORT(OS_CRYPT) std::string GetRawEncryptionKey();
+
+  // Set the raw encryption key to be used for all AES encryption.
+  // This method is thread-safe.
+  static COMPONENT_EXPORT(OS_CRYPT) void SetRawEncryptionKey(
+      const std::string& key);
 #endif
 
  private:
