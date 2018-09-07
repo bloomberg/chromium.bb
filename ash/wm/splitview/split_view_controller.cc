@@ -695,7 +695,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // mode and show the cannot snap toast.
   if (!CanSnap(gained_active)) {
     if (wm::GetWindowState(gained_active)->IsUserPositionable()) {
-      EndSplitView();
+      EndSplitView(EndReason::kUnsnappableWindowActivated);
       ShowAppCannotSnapToast();
     }
     return;

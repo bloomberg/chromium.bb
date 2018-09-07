@@ -929,14 +929,21 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
 void WindowSelector::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
-  if (state != SplitViewController::NO_SNAP) {
-    // Do not restore focus if a window was just snapped and activated.
+  const bool unsnappable_window_activated =
+      state == SplitViewController::NO_SNAP &&
+      Shell::Get()->split_view_controller()->end_reason() ==
+          SplitViewController::EndReason::kUnsnappableWindowActivated;
+
+  if (state != SplitViewController::NO_SNAP || unsnappable_window_activated) {
+    // Do not restore focus if a window was just snapped and activated or
+    // splitview mode is ended by activating an unsnappable window.
     ResetFocusRestoreWindow(false);
   }
 
-  if (state == SplitViewController::BOTH_SNAPPED) {
-    // If two windows were snapped to both sides of the screen, end overview
-    // mode.
+  if (state == SplitViewController::BOTH_SNAPPED ||
+      unsnappable_window_activated) {
+    // If two windows were snapped to both sides of the screen or an unsnappable
+    // window was just activated, end overview mode.
     CancelSelection();
   } else {
     // Otherwise adjust the overview window grid bounds if overview mode is
