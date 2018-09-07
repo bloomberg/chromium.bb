@@ -32,12 +32,6 @@ enum GenerationUploadStatus {
   UNKNOWN_STATUS = 10
 };
 
-// autofill::PasswordForm::Layout
-enum PasswordFormLayout {
-  LAYOUT_OTHER,
-  LAYOUT_LOGIN_AND_SIGNUP
-};
-
 // autofill::PasswordForm::Type
 enum PasswordFormType {
   TYPE_MANUAL,
@@ -244,7 +238,6 @@ struct PasswordForm {
   url.mojom.Url icon_url;
   url.mojom.Origin federation_origin;
   bool skip_zero_click;
-  PasswordFormLayout layout;
   bool was_parsed_using_autofill_predictions;
   bool is_public_suffix_match;
   bool is_affiliation_based_match;

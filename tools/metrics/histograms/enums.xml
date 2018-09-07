@@ -37245,7 +37245,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Disabled change password form without username"/>
   <int value="5" label="Signup form"/>
   <int value="6" label="Signup form without username"/>
-  <int value="7" label="Combined login and signup form"/>
+  <int value="7" label="Combined login and signup form (obsolete)"/>
 </enum>
 
 <enum name="PasswordGenerationEvent">
