@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "ui/views/controls/link_listener.h"
@@ -68,6 +70,8 @@ class CrostiniInstallerView
   void OnConciergeStarted(crostini::ConciergeClientResult result) override;
   void OnDiskImageCreated(crostini::ConciergeClientResult result) override;
   void OnVmStarted(crostini::ConciergeClientResult result) override;
+  void OnContainerDownloading(int32_t download_percent) override;
+  void OnContainerCreated(crostini::ConciergeClientResult result) override;
   void OnContainerStarted(crostini::ConciergeClientResult result) override;
   void OnSshKeysFetched(crostini::ConciergeClientResult result) override;
 
@@ -83,6 +87,7 @@ class CrostiniInstallerView
     START_CONCIERGE,       // Starting the Concierge D-Bus client.
     CREATE_DISK_IMAGE,     // Creating the image for the Termina VM.
     START_TERMINA_VM,      // Starting the Termina VM.
+    CREATE_CONTAINER,      // Creating the container inside the Termina VM.
     START_CONTAINER,       // Starting the container inside the Termina VM.
     FETCH_SSH_KEYS,        // Fetch ssh keys from concierge.
     MOUNT_CONTAINER,       // Do sshfs mount of container.
@@ -97,6 +102,7 @@ class CrostiniInstallerView
   void MountContainerFinished(crostini::ConciergeClientResult result);
   void ShowLoginShell();
   void StepProgress();
+  void UpdateState(State new_state);
   void SetMessageLabel();
   void SetBigMessageLabel();
 
@@ -112,6 +118,9 @@ class CrostiniInstallerView
   Profile* profile_;
   crostini::CrostiniManager::RestartId restart_id_ =
       crostini::CrostiniManager::kUninitializedRestartId;
+  int32_t container_download_percent_ = 0;
+  base::Time state_start_time_;
+  std::unique_ptr<base::RepeatingTimer> state_progress_timer_;
 
   // Whether the result has been logged or not is stored to prevent multiple
   // results being logged for a given setup flow. This can happen due to

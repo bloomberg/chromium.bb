@@ -146,6 +146,8 @@ class CrostiniManager : public KeyedService,
     virtual void OnConciergeStarted(ConciergeClientResult result) = 0;
     virtual void OnDiskImageCreated(ConciergeClientResult result) = 0;
     virtual void OnVmStarted(ConciergeClientResult result) = 0;
+    virtual void OnContainerDownloading(int32_t download_percent) = 0;
+    virtual void OnContainerCreated(ConciergeClientResult result) = 0;
     virtual void OnContainerStarted(ConciergeClientResult result) = 0;
     virtual void OnSshKeysFetched(ConciergeClientResult result) = 0;
   };

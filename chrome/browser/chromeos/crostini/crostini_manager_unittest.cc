@@ -368,6 +368,14 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
+  void OnContainerDownloading(int32_t download_percent) override {}
+
+  void OnContainerCreated(ConciergeClientResult result) override {
+    if (abort_on_container_created_) {
+      Abort();
+    }
+  }
+
   void OnContainerStarted(ConciergeClientResult result) override {
     if (abort_on_container_started_) {
       Abort();
@@ -407,6 +415,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_concierge_started_ = false;
   bool abort_on_disk_image_created_ = false;
   bool abort_on_vm_started_ = false;
+  bool abort_on_container_created_ = false;
   bool abort_on_container_started_ = false;
   bool abort_on_ssh_keys_fetched_ = false;
   int restart_crostini_callback_count_ = 0;
@@ -473,6 +482,21 @@ TEST_F(CrostiniManagerRestartTest, AbortOnVmStarted) {
   abort_on_vm_started_ = true;
   restart_id_ = crostini_manager()->RestartCrostini(
       kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreated) {
+  abort_on_container_created_ = true;
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
