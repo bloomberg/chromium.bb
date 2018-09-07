@@ -2513,7 +2513,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Set the interval until the next gf.
   // If forward keyframes are enabled, ensure the final gf group obeys the
   // MIN_FWD_KF_INTERVAL.
-  if (cpi->oxcf.fwd_kf_enabled) {
+  if (cpi->oxcf.fwd_kf_enabled &&
+      ((twopass->stats_in - i + rc->frames_to_key) < twopass->stats_in_end)) {
     if (i == rc->frames_to_key) {
       rc->baseline_gf_interval = i;
       // if the last gf group will be smaller than MIN_FWD_KF_INTERVAL
