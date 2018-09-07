@@ -265,6 +265,8 @@ Viewport.prototype = {
       this.fitToWidth();
     else if (this.fittingType_ == FittingType.FIT_TO_HEIGHT)
       this.fitToHeightInternal_(false);
+    else if (this.internalZoom_ == 0)
+      this.fitToNone();
     else
       this.updateViewport_();
   },
@@ -373,6 +375,7 @@ Viewport.prototype = {
       x: this.position.x / this.zoom,
       y: this.position.y / this.zoom
     };
+
     this.internalZoom_ = newZoom;
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
@@ -634,13 +637,17 @@ Viewport.prototype = {
     if (fitHeight)
       zoomHeight = windowHeight / pageHeight;
 
-    if (!fitWidth && fitHeight)
-      return zoomHeight;
-    if (fitWidth && !fitHeight)
-      return zoomWidth;
+    var zoom;
+    if (!fitWidth && fitHeight) {
+      zoom = zoomHeight;
+    } else if (fitWidth && !fitHeight) {
+      zoom = zoomWidth;
+    } else {
+      // Assume fitWidth && fitHeight
+      zoom = Math.min(zoomWidth, zoomHeight);
+    }
 
-    // Assume fitWidth && fitHeight
-    return Math.min(zoomWidth, zoomHeight);
+    return Math.max(zoom, 0);
   },
 
   /**
@@ -727,6 +734,21 @@ Viewport.prototype = {
    */
   fitToPage: function() {
     this.fitToPageInternal_(true);
+  },
+
+  /**
+   * Zoom the viewport to the default zoom policy.
+   */
+  fitToNone: function() {
+    this.mightZoom_(() => {
+      this.fittingType_ = FittingType.NONE;
+      if (!this.documentDimensions_)
+        return;
+      this.setZoomInternal_(Math.min(
+          this.defaultZoom_,
+          this.computeFittingZoom_(this.documentDimensions_, true, false)));
+      this.updateViewport_();
+    });
   },
 
   /**
