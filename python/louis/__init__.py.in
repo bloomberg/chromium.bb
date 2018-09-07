@@ -18,6 +18,11 @@
 # License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 # 
 
+from __future__ import unicode_literals
+from ctypes import *
+import atexit
+import sys
+
 """Liblouis Python ctypes bindings
 These bindings allow you to use the liblouis braille translator and back-translator library from within Python.
 This documentation is only a Python helper.
@@ -36,11 +41,6 @@ function for information about how liblouis searches for these tables.
 @author: Leonard de Ruijter (Babbage B.V.) <alderuijter@gmail.com>
 """
 
-from ctypes import *
-import struct
-import atexit
-import sys
-
 # Some general utility functions
 def _createTablesString(tablesList):
     """Creates a tables string for liblouis calls"""
@@ -53,15 +53,17 @@ def _createTypeformbuf(length, typeform=None):
 createEncodedByeString = None
 if sys.version_info[0] == 2:
     createEncodedByeString = lambda x: unicode(x).encode(conversionEncoding)
-else:
+else: # sys.version_info[0] == 3
     createEncodedByeString = lambda x: str(x).encode(conversionEncoding)
 
 try:
     # Native win32
     _loader = windll
+    _functype = WINFUNCTYPE
 except NameError:
     # Unix/Cygwin
     _loader = cdll
+    _functype = CFUNCTYPE
 liblouis = _loader["###LIBLOUIS_SONAME###"]
 
 atexit.register(liblouis.lou_free)
@@ -96,6 +98,24 @@ liblouis.lou_checkTable.argtypes = (c_char_p,)
 liblouis.lou_compileString.argtypes = (c_char_p, c_char_p)
 
 liblouis.lou_getTypeformForEmphClass.argtypes = (c_char_p, c_char_p)
+
+liblouis.lou_dotsToChar.argtypes = (
+    c_char_p, POINTER(c_char), POINTER(c_char), 
+         c_int, c_int)
+
+liblouis.lou_charToDots.argtypes = (
+    c_char_p, POINTER(c_char), POINTER(c_char), 
+         c_int, c_int)
+
+liblouis.lou_readCharFromFile.argtypes = (c_char_p, POINTER(c_int))
+
+logcallback = _functype(None, c_int, c_char_p)
+
+liblouis.lou_registerLogCallback.restype = None
+liblouis.lou_registerLogCallback.argtypes = (logcallback,)
+
+liblouis.lou_setLogLevel.restype = None
+liblouis.lou_setLogLevel.argtypes = (c_int,)
 
 #{ Module Configuration
 #: Specifies the charSize (in bytes) used by liblouis.
@@ -336,11 +356,78 @@ def getTypeformForEmphClass(tableList, emphClass):
     tablesString = _createTablesString(tableList)
     return liblouis.lou_getTypeformForEmphClass(tablesString, emphClass)
 
+def dotsToChar(tableList, inbuf):
+    """"Convert a string of dot patterns to a string of characters according to the specifications in tableList.
+    @param tableList: A list of translation tables.
+    @type tableList: list of str
+    @param inbuf: a string of dot patterns, either in liblouis format or Unicode braille.
+    @type inbuf: str
+    @raise RuntimeError: If a complete conversion could not be done.
+    @see: lou_dotsToChar in the liblouis documentation
+    """
+    tablesString = _createTablesString(tableList)
+    inbuf = createEncodedByeString(inbuf)
+    length = c_int(len(inbuf) // wideCharBytes)
+    outbuf = create_string_buffer(length.value * wideCharBytes)
+    if not liblouis.lou_dotsToChar(tablesString, inbuf, outbuf, length, 0):
+        raise RuntimeError("Can't convert dots to char: tables %s, inbuf %s"%(tableList, inbuf))
+    return outbuf.raw[:length.value * wideCharBytes].decode(conversionEncoding)
+
+def charToDots(tableList, inbuf, mode=0):
+    """"Convert a string of characterss to a string of dot patterns according to the specifications in tableList.
+    @param tableList: A list of translation tables.
+    @type tableList: list of str
+    @param inbuf: a string of characters.
+    @type inbuf: str
+    @param mode: The translation mode; add multiple values for a combined mode.
+    @type mode: int
+    @raise RuntimeError: If a complete conversion could not be done.
+    @see: lou_charToDOts in the liblouis documentation
+    """
+    tablesString = _createTablesString(tableList)
+    inbuf = createEncodedByeString(inbuf)
+    length = c_int(len(inbuf) // wideCharBytes)
+    outbuf = create_string_buffer(length.value * wideCharBytes)
+    if not liblouis.lou_charToDots(tablesString, inbuf, outbuf, length, mode):
+        raise RuntimeError("Can't convert char to dots: tables %s, inbuf %s, mode %d"%(tableList, inbuf, mode))
+    return outbuf.raw[:length.value * wideCharBytes].decode(conversionEncoding)
+
+def registerLogCallback(logcallback):
+    """Register logging callbacks.
+    Set to C{None} for default callback.
+    @param logcallback: The callback to use.
+        The callback must take two arguments:
+        @param level: The log level on which a message is logged.
+        @type level: int
+        @param message: The logged message.
+            Note that the callback should provide its own ASCII decoding routine.
+        @type message: bytes
+
+        Example callback:
+
+        @louis.logcallback
+        def incomingLouisLog(level, message):
+            print("Message %s logged at level %d" % (message.decode("ASCII"), level))
+
+    @type logcallback: L{logcallback}
+    """
+    return liblouis.lou_registerLogCallback(logcallback)
+
+def setLogLevel(level):
+	"""Set the level for logging callback to be called at.
+	@param level: one of the C{LOG_*} constants.
+	@type level: int
+	@raise ValueError: If an invalid log level is provided.
+	"""
+	if level not in logLevels:
+		raise ValueError("Level %d is an invalid log level"%level)
+	return liblouis.lou_setLogLevel(level)
+
 #{ Typeforms
 plain_text = 0x0000
-italic = 0x0001       # emph_1
-underline = 0x0002    # emph_2
-bold = 0x0004         # emph_3
+emph_1 = comp_emph_1 = italic = 0x0001
+emph_2 = comp_emph_2 = underline = 0x0002
+emph_3 = comp_emph_3 = bold = 0x0004
 emph_4 = 0x0008
 emph_5 = 0x0010
 emph_6 = 0x0020
@@ -362,6 +449,18 @@ ucBrl = 64
 noUndefinedDots = 128
 partialTrans = 256
 #}
+
+#{ logLevels
+LOG_ALL = 0
+LOG_DEBUG = 10000
+LOG_INFO = 20000
+LOG_WARN = 30000
+LOG_ERROR = 40000
+LOG_FATAL = 50000
+LOG_OFF = 60000
+#}
+
+logLevels = (LOG_ALL, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL, LOG_OFF)
 
 if __name__ == '__main__':
     # Just some common tests.
