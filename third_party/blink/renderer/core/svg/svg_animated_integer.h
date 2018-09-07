@@ -49,6 +49,13 @@ class SVGAnimatedInteger : public ScriptWrappable,
  public:
   static SVGAnimatedInteger* Create(SVGElement* context_element,
                                     const QualifiedName& attribute_name,
+                                    int initial) {
+    SVGInteger* initial_value = SVGInteger::Create(initial);
+    return new SVGAnimatedInteger(context_element, attribute_name,
+                                  initial_value);
+  }
+  static SVGAnimatedInteger* Create(SVGElement* context_element,
+                                    const QualifiedName& attribute_name,
                                     SVGInteger* initial_value) {
     return new SVGAnimatedInteger(context_element, attribute_name,
                                   initial_value);
@@ -69,7 +76,9 @@ class SVGAnimatedInteger : public ScriptWrappable,
                      SVGInteger* initial_value)
       : SVGAnimatedProperty<SVGInteger>(context_element,
                                         attribute_name,
-                                        initial_value),
+                                        initial_value,
+                                        CSSPropertyInvalid,
+                                        initial_value->Value()),
         parent_integer_optional_integer_(nullptr) {}
 
   Member<SVGAnimatedIntegerOptionalInteger> parent_integer_optional_integer_;

@@ -50,8 +50,7 @@ class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
   SVGAnimatedOrder(SVGElement* context_element)
       : SVGAnimatedIntegerOptionalInteger(context_element,
                                           SVGNames::orderAttr,
-                                          0,
-                                          0) {}
+                                          3) {}
 
   static SVGParsingError CheckValue(SVGParsingError parse_status, int value) {
     if (parse_status != SVGParseStatus::kNoError)
@@ -94,12 +93,8 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
       order_(SVGAnimatedOrder::Create(this)),
       preserve_alpha_(
           SVGAnimatedBoolean::Create(this, SVGNames::preserveAlphaAttr)),
-      target_x_(SVGAnimatedInteger::Create(this,
-                                           SVGNames::targetXAttr,
-                                           SVGInteger::Create())),
-      target_y_(SVGAnimatedInteger::Create(this,
-                                           SVGNames::targetYAttr,
-                                           SVGInteger::Create())) {
+      target_x_(SVGAnimatedInteger::Create(this, SVGNames::targetXAttr, 0)),
+      target_y_(SVGAnimatedInteger::Create(this, SVGNames::targetYAttr, 0)) {
   AddToPropertyMap(preserve_alpha_);
   AddToPropertyMap(divisor_);
   AddToPropertyMap(bias_);
