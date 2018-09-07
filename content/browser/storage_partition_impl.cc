@@ -1309,7 +1309,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context(), nullptr, false /* is_navigation */, GURL(),
-          &request);
+          &request, nullptr /* bypass_redirect_checks */);
     }
     GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
                                                 std::move(params));

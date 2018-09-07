@@ -291,12 +291,16 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     content::RenderFrameHost* frame,
     bool is_navigation,
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    bool* bypass_redirect_checks) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
           browser_context);
-  return web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
-                                                     factory_request);
+  bool use_proxy = web_request_api->MaybeProxyURLLoaderFactory(
+      frame, is_navigation, factory_request);
+  if (bypass_redirect_checks)
+    *bypass_redirect_checks = use_proxy;
+  return use_proxy;
 }
 
 bool ShellContentBrowserClient::HandleExternalProtocol(

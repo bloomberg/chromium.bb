@@ -4493,7 +4493,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::RenderFrameHost* frame,
     bool is_navigation,
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    bool* bypass_redirect_checks) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   bool use_proxy = false;
 
@@ -4505,8 +4506,12 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   // NOTE: Some unit test environments do not initialize
   // BrowserContextKeyedAPI factories for e.g. WebRequest.
   if (web_request_api) {
-    use_proxy |= web_request_api->MaybeProxyURLLoaderFactory(
-        frame, is_navigation, factory_request);
+    bool use_proxy_for_web_request =
+        web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
+                                                    factory_request);
+    if (bypass_redirect_checks)
+      *bypass_redirect_checks = use_proxy_for_web_request;
+    use_proxy |= use_proxy_for_web_request;
   }
 #endif
 
