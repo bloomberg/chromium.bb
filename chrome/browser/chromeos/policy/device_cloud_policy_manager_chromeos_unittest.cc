@@ -256,7 +256,7 @@ class DeviceCloudPolicyManagerChromeOSTest
             DM_STATUS_TEMPORARY_UNAVAILABLE));
     EXPECT_CALL(
         device_management_service_,
-        StartJob(dm_protocol::kValueRequestRemoteCommands, _, _, _, _, _, _))
+        StartJob(dm_protocol::kValueRequestRemoteCommands, _, _, _, _, _))
         .Times(AnyNumber());
   }
 
@@ -313,7 +313,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
       .Times(AtMost(1))
       .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
   EXPECT_CALL(device_management_service_,
-              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
+              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _))
       .Times(AtMost(1));
   ConnectManager();
   base::RunLoop().RunUntilIdle();
@@ -351,7 +351,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
       .Times(AtMost(1))
       .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
   EXPECT_CALL(device_management_service_,
-              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
+              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _))
       .Times(AtMost(1));
   ConnectManager();
   base::RunLoop().RunUntilIdle();
@@ -404,7 +404,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConnectAndDisconnect) {
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
       .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
   EXPECT_CALL(device_management_service_,
-              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _));
+              StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _));
   EXPECT_CALL(*this, OnDeviceCloudPolicyManagerConnected());
   ConnectManager();
   base::RunLoop().RunUntilIdle();
@@ -499,10 +499,10 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     EXPECT_CALL(device_management_service_,
                 StartJob(with_cert ? dm_protocol::kValueRequestCertBasedRegister
                                    : dm_protocol::kValueRequestRegister,
-                         _, _, _, _, _, _))
+                         _, _, _, _, _))
         .Times(AtMost(1))
         .WillOnce(
-            DoAll(SaveArg<5>(&client_id_), SaveArg<6>(&register_request_)));
+            DoAll(SaveArg<4>(&client_id_), SaveArg<5>(&register_request_)));
 
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
@@ -514,11 +514,9 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
     enrollment_config.mode = with_cert ? EnrollmentConfig::MODE_ATTESTATION
                                        : EnrollmentConfig::MODE_MANUAL;
-    std::unique_ptr<DMAuth> auth =
-        with_cert ? DMAuth::NoAuth() : DMAuth::FromOAuthToken("auth token");
+    std::string token = with_cert ? "" : "auth token";
     initializer_->PrepareEnrollment(
-        &device_management_service_, nullptr, enrollment_config,
-        std::move(auth),
+        &device_management_service_, nullptr, enrollment_config, token,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     initializer_->StartEnrollment();
@@ -537,7 +535,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Times(AtMost(1))
         .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
     EXPECT_CALL(device_management_service_,
-                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
+                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _))
         .Times(AtMost(1));
     register_job->SendResponse(register_status_, register_response_);
     Mock::VerifyAndClearExpectations(&device_management_service_);
@@ -563,7 +561,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             &robot_auth_fetch_job));
     EXPECT_CALL(
         device_management_service_,
-        StartJob(dm_protocol::kValueRequestApiAuthorization, _, _, _, _, _, _))
+        StartJob(dm_protocol::kValueRequestApiAuthorization, _, _, _, _, _))
         .Times(AtMost(1));
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&device_management_service_);
@@ -620,7 +618,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .WillOnce(device_management_service_.CreateAsyncJob(
             &component_policy_fetch_job));
     EXPECT_CALL(device_management_service_,
-                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
+                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _))
         .Times(AtMost(1));
 
     // Key installation and policy load.
@@ -780,7 +778,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
   EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION, _))
       .WillOnce(device_management_service_.SucceedJob(response));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _));
   EXPECT_CALL(*this, OnUnregistered(true));
 
   // Start unregistering.
@@ -798,7 +796,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterFails) {
   EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION, _))
       .WillOnce(device_management_service_.FailJob(DM_STATUS_REQUEST_FAILED));
-  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _));
   EXPECT_CALL(*this, OnUnregistered(false));
 
   // Start unregistering.

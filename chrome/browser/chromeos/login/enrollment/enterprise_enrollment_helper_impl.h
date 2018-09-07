@@ -18,7 +18,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace policy {
-class DMAuth;
 class PolicyOAuth2TokenFetcher;
 }
 
@@ -54,8 +53,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   // Checks if license type selection should be performed during enrollment.
   bool ShouldCheckLicenseType() const;
 
-  // Attempt enrollment using |auth_data| for authentication.
-  void DoEnroll(std::unique_ptr<policy::DMAuth> auth_data);
+  void DoEnroll(const std::string& token);
 
   // Handles completion of the OAuth2 token fetch attempt.
   void OnTokenFetched(bool is_additional_token,
@@ -97,7 +95,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
     OAUTH_FINISHED
   } oauth_status_ = OAUTH_NOT_STARTED;
   bool oauth_data_cleared_ = false;
-  std::unique_ptr<policy::DMAuth> auth_data_;
+  std::string oauth_token_;
   bool success_ = false;
   ActiveDirectoryJoinDelegate* ad_join_delegate_ = nullptr;
 
