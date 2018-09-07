@@ -370,7 +370,11 @@
     },
     'base_unittests': {},
     'cacheinvalidation_unittests': {},
-    'capture_unittests': {},
+    'capture_unittests': {
+      'args': [
+        '--test-launcher-jobs=1',
+      ],
+    },
     'cc_unittests': {},
     'chromeos_unittests': {
       'args': [
