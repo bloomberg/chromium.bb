@@ -121,6 +121,12 @@ enum class NamedItemType {
   kNameOrIdWithName,
 };
 
+enum class InvisibleState {
+  kMissing,
+  kStatic,
+  kInvisible,
+};
+
 struct FocusParams {
   STACK_ALLOCATED();
 
@@ -333,9 +339,9 @@ class CORE_EXPORT Element : public ContainerNode {
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
-  const AtomicString& invisible() const;
-  void setInvisible(const AtomicString&);
+  InvisibleState Invisible() const;
   void DispatchActivateInvisibleEventIfNeeded();
+  bool IsInsideInvisibleStaticSubtree();
 
   void DefaultEventHandler(Event&) override;
 
@@ -991,7 +997,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void InlineStyleChanged();
   void SetInlineStyleFromString(const AtomicString&);
 
-  void InvisibleAttributeChanged();
+  void InvisibleAttributeChanged(const AtomicString& old_value,
+                                 const AtomicString& new_value);
 
   // If the only inherited changes in the parent element are independent,
   // these changes can be directly propagated to this element (the child).

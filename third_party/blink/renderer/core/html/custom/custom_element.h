@@ -94,7 +94,7 @@ class CORE_EXPORT CustomElement {
                                               const AtomicString& old_value,
                                               const AtomicString& new_value);
 
-  static void TryToUpgrade(Element*);
+  static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
 
  private:
   // Some existing specs have element names with hyphens in them,

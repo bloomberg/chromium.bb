@@ -1439,12 +1439,13 @@ AccessibleNode* Element::accessibleNode() {
   return rare_data.EnsureAccessibleNode(this);
 }
 
-const AtomicString& Element::invisible() const {
-  return FastGetAttribute(invisibleAttr);
-}
-
-void Element::setInvisible(const AtomicString& value) {
-  setAttribute(invisibleAttr, value);
+InvisibleState Element::Invisible() const {
+  const AtomicString& value = FastGetAttribute(invisibleAttr);
+  if (value.IsNull())
+    return InvisibleState::kMissing;
+  if (EqualIgnoringASCIICase(value, "static"))
+    return InvisibleState::kStatic;
+  return InvisibleState::kInvisible;
 }
 
 void Element::DispatchActivateInvisibleEventIfNeeded() {
@@ -1459,7 +1460,8 @@ void Element::DispatchActivateInvisibleEventIfNeeded() {
   HeapVector<Member<Element>> invisible_ancestors;
   HeapVector<Member<Element>> activated_elements;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() && ToElement(ancestor).invisible()) {
+    if (ancestor.IsElementNode() &&
+        ToElement(ancestor).Invisible() != InvisibleState::kMissing) {
       invisible_ancestors.push_back(ToElement(ancestor));
       activated_elements.push_back(ancestor.GetTreeScope().Retarget(*this));
     }
@@ -1473,10 +1475,28 @@ void Element::DispatchActivateInvisibleEventIfNeeded() {
   }
 }
 
-void Element::InvisibleAttributeChanged() {
-  SetNeedsStyleRecalc(
-      kLocalStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kInvisibleChange));
+bool Element::IsInsideInvisibleStaticSubtree() {
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
+    if (ancestor.IsElementNode() &&
+        ToElement(ancestor).Invisible() == InvisibleState::kStatic)
+      return true;
+  }
+  return false;
+}
+
+void Element::InvisibleAttributeChanged(const AtomicString& old_value,
+                                        const AtomicString& new_value) {
+  if (old_value.IsNull() != new_value.IsNull()) {
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::Create(
+                            StyleChangeReason::kInvisibleChange));
+  }
+  if (EqualIgnoringASCIICase(old_value, "static") &&
+      !IsInsideInvisibleStaticSubtree()) {
+    // This element and its descendants are not in an invisible="static" tree
+    // anymore.
+    CustomElement::Registry(*this)->upgrade(this);
+  }
 }
 
 void Element::DefaultEventHandler(Event& event) {
@@ -1788,8 +1808,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
                           StyleChangeReasonForTracing::FromAttribute(name));
     } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
                name == HTMLNames::invisibleAttr &&
-               params.old_value.IsNull() != params.new_value.IsNull()) {
-      InvisibleAttributeChanged();
+               params.old_value != params.new_value) {
+      InvisibleAttributeChanged(params.old_value, params.new_value);
     }
   }
 

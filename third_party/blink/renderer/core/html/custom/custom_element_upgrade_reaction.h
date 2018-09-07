@@ -17,10 +17,13 @@ class Element;
 class CORE_EXPORT CustomElementUpgradeReaction final
     : public CustomElementReaction {
  public:
-  CustomElementUpgradeReaction(CustomElementDefinition*);
+  CustomElementUpgradeReaction(CustomElementDefinition*,
+                               bool upgrade_invisible_elements);
 
  private:
   void Invoke(Element*) override;
+
+  bool upgrade_invisible_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementUpgradeReaction);
 };

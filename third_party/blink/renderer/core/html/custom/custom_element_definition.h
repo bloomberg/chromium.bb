@@ -79,7 +79,8 @@ class CORE_EXPORT CustomElementDefinition
                                            const AtomicString& old_value,
                                            const AtomicString& new_value) = 0;
 
-  void EnqueueUpgradeReaction(Element*);
+  void EnqueueUpgradeReaction(Element*,
+                              bool upgrade_invisible_elements = false);
   void EnqueueConnectedCallback(Element*);
   void EnqueueDisconnectedCallback(Element*);
   void EnqueueAdoptedCallback(Element*,

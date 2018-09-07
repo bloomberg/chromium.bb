@@ -223,8 +223,11 @@ bool CustomElementDefinition::HasStyleAttributeChangedCallback() const {
   return has_style_attribute_changed_callback_;
 }
 
-void CustomElementDefinition::EnqueueUpgradeReaction(Element* element) {
-  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(this));
+void CustomElementDefinition::EnqueueUpgradeReaction(
+    Element* element,
+    bool upgrade_invisible_elements) {
+  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(
+                                      this, upgrade_invisible_elements));
 }
 
 void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {

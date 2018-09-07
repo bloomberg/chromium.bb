@@ -371,7 +371,8 @@ void CustomElementRegistry::upgrade(Node* root) {
 
   // 2. For each candidate of candidates, try to upgrade candidate.
   for (auto& candidate : candidates) {
-    CustomElement::TryToUpgrade(candidate);
+    CustomElement::TryToUpgrade(candidate,
+                                true /* upgrade_invisible_elements */);
   }
 }
 

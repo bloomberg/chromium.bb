@@ -230,7 +230,8 @@ void CustomElement::EnqueueAttributeChangedCallback(
                                                 new_value);
 }
 
-void CustomElement::TryToUpgrade(Element* element) {
+void CustomElement::TryToUpgrade(Element* element,
+                                 bool upgrade_invisible_elements) {
   // Try to upgrade an element
   // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
 
@@ -244,7 +245,7 @@ void CustomElement::TryToUpgrade(Element* element) {
           registry->DefinitionFor(CustomElementDescriptor(
               is_value.IsNull() ? element->localName() : is_value,
               element->localName())))
-    definition->EnqueueUpgradeReaction(element);
+    definition->EnqueueUpgradeReaction(element, upgrade_invisible_elements);
   else
     registry->AddCandidate(element);
 }
