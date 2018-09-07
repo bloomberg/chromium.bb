@@ -91,15 +91,16 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.M)
+    @TargetApi(Build.VERSION_CODES.N)
     public void isUserVerifyingPlatformAuthenticatorAvailable(
             IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
         Context context = ChromeActivity.fromWebContents(mWebContents);
-        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
-            < GMSCORE_MIN_VERSION) {
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION
+                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             callback.call(false);
             return;
         }
+
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH)) {
             callback.call(false);
             return;
