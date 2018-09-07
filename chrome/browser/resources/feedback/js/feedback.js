@@ -227,7 +227,8 @@ function sendReport() {
   }
   // <if expr="chromeos">
   if ($('bluetooth-logs-checkbox') != null &&
-      $('bluetooth-logs-checkbox').checked) {
+      $('bluetooth-logs-checkbox').checked &&
+      !$('bluetooth-checkbox-container').hidden) {
     feedbackInfo.sendBluetoothLogs = true;
     feedbackInfo.categoryTag = 'BluetoothReportWithLogs';
   }
