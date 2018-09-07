@@ -104,21 +104,29 @@ cr.googleTranslate = (function() {
 
   /**
    * Callback invoked when Translate Element's ready state is known.
-   * @type {Function}
+   * @type {function}
    */
   var readyCallback;
 
   /**
    * Callback invoked when Translate Element's translation result is known.
-   * @type {Function}
+   * @type {function}
    */
   var resultCallback;
+
+  /**
+   * Callback invoked when Translate Element requests load of javascript files.
+   * Currently main.js and element_main.js are expected to be loaded.
+   * @type {function(string)}
+   */
+  var loadJavascriptCallback;
 
   /**
    * Listens to security policy violations to set |errorCode|.
    */
   document.addEventListener('securitypolicyviolation', function(event) {
-    if (securityOrigin.startsWith(event.blockedURI)) {
+    if (securityOrigin.startsWith(event.blockedURI) &&
+        event.effectiveDirective == 'script-src') {
       errorCode = ERROR['BAD_ORIGIN'];
       invokeReadyCallback();
     }
@@ -175,7 +183,7 @@ cr.googleTranslate = (function() {
   return {
     /**
      * Setter for readyCallback. No op if already set.
-     * @param {Function} callback The function to be invoked.
+     * @param {function} callback The function to be invoked.
      */
     set readyCallback(callback) {
       if (!readyCallback) {
@@ -185,11 +193,21 @@ cr.googleTranslate = (function() {
 
     /**
      * Setter for resultCallback. No op if already set.
-     * @param {Function} callback The function to be invoked.
+     * @param {function} callback The function to be invoked.
      */
     set resultCallback(callback) {
       if (!resultCallback) {
         resultCallback = callback;
+      }
+    },
+
+    /**
+     * Setter for loadJavascriptCallback. No op if already set.
+     * @param {function(string)} callback The function to be invoked.
+     */
+    set loadJavascriptCallback(callback) {
+      if (!loadJavascriptCallback) {
+        loadJavascriptCallback = callback;
       }
     },
 
@@ -374,6 +392,12 @@ cr.googleTranslate = (function() {
         errorCode = ERROR['BAD_ORIGIN'];
         return;
       }
+
+      if (loadJavascriptCallback) {
+        loadJavascriptCallback(url);
+        return;
+      }
+
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
