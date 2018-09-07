@@ -249,8 +249,8 @@ const base::Feature kExperimentalAppBanners {
 };
 
 #if defined(OS_CHROMEOS)
-extern const base::Feature kExperimentalCrostiniUI{
-    "ExperimentalCrostiniUI", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kExperimentalCrostiniUI{"ExperimentalCrostiniUI",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
@@ -683,10 +683,10 @@ const base::Feature kWebAuthenticationUI{"WebAuthenticationUI",
 // Please note that a Chrome policy must also be set, for this to have effect.
 // Effectively, this is a kill-switch for the feature.
 // TODO(crbug.com/775415): Remove this kill-switch.
-extern const base::Feature kWebRtcRemoteEventLog{
-    "WebRtcRemoteEventLog", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kWebRtcRemoteEventLog{"WebRtcRemoteEventLog",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Compress remote-bound WebRTC event logs (if used; see kWebRtcRemoteEventLog).
-extern const base::Feature kWebRtcRemoteEventLogGzipped{
+const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 

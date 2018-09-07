@@ -99,9 +99,9 @@ const char kAutofillPrefilledFieldsName[] = "Autofill Prefilled Fields";
 const char kAutofillPrefilledFieldsDescription[] =
     "Allows autofill to fill fields previously filled by the website";
 
-extern const char kAutofillPreviewStyleExperimentName[] =
+const char kAutofillPreviewStyleExperimentName[] =
     "Autofill Preview Style Experiment";
-extern const char kAutofillPreviewStyleExperimentDescription[] =
+const char kAutofillPreviewStyleExperimentDescription[] =
     "Allows experimentation with the Autofill field preview's style.";
 
 const char kAutofillRationalizeRepeatedServerPredictionsName[] =
@@ -144,8 +144,8 @@ const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
 const char kAutoplayPolicyDocumentUserActivation[] =
     "Document user activation is required.";
 
-extern const char kAv1DecoderName[] = "Enable AV1 video decoding.";
-extern const char kAv1DecoderDescription[] =
+const char kAv1DecoderName[] = "Enable AV1 video decoding.";
+const char kAv1DecoderDescription[] =
     "Allow decoding of files with the AV1 video codec.";
 
 const char kBackgroundVideoTrackOptimizationName[] =
@@ -760,9 +760,9 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
-extern const char kEnableSyncUserConsentSeparateTypeName[] =
+const char kEnableSyncUserConsentSeparateTypeName[] =
     "Enable separate sync type for consents";
-extern const char kEnableSyncUserConsentSeparateTypeDescription[] =
+const char kEnableSyncUserConsentSeparateTypeDescription[] =
     "Emit user consents as a separate sync type instead of user events.";
 
 const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
@@ -802,9 +802,9 @@ const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
 const char kEnableWebAuthenticationAPIDescription[] =
     "Enable Web Authentication API support.";
 
-extern const char kEnableWebAuthenticationCableSupportName[] =
+const char kEnableWebAuthenticationCableSupportName[] =
     "Web Authentication caBLE support";
-extern const char kEnableWebAuthenticationCableSupportDescription[] =
+const char kEnableWebAuthenticationCableSupportDescription[] =
     "Enable the cloud-assisted pairingless BLE protocol for use with "
     "the Web Authentication API.";
 
@@ -1522,9 +1522,9 @@ const char kReducedReferrerGranularityDescription[] =
     "reduce the amount of information in the 'referer' header for cross-origin "
     "requests.";
 
-extern const char kRegionalLocalesAsDisplayUIName[] =
+const char kRegionalLocalesAsDisplayUIName[] =
     "Allow regional locales as display UI";
-extern const char kRegionalLocalesAsDisplayUIDescription[] =
+const char kRegionalLocalesAsDisplayUIDescription[] =
     "This flag allows regional locales to be selected as display UI by the "
     "user in Language Settings. The actual locale of the system is derived "
     "from the user selection based on some simple fallback logic.";
@@ -1602,9 +1602,8 @@ const char kServiceWorkerImportedScriptUpdateCheckDescription[] =
     "Extend byte-for-byte update check for scripts that are imported by the "
     "service worker script via importScripts().";
 
-extern const char kServiceWorkerServicificationName[] =
-    "Servicified service workers";
-extern const char kServiceWorkerServicificationDescription[] =
+const char kServiceWorkerServicificationName[] = "Servicified service workers";
+const char kServiceWorkerServicificationDescription[] =
     "Enable the servicified service workers. A servicified service worker can "
     "have direct connection from its clients, so that fetch events can be "
     "dispatched through the connection without hopping to the browser process.";
@@ -1738,8 +1737,8 @@ const char kSiteIsolationTrialOptOutDescription[] =
     "isolation is force-enabled via #enable-site-per-process or enterprise "
     "policy. Caution: this disables important mitigations for the Spectre CPU "
     "vulnerability affecting most computers.";
-extern const char kSiteIsolationTrialOptOutChoiceDefault[] = "Default";
-extern const char kSiteIsolationTrialOptOutChoiceOptOut[] =
+const char kSiteIsolationTrialOptOutChoiceDefault[] = "Default";
+const char kSiteIsolationTrialOptOutChoiceOptOut[] =
     "Opt-out (not recommended)";
 
 const char kSiteSettings[] = "Site settings";
@@ -3207,13 +3206,12 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
 
-extern const char kEnableChromeOsAccountManagerName[] =
-    "Enable Account Manager";
-extern const char kEnableChromeOsAccountManagerDescription[] =
+const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
+const char kEnableChromeOsAccountManagerDescription[] =
     "Enables the Chrome OS Account Manager";
 
-extern const char kEnableContinueReadingName[] = "Enable continue reading";
-extern const char kEnableContinueReadingDescription[] =
+const char kEnableContinueReadingName[] = "Enable continue reading";
+const char kEnableContinueReadingDescription[] =
     "Enable continue reading feature in Launcher, which allows users to "
     "seamlessly continue reading a web page when they switch devices from "
     "phones or tablets to Chromebooks.";
@@ -3259,9 +3257,8 @@ const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
 
-extern const char kEnableHomeLauncherGesturesName[] =
-    "Enable home launcher gestures";
-extern const char kEnableHomeLauncherGesturesDescription[] =
+const char kEnableHomeLauncherGesturesName[] = "Enable home launcher gestures";
+const char kEnableHomeLauncherGesturesDescription[] =
     "Enables using gestures to hide or show the home launcher.";
 
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
@@ -3319,9 +3316,8 @@ const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
 const char kEnableVirtualKeyboardUkmDescription[] =
     "Enables UKM for virtual keyboard";
 
-extern const char kEnableZeroStateSuggestionsName[] =
-    "Enable Zero State Suggetions";
-extern const char kEnableZeroStateSuggestionsDescription[] =
+const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
+const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggetions when launcher search box is active with an empty query";
 
