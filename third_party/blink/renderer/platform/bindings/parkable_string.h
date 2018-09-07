@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 // ParkableString represents a string that may be parked in memory, that it its
@@ -86,6 +87,16 @@ class PLATFORM_EXPORT ParkableStringImpl final
   bool is_parked_;
 
   const bool is_parkable_;
+
+#if DCHECK_IS_ON()
+  const ThreadIdentifier owning_thread_;
+#endif
+
+  void AssertOnValidThread() const {
+#if DCHECK_IS_ON()
+    DCHECK_EQ(owning_thread_, CurrentThread());
+#endif
+  }
 
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, Park);
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, Unpark);
