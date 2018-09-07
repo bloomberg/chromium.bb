@@ -1108,7 +1108,7 @@ void NavigationRequest::OnResponseStarted(
       render_frame_host, response->head.headers.get(),
       response->head.connection_info, response->head.socket_address, ssl_info_,
       request_id, common_params_.should_replace_current_entry, is_download,
-      is_stream,
+      is_stream, response->head.is_signed_exchange_inner_response,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }

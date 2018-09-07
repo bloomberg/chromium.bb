@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -62,6 +63,20 @@ class RedirectObserver : public WebContentsObserver {
   base::Optional<int> response_code_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectObserver);
+};
+
+class AssertNavigationHandleFlagObserver : public WebContentsObserver {
+ public:
+  explicit AssertNavigationHandleFlagObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  ~AssertNavigationHandleFlagObserver() override = default;
+
+  void DidFinishNavigation(NavigationHandle* handle) override {
+    EXPECT_TRUE(static_cast<NavigationHandleImpl*>(handle)->IsSignedExchangeInnerResponse());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AssertNavigationHandleFlagObserver);
 };
 
 }  // namespace
@@ -178,6 +193,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   RedirectObserver redirect_observer(shell()->web_contents());
+  AssertNavigationHandleFlagObserver assert_navigation_handle_flag_observer(
+      shell()->web_contents());
 
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());

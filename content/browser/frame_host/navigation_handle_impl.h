@@ -164,6 +164,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsDownload() override;
   bool IsFormSubmission() override;
 
+  // TODO(kouhei): Add public interface in NavigationHandle.
+  bool IsSignedExchangeInnerResponse();
+
   const std::string& origin_policy() const { return origin_policy_; }
   void set_origin_policy(const std::string& origin_policy) {
     origin_policy_ = origin_policy;
@@ -305,6 +308,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool should_replace_current_entry,
       bool is_download,
       bool is_stream,
+      bool is_signed_exchange_inner_response,
       const ThrottleChecksFinishedCallback& callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -605,6 +609,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Whether the navigation ended up being a download or a stream.
   bool is_download_;
   bool is_stream_;
+
+  // True if the target is an inner response of a signed exchange.
+  bool is_signed_exchange_inner_response_;
 
   // False by default unless the navigation started within a context menu.
   bool started_from_context_menu_;
