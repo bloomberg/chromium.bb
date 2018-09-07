@@ -272,6 +272,9 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
+  } else if (Shell::Get()->window_selector_controller() &&
+             Shell::Get()->window_selector_controller()->IsSelecting()) {
+    SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
@@ -497,6 +500,16 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
   MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
+void ShelfLayoutManager::OnOverviewModeStarting() {
+  UpdateVisibilityState();
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
+void ShelfLayoutManager::OnOverviewModeEnded() {
+  UpdateVisibilityState();
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
 void ShelfLayoutManager::OnSplitViewModeStarted() {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
@@ -556,6 +569,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       window_overlaps_shelf_ || state_.visibility_state == SHELF_AUTO_HIDE) {
+    return SHELF_BACKGROUND_OVERLAP;
+  }
+
+  if (Shell::Get()->window_selector_controller() &&
+      Shell::Get()->window_selector_controller()->IsSelecting()) {
     return SHELF_BACKGROUND_OVERLAP;
   }
 

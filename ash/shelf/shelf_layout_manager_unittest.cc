@@ -35,6 +35,7 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/window_factory.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -1004,6 +1005,36 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
+}
+
+// Tests that the shelf should be visible when in overview mode.
+TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  window->Show();
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // LayoutShelf() forces the animation to completion, at which point the
+  // shelf should go off the screen.
+  GetShelfLayoutManager()->LayoutShelf();
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  EXPECT_EQ(display.bounds().bottom() - kShelfAutoHideSize,
+            GetShelfWidget()->GetWindowBoundsInScreen().y());
+
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  // Tests that the shelf is visible when in overview mode and its color is
+  // overlap.
+  window_selector_controller->ToggleOverview();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
+
+  // Test that on exiting overview mode, the shelf returns to auto hide state.
+  window_selector_controller->ToggleOverview();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Assertions around SetAutoHideBehavior.
