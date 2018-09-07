@@ -19,15 +19,11 @@
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "cc/base/switches.h"
-#include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/variations/entropy_provider.h"
-#include "components/variations/pref_names.h"
-#include "components/variations/seed_response.h"
 #include "components/variations/service/safe_seed_manager.h"
-#include "components/variations/service/variations_service.h"
 
 namespace android_webview {
 namespace {
@@ -49,8 +45,8 @@ AwFieldTrialCreator::AwFieldTrialCreator()
 
 AwFieldTrialCreator::~AwFieldTrialCreator() {}
 
-void AwFieldTrialCreator::SetUpFieldTrials() {
-  DoSetUpFieldTrials();
+void AwFieldTrialCreator::SetUpFieldTrials(PrefService* pref_service) {
+  DoSetUpFieldTrials(pref_service);
 
   // If DoSetUpFieldTrials failed, it might have skipped creating
   // FeatureList. If so, create a FeatureList without field trials.
@@ -65,7 +61,7 @@ void AwFieldTrialCreator::SetUpFieldTrials() {
   }
 }
 
-void AwFieldTrialCreator::DoSetUpFieldTrials() {
+void AwFieldTrialCreator::DoSetUpFieldTrials(PrefService* pref_service) {
   // If the client ID isn't available yet, don't delay startup by creating it.
   // Instead, variations will be disabled for this run.
   std::string client_id;
@@ -80,7 +76,7 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
   client_ = std::make_unique<AwVariationsServiceClient>();
   variations_field_trial_creator_ =
       std::make_unique<variations::VariationsFieldTrialCreator>(
-          GetLocalState(), client_.get(), ui_string_overrider,
+          pref_service, client_.get(), ui_string_overrider,
           GetAndClearJavaSeed());
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
@@ -90,7 +86,7 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
   // TODO(isherman): We might want a more genuine SafeSeedManager:
   // https://crbug.com/801771
   std::set<std::string> unforceable_field_trials;
-  variations::SafeSeedManager ignored_safe_seed_manager(true, GetLocalState());
+  variations::SafeSeedManager ignored_safe_seed_manager(true, pref_service);
   // Populates the FieldTrialList singleton via the static member functions.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
@@ -98,19 +94,6 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
       std::vector<std::string>(), CreateLowEntropyProvider(client_id),
       std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
       &ignored_safe_seed_manager);
-}
-
-PrefService* AwFieldTrialCreator::GetLocalState() {
-  if (!local_state_) {
-    scoped_refptr<PrefRegistrySimple> pref_registry =
-        base::MakeRefCounted<PrefRegistrySimple>();
-    variations::VariationsService::RegisterPrefs(pref_registry.get());
-
-    PrefServiceFactory factory;
-    factory.set_user_prefs(base::MakeRefCounted<InMemoryPrefStore>());
-    local_state_ = factory.Create(pref_registry.get());
-  }
-  return local_state_.get();
 }
 
 }  // namespace android_webview

@@ -725,6 +725,7 @@ source_set("common") {
     "//components/keyed_service/content",
     "//components/metrics",
     "//components/metrics:gpu",
+    "//components/metrics:metrics",
     "//components/metrics:net",
     "//components/metrics:ui",
     "//components/minidump_uploader",
