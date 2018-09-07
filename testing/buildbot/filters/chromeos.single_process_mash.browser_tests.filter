@@ -166,6 +166,9 @@
 # Encrypted media tests are flaky due to race condition. crbug.com/880584
 -ECKEncryptedMediaTest.*
 -EncryptedMediaTest.*
+-CDM_9/ECKEncryptedMediaTest.*
+-CDM_10/ECKEncryptedMediaTest.*
+-CDM_11/ECKEncryptedMediaTest.*
 -MSE_ClearKey/EncryptedMediaTest.*
 -MSE_ExternalClearKey/EncryptedMediaTest.*
 -MSE_Widevine/EncryptedMediaTest.*
@@ -185,7 +188,6 @@
 # FATAL:ref_counted.h(85)] Check failed: CalledOnValidSequence()
 -ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
-
 
 # Full screen button tests.
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
