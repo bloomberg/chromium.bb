@@ -3465,6 +3465,12 @@ const char kShowTouchHudDescription[] =
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
 
+const char kSingleProcessMashName[] =
+    "In-process window service (SingleProcessMash)";
+const char kSingleProcessMashDescription[] =
+    "Runs the system UI (ash) as a mojo service, but inside the browser "
+    "process. The browser uses the mojo window service (ws) APIs.";
+
 const char kSlideTopChromeWithPageScrollsName[] =
     "Slide top-chrome with page scrolls";
 const char kSlideTopChromeWithPageScrollsDescription[] =

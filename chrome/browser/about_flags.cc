@@ -1765,6 +1765,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
+    {"single-process-mash", flag_descriptions::kSingleProcessMashName,
+     flag_descriptions::kSingleProcessMashDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kSingleProcessMash)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",
