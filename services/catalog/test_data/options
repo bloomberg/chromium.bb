@@ -4,7 +4,7 @@
   "options": {
     "instance_sharing": "singleton",
     "can_connect_to_other_services_as_any_user": true,
-    "allow_other_instance_names": true,
+    "can_connect_to_other_services_with_any_instance_name": true,
     "instance_for_client_process": true
   },
   "interface_provider_specs": { }

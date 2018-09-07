@@ -13,9 +13,6 @@
         // Clients requesting this class are allowed to register clients for
         // processes they launch themselves.
         "service_manager:client_process": [ ],
-        // Clients requesting this class are allowed to connect to other clients
-        // in specific process instance groups.
-        "service_manager:instance_name": [ ],
         "service_manager:block_wildcard": [ ],
 
         "service_manager:service_manager": [

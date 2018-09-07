@@ -1,7 +1,10 @@
 {
   "name": "connect_unittests",
   "display_name": "Connect Unittests",
-  "options": { "can_connect_to_other_services_as_any_user": true },
+  "options": {
+    "can_connect_to_other_services_as_any_user": true,
+    "can_connect_to_other_services_with_any_instance_name": true
+  },
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
@@ -26,10 +29,7 @@
           "connect_unittests:standalone_app",
           "connect_unittests:user_id_test"
         ],
-        "connect_test_singleton_app": [],
-        "service_manager": [
-          "service_manager:instance_name"
-        ]
+        "connect_test_singleton_app": []
       }
     }
   }
