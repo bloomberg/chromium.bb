@@ -616,6 +616,16 @@ static void GbkCallbackSubstitute(const void* context,
 }
 #endif  // USING_SYSTEM_ICU
 
+static void NotReachedEntityCallback(const void* context,
+                                     UConverterFromUnicodeArgs* from_u_args,
+                                     const UChar* code_units,
+                                     int32_t length,
+                                     UChar32 code_point,
+                                     UConverterCallbackReason reason,
+                                     UErrorCode* err) {
+  NOTREACHED();
+}
+
 class TextCodecInput final {
   STACK_ALLOCATED();
 
@@ -684,6 +694,13 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
                                                  : CssEscapedEntityCallback,
                             0, 0, 0, &err);
 #endif
+      break;
+    case kNoUnencodables:
+      DCHECK(encoding_ == UTF16BigEndianEncoding() ||
+             encoding_ == UTF16LittleEndianEncoding() ||
+             encoding_ == UTF8Encoding());
+      ucnv_setFromUCallBack(converter_icu_, NotReachedEntityCallback, nullptr,
+                            nullptr, nullptr, &err);
       break;
   }
 

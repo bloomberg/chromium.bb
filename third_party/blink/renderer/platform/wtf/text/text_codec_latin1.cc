@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_latin1.h"
 
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_ascii_fast_path.h"
@@ -205,6 +206,7 @@ template <typename CharType>
 static CString EncodeComplexWindowsLatin1(const CharType* characters,
                                           size_t length,
                                           UnencodableHandling handling) {
+  DCHECK_NE(handling, kNoUnencodables);
   size_t target_length = length;
   Vector<char> result(target_length);
   char* bytes = result.data();
