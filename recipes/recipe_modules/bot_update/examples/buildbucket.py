@@ -44,4 +44,4 @@ def GenTests(api):
 
   yield api.test('try') + api.buildbucket.try_build(
       'v8', 'try', 'builder',
-      gerrit_host='chromium-review.googlesource.com')
+      git_repo='https://chromium.googlesource.com/v8/v8')
