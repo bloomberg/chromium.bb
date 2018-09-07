@@ -165,7 +165,7 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
     return;
   }
 
-  ASSERT_TRUE(LoadHtml("<p>>"));
+  ASSERT_TRUE(LoadHtml("<p>"));
 
   WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
   ASSERT_TRUE(main_frame);
@@ -220,13 +220,13 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
     return called;
   }));
 
-  EXPECT_EQ(1, [ExecuteJavaScript(@"sensitiveValue") intValue]);
+  EXPECT_NSEQ(@1, ExecuteJavaScript(@"sensitiveValue"));
 
   ExecuteJavaScript(@"replayInterceptedMessage()");
 
   // Value should not increase because replaying message should not re-execute
   // the called function.
-  EXPECT_EQ(1, [ExecuteJavaScript(@"sensitiveValue") intValue]);
+  EXPECT_NSEQ(@1, ExecuteJavaScript(@"sensitiveValue"));
 }
 
 }  // namespace web

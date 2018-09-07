@@ -43,26 +43,15 @@ WebFrameImpl::WebFrameImpl(const std::string& frame_id,
   DCHECK(web_state);
   web_state->AddObserver(this);
 
-  const std::string command_prefix = kJavaScriptReplyCommandPrefix + frame_id;
   web_state->AddScriptCommandCallback(
       base::BindRepeating(&WebFrameImpl::OnJavaScriptReply,
                           base::Unretained(this), base::Unretained(web_state)),
-      command_prefix);
+      GetScriptCommandPrefix());
 }
 
 WebFrameImpl::~WebFrameImpl() {
   CancelPendingRequests();
   DetachFromWebState();
-}
-
-void WebFrameImpl::DetachFromWebState() {
-  if (web_state_) {
-    const std::string command_prefix =
-        kJavaScriptReplyCommandPrefix + frame_id_;
-    web_state_->RemoveScriptCommandCallback(command_prefix);
-    web_state_->RemoveObserver(this);
-    web_state_ = nullptr;
-  }
 }
 
 WebState* WebFrameImpl::GetWebState() {
@@ -126,7 +115,7 @@ bool WebFrameImpl::CallJavaScriptFunction(
 bool WebFrameImpl::CallJavaScriptFunction(
     const std::string& name,
     const std::vector<base::Value>& parameters) {
-  return CallJavaScriptFunction(name, parameters, /*replyWithResult=*/false);
+  return CallJavaScriptFunction(name, parameters, /*reply_with_result=*/false);
 }
 
 bool WebFrameImpl::CallJavaScriptFunction(
@@ -145,7 +134,7 @@ bool WebFrameImpl::CallJavaScriptFunction(
 
   base::PostDelayedTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                   timeout_callback_ptr->callback(), timeout);
-  return CallJavaScriptFunction(name, parameters, /*replyWithResult=*/true);
+  return CallJavaScriptFunction(name, parameters, /*reply_with_result=*/true);
 }
 
 void WebFrameImpl::CancelRequest(int message_id) {
@@ -182,8 +171,7 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
   }
 
   const std::string command_string = command->GetString();
-  if (command_string !=
-      (std::string(kJavaScriptReplyCommandPrefix) + frame_id_ + ".reply")) {
+  if (command_string != (GetScriptCommandPrefix() + ".reply")) {
     NOTREACHED();
     return false;
   }
@@ -211,6 +199,18 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
   return true;
 }
 
+void WebFrameImpl::DetachFromWebState() {
+  if (web_state_) {
+    web_state_->RemoveScriptCommandCallback(GetScriptCommandPrefix());
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
+}
+
+const std::string WebFrameImpl::GetScriptCommandPrefix() {
+  return kJavaScriptReplyCommandPrefix + frame_id_;
+}
+
 void WebFrameImpl::WebStateDestroyed(web::WebState* web_state) {
   CancelPendingRequests();
   DetachFromWebState();
@@ -221,6 +221,6 @@ WebFrameImpl::RequestCallbacks::RequestCallbacks(
     std::unique_ptr<TimeoutCallback> timeout)
     : completion(std::move(completion)), timeout_callback(std::move(timeout)) {}
 
-WebFrameImpl::RequestCallbacks::~RequestCallbacks(){};
+WebFrameImpl::RequestCallbacks::~RequestCallbacks() {}
 
 }  // namespace web
