@@ -166,6 +166,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/platform_apps/chrome_apps_browser_api_provider.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -265,6 +266,8 @@ void BrowserProcessImpl::Init() {
 
   extensions_browser_client_ =
       std::make_unique<extensions::ChromeExtensionsBrowserClient>();
+  extensions_browser_client_->AddAPIProvider(
+      std::make_unique<apps::ChromeAppsBrowserAPIProvider>());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 

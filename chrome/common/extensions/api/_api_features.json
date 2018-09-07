@@ -172,10 +172,6 @@
     "dependencies": ["permission:brailleDisplayPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "browser": {
-    "dependencies": ["permission:browser"],
-    "contexts": ["blessed_extension"]
-  },
   "browserAction": {
     "dependencies": ["manifest:browser_action"],
     "contexts": ["blessed_extension"]

@@ -14,6 +14,19 @@ from test_file_system import TestFileSystem
 _TEST_FS = {
   'chrome': {
     'browser': {
+      'apps': {
+        'platform_apps': {
+          'OWNERS': '\n'.join([
+            '# Apps owners.',
+            'apps@owner.tld'
+          ]),
+          'api': {
+            'an_app_api': {
+              'an_app_api.cc': ''
+            }
+          }
+        }
+      },
       'extensions': {
         'OWNERS': '\n'.join([
           '# Core owners.',
@@ -153,6 +166,12 @@ class OwnersDataSourceTest(unittest.TestCase):
       ],
       'notes': 'Hallo!',
       'id': 'a_different_api'
+    },
+    {
+      'apiName': 'an_app_api',
+      'owners': [],
+      'notes': 'Use one of the Core Extensions/Apps Owners.',
+      'id': 'an_app_api',
     },
     {
       'apiName': 'another_api',

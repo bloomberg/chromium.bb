@@ -41,6 +41,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/platform_apps/chrome_apps_browser_api_provider.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
@@ -97,6 +98,8 @@ TestingBrowserProcess::TestingBrowserProcess()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
       new extensions::ChromeExtensionsBrowserClient);
+  extensions_browser_client_->AddAPIProvider(
+      std::make_unique<apps::ChromeAppsBrowserAPIProvider>());
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif

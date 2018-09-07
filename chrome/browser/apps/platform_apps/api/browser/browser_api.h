@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSER_BROWSER_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_BROWSER_BROWSER_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_BROWSER_BROWSER_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_BROWSER_BROWSER_API_H_
 
 #include "extensions/browser/extension_function.h"
 
-namespace extensions {
+namespace apps {
 namespace api {
 
 class BrowserOpenTabFunction : public UIThreadExtensionFunction {
@@ -21,6 +21,6 @@ class BrowserOpenTabFunction : public UIThreadExtensionFunction {
 };
 
 }  // namespace api
-}  // namespace extensions
+}  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSER_BROWSER_API_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_BROWSER_BROWSER_API_H_

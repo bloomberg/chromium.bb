@@ -22,6 +22,8 @@ class PermissionsProvider {
   // Returns all the known permissions.
   virtual std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
       const = 0;
+
+  virtual ~PermissionsProvider() {}
 };
 
 }  // namespace extensions

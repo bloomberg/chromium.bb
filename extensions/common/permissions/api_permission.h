@@ -14,6 +14,10 @@
 #include "base/pickle.h"
 #include "base/values.h"
 
+namespace apps {
+class ChromeAppsAPIPermissions;
+}
+
 namespace extensions {
 
 class PermissionIDSet;
@@ -420,6 +424,7 @@ class APIPermissionInfo {
   // Instances should only be constructed from within a PermissionsProvider.
   friend class CastAPIPermissions;
   friend class ChromeAPIPermissions;
+  friend class apps::ChromeAppsAPIPermissions;
   friend class ExtensionsAPIPermissions;
   // Implementations of APIPermission will want to get the permission message,
   // but this class's implementation should be hidden from everyone else.

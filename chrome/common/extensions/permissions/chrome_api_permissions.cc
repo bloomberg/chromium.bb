@@ -218,7 +218,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
        &CreateAPIPermission<MediaGalleriesPermission>},
       {APIPermission::kPointerLock, "pointerLock"},
       {APIPermission::kCastStreaming, "cast.streaming"},
-      {APIPermission::kBrowser, "browser"},
       {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 
       // Settings override permissions.
