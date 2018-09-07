@@ -23,6 +23,9 @@ class PrefChangeRegistrarAndroid {
   void Add(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            const jint j_pref_index);
+  void Remove(JNIEnv* env,
+              const JavaParamRef<jobject>& obj,
+              const jint j_pref_index);
 
  private:
   ~PrefChangeRegistrarAndroid();

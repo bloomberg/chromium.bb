@@ -4,16 +4,19 @@
 
 package org.chromium.chrome.browser.feed;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
@@ -39,13 +42,12 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.ui.UiUtils;
 
 import java.util.Arrays;
 
@@ -54,13 +56,18 @@ import java.util.Arrays;
  */
 public class FeedNewTabPage extends NewTabPage {
     private final FeedNewTabPageMediator mMediator;
-    private final StreamLifecycleManager mStreamLifecycleManager;
-    private final Stream mStream;
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
-    private SectionHeaderView mSectionHeaderView;
-    private FeedImageLoader mImageLoader;
+
+    // Used when Feed is enabled.
+    private @Nullable Stream mStream;
+    private @Nullable FeedImageLoader mImageLoader;
+    private @Nullable StreamLifecycleManager mStreamLifecycleManager;
+    private @Nullable SectionHeaderView mSectionHeaderView;
+
+    // Used when Feed is disabled by policy.
+    private @Nullable ScrollView mScrollViewForPolicy;
 
     private class BasicSnackbarApi implements SnackbarApi {
         @Override
@@ -175,42 +182,12 @@ public class FeedNewTabPage extends NewTabPage {
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost, tabModelSelector);
 
-        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
-        Tab tab = nativePageHost.getActiveTab();
-        Profile profile = tab.getProfile();
-        mImageLoader = new FeedImageLoader(profile, activity);
-        SuggestionsNavigationDelegateImpl navigationDelegate =
-                new SuggestionsNavigationDelegateImpl(
-                        activity, profile, nativePageHost, tabModelSelector);
-        ActionApi actionApi = new FeedActionHandler(navigationDelegate,
-                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed());
-        FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
-        FeedStreamScope streamScope =
-                feedProcessScope
-                        .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
-                                new BasicStreamConfiguration(),
-                                new BasicCardConfiguration(activity.getResources(), mUiConfig),
-                                new BasicSnackbarApi(), new FeedBasicLogging(), offlineIndicator)
-                        .build();
-
-        mStream = streamScope.getStream();
-        mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, tab);
-
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
-        mSectionHeaderView = (SectionHeaderView) inflater.inflate(
-                R.layout.new_tab_page_snippets_expandable_header, null);
 
-        // TODO(huayinz): Add MarginResizer for sign-in promo under issue 860051 or 860043,
-        // depending on which one lands first.
-        Resources resources = mSectionHeaderView.getResources();
-        int defaultMargin =
-                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
-        int wideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
-        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, defaultMargin, wideMargin);
-
-        mMediator = new FeedNewTabPageMediator(this,
-                new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout, mStream.getView()));
+        // Mediator should be created before any Stream changes.
+        mMediator = new FeedNewTabPageMediator(
+                this, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout));
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
@@ -225,12 +202,6 @@ public class FeedNewTabPage extends NewTabPage {
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(), mMediator,
                 contextMenuManager, mUiConfig);
-
-        mStream.getView().setBackgroundColor(Color.WHITE);
-        mRootView.addView(mStream.getView());
-
-        mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
-                new NonDismissibleHeader(mSectionHeaderView)));
     }
 
     @Override
@@ -247,8 +218,8 @@ public class FeedNewTabPage extends NewTabPage {
     public void destroy() {
         super.destroy();
         mMediator.destroy();
-        mImageLoader.destroy();
-        mStreamLifecycleManager.destroy();
+        if (mImageLoader != null) mImageLoader.destroy();
+        if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
     }
 
     @Override
@@ -281,6 +252,94 @@ public class FeedNewTabPage extends NewTabPage {
     /** @return The {@link Stream} that this class holds. */
     Stream getStream() {
         return mStream;
+    }
+
+    /**
+     * Create a {@link Stream} for this class.
+     */
+    void createStream() {
+        if (mScrollViewForPolicy != null) {
+            mRootView.removeView(mScrollViewForPolicy);
+            mScrollViewForPolicy = null;
+        }
+
+        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        Activity activity = mTab.getActivity();
+        Profile profile = mTab.getProfile();
+
+        mImageLoader = new FeedImageLoader(profile, activity);
+        ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
+                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed());
+        FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
+        FeedStreamScope streamScope =
+                feedProcessScope
+                        .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
+                                new BasicStreamConfiguration(),
+                                new BasicCardConfiguration(activity.getResources(), mUiConfig),
+                                new BasicSnackbarApi(), new FeedBasicLogging(), offlineIndicator)
+                        .build();
+
+        mStream = streamScope.getStream();
+        mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, mTab);
+
+        LayoutInflater inflater = LayoutInflater.from(activity);
+        mSectionHeaderView = (SectionHeaderView) inflater.inflate(
+                R.layout.new_tab_page_snippets_expandable_header, null);
+
+        // TODO(huayinz): Add MarginResizer for sign-in promo under issue 860051 or 860043,
+        // depending on which one lands first.
+        Resources resources = mSectionHeaderView.getResources();
+        int defaultMargin =
+                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
+        int wideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
+        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, defaultMargin, wideMargin);
+
+        View view = mStream.getView();
+        view.setBackgroundColor(Color.WHITE);
+        mRootView.addView(view);
+
+        UiUtils.removeViewFromParent(mNewTabPageLayout);
+        UiUtils.removeViewFromParent(mSectionHeaderView);
+        mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                new NonDismissibleHeader(mSectionHeaderView)));
+        // Explicitly request focus on the scroll container to avoid UrlBar being focused after
+        // the scroll container for policy is removed.
+        view.requestFocus();
+    }
+
+    /**
+     * @return The {@link ScrollView} for displaying content for supervised user or enterprise
+     *         policy.
+     */
+    ScrollView getScrollViewForPolicy() {
+        return mScrollViewForPolicy;
+    }
+
+    /**
+     * Create a {@link ScrollView} for displaying content for supervised user or enterprise policy.
+     */
+    void createScrollViewForPolicy() {
+        if (mStream != null) {
+            mRootView.removeView(mStream.getView());
+            mStreamLifecycleManager.destroy();
+            mStream = null;
+            mSectionHeaderView = null;
+        }
+
+        mScrollViewForPolicy = new ScrollView(mTab.getActivity());
+        mScrollViewForPolicy.setBackgroundColor(Color.WHITE);
+
+        // Make scroll view focusable so that it is the next focusable view when the url bar clears
+        // focus.
+        mScrollViewForPolicy.setFocusable(true);
+        mScrollViewForPolicy.setFocusableInTouchMode(true);
+        mScrollViewForPolicy.setContentDescription(
+                mScrollViewForPolicy.getResources().getString(R.string.accessibility_new_tab_page));
+
+        UiUtils.removeViewFromParent(mNewTabPageLayout);
+        mScrollViewForPolicy.addView(mNewTabPageLayout);
+        mRootView.addView(mScrollViewForPolicy);
+        mScrollViewForPolicy.requestFocus();
     }
 
     /** @return The {@link SectionHeaderView} for the Feed section header. */

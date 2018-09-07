@@ -133,7 +133,8 @@ public class NewTabPageView extends FrameLayout {
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
                 searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig);
 
-        mSnapScrollHelper = new SnapScrollHelper(mManager, mNewTabPageLayout, mRecyclerView);
+        mSnapScrollHelper = new SnapScrollHelper(mManager, mNewTabPageLayout);
+        mSnapScrollHelper.setView(mRecyclerView);
         mRecyclerView.setSnapScrollHelper(mSnapScrollHelper);
         addView(mRecyclerView);
 
