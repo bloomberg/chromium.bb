@@ -9,6 +9,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
@@ -32,6 +33,10 @@ import org.chromium.build.BuildHooksConfig;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
 import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.dependency_injection.ChromeAppComponent;
+import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
+import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent;
+import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -47,6 +52,9 @@ public class ChromeApplication extends Application {
     private static final String TAG = "ChromiumApplication";
 
     private DiscardableReferencePool mReferencePool;
+
+    @Nullable
+    private static ChromeAppComponent sComponent;
 
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
@@ -188,5 +196,21 @@ public class ChromeApplication extends Application {
             @Override
             public void onDenied() {}
         });
+    }
+
+    /** Returns the application-scoped component. */
+    public static ChromeAppComponent getComponent() {
+        if (sComponent == null) {
+            sComponent = createComponent();
+        }
+        return sComponent;
+    }
+
+    private static ChromeAppComponent createComponent() {
+        ChromeAppModule.Factory overriddenFactory =
+                ModuleFactoryOverrides.getOverrideFor(ChromeAppModule.Factory.class);
+        ChromeAppModule module =
+                overriddenFactory == null ? new ChromeAppModule() : overriddenFactory.create();
+        return DaggerChromeAppComponent.builder().chromeAppModule(module).build();
     }
 }

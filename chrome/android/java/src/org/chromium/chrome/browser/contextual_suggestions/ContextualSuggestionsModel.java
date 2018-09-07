@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.view.View.OnClickListener;
 
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 
@@ -13,7 +14,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /** A model for the contextual suggestions UI component. */
+@ActivityScope
 class ContextualSuggestionsModel
         extends PropertyObservable<ContextualSuggestionsModel.PropertyKey> {
     /** Keys uniquely identifying model properties. */
@@ -44,6 +48,9 @@ class ContextualSuggestionsModel
     private boolean mIsSlimPeekEnabled;
     private float mToolbarTranslationPercent;
     private int mToolbarArrowTintResourceId;
+
+    @Inject
+    ContextualSuggestionsModel() {}
 
     @Override
     public Collection<PropertyKey> getAllSetProperties() {
