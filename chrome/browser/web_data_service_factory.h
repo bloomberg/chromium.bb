@@ -21,10 +21,6 @@ class Profile;
 class TokenWebData;
 class WebDataServiceWrapper;
 
-#if defined(OS_WIN)
-class PasswordWebDataService;
-#endif
-
 namespace payments {
 class PaymentManifestWebDataService;
 }
@@ -63,13 +59,6 @@ class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
   static scoped_refptr<TokenWebData> GetTokenWebDataForProfile(
       Profile* profile,
       ServiceAccessType access_type);
-
-#if defined(OS_WIN)
-  // Returns the PasswordWebDataService associated with the |profile|.
-  static scoped_refptr<PasswordWebDataService> GetPasswordWebDataForProfile(
-      Profile* profile,
-      ServiceAccessType access_type);
-#endif
 
   static scoped_refptr<payments::PaymentManifestWebDataService>
   GetPaymentManifestWebDataForProfile(Profile* profile,

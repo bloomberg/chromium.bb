@@ -32,10 +32,6 @@
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_constants.h"
 
-#if defined(OS_WIN)
-#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
-#endif
-
 #if !defined(OS_IOS)
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_method_manifest_table.h"
@@ -160,13 +156,6 @@ WebDataServiceWrapper::WebDataServiceWrapper(
                        base::Bind(show_error_callback, ERROR_LOADING_TOKEN));
   token_web_data_->Init();
 
-#if defined(OS_WIN)
-  password_web_data_ = new PasswordWebDataService(
-      profile_database_, ui_task_runner,
-      base::Bind(show_error_callback, ERROR_LOADING_PASSWORD));
-  password_web_data_->Init();
-#endif
-
 #if !defined(OS_IOS)
   payment_manifest_web_data_ = new payments::PaymentManifestWebDataService(
       profile_database_,
@@ -210,10 +199,6 @@ void WebDataServiceWrapper::Shutdown() {
   keyword_web_data_->ShutdownOnUISequence();
   token_web_data_->ShutdownOnUISequence();
 
-#if defined(OS_WIN)
-  password_web_data_->ShutdownOnUISequence();
-#endif
-
 #if !defined(OS_IOS)
   payment_manifest_web_data_->ShutdownOnUISequence();
 #endif
@@ -241,13 +226,6 @@ WebDataServiceWrapper::GetKeywordWebData() {
 scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
   return token_web_data_.get();
 }
-
-#if defined(OS_WIN)
-scoped_refptr<PasswordWebDataService>
-WebDataServiceWrapper::GetPasswordWebData() {
-  return password_web_data_.get();
-}
-#endif
 
 #if !defined(OS_IOS)
 scoped_refptr<payments::PaymentManifestWebDataService>

@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -35,10 +34,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-
-#if defined(OS_WIN)
-#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
-#endif
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -95,13 +90,6 @@ void ProfileWriter::AddPasswordForm(const autofill::PasswordForm& form) {
   PasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddLogin(form);
 }
-
-#if defined(OS_WIN)
-void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
-  WebDataServiceFactory::GetPasswordWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddIE7Login(info);
-}
-#endif
 
 void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {

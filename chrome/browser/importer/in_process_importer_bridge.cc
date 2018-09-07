@@ -174,13 +174,8 @@ void InProcessImporterBridge::AddHomePage(const GURL& home_page) {
 
 #if defined(OS_WIN)
 void InProcessImporterBridge::AddIE7PasswordInfo(
-    const importer::ImporterIE7PasswordInfo& password_info) {
-  IE7PasswordInfo ie7_password_info;
-  ie7_password_info.url_hash = password_info.url_hash;
-  ie7_password_info.encrypted_data = password_info.encrypted_data;
-  ie7_password_info.date_created = password_info.date_created;
-
-  writer_->AddIE7PasswordInfo(ie7_password_info);
+    const importer::ImporterIE7PasswordInfo&) {
+  // TODO(crbug.com/456119): delete AddIE7PasswordInfo
 }
 #endif  // OS_WIN
 
