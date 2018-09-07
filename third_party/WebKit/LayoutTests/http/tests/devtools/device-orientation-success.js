@@ -78,5 +78,24 @@
       ConsoleTestRunner.dumpConsoleMessages();
       next();
     },
+
+    // This test ensures we do not repeatedly show console warning from
+    // SensorInspectorAgent::SetOrientationSensorOverride() when Document
+    // changes.
+    async function reloadPageAndOverride(next) {
+      // First, enable DeviceOrientationAgent again.
+      TestRunner.DeviceOrientationAgent.setDeviceOrientationOverride(1, 2, 3);
+
+      // Reload the page. DeviceOrientationInspectorAgent::Restore() will call
+      // SensorInspectorAgent::SetOrientationSensorOverride() again, and we do
+      // not want any new console messages.
+      // The console message from the call to setDeviceOrientationOverride()
+      // above is lost with the reload, but we do not care.
+      await TestRunner.reloadPagePromise();
+      ConsoleTestRunner.dumpConsoleMessages();
+
+      await TestRunner.DeviceOrientationAgent.clearDeviceOrientationOverride();
+      next();
+    },
   ]);
 })();

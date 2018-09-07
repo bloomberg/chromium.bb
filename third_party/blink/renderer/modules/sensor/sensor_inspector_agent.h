@@ -9,13 +9,16 @@
 
 namespace blink {
 
+class Document;
 class LocalFrame;
 class SensorProviderProxy;
 
 class SensorInspectorAgent : public GarbageCollected<SensorInspectorAgent> {
  public:
-  explicit SensorInspectorAgent(LocalFrame* frame);
+  explicit SensorInspectorAgent(Document* document);
   virtual void Trace(blink::Visitor*);
+
+  void DidCommitLoadForLocalFrame(LocalFrame* frame);
 
   void SetOrientationSensorOverride(double alpha, double beta, double gamma);
 
