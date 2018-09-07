@@ -2778,6 +2778,8 @@ int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, MV *mvp_full,
     const int32_t *mask = x->mask_buf;
     const int search_range = 8;
     *dst_mv = *mvp_full;
+    clamp_mv(dst_mv, x->mv_limits.col_min, x->mv_limits.col_max,
+             x->mv_limits.row_min, x->mv_limits.row_max);
     int thissme = obmc_refining_search_sad(
         x, wsrc, mask, dst_mv, sadpb, search_range, fn_ptr, ref_mv, is_second);
     if (thissme < INT_MAX)
