@@ -34,7 +34,7 @@ const base::Feature kEnableContinueReading{"EnableContinueReading",
 const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
-    "EnableAppListSearchAutocomplete", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableSearchResultRankerTrain{
     "EnableSearchResultRankerTrain", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSearchResultRankerInfer{
