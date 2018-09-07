@@ -33,7 +33,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarContainerViewController.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -56,7 +57,7 @@
   id<LayoutGuideProvider> safeAreaLayoutGuide =
       SafeAreaLayoutGuideForView(self.view);
   UIView* contentView = self.contentViewController.view;
-  UIView* headerView = self.appBar.headerViewController.headerView;
+  UIView* headerView = self.appBarViewController.headerView;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [contentView.topAnchor constraintEqualToAnchor:headerView.bottomAnchor],
@@ -583,12 +584,13 @@ initWithRootViewController:(UIViewController*)rootViewController
 
     // Configure the style.
     appBarContainer.view.backgroundColor = [UIColor whiteColor];
-    ConfigureAppBarWithCardStyle(appBarContainer.appBar);
+    ConfigureAppBarViewControllerWithCardStyle(
+        appBarContainer.appBarViewController);
 
     // Override the header view's background color if the UIRefresh experiment
     // is enabled.
     if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      appBarContainer.appBar.headerViewController.headerView.backgroundColor =
+      appBarContainer.appBarViewController.headerView.backgroundColor =
           [UIColor groupTableViewBackgroundColor];
     }
 
