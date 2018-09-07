@@ -58,17 +58,6 @@ class WebSandboxSupport {
                                            const char* preferred_locale,
                                            OutOfProcessFont*) = 0;
 
-  // Get a OutOfProcessFont specification for a font uniquely identified by full
-  // font name or postscript name.  Specify full font name or postscript name as
-  // argument in UTF-8.
-  //
-  // The OutOfProcessFont out parameter will contain a filename, ttc index and
-  // fontconfig interface id, with the italic and bold members set always
-  // initialised to false.
-  virtual void MatchFontByPostscriptNameOrFullFontName(
-      const char* font_unique_name,
-      OutOfProcessFont*) = 0;
-
   // Fill out the given WebFontRenderStyle with the user's preferences for
   // rendering the given font at the given size (in pixels), given weight and
   // given slant and given device scale factor. The device scale factor is

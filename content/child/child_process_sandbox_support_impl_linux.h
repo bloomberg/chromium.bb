@@ -38,16 +38,6 @@ void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
                              float device_scale_factor,
                              blink::WebFontRenderStyle* out);
 
-// Matches a font uniquely by postscript name or full font name.  Used in Blink
-// for @font-face { src: local(arg) } matching.  Provide full font name or
-// postscript name as argument font_unique_name in UTF-8. fallback_font contains
-// a filename and fontconfig interface id if a match was found. The filename is
-// empty and the interface id is zero if no match is found.
-void MatchFontByPostscriptNameOrFullFontName(
-    sk_sp<font_service::FontLoader> font_loader,
-    const char* font_unique_name,
-    blink::OutOfProcessFont* uniquely_matched_font);
-
 };  // namespace content
 
 #endif  // CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
