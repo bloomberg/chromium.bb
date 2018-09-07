@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -19,25 +18,15 @@ namespace {
 
 class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
  public:
-  using Entry = ukm::builders::Media_Autoplay_Attempt;
-  using CreatedEntry = ukm::builders::DocumentCreated;
-
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void TryAutoplay(ukm::TestUkmRecorder& ukm_recorder,
-                   const content::ToRenderFrameHost& adapter) {
-    base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromSeconds(10));
-    ukm_recorder.SetOnAddEntryCallback(Entry::kEntryName,
-                                       run_loop.QuitClosure());
+  void TryAutoplay(const content::ToRenderFrameHost& adapter) {
     EXPECT_TRUE(ExecuteScriptWithoutUserGesture(adapter.render_frame_host(),
                                                 "tryPlayback();"));
-    run_loop.Run();
   }
 
   void NavigateFrameAndWait(content::RenderFrameHost* rfh, const GURL& url) {
@@ -81,6 +70,9 @@ class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  using Entry = ukm::builders::Media_Autoplay_Attempt;
+  using CreatedEntry = ukm::builders::DocumentCreated;
+
   GURL main_url(embedded_test_server()->GetURL("example.com",
                                                "/media/autoplay_iframe.html"));
   GURL foo_url(
@@ -90,25 +82,25 @@ IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
 
   // Navigate main frame, try play.
   NavigateFrameAndWait(web_contents()->GetMainFrame(), main_url);
-  TryAutoplay(test_ukm_recorder, web_contents());
+  TryAutoplay(web_contents());
 
   // Check that we recorded a UKM event using the main frame URL.
   {
     auto ukm_entries = test_ukm_recorder.GetEntriesByName(Entry::kEntryName);
 
-    ASSERT_EQ(1u, ukm_entries.size());
+    EXPECT_EQ(1u, ukm_entries.size());
     test_ukm_recorder.ExpectEntrySourceHasUrl(ukm_entries[0], main_url);
   }
 
   // Navigate sub frame, try play.
   NavigateFrameAndWait(first_child(), foo_url);
-  TryAutoplay(test_ukm_recorder, first_child());
+  TryAutoplay(first_child());
 
   // Check that we recorded a UKM event that is not keyed to any URL.
   {
     auto ukm_entries = test_ukm_recorder.GetEntriesByName(Entry::kEntryName);
 
-    ASSERT_EQ(2u, ukm_entries.size());
+    EXPECT_EQ(2u, ukm_entries.size());
     EXPECT_FALSE(
         test_ukm_recorder.GetSourceForSourceId(ukm_entries[1]->source_id));
 
@@ -130,13 +122,13 @@ IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
 
   // Navigate sub sub frame, try play.
   NavigateFrameAndWait(second_child(), bar_url);
-  TryAutoplay(test_ukm_recorder, second_child());
+  TryAutoplay(second_child());
 
   // Check that we recorded a UKM event that is not keyed to any url.
   {
     auto ukm_entries = test_ukm_recorder.GetEntriesByName(Entry::kEntryName);
 
-    ASSERT_EQ(3u, ukm_entries.size());
+    EXPECT_EQ(3u, ukm_entries.size());
     EXPECT_FALSE(
         test_ukm_recorder.GetSourceForSourceId(ukm_entries[2]->source_id));
 
@@ -158,13 +150,13 @@ IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
 
   // Navigate top frame, try play.
   NavigateFrameAndWait(web_contents()->GetMainFrame(), foo_url);
-  TryAutoplay(test_ukm_recorder, web_contents());
+  TryAutoplay(web_contents());
 
   // Check that we recorded a UKM event using the main frame URL.
   {
     auto ukm_entries = test_ukm_recorder.GetEntriesByName(Entry::kEntryName);
 
-    ASSERT_EQ(4u, ukm_entries.size());
+    EXPECT_EQ(4u, ukm_entries.size());
     test_ukm_recorder.ExpectEntrySourceHasUrl(ukm_entries[3], foo_url);
   }
 }
