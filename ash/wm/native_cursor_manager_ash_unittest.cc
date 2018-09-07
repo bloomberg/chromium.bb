@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/native_cursor_manager_ash.h"
+#include "ash/wm/native_cursor_manager_ash_classic.h"
 
 #include "ash/display/display_util.h"
 #include "ash/shell.h"

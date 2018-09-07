@@ -1046,7 +1046,7 @@ void Shell::Init(
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
-  native_cursor_manager_ = new NativeCursorManagerAshClassic;
+  native_cursor_manager_ = new NativeCursorManagerAsh;
   cursor_manager_ =
       std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
 

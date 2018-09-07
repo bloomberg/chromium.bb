@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/base/layout.h"
+#include "ui/wm/core/native_cursor_manager_delegate.h"
 
 namespace ash {
 namespace {
@@ -52,27 +53,27 @@ void NotifyMouseEventsEnableStateChange(bool enabled) {
 
 }  // namespace
 
-NativeCursorManagerAshClassic::NativeCursorManagerAshClassic()
+NativeCursorManagerAsh::NativeCursorManagerAsh()
     : native_cursor_enabled_(true), image_cursors_(new ui::ImageCursors) {}
 
-NativeCursorManagerAshClassic::~NativeCursorManagerAshClassic() = default;
+NativeCursorManagerAsh::~NativeCursorManagerAsh() = default;
 
-void NativeCursorManagerAshClassic::SetNativeCursorEnabled(bool enabled) {
+void NativeCursorManagerAsh::SetNativeCursorEnabled(bool enabled) {
   native_cursor_enabled_ = enabled;
 
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   SetCursor(cursor_manager->GetCursor(), cursor_manager);
 }
 
-float NativeCursorManagerAshClassic::GetScale() const {
+float NativeCursorManagerAsh::GetScale() const {
   return image_cursors_->GetScale();
 }
 
-display::Display::Rotation NativeCursorManagerAshClassic::GetRotation() const {
+display::Display::Rotation NativeCursorManagerAsh::GetRotation() const {
   return image_cursors_->GetRotation();
 }
 
-void NativeCursorManagerAshClassic::SetDisplay(
+void NativeCursorManagerAsh::SetDisplay(
     const display::Display& display,
     ::wm::NativeCursorManagerDelegate* delegate) {
   DCHECK(display.is_valid());
@@ -95,7 +96,7 @@ void NativeCursorManagerAshClassic::SetDisplay(
       ->SetDisplay(display);
 }
 
-void NativeCursorManagerAshClassic::SetCursor(
+void NativeCursorManagerAsh::SetCursor(
     gfx::NativeCursor cursor,
     ::wm::NativeCursorManagerDelegate* delegate) {
   if (native_cursor_enabled_) {
@@ -113,7 +114,7 @@ void NativeCursorManagerAshClassic::SetCursor(
     SetCursorOnAllRootWindows(cursor);
 }
 
-void NativeCursorManagerAshClassic::SetCursorSize(
+void NativeCursorManagerAsh::SetCursorSize(
     ui::CursorSize cursor_size,
     ::wm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetCursorSize(cursor_size);
@@ -129,7 +130,7 @@ void NativeCursorManagerAshClassic::SetCursorSize(
       ->SetCursorSize(cursor_size);
 }
 
-void NativeCursorManagerAshClassic::SetVisibility(
+void NativeCursorManagerAsh::SetVisibility(
     bool visible,
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitVisibility(visible);
@@ -145,7 +146,7 @@ void NativeCursorManagerAshClassic::SetVisibility(
   NotifyCursorVisibilityChange(visible);
 }
 
-void NativeCursorManagerAshClassic::SetMouseEventsEnabled(
+void NativeCursorManagerAsh::SetMouseEventsEnabled(
     bool enabled,
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitMouseEventsEnabled(enabled);

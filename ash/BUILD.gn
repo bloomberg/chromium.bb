@@ -1143,7 +1143,6 @@ component("ash") {
     "wm/lock_window_state.cc",
     "wm/lock_window_state.h",
     "wm/mru_window_tracker.cc",
-    "wm/native_cursor_manager_ash.h",
     "wm/native_cursor_manager_ash_classic.cc",
     "wm/native_cursor_manager_ash_classic.h",
     "wm/non_client_frame_controller.cc",
