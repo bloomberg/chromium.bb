@@ -33,9 +33,12 @@ void av1_setup_src_planes(struct macroblock *x,
 
 void av1_encode_frame(struct AV1_COMP *cpi);
 
+void av1_alloc_tile_data(struct AV1_COMP *cpi);
 void av1_init_tile_data(struct AV1_COMP *cpi);
 void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
                      int tile_col);
+void av1_encode_sb_row(struct AV1_COMP *cpi, struct ThreadData *td,
+                       int tile_row, int tile_col, int mi_row);
 
 #ifdef __cplusplus
 }  // extern "C"

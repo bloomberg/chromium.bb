@@ -225,6 +225,9 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
   const int tile_rows = cm->tile_rows;
   int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols * tile_rows);
 
+  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
+    av1_alloc_tile_data(cpi);
+
   av1_init_tile_data(cpi);
   // Only run once to create threads and allocate thread data.
   if (cpi->num_workers == 0) {

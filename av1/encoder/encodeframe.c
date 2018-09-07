@@ -4339,6 +4339,32 @@ static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
     return cpi->common.tx_mode;
 }
 
+void av1_alloc_tile_data(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+  int tile_col, tile_row;
+
+  if (cpi->tile_data != NULL) aom_free(cpi->tile_data);
+  CHECK_MEM_ERROR(
+      cm, cpi->tile_data,
+      aom_memalign(32, tile_cols * tile_rows * sizeof(*cpi->tile_data)));
+  cpi->allocated_tiles = tile_cols * tile_rows;
+
+  for (tile_row = 0; tile_row < tile_rows; ++tile_row)
+    for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
+      TileDataEnc *const tile_data =
+          &cpi->tile_data[tile_row * tile_cols + tile_col];
+      int i, j;
+      for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
+        for (j = 0; j < MAX_MODES; ++j) {
+          tile_data->thresh_freq_fact[i][j] = 32;
+          tile_data->mode_map[i][j] = j;
+        }
+      }
+    }
+}
+
 void av1_init_tile_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -4349,27 +4375,6 @@ void av1_init_tile_data(AV1_COMP *cpi) {
   TOKENLIST *tplist = cpi->tplist[0][0];
   unsigned int tile_tok = 0;
   int tplist_count = 0;
-
-  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {
-    if (cpi->tile_data != NULL) aom_free(cpi->tile_data);
-    CHECK_MEM_ERROR(
-        cm, cpi->tile_data,
-        aom_memalign(32, tile_cols * tile_rows * sizeof(*cpi->tile_data)));
-    cpi->allocated_tiles = tile_cols * tile_rows;
-
-    for (tile_row = 0; tile_row < tile_rows; ++tile_row)
-      for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
-        TileDataEnc *const tile_data =
-            &cpi->tile_data[tile_row * tile_cols + tile_col];
-        int i, j;
-        for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
-          for (j = 0; j < MAX_MODES; ++j) {
-            tile_data->thresh_freq_fact[i][j] = 32;
-            tile_data->mode_map[i][j] = j;
-          }
-        }
-      }
-  }
 
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
@@ -4468,12 +4473,17 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
 static void encode_tiles(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
   int tile_col, tile_row;
+
+  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
+    av1_alloc_tile_data(cpi);
 
   av1_init_tile_data(cpi);
 
-  for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
-    for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
+  for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
+    for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
       cpi->intrabc_used |= cpi->td.intrabc_used_this_tile;
     }
