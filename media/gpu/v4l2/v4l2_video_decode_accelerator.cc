@@ -29,6 +29,7 @@
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/scoped_binders.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -84,13 +85,6 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   const int32_t input_id;
 };
 
-struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
-  EGLSyncKHRRef(EGLDisplay egl_display, EGLSyncKHR egl_sync);
-  ~EGLSyncKHRRef();
-  EGLDisplay const egl_display;
-  EGLSyncKHR egl_sync;
-};
-
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
@@ -114,18 +108,6 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
   }
 }
 
-V4L2VideoDecodeAccelerator::EGLSyncKHRRef::EGLSyncKHRRef(EGLDisplay egl_display,
-                                                         EGLSyncKHR egl_sync)
-    : egl_display(egl_display), egl_sync(egl_sync) {}
-
-V4L2VideoDecodeAccelerator::EGLSyncKHRRef::~EGLSyncKHRRef() {
-  // We don't check for eglDestroySyncKHR failures, because if we get here
-  // with a valid sync object, something went wrong and we are getting
-  // destroyed anyway.
-  if (egl_sync != EGL_NO_SYNC_KHR)
-    eglDestroySyncKHR(egl_display, egl_sync);
-}
-
 V4L2VideoDecodeAccelerator::InputRecord::InputRecord()
     : at_device(false), address(NULL), length(0), bytes_used(0), input_id(-1) {}
 
@@ -134,7 +116,6 @@ V4L2VideoDecodeAccelerator::InputRecord::~InputRecord() {}
 V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord()
     : state(kFree),
       egl_image(EGL_NO_IMAGE_KHR),
-      egl_sync(EGL_NO_SYNC_KHR),
       picture_id(-1),
       texture_id(0),
       cleared(false) {}
@@ -398,9 +379,9 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK_EQ(output_record.state, kFree);
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
-    DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+    DCHECK(!output_record.egl_fence);
     DCHECK_EQ(output_record.picture_id, -1);
-    DCHECK_EQ(output_record.cleared, false);
+    DCHECK(!output_record.cleared);
     DCHECK(output_record.processor_input_fds.empty());
 
     output_record.picture_id = buffers[i].id();
@@ -517,7 +498,7 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(
 
   OutputRecord& output_record = output_buffer_map_[buffer_index];
   DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
-  DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+  DCHECK(!output_record.egl_fence);
   DCHECK_EQ(output_record.state, kFree);
   DCHECK_EQ(std::count(free_output_buffers_.begin(), free_output_buffers_.end(),
                        buffer_index),
@@ -678,7 +659,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   // Must be run on child thread, as we'll insert a sync in the EGL context.
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<EGLSyncKHRRef> egl_sync_ref;
+  std::unique_ptr<gl::GLFenceEGL> egl_fence;
 
   if (!make_context_current_cb_.is_null()) {
     if (!make_context_current_cb_.Run()) {
@@ -687,24 +668,21 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
       return;
     }
 
-    EGLSyncKHR egl_sync = EGL_NO_SYNC_KHR;
 // TODO(posciak): https://crbug.com/450898.
 #if defined(ARCH_CPU_ARMEL)
-    egl_sync = eglCreateSyncKHR(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
-    if (egl_sync == EGL_NO_SYNC_KHR) {
-      VLOGF(1) << "eglCreateSyncKHR() failed";
+    egl_fence = gl::GLFenceEGL::Create();
+    if (!egl_fence) {
+      VLOGF(1) << "gl::GLFenceEGL::Create() failed";
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
     }
 #endif
-
-    egl_sync_ref.reset(new EGLSyncKHRRef(egl_display_, egl_sync));
   }
 
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
                             base::Unretained(this), picture_buffer_id,
-                            base::Passed(&egl_sync_ref)));
+                            base::Passed(&egl_fence)));
 }
 
 void V4L2VideoDecodeAccelerator::Flush() {
@@ -1533,23 +1511,19 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   OutputRecord& output_record = output_buffer_map_[buffer];
   DCHECK_EQ(output_record.state, kFree);
   DCHECK_NE(output_record.picture_id, -1);
-  if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
+  if (output_record.egl_fence) {
     TRACE_EVENT0("media,gpu",
                  "V4L2VDA::EnqueueOutputRecord: eglClientWaitSyncKHR");
     // If we have to wait for completion, wait.  Note that
     // free_output_buffers_ is a FIFO queue, so we always wait on the
     // buffer that has been in the queue the longest.
-    if (eglClientWaitSyncKHR(egl_display_, output_record.egl_sync, 0,
-                             EGL_FOREVER_KHR) == EGL_FALSE) {
+    if (output_record.egl_fence->ClientWaitWithTimeoutNanos(EGL_FOREVER_KHR) ==
+        EGL_FALSE) {
       // This will cause tearing, but is safe otherwise.
-      DVLOGF(1) << "eglClientWaitSyncKHR failed!";
+      DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
     }
-    if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
-      VLOGF(1) << "eglDestroySyncKHR failed!";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return false;
-    }
-    output_record.egl_sync = EGL_NO_SYNC_KHR;
+
+    output_record.egl_fence.reset();
   }
   struct v4l2_buffer qbuf;
   std::unique_ptr<struct v4l2_plane[]> qbuf_planes(
@@ -1580,7 +1554,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
 
 void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     int32_t picture_buffer_id,
-    std::unique_ptr<EGLSyncKHRRef> egl_sync_ref) {
+    std::unique_ptr<gl::GLFenceEGL> egl_fence) {
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::ReusePictureBufferTask");
@@ -1605,7 +1579,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer was
     // posted to us by the client. In that case just ignore this (we've already
-    // dismissed it and accounted for that) and let the sync object get
+    // dismissed it and accounted for that) and let the fence object get
     // destroyed.
     DVLOGF(3) << "got picture id= " << picture_buffer_id
               << " not in use (anymore?).";
@@ -1619,15 +1593,13 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     return;
   }
 
-  DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+  DCHECK(!output_record.egl_fence);
   output_record.state = kFree;
   free_output_buffers_.push_back(index);
   decoder_frames_at_client_--;
-  if (egl_sync_ref) {
-    output_record.egl_sync = egl_sync_ref->egl_sync;
-    // Take ownership of the EGLSync.
-    egl_sync_ref->egl_sync = EGL_NO_SYNC_KHR;
-  }
+  // Take ownership of the EGL fence.
+  output_record.egl_fence = std::move(egl_fence);
+
   // We got a buffer back, so enqueue it back.
   Enqueue();
 }
@@ -1941,7 +1913,7 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
     if (output_record.state == kAtDevice) {
       output_record.state = kFree;
       free_output_buffers_.push_back(i);
-      DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+      DCHECK(!output_record.egl_fence);
     }
   }
   output_buffer_queued_count_ = 0;
@@ -2570,12 +2542,7 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
                      egl_display_, output_record.egl_image));
     }
 
-    if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
-      if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
-        VLOGF(1) << "eglDestroySyncKHR failed.";
-        success = false;
-      }
-    }
+    output_record.egl_fence.reset();
 
     DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
     child_task_runner_->PostTask(
