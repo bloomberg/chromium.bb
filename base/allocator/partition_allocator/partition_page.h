@@ -198,17 +198,25 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
 }
 
 ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
-// If these asserts fire, you probably corrupted memory.
-#if DCHECK_IS_ON()
   size_t slot_size = this->bucket->slot_size;
-  size_t raw_size = get_raw_size();
-  if (raw_size)
+  const size_t raw_size = get_raw_size();
+  if (raw_size) {
     slot_size = raw_size;
+  }
+
+#if DCHECK_IS_ON()
+  // If these asserts fire, you probably corrupted memory.
   PartitionCookieCheckValue(ptr);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
-  memset(ptr, kFreedByte, slot_size);
 #endif
+
+  // Perhaps surprisingly, this does not measurably regress performance. See
+  // https://crbug.com/680657 for history. We formerly did this in
+  // |PartitionFree|, and in `DCHECK_IS_ON()` builds we redundantly did it
+  // here, too. Now we only do it here, unconditionally.
+  memset(ptr, kFreedByte, slot_size);
+
   DCHECK(this->num_allocated_slots);
   // TODO(palmer): See if we can afford to make this a CHECK.
   // FIX FIX FIX

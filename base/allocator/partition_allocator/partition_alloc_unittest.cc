@@ -2158,6 +2158,36 @@ TEST_F(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
   generic_allocator.root()->Free(ptr);
 }
 
+TEST_F(PartitionAllocTest, ZeroFill) {
+  const size_t test_sizes[] = {
+      1,
+      17,
+      100,
+      kSystemPageSize,
+      kSystemPageSize + 1,
+      internal::PartitionBucket::get_direct_map_size(100),
+      1 << 20,
+      1 << 21,
+  };
+
+  constexpr static size_t kAllZerosSentinel =
+      std::numeric_limits<size_t>::max();
+  for (size_t size : test_sizes) {
+    char* p = static_cast<char*>(PartitionAllocGenericFlags(
+        generic_allocator.root(), PartitionAllocZeroFill, size, nullptr));
+    size_t non_zero_position = kAllZerosSentinel;
+    for (size_t i = 0; i < size; ++i) {
+      if (0 != p[i]) {
+        non_zero_position = i;
+        break;
+      }
+    }
+    EXPECT_EQ(kAllZerosSentinel, non_zero_position)
+        << "test allocation size: " << size;
+    PartitionFree(p);
+  }
+}
+
 }  // namespace internal
 }  // namespace base
 

@@ -235,8 +235,7 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
     root->RecommitSystemPages(char_ptr + current_size, recommit_size);
 
 #if DCHECK_IS_ON()
-    memset(char_ptr + current_size, internal::kUninitializedByte,
-           recommit_size);
+    memset(char_ptr + current_size, kUninitializedByte, recommit_size);
 #endif
   } else {
     // We can't perform the realloc in-place.
