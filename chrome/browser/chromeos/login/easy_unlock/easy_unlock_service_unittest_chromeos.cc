@@ -213,7 +213,7 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
           Profile::FromBrowserContext(context),
           nullptr /* secure_channel_client */,
           std::make_unique<MockEasyUnlockNotificationController>(),
-          fake_device_sync_client));
+          fake_device_sync_client, nullptr /* multidevice_setup_client */));
   service->Initialize(std::move(app_manager));
   return std::move(service);
 }

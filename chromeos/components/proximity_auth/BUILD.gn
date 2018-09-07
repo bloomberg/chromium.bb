@@ -58,6 +58,7 @@ static_library("proximity_auth") {
 
     # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
     # fixed.
+    "//chromeos/services/multidevice_setup/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",

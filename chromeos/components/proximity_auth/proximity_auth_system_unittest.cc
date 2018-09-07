@@ -77,7 +77,10 @@ class MockUnlockManager : public UnlockManager {
 // Mock implementation of ProximityAuthProfilePrefManager.
 class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager() : ProximityAuthProfilePrefManager(nullptr) {}
+  MockProximityAuthPrefManager()
+      : ProximityAuthProfilePrefManager(
+            nullptr,
+            nullptr /* multidevice_setup_client */) {}
   ~MockProximityAuthPrefManager() override {}
   MOCK_CONST_METHOD0(GetLastPasswordEntryTimestampMs, int64_t());
 

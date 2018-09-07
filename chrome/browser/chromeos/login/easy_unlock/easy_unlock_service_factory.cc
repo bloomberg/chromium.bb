@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -71,6 +72,7 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
   DependsOn(device_sync::DeviceSyncClientFactory::GetInstance());
+  DependsOn(multidevice_setup::MultiDeviceSetupClientFactory::GetInstance());
 }
 
 EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {}
@@ -100,6 +102,8 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
         Profile::FromBrowserContext(context),
         secure_channel::SecureChannelClientProvider::GetInstance()->GetClient(),
         device_sync::DeviceSyncClientFactory::GetForProfile(
+            Profile::FromBrowserContext(context)),
+        multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
             Profile::FromBrowserContext(context)));
     manifest_id = IDR_EASY_UNLOCK_MANIFEST;
   }

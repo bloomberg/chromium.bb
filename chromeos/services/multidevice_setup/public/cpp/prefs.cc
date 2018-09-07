@@ -24,7 +24,8 @@ const char kBetterTogetherSuiteEnabledPrefName[] =
     "multidevice_setup.suite_enabled";
 const char kInstantTetheringEnabledPrefName[] = "tether.enabled";
 const char kMessagesEnabledPrefName[] = "multidevice.sms_connect_enabled";
-const char kSmartLockEnabledPrefName[] = "easy_unlock.enabled";
+const char kSmartLockEnabledPrefName[] = "smart_lock.enabled";
+const char kSmartLockEnabledDeprecatedPrefName[] = "easy_unlock.enabled";
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kInstantTetheringAllowedPrefName, true);
@@ -34,6 +35,7 @@ void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kBetterTogetherSuiteEnabledPrefName, true);
   registry->RegisterBooleanPref(kInstantTetheringEnabledPrefName, true);
   registry->RegisterBooleanPref(kMessagesEnabledPrefName, true);
+  registry->RegisterBooleanPref(kSmartLockEnabledDeprecatedPrefName, true);
   registry->RegisterBooleanPref(kSmartLockEnabledPrefName, true);
 }
 
