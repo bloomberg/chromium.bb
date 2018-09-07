@@ -1,5 +1,6 @@
 # App-y stuff
 benwells@chromium.org
+per-file hosted_app_*=alancutter@chromium.org
 per-file hosted_app_*=mgiuca@chromium.org
 per-file hosted_app_*=ortuno@chromium.org
 
