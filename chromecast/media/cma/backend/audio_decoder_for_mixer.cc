@@ -269,10 +269,10 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
   if (BypassDecoder()) {
     DCHECK(!decoder_);
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
-                       weak_factory_.GetWeakPtr(), input_bytes,
-                       CastAudioDecoder::Status::kDecodeOk, buffer_base));
+        FROM_HERE, base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
+                                  weak_factory_.GetWeakPtr(), input_bytes,
+                                  CastAudioDecoder::Status::kDecodeOk, config_,
+                                  buffer_base));
     return MediaPipelineBackend::kBufferPending;
   }
 
@@ -409,6 +409,7 @@ void AudioDecoderForMixer::OnDecoderInitialized(bool success) {
 void AudioDecoderForMixer::OnBufferDecoded(
     uint64_t input_bytes,
     CastAudioDecoder::Status status,
+    const AudioConfig& config,
     const scoped_refptr<DecoderBufferBase>& decoded) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -439,6 +440,22 @@ void AudioDecoderForMixer::OnBufferDecoded(
     got_eos_ = true;
   } else {
     int input_frames = decoded->data_size() / (kNumChannels * sizeof(float));
+
+    if (config.samples_per_second != config_.samples_per_second) {
+      LOG(WARNING) << "mixer_input sample_rate changed to: "
+                   << config.samples_per_second;
+      CreateRateShifter(config.samples_per_second);
+      mixer_input_.reset();
+      mixer_input_.reset(new BufferingMixerSource(
+          this, config.samples_per_second, backend_->Primary(),
+          backend_->DeviceId(), backend_->ContentType(),
+          ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts_,
+          start_playback_asap_));
+      mixer_input_->SetVolumeMultiplier(volume_multiplier_);
+      pending_output_frames_ = kNoPendingOutput;
+      config_.samples_per_second = config.samples_per_second;
+      last_mixer_delay_ = RenderingDelay();
+    }
 
     last_push_pts_ = decoded->timestamp();
     last_push_pts_length_ =

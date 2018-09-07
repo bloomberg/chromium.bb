@@ -161,6 +161,7 @@ void AudioDecoderSoftwareWrapper::OnDecoderInitialized(bool success) {
 
 void AudioDecoderSoftwareWrapper::OnDecodedBuffer(
     CastAudioDecoder::Status status,
+    const media::AudioConfig& config,
     const scoped_refptr<DecoderBufferBase>& decoded) {
   DCHECK(delegate_);
   if (status != CastAudioDecoder::kDecodeOk) {

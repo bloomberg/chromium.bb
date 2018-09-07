@@ -44,6 +44,7 @@ class AudioDecoderSoftwareWrapper
   bool CreateSoftwareDecoder(const AudioConfig& config);
   void OnDecoderInitialized(bool success);
   void OnDecodedBuffer(CastAudioDecoder::Status status,
+                       const media::AudioConfig& config,
                        const scoped_refptr<DecoderBufferBase>& decoded);
 
   // MediaPipelineBackend::Decoder::Delegate implementation:

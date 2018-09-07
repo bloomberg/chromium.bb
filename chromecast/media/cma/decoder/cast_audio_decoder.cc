@@ -92,7 +92,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
       // Post the task to ensure that |decode_callback| is not called from
       // within a call to Decode().
       task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(decode_callback, kDecodeError, data));
+          FROM_HERE,
+          base::BindOnce(decode_callback, kDecodeError, config_, data));
     } else if (!initialized_ || decode_pending_) {
       decode_queue_.push(std::make_pair(data, decode_callback));
     } else {
@@ -110,8 +111,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     if (data->end_of_stream()) {
       // Post the task to ensure that |decode_callback| is not called from
       // within a call to Decode().
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(decode_callback, kDecodeOk, data));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(decode_callback, kDecodeOk, config_, data));
       return;
     }
 
@@ -168,7 +169,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     decoded_chunks_.clear();
     decoded->set_timestamp(buffer_timestamp);
     base::WeakPtr<CastAudioDecoderImpl> self = weak_factory_.GetWeakPtr();
-    decode_callback.Run(result_status, decoded);
+    decode_callback.Run(result_status, config_, decoded);
     if (!self.get())
       return;  // Return immediately if the decode callback deleted this.
 
@@ -188,6 +189,11 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
   }
 
   void OnDecoderOutput(const scoped_refptr<::media::AudioBuffer>& decoded) {
+    if (decoded->sample_rate() != config_.samples_per_second) {
+      LOG(WARNING) << "sample_rate changed to " << decoded->sample_rate()
+                   << " from " << config_.samples_per_second;
+      config_.samples_per_second = decoded->sample_rate();
+    }
     decoded_chunks_.push_back(decoded);
   }
 
