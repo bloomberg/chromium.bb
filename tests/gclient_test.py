@@ -284,28 +284,22 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(322, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
-    topdir = self.root_dir
-    gclient_fn = os.path.join(topdir, '.gclient')
-    fh = open(gclient_fn, 'w')
-    print >> fh, 'solutions = [{"name":"top","url":"svn://example.com/top"}]'
-    fh.close()
-    subdir_fn = os.path.join(topdir, 'top')
-    os.mkdir(subdir_fn)
-    deps_fn = os.path.join(subdir_fn, 'DEPS')
-    fh = open(deps_fn, 'w')
     hooks = [{'pattern':'.', 'action':['cmd1', 'arg1', 'arg2']}]
-    print >> fh, 'hooks = %s' % repr(hooks)
-    fh.close()
 
-    fh = open(os.path.join(subdir_fn, 'fake.txt'), 'w')
-    print >> fh, 'bogus content'
-    fh.close()
-
-    os.chdir(topdir)
+    write('.gclient',
+          'solutions = [{\n'
+          '  "name": "top",\n'
+          '  "url": "svn://example.com/top"\n'
+          '}]')
+    write(os.path.join('top', 'DEPS'),
+          'hooks =  %s' % repr(hooks))
+    write(os.path.join('top', 'fake.txt'),
+          "bogus content")
 
     parser = gclient.OptionParser()
     options, _ = parser.parse_args([])
     options.force = True
+
     client = gclient.GClient.LoadCurrentConfig(options)
     work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
     for s in client.dependencies:
@@ -317,47 +311,47 @@ class GclientTest(trial_dir.TestCase):
         [tuple(x['action']) for x in hooks])
 
   def testCustomHooks(self):
-    topdir = self.root_dir
-    gclient_fn = os.path.join(topdir, '.gclient')
-    fh = open(gclient_fn, 'w')
-    extra_hooks = [{'name': 'append', 'pattern':'.', 'action':['supercmd']}]
-    print >> fh, ('solutions = [{"name":"top","url":"svn://example.com/top",'
-        '"custom_hooks": %s},' ) % repr(extra_hooks + [{'name': 'skip'}])
-    print >> fh, '{"name":"bottom","url":"svn://example.com/bottom"}]'
-    fh.close()
-    subdir_fn = os.path.join(topdir, 'top')
-    os.mkdir(subdir_fn)
-    deps_fn = os.path.join(subdir_fn, 'DEPS')
-    fh = open(deps_fn, 'w')
-    hooks = [{'pattern':'.', 'action':['cmd1', 'arg1', 'arg2']}]
-    hooks.append({'pattern':'.', 'action':['cmd2', 'arg1', 'arg2']})
+    extra_hooks = [{'name': 'append', 'pattern': '.', 'action': ['supercmd']}]
+
+    write('.gclient',
+          'solutions = [\n'
+          '  {\n'
+          '    "name": "top",\n'
+          '    "url": "svn://example.com/top",\n' +
+         ('    "custom_hooks": %s' % repr(extra_hooks + [{'name': 'skip'}])) +
+          '  },\n'
+          '  {\n'
+          '    "name": "bottom",\n'
+          '    "url": "svn://example.com/bottom"\n'
+          '  }\n'
+          ']')
+
+    hooks = [
+      {'pattern':'.', 'action': ['cmd1', 'arg1', 'arg2']},
+      {'pattern':'.', 'action': ['cmd2', 'arg1', 'arg2']},
+    ]
     skip_hooks = [
-        {'name': 'skip', 'pattern':'.', 'action':['cmd3', 'arg1', 'arg2']}]
-    skip_hooks.append(
-        {'name': 'skip', 'pattern':'.', 'action':['cmd4', 'arg1', 'arg2']})
-    print >> fh, 'hooks = %s' % repr(hooks + skip_hooks)
-    fh.close()
+        {'name': 'skip', 'pattern':'.', 'action': ['cmd3', 'arg1', 'arg2']},
+        {'name': 'skip', 'pattern':'.', 'action': ['cmd4', 'arg1', 'arg2']},
+    ]
+    write(os.path.join('top', 'DEPS'),
+          'hooks =  %s' % repr(hooks + skip_hooks))
 
     # Make sure the custom hooks for that project don't affect the next one.
-    subdir_fn = os.path.join(topdir, 'bottom')
-    os.mkdir(subdir_fn)
-    deps_fn = os.path.join(subdir_fn, 'DEPS')
-    fh = open(deps_fn, 'w')
-    sub_hooks = [{'pattern':'.', 'action':['response1', 'yes1', 'yes2']}]
-    sub_hooks.append(
-        {'name': 'skip', 'pattern':'.', 'action':['response2', 'yes', 'sir']})
-    print >> fh, 'hooks = %s' % repr(sub_hooks)
-    fh.close()
+    sub_hooks = [
+      {'pattern':'.', 'action':['response1', 'yes1', 'yes2']},
+      {'name': 'skip', 'pattern': '.', 'action': ['response2', 'yes', 'sir']},
+    ]
+    write(os.path.join('bottom', 'DEPS'),
+          'hooks =  %s' % repr(sub_hooks))
 
-    fh = open(os.path.join(subdir_fn, 'fake.txt'), 'w')
-    print >> fh, 'bogus content'
-    fh.close()
-
-    os.chdir(topdir)
+    write(os.path.join('bottom', 'fake.txt'),
+          "bogus content")
 
     parser = gclient.OptionParser()
     options, _ = parser.parse_args([])
     options.force = True
+
     client = gclient.GClient.LoadCurrentConfig(options)
     work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
     for s in client.dependencies:
