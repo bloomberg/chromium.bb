@@ -282,7 +282,7 @@ public class TextSuggestionMenuTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TextSuggestionHost.fromWebContents(webContents)
+                getTextSuggestionHost(webContents)
                         .getTextSuggestionsPopupWindowForTesting()
                         .dismiss();
             }
@@ -313,12 +313,11 @@ public class TextSuggestionMenuTest {
             @Override
             public boolean isSatisfied() {
                 SuggestionsPopupWindow suggestionsPopupWindow =
-                        TextSuggestionHost.fromWebContents(webContents)
+                        getTextSuggestionHost(webContents)
                                 .getTextSuggestionsPopupWindowForTesting();
 
                 SuggestionsPopupWindow spellCheckPopupWindow =
-                        TextSuggestionHost.fromWebContents(webContents)
-                                .getSpellCheckPopupWindowForTesting();
+                        getTextSuggestionHost(webContents).getSpellCheckPopupWindowForTesting();
 
                 return suggestionsPopupWindow == null && spellCheckPopupWindow == null;
             }
@@ -327,22 +326,25 @@ public class TextSuggestionMenuTest {
 
     private View getContentView(WebContents webContents) {
         SuggestionsPopupWindow suggestionsPopupWindow =
-                TextSuggestionHost.fromWebContents(webContents)
-                        .getTextSuggestionsPopupWindowForTesting();
+                getTextSuggestionHost(webContents).getTextSuggestionsPopupWindowForTesting();
 
         if (suggestionsPopupWindow != null) {
             return suggestionsPopupWindow.getContentViewForTesting();
         }
 
         SuggestionsPopupWindow spellCheckPopupWindow =
-                TextSuggestionHost.fromWebContents(webContents)
-                        .getSpellCheckPopupWindowForTesting();
+                getTextSuggestionHost(webContents).getSpellCheckPopupWindowForTesting();
 
         if (spellCheckPopupWindow != null) {
             return spellCheckPopupWindow.getContentViewForTesting();
         }
 
         return null;
+    }
+
+    private TextSuggestionHost getTextSuggestionHost(WebContents webContents) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> TextSuggestionHost.fromWebContents(webContents));
     }
 
     private ListView getSuggestionList(WebContents webContents) {

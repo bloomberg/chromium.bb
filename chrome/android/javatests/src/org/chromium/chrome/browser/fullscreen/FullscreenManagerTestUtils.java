@@ -20,6 +20,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +152,7 @@ public class FullscreenManagerTestUtils {
 
         };
         GestureListenerManager gestureListenerManager =
-                GestureListenerManager.fromWebContents(webContents);
+                WebContentsUtils.getGestureListenerManager(webContents);
         gestureListenerManager.addListener(scrollEndListener);
 
         for (int i = 0; i < 10; i++) {

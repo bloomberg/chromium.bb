@@ -24,7 +24,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
-import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
 
@@ -61,7 +60,7 @@ public class SelectPopupTest {
 
         @Override
         public boolean isSatisfied() {
-            return WebContentsUtils.isSelectPopupVisible(mActivityTestRule.getWebContents());
+            return mActivityTestRule.getSelectPopup().isVisibleForTesting();
         }
     }
 
@@ -72,7 +71,7 @@ public class SelectPopupTest {
 
         @Override
         public boolean isSatisfied() {
-            return !WebContentsUtils.isSelectPopupVisible(mActivityTestRule.getWebContents());
+            return !mActivityTestRule.getSelectPopup().isVisibleForTesting();
         }
     }
 

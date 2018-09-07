@@ -31,6 +31,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
 
@@ -151,7 +152,7 @@ public class AutofillPopupTest {
         // brought up.
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
         final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
-        final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
+        final ImeAdapter imeAdapter = WebContentsUtils.getImeAdapter(webContents);
         TestInputMethodManagerWrapper immw = TestInputMethodManagerWrapper.create(imeAdapter);
         imeAdapter.setInputMethodManagerWrapper(immw);
 

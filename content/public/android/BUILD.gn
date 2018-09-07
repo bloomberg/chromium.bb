@@ -219,7 +219,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/selection/SmartSelectionProvider.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
-    "java/src/org/chromium/content/browser/webcontents/WebContentsUserData.java",
     "java/src/org/chromium/content/common/ContentSwitchUtils.java",
     "java/src/org/chromium/content/common/ServiceManagerConnectionImpl.java",
     "java/src/org/chromium/content/common/SurfaceWrapper.java",

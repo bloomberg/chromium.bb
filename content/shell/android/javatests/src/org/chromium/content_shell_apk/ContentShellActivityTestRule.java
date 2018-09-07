@@ -25,6 +25,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.RenderCoordinatesImpl;
+import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
+import org.chromium.content.browser.input.ImeAdapterImpl;
+import org.chromium.content.browser.input.SelectPopup;
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -157,12 +161,59 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     /**
+     * Returns the {@link SelectionPopupControllerImpl} of the WebContents.
+     */
+    public SelectionPopupControllerImpl getSelectionPopupController() {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return SelectionPopupControllerImpl.fromWebContents(
+                        getActivity().getActiveShell().getWebContents());
+            });
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the {@link ImeAdapterImpl} of the WebContents.
+     */
+    public ImeAdapterImpl getImeAdapter() {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> ImeAdapterImpl.fromWebContents(getWebContents()));
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the {@link SelectPopup} of the WebContents.
+     */
+    public SelectPopup getSelectPopup() {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> SelectPopup.fromWebContents(getWebContents()));
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    public WebContentsAccessibilityImpl getWebContentsAccessibility() {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> WebContentsAccessibilityImpl.fromWebContents(getWebContents()));
+        } catch (ExecutionException e) {
+            return null;
+        }
+    }
+
+    /**
      * Returns the RenderCoordinates of the WebContents.
      */
     public RenderCoordinatesImpl getRenderCoordinates() {
         try {
             return ThreadUtils.runOnUiThreadBlocking(
-                    () -> { return ((WebContentsImpl) getWebContents()).getRenderCoordinates(); });
+                    () -> ((WebContentsImpl) getWebContents()).getRenderCoordinates());
         } catch (ExecutionException e) {
             return null;
         }

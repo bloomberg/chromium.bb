@@ -53,7 +53,7 @@ SelectPopup::~SelectPopup() {
   ScopedJavaLocalRef<jobject> j_obj = java_obj_.get(env);
   if (j_obj.is_null())
     return;
-  Java_SelectPopup_destroy(env, j_obj);
+  Java_SelectPopup_onNativeDestroyed(env, j_obj);
 }
 
 void SelectPopup::ShowMenu(RenderFrameHost* frame,

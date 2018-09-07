@@ -64,7 +64,7 @@ TextSuggestionHostAndroid::~TextSuggestionHostAndroid() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_text_suggestion_host_.get(env);
   if (!obj.is_null())
-    Java_TextSuggestionHost_destroy(env, obj);
+    Java_TextSuggestionHost_onNativeDestroyed(env, obj);
 }
 
 void TextSuggestionHostAndroid::UpdateRenderProcessConnection(

@@ -150,7 +150,7 @@ ImeAdapterAndroid::~ImeAdapterAndroid() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null())
-    Java_ImeAdapterImpl_destroy(env, obj);
+    Java_ImeAdapterImpl_onNativeDestroyed(env, obj);
 }
 
 void ImeAdapterAndroid::UpdateRenderProcessConnection(
