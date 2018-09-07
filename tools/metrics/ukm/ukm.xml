@@ -2571,6 +2571,13 @@ be describing additional metrics about the same event.
       method with a value of 2.0 for spacing.
     </summary>
   </metric>
+  <metric name="RatioOfIdealToChosenIconSize">
+    <summary>
+      Ratio of the ideal icon to the chosen icon size, times hundred. This will
+      be set to -1 if either ideal icon size is 0, or if none of the provided
+      icons are suitable.
+    </summary>
+  </metric>
 </event>
 
 <event name="OfflinePages.SavePageRequested">

@@ -135,6 +135,7 @@ void BackgroundFetchContext::StartFetch(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     RenderFrameHost* render_frame_host,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -152,7 +153,7 @@ void BackgroundFetchContext::StartFetch(
       registration_id.origin(), render_frame_host,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
                      weak_factory_.GetWeakPtr(), registration_id, requests,
-                     options, icon, frame_tree_node_id));
+                     options, icon, std::move(ukm_data), frame_tree_node_id));
 }
 
 void BackgroundFetchContext::GetPermissionForOrigin(
@@ -178,6 +179,7 @@ void BackgroundFetchContext::DidGetPermission(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
     bool has_permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -186,7 +188,7 @@ void BackgroundFetchContext::DidGetPermission(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
                      registration_id.origin(), requests, options, icon,
-                     frame_tree_node_id, has_permission));
+                     std::move(ukm_data), frame_tree_node_id, has_permission));
 
   if (has_permission) {
     data_manager_->BackgroundFetchDataManager::CreateRegistration(
@@ -207,7 +209,6 @@ void BackgroundFetchContext::DidGetPermission(
 void BackgroundFetchContext::GetIconDisplaySize(
     blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   delegate_proxy_.GetIconDisplaySize(std::move(callback));
 }
 

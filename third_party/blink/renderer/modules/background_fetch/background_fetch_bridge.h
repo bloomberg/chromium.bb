@@ -54,6 +54,7 @@ class BackgroundFetchBridge final
              Vector<WebServiceWorkerRequest> requests,
              mojom::blink::BackgroundFetchOptionsPtr options,
              const SkBitmap& icon,
+             mojom::blink::BackgroundFetchUkmDataPtr ukm_data,
              RegistrationCallback callback);
 
   // Gets the size of the icon to be displayed in Background Fetch UI.
@@ -62,7 +63,7 @@ class BackgroundFetchBridge final
   // Matches completed requests for the fetch associated with the |developer_id|
   // and |unique_id| and returns the {request, response} pairs based on the rest
   // of the arguments. If |filter_by_request| is true, only response(s) for
-  // |request_to_match| are returned. |cache_query_params| are options for the
+  // |request_to_match| are returned. |cache_query_params|s are options for the
   // query to the cache storage. |match_all|, when true, returns all responses
   // from the result set, and when false, returns only the first one.
   void MatchRequests(

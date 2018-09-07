@@ -276,8 +276,8 @@ ScriptPromise BackgroundFetchManager::fetch(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // Load Icons. Right now, we just load the first icon. Lack of icons or
-  // inability to load them should not be fatal to the fetch.
+  // Pick the best icon, and load it.
+  // Inability to load them should not be fatal to the fetch.
   mojom::blink::BackgroundFetchOptionsPtr options_ptr =
       mojom::blink::BackgroundFetchOptions::From(options);
   if (options.icons().size()) {
@@ -290,7 +290,7 @@ ScriptPromise BackgroundFetchManager::fetch(
   }
 
   DidLoadIcons(id, std::move(web_requests), std::move(options_ptr), resolver,
-               SkBitmap());
+               SkBitmap(), -1 /* ideal_to_chosen_icon_size */);
   return promise;
 }
 
@@ -299,9 +299,13 @@ void BackgroundFetchManager::DidLoadIcons(
     Vector<WebServiceWorkerRequest> web_requests,
     mojom::blink::BackgroundFetchOptionsPtr options,
     ScriptPromiseResolver* resolver,
-    const SkBitmap& icon) {
+    const SkBitmap& icon,
+    int64_t ideal_to_chosen_icon_size) {
+  auto ukm_data = mojom::blink::BackgroundFetchUkmData::New();
+  ukm_data->ideal_to_chosen_icon_size = ideal_to_chosen_icon_size;
   bridge_->Fetch(
       id, std::move(web_requests), std::move(options), icon,
+      std::move(ukm_data),
       WTF::Bind(&BackgroundFetchManager::DidFetch, WrapPersistent(this),
                 WrapPersistent(resolver), base::Time::Now()));
 }

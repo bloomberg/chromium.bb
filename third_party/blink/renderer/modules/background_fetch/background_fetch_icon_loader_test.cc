@@ -64,7 +64,9 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
 
   // Callback for BackgroundFetchIconLoader. This will set up the state of the
   // load as either success or failed based on whether the bitmap is empty.
-  void IconLoaded(base::OnceClosure quit_closure, const SkBitmap& bitmap) {
+  void IconLoaded(base::OnceClosure quit_closure,
+                  const SkBitmap& bitmap,
+                  int64_t ideal_to_chosen_icon_size) {
     bitmap_ = bitmap;
 
     if (!bitmap_.isNull())

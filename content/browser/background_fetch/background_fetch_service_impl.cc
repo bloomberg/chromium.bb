@@ -105,6 +105,7 @@ void BackgroundFetchServiceImpl::Fetch(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateDeveloperId(developer_id) || !ValidateRequests(requests)) {
@@ -122,9 +123,9 @@ void BackgroundFetchServiceImpl::Fetch(
                                                 origin_, developer_id,
                                                 base::GenerateGUID());
 
-  background_fetch_context_->StartFetch(registration_id, requests, options,
-                                        icon, render_frame_host_,
-                                        std::move(callback));
+  background_fetch_context_->StartFetch(
+      registration_id, requests, options, icon, std::move(ukm_data),
+      render_frame_host_, std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::GetIconDisplaySize(

@@ -32,6 +32,7 @@ void RecordBackgroundFetchUkmEvent(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
     bool has_permission);
 
