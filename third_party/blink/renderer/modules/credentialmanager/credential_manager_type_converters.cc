@@ -211,6 +211,23 @@ AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
 }
 
 // static
+String TypeConverter<String, AuthenticatorTransport>::Convert(
+    const AuthenticatorTransport& transport) {
+  if (transport == AuthenticatorTransport::USB)
+    return "usb";
+  if (transport == AuthenticatorTransport::NFC)
+    return "nfc";
+  if (transport == AuthenticatorTransport::BLE)
+    return "ble";
+  if (transport == AuthenticatorTransport::CABLE)
+    return "cable";
+  if (transport == AuthenticatorTransport::INTERNAL)
+    return "internal";
+  NOTREACHED();
+  return "usb";
+}
+
+// static
 UserVerificationRequirement
 TypeConverter<UserVerificationRequirement, String>::Convert(
     const String& requirement) {

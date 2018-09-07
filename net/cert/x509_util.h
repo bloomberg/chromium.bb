@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
@@ -68,15 +69,29 @@ NET_EXPORT bool CreateKeyAndSelfSignedCert(
     std::unique_ptr<crypto::RSAPrivateKey>* key,
     std::string* der_cert);
 
+struct NET_EXPORT Extension {
+  Extension(base::span<const uint8_t> oid,
+            bool critical,
+            base::span<const uint8_t> contents);
+  ~Extension();
+  Extension(const Extension&);
+
+  base::span<const uint8_t> oid;
+  bool critical;
+  base::span<const uint8_t> contents;
+};
+
 // Creates a self-signed certificate from a provided key, using the specified
 // hash algorithm.
-NET_EXPORT bool CreateSelfSignedCert(EVP_PKEY* key,
-                                     DigestAlgorithm alg,
-                                     const std::string& subject,
-                                     uint32_t serial_number,
-                                     base::Time not_valid_before,
-                                     base::Time not_valid_after,
-                                     std::string* der_cert);
+NET_EXPORT bool CreateSelfSignedCert(
+    EVP_PKEY* key,
+    DigestAlgorithm alg,
+    const std::string& subject,
+    uint32_t serial_number,
+    base::Time not_valid_before,
+    base::Time not_valid_after,
+    const std::vector<Extension>& extension_specs,
+    std::string* der_cert);
 
 // Returns a CRYPTO_BUFFER_POOL for deduplicating certificates.
 NET_EXPORT CRYPTO_BUFFER_POOL* GetBufferPool();

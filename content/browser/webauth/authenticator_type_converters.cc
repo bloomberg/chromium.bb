@@ -44,6 +44,25 @@ TypeConverter<::device::FidoTransportProtocol, AuthenticatorTransport>::Convert(
   return ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice;
 }
 
+AuthenticatorTransport
+TypeConverter<AuthenticatorTransport, ::device::FidoTransportProtocol>::Convert(
+    const ::device::FidoTransportProtocol& input) {
+  switch (input) {
+    case ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice:
+      return AuthenticatorTransport::USB;
+    case ::device::FidoTransportProtocol::kNearFieldCommunication:
+      return AuthenticatorTransport::NFC;
+    case ::device::FidoTransportProtocol::kBluetoothLowEnergy:
+      return AuthenticatorTransport::BLE;
+    case ::device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      return AuthenticatorTransport::CABLE;
+    case ::device::FidoTransportProtocol::kInternal:
+      return AuthenticatorTransport::INTERNAL;
+  }
+  NOTREACHED();
+  return AuthenticatorTransport::USB;
+}
+
 // static
 ::device::CredentialType
 TypeConverter<::device::CredentialType, PublicKeyCredentialType>::Convert(

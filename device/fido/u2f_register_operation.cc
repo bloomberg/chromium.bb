@@ -76,6 +76,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 
       auto response =
           AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
+              device()->DeviceTransport(),
               fido_parsing_utils::CreateSHA256Hash(request().rp().rp_id()),
               apdu_response->data());
       std::move(callback())

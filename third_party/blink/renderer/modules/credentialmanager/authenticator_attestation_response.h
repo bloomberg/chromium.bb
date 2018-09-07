@@ -5,10 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_AUTHENTICATOR_ATTESTATION_RESPONSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_AUTHENTICATOR_ATTESTATION_RESPONSE_H_
 
+#include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_response.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -19,7 +22,8 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
  public:
   static AuthenticatorAttestationResponse* Create(
       DOMArrayBuffer* client_data_json,
-      DOMArrayBuffer* attestation_object);
+      DOMArrayBuffer* attestation_object,
+      Vector<mojom::AuthenticatorTransport> transports);
 
   ~AuthenticatorAttestationResponse() override;
 
@@ -27,13 +31,18 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
     return attestation_object_.Get();
   }
 
+  Vector<String> getTransports() const;
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit AuthenticatorAttestationResponse(DOMArrayBuffer* client_data_json,
-                                            DOMArrayBuffer* attestation_object);
+  AuthenticatorAttestationResponse(
+      DOMArrayBuffer* client_data_json,
+      DOMArrayBuffer* attestation_object,
+      Vector<mojom::AuthenticatorTransport> transports);
 
   const Member<DOMArrayBuffer> attestation_object_;
+  const Vector<mojom::AuthenticatorTransport> transports_;
 };
 
 }  // namespace blink

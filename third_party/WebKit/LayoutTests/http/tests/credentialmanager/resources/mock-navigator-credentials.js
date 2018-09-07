@@ -97,7 +97,8 @@ class MockAuthenticator {
           });
       response = new blink.mojom.MakeCredentialAuthenticatorResponse(
           { info: info,
-            attestationObject: this.attestationObject_
+            attestationObject: this.attestationObject_,
+            transports: [blink.mojom.AuthenticatorTransport.INTERNAL],
           });
     }
     let status = this.status_;

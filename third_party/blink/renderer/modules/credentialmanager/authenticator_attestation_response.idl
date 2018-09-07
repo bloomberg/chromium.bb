@@ -10,4 +10,5 @@
     Exposed=Window
 ] interface AuthenticatorAttestationResponse : AuthenticatorResponse {
     [SameObject] readonly attribute ArrayBuffer attestationObject;
+    [RuntimeEnabled=WebAuthGetTransports] sequence<AuthenticatorTransport> getTransports();
 };

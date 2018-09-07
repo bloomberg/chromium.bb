@@ -1295,6 +1295,10 @@
       name: "WebAuth",
       status: "experimental",
     },
+    {
+      name: "WebAuthGetTransports",
+      status: "experimental",
+    },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     {
       name: "WebBluetooth",

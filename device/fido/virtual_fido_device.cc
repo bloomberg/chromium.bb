@@ -106,6 +106,20 @@ VirtualFidoDevice::GenerateAttestationCertificate(
   std::unique_ptr<crypto::ECPrivateKey> attestation_private_key =
       crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey());
   constexpr uint32_t kAttestationCertSerialNumber = 1;
+
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
+  static constexpr uint8_t kTransportTypesOID[] = {
+      0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
+  static constexpr uint8_t kTransportTypesContents[] = {
+      3,           // BIT STRING
+      2,           // two bytes long
+      4,           // four trailing bits unused
+      0b00110000,  // USB + NFC asserted
+  };
+  const std::vector<net::x509_util::Extension> extensions = {
+      {kTransportTypesOID, false /* not critical */, kTransportTypesContents},
+  };
+
   std::string attestation_cert;
   if (!net::x509_util::CreateSelfSignedCert(
           attestation_private_key->key(), net::x509_util::DIGEST_SHA256,
@@ -113,7 +127,7 @@ VirtualFidoDevice::GenerateAttestationCertificate(
                        ? state_->individual_attestation_cert_common_name
                        : state_->attestation_cert_common_name),
           kAttestationCertSerialNumber, base::Time::FromTimeT(1500000000),
-          base::Time::FromTimeT(1500000000), &attestation_cert)) {
+          base::Time::FromTimeT(1500000000), extensions, &attestation_cert)) {
     DVLOG(2) << "Failed to create attestation certificate";
     return base::nullopt;
   }

@@ -67,7 +67,8 @@ void MakeCredentialTask::MakeCredential() {
   register_operation_ = std::make_unique<Ctap2DeviceOperation<
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), request_parameter_, std::move(callback_),
-      base::BindOnce(&ReadCTAPMakeCredentialResponse));
+      base::BindOnce(&ReadCTAPMakeCredentialResponse,
+                     device()->DeviceTransport()));
   register_operation_->Start();
 }
 

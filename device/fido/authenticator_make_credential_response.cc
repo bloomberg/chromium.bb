@@ -18,6 +18,7 @@ namespace device {
 // static
 base::Optional<AuthenticatorMakeCredentialResponse>
 AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
+    FidoTransportProtocol transport_used,
     base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   auto public_key = ECPublicKey::ExtractFromU2fRegistrationResponse(
@@ -51,14 +52,17 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
   if (!fido_attestation_statement)
     return base::nullopt;
 
-  return AuthenticatorMakeCredentialResponse(AttestationObject(
-      std::move(authenticator_data), std::move(fido_attestation_statement)));
+  return AuthenticatorMakeCredentialResponse(
+      transport_used, AttestationObject(std::move(authenticator_data),
+                                        std::move(fido_attestation_statement)));
 }
 
 AuthenticatorMakeCredentialResponse::AuthenticatorMakeCredentialResponse(
+    FidoTransportProtocol transport_used,
     AttestationObject attestation_object)
     : ResponseData(attestation_object.GetCredentialId()),
-      attestation_object_(std::move(attestation_object)) {}
+      attestation_object_(std::move(attestation_object)),
+      transport_used_(transport_used) {}
 
 AuthenticatorMakeCredentialResponse::AuthenticatorMakeCredentialResponse(
     AuthenticatorMakeCredentialResponse&& that) = default;

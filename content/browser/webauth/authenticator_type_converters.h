@@ -30,6 +30,13 @@ struct TypeConverter<::device::FidoTransportProtocol,
 };
 
 template <>
+struct TypeConverter<::blink::mojom::AuthenticatorTransport,
+                     ::device::FidoTransportProtocol> {
+  static ::blink::mojom::AuthenticatorTransport Convert(
+      const ::device::FidoTransportProtocol& input);
+};
+
+template <>
 struct TypeConverter<::device::CredentialType,
                      ::blink::mojom::PublicKeyCredentialType> {
   static ::device::CredentialType Convert(
