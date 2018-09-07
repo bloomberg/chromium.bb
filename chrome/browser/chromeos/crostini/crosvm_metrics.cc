@@ -38,7 +38,6 @@ CrosvmMetrics::CrosvmMetrics()
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       page_size_(sysconf(_SC_PAGESIZE)),
       weak_ptr_factory_(this) {
-  timer_.SetTaskRunner(task_runner_);
 }
 
 CrosvmMetrics::~CrosvmMetrics() = default;
@@ -95,6 +94,12 @@ int CrosvmMetrics::CalculateCrosvmCpuPercentage(
 }
 
 void CrosvmMetrics::MetricsCycleCallback() {
+  task_runner_->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&CrosvmMetrics::MetricsCycle,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrosvmMetrics::MetricsCycle() {
   if (!cycle_start_data_collected_) {
     CollectCycleStartData();
     return;
