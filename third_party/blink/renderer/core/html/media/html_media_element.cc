@@ -536,8 +536,6 @@ HTMLMediaElement::~HTMLMediaElement() {
 }
 
 void HTMLMediaElement::Dispose() {
-  CloseMediaSource();
-
   // Destroying the player may cause a resource load to be canceled,
   // which could result in LocalDOMWindow::dispatchWindowLoadEvent() being
   // called via ResourceFetch::didLoadResource(), then
