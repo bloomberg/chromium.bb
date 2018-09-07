@@ -256,6 +256,7 @@ blink_core_sources("dom") {
     "throw_on_dynamic_markup_insertion_count_incrementer.h",
     "transform_source.h",
     "transform_source_libxslt.cc",
+    "traversal_range.h",
     "tree_ordered_list.cc",
     "tree_ordered_list.h",
     "tree_ordered_map.cc",
