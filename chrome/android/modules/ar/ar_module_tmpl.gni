@@ -10,6 +10,7 @@ assert(enable_arcore)
 template("ar_module_tmpl") {
   assert(defined(invoker.manifest_package))
   assert(defined(invoker.module_name))
+  assert(defined(invoker.base_module_target))
 
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
@@ -23,22 +24,14 @@ template("ar_module_tmpl") {
   }
 
   android_app_bundle_module(target_name) {
-    if (defined(invoker.base_module_target)) {
-      _base_module_target = invoker.base_module_target
-    } else {
-      # TODO(tiborg): This is here to not break the downstream bots. Remove once
-      # we have set the flag for downstream as well.
-      _base_module_target = "//clank/java:monochrome_base_module"
-    }
-
     forward_variables_from(invoker,
                            [
+                             "base_module_target",
                              "module_name",
                              "version_code",
                            ])
     android_manifest = _manifest
     android_manifest_dep = ":$_manifest_target"
-    base_module_target = _base_module_target
     deps = [
       "//third_party/arcore-android-sdk:libdynamite_client_java",
     ]
