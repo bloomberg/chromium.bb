@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/application_status_listener.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/auto_reset.h"
@@ -103,6 +104,29 @@ namespace content {
 
 namespace {
 
+// These functions are called based on application visibility status.
+void SendOnBackgroundedToGpuService() {
+  content::GpuProcessHost::CallOnIO(
+      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      false /* force_create */,
+      base::BindRepeating([](content::GpuProcessHost* host) {
+        if (host) {
+          host->gpu_service()->OnBackgrounded();
+        }
+      }));
+}
+
+void SendOnForegroundedToGpuService() {
+  content::GpuProcessHost::CallOnIO(
+      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      false /* force_create */,
+      base::BindRepeating([](content::GpuProcessHost* host) {
+        if (host) {
+          host->gpu_service()->OnForegrounded();
+        }
+      }));
+}
+
 // The client_id used here should not conflict with the client_id generated
 // from RenderWidgetHostImpl.
 constexpr uint32_t kDefaultClientId = 0u;
@@ -189,7 +213,13 @@ class CompositorDependencies {
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
-  CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
+  CompositorDependencies()
+      : frame_sink_id_allocator(kDefaultClientId),
+        app_listener_(base::BindRepeating(
+            &CompositorDependencies::OnApplicationStateChange,
+            base::Unretained(this))) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
     bool enable_viz =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
     if (!enable_viz) {
@@ -202,6 +232,9 @@ class CompositorDependencies {
     } else {
       CreateVizFrameSinkManager();
     }
+
+    // Unretained is safe as CompositorDependencies is a static instance which
+    // is leaked at the end.
   }
 
   void OnReadyToConnectVizFrameSinkManagerOnMainThread(
@@ -237,6 +270,65 @@ class CompositorDependencies {
                                                             std::move(client));
     }
   }
+
+  void EnqueueLowEndBackgroundCleanup() {
+    if (base::SysInfo::IsLowEndDevice()) {
+      low_end_background_cleanup_task_.Reset(
+          base::BindOnce(&CompositorDependencies::DoLowEndBackgroundCleanup,
+                         base::Unretained(this)));
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, low_end_background_cleanup_task_.callback(),
+          base::TimeDelta::FromSeconds(5));
+    }
+  }
+
+  void DoLowEndBackgroundCleanup() {
+    // When we become visible, we immediately cancel the callback that runs this
+    // code. First, evict all unlocked frames, allowing resources to be
+    // reclaimed.
+    viz::FrameEvictionManager::GetInstance()->PurgeAllUnlockedFrames();
+
+    // Next, notify the GPU process to do background processing, which will
+    // lose all renderer contexts.
+    content::GpuProcessHost::CallOnIO(
+        content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+        false /* force_create */,
+        base::BindRepeating([](content::GpuProcessHost* host) {
+          if (host) {
+            host->gpu_service()->OnBackgroundCleanup();
+          }
+        }));
+  }
+
+  // This callback function runs when application state changes. If application
+  // state is UNKNOWN, consider it as the app running as a conservative
+  // approach so that we don't send the gpu services to background.
+  void OnApplicationStateChange(
+      base::android::ApplicationState application_state) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    switch (application_state) {
+      case base::android::APPLICATION_STATE_UNKNOWN:
+      case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+      case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
+        SendOnForegroundedToGpuService();
+        low_end_background_cleanup_task_.Cancel();
+        break;
+      case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+      case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
+        SendOnBackgroundedToGpuService();
+        EnqueueLowEndBackgroundCleanup();
+    }
+  }
+
+  // A task which runs cleanup tasks on low-end Android after a delay. Enqueued
+  // when we hide, canceled when we're shown.
+  base::CancelableOnceClosure low_end_background_cleanup_task_;
+
+  // An instance of Android AppListener.
+  base::android::ApplicationStatusListener app_listener_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
@@ -608,33 +700,6 @@ class VulkanOutputSurface : public viz::OutputSurface {
 };
 #endif
 
-// TODO(khushalsagar): These are being sent based on the CompositorImpl
-// visiblity which bakes in the assumption that there is a single CompositorImpl
-// instance per application, while the embedder could potentially create
-// multiple compositor instances. We should use the ApplicationStateListener to
-// send these notifications to the GPU instead. See crbug.com/859723.
-void SendOnBackgroundedToGpuService() {
-  content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
-      base::BindRepeating([](content::GpuProcessHost* host) {
-        if (host) {
-          host->gpu_service()->OnBackgrounded();
-        }
-      }));
-}
-
-void SendOnForegroundedToGpuService() {
-  content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
-      base::BindRepeating([](content::GpuProcessHost* host) {
-        if (host) {
-          host->gpu_service()->OnForegrounded();
-        }
-      }));
-}
-
 static bool g_initialized = false;
 
 }  // anonymous namespace
@@ -864,10 +929,6 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->ReleaseLayerTreeFrameSink();
     has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
-    // Handle GPU visibility signals.
-    GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
-    SendOnBackgroundedToGpuService();
-    EnqueueLowEndBackgroundCleanup();
   } else {
     DCHECK(!host_->IsVisible());
     RegisterRootFrameSink();
@@ -875,9 +936,6 @@ void CompositorImpl::SetVisible(bool visible) {
     has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
       HandlePendingLayerTreeFrameSinkRequest();
-    GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
-    SendOnForegroundedToGpuService();
-    low_end_background_cleanup_task_.Cancel();
   }
 }
 
@@ -1038,10 +1096,8 @@ void CompositorImpl::OnGpuChannelEstablished(
     return;
   }
 
-  // We don't need the context anymore if we are invisible. Additionally, we
-  // should notify the channel that we are invisible.
+  // We don't need the context anymore if we are invisible.
   if (!host_->IsVisible()) {
-    SendOnBackgroundedToGpuService();
     return;
   }
 
@@ -1271,37 +1327,6 @@ void CompositorImpl::SetVSyncPaused(bool paused) {
   vsync_paused_ = paused;
   if (display_private_)
     display_private_->SetVSyncPaused(paused);
-}
-
-void CompositorImpl::EnqueueLowEndBackgroundCleanup() {
-  if (base::SysInfo::IsLowEndDevice()) {
-    low_end_background_cleanup_task_.Reset(
-        base::BindOnce(&CompositorImpl::DoLowEndBackgroundCleanup,
-                       weak_factory_.GetWeakPtr()));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, low_end_background_cleanup_task_.callback(),
-        base::TimeDelta::FromSeconds(5));
-  }
-}
-
-void CompositorImpl::DoLowEndBackgroundCleanup() {
-  // When we become visible, we immediately cancel the callback that runs this
-  // code.
-  DCHECK(!host_->IsVisible());
-
-  // First, evict all unlocked frames, allowing resources to be reclaimed.
-  viz::FrameEvictionManager::GetInstance()->PurgeAllUnlockedFrames();
-
-  // Next, notify the GPU process to do background processing, which will
-  // lose all renderer contexts.
-  content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
-      base::BindRepeating([](content::GpuProcessHost* host) {
-        if (host) {
-          host->gpu_service()->OnBackgroundCleanup();
-        }
-      }));
 }
 
 void CompositorImpl::InitializeVizLayerTreeFrameSink(

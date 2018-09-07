@@ -244,10 +244,6 @@ class CONTENT_EXPORT CompositorImpl
   ui::CompositorLockManager lock_manager_;
   bool has_submitted_frame_since_became_visible_ = false;
 
-  // A task which runs cleanup tasks on low-end Android after a delay. Enqueued
-  // when we hide, canceled when we're shown.
-  base::CancelableOnceClosure low_end_background_cleanup_task_;
-
   // If true, we are using surface synchronization.
   const bool enable_surface_synchronization_;
 
