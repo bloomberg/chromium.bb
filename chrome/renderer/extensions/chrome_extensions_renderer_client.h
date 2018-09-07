@@ -83,7 +83,7 @@ class ChromeExtensionsRendererClient
       const content::WebPluginInfo& info,
       const std::string& mime_type,
       const GURL& original_url);
-  static bool MaybeCreateMimeHandlerView(
+  static bool IsPluginHandledByMimeHandlerView(
       const blink::WebElement& plugin_element,
       const GURL& resource_url,
       const std::string& mime_type,

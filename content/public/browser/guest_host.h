@@ -9,8 +9,6 @@
 
 namespace content {
 
-class WebContents;
-
 // A GuestHost is the content API for a guest WebContents.
 // Guests are top-level frames that can be embedded within other pages.
 // The content module manages routing of input events and compositing, but all
@@ -32,19 +30,6 @@ class GuestHost {
 
   // Called when the GuestHost is about to be destroyed.
   virtual void WillDestroy() = 0;
-
-  // A cue to start the browser side attaching. When a GuestView is rendered
-  // inside a plugin element's frame attaching the guest WebContents to the
-  // |embedder_web_contents| is initiated right after creating the guest on the
-  // browser side. |instance_id| is used to uniquely identify the internal
-  // instance of GuestHost inside content layer ad |is_full_page_plugin| is
-  // notifies the content layer whether or not the MimeHandlerView is embedded
-  // (|is_full_page_plugin| is set to true if a frame (i.e., main frame) is
-  // navigated to a MimeHandlerView type and therefore the whole page is
-  // dedicated to rendering its content).
-  virtual void BeginAttach(WebContents* embedder_web_contents,
-                           int instance_id,
-                           bool is_full_page_plugin) = 0;
 };
 
 }  // namespace content

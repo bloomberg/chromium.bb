@@ -20,9 +20,6 @@ class ExtensionsGuestViewContainerDispatcher
   // guest_view::GuestViewContainerDispatcher implementation.
   bool HandlesMessage(const IPC::Message& message) override;
 
-  // content::RenderThreadObserver implementation.
-  bool OnControlMessageReceived(const IPC::Message& message) override;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewContainerDispatcher);
 };
 
