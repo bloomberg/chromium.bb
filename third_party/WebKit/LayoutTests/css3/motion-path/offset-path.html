@@ -35,11 +35,11 @@ test(function() {
 }, 'offset-path can be explicitly none');
 
 test(function() {
-    assert_equals(getComputedStyle(div3, null).offsetPath, "path('M 20 20 H 80 V 30 H 20 L 20 20')");
+    assert_equals(getComputedStyle(div3, null).offsetPath, 'path("M 20 20 H 80 V 30 H 20 L 20 20")');
 }, 'offset-path can be an SVG Path data string');
 
 test(function() {
-    assert_equals(getComputedStyle(div4, null).offsetPath, "path('M 20 20 H 80 V 30 H 20 L 20 20')");
+    assert_equals(getComputedStyle(div4, null).offsetPath, 'path("M 20 20 H 80 V 30 H 20 L 20 20")');
 }, 'offset-path can be explicitly inherited');
 
 test(function() {
@@ -47,7 +47,7 @@ test(function() {
 }, 'offset-path is not inherited by default');
 
 test(function() {
-    assert_equals(span1.style.offsetPath, "path('M 1 2 V 3')");
+    assert_equals(span1.style.offsetPath, 'path("M 1 2 V 3")');
 }, 'offset-path style can be set inline');
 
 </script>

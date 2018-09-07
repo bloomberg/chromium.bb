@@ -24,11 +24,11 @@ test(function() {
 }, "Test for getPointAtLength using computed style");
 test(function() {
     var test = document.getElementById("test");
-    assert_equals(getComputedStyle(test).d, "path('M 0 0 H 30 V 40')");
+    assert_equals(getComputedStyle(test).d, "path(\"M 0 0 H 30 V 40\")");
 }, "Test for CSS d using computed style");
 test(function() {
     var test2 = document.getElementById("test2");
-    assert_equals(getComputedStyle(test2).d, "path('M 10 190 H 190')");
+    assert_equals(getComputedStyle(test2).d, "path(\"M 10 190 H 190\")");
 }, "Test for DOM d using computed style");
 test(function() {
     var test3 = document.getElementById("test3");
