@@ -852,13 +852,6 @@ chrome.automation.AutomationNode.prototype.textSelEnd;
 chrome.automation.AutomationNode.prototype.textInputType;
 
 /**
- * An array of indexes of the break between lines in editable text.
- * @type {!Array<number>}
- * @see https://developer.chrome.com/extensions/automation#type-lineBreaks
- */
-chrome.automation.AutomationNode.prototype.lineBreaks;
-
-/**
  * An array of indexes of the start position of each text marker.
  * @type {!Array<number>}
  * @see https://developer.chrome.com/extensions/automation#type-markerStarts
