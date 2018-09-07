@@ -352,17 +352,6 @@ Polymer({
   },
 
   /**
-   * Returns true if either pref value is false.
-   * @param {boolean} pref1Value
-   * @param {boolean} pref2Value
-   * @return {boolean}
-   * @private
-   */
-  eitherIsDisabled_: function(pref1Value, pref2Value) {
-    return !pref1Value || !pref2Value;
-  },
-
-  /**
    * Listens for the save-credit-card event, and calls the private API.
    * @param {!Event} event
    * @private
@@ -383,15 +372,13 @@ Polymer({
   /**
    * @param {!settings.SyncStatus} syncStatus
    * @param {!Array<!PaymentsManager.CreditCardEntry>} creditCards
-   * @param {boolean} autofillEnabled
    * @param {boolean} creditCardEnabled
    * @return {boolean} Whether to show the migration button. True iff at least
-   * one valid local card, enable migration, signed-in & synced and both prefs
-   * enabled.
+   * one valid local card, enable migration, signed-in & synced and credit card
+   * pref enabled.
    * @private
    */
-  checkIfMigratable_: function(
-      syncStatus, creditCards, autofillEnabled, creditCardEnabled) {
+  checkIfMigratable_: function(syncStatus, creditCards, creditCardEnabled) {
     if (syncStatus == undefined)
       return false;
 
@@ -403,7 +390,8 @@ Polymer({
     if (!this.hasGooglePaymentsAccount_)
       return false;
 
-    if (this.eitherIsDisabled_(autofillEnabled, creditCardEnabled))
+    // If credit card enabled pref is false, return false.
+    if (!creditCardEnabled)
       return false;
 
     // If user not signed-in and synced, return false.
