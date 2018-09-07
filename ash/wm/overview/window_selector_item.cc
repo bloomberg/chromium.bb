@@ -556,13 +556,13 @@ void WindowSelectorItem::SlideWindowIn() {
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
   gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedTransformOverviewWindow::GetItemScale(
-      transform_window_.GetTargetBoundsInScreen().size(), inset_size,
+      GetTargetBoundsInScreen().size(), inset_size,
       transform_window_.GetTopInset(),
       close_button_->GetPreferredSize().height());
 }
 
 gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {
-  return transform_window_.GetTargetBoundsInScreen();
+  return ::ash::GetTargetBoundsInScreen(transform_window_.GetOverviewWindow());
 }
 
 gfx::Rect WindowSelectorItem::GetTransformedBounds() const {
@@ -979,7 +979,7 @@ gfx::Rect WindowSelectorItem::GetShadowBoundsForTesting() {
 void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
                                        OverviewAnimationType animation_type) {
   DCHECK(root_window_ == GetWindow()->GetRootWindow());
-  gfx::Rect screen_rect = transform_window_.GetTargetBoundsInScreen();
+  gfx::Rect screen_rect = GetTargetBoundsInScreen();
 
   // Avoid division by zero by ensuring screen bounds is not empty.
   gfx::Size screen_size(screen_rect.size());
@@ -995,7 +995,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
       screen_rect, selector_item_bounds);
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
-  transform_window_.SetTransform(root_window_, transform);
+  SetTransform(transform_window_.GetOverviewWindow(), transform);
 }
 
 void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {

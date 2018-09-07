@@ -319,8 +319,13 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // Restore the snapped windows transform to identity transform after resizing.
   void RestoreWindowsTransformAfterResizing();
 
-  // Set |transform| for |window| and its transient descendants.
-  void SetTransform(aura::Window* window, const gfx::Transform& transform);
+  // Animates to |target_transform| for |window| and its transient descendants.
+  // |window| will be applied |start_transform| first and then animate to
+  // |target_transform|. Note |start_transform| and |end_transform| are for
+  // |window| and need to be adjusted for its transient child windows.
+  void SetTransformWithAnimation(aura::Window* window,
+                                 const gfx::Transform& start_transform,
+                                 const gfx::Transform& target_transform);
 
   // Removes the window item that contains |window| from the overview window
   // grid if |window| is currently showing in overview window grid. It should be

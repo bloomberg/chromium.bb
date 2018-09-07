@@ -44,6 +44,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -1287,13 +1288,7 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
     const gfx::Transform starting_transform =
         ScopedTransformOverviewWindow::GetTransformForRect(snapped_bounds,
                                                            item_bounds);
-    for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
-      if (!starting_transform.IsIdentity())
-        window_iter->SetTransform(starting_transform);
-      DoSplitviewTransformAnimation(window_iter->layer(),
-                                    SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
-                                    gfx::Transform());
-    }
+    SetTransformWithAnimation(window, starting_transform, gfx::Transform());
   }
 }
 
@@ -1366,11 +1361,31 @@ void SplitViewController::RestoreWindowsTransformAfterResizing() {
     black_scrim_layer_->SetTransform(gfx::Transform());
 }
 
-void SplitViewController::SetTransform(aura::Window* window,
-                                       const gfx::Transform& transform) {
-  DCHECK(window);
-  for (auto* window_iter : wm::GetTransientTreeIterator(window))
-    window_iter->SetTransform(transform);
+void SplitViewController::SetTransformWithAnimation(
+    aura::Window* window,
+    const gfx::Transform& start_transform,
+    const gfx::Transform& target_transform) {
+  gfx::Point target_origin(GetTargetBoundsInScreen(window).origin());
+  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+    // Adjust |start_transform| and |target_transform| for the transient child.
+    aura::Window* parent_window = window_iter->parent();
+    gfx::Rect original_bounds(window_iter->GetTargetBounds());
+    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
+    gfx::Transform new_start_transform =
+        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
+                                       target_origin.y() - original_bounds.y()),
+                            start_transform);
+    gfx::Transform new_target_transform =
+        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
+                                       target_origin.y() - original_bounds.y()),
+                            target_transform);
+    if (new_start_transform != window_iter->layer()->GetTargetTransform())
+      window_iter->SetTransform(new_start_transform);
+
+    DoSplitviewTransformAnimation(window_iter->layer(),
+                                  SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
+                                  new_target_transform);
+  }
 }
 
 void SplitViewController::RemoveWindowFromOverviewIfApplicable(
@@ -1456,6 +1471,13 @@ void SplitViewController::EndWindowDragImpl(
       // SnapWindow() will put the previous snapped window in overview.
       SnapWindow(window, GetSnapPosition(window, last_location_in_screen));
     } else {
+      // Restore the dragged window's transform first if it's not identity. It
+      // needs to be called before the transformed window's bounds change so
+      // that its transient children are layout'ed properly (the layout happens
+      // when window's bounds change).
+      SetTransformWithAnimation(window, window->layer()->GetTargetTransform(),
+                                gfx::Transform());
+
       if (window_selector_controller->IsSelecting()) {
         window_selector_controller->window_selector()
             ->SetWindowListNotAnimatedWhenExiting(window->GetRootWindow());

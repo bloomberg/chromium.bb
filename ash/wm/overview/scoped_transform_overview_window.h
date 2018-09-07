@@ -99,9 +99,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Returns true if this window selector window contains the |target|.
   bool Contains(const aura::Window* target) const;
 
-  // Returns the original target bounds of all transformed windows.
-  gfx::Rect GetTargetBoundsInScreen() const;
-
   // Returns transformed bounds of the overview window. See
   // OverviewUtil::GetTransformedBounds for more details.
   gfx::Rect GetTransformedBounds() const;
@@ -122,10 +119,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // Prepares for overview mode by doing any necessary actions before entering.
   void PrepareForOverview();
-
-  // Applies the |transform| to the overview window and all of its transient
-  // children.
-  void SetTransform(aura::Window* root_window, const gfx::Transform& transform);
 
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
