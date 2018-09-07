@@ -62,6 +62,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -1291,6 +1292,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketRequestOnWorker) {
   ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory()));
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_websocket_worker.html"))
       << message_;
+}
+
+// Tests the WebRequestProxyingWebSocket does not crash when there is a
+// connection error before AddChannelRequest is called. Regression test for
+// http://crbug.com/878574.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebSocketConnectionErrorBeforeChannelRequest) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  auto* web_request_api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          profile());
+  web_request_api->OnListenerAdded(
+      EventListenerInfo("name", "id1", GURL(), profile()));
+
+  network::mojom::WebSocketPtr web_socket;
+  network::mojom::WebSocketRequest request = mojo::MakeRequest(&web_socket);
+  network::mojom::AuthenticationHandlerPtr auth_handler;
+  content::RenderFrameHost* host =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  web_request_api->MaybeProxyWebSocket(host, &request, &auth_handler);
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->GetNetworkContext()
+      ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
+                        host->GetProcess()->GetID(),
+                        url::Origin::Create(GURL("http://example.com")),
+                        std::move(auth_handler));
+  web_socket.reset();
 }
 
 // Test behavior when intercepting requests from a browser-initiated url fetch.
