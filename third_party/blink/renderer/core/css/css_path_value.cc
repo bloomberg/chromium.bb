@@ -45,7 +45,7 @@ CSSPathValue& CSSPathValue::EmptyPathValue() {
 }
 
 String CSSPathValue::CustomCSSText() const {
-  return "path('" + BuildStringFromByteStream(ByteStream()) + "')";
+  return "path(\"" + BuildStringFromByteStream(ByteStream()) + "\")";
 }
 
 bool CSSPathValue::Equals(const CSSPathValue& other) const {
