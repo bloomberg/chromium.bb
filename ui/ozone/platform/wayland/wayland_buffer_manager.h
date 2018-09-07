@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
@@ -56,9 +57,12 @@ class WaylandBufferManager {
                     uint32_t buffer_id);
 
   // Assigns a wl_buffer with |buffer_id| to a window with the same |widget|. On
-  // error, false is returned and |error_message_| is set.
+  // error, false is returned and |error_message_| is set. A |damage_region|
+  // identifies which part of the buffer is updated. If an empty region is
+  // provided, the whole buffer is updated.
   bool ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
+                          const gfx::Rect& damage_region,
                           wl::BufferSwapCallback callback);
 
   // Destroys a buffer with |buffer_id| in |buffers_|. On error, false is
@@ -86,6 +90,11 @@ class WaylandBufferManager {
 
     // Widget to attached/being attach WaylandWindow.
     gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
+
+    // Describes the region where the pending buffer is different from the
+    // current surface contents, and where the surface therefore needs to be
+    // repainted.
+    gfx::Rect damage_region;
 
     // A buffer swap result once the buffer is committed.
     gfx::SwapResult swap_result;

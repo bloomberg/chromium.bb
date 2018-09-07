@@ -22,7 +22,8 @@ struct wl_shm;
 
 namespace gfx {
 enum class SwapResult;
-}
+class Rect;
+}  // namespace gfx
 
 namespace ui {
 
@@ -67,6 +68,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // is received.
   void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
+                          const gfx::Rect& damage_region,
                           wl::BufferSwapCallback callback);
 
 #if defined(WAYLAND_GBM)

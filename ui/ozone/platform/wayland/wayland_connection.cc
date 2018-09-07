@@ -187,9 +187,10 @@ void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
 void WaylandConnection::ScheduleBufferSwap(
     gfx::AcceleratedWidget widget,
     uint32_t buffer_id,
+    const gfx::Rect& damage_region,
     ScheduleBufferSwapCallback callback) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id,
+  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region,
                                            std::move(callback))) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
