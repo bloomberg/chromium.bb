@@ -259,7 +259,7 @@ crbug.com/591099 external/wpt/html-media-capture/capture_video_cancel-manual.htm
 crbug.com/591099 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
 crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Timeout ]
-crbug.com/591099 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive.html [ Timeout ]
+crbug.com/591099 external/wpt/html/interaction/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive.html [ Timeout ]
 crbug.com/591099 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Pass ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2j.html [ Failure ]

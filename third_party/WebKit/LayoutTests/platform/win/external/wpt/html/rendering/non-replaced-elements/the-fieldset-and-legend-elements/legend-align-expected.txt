@@ -1,9 +1,10 @@
 This is a testharness.js-based test.
 PASS div[align=left] legend
-PASS div[align=center] legend
-PASS div[align=right] legend
+FAIL div[align=center] legend assert_equals: expected legend[align=left] expected 24 but got 395
+FAIL div[align=right] legend assert_equals: expected legend[align=left] expected 24 but got 765
+PASS div[align=justify] legend
 FAIL div[style="text-align: center"] legend assert_equals: expected legend[align=left] expected 24 but got 395
-PASS div[style="text-align: center"][align=center] legend
+FAIL div[style="text-align: center"][align=center] legend assert_equals: expected legend[align=left] expected 24 but got 395
 PASS legend[style="margin: 0 auto"]
 PASS legend[style="margin: 0 0 0 auto"]
 PASS fieldset[dir=rtl] legend
