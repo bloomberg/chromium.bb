@@ -27,18 +27,12 @@ class MockFidoBleConnection : public FidoBleConnection {
   // TODO(https://crbug.com/729950): Remove these workarounds once support for
   // move-only types is added to GMock.
   MOCK_METHOD1(ReadControlPointLengthPtr, void(ControlPointLengthCallback* cb));
-  MOCK_METHOD1(ReadServiceRevisionsPtr, void(ServiceRevisionsCallback* cb));
   MOCK_METHOD2(WriteControlPointPtr,
                void(const std::vector<uint8_t>& data, WriteCallback* cb));
-  MOCK_METHOD2(WriteServiceRevisionPtr,
-               void(ServiceRevision service_revision, WriteCallback* cb));
 
   void ReadControlPointLength(ControlPointLengthCallback cb) override;
-  void ReadServiceRevisions(ServiceRevisionsCallback cb) override;
   void WriteControlPoint(const std::vector<uint8_t>& data,
                          WriteCallback cb) override;
-  void WriteServiceRevision(ServiceRevision service_revision,
-                            WriteCallback cb) override;
 
   ConnectionStatusCallback& connection_status_callback() {
     return connection_status_callback_;
