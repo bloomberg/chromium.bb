@@ -2916,9 +2916,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Intervention_R3",
+                    "name": "Intervention_R7",
                     "params": {
-                        "pause_renderer": "true"
+                        "navigate_ads": "true",
+                        "pause_renderer": "true",
+                        "renderer_workload_threshold_percentage": "16"
                     },
                     "enable_features": [
                         "OomIntervention"
