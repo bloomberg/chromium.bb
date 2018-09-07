@@ -937,8 +937,14 @@ CrSettingsPrivacyPageTest.prototype = {
     'privacy_page_test.js',
   ]),
 };
-
-TEST_F('CrSettingsPrivacyPageTest', 'All', function() {
+// Disabling on Mac due to flakiness.
+// https://crbug.com/877109
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All2 DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All2 All');
+GEN('#endif');
+TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_All2', function() {
   mocha.run();
 });
 
