@@ -33,6 +33,12 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace gl {
+
+class GLFenceEGL;
+
+}  // namespace gl
+
 namespace media {
 
 class H264Parser;
@@ -163,9 +169,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Decode() to DecodeTask().
   struct BitstreamBufferRef;
 
-  // Auto-destruction reference for EGLSync (for message-passing).
-  struct EGLSyncKHRRef;
-
   // Record for decoded pictures that can be sent to PictureReady.
   struct PictureRecord {
     PictureRecord(bool cleared, const Picture& picture);
@@ -192,7 +195,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     ~OutputRecord();
     OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
-    EGLSyncKHR egl_sync;    // sync the compositor's use of the EGLImage.
+    std::unique_ptr<gl::GLFenceEGL> egl_fence;  // sync the compositor's use of
+                                                // the EGLImage.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
     GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
@@ -286,11 +290,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool EnqueueInputRecord();
   bool EnqueueOutputRecord();
 
-  // Process a ReusePictureBuffer() API call.  The API call create an EGLSync
-  // object on the main (GPU process) thread; we will record this object so we
-  // can wait on it before reusing the buffer.
+  // Task to flag the specified picture buffer for reuse, executed on the
+  // decoder_thread_. The picture buffer can only be reused after the specified
+  // fence has been signaled.
   void ReusePictureBufferTask(int32_t picture_buffer_id,
-                              std::unique_ptr<EGLSyncKHRRef> egl_sync_ref);
+                              std::unique_ptr<gl::GLFenceEGL> egl_fence);
 
   // Flush() task.  Child thread should not submit any more buffers until it
   // receives the NotifyFlushDone callback.  This task will schedule an empty
