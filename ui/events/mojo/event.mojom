@@ -46,9 +46,6 @@ struct KeyData {
   // Like |text|, but unmodified by concurrently held modifier keys (except
   // shift). Corresponds to blink::WebKeyboardEvent::unmodifiedText.
   uint16 unmodified_text;
-
-  // Mirrors KeyEvent::properties_.
-  map<string, array<uint8>>? properties;
 };
 
 struct LocationData {
@@ -160,4 +157,5 @@ struct Event {
   PointerData? pointer_data;
   GestureData? gesture_data;
   ScrollData? scroll_data;
+  map<string, array<uint8>>? properties;
 };

@@ -5,6 +5,11 @@
 #ifndef UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 #define UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 
+#include <stdint.h>
+
+#include <string>
+
+#include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/mojo/event.mojom.h"
@@ -39,6 +44,8 @@ struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static ui::mojom::PointerDataPtr pointer_data(const EventUniquePtr& event);
   static ui::mojom::GestureDataPtr gesture_data(const EventUniquePtr& event);
   static ui::mojom::ScrollDataPtr scroll_data(const EventUniquePtr& event);
+  static base::flat_map<std::string, std::vector<uint8_t>> properties(
+      const EventUniquePtr& event);
   static bool Read(ui::mojom::EventDataView r, EventUniquePtr* out);
 };
 

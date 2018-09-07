@@ -1122,6 +1122,20 @@ TEST(EventTest, UpdateForRootTransformation) {
   }
 }
 
+TEST(EventTest, OperatorEqual) {
+  MouseEvent m1(ET_MOUSE_PRESSED, gfx::Point(1, 2), gfx::Point(2, 3),
+                EventTimeForNow(), EF_LEFT_MOUSE_BUTTON, EF_RIGHT_MOUSE_BUTTON);
+  base::flat_map<std::string, std::vector<uint8_t>> properties;
+  properties["a"] = {1u};
+  m1.SetProperties(properties);
+  EXPECT_EQ(properties, *(m1.properties()));
+  MouseEvent m2(ET_MOUSE_RELEASED, gfx::Point(11, 21), gfx::Point(2, 2),
+                EventTimeForNow(), EF_RIGHT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON);
+  m2 = m1;
+  ASSERT_TRUE(m2.properties());
+  EXPECT_EQ(properties, *(m2.properties()));
+}
+
 #if defined(OS_WIN)
 namespace {
 

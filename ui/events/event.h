@@ -51,6 +51,8 @@ using PointerId = int32_t;
 
 class EVENTS_EXPORT Event {
  public:
+  using Properties = base::flat_map<std::string, std::vector<uint8_t>>;
+
   // Copies an arbitrary event. If you have a typed event (e.g. a MouseEvent)
   // just use its copy constructor.
   static std::unique_ptr<Event> Clone(const Event& event);
@@ -102,6 +104,14 @@ class EVENTS_EXPORT Event {
 
   int source_device_id() const { return source_device_id_; }
   void set_source_device_id(int id) { source_device_id_ = id; }
+
+  // Sets the properties associated with this Event.
+  void SetProperties(const Properties& properties);
+
+  // Returns the properties associated with this event, which may be null.
+  // The properties are meant to provide a way to associate arbitrary key/value
+  // pairs with Events and not used by Event.
+  const Properties* properties() const { return properties_.get(); }
 
   // By default, events are "cancelable", this means any default processing that
   // the containing abstraction layer may perform can be prevented by calling
@@ -313,6 +323,8 @@ class EVENTS_EXPORT Event {
   Event(EventType type, base::TimeTicks time_stamp, int flags);
   Event(const PlatformEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
+  Event& operator=(const Event& rhs);
+
   void SetType(EventType type);
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
 
@@ -337,6 +349,8 @@ class EVENTS_EXPORT Event {
   // The device id the event came from, or ED_UNKNOWN_DEVICE if the information
   // is not available.
   int source_device_id_;
+
+  std::unique_ptr<Properties> properties_;
 };
 
 class EVENTS_EXPORT CancelModeEvent : public Event {
@@ -831,8 +845,6 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
-  using Properties = base::flat_map<std::string, std::vector<uint8_t>>;
-
   // Create a KeyEvent from a NativeEvent. For Windows this native event can
   // be either a keystroke message (WM_KEYUP/WM_KEYDOWN) or a character message
   // (WM_CHAR). Other systems have only keystroke events.
@@ -940,14 +952,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // (Native X11 event flags describe the state before the event.)
   void NormalizeFlags();
 
-  // Sets the properties associated with this KeyEvent.
-  void SetProperties(const Properties& properties);
-
-  // Returns the properties associated with this event, which may be null.
-  // The properties are meant to provide a way to associate arbitrary key/value
-  // pairs with KeyEvents and not used by KeyEvent.
-  const Properties* properties() const { return properties_.get(); }
-
  protected:
   friend class KeyEventTestApi;
 
@@ -985,8 +989,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // This is not necessarily initialized when the event is constructed;
   // it may be set only if and when GetCharacter() or GetDomKey() is called.
   mutable DomKey key_ = DomKey::NONE;
-
-  std::unique_ptr<Properties> properties_;
 
   static KeyEvent* last_key_event_;
 #if defined(USE_X11)
