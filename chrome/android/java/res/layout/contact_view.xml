@@ -39,7 +39,7 @@
             style="@style/BlackTitle1" />
 
         <TextView
-            android:id="@+id/email"
+            android:id="@+id/details"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:paddingBottom="5dp"

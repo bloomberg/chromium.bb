@@ -88,7 +88,7 @@ public class PickerAdapter extends Adapter<ViewHolder> {
                     mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
             String name = mContactsCursor.getString(
                     mContactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            contacts.add(new ContactDetails(id, name, getEmails()));
+            contacts.add(new ContactDetails(id, name, getEmails(), getPhoneNumbers()));
         } while (mContactsCursor.moveToNext());
 
         return contacts;
@@ -115,23 +115,18 @@ public class PickerAdapter extends Adapter<ViewHolder> {
                     mContactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
         }
 
-        ((ContactView) holder.itemView).initialize(new ContactDetails(id, name, getEmails()));
-    }
-
-    private Cursor getEmailCursor(String id) {
-        Cursor emailCursor =
-                mContentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + id, null,
-                        ContactsContract.CommonDataKinds.Email.DATA + " ASC");
-        return emailCursor;
+        ((ContactView) holder.itemView)
+                .initialize(new ContactDetails(id, name, getEmails(), getPhoneNumbers()));
     }
 
     private ArrayList<String> getEmails() {
         // Look up all associated emails for this contact.
-        // TODO(finnur): Investigate whether we can do this in one go with the original cursor...
         String id = mContactsCursor.getString(
                 mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-        Cursor emailCursor = getEmailCursor(id);
+        Cursor emailCursor =
+                mContentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + id, null,
+                        ContactsContract.CommonDataKinds.Email.DATA + " ASC");
         ArrayList<String> emails = new ArrayList<String>();
         while (emailCursor.moveToNext()) {
             emails.add(emailCursor.getString(
@@ -139,6 +134,23 @@ public class PickerAdapter extends Adapter<ViewHolder> {
         }
         emailCursor.close();
         return emails;
+    }
+
+    private ArrayList<String> getPhoneNumbers() {
+        // Look up all associated phone numbers for this contact.
+        String id = mContactsCursor.getString(
+                mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
+        Cursor phoneNumberCursor =
+                mContentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null,
+                        ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
+        ArrayList<String> phoneNumbers = new ArrayList<String>();
+        while (phoneNumberCursor.moveToNext()) {
+            phoneNumbers.add(phoneNumberCursor.getString(
+                    phoneNumberCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
+        }
+        phoneNumberCursor.close();
+        return phoneNumbers;
     }
 
     @Override
