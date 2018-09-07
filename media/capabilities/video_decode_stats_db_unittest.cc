@@ -22,6 +22,7 @@
 using leveldb_proto::test::FakeDB;
 using testing::Pointee;
 using testing::Eq;
+using testing::_;
 
 namespace media {
 

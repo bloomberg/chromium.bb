@@ -95,4 +95,9 @@ bool operator!=(const VideoDecodeStatsDB::DecodeStatsEntry& x,
   return !(x == y);
 }
 
+VideoDecodeStatsDB::~VideoDecodeStatsDB() {
+  // Tracking down crash. See https://crbug/865321.
+  CHECK(!dependent_db_) << __func__ << " Destroying before dependent_db_!";
+}
+
 }  // namespace media
