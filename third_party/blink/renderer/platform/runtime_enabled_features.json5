@@ -674,7 +674,7 @@
     },
     {
       name:"ManualSlotting",
-      status:"test",
+      status:"experimental",
     },
     {
       name: "MediaCapabilities",
