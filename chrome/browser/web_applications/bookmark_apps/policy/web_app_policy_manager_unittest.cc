@@ -92,29 +92,20 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     web_app::WebAppProvider::Get(profile())->Reset();
   }
 
-  // TODO(nigeltao): replace the N SimulateEtc methods with 1 method, that
-  // derives the extensions::Manifest::Location from app_info.install_source.
-  void SimulatePreviouslyInstalledApp(PendingAppManager::AppInfo app_info,
-                                      extensions::Manifest::Location location =
-                                          extensions::Manifest::INTERNAL) {
+  void SimulatePreviouslyInstalledApp(GURL url,
+                                      extensions::Manifest::Location location) {
     scoped_refptr<extensions::Extension> extension =
         extensions::ExtensionBuilder("Dummy Name")
             .SetLocation(location)
-            .SetID(crx_file::id_util::GenerateId("fake_app_id_for:" +
-                                                 app_info.url.spec()))
+            .SetID(
+                crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec()))
             .Build();
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile());
     registry->AddEnabled(extension);
 
     ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
-    extension_ids_map.Insert(app_info.url, extension->id());
-  }
-
-  void SimulatePreviouslyInstalledPolicyApp(
-      PendingAppManager::AppInfo app_info) {
-    SimulatePreviouslyInstalledApp(
-        std::move(app_info), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+    extension_ids_map.Insert(url, extension->id());
   }
 
  private:
@@ -216,9 +207,12 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledPolicyApp(GetWindowedAppInfo());
-  SimulatePreviouslyInstalledPolicyApp(GetTabbedAppInfo());
-  SimulatePreviouslyInstalledApp(GetDefaultContainerAppInfo());
+  SimulatePreviouslyInstalledApp(
+      GURL(kWindowedUrl), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  SimulatePreviouslyInstalledApp(
+      GURL(kTabbedUrl), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  SimulatePreviouslyInstalledApp(GURL(kDefaultContainerUrl),
+                                 extensions::Manifest::INTERNAL);
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);
