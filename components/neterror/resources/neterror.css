@@ -57,15 +57,15 @@ a {
 
 .icon-offline {
   content: -webkit-image-set(
-      url(default_100_percent/offline/100-error-offline.png) 1x,
-      url(default_200_percent/offline/200-error-offline.png) 2x);
+      url(images/default_100_percent/offline/100-error-offline.png) 1x,
+      url(images/default_200_percent/offline/200-error-offline.png) 2x);
   position: relative;
 }
 
 .icon-disabled {
   content: -webkit-image-set(
-      url(default_100_percent/offline/100-disabled.png) 1x,
-      url(default_200_percent/offline/200-disabled.png) 2x);
+      url(images/default_100_percent/offline/100-disabled.png) 1x,
+      url(images/default_200_percent/offline/200-disabled.png) 2x);
   width: 112px;
 }
 
@@ -112,9 +112,7 @@ a {
 }
 
 #error-information-button {
-  content: -webkit-image-set(
-          url(../../resources/default_100_percent/neterror/help_outline.png) 1x,
-          url(../../resources/default_200_percent/neterror/help_outline.png) 2x);
+  content: url(images/help_outline.svg);
   height: 24px;
   vertical-align: -.15em;
   width: 24px;
@@ -333,7 +331,7 @@ a {
 }
 
 #download-link:before, #download-link-clicked:before {
-  content: url(offline_content/download-blue.svg);
+  content: url(images/download-blue.svg);
   display: inline-block;
   margin-inline-end: 4px;
   vertical-align: -webkit-baseline-middle;
