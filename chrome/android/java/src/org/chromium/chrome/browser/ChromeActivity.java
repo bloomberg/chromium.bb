@@ -1379,10 +1379,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             setStatusBarColor(null, mBaseStatusBarColor);
         }, coordinator);
 
-        mManualFillingController.initialize(getWindowAndroid(),
-                new DeferredViewStubInflationProvider<>(findViewById(R.id.keyboard_accessory_stub)),
-                new DeferredViewStubInflationProvider<>(
-                        findViewById(R.id.keyboard_accessory_sheet_stub)));
+        ViewStub accessoryBarStub = findViewById(R.id.keyboard_accessory_stub);
+        ViewStub accessorySheetStub = findViewById(R.id.keyboard_accessory_sheet_stub);
+        if (accessoryBarStub != null && accessorySheetStub != null) {
+            mManualFillingController.initialize(getWindowAndroid(),
+                    new DeferredViewStubInflationProvider<>(accessoryBarStub),
+                    new DeferredViewStubInflationProvider<>(accessorySheetStub));
+        }
 
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
