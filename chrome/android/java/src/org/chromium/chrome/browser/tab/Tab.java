@@ -349,8 +349,6 @@ public class Tab
      */
     private boolean mIsNativePageCommitPending;
 
-    private TabRedirectHandler mTabRedirectHandler;
-
     private FullscreenManager mFullscreenManager;
     private final TabBrowserControlsOffsetHelper mControlsOffsetHelper;
 
@@ -564,6 +562,10 @@ public class Tab
         return mUserDataHost;
     }
 
+    Context getContext() {
+        return mThemedApplicationContext;
+    }
+
     /**
      * Creates an instance of a {@link Tab}.
      *
@@ -616,7 +618,6 @@ public class Tab
             restoreFieldsFromState(frozenState);
         }
 
-        mTabRedirectHandler = new TabRedirectHandler(mThemedApplicationContext);
         addObserver(mTabObserver);
 
         if (incognito) {
@@ -1300,8 +1301,6 @@ public class Tab
             }
 
             if (mTabUma != null) mTabUma.onHide();
-
-            mTabRedirectHandler.clear();
 
             // Allow this tab's NativePage to be frozen if it stays hidden for a while.
             NativePageAssassin.getInstance().tabHidden(this);
@@ -3035,22 +3034,6 @@ public class Tab
     public void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
         mInterceptNavigationDelegate = delegate;
         nativeSetInterceptNavigationDelegate(mNativeTabAndroid, delegate);
-    }
-
-    /**
-     * @return the TabRedirectHandler for the tab.
-     */
-    public TabRedirectHandler getTabRedirectHandler() {
-        return mTabRedirectHandler;
-    }
-
-    /**
-     * Sets the TabRedirectHandler for the tab.
-     *
-     * @param tabRedirectHandler the TabRedirectHandler
-     */
-    public void setTabRedirectHandler(TabRedirectHandler tabRedirectHandler) {
-        mTabRedirectHandler = tabRedirectHandler;
     }
 
     /**

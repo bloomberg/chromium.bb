@@ -494,15 +494,14 @@ public class VrShell extends GvrLayout
     private void initializeTabForVR() {
         if (mTab == null) return;
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
-        mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
-        mTab.setTabRedirectHandler(mTabRedirectHandler);
+        mNonVrTabRedirectHandler = TabRedirectHandler.swapFor(mTab, mTabRedirectHandler);
         assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
         configWebContentsImeForVr(mTab.getWebContents());
     }
 
     private void restoreTabFromVR() {
         if (mTab == null) return;
-        mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
+        TabRedirectHandler.swapFor(mTab, mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
         restoreWebContentsImeFromVr(mTab.getWebContents());
     }
