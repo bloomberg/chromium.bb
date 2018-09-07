@@ -429,7 +429,7 @@ void SearchBoxView::AcceptAutocompleteText() {
   if (!is_app_list_search_autocomplete_enabled_)
     return;
 
-  if (highlight_range_.start() != search_box()->text().length())
+  if (HasAutocompleteText())
     ContentsChanged(search_box(), search_box()->text());
 }
 
@@ -445,6 +445,15 @@ void SearchBoxView::AcceptOneCharInAutocompleteText() {
   ContentsChanged(search_box(), search_box()->text());
   search_box()->SetText(original_text);
   search_box()->SetSelectionRange(highlight_range_);
+}
+
+bool SearchBoxView::HasAutocompleteText() {
+  // If the selected range is non-empty, it will either be suggested by
+  // autocomplete or selected by the user. If the recorded autocomplete
+  // |highlight_range_| matches the selection range, this text is suggested by
+  // autocomplete.
+  return search_box()->GetSelectedRange() == highlight_range_ &&
+         highlight_range_.length() > 0;
 }
 
 void SearchBoxView::ClearAutocompleteText() {
@@ -499,11 +508,13 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         key_event.key_code() != ui::VKEY_BACK) {
       if (key_event.key_code() == ui::VKEY_TAB) {
         AcceptAutocompleteText();
-      } else if (key_event.key_code() == ui::VKEY_UP ||
-                 key_event.key_code() == ui::VKEY_DOWN ||
-                 key_event.key_code() == ui::VKEY_LEFT ||
-                 key_event.key_code() == ui::VKEY_RIGHT) {
+      } else if ((key_event.key_code() == ui::VKEY_UP ||
+                  key_event.key_code() == ui::VKEY_DOWN ||
+                  key_event.key_code() == ui::VKEY_LEFT ||
+                  key_event.key_code() == ui::VKEY_RIGHT) &&
+                 HasAutocompleteText()) {
         ClearAutocompleteText();
+        return true;
       } else {
         const base::string16 pending_text = search_box()->GetSelectedText();
         // Hitting the next key in the autocompete suggestion continues
