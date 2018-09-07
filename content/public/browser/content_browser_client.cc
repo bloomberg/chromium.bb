@@ -672,7 +672,8 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     RenderFrameHost* frame,
     bool is_navigation,
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    bool* bypass_redirect_checks) {
   return false;
 }
 

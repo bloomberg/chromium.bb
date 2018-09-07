@@ -1138,6 +1138,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
   // unmodified and this must return |false|.
   //
+  // |bypass_redirect_checks| will be set to true when the embedder will be
+  // handling redirect security checks.
+  //
   // Always called on the UI thread and only when the Network Service is
   // enabled.
   //
@@ -1149,7 +1152,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* frame,
       bool is_navigation,
       const GURL& url,
-      network::mojom::URLLoaderFactoryRequest* factory_request);
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      bool* bypass_redirect_checks);
 
   // Allows the embedder to intercept a WebSocket connection. |*request|
   // is always valid upon entry and MUST be valid upon return. The embedder
