@@ -26,7 +26,8 @@ TEST(IceConfigTest, ParseValid) {
       "        \"turns:the_server.com?transport=udp\""
       "      ],"
       "      \"username\": \"123\","
-      "      \"credential\": \"abc\""
+      "      \"credential\": \"abc\","
+      "      \"maxRateKbps\": 8000.0"
       "    },"
       "    {"
       "      \"urls\": ["
@@ -71,6 +72,7 @@ TEST(IceConfigTest, ParseValid) {
   EXPECT_EQ(rtc::SocketAddress("stun_server.com", 18344),
             config.stun_servers[0]);
   EXPECT_EQ(rtc::SocketAddress("1.2.3.4", 3478), config.stun_servers[1]);
+  EXPECT_EQ(8000.0, config.max_bitrate_kbps);
 }
 
 TEST(IceConfigTest, ParseDataEnvelope) {
@@ -124,6 +126,64 @@ TEST(IceConfigTest, ParsePartiallyInvalid) {
 TEST(IceConfigTest, NotParseable) {
   IceConfig config = IceConfig::Parse("Invalid Ice Config");
   EXPECT_TRUE(config.is_null());
+}
+
+TEST(IceConfigTest, UnspecifiedMaxRate_IsZero) {
+  const char kTestConfigJson[] =
+      "{"
+      "  \"iceServers\": ["
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ]"
+      "    }"
+      "  ]"
+      "}";
+
+  IceConfig config = IceConfig::Parse(kTestConfigJson);
+  EXPECT_EQ(0, config.max_bitrate_kbps);
+}
+
+TEST(IceConfigTest, OneSpecifiedMaxRate_IsUsed) {
+  const char kTestConfigJson1[] =
+      "{"
+      "  \"iceServers\": ["
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ],"
+      "      \"maxRateKbps\": 1000.0"
+      "    },"
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ]"
+      "    }"
+      "  ]"
+      "}";
+
+  IceConfig config1 = IceConfig::Parse(kTestConfigJson1);
+  EXPECT_EQ(1000, config1.max_bitrate_kbps);
+
+  const char kTestConfigJson2[] =
+      "{"
+      "  \"iceServers\": ["
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ]"
+      "    },"
+      "    {"
+      "      \"urls\": ["
+      "        \"stun:1.2.3.4\""
+      "      ],"
+      "      \"maxRateKbps\": 2000.0"
+      "    }"
+      "  ]"
+      "}";
+
+  IceConfig config2 = IceConfig::Parse(kTestConfigJson2);
+  EXPECT_EQ(2000, config2.max_bitrate_kbps);
 }
 
 }  // namespace protocol
