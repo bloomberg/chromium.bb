@@ -11,11 +11,15 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/process/process_info.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -42,8 +46,8 @@ const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
 
 const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
-static bool CookiePartsContains(const std::vector<std::string>& parts,
-                                const char* part) {
+bool CookiePartsContains(const std::vector<std::string>& parts,
+                         const char* part) {
   for (std::vector<std::string>::const_iterator it = parts.begin();
        it != parts.end(); ++it) {
     if (base::LowerCaseEqualsASCII(*it, part))
@@ -819,6 +823,11 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
 
 void GaiaAuthFetcher::StartListAccounts() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+  list_accounts_system_uptime_ = base::SysInfo::Uptime();
+#if !defined(OS_IOS)
+  list_accounts_process_uptime_ =
+      base::Time::Now() - base::CurrentProcessInfo::CreationTime();
+#endif
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gaia_auth_list_accounts", R"(
@@ -1093,11 +1102,33 @@ void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(const std::string& data,
 void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
                                             net::Error net_error,
                                             int response_code) {
-  if (net_error == net::OK && response_code == net::HTTP_OK) {
-    consumer_->OnListAccountsSuccess(data);
+  // Log error rates and details for ListAccounts, for investigation of
+  // https://crbug.com/876306.
+  base::UmaHistogramSparse("Gaia.AuthFetcher.ListAccounts.NetErrorCodes",
+                           -net_error);
+  if (net_error == net::OK) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Gaia.AuthFetcher.ListAccounts.SystemUptime.Success",
+        list_accounts_system_uptime_);
+#if !defined(OS_IOS)
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Success",
+        list_accounts_process_uptime_);
+#endif
   } else {
-    consumer_->OnListAccountsFailure(GenerateAuthError(data, net_error));
+    UMA_HISTOGRAM_LONG_TIMES("Gaia.AuthFetcher.ListAccounts.SystemUptime.Error",
+                             list_accounts_system_uptime_);
+#if !defined(OS_IOS)
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Error",
+        list_accounts_process_uptime_);
+#endif
   }
+
+  if (net_error == net::OK && response_code == net::HTTP_OK)
+    consumer_->OnListAccountsSuccess(data);
+  else
+    consumer_->OnListAccountsFailure(GenerateAuthError(data, net_error));
 }
 
 void GaiaAuthFetcher::OnLogOutFetched(const std::string& data,
@@ -1177,6 +1208,7 @@ void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(const std::string& data,
 void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
                                                net::Error net_error,
                                                int response_code) {
+  GoogleServiceAuthError auth_error = GoogleServiceAuthError::AuthErrorNone();
   if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
     OAuthMultiloginResult result;
     if (!OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
@@ -1186,8 +1218,12 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
     } else
       consumer_->OnOAuthMultiloginSuccess(result);
   } else {
-    consumer_->OnOAuthMultiloginFailure(GenerateAuthError(data, net_error));
+    auth_error = GenerateAuthError(data, net_error);
+    consumer_->OnOAuthMultiloginFailure(auth_error);
   }
+  UMA_HISTOGRAM_ENUMERATION("Gaia.AuthFetcher.Multilogin.AuthErrors",
+                            auth_error.state(),
+                            GoogleServiceAuthError::NUM_STATES);
 }
 
 void GaiaAuthFetcher::OnURLLoadComplete(
