@@ -27,14 +27,14 @@ class TestDrivenDataProvider extends UploadDataProvider {
     // Lock used to synchronize access to mReadPending and mRewindPending.
     private final Object mLock = new Object();
 
-    private int mNextRead = 0;
+    private int mNextRead;
 
     // Only accessible when holding mLock.
 
-    private boolean mReadPending = false;
-    private boolean mRewindPending = false;
-    private int mNumRewindCalls = 0;
-    private int mNumReadCalls = 0;
+    private boolean mReadPending;
+    private boolean mRewindPending;
+    private int mNumRewindCalls;
+    private int mNumReadCalls;
 
     /**
      * Constructor.

@@ -23,7 +23,7 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
     private final MessageLoop mMessageLoop;
     private final ByteBuffer mBuffer;
     private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
-    private boolean mLastChunk = false;
+    private boolean mLastChunk;
 
     /**
      * Package protected constructor.

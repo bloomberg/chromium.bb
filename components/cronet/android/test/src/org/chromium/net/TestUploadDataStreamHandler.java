@@ -32,7 +32,7 @@ public final class TestUploadDataStreamHandler {
     // Waits for checkIfReadCallbackInvoked() returns result asynchronously.
     private ConditionVariable mWaitCheckRead = new ConditionVariable();
     // If true, init completes synchronously.
-    private boolean mInitCompletedSynchronously = false;
+    private boolean mInitCompletedSynchronously;
     private String mData = "";
 
     public TestUploadDataStreamHandler(Context context, final long uploadDataStream) {

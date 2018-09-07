@@ -346,7 +346,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         /** This holds the total bytes to send (the content-length). -1 if unknown. */
         long mTotalBytes;
         /** This holds the bytes written so far */
-        long mWrittenBytes = 0;
+        long mWrittenBytes;
 
         OutputStreamDataSink(final Executor userExecutor, Executor executor,
                 HttpURLConnection urlConnection,
@@ -1045,7 +1045,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         private static final class InlineCheckingRunnable implements Runnable {
             private final Runnable mCommand;
             private Thread mCallingThread;
-            private InlineExecutionProhibitedException mExecutedInline = null;
+            private InlineExecutionProhibitedException mExecutedInline;
 
             private InlineCheckingRunnable(Runnable command, Thread callingThread) {
                 this.mCommand = command;

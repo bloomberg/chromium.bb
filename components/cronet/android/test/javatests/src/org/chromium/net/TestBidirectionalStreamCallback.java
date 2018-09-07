@@ -30,10 +30,10 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     public ResponseStep mResponseStep = ResponseStep.NOTHING;
 
-    public boolean mOnErrorCalled = false;
-    public boolean mOnCanceledCalled = false;
+    public boolean mOnErrorCalled;
+    public boolean mOnCanceledCalled;
 
-    public int mHttpResponseDataLength = 0;
+    public int mHttpResponseDataLength;
     public String mResponseAsString = "";
 
     public UrlResponseInfo.HeaderBlock mTrailers;

@@ -61,7 +61,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private final AtomicInteger mActiveRequestCount = new AtomicInteger(0);
 
     @GuardedBy("mLock")
-    private long mUrlRequestContextAdapter = 0;
+    private long mUrlRequestContextAdapter;
     /**
      * This field is accessed without synchronization, but only for the purposes of reference
      * equality comparison with other threads. If such a comparison is performed on the network
