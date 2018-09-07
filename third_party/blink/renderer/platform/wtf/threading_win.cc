@@ -122,7 +122,7 @@ MutexBase::~MutexBase() {
 
 void MutexBase::lock() {
   EnterCriticalSection(&mutex_.internal_mutex_);
-  DCHECK(!mutex_.recursion_count_)
+  CHECK(!mutex_.recursion_count_)
       << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
 }
@@ -149,7 +149,7 @@ bool Mutex::TryLock() {
     // check in the lock method (presumably due to performance?). This
     // means lock() will succeed even if the current thread has already
     // entered the critical section.
-    DCHECK(!mutex_.recursion_count_)
+    CHECK(!mutex_.recursion_count_)
         << "WTF does not support recursive mutex acquisition!";
     if (mutex_.recursion_count_ > 0) {
       LeaveCriticalSection(&mutex_.internal_mutex_);
@@ -169,7 +169,7 @@ bool RecursiveMutex::TryLock() {
   if (result == 0) {  // We didn't get the lock.
     return false;
   }
-  DCHECK(!mutex_.recursion_count_)
+  CHECK(!mutex_.recursion_count_)
       << "WTF does not support recursive mutex acquisition!";
   ++mutex_.recursion_count_;
   return true;

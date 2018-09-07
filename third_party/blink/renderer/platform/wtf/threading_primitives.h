@@ -56,9 +56,7 @@ typedef CONDITION_VARIABLE PlatformCondition;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 struct PlatformMutex {
   pthread_mutex_t internal_mutex_;
-#if DCHECK_IS_ON()
   size_t recursion_count_;
-#endif
 };
 typedef pthread_cond_t PlatformCondition;
 #endif
