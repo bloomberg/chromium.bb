@@ -57,15 +57,12 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Invoked when a password mapping is added.
-  void OnAddPasswordFormMapping(
-      int key,
-      const autofill::PasswordFormFillData& fill_data);
+  void OnAddPasswordFillData(const autofill::PasswordFormFillData& fill_data);
 
   // Handles a request from the renderer to show a popup with the suggestions
   // from the password manager. |options| should be a bitwise mask of
   // autofill::ShowPasswordSuggestionsOptions values.
-  void OnShowPasswordSuggestions(int key,
-                                 base::i18n::TextDirection text_direction,
+  void OnShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                  const base::string16& typed_username,
                                  int options,
                                  const gfx::RectF& bounds);
@@ -89,26 +86,25 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void DidNavigateMainFrame();
 
   // A public version of FillSuggestion(), only for use in tests.
-  bool FillSuggestionForTest(int key, const base::string16& username);
+  bool FillSuggestionForTest(const base::string16& username);
 
   // A public version of PreviewSuggestion(), only for use in tests.
-  bool PreviewSuggestionForTest(int key, const base::string16& username);
+  bool PreviewSuggestionForTest(const base::string16& username);
 
-  // Only use in tests.
+#if defined(UNIT_TEST)
   void set_autofill_client(autofill::AutofillClient* autofill_client) {
     autofill_client_ = autofill_client;
   }
+#endif  // defined(UNIT_TEST)
 
  private:
-  typedef std::map<int, autofill::PasswordFormFillData> LoginToPasswordInfoMap;
-
   // Attempts to fill the password associated with user name |username|, and
   // returns true if it was successful.
-  bool FillSuggestion(int key, const base::string16& username);
+  bool FillSuggestion(const base::string16& username);
 
   // Attempts to preview the password associated with user name |username|, and
   // returns true if it was successful.
-  bool PreviewSuggestion(int key, const base::string16& username);
+  bool PreviewSuggestion(const base::string16& username);
 
   // If |current_username| matches a username for one of the login mappings in
   // |fill_data|, returns true and assigns the password and the original signon
@@ -121,9 +117,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
       const autofill::PasswordFormFillData& fill_data,
       autofill::PasswordAndRealm* password_and_realm);
 
-  // Finds login information for a |node| that was previously filled.
-  bool FindLoginInfo(int key, autofill::PasswordFormFillData* found_password);
-
   // Makes a request to the favicon service for the icon of |url|.
   void RequestFavicon(const GURL& url);
 
@@ -132,15 +125,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // store is canceled on navigation.
   void OnFaviconReady(const favicon_base::FaviconImageResult& result);
 
-  // The logins we have filled so far with their associated info.
-  LoginToPasswordInfoMap login_to_password_info_;
+  std::unique_ptr<autofill::PasswordFormFillData> fill_data_;
 
   // Contains the favicon for the credentials offered on the current page.
   gfx::Image page_favicon_;
-
-  // When the autofill popup should be shown, |form_data_key_| identifies the
-  // right password info in |login_to_password_info_|.
-  int form_data_key_;
 
   // The driver that owns |this|.
   PasswordManagerDriver* password_manager_driver_;

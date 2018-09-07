@@ -1442,7 +1442,6 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
 }
 
 void PasswordAutofillAgent::FillUsingRendererIDs(
-    int key,
     const PasswordFormFillData& form_data) {
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
@@ -1454,11 +1453,11 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
   std::tie(username_element, password_element) =
       FindUsernamePasswordElements(form_data);
   if (password_element.IsNull()) {
-    MaybeStoreFallbackData(key, form_data);
+    MaybeStoreFallbackData(form_data);
     return;
   }
 
-  StoreDataForFillOnAccountSelect(key, form_data, username_element,
+  StoreDataForFillOnAccountSelect(form_data, username_element,
                                   password_element);
   FillFormOnPasswordReceived(form_data, username_element, password_element,
                              &field_data_manager_, logger.get());
@@ -1466,10 +1465,9 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
 
 // mojom::PasswordAutofillAgent:
 void PasswordAutofillAgent::FillPasswordForm(
-    int key,
     const PasswordFormFillData& form_data) {
   if (form_data.has_renderer_ids) {
-    FillUsingRendererIDs(key, form_data);
+    FillUsingRendererIDs(form_data);
     return;
   }
 
@@ -1480,7 +1478,7 @@ void PasswordAutofillAgent::FillPasswordForm(
         GetPasswordManagerDriver().get()));
     logger->LogMessage(Logger::STRING_ON_FILL_PASSWORD_FORM_METHOD);
   }
-  GetFillableElementFromFormData(key, form_data, logger.get(), &elements);
+  GetFillableElementFromFormData(form_data, logger.get(), &elements);
 
   // If wait_for_username is true, we don't want to initially fill the form
   // until the user types in a valid username.
@@ -1501,7 +1499,6 @@ void PasswordAutofillAgent::FillPasswordForm(
 }
 
 void PasswordAutofillAgent::GetFillableElementFromFormData(
-    int key,
     const PasswordFormFillData& form_data,
     RendererSavePasswordProgressLogger* logger,
     std::vector<WebInputElement>* elements) {
@@ -1564,11 +1561,11 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
         username_element.IsNull() ? password_element : username_element;
     if (elements)
       elements->push_back(main_element);
-    StoreDataForFillOnAccountSelect(key, form_data, username_element,
+    StoreDataForFillOnAccountSelect(form_data, username_element,
                                     password_element);
   }
 
-  MaybeStoreFallbackData(key, form_data);
+  MaybeStoreFallbackData(form_data);
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
@@ -1655,7 +1652,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
                                      : user_input.Value().Utf16());
 
   GetPasswordManagerDriver()->ShowPasswordSuggestions(
-      password_info.key, field.text_direction, username_string, options,
+      field.text_direction, username_string, options,
       render_frame()->GetRenderView()->ElementBoundsInWindow(user_input));
   username_query_prefix_ = username_string;
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
@@ -1988,7 +1985,6 @@ PasswordAutofillAgent::FindUsernamePasswordElements(
 }
 
 void PasswordAutofillAgent::StoreDataForFillOnAccountSelect(
-    int key,
     const PasswordFormFillData& form_data,
     WebInputElement username_element,
     WebInputElement password_element) {
@@ -1997,7 +1993,6 @@ void PasswordAutofillAgent::StoreDataForFillOnAccountSelect(
 
   PasswordInfo password_info;
   password_info.fill_data = form_data;
-  password_info.key = key;
   password_info.password_field = password_element;
   web_input_to_password_info_[main_element] = password_info;
   last_supplied_password_info_iter_ =
@@ -2007,7 +2002,6 @@ void PasswordAutofillAgent::StoreDataForFillOnAccountSelect(
 }
 
 void PasswordAutofillAgent::MaybeStoreFallbackData(
-    int key,
     const PasswordFormFillData& form_data) {
   if (!web_input_to_password_info_.empty())
     return;
@@ -2019,7 +2013,6 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   // PasswordAutofillAgent::FindPasswordInfoForElement to propose to fill.
   PasswordInfo password_info;
   password_info.fill_data = form_data;
-  password_info.key = key;
   web_input_to_password_info_[WebInputElement()] = password_info;
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
 }

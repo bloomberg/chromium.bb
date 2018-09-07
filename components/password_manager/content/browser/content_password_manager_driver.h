@@ -87,22 +87,10 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   const autofill::mojom::PasswordGenerationAgentAssociatedPtr&
   GetPasswordGenerationAgent();
 
-  // Returns the next key to be used for PasswordFormFillData sent to
-  // PasswordAutofillManager and PasswordAutofillAgent.
-  int GetNextKey();
-
   content::RenderFrameHost* render_frame_host_;
   PasswordManagerClient* client_;
   PasswordGenerationManager password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
-
-  // Every instance of PasswordFormFillData created by |*this| and sent to
-  // PasswordAutofillManager and PasswordAutofillAgent is given an ID, so that
-  // the latter two classes can reference to the same instance without sending
-  // it to each other over IPC. The counter below is used to generate new IDs.
-  // The counter cycles over a limited range of values, see
-  // https://crbug.com/846404#c5.
-  int next_free_key_ = 0;
 
   // It should be filled in the constructor, since later the frame might be
   // detached and it would be impossible to check whether the frame is a main
