@@ -333,6 +333,13 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
     case ui::ET_SCROLL_FLING_START:
       CompleteDrag(DragResult::SUCCESS);
 
+      // TODO(xdai): We'll do special handling in tablet mode later.
+      if (Shell::Get()
+              ->tablet_mode_controller()
+              ->IsTabletModeWindowManagerEnabled()) {
+        return;
+      }
+
       // TODO(pkotwicz): Fix tests which inadvertently start flings and check
       // window_resizer_->IsMove() instead of the hittest component at |event|'s
       // location.
