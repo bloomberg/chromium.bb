@@ -11,31 +11,33 @@ function runTest(t, testCase) {
   return new Promise(t.step_func((resolve, reject) => {
     internals.setPageScaleFactor(testCase.startingScale);
     internals.setVisualViewportOffset(
-        window.innerWidth * (1 - (1 / testCase.startingScale)) / 2,
-        window.innerHeight * (1 - (1 / testCase.startingScale)) / 2);
+      window.innerWidth * (1 - (1 / testCase.startingScale)) / 2,
+      window.innerHeight * (1 - (1 / testCase.startingScale)) / 2);
 
     // Ensure the compositor knows the starting scale and offset.
     waitForCompositorCommit().then(t.step_func(() => {
       chrome.gpuBenchmarking.pinchBy(
-          testCase.scale, centerX, centerY, t.step_func(() => {
-        const expectedScale = testCase.startingScale * testCase.scale;
-        assert_approx_equals(
-            window.visualViewport.scale,
-            expectedScale,
-            kScaleEpsilon,
-            testCase.msg + " has correct page scale factor.");
-        assert_approx_equals(
-            window.visualViewport.offsetLeft,
-            window.innerWidth * (1 - (1 / expectedScale)) / 2,
-            kOffsetEpsilon,
-            testCase.msg + " has correct visual viewport offsetLeft.");
-        assert_approx_equals(
-            window.visualViewport.offsetTop,
-            window.innerHeight * (1 - (1 / expectedScale)) / 2,
-            kOffsetEpsilon,
-            testCase.msg + " has correct visual viewport offsetTop.");
-        resolve();
-      }), testCase.speed, testCase.gestureSource);
+        testCase.scale, centerX, centerY, t.step_func(() => {
+          waitForCompositorCommit().then(t.step_func(() => {
+            const expectedScale = testCase.startingScale * testCase.scale;
+            assert_approx_equals(
+              window.visualViewport.scale,
+              expectedScale,
+              kScaleEpsilon,
+              testCase.msg + " has correct page scale factor.");
+            assert_approx_equals(
+              window.visualViewport.offsetLeft,
+              window.innerWidth * (1 - (1 / expectedScale)) / 2,
+              kOffsetEpsilon,
+              testCase.msg + " has correct visual viewport offsetLeft.");
+            assert_approx_equals(
+              window.visualViewport.offsetTop,
+              window.innerHeight * (1 - (1 / expectedScale)) / 2,
+              kOffsetEpsilon,
+              testCase.msg + " has correct visual viewport offsetTop.");
+            resolve();
+          }))
+        }), testCase.speed, testCase.gestureSource);
     }));
   }));
 }
@@ -56,21 +58,21 @@ function runTestDesktop(t, testCase) {
   return new Promise(t.step_func((resolve, reject) => {
     internals.setPageScaleFactor(testCase.startingScale);
     internals.setVisualViewportOffset(
-        window.innerWidth * (1 - (1 / testCase.startingScale)) / 2,
-        window.innerHeight * (1 - (1 / testCase.startingScale)) / 2);
+      window.innerWidth * (1 - (1 / testCase.startingScale)) / 2,
+      window.innerHeight * (1 - (1 / testCase.startingScale)) / 2);
 
     // Ensure the compositor knows the starting scale and offset.
     waitForCompositorCommit().then(t.step_func(() => {
       chrome.gpuBenchmarking.pinchBy(
-          testCase.scale, centerX, centerY, t.step_func(() => {
-        const expectedScale = testCase.startingScale * testCase.scale;
-        assert_approx_equals(
+        testCase.scale, centerX, centerY, t.step_func(() => {
+          const expectedScale = testCase.startingScale * testCase.scale;
+          assert_approx_equals(
             window.visualViewport.scale,
             expectedScale,
             kScaleEpsilon,
             testCase.msg + " has correct page scale factor.");
-        resolve();
-      }), testCase.speed, testCase.gestureSource);
+          resolve();
+        }), testCase.speed, testCase.gestureSource);
     }));
   }));
 }
