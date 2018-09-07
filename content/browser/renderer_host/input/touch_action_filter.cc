@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -66,8 +67,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
-        // https://crbug.com/869375, temporary fix to prevent crash.
-        SetTouchAction(cc::kTouchActionAuto);
       }
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
@@ -94,8 +93,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "scrollupdate-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
-        // https://crbug.com/869375, temporary fix to prevent crash.
-        SetTouchAction(cc::kTouchActionAuto);
       }
       if (IsYAxisActionDisallowed(scrolling_touch_action_.value())) {
         gesture_event->data.scroll_update.delta_y = 0;
@@ -150,8 +147,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         gesture_sequence_.clear();
-        // https://crbug.com/869375, temporary fix to prevent crash.
-        SetTouchAction(cc::kTouchActionAuto);
       }
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
                                          cc::kTouchActionDoubleTapZoom) != 0;
@@ -246,9 +241,19 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   scrolling_touch_action_ = allowed_touch_action_;
 }
 
-void TouchActionFilter::SetActiveTouchInProgress(
-    bool active_touch_in_progress) {
-  active_touch_in_progress_ = active_touch_in_progress;
+void TouchActionFilter::IncreaseActiveTouches() {
+  // The touch start and associated touch end should be acked in order. If not,
+  // dump.
+  if (num_of_active_touches_ > 0)
+    base::debug::DumpWithoutCrashing();
+  num_of_active_touches_++;
+}
+
+void TouchActionFilter::DecreaseActiveTouches() {
+  // Something is seriously wrong if this is true.
+  if (num_of_active_touches_ == 0)
+    base::debug::DumpWithoutCrashing();
+  num_of_active_touches_--;
 }
 
 void TouchActionFilter::ReportAndResetTouchAction() {
@@ -257,13 +262,11 @@ void TouchActionFilter::ReportAndResetTouchAction() {
   else
     gesture_sequence_.append("R0");
   ReportTouchAction();
-  ResetTouchAction();
+  if (num_of_active_touches_ <= 0)
+    ResetTouchAction();
 }
 
 void TouchActionFilter::ReportTouchAction() {
-  // https://crbug.com/869375, temporary fix to prevent crash.
-  if (!scrolling_touch_action_.has_value())
-    SetTouchAction(cc::kTouchActionAuto);
   // Report the effective touch action computed by blink such as
   // kTouchActionNone, kTouchActionPanX, etc.
   // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
@@ -369,7 +372,7 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   // We have set the associated touch action if the touch start already happened
   // or there is a gesture in progress. In these cases, we should not reset the
   // associated touch action.
-  if (!gesture_sequence_in_progress_ && !active_touch_in_progress_) {
+  if (!gesture_sequence_in_progress_ && num_of_active_touches_ <= 0) {
     ResetTouchAction();
     if (has_touch_event_handler_)
       scrolling_touch_action_.reset();

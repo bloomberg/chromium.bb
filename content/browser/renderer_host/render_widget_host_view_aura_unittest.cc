@@ -1526,6 +1526,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::DOWN, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
+  widget_host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
 
   view_->OnTouchEvent(&move);
   base::RunLoop().RunUntilIdle();
