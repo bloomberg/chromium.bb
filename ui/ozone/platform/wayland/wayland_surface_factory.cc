@@ -231,9 +231,11 @@ GbmSurfacelessWayland* WaylandSurfaceFactory::GetSurface(
   return it->second;
 }
 
-void WaylandSurfaceFactory::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                                               uint32_t buffer_id) {
-  connection_->ScheduleBufferSwap(widget, buffer_id);
+void WaylandSurfaceFactory::ScheduleBufferSwap(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    wl::BufferSwapCallback callback) {
+  connection_->ScheduleBufferSwap(widget, buffer_id, std::move(callback));
 }
 
 std::unique_ptr<SurfaceOzoneCanvas>

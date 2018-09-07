@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_util.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 #if defined(WAYLAND_GBM)
@@ -18,6 +19,10 @@
 #endif
 
 struct wl_shm;
+
+namespace gfx {
+enum class SwapResult;
+}
 
 namespace ui {
 
@@ -58,7 +63,11 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
 
   // Asks Wayland to find a wl_buffer with the |buffer_id| and schedule a
   // buffer swap for a WaylandWindow, which backs the following |widget|.
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  // The |callback| is called once a frame callback from the Wayland server
+  // is received.
+  void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                          uint32_t buffer_id,
+                          wl::BufferSwapCallback callback);
 
 #if defined(WAYLAND_GBM)
   // Returns a gbm_device based on a DRM render node.

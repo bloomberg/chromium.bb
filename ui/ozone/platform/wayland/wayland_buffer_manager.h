@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
+#include "ui/ozone/platform/wayland/wayland_util.h"
 
 struct zwp_linux_dmabuf_v1;
 struct zwp_linux_buffer_params_v1;
@@ -53,7 +54,9 @@ class WaylandBufferManager {
 
   // Assigns a wl_buffer with |buffer_id| to a window with the same |widget|. On
   // error, false is returned and |error_message_| is set.
-  bool ScheduleBufferSwap(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  bool ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                          uint32_t buffer_id,
+                          wl::BufferSwapCallback callback);
 
   // Destroys a buffer with |buffer_id| in |buffers_|. On error, false is
   // returned and |error_message_| is set.
@@ -86,6 +89,15 @@ class WaylandBufferManager {
 
     // A wl_buffer backed by a dmabuf created on the GPU side.
     wl::Object<wl_buffer> wl_buffer;
+
+    // A callback, which is called once the |wl_frame_callback| from the server
+    // is received.
+    wl::BufferSwapCallback buffer_swap_callback;
+
+    // A Wayland callback, which is triggered once wl_buffer has been committed
+    // and it is right time to notify the GPU that it can start a new drawing
+    // operation.
+    wl::Object<wl_callback> wl_frame_callback;
 
     DISALLOW_COPY_AND_ASSIGN(Buffer);
   };
@@ -125,6 +137,11 @@ class WaylandBufferManager {
                               struct wl_buffer* new_buffer);
   static void CreateFailed(void* data,
                            struct zwp_linux_buffer_params_v1* params);
+
+  // wl_callback_listener
+  static void FrameCallbackDone(void* data,
+                                wl_callback* callback,
+                                uint32_t time);
 
   // Stores announced buffer formats supported by the compositor.
   std::vector<gfx::BufferFormat> supported_buffer_formats_;

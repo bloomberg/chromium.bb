@@ -7,6 +7,7 @@ module ui.ozone.mojom;
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
+import "ui/gfx/mojo/swap_result.mojom";
 
 // Used by the GPU for communication with a WaylandConnection on the browser
 // process.
@@ -26,7 +27,8 @@ interface WaylandConnection {
   DestroyZwpLinuxDmabuf(uint32 buffer_id);
 
   // Swaps wl_buffers for a WaylandWindow with the following |widget|.
-  ScheduleBufferSwap(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
+  ScheduleBufferSwap(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id)
+        => (gfx.mojom.SwapResult swap_result);
 };
 
 // Used by the browser process to provide the GPU process with a mojo ptr to a

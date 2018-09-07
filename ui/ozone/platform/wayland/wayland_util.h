@@ -7,6 +7,7 @@
 
 #include <wayland-client.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
@@ -18,9 +19,13 @@ class SharedMemory;
 
 namespace gfx {
 class Size;
+enum class SwapResult;
 }
 
 namespace wl {
+
+// Corresponds to mojom::WaylandConnection::ScheduleBufferSwapCallback.
+using BufferSwapCallback = base::OnceCallback<void(gfx::SwapResult)>;
 
 wl_buffer* CreateSHMBuffer(const gfx::Size& size,
                            base::SharedMemory* shared_memory,
