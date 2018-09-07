@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -313,6 +314,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   AtomicString mime_type_override_;
   TimeDelta timeout_;
   TraceWrapperMember<Blob> response_blob_;
+
+  TaskHandle pending_abort_event_;
 
   Member<ThreadableLoader> loader_;
   State state_ = kUnsent;

@@ -1200,6 +1200,11 @@ void XMLHttpRequest::ClearVariablesForLoading() {
 }
 
 bool XMLHttpRequest::InternalAbort() {
+  // If there is an existing pending abort event, cancel it. The caller of this
+  // function is responsible for firing any events on XMLHttpRequest, if
+  // needed.
+  pending_abort_event_.Cancel();
+
   // Fast path for repeated internalAbort()s; this
   // will happen if an XHR object is notified of context
   // destruction followed by finalization.
@@ -1318,8 +1323,11 @@ void XMLHttpRequest::HandleDidCancel() {
   if (!InternalAbort())
     return;
 
-  HandleRequestError(DOMExceptionCode::kAbortError, EventTypeNames::abort,
-                     received_length, expected_length);
+  pending_abort_event_ = PostCancellableTask(
+      *GetExecutionContext()->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
+      WTF::Bind(&XMLHttpRequest::HandleRequestError, WrapPersistent(this),
+                DOMExceptionCode::kAbortError, EventTypeNames::abort,
+                received_length, expected_length));
 }
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,

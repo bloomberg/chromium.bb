@@ -3726,6 +3726,11 @@ crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-tim
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
 
+# Unclear if XHR events should still be fired after its frame is discarded.
+crbug.com/881180 external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
+crbug.com/881180 virtual/outofblink-cors/external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
+crbug.com/881180 virtual/outofblink-cors-ns/external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
+
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure ]
