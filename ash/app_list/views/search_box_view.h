@@ -122,6 +122,8 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
                       const ui::KeyEvent& key_event) override;
   bool HandleMouseEvent(views::Textfield* sender,
                         const ui::MouseEvent& mouse_event) override;
+  bool HandleGestureEvent(views::Textfield* sender,
+                          const ui::GestureEvent& gesture_event) override;
 
   // Overridden from SearchBoxModelObserver:
   void HintTextChanged() override;

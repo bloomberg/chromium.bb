@@ -553,6 +553,14 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
 }
 
+bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
+                                       const ui::GestureEvent& gesture_event) {
+  if (gesture_event.type() == ui::ET_GESTURE_TAP)
+    AcceptAutocompleteText();
+  return search_box::SearchBoxViewBase::HandleGestureEvent(sender,
+                                                           gesture_event);
+}
+
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   search_box::SearchBoxViewBase::ButtonPressed(sender, event);
