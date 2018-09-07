@@ -346,7 +346,7 @@ public class BidirectionalStreamTest {
         final ConditionVariable waitOnStreamReady = new ConditionVariable();
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
             // Number of onWriteCompleted callbacks that have been invoked.
-            private int mNumWriteCompleted = 0;
+            private int mNumWriteCompleted;
 
             @Override
             public void onStreamReady(BidirectionalStream stream) {

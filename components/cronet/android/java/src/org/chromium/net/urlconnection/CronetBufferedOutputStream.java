@@ -28,7 +28,7 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
     private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
     // Internal buffer that is used to buffer the request body.
     private ByteBuffer mBuffer;
-    private boolean mConnected = false;
+    private boolean mConnected;
 
     /**
      * Package protected constructor.

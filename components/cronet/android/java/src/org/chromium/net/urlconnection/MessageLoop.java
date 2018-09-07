@@ -20,13 +20,13 @@ class MessageLoop implements Executor {
     private final BlockingQueue<Runnable> mQueue;
 
     // Indicates whether this message loop is currently running.
-    private boolean mLoopRunning = false;
+    private boolean mLoopRunning;
 
     // Indicates whether an InterruptedException or a RuntimeException has
     // occurred in loop(). If true, the loop cannot be safely started because
     // this might cause the loop to terminate immediately if there is a quit
     // task enqueued.
-    private boolean mLoopFailed = false;
+    private boolean mLoopFailed;
     // The exception that caused mLoopFailed to be set to true. Will be
     // rethrown if loop() is called again. If mLoopFailed is set then
     // exactly one of mPriorInterruptedIOException and mPriorRuntimeException

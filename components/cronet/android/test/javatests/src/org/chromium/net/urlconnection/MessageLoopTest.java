@@ -44,7 +44,7 @@ public class MessageLoopTest {
             return mTestThread;
         }
     }
-    private boolean mFailed = false;
+    private boolean mFailed;
 
     @Test
     @SmallTest
