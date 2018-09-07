@@ -74,6 +74,7 @@ class WaylandConnection : public PlatformEventSource,
   zxdg_shell_v6* shell_v6() { return shell_v6_.get(); }
   wl_seat* seat() { return seat_.get(); }
   wl_data_device* data_device() { return data_device_->data_device(); }
+  wp_presentation* presentation() const { return presentation_.get(); }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
   WaylandWindow* GetCurrentFocusedWindow();
@@ -182,6 +183,7 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<wl_shm> shm_;
   wl::Object<xdg_shell> shell_;
   wl::Object<zxdg_shell_v6> shell_v6_;
+  wl::Object<wp_presentation> presentation_;
 
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;

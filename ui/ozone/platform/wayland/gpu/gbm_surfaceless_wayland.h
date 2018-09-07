@@ -78,7 +78,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
-  void OnScheduleBufferSwapDone(gfx::SwapResult result);
+  void OnScheduleBufferSwapDone(gfx::SwapResult result,
+                                const gfx::PresentationFeedback& feedback);
   void OnSubmission(gfx::SwapResult result,
                     std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);

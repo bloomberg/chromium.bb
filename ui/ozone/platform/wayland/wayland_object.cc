@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <presentation-time-client-protocol.h>
 #include <wayland-client.h>
 #include <xdg-shell-unstable-v5-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
@@ -125,6 +126,16 @@ void (*ObjectTraits<wl_subsurface>::deleter)(wl_subsurface*) =
 
 const wl_interface* ObjectTraits<wl_touch>::interface = &wl_touch_interface;
 void (*ObjectTraits<wl_touch>::deleter)(wl_touch*) = &delete_touch;
+
+const wl_interface* ObjectTraits<wp_presentation>::interface =
+    &wp_presentation_interface;
+void (*ObjectTraits<wp_presentation>::deleter)(wp_presentation*) =
+    &wp_presentation_destroy;
+
+const wl_interface* ObjectTraits<struct wp_presentation_feedback>::interface =
+    &wp_presentation_feedback_interface;
+void (*ObjectTraits<struct wp_presentation_feedback>::deleter)(
+    struct wp_presentation_feedback*) = &wp_presentation_feedback_destroy;
 
 const wl_interface* ObjectTraits<xdg_shell>::interface = &xdg_shell_interface;
 void (*ObjectTraits<xdg_shell>::deleter)(xdg_shell*) = &xdg_shell_destroy;

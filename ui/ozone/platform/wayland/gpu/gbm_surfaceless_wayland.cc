@@ -220,12 +220,11 @@ void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
   SubmitFrame();
 }
 
-void GbmSurfacelessWayland::OnScheduleBufferSwapDone(gfx::SwapResult result) {
+void GbmSurfacelessWayland::OnScheduleBufferSwapDone(
+    gfx::SwapResult result,
+    const gfx::PresentationFeedback& feedback) {
   OnSubmission(result, nullptr);
-  // TODO: presentation.
-  OnPresentation(
-      gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
-                                gfx::PresentationFeedback::kZeroCopy));
+  OnPresentation(feedback);
   planes_.clear();
 }
 
