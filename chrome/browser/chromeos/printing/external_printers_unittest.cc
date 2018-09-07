@@ -238,6 +238,38 @@ TEST_F(ExternalPrintersTest, WhitelistPolicySet) {
   EXPECT_EQ("LexaPrint", printers.at("First").display_name());
 }
 
+// Verify that an empty blacklist results in no printer limits.
+TEST_F(ExternalPrintersTest, EmptyBlacklistAllPrinters) {
+  auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
+  external_printers_->ClearData();
+  external_printers_->SetData(std::move(data));
+  external_printers_->SetAccessMode(ExternalPrinters::BLACKLIST_ONLY);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(external_printers_->IsPolicySet());
+  external_printers_->SetBlacklist({});
+
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(external_printers_->IsPolicySet());
+  const auto& printers = external_printers_->GetPrinters();
+  EXPECT_EQ(kNumPrinters, printers.size());
+}
+
+// Verify that an empty whitelist results in no printers.
+TEST_F(ExternalPrintersTest, EmptyWhitelistNoPrinters) {
+  auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
+  external_printers_->ClearData();
+  external_printers_->SetData(std::move(data));
+  external_printers_->SetAccessMode(ExternalPrinters::WHITELIST_ONLY);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(external_printers_->IsPolicySet());
+  external_printers_->SetWhitelist({});
+
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(external_printers_->IsPolicySet());
+  const auto& printers = external_printers_->GetPrinters();
+  EXPECT_EQ(0U, printers.size());
+}
+
 // Verify that switching from whitelist to blacklist behaves correctly.
 TEST_F(ExternalPrintersTest, BlacklistToWhitelistSwap) {
   auto data = std::make_unique<std::string>(kBulkPolicyContentsJson);
