@@ -107,7 +107,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   // EffectModel implementation.
   bool Sample(int iteration,
               double fraction,
-              double iteration_duration,
+              AnimationTimeDelta iteration_duration,
               HeapVector<Member<Interpolation>>&) const override;
 
   bool IsKeyframeEffectModel() const override { return true; }
@@ -155,7 +155,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
       : interpolation_effect_(new InterpolationEffect),
         last_iteration_(0),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()),
-        last_iteration_duration_(0),
+        last_iteration_duration_(AnimationTimeDelta()),
         composite_(composite),
         default_keyframe_easing_(std::move(default_keyframe_easing)),
         has_synthetic_keyframes_(false),
@@ -173,7 +173,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   mutable Member<InterpolationEffect> interpolation_effect_;
   mutable int last_iteration_;
   mutable double last_fraction_;
-  mutable double last_iteration_duration_;
+  mutable AnimationTimeDelta last_iteration_duration_;
   CompositeOperation composite_;
   scoped_refptr<TimingFunction> default_keyframe_easing_;
 

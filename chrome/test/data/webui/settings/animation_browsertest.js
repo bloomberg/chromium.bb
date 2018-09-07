@@ -95,9 +95,9 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
     });
 
     test('Animation finishes', function(done) {
-      // Absurdly large finite value to ensure we call finish() before the
+      // Absurdly large duration to ensure we call finish() before the
       // animation finishes automatically.
-      options.duration = Number.MAX_VALUE;
+      options.duration = 24 * 60 * 60 * 1000;
       const animation = new Animation(div, keyframes, options);
       animation.addEventListener('cancel', onCancelUnexpectedly);
       animation.addEventListener('finish', onFinishBeforePromise);

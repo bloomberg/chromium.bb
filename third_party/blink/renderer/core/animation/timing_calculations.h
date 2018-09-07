@@ -44,6 +44,12 @@ static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
   return x && y ? x * y : 0;
 }
 
+static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
+                                                 double y) {
+  DCHECK(!IsNull(y));
+  return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
+}
+
 static inline AnimationEffect::Phase CalculatePhase(double active_duration,
                                                     double local_time,
                                                     const Timing& specified) {

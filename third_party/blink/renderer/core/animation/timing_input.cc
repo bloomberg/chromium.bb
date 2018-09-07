@@ -39,6 +39,15 @@ Timing::PlaybackDirection ConvertPlaybackDirection(const String& direction) {
   return Timing::PlaybackDirection::NORMAL;
 }
 
+base::Optional<AnimationTimeDelta> ConvertIterationDuration(
+    const UnrestrictedDoubleOrString& duration) {
+  if (duration.IsUnrestrictedDouble()) {
+    return AnimationTimeDelta::FromMillisecondsD(
+        duration.GetAsUnrestrictedDouble());
+  }
+  return base::nullopt;
+}
+
 Timing ConvertEffectTiming(const EffectTiming& timing_input,
                            Document* document,
                            ExceptionState& exception_state) {
@@ -186,17 +195,8 @@ bool TimingInput::Update(Timing& timing,
     changed |= UpdateValueIfChanged(timing.iteration_count, input.iterations());
   }
   if (input.hasDuration()) {
-    double old_duration = timing.iteration_duration;
-    if (input.duration().IsUnrestrictedDouble()) {
-      timing.iteration_duration =
-          input.duration().GetAsUnrestrictedDouble() / 1000;
-    } else {
-      timing.iteration_duration = NullValue();
-    }
-    // TODO(crbug.com/791086): This check can be simplified once we use
-    // WTF::Optional for timing.iteration_duration.
-    changed |= (timing.iteration_duration != old_duration &&
-                !(IsNull(timing.iteration_duration) && IsNull(old_duration)));
+    changed |= UpdateValueIfChanged(timing.iteration_duration,
+                                    ConvertIterationDuration(input.duration()));
   }
   if (input.hasDirection()) {
     changed |= UpdateValueIfChanged(

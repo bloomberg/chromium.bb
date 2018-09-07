@@ -114,7 +114,7 @@ class CORE_EXPORT CompositorAnimations {
 
   struct CompositorTiming {
     Timing::PlaybackDirection direction;
-    double scaled_duration;
+    AnimationTimeDelta scaled_duration;
     double scaled_time_offset;
     double adjusted_iteration_count;
     double playback_rate;

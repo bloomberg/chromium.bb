@@ -757,7 +757,9 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   // last one since we iterate over them in order.
 
   Timing timing = state.transition_data.ConvertToTiming(transition_index);
-  if (timing.start_delay + timing.iteration_duration <= 0) {
+  // CSS Transitions always have a valid duration (i.e. the value 'auto' is not
+  // supported), so iteration_duration will always be set.
+  if (timing.start_delay + timing.iteration_duration->InSecondsF() <= 0) {
     // We may have started a transition in a prior CSSTransitionData update,
     // this CSSTransitionData update needs to override them.
     // TODO(alancutter): Just iterate over the CSSTransitionDatas in reverse and
@@ -779,7 +781,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
                    interrupted_transition->reversing_shortening_factor) +
                       (1 - interrupted_transition->reversing_shortening_factor),
                   0.0, 1.0);
-      timing.iteration_duration *= reversing_shortening_factor;
+      timing.iteration_duration.value() *= reversing_shortening_factor;
       if (timing.start_delay < 0) {
         timing.start_delay *= reversing_shortening_factor;
       }
@@ -790,8 +792,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   double start_keyframe_offset = 0;
 
   if (timing.start_delay > 0) {
-    timing.iteration_duration += timing.start_delay;
-    start_keyframe_offset = timing.start_delay / timing.iteration_duration;
+    timing.iteration_duration.value() +=
+        AnimationTimeDelta::FromSecondsD(timing.start_delay);
+    start_keyframe_offset =
+        timing.start_delay / timing.iteration_duration->InSecondsF();
     timing.start_delay = 0;
   }
 
@@ -1160,16 +1164,16 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   if (current_phase == AnimationEffect::kPhaseActive &&
       previous_phase_ == current_phase &&
       previous_iteration_ != current_iteration) {
-    // We fire only a single event for all iterations thast terminate
+    // We fire only a single event for all iterations that terminate
     // between a single pair of samples. See http://crbug.com/275263. For
     // compatibility with the existing implementation, this event uses
     // the elapsedTime for the first iteration in question.
-    DCHECK(!std::isnan(animation_node.SpecifiedTiming().iteration_duration));
-    const double elapsed_time =
-        animation_node.SpecifiedTiming().iteration_duration *
+    const AnimationTimeDelta elapsed_time =
+        animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_ + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  EventTypeNames::animationiteration, elapsed_time);
+                  EventTypeNames::animationiteration,
+                  elapsed_time.InSecondsF());
   }
 
   if (current_phase == AnimationEffect::kPhaseAfter &&
@@ -1202,7 +1206,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
             ? property_.CustomPropertyName()
             : property_.GetCSSProperty().GetPropertyNameString();
     const Timing& timing = animation_node.SpecifiedTiming();
-    double elapsed_time = timing.iteration_duration;
+    double elapsed_time = timing.iteration_duration->InSecondsF();
     const AtomicString& event_type = EventTypeNames::transitionend;
     String pseudo_element =
         PseudoElement::PseudoElementNameForEvents(GetPseudoId());

@@ -192,7 +192,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     timing.fill_mode = Timing::FillMode::NONE;
     timing.iteration_start = 0;
     timing.iteration_count = 1;
-    timing.iteration_duration = 1.0;
+    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
     timing.direction = Timing::PlaybackDirection::NORMAL;
     timing.timing_function = linear_timing_function_;
     return timing;
@@ -537,7 +537,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        ConvertTimingForCompositorStartDelay) {
-  timing_.iteration_duration = 20.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(20);
 
   timing_.start_delay = 2.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
@@ -569,7 +569,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   EXPECT_EQ(-1, compositor_timing_.adjusted_iteration_count);
 
   timing_.iteration_count = std::numeric_limits<double>::infinity();
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -6.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(6.0, compositor_timing_.scaled_time_offset);
@@ -579,7 +579,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 TEST_F(AnimationCompositorAnimationsTest,
        ConvertTimingForCompositorIterationsAndStartDelay) {
   timing_.iteration_count = 4.0;
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
 
   timing_.start_delay = 6.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
@@ -619,7 +619,7 @@ TEST_F(AnimationCompositorAnimationsTest,
        ConvertTimingForCompositorDirectionIterationsAndStartDelay) {
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
   timing_.iteration_count = 4.0;
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -6.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(6.0, compositor_timing_.scaled_time_offset);
@@ -629,7 +629,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
   timing_.iteration_count = 4.0;
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -11.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(11.0, compositor_timing_.scaled_time_offset);
@@ -639,7 +639,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
   timing_.iteration_count = 4.0;
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -6.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(6.0, compositor_timing_.scaled_time_offset);
@@ -649,7 +649,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
   timing_.iteration_count = 4.0;
-  timing_.iteration_duration = 5.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(5);
   timing_.start_delay = -11.0;
   EXPECT_TRUE(ConvertTimingForCompositor(timing_, compositor_timing_));
   EXPECT_DOUBLE_EQ(11.0, compositor_timing_.scaled_time_offset);
@@ -768,7 +768,7 @@ TEST_F(AnimationCompositorAnimationsTest,
       StringKeyframeEffectModel::Create(key_frames);
 
   Timing timing;
-  timing.iteration_duration = 1.f;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   base::Optional<CompositorElementIdSet> none;
 
   // The first animation for opacity is ok to run on compositor.
@@ -1234,7 +1234,7 @@ TEST_F(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyOpacity, "0.2", 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity, "0.5", 1.0));
 
-  const double kDuration = 10.0;
+  const AnimationTimeDelta kDuration = AnimationTimeDelta::FromSecondsD(10);
   timing_.iteration_duration = kDuration;
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
@@ -1309,7 +1309,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   const double kStartDelay = 3.25;
 
   timing_.iteration_count = 5.0;
-  timing_.iteration_duration = 1.75;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(1.75);
   timing_.start_delay = kStartDelay;
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
@@ -1327,7 +1327,8 @@ TEST_F(AnimationCompositorAnimationsTest,
       keyframed_float_curve->KeyframesForTesting();
   ASSERT_EQ(2UL, keyframes.size());
 
-  EXPECT_EQ(1.75, keyframes[1]->Time() * timing_.iteration_duration);
+  EXPECT_EQ(1.75,
+            keyframes[1]->Time() * timing_.iteration_duration->InSecondsF());
   EXPECT_EQ(0.5f, keyframes[1]->Value());
 }
 
@@ -1345,7 +1346,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   StringKeyframeEffectModel* effect = StringKeyframeEffectModel::Create(frames);
 
   timing_.timing_function = linear_timing_function_.get();
-  timing_.iteration_duration = 2.0;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(2);
   timing_.iteration_count = 10;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
 
@@ -1366,22 +1367,25 @@ TEST_F(AnimationCompositorAnimationsTest,
       keyframed_float_curve->KeyframesForTesting();
   ASSERT_EQ(4UL, keyframes.size());
 
-  EXPECT_EQ(0, keyframes[0]->Time() * timing_.iteration_duration);
+  EXPECT_EQ(0, keyframes[0]->Time() * timing_.iteration_duration->InSecondsF());
   EXPECT_EQ(0.2f, keyframes[0]->Value());
   ExpectKeyframeTimingFunctionCubic(*keyframes[0],
                                     CubicBezierTimingFunction::EaseType::EASE);
 
-  EXPECT_EQ(0.5, keyframes[1]->Time() * timing_.iteration_duration);
+  EXPECT_EQ(0.5,
+            keyframes[1]->Time() * timing_.iteration_duration->InSecondsF());
   EXPECT_EQ(0, keyframes[1]->Value());
   EXPECT_EQ(TimingFunction::Type::LINEAR,
             keyframes[1]->GetTimingFunctionForTesting()->GetType());
 
-  EXPECT_EQ(1.0, keyframes[2]->Time() * timing_.iteration_duration);
+  EXPECT_EQ(1.0,
+            keyframes[2]->Time() * timing_.iteration_duration->InSecondsF());
   EXPECT_EQ(0.35f, keyframes[2]->Value());
   ExpectKeyframeTimingFunctionCubic(
       *keyframes[2], CubicBezierTimingFunction::EaseType::CUSTOM);
 
-  EXPECT_EQ(2.0, keyframes[3]->Time() * timing_.iteration_duration);
+  EXPECT_EQ(2.0,
+            keyframes[3]->Time() * timing_.iteration_duration->InSecondsF());
   EXPECT_EQ(0.5f, keyframes[3]->Value());
   EXPECT_EQ(TimingFunction::Type::LINEAR,
             keyframes[3]->GetTimingFunctionForTesting()->GetType());
@@ -1458,7 +1462,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   const double kNegativeStartDelay = -3;
 
   timing_.iteration_count = 5.0;
-  timing_.iteration_duration = 1.5;
+  timing_.iteration_duration = AnimationTimeDelta::FromSecondsD(1.5);
   timing_.start_delay = kNegativeStartDelay;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
 
@@ -1580,7 +1584,7 @@ TEST_F(AnimationCompositorAnimationsTest,
       StringKeyframeEffectModel::Create(key_frames);
 
   Timing timing;
-  timing.iteration_duration = 1.f;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
 
   // The first animation for opacity is ok to run on compositor.
   KeyframeEffect* keyframe_effect1 =
