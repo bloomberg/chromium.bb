@@ -47,6 +47,10 @@ VIEWS_EXPORT
 // create one.
 - (void)setWindowTouchBarDelegate:(id<WindowTouchBarDelegate>)delegate;
 
+// Identifier for the NativeWidgetMac from which this window was created. This
+// may be used to look up the BridgedNativeWidgetHostImpl in the browser process
+// or the BridgedNativeWidgetImpl in a display process.
+@property(assign, nonatomic) uint64_t bridgedNativeWidgetId;
 @end
 
 #endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_

@@ -41,14 +41,38 @@ bool PositionWindowInScreenCoordinates(Widget* widget,
   return widget && widget->is_top_level();
 }
 
+base::NoDestructor<std::map<uint64_t, BridgedNativeWidgetHostImpl*>> g_id_map;
+
+uint64_t g_last_bridged_native_widget_id = 0;
+
 }  // namespace
+
+// static
+BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
+    uint64_t bridged_native_widget_id) {
+  auto found = g_id_map.get()->find(bridged_native_widget_id);
+  if (found == g_id_map.get()->end())
+    return nullptr;
+  return found->second;
+}
 
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
-    : native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidgetImpl(this, this, parent)) {}
+    : id_(++g_last_bridged_native_widget_id),
+      native_widget_mac_(parent),
+      bridge_impl_(new BridgedNativeWidgetImpl(id_, this, this, parent)) {
+  DCHECK(g_id_map.get()->find(id_) == g_id_map.get()->end());
+  g_id_map.get()->insert(std::make_pair(id_, this));
+  DCHECK(parent);
+}
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
+  // Ensure that |this| cannot be reached by its id while it is being destroyed.
+  auto found = g_id_map.get()->find(id_);
+  DCHECK(found != g_id_map.get()->end());
+  DCHECK_EQ(found->second, this);
+  g_id_map.get()->erase(found);
+
   // Destroy the bridge first to prevent any calls back into this during
   // destruction.
   // TODO(ccameron): When all communication from |bridge_| to this goes through
@@ -290,6 +314,10 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
            ui::POST_DISPATCH_NONE;
   }
   return false;
+}
+
+double BridgedNativeWidgetHostImpl::SheetPositionY() {
+  return native_widget_mac_->SheetPositionY();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -583,6 +611,38 @@ bool BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
   return true;
 }
 
+bool BridgedNativeWidgetHostImpl::GetShouldShowWindowTitle(
+    bool* should_show_window_title) {
+  *should_show_window_title =
+      root_view_
+          ? root_view_->GetWidget()->widget_delegate()->ShouldShowWindowTitle()
+          : true;
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::GetCanWindowBecomeKey(
+    bool* can_window_become_key) {
+  *can_window_become_key =
+      root_view_ ? root_view_->GetWidget()->CanActivate() : false;
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::GetAlwaysRenderWindowAsKey(
+    bool* always_render_as_key) {
+  *always_render_as_key =
+      root_view_ ? root_view_->GetWidget()->IsAlwaysRenderAsActive() : false;
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::GetCanWindowClose(bool* can_window_close) {
+  *can_window_close = true;
+  views::NonClientView* non_client_view =
+      root_view_ ? root_view_->GetWidget()->non_client_view() : nullptr;
+  if (non_client_view)
+    *can_window_close = non_client_view->CanClose();
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
@@ -658,6 +718,34 @@ void BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(
   std::move(callback).Run(buttons_exist);
 }
 
+void BridgedNativeWidgetHostImpl::GetShouldShowWindowTitle(
+    GetShouldShowWindowTitleCallback callback) {
+  bool should_show_window_title = false;
+  GetShouldShowWindowTitle(&should_show_window_title);
+  std::move(callback).Run(should_show_window_title);
+}
+
+void BridgedNativeWidgetHostImpl::GetCanWindowBecomeKey(
+    GetCanWindowBecomeKeyCallback callback) {
+  bool can_window_become_key = false;
+  GetCanWindowBecomeKey(&can_window_become_key);
+  std::move(callback).Run(can_window_become_key);
+}
+
+void BridgedNativeWidgetHostImpl::GetAlwaysRenderWindowAsKey(
+    GetAlwaysRenderWindowAsKeyCallback callback) {
+  bool always_render_as_key = false;
+  GetAlwaysRenderWindowAsKey(&always_render_as_key);
+  std::move(callback).Run(always_render_as_key);
+}
+
+void BridgedNativeWidgetHostImpl::GetCanWindowClose(
+    GetCanWindowCloseCallback callback) {
+  bool can_window_close = false;
+  GetCanWindowClose(&can_window_close);
+  std::move(callback).Run(can_window_close);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, DialogObserver:
 
@@ -682,7 +770,10 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
     // Sanity check: When focus moves away from the widget (i.e. |focused_now|
     // is nil), then the textInputClient will be cleared.
     DCHECK(!!focused_now || !input_client);
-    bridge_impl_->SetTextInputClient(input_client);
+    // TODO(ccameron): TextInputClient is not handled across process borders
+    // yet.
+    if (bridge_impl_)
+      bridge_impl_->SetTextInputClient(input_client);
   }
 }
 

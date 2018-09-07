@@ -67,8 +67,12 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
+  // Retrieve a BridgedNativeWidgetImpl* from its id.
+  static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
+
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidgetImpl(BridgedNativeWidgetHost* host,
+  BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
+                          BridgedNativeWidgetHost* host,
                           BridgedNativeWidgetHostHelper* host_helper,
                           NativeWidgetMac* parent);
   ~BridgedNativeWidgetImpl() override;
@@ -291,6 +295,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   bool IsVisibleParent() const override;
   void RemoveChildWindow(BridgedNativeWidgetImpl* child) override;
 
+  const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
   NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |host_|.
