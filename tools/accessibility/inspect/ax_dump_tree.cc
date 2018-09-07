@@ -7,6 +7,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "tools/accessibility/inspect/ax_tree_server.h"
@@ -26,6 +27,15 @@ bool StringToInt(std::string str, unsigned* result) {
                 : base::StringToUint(str, result);
 }
 
+bool AXDumpTreeLogMessageHandler(int severity,
+                                 const char* file,
+                                 int line,
+                                 size_t message_start,
+                                 const std::string& str) {
+  printf("%s", str.substr(message_start).c_str());
+  return true;
+}
+
 gfx::AcceleratedWidget CastToAcceleratedWidget(unsigned window_id) {
 #if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
   return static_cast<gfx::AcceleratedWidget>(window_id);
@@ -35,6 +45,8 @@ gfx::AcceleratedWidget CastToAcceleratedWidget(unsigned window_id) {
 }
 
 int main(int argc, char** argv) {
+  logging::SetLogMessageHandler(AXDumpTreeLogMessageHandler);
+
   base::AtExitManager at_exit_manager;
 
   base::CommandLine::Init(argc, argv);
@@ -52,8 +64,7 @@ int main(int argc, char** argv) {
   if (!window_str.empty()) {
     unsigned window_id;
     if (!StringToInt(window_str, &window_id)) {
-      std::cout << "* Error: Could not convert window id string to integer."
-                << std::endl;
+      LOG(ERROR) << "* Error: Could not convert window id string to integer.";
       return 1;
     }
     gfx::AcceleratedWidget widget(CastToAcceleratedWidget(window_id));
@@ -72,7 +83,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  std::cout << "* Error: Neither window handle (--window=[window-handle]) "
-            << "nor pattern (--pattern=[pattern]) provided." << std::endl;
+  LOG(ERROR) << "* Error: Neither window handle (--window=[window-handle]) "
+                "nor pattern (--pattern=[pattern]) provided.";
   return 1;
 }

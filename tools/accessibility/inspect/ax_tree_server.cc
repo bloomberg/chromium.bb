@@ -35,7 +35,7 @@ AXTreeServer::AXTreeServer(const base::StringPiece& pattern,
       formatter->BuildAccessibilityTreeForPattern(pattern);
 
   if (!dict) {
-    std::cout << "Error: Failed to get accessibility tree" << std::endl;
+    LOG(ERROR) << "Error: Failed to get accessibility tree";
     return;
   }
 
@@ -54,7 +54,7 @@ AXTreeServer::AXTreeServer(base::ProcessId pid,
       formatter->BuildAccessibilityTreeForProcess(pid);
 
   if (!dict) {
-    std::cout << "Error: Failed to get accessibility tree" << std::endl;
+    LOG(ERROR) << "Error: Failed to get accessibility tree";
     return;
   }
 
@@ -72,7 +72,7 @@ AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
       formatter->BuildAccessibilityTreeForWindow(widget);
 
   if (!dict) {
-    std::cout << "Failed to get accessibility tree" << std::endl;
+    LOG(ERROR) << "Failed to get accessibility tree";
     return;
   }
 
@@ -143,7 +143,7 @@ void AXTreeServer::Format(AccessibilityTreeFormatter& formatter,
   }
 
   // Write to console.
-  std::cout << accessibility_contents_utf8;
+  printf("%s", accessibility_contents_utf8.c_str());
 }
 
 }  // namespace content

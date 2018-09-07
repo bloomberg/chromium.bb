@@ -27,16 +27,26 @@ bool StringToInt(std::string str, int* result) {
                 : base::StringToInt(str, result);
 }
 
+bool AXDumpEventsLogMessageHandler(int severity,
+                                   const char* file,
+                                   int line,
+                                   size_t message_start,
+                                   const std::string& str) {
+  printf("%s", str.substr(message_start).c_str());
+  return true;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+  logging::SetLogMessageHandler(AXDumpEventsLogMessageHandler);
+
   base::CommandLine::Init(argc, argv);
   const std::string pid_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kPidSwitch);
   int pid;
   if (pid_str.empty() || !StringToInt(pid_str, &pid)) {
-    std::cout << "* Error: No process id provided via --pid=[process-id]."
-              << std::endl;
+    LOG(ERROR) << "* Error: No process id provided via --pid=[process-id].";
     return 1;
   }
 
