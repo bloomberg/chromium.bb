@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/strings/stringprintf.h"
@@ -405,31 +404,7 @@ void AddStringsForZipArchiver(base::DictionaryValue* dict) {
              IDS_ZIP_ARCHIVER_PASSPHRASE_TITLE);
 }
 
-}  // namespace
-
-namespace extensions {
-
-FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() =
-    default;
-
-FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
-    default;
-
-ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-
-  AddStringsForDrive(dict.get());
-  AddStringsForMediaView(dict.get());
-  AddStringsForFileTypes(dict.get());
-  AddStringsForGallery(dict.get());
-  AddStringsForMediaPlayer(dict.get());
-  AddStringsForVideoPlayer(dict.get());
-  AddStringsForAudioPlayer(dict.get());
-  AddStringsForCloudImport(dict.get());
-  AddStringsForCrUiMenuItemShortcuts(dict.get());
-  AddStringsForFileErrors(dict.get());
-  AddStringsForZipArchiver(dict.get());
-
+void AddStringsForDefault(base::DictionaryValue* dict) {
   SET_STRING("ADD_NEW_SERVICES_BUTTON_LABEL",
              IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL);
   SET_STRING("ALL_FILES_FILTER", IDS_FILE_BROWSER_ALL_FILES_FILTER);
@@ -810,19 +785,6 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   SET_STRING("SEE_MENU_FOR_ACTIONS", IDS_FILE_BROWSER_SEE_MENU_FOR_ACTIONS);
 #undef SET_STRING
 
-  dict->SetBoolean("PDF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(
-                       Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".pdf")));
-  dict->SetBoolean("SWF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(
-                       Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".swf")));
-  // TODO(crbug.com/868747): Find a better solution for demo mode.
-  dict->SetBoolean("HIDE_SPACE_INFO",
-                   chromeos::DemoSession::IsDeviceInDemoMode());
-  dict->SetString("CHROMEOS_RELEASE_BOARD",
-                  base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(
       "DOWNLOADS_LOW_SPACE_WARNING_HELP_URL",
       base::StringPrintf(kHelpURLFormat, kDownloadsLowSpaceWarningHelpNumber));
@@ -841,9 +803,63 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
       "NO_TASK_FOR_FILE_URL",
       base::StringPrintf(kHelpURLFormat, kNoActionForFileHelpNumber));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
+}
 
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+}  // namespace
+
+namespace extensions {
+
+std::unique_ptr<base::DictionaryValue> FileManagerPrivateStrings::GetStrings(
+    const std::string& app_locale,
+    bool pdf_view_enabled,
+    bool swf_view_enabled,
+    bool is_device_in_demo_mode,
+    const std::string& lsb_release_board) {
+  std::unique_ptr<base::DictionaryValue> dict =
+      std::make_unique<base::DictionaryValue>();
+  AddStringsForDrive(dict.get());
+  AddStringsForMediaView(dict.get());
+  AddStringsForFileTypes(dict.get());
+  AddStringsForGallery(dict.get());
+  AddStringsForMediaPlayer(dict.get());
+  AddStringsForVideoPlayer(dict.get());
+  AddStringsForAudioPlayer(dict.get());
+  AddStringsForCloudImport(dict.get());
+  AddStringsForCrUiMenuItemShortcuts(dict.get());
+  AddStringsForFileErrors(dict.get());
+  AddStringsForZipArchiver(dict.get());
+  AddStringsForDefault(dict.get());
+
+  dict->SetBoolean("PDF_VIEW_ENABLED", pdf_view_enabled);
+  dict->SetBoolean("SWF_VIEW_ENABLED", swf_view_enabled);
+  dict->SetBoolean("HIDE_SPACE_INFO", is_device_in_demo_mode);
+  dict->SetString("CHROMEOS_RELEASE_BOARD", lsb_release_board);
+
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
+  return dict;
+}
+
+FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() =
+    default;
+
+FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
+    default;
+
+ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
+  bool pdf_view_enabled = file_manager::util::ShouldBeOpenedWithPlugin(
+      Profile::FromBrowserContext(browser_context()),
+      FILE_PATH_LITERAL(".pdf"));
+  bool swf_view_enabled = file_manager::util::ShouldBeOpenedWithPlugin(
+      Profile::FromBrowserContext(browser_context()),
+      FILE_PATH_LITERAL(".swf"));
+
+  std::unique_ptr<base::DictionaryValue> dict =
+      FileManagerPrivateStrings::GetStrings(
+          g_browser_process->GetApplicationLocale(), pdf_view_enabled,
+          swf_view_enabled,
+          // TODO(crbug.com/868747): Find a better solution for demo mode.
+          chromeos::DemoSession::IsDeviceInDemoMode(),
+          base::SysInfo::GetLsbReleaseBoard());
 
   return RespondNow(OneArgument(std::move(dict)));
 }

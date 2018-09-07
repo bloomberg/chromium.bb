@@ -13,6 +13,7 @@ as a regular web page in a single renderer.
 
 import argparse
 import os
+import subprocess
 import sys
 import time
 
@@ -21,17 +22,17 @@ assert __name__ == '__main__'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
+parser.add_argument('--file_manager_strings')
 args = parser.parse_args()
 
-# If --output is not provided, write to local test.html.
-output = args.output or os.path.abspath(
-    os.path.join(sys.path[0], '../../test.html'))
+if not (args.output and args.file_manager_strings):
+  parser.error('--output and --file_manager_strings flags required')
 
 # ROOT_SRC: Absolute path to src //ui/file_manager/file_manager.
 # ROOT_GEN: Absolute path to $target_gen_dir of ROOT_SRC.
 # ROOT    : Relative path from ROOT_GEN to ROOT_SRC.
 ROOT_SRC = os.path.abspath(os.path.join(sys.path[0], '../..'))
-ROOT_GEN = os.path.dirname(os.path.abspath(output))
+ROOT_GEN = os.path.dirname(os.path.abspath(args.output))
 ROOT = os.path.relpath(ROOT_SRC, ROOT_GEN) + '/'
 scripts = []
 GENERATED = 'Generated at %s by: %s' % (time.ctime(), sys.path[0])
@@ -159,24 +160,28 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
 
 
 def elements_path(elements_filename):
-  return '="../../../%sforeground/elements/%s' % (ROOT, elements_filename)
+  return '="../../../../%sforeground/elements/%s' % (ROOT, elements_filename)
 
+# Populate strings.
 # Fix relative file paths in elements_bundle.html
 # Load QuickView in iframe rather than webview.
 # Change references in files_quick_view.html to use updated
 # files_safe_media.html which will use webview rather than iframe,
 # and sets src directly on iframe.
 for filename, substitutions in (
-    ('elements/elements_bundle.html', (
+    ('test/js/strings.js', (
+        ('$DATA', subprocess.check_output([args.file_manager_strings])),
+    )),
+    ('foreground/elements/elements_bundle.html', (
         ('="files_ripple', elements_path('files_ripple')),
         ('="files_toggle_ripple', elements_path('files_toggle_ripple')),
         ('="files_tooltip', elements_path('files_tooltip')),
         ('="icons', elements_path('icons')),
     )),
-    ('js/elements_importer.js', (
-        ("= 'foreground", "= 'test/gen"),
+    ('foreground/js/elements_importer.js', (
+        ("= 'foreground", "= 'test/gen/foreground"),
     )),
-    ('elements/files_quick_view.html', (
+    ('foreground/elements/files_quick_view.html', (
         ('="files_icon', elements_path('files_icon')),
         ('="files_metadata', elements_path('files_metadata')),
         ('="files_tooltip', elements_path('files_tooltip')),
@@ -184,8 +189,8 @@ for filename, substitutions in (
         ('="icons', elements_path('icons')),
         ('webview', 'iframe'),
     )),
-    ('elements/files_safe_media.html', (('webview', 'iframe'),)),
-    ('elements/files_safe_media.js', (
+    ('foreground/elements/files_safe_media.html', (('webview', 'iframe'),)),
+    ('foreground/elements/files_safe_media.js', (
         ("'foreground/elements", "'%sforeground/elements" % ROOT),
         ("'webview'", "'iframe'"),
         ("'contentload'", "'load'"),
@@ -194,11 +199,11 @@ for filename, substitutions in (
           'this.webview_.contentWindow.content.src = this.src;')),
     )),
     ):
-  buf = read('foreground/' + filename)
+  buf = read(filename)
   for old, new in substitutions:
     buf = buf.replace(old, new)
   write('test/gen/' + filename, buf)
-  main_html = replaceline(main_html, 'foreground/' + filename,
+  main_html = replaceline(main_html, filename,
                           ['<script src="test/gen/%s"></script>' % filename])
 
 test_html = GENERATED_HTML + '\n'.join(main_html)
