@@ -175,7 +175,7 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"

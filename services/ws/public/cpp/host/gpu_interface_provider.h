@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_GPU_INTERFACE_PROVIDER_H_
-#define SERVICES_WS_GPU_INTERFACE_PROVIDER_H_
+#ifndef SERVICES_WS_PUBLIC_CPP_HOST_GPU_INTERFACE_PROVIDER_H_
+#define SERVICES_WS_PUBLIC_CPP_HOST_GPU_INTERFACE_PROVIDER_H_
 
-#include "base/component_export.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace ws {
@@ -13,7 +12,7 @@ namespace ws {
 // GpuInterfaceProvider is responsible for providing the Gpu related interfaces.
 // The implementation of these varies depending upon where the WindowService is
 // hosted.
-class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
+class GpuInterfaceProvider {
  public:
   virtual ~GpuInterfaceProvider() {}
 
@@ -32,4 +31,4 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
 
 }  // namespace ws
 
-#endif  // SERVICES_WS_GPU_INTERFACE_PROVIDER_H_
+#endif  // SERVICES_WS_PUBLIC_CPP_HOST_GPU_INTERFACE_PROVIDER_H_

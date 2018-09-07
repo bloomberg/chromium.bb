@@ -6,13 +6,13 @@
 
 #include <utility>
 
-#include "ash/content/content_gpu_interface_provider.h"
 #include "ash/display/display_prefs.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "content/public/browser/context_factory.h"
+#include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -25,7 +25,7 @@ void CreateClassicShell() {
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
   shell_init_params.gpu_interface_provider =
-      std::make_unique<ash::ContentGpuInterfaceProvider>();
+      content::CreateGpuInterfaceProvider();
   shell_init_params.connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   DCHECK(shell_init_params.connector);

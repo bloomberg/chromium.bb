@@ -18,7 +18,6 @@ component("lib") {
     "//ash:ash_unittests",
   ]
   public = [
-    "gpu_interface_provider.h",
     "ids.h",
     "window_delegate_impl.h",
     "window_properties.h",
@@ -85,6 +84,7 @@ component("lib") {
 
   deps = [
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
   ]
 
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
@@ -147,6 +147,7 @@ static_library("test_support") {
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ws/common",
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//ui/aura",
@@ -206,6 +207,7 @@ source_set("tests") {
     "//services/ws/common:task_runner_test_base",
     "//services/ws/gpu_host:tests",
     "//services/ws/public/cpp",
+    "//services/ws/public/cpp/host",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//third_party/mesa_headers",
