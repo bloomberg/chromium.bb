@@ -11,6 +11,8 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -22,6 +24,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -32,6 +35,9 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     private class LanguageAskPromptRowViewHolder extends ViewHolder {
         private TextView mLanguageNameTextView;
         private TextView mNativeNameTextView;
+        private CheckBox mCheckbox;
+        private String mCode;
+        private HashSet<String> mLanguagesUpdate;
 
         LanguageAskPromptRowViewHolder(View view) {
             super(view);
@@ -39,6 +45,17 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
                     ((TextView) itemView.findViewById(R.id.ui_language_representation));
             mNativeNameTextView =
                     ((TextView) itemView.findViewById(R.id.native_language_representation));
+            mCheckbox = ((CheckBox) itemView.findViewById(R.id.language_ask_checkbox));
+            mCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton button, boolean isChecked) {
+                    if (isChecked) {
+                        mLanguagesUpdate.add(mCode);
+                    } else {
+                        mLanguagesUpdate.remove(mCode);
+                    }
+                }
+            });
         }
 
         /**
@@ -46,18 +63,32 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
          * respectively.
          * @param languageName The name of this row's language in the browser's locale.
          * @param nativeLanguage The name of this row's language as written in that language.
+         * @param code The standard language code for this row's language.
+         * @param languagesUpdate The set of language codes to use to know which languages to
+         *        add/remove from the language list.
          */
-        public void setLanguage(String languageName, String nativeName) {
+        public void setLanguage(String languageName, String nativeName, String code,
+                HashSet<String> languagesUpdate) {
             mLanguageNameTextView.setText(languageName);
             mNativeNameTextView.setText(nativeName);
+            mCode = code;
+            mLanguagesUpdate = languagesUpdate;
+            mCheckbox.setChecked(mLanguagesUpdate.contains(mCode));
         }
     }
 
     private class LanguageItemAdapter extends RecyclerView.Adapter<LanguageAskPromptRowViewHolder> {
         private List<LanguageItem> mLanguages;
+        private HashSet<String> mLanguagesUpdate;
 
-        public LanguageItemAdapter(Context context) {
+        /**
+         * @param context The context this item's views will be associated with.
+         * @param languagesUpdate The set of language codes to use to know which languages to
+         *        add/remove from the language list.
+         */
+        public LanguageItemAdapter(Context context, HashSet<String> languagesUpdate) {
             mLanguages = new ArrayList<LanguageItem>();
+            mLanguagesUpdate = languagesUpdate;
         }
 
         @Override
@@ -71,7 +102,8 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         @Override
         public void onBindViewHolder(LanguageAskPromptRowViewHolder holder, int position) {
             LanguageItem lang = mLanguages.get(position);
-            holder.setLanguage(lang.getDisplayName(), lang.getNativeDisplayName());
+            holder.setLanguage(lang.getDisplayName(), lang.getNativeDisplayName(), lang.getCode(),
+                    mLanguagesUpdate);
         }
 
         @Override
@@ -110,8 +142,30 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
     private ModalDialogManager mModalDialogManager;
     private ModalDialogView mDialog;
+    private HashSet<String> mLanguagesUpdate;
+    private HashSet<String> mInitialLanguages;
 
     public LanguageAskPrompt() {}
+
+    /**
+     * Mutates the user's accept languages pref so that it reflects which languages are in
+     * mLanguagesUpdate, and by extension which languages were checked by the user in the prompt.
+     */
+    private void saveLanguages() {
+        HashSet<String> languagesToAdd = new HashSet<String>(mLanguagesUpdate);
+        languagesToAdd.removeAll(mInitialLanguages);
+
+        for (String language : languagesToAdd) {
+            PrefServiceBridge.getInstance().updateUserAcceptLanguages(language, true);
+        }
+
+        HashSet<String> languagesToRemove = new HashSet<String>(mInitialLanguages);
+        languagesToRemove.removeAll(mLanguagesUpdate);
+
+        for (String language : languagesToRemove) {
+            PrefServiceBridge.getInstance().updateUserAcceptLanguages(language, false);
+        }
+    }
 
     /**
      * Displays this prompt inside the specified |activity|.
@@ -120,6 +174,12 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     public void show(ChromeActivity activity) {
         if (activity == null) return;
 
+        List<String> userAcceptLanguagesList =
+                PrefServiceBridge.getInstance().getUserLanguageCodes();
+        mInitialLanguages = new HashSet<String>();
+        mInitialLanguages.addAll(userAcceptLanguagesList);
+        mLanguagesUpdate = new HashSet<String>(mInitialLanguages);
+
         ModalDialogView.Params params = new ModalDialogView.Params();
         params.title = activity.getString(R.string.languages_explicit_ask_title);
         params.positiveButtonTextId = R.string.save;
@@ -127,7 +187,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         params.cancelOnTouchOutside = true;
 
         RecyclerView list = new RecyclerView(activity);
-        LanguageItemAdapter adapter = new LanguageItemAdapter(activity);
+        LanguageItemAdapter adapter = new LanguageItemAdapter(activity, mLanguagesUpdate);
         list.setAdapter(adapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(activity);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -146,6 +206,9 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
     public void onClick(int buttonType) {
         if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
             mModalDialogManager.cancelDialog(mDialog);
+        } else {
+            saveLanguages();
+            mModalDialogManager.dismissDialog(mDialog);
         }
     }
 
