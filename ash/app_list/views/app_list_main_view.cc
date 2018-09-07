@@ -182,14 +182,17 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
   if (!features::IsZeroStateSuggestionsEnabled())
     return;
 
-  // Show zero state suggestions when search box is activated with an empty
-  // query.
   if (search_box_view_->is_search_box_active()) {
+    // Show zero state suggestions when search box is activated with an empty
+    // query.
     base::string16 raw_query = search_model_->search_box()->text();
     base::string16 query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
     if (query.empty())
       search_box_view_->ShowZeroStateSuggestions();
+  } else {
+    // Close the search results page if the search box is inactive.
+    contents_view_->ShowSearchResults(false);
   }
 }
 
