@@ -235,6 +235,10 @@ id<GREYMatcher> SystemSelectionCalloutCopyButton();
 // Returns matcher for the Copy item on the context menu.
 id<GREYMatcher> ContextMenuCopyButton();
 
+// Returns matcher for defoucesed omnibox on a new tab.
+// This matcher will only work when kUIRefreshPhase1 flag is enabled.
+id<GREYMatcher> NewTabPageOmnibox();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
