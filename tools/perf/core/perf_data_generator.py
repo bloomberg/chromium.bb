@@ -190,7 +190,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_go_shard_map.json',
+            '--test-shard-map-filename=android-go-perf_map.json',
           ],
           'num_shards': 19
         }
@@ -211,7 +211,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 16,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
+              '--test-shard-map-filename=android-nexus5x-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -260,7 +260,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 16,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5_16_shard_map.json',
+              '--test-shard-map-filename=android_nexus5_perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -303,7 +303,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_webview_test_suite',
           'num_shards': 16,
           'extra_args': [
-              '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
+              '--test-shard-map-filename=android_nexus5x_webview_perf_map.json',
               '--assert-gpu-compositing',
           ],
         }
@@ -323,7 +323,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_webview_test_suite',
           'num_shards': 16,
           'extra_args': [
-              '--test-shard-map-filename=android_nexus6_webview_shard_map.json',
+              '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
               '--assert-gpu-compositing',
           ],
         }
@@ -344,7 +344,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win10_shard_map.json',
+              '--test-shard-map-filename=win-10-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -379,7 +379,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 5,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win7_shard_map.json',
+              '--test-shard-map-filename=win_7_perf_map.json',
           ],
         },
         # crbug.com/735679 enable performance_browser_tests
@@ -414,7 +414,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 5,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=win7_nvidia_shard_map.json',
+              '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -470,7 +470,8 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
+              ('--test-shard-map-filename='
+               'mac-10_12_laptop_low_end-perf_map.json'),
               '--assert-gpu-compositing',
           ],
         },
@@ -500,7 +501,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=linux_perf_shard_map.json',
+              '--test-shard-map-filename=linux-perf_map.json',
               '--assert-gpu-compositing',
           ],
         },
@@ -538,7 +539,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
+            '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
               '--assert-gpu-compositing',
           ],
           'num_shards': 26
@@ -701,7 +702,7 @@ def get_all_benchmarks_metadata(metadata):
 def get_tests_in_performance_test_suite():
   tests = sets.Set()
   add_benchmarks_from_sharding_map(
-      tests, "shard_maps/linux_perf_shard_map.json")
+      tests, "shard_maps/linux-perf_map.json")
   add_benchmarks_from_sharding_map(
       tests, "shard_maps/pixel2_7_shard_map.json")
   return tests
