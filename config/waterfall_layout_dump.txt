@@ -97,6 +97,7 @@ wooten-paladin (gce_beefy)
 zoombini-paladin (gce_beefy)
 
 == chromeos_release ==
+grunt-android-pi-pre-flight-branch (gce_beefy)
 reef-android-nyc-pre-flight-branch (gce_beefy)
 samus-chrome-pre-flight-branch (gce_beefy)
 
@@ -1393,6 +1394,7 @@ gru-release-tryjob (gce_beefy)
 gru-tot-chrome-pfq-informational-tryjob (gce_beefy)
 gru-tot-chromium-pfq-informational-tryjob (gce_beefy)
 gru-unittest-stress (gce_beefy)
+grunt-android-pi-pre-flight-branch-tryjob (gce_beefy)
 grunt-chrome-pfq-tryjob (gce_beefy)
 grunt-chromium-pfq-tryjob (gce_beefy)
 grunt-compile-only-pre-cq (gce_beefy)
