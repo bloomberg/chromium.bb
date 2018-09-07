@@ -61,7 +61,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   int32_t MicrophoneMuteIsAvailable(bool* available) override;
   int32_t SetMicrophoneMute(bool enable) override;
   int32_t MicrophoneMute(bool* enabled) const override;
+  int32_t StereoPlayoutIsAvailable(bool* available) const override;
   int32_t SetStereoPlayout(bool enable) override;
+  int32_t StereoRecordingIsAvailable(bool* available) const override;
   int32_t StereoPlayout(bool* enabled) const override;
   int32_t SetStereoRecording(bool enable) override;
   int32_t StereoRecording(bool* enabled) const override;

@@ -121,11 +121,23 @@ int32_t WebRtcAudioDeviceNotImpl::MicrophoneMute(bool* enabled) const {
   return 0;
 }
 
+int32_t WebRtcAudioDeviceNotImpl::StereoPlayoutIsAvailable(
+    bool* available) const {
+  *available = false;
+  return 0;
+}
+
 int32_t WebRtcAudioDeviceNotImpl::SetStereoPlayout(bool enable) {
   return 0;
 }
 
 int32_t WebRtcAudioDeviceNotImpl::StereoPlayout(bool* enabled) const {
+  return 0;
+}
+
+int32_t WebRtcAudioDeviceNotImpl::StereoRecordingIsAvailable(
+    bool* available) const {
+  *available = false;
   return 0;
 }
 
