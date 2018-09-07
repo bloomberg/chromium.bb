@@ -1345,7 +1345,7 @@ void NavigationRequest::OnStartChecksComplete(
           : frame_tree_node_->frame_tree()->root()->current_url();
 
   // Walk the ancestor chain to determine whether all frames are same-site. If
-  // not, the |site_for_cookies| is set to an empty URL.
+  // not, the |site_for_cookies| is set to an opaque URL.
   //
   // TODO(mkwst): This is incorrect. It ought to use the definition from
   // 'Document::SiteForCookies()' in Blink, which special-cases extension
@@ -1360,11 +1360,12 @@ void NavigationRequest::OnStartChecksComplete(
     }
     current = current->parent();
   }
+
   const GURL& site_for_cookies =
-      ancestors_are_same_site
+      (ancestors_are_same_site || !base_url.is_empty())
           ? (frame_tree_node_->IsMainFrame() ? common_params_.url
                                              : top_document_url)
-          : GURL::EmptyGURL();
+          : GURL("data:,");
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();
