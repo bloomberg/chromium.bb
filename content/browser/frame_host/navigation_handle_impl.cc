@@ -220,6 +220,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       should_replace_current_entry_(false),
       is_download_(false),
       is_stream_(false),
+      is_signed_exchange_inner_response_(false),
       started_from_context_menu_(started_from_context_menu),
       is_same_process_(true),
       weak_factory_(this) {
@@ -545,7 +546,10 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                       net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
-                      false, false, false,
+                      /* should_replace_current_entry=*/false,
+                      /* is_download=*/false,
+                      /* is_stream=*/false,
+                      /* is_signed_exchange_inner_response=*/false,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -630,6 +634,10 @@ bool NavigationHandleImpl::IsDownload() {
 
 bool NavigationHandleImpl::IsFormSubmission() {
   return is_form_submission_;
+}
+
+bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
+  return is_signed_exchange_inner_response_;
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
@@ -793,6 +801,7 @@ void NavigationHandleImpl::WillProcessResponse(
     bool should_replace_current_entry,
     bool is_download,
     bool is_stream,
+    bool is_signed_exchange_inner_response,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
@@ -805,6 +814,7 @@ void NavigationHandleImpl::WillProcessResponse(
   should_replace_current_entry_ = should_replace_current_entry;
   is_download_ = is_download;
   is_stream_ = is_stream;
+  is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
   state_ = WILL_PROCESS_RESPONSE;
   ssl_info_ = ssl_info;
   socket_address_ = socket_address;
