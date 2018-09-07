@@ -18,9 +18,8 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
-}  // namespace base
+}
 
 namespace chromeos {
 
@@ -57,11 +56,12 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // If you change this method, update GetProperties too.
   bool PropertyChanged(const std::string& key,
                        const base::Value& value) override;
-  bool InitialPropertiesReceived(
-      const base::DictionaryValue& properties) override;
-  void GetStateProperties(base::DictionaryValue* dictionary) const override;
+  bool InitialPropertiesReceived(const base::Value& properties) override;
+  void GetStateProperties(base::Value* dictionary) const override;
 
-  void IPConfigPropertiesChanged(const base::DictionaryValue& properties);
+  // Called when the IPConfig properties may have changed. |properties| is
+  // expected to be of type DICTIONARY.
+  void IPConfigPropertiesChanged(const base::Value& properties);
 
   // Returns true if the network requires a service activation.
   bool RequiresActivation() const;
@@ -197,8 +197,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Helpers (used e.g. when a state, error, or shill dictionary is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
-  static bool NetworkStateIsCaptivePortal(
-      const base::DictionaryValue& shill_properties);
+  static bool NetworkStateIsCaptivePortal(const base::Value& shill_properties);
   static bool ErrorIsValid(const std::string& error);
   static std::unique_ptr<NetworkState> CreateDefaultCellular(
       const std::string& device_path);
@@ -209,9 +208,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   friend class NetworkChangeNotifierChromeosUpdateTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateTest, TetherProperties);
 
-  // Updates |name_| from WiFi.HexSSID if provided, and validates |name_|.
-  // Returns true if |name_| changes.
-  bool UpdateName(const base::DictionaryValue& properties);
+  // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, which must
+  // be of type DICTIONARY, if the key exists, and validates |name_|. Returns
+  // true if |name_| changes.
+  bool UpdateName(const base::Value& properties);
 
   void SetVpnProvider(const std::string& id, const std::string& type);
 
