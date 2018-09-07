@@ -21,8 +21,8 @@ namespace content_settings {
 
 namespace {
 
-base::LazyInstance<ContentSettingsRegistry>::DestructorAtExit g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ContentSettingsRegistry>::DestructorAtExit
+    g_content_settings_registry_instance = LAZY_INSTANCE_INITIALIZER;
 
 // TODO(raymes): These overloaded functions make the registration code clearer.
 // When initializer lists are available they won't be needed. The initializer
@@ -73,7 +73,7 @@ std::set<ContentSetting> ValidSettings(ContentSetting setting1,
 
 // static
 ContentSettingsRegistry* ContentSettingsRegistry::GetInstance() {
-  return g_instance.Pointer();
+  return g_content_settings_registry_instance.Pointer();
 }
 
 ContentSettingsRegistry::ContentSettingsRegistry()
