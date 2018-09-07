@@ -4490,6 +4490,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (pbi->common.frame_type == KEY_FRAME) {
         // This is the start of a new coded video sequence.
         pbi->sequence_header_changed = 0;
+        pbi->decoding_first_frame = 1;
         reset_frame_buffers(&pbi->common);
       } else {
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
