@@ -623,17 +623,18 @@ void MockAndroidConnection::SendHTTPResponse(const std::string& body) {
 }
 
 void StartMockAdbServer(FlushMode flush_mode) {
+  base::RunLoop run_loop;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&StartMockAdbServerOnIOThread, flush_mode),
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  content::RunMessageLoop();
+      run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void StopMockAdbServer() {
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&StopMockAdbServerOnIOThread),
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  content::RunMessageLoop();
+  base::RunLoop run_loop;
+  BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
+                                  base::BindOnce(&StopMockAdbServerOnIOThread),
+                                  run_loop.QuitClosure());
+  run_loop.Run();
 }
