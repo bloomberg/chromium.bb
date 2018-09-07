@@ -660,6 +660,8 @@ jumbo_component("platform") {
     "fonts/generic_font_family_settings.h",
     "fonts/glyph_metrics_map.h",
     "fonts/linux/font_cache_linux.cc",
+    "fonts/linux/font_unique_name_lookup_linux.cc",
+    "fonts/linux/font_unique_name_lookup_linux.h",
     "fonts/mac/core_text_variations_support.cc",
     "fonts/mac/core_text_variations_support.h",
     "fonts/mac/font_cache_mac.mm",
