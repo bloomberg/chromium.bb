@@ -66,6 +66,7 @@ static_library("background_offliner") {
     "//components/offline_items_collection/core",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
+    "//components/offline_pages/task",
     "//net",
     "//services/network/public/cpp",
     "//sql:sql",

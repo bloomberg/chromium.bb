@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_H_
 
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 
@@ -56,4 +56,4 @@ class TestTask : public Task {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TEST_TASK_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_TASK_TEST_TASK_H_

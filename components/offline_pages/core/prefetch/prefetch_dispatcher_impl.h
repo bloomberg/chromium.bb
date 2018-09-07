@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
-#include "components/offline_pages/core/task_queue.h"
+#include "components/offline_pages/task/task_queue.h"
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_context_getter.h"
 

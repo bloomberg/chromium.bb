@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_CORE_TASK_QUEUE_H_
-#define COMPONENTS_OFFLINE_PAGES_CORE_TASK_QUEUE_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_TASK_TASK_QUEUE_H_
+#define COMPONENTS_OFFLINE_PAGES_TASK_TASK_QUEUE_H_
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 
@@ -35,7 +35,7 @@ class TaskQueue {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {};
+    virtual ~Delegate(){};
 
     // Invoked once when TaskQueue reached 0 tasks.
     virtual void OnTaskQueueIsIdle() = 0;
@@ -80,4 +80,4 @@ class TaskQueue {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_CORE_TASK_QUEUE_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_TASK_TASK_QUEUE_H_

@@ -18,7 +18,7 @@
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_types.h"
-#include "components/offline_pages/core/task_test_base.h"
+#include "components/offline_pages/task/task_test_base.h"
 
 namespace offline_pages {
 class ModelTaskTestBase : public TaskTestBase,

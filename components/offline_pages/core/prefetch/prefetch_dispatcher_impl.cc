@@ -44,7 +44,7 @@
 #include "components/offline_pages/core/prefetch/stale_entry_finalizer_task.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/thumbnail_fetcher.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
