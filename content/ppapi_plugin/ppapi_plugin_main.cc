@@ -129,8 +129,10 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
   ChildProcess ppapi_process;
-  ppapi_process.set_main_thread(
-      new PpapiThread(parameters.command_line, false));  // Not a broker.
+  base::RunLoop run_loop;
+  ppapi_process.set_main_thread(new PpapiThread(run_loop.QuitClosure(),
+                                                parameters.command_line,
+                                                false /* Not a broker */));
 
 #if defined(OS_WIN)
   if (!base::win::IsUser32AndGdi32Available())
@@ -152,7 +154,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
       subpixel_rendering != gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
 #endif
 
-  base::RunLoop().Run();
+  run_loop.Run();
 
 #if defined(OS_WIN)
   UninitializeDWriteFontProxy();

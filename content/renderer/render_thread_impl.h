@@ -182,7 +182,8 @@ class CONTENT_EXPORT RenderThreadImpl
   static scoped_refptr<base::SingleThreadTaskRunner>
   DeprecatedGetMainTaskRunner();
 
-  explicit RenderThreadImpl(
+  RenderThreadImpl(
+      base::RepeatingClosure quit_closure,
       std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
   RenderThreadImpl(
       const InProcessChildThreadParams& params,

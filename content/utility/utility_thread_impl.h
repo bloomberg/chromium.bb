@@ -33,7 +33,7 @@ class FontLoaderMac;
 class UtilityThreadImpl : public UtilityThread,
                           public ChildThreadImpl {
  public:
-  UtilityThreadImpl();
+  explicit UtilityThreadImpl(base::RepeatingClosure quit_closure);
   // Constructor used when running in single process mode.
   explicit UtilityThreadImpl(const InProcessChildThreadParams& params);
   ~UtilityThreadImpl() override;

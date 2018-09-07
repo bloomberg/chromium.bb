@@ -326,8 +326,10 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (client)
     client->PostIOThreadCreated(gpu_process.io_task_runner());
 
-  GpuChildThread* child_thread = new GpuChildThread(
-      std::move(gpu_init), std::move(deferred_messages.Get()));
+  base::RunLoop run_loop;
+  GpuChildThread* child_thread =
+      new GpuChildThread(run_loop.QuitClosure(), std::move(gpu_init),
+                         std::move(deferred_messages.Get()));
   deferred_messages.Get().clear();
 
   child_thread->Init(start_time);
@@ -344,7 +346,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   {
     TRACE_EVENT0("gpu", "Run Message Loop");
-    base::RunLoop().Run();
+    run_loop.Run();
   }
 
   return dead_on_arrival ? RESULT_CODE_GPU_DEAD_ON_ARRIVAL : 0;
