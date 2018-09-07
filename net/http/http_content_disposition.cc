@@ -189,7 +189,7 @@ bool DecodeWord(const std::string& encoded_word,
   // web browser.
 
   // What IE6/7 does: %-escaped UTF-8.
-  decoded_word = UnescapeURLComponent(encoded_word, UnescapeRule::SPACES);
+  UnescapeBinaryURLComponent(encoded_word, UnescapeRule::NORMAL, &decoded_word);
   if (decoded_word != encoded_word)
     *parse_result_flags |= HttpContentDisposition::HAS_PERCENT_ENCODED_STRINGS;
   if (base::IsStringUTF8(decoded_word)) {
