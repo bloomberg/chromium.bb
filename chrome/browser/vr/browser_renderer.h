@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_RENDER_LOOP_H_
-#define CHROME_BROWSER_VR_RENDER_LOOP_H_
+#ifndef CHROME_BROWSER_VR_BROWSER_RENDERER_H_
+#define CHROME_BROWSER_VR_BROWSER_RENDERER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/scheduler_render_loop_interface.h"
+#include "chrome/browser/vr/graphics_delegate.h"
+#include "chrome/browser/vr/scheduler_browser_renderer_interface.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
@@ -20,7 +20,7 @@
 namespace base {
 class TimeDelta;
 class TimeTicks;
-}
+}  // namespace base
 
 namespace vr {
 
@@ -29,7 +29,7 @@ class BrowserUiInterface;
 class ControllerDelegate;
 class PlatformInputHandler;
 class PlatformUiInputDelegate;
-class RenderLoopBrowserInterface;
+class BrowserRendererBrowserInterface;
 class SchedulerDelegate;
 class UiInterface;
 struct ControllerTestInput;
@@ -37,19 +37,18 @@ struct RenderInfo;
 struct UiTestActivityExpectation;
 struct UiTestState;
 
-// The RenderLoop handles all input/output activities during a frame.
+// The BrowserRenderer handles all input/output activities during a frame.
 // This includes head movement, controller movement and input, audio output and
 // rendering of the frame.
-// TODO(acondor): Rename to BrowserRenderer.
-class VR_EXPORT RenderLoop : public SchedulerRenderLoopInterface {
+class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
  public:
-  RenderLoop(std::unique_ptr<UiInterface> ui,
-             std::unique_ptr<SchedulerDelegate> scheduler_delegate,
-             std::unique_ptr<CompositorDelegate> compositor_delegate,
-             std::unique_ptr<ControllerDelegate> controller_delegate,
-             RenderLoopBrowserInterface* browser,
-             size_t sliding_time_size);
-  ~RenderLoop() override;
+  BrowserRenderer(std::unique_ptr<UiInterface> ui,
+                  std::unique_ptr<SchedulerDelegate> scheduler_delegate,
+                  std::unique_ptr<GraphicsDelegate> graphics_delegate,
+                  std::unique_ptr<ControllerDelegate> controller_delegate,
+                  BrowserRendererBrowserInterface* browser,
+                  size_t sliding_time_size);
+  ~BrowserRenderer() override;
 
   void OnPause();
   void OnResume();
@@ -72,7 +71,7 @@ class VR_EXPORT RenderLoop : public SchedulerRenderLoopInterface {
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size);
 
-  base::WeakPtr<RenderLoop> GetWeakPtr();
+  base::WeakPtr<BrowserRenderer> GetWeakPtr();
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
@@ -83,20 +82,20 @@ class VR_EXPORT RenderLoop : public SchedulerRenderLoopInterface {
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
 
-  // SchedulerRenderLoopInterface implementation.
+  // SchedulerBrowserRendererInterface implementation.
   void DrawBrowserFrame(base::TimeTicks current_time) override;
   void DrawWebXrFrame(base::TimeTicks current_time) override;
   void ProcessControllerInputForWebXr(base::TimeTicks current_time) override;
 
  private:
-  void Draw(CompositorDelegate::FrameType frame_type,
+  void Draw(GraphicsDelegate::FrameType frame_type,
             base::TimeTicks current_time);
 
   // Position, hide and/or show UI elements, process input and update textures.
   // Returns true if the scene changed.
   void UpdateUi(const RenderInfo& render_info,
                 base::TimeTicks currrent_time,
-                CompositorDelegate::FrameType frame_type);
+                GraphicsDelegate::FrameType frame_type);
   void DrawWebXr();
   void DrawWebXrOverlay(const RenderInfo& render_info);
   void DrawContentQuad();
@@ -110,24 +109,24 @@ class VR_EXPORT RenderLoop : public SchedulerRenderLoopInterface {
 
   std::unique_ptr<UiInterface> ui_;
   std::unique_ptr<SchedulerDelegate> scheduler_delegate_;
-  std::unique_ptr<CompositorDelegate> compositor_delegate_;
+  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
   bool using_controller_delegate_for_testing_ = false;
 
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
 
-  RenderLoopBrowserInterface* browser_;
+  BrowserRendererBrowserInterface* browser_;
 
   std::unique_ptr<UiTestState> ui_test_state_;
   SlidingTimeDeltaAverage ui_processing_time_;
   SlidingTimeDeltaAverage ui_controller_update_time_;
 
-  base::WeakPtrFactory<RenderLoop> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowserRenderer> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderLoop);
+  DISALLOW_COPY_AND_ASSIGN(BrowserRenderer);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_RENDER_LOOP_H_
+#endif  // CHROME_BROWSER_VR_BROWSER_RENDERER_H_

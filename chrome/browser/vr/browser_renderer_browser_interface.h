@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_RENDER_LOOP_BROWSER_INTERFACE_H_
-#define CHROME_BROWSER_VR_RENDER_LOOP_BROWSER_INTERFACE_H_
+#ifndef CHROME_BROWSER_VR_BROWSER_RENDERER_BROWSER_INTERFACE_H_
+#define CHROME_BROWSER_VR_BROWSER_RENDERER_BROWSER_INTERFACE_H_
 
 #include "chrome/browser/vr/ui_test_input.h"
 
 namespace vr {
 
-// RenderLoop talks to the browser main thread through this interface.
-class RenderLoopBrowserInterface {
+// BrowserRenderer talks to the browser main thread through this interface.
+class BrowserRendererBrowserInterface {
  public:
-  virtual ~RenderLoopBrowserInterface() = default;
+  virtual ~BrowserRendererBrowserInterface() = default;
 
   virtual void ForceExitVr() = 0;
   virtual void ReportUiActivityResultForTesting(
@@ -21,4 +21,4 @@ class RenderLoopBrowserInterface {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_RENDER_LOOP_BROWSER_INTERFACE_H_
+#endif  // CHROME_BROWSER_VR_BROWSER_RENDERER_BROWSER_INTERFACE_H_

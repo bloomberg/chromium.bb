@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_VR_SHELL_GL_H_
-#define CHROME_BROWSER_ANDROID_VR_VR_SHELL_GL_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_GVR_GRAPHICS_DELEGATE_H_
+#define CHROME_BROWSER_ANDROID_VR_GVR_GRAPHICS_DELEGATE_H_
 
 #include <memory>
 #include <queue>
@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
-#include "chrome/browser/vr/base_compositor_delegate.h"
+#include "chrome/browser/vr/base_graphics_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/sliding_average.h"
@@ -70,18 +70,18 @@ struct Viewport {
   }
 };
 
-class VrShellGl : public BaseCompositorDelegate {
+class GvrGraphicsDelegate : public BaseGraphicsDelegate {
  public:
   using WebXrTokenSignaledCallback =
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>;
-  VrShellGl(GlBrowserInterface* browser,
-            TexturesInitializedCallback textures_initialized_callback,
-            gvr::GvrApi* gvr_api,
-            bool reprojected_rendering,
-            bool pause_content,
-            bool low_density,
-            size_t sliding_time_size);
-  ~VrShellGl() override;
+  GvrGraphicsDelegate(GlBrowserInterface* browser,
+                      TexturesInitializedCallback textures_initialized_callback,
+                      gvr::GvrApi* gvr_api,
+                      bool reprojected_rendering,
+                      bool pause_content,
+                      bool low_density,
+                      size_t sliding_time_size);
+  ~GvrGraphicsDelegate() override;
 
   void set_webxr_presentation_state(WebXrPresentationState* webxr) {
     webxr_ = webxr;
@@ -89,7 +89,7 @@ class VrShellGl : public BaseCompositorDelegate {
   void Init(base::WaitableEvent* gl_surface_created_event,
             base::OnceCallback<gfx::AcceleratedWidget()> callback,
             bool start_in_webxr_mode);
-  base::WeakPtr<VrShellGl> GetWeakPtr();
+  base::WeakPtr<GvrGraphicsDelegate> GetWeakPtr();
 
   // GvrSchedulerDelegate communicates with this class through these functions.
   bool DoesSurfacelessRendering() const;
@@ -114,7 +114,7 @@ class VrShellGl : public BaseCompositorDelegate {
   gfx::Size webxr_surface_size() const { return webxr_surface_size_; }
 
  private:
-  // CompositorDelegate overrides.
+  // GraphicsDelegate overrides.
   void OnResume() override;
   FovRectangles GetRecommendedFovs() override;
   float GetZNear() override;
@@ -137,7 +137,7 @@ class VrShellGl : public BaseCompositorDelegate {
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size) override;
   void ResumeContentRendering() override;
-  // End CompositorDelegate overrides.
+  // End GraphicsDelegate overrides.
 
   void UIBoundsChanged(int width, int height);
 
@@ -213,11 +213,11 @@ class VrShellGl : public BaseCompositorDelegate {
 
   std::vector<gvr::BufferSpec> specs_;
 
-  base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
+  base::WeakPtrFactory<GvrGraphicsDelegate> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VrShellGl);
+  DISALLOW_COPY_AND_ASSIGN(GvrGraphicsDelegate);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_VR_SHELL_GL_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_GVR_GRAPHICS_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/render_loop_factory.h"
+#include "chrome/browser/android/vr/browser_renderer_factory.h"
 
 #include <utility>
 
@@ -11,8 +11,7 @@
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
 #include "chrome/browser/android/vr/vr_gl_thread.h"
-#include "chrome/browser/android/vr/vr_shell_gl.h"
-#include "chrome/browser/vr/render_loop.h"
+#include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
@@ -25,7 +24,7 @@ constexpr unsigned kSlidingAverageSize = 5;
 
 namespace vr {
 
-RenderLoopFactory::Params::Params(
+BrowserRendererFactory::Params::Params(
     gvr::GvrApi* gvr_api,
     const UiInitialState& ui_initial_state,
     bool reprojected_rendering,
@@ -43,9 +42,9 @@ RenderLoopFactory::Params::Params(
       gl_surface_created_event(gl_surface_created_event),
       surface_callback(std::move(surface_callback)) {}
 
-RenderLoopFactory::Params::~Params() = default;
+BrowserRendererFactory::Params::~Params() = default;
 
-std::unique_ptr<RenderLoop> RenderLoopFactory::Create(
+std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
     VrGLThread* vr_gl_thread,
     UiFactory* ui_factory,
     std::unique_ptr<Params> params) {
@@ -66,28 +65,28 @@ std::unique_ptr<RenderLoop> RenderLoopFactory::Create(
       params->ui_initial_state);
   auto controller_delegate =
       std::make_unique<GvrControllerDelegate>(params->gvr_api, vr_gl_thread);
-  auto compositor_delegate = std::make_unique<VrShellGl>(
+  auto graphics_delegate = std::make_unique<GvrGraphicsDelegate>(
       vr_gl_thread,
       base::BindOnce(&UiInterface::OnGlInitialized, base::Unretained(ui.get())),
       params->gvr_api, params->reprojected_rendering, params->pause_content,
       params->low_density, kSlidingAverageSize);
   auto scheduler_delegate = std::make_unique<GvrSchedulerDelegate>(
-      vr_gl_thread, ui.get(), params->gvr_api, compositor_delegate.get(),
+      vr_gl_thread, ui.get(), params->gvr_api, graphics_delegate.get(),
       params->ui_initial_state.in_web_vr, params->cardboard_gamepad,
       kSlidingAverageSize);
-  compositor_delegate->set_webxr_presentation_state(
-      scheduler_delegate->webxr());
+  graphics_delegate->set_webxr_presentation_state(scheduler_delegate->webxr());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&VrShellGl::Init, compositor_delegate->GetWeakPtr(),
+      base::BindOnce(&GvrGraphicsDelegate::Init,
+                     graphics_delegate->GetWeakPtr(),
                      base::Unretained(params->gl_surface_created_event),
                      base::Passed(std::move(params->surface_callback)),
                      params->ui_initial_state.in_web_vr));
-  auto render_loop = std::make_unique<RenderLoop>(
+  auto browser_renderer = std::make_unique<BrowserRenderer>(
       std::move(ui), std::move(scheduler_delegate),
-      std::move(compositor_delegate), std::move(controller_delegate),
+      std::move(graphics_delegate), std::move(controller_delegate),
       vr_gl_thread, kSlidingAverageSize);
-  return render_loop;
+  return browser_renderer;
 }
 
 }  // namespace vr

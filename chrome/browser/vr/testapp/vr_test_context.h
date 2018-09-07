@@ -23,7 +23,7 @@ class Event;
 
 namespace vr {
 
-class CompositorDelegate;
+class GraphicsDelegate;
 class TestKeyboardDelegate;
 class Ui;
 struct Model;
@@ -32,11 +32,10 @@ struct Model;
 // manipulates the UI according to user input.
 class VrTestContext : public vr::UiBrowserInterface {
  public:
-  explicit VrTestContext(CompositorDelegate* compositor_delgate);
+  explicit VrTestContext(GraphicsDelegate* compositor_delgate);
   ~VrTestContext() override;
 
-  // TODO(vollick): we should refactor VrShellGl's rendering logic and use it
-  // directly. crbug.com/767282
+  // TODO(acondor): Make use of BrowserRenderer (http://crbug.com/767282).
   void DrawFrame();
   void HandleInput(ui::Event* event);
 
@@ -117,7 +116,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   int tab_id_ = 0;
   bool hosted_ui_enabled_ = false;
 
-  CompositorDelegate* compositor_delegate_;
+  GraphicsDelegate* graphics_delegate_;
   TestKeyboardDelegate* keyboard_delegate_;
 
   ControllerModel::Handedness handedness_ = ControllerModel::kRightHanded;

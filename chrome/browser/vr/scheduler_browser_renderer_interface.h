@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SCHEDULER_RENDER_LOOP_INTERFACE_H_
-#define CHROME_BROWSER_VR_SCHEDULER_RENDER_LOOP_INTERFACE_H_
+#ifndef CHROME_BROWSER_VR_SCHEDULER_BROWSER_RENDERER_INTERFACE_H_
+#define CHROME_BROWSER_VR_SCHEDULER_BROWSER_RENDERER_INTERFACE_H_
 
 namespace base {
 class TimeTicks;
@@ -11,9 +11,9 @@ class TimeTicks;
 
 namespace vr {
 
-class SchedulerRenderLoopInterface {
+class SchedulerBrowserRendererInterface {
  public:
-  virtual ~SchedulerRenderLoopInterface() {}
+  virtual ~SchedulerBrowserRendererInterface() {}
   virtual void DrawBrowserFrame(base::TimeTicks current_time) = 0;
   virtual void DrawWebXrFrame(base::TimeTicks current_time) = 0;
   virtual void ProcessControllerInputForWebXr(base::TimeTicks current_time) = 0;
@@ -21,4 +21,4 @@ class SchedulerRenderLoopInterface {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_SCHEDULER_RENDER_LOOP_INTERFACE_H_
+#endif  // CHROME_BROWSER_VR_SCHEDULER_BROWSER_RENDERER_INTERFACE_H_

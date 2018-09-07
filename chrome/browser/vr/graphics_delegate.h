@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
-#define CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
+#ifndef CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
+#define CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
 
 #include "base/callback.h"
 #include "chrome/browser/vr/fov_rectangle.h"
@@ -13,7 +13,7 @@
 namespace gfx {
 class Size;
 class Transform;
-}
+}  // namespace gfx
 
 namespace gl {
 class GLSurface;
@@ -23,17 +23,17 @@ namespace vr {
 
 struct RenderInfo;
 
-// The CompositorDelegate manages surfaces, buffers and viewports, preparing
+// The GraphicsDelegate manages surfaces, buffers and viewports, preparing
 // them for drawing browser UI. It provides projection and view matrices for the
 // viewports.
-class VR_EXPORT CompositorDelegate {
+class VR_EXPORT GraphicsDelegate {
  public:
   using Transform = float[16];
   enum FrameType { kUiFrame, kWebXrFrame };
   using SkiaContextCallback = base::OnceCallback<void()>;
   using TexturesInitializedCallback = base::OnceCallback<
       void(GlTextureLocation, unsigned int, unsigned int, unsigned int)>;
-  virtual ~CompositorDelegate() {}
+  virtual ~GraphicsDelegate() {}
 
   virtual void OnResume() = 0;
 
@@ -67,4 +67,4 @@ class VR_EXPORT CompositorDelegate {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
+#endif  // CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_

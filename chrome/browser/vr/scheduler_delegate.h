@@ -17,11 +17,12 @@ class Transform;
 
 namespace vr {
 
-class SchedulerRenderLoopInterface;
+class SchedulerBrowserRendererInterface;
 
 // The SchedulerDelegate is responsible for starting the draw calls of the
-// RenderLoop, given different signals, such as WebXR frames submitted or VSync
-// events. It also provides head poses, obtained from the underlaying platform.
+// BrowserRenderer, given different signals, such as WebXR frames submitted or
+// VSync events. It also provides head poses, obtained from the underlaying
+// platform.
 // TODO(acondor): Move head pose logic to the ControllerDelegate.
 class VR_EXPORT SchedulerDelegate {
  public:
@@ -35,7 +36,8 @@ class VR_EXPORT SchedulerDelegate {
   virtual void OnTriggerEvent(bool pressed) = 0;
   virtual void SetWebXrMode(bool enabled) = 0;
   virtual void SetShowingVrDialog(bool showing) = 0;
-  virtual void SetRenderLoop(SchedulerRenderLoopInterface* render_loop) = 0;
+  virtual void SetBrowserRenderer(
+      SchedulerBrowserRendererInterface* browser_renderer) = 0;
   virtual void AddInputSourceState(
       device::mojom::XRInputSourceStatePtr state) = 0;
   virtual void ConnectPresentingService(

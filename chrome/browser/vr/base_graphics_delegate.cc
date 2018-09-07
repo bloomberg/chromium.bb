@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/base_compositor_delegate.h"
+#include "chrome/browser/vr/base_graphics_delegate.h"
 
 #include <utility>
 
@@ -15,14 +15,14 @@
 
 namespace vr {
 
-BaseCompositorDelegate::BaseCompositorDelegate() {}
+BaseGraphicsDelegate::BaseGraphicsDelegate() {}
 
-BaseCompositorDelegate::~BaseCompositorDelegate() {
+BaseGraphicsDelegate::~BaseGraphicsDelegate() {
   if (curr_context_id_ != kNone)
     contexts_[curr_context_id_]->ReleaseCurrent(surface_.get());
 }
 
-bool BaseCompositorDelegate::Initialize(
+bool BaseGraphicsDelegate::Initialize(
     const scoped_refptr<gl::GLSurface>& surface) {
   surface_ = surface;
   share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
@@ -37,7 +37,7 @@ bool BaseCompositorDelegate::Initialize(
   return MakeContextCurrent(kMainContext);
 }
 
-bool BaseCompositorDelegate::RunInSkiaContext(SkiaContextCallback callback) {
+bool BaseGraphicsDelegate::RunInSkiaContext(SkiaContextCallback callback) {
   DCHECK_EQ(curr_context_id_, kMainContext);
   if (!MakeContextCurrent(kSkiaContext))
     return false;
@@ -45,13 +45,13 @@ bool BaseCompositorDelegate::RunInSkiaContext(SkiaContextCallback callback) {
   return MakeContextCurrent(kMainContext);
 }
 
-void BaseCompositorDelegate::SwapSurfaceBuffers() {
+void BaseGraphicsDelegate::SwapSurfaceBuffers() {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(surface_);
   surface_->SwapBuffers(base::DoNothing());
 }
 
-bool BaseCompositorDelegate::MakeContextCurrent(ContextId context_id) {
+bool BaseGraphicsDelegate::MakeContextCurrent(ContextId context_id) {
   DCHECK(context_id > kNone && context_id < kNumContexts);
   if (curr_context_id_ == context_id)
     return true;
