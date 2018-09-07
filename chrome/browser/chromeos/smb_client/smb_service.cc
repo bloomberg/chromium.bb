@@ -113,8 +113,15 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   CallMount(options, share_path, username, password, std::move(callback));
 }
 
-void SmbService::GatherSharesInNetwork(GatherSharesResponse callback) {
-  share_finder_->GatherSharesInNetwork(std::move(callback));
+void SmbService::GatherSharesInNetwork(GatherSharesResponse shares_callback) {
+  share_finder_->GatherSharesInNetwork(base::DoNothing(),
+                                       std::move(shares_callback));
+}
+
+void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
+                                       GatherSharesResponse shares_callback) {
+  share_finder_->GatherSharesInNetwork(std::move(discovery_callback),
+                                       std::move(shares_callback));
 }
 
 void SmbService::CallMount(const file_system_provider::MountOptions& options,

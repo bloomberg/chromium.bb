@@ -72,9 +72,12 @@ class SmbService : public KeyedService,
                        int32_t mount_id);
 
   // Gathers the hosts in the network using |share_finder_| and gets the shares
-  // for each of the hosts found. |callback| will be called once per host and
-  // will contain the URLs to the shares found.
-  void GatherSharesInNetwork(GatherSharesResponse callback);
+  // for each of the hosts found. |discovery_callback| is called as soon as host
+  // discovery is complete. |shares_callback| is called once per host and will
+  // contain the URLs to the shares found.
+  void GatherSharesInNetwork(GatherSharesResponse shares_callback);
+  void GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
+                             GatherSharesResponse shares_callback);
 
  private:
   // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
