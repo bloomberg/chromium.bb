@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
@@ -41,8 +42,8 @@ public class AutofillProfileEditorPreference extends Preference {
     protected void onClick() {
         Bundle extras = getExtras();
         // We know which profile to edit based on the GUID stuffed in our extras
-        // by AutofillAndPaymentsPreferences.
-        mGUID = extras.getString(AutofillAndPaymentsPreferences.AUTOFILL_GUID);
+        // by MainPreferences.
+        mGUID = extras.getString(MainPreferences.AUTOFILL_GUID);
         prepareEditorDialog();
         prepareAddressEditor();
     }

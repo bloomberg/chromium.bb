@@ -1181,7 +1181,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/TextScalePreference.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AndroidPaymentAppPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AndroidPaymentAppsFragment.java",
-  "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillAndPaymentsPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillPaymentMethodsFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillCreditCardEditor.java",
   "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillEditorBase.java",
