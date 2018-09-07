@@ -1245,14 +1245,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)closeAllButtonTapped:(id)sender {
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridCloseAllIncognitoTabs"));
       [self.incognitoTabsDelegate closeAllItems];
       break;
     case TabGridPageRegularTabs:
       DCHECK_EQ(self.undoCloseAllAvailable,
                 self.regularTabsViewController.gridEmpty);
       if (self.undoCloseAllAvailable) {
+        base::RecordAction(
+            base::UserMetricsAction("MobileTabGridUndoCloseAllRegularTabs"));
         [self.regularTabsDelegate undoCloseAllItems];
       } else {
+        base::RecordAction(
+            base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
         [self.regularTabsDelegate saveAndCloseAllItems];
       }
       self.undoCloseAllAvailable = !self.undoCloseAllAvailable;
