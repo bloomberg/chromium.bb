@@ -664,7 +664,10 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
     const PaintLayer* composited_layer =
         layer_iter->key
             ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-    DCHECK(composited_layer);
+    // https://crbug.com/751768. |composited_layer| can be null, don't just
+    // DCHECK it.
+    if (!composited_layer)
+      return;
 
     // Find the appropriate GraphicsLayer for the composited Layer.
     GraphicsLayer* graphics_layer =
@@ -878,6 +881,8 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
       const PaintLayer* composited_layer =
           layer_rect.key
               ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+      // https://crbug.com/751768. |composited_layer| can be null, don't just
+      // DCHECK it.
       if (!composited_layer)
         continue;
       frame->View()->GetScrollingContext()->GetLayersWithTouchRects()->insert(
