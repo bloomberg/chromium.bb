@@ -752,8 +752,18 @@ void HandleCycleUser(CycleUserDirection direction) {
   Shell::Get()->session_controller()->CycleActiveUser(direction);
 }
 
-bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
-                             const ui::Accelerator& previous_accelerator) {
+bool CanHandleToggleCapsLock(
+    const ui::Accelerator& accelerator,
+    const ui::Accelerator& previous_accelerator,
+    const std::set<ui::KeyboardCode>& currently_pressed_keys) {
+  // Iterate the set of pressed keys. If any redundant key is pressed, CapsLock
+  // should not be triggered. Otherwise, CapsLock may be triggered accidentally.
+  // See issue 789283 (https://crbug.com/789283)
+  for (const auto& pressed_key : currently_pressed_keys) {
+    if (pressed_key != ui::VKEY_LWIN && pressed_key != ui::VKEY_MENU)
+      return false;
+  }
+
   // This shortcust is set to be trigger on release. Either the current
   // accelerator is a Search release or Alt release.
   if (accelerator.key_code() == ui::VKEY_LWIN &&
@@ -1309,7 +1319,9 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_APP_LIST:
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
-      return CanHandleToggleCapsLock(accelerator, previous_accelerator);
+      return CanHandleToggleCapsLock(
+          accelerator, previous_accelerator,
+          accelerator_history_->currently_pressed_keys());
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
     case TOGGLE_DOCKED_MAGNIFIER:
