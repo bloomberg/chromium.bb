@@ -23,26 +23,24 @@ namespace gfx {
 class Range;
 }  // namespace gfx
 
+API_AVAILABLE(macos(10.12.2))
 @interface TextSuggestionsTouchBarController
     : NSObject<NSTouchBarDelegate, NSCandidateListTouchBarItemDelegate>
 
 - (instancetype)initWithWebContents:(content::WebContents*)webContents
                          controller:(WebTextfieldTouchBarController*)controller;
 
-- (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
+- (NSTouchBar*)makeTouchBar;
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
-    API_AVAILABLE(macos(10.12.2));
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier;
 
 // Creates a NSCandidateListTouchBarItem that contains text suggestions
 // based on the current text selection.
-- (NSCandidateListTouchBarItem*)makeCandidateListItem
-    API_AVAILABLE(macos(10.12.2));
+- (NSCandidateListTouchBarItem*)makeCandidateListItem;
 
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
-     endSelectingCandidateAtIndex:(NSInteger)index
-    API_AVAILABLE(macos(10.12.2));
+     endSelectingCandidateAtIndex:(NSInteger)index;
 
 - (void)updateTextSelection:(const base::string16&)text
                       range:(const gfx::Range&)range
@@ -53,7 +51,7 @@ class Range;
 - (NSRange)editingWordRangeFromText:(const base::string16&)text
                      cursorPosition:(size_t)cursor;
 
-- (void)requestSuggestions API_AVAILABLE(macos(10.12.2));
+- (void)requestSuggestions;
 
 // Select the range of the editing word and replace it with a suggestion
 // from the touch bar.

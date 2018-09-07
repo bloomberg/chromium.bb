@@ -19,8 +19,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 
-class WebContentsNotificationBridge : public TabStripModelObserver,
-                                      public content::WebContentsObserver {
+class API_AVAILABLE(macos(10.12.2)) WebContentsNotificationBridge
+    : public TabStripModelObserver,
+      public content::WebContentsObserver {
  public:
   WebContentsNotificationBridge(BrowserWindowTouchBarController* owner,
                                 Browser* browser)

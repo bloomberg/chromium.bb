@@ -21,7 +21,8 @@ NSString* const kTextSuggestionsItemsTouchId = @"TEXT-SUGGESTIONS-ITEMS";
 }  // namespace
 
 namespace text_observer {
-class WebContentsTextObserver : public content::WebContentsObserver {
+class API_AVAILABLE(macos(10.12.2)) WebContentsTextObserver
+    : public content::WebContentsObserver {
  public:
   WebContentsTextObserver(content::WebContents* web_contents,
                           TextSuggestionsTouchBarController* owner)
@@ -161,41 +162,38 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 - (void)updateTextSelection:(const base::string16&)text
                       range:(const gfx::Range&)range
                      offset:(size_t)offset {
-  if (@available(macOS 10.12.2, *)) {
-    if (shouldIgnoreReplacementSelection_ &&
-        range == gfx::Range(offsetEditingWordRange_)) {
-      shouldIgnoreReplacementSelection_ = NO;
-      return;
-    }
-
-    if (![self isTextfieldFocused]) {
-      [controller_ invalidateTouchBar];
-      return;
-    }
-
-    // TODO(crbug.com/880642): It's possible for a range out of the text bounds
-    // to be passed in. Investigate this.
-    if (range.start() - offset > text.length() ||
-        range.end() - offset > text.length()) {
-      text_.reset([[NSString alloc] init]);
-      selectionRange_ = NSMakeRange(0, 0);
-      editingWordRange_ = NSMakeRange(0, 0);
-      offsetEditingWordRange_ = NSMakeRange(0, 0);
-      return;
-    }
-
-    text_.reset([base::SysUTF16ToNSString(text) retain]);
-    selectionRange_ = range.ToNSRange();
-    selectionRange_.location -= offset;
-
-    editingWordRange_ =
-        [self editingWordRangeFromText:text
-                        cursorPosition:selectionRange_.location];
-
-    offsetEditingWordRange_ = editingWordRange_;
-    offsetEditingWordRange_.location += offset;
-    [self requestSuggestions];
+  if (shouldIgnoreReplacementSelection_ &&
+      range == gfx::Range(offsetEditingWordRange_)) {
+    shouldIgnoreReplacementSelection_ = NO;
+    return;
   }
+
+  if (![self isTextfieldFocused]) {
+    [controller_ invalidateTouchBar];
+    return;
+  }
+
+  // TODO(crbug.com/880642): It's possible for a range out of the text bounds
+  // to be passed in. Investigate this.
+  if (range.start() - offset > text.length() ||
+      range.end() - offset > text.length()) {
+    text_.reset([[NSString alloc] init]);
+    selectionRange_ = NSMakeRange(0, 0);
+    editingWordRange_ = NSMakeRange(0, 0);
+    offsetEditingWordRange_ = NSMakeRange(0, 0);
+    return;
+  }
+
+  text_.reset([base::SysUTF16ToNSString(text) retain]);
+  selectionRange_ = range.ToNSRange();
+  selectionRange_.location -= offset;
+
+  editingWordRange_ = [self editingWordRangeFromText:text
+                                      cursorPosition:selectionRange_.location];
+
+  offsetEditingWordRange_ = editingWordRange_;
+  offsetEditingWordRange_.location += offset;
+  [self requestSuggestions];
 }
 
 - (NSRange)editingWordRangeFromText:(const base::string16&)text

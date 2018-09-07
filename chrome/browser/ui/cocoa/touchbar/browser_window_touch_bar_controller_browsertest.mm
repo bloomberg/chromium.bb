@@ -42,10 +42,12 @@ class BrowserWindowTouchBarControllerTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    DestroyBrowserWindowTouchBar();
+    if (@available(macOS 10.12.2, *))
+      DestroyBrowserWindowTouchBar();
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
+  API_AVAILABLE(macos(10.12.2))
   void DestroyBrowserWindowTouchBar() {
     [browser_window_controller() setBrowserWindowTouchBarController:nil];
     browser_touch_bar_controller_.reset();
@@ -58,11 +60,13 @@ class BrowserWindowTouchBarControllerTest : public InProcessBrowserTest {
                                              ->GetNativeWindow()];
   }
 
+  API_AVAILABLE(macos(10.12.2))
   BrowserWindowTouchBarController* browser_touch_bar_controller() const {
     return browser_touch_bar_controller_;
   }
 
  private:
+  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<BrowserWindowTouchBarController>
       browser_touch_bar_controller_;
 
