@@ -39,6 +39,53 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
+namespace {
+
+// Returns true if |window| can be dragged from the top of the screen in tablet
+// mode.
+bool CanDragInTabletMode(aura::Window* window, int window_component) {
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  // Pip window can't be dragged.
+  if (window_state->IsPip())
+    return false;
+
+  // Only maximized/fullscreen/snapped window can be dragged from the top of
+  // the screen.
+  if (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+      !window_state->IsSnapped()) {
+    return false;
+  }
+
+  // Only allow drag that happens on caption or top area. Note: for a maxmized
+  // or fullscreen window, the window component here is always HTCAPTION, but
+  // for a snapped window, the window component here can either be HTCAPTION or
+  // HTTOP.
+  if (window_component != HTCAPTION && window_component != HTTOP)
+    return false;
+
+  // Note: only browser windows and chrome app windows are included here.
+  // For browser windows, this piece of codes will be called no matter the
+  // drag happens on the tab(s) or on the non-tabstrip caption or top area.
+  // But for app window, this piece of codes will only be called if the chrome
+  // app window has its customized caption area and can't be hidden in tablet
+  // mode (and thus the drag for this type of chrome app window always happens
+  // on caption or top area). If the caption area of the chrome app window can
+  // be hidden, ImmersiveGestureHandlerClassic will handle the window drag
+  // through TabletModeAppWindowDragController.
+  // TODO(xdai, minch): Merge the logic in ImmersiveGestureHandlerClassic into
+  // CreateWindowResizer() in future.
+  ash::AppType app_type =
+      static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
+  if (app_type != ash::AppType::BROWSER &&
+      app_type != ash::AppType::CHROME_APP) {
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
 namespace ash {
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -70,15 +117,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled() &&
       !window_state->IsPip()) {
-    // We still don't allow any dragging or resizing happening on the area other
-    // then caption or top area. Note: for a maxmized or fullscreen window, the
-    // window component here is always HTCAPTION, but for a snapped window, the
-    // window component here can either be HTCAPTION or HTTOP.
-    if ((window_component != HTCAPTION && window_component != HTTOP) ||
-        window->GetProperty(aura::client::kAppType) !=
-            static_cast<int>(AppType::BROWSER)) {
+    if (!CanDragInTabletMode(window, window_component))
       return nullptr;
-    }
 
     window_state->CreateDragDetails(point_in_parent, window_component, source);
     window_resizer =
