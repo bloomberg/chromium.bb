@@ -26,6 +26,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -129,11 +130,12 @@ std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
   return extension_name;
 }
 
-bool ChromeDevToolsManagerDelegate::AllowInspectingWebContents(
-    content::WebContents* web_contents) {
-  return AllowInspection(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      web_contents);
+bool ChromeDevToolsManagerDelegate::AllowInspectingRenderFrameHost(
+    content::RenderFrameHost* rfh) {
+  Profile* profile =
+      Profile::FromBrowserContext(rfh->GetProcess()->GetBrowserContext());
+  return AllowInspection(profile, extensions::ProcessManager::Get(profile)
+                                      ->GetExtensionForRenderFrameHost(rfh));
 }
 
 // static

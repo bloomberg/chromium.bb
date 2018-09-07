@@ -190,6 +190,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void RevokePolicy();
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
 
+  bool ShouldAllowSession(DevToolsSession* session,
+                          RenderFrameHostImpl* frame_host);
+
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
 #endif
