@@ -25,7 +25,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/previews/core/previews_features.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -148,6 +150,22 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(navigated_url.DomainIs(previews_host.host()) &&
                  navigated_url.EffectiveIntPort() ==
                      previews_host.EffectiveIntPort());
+
+    content::NavigationEntry* entry =
+        GetWebContents()->GetController().GetVisibleEntry();
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+  }
+
+  void VerifyErrorPageLoaded() const {
+    const GURL navigated_url = NavigatedURL();
+    const GURL previews_host = previews_server();
+    EXPECT_FALSE(navigated_url.DomainIs(previews_host.host()) &&
+                 navigated_url.EffectiveIntPort() ==
+                     previews_host.EffectiveIntPort());
+
+    content::NavigationEntry* entry =
+        GetWebContents()->GetController().GetVisibleEntry();
+    EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
   }
 
   // Returns a HTTP URL that will respond with the given HTTP response code and
@@ -172,7 +190,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return base_https_lite_page_url().ReplaceComponents(replacements);
   }
 
-  GURL previews_server() const { return previews_server_->base_url(); }
+  virtual GURL previews_server() const { return previews_server_->base_url(); }
 
   const GURL& https_url() const { return https_url_; }
   const GURL& base_https_lite_page_url() const {
@@ -360,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         1);
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        false, 1);
-    VerifyPreviewNotLoaded();
+    VerifyErrorPageLoaded();
   }
 
   {
@@ -368,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     // dot.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), GURL("https://no-dots-here/"));
-    VerifyPreviewNotLoaded();
+    VerifyErrorPageLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
         PreviewsLitePageNavigationThrottle::BlacklistReason::
@@ -521,6 +539,50 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
   VerifyPreviewLoaded();
+}
+
+class PreviewsLitePageServerBadServerBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageServerBadServerBrowserTest() = default;
+
+  ~PreviewsLitePageServerBadServerBrowserTest() override = default;
+
+  // Override the previews_server URL so that a bad value will be configured.
+  GURL previews_server() const override {
+    return GURL("https://bad-server.com");
+  }
+};
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsBadServer LitePagePreviewsBadServer
+#else
+#define MAYBE_LitePagePreviewsBadServer DISABLED_LitePagePreviewsBadServer
+#endif
+
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
+                       MAYBE_LitePagePreviewsBadServer) {
+  // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
+  // The histograms in this tests can only be checked by the expected bucket,
+  // and not by a unique sample. This is because each navigation to a preview
+  // will cause two navigations and two records, one for the original navigation
+  // under test, and another one for loading the preview.
+
+  {
+    // Verify the preview is not shown on a bad previews server.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+    VerifyPreviewNotLoaded();
+
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed, 1);
+  }
 }
 
 class PreviewsLitePageServerDataSaverBrowserTest
