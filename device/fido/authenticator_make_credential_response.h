@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "device/fido/attestation_object.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/response_data.h"
 
 namespace device {
@@ -29,10 +30,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
  public:
   static base::Optional<AuthenticatorMakeCredentialResponse>
   CreateFromU2fRegisterResponse(
+      FidoTransportProtocol transport_used,
       base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
       base::span<const uint8_t> u2f_data);
 
-  AuthenticatorMakeCredentialResponse(AttestationObject attestation_object);
+  AuthenticatorMakeCredentialResponse(FidoTransportProtocol transport_used,
+                                      AttestationObject attestation_object);
   AuthenticatorMakeCredentialResponse(
       AuthenticatorMakeCredentialResponse&& that);
   AuthenticatorMakeCredentialResponse& operator=(
@@ -63,8 +66,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
     return attestation_object_;
   }
 
+  FidoTransportProtocol transport_used() const { return transport_used_; }
+
  private:
   AttestationObject attestation_object_;
+
+  // Contains the transport used to register the credential in this case.
+  FidoTransportProtocol transport_used_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorMakeCredentialResponse);
 };

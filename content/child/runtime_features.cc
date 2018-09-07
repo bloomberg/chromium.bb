@@ -372,6 +372,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
 
+  WebRuntimeFeatures::EnableWebAuthGetTransports(
+      base::FeatureList::IsEnabled(features::kWebAuthGetTransports) ||
+      enableExperimentalWebPlatformFeatures);
+
   WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",
                                     "replace_server_placeholders") != "false");

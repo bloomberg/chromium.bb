@@ -15,6 +15,7 @@
 #include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_transport_protocol.h"
 
 // Converts response from authenticators to CTAPResponse objects. If the
 // response of the authenticator does not conform to format specified by the
@@ -32,7 +33,8 @@ CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer);
 // WebAuthN spec : https://w3c.github.io/webauthn/#fig-attStructs
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(base::span<const uint8_t> buffer);
+ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
+                               base::span<const uint8_t> buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetAssertion /
 // AuthenticatorGetNextAssertion request to AuthenticatorGetAssertionResponse

@@ -1996,4 +1996,34 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
             std::get<0>(*failure_reason_receiver.result()));
 }
 
+TEST_F(AuthenticatorImplTest, Transports) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (auto protocol :
+       {device::ProtocolVersion::kU2f, device::ProtocolVersion::kCtap}) {
+    SCOPED_TRACE(static_cast<int>(protocol));
+
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    scoped_virtual_device.SetSupportedProtocol(protocol);
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    const std::vector<blink::mojom::AuthenticatorTransport>& transports(
+        callback_receiver.value()->transports);
+    ASSERT_EQ(2u, transports.size());
+    EXPECT_EQ(blink::mojom::AuthenticatorTransport::USB, transports[0]);
+    // VirtualFidoDevice generates an attestation certificate that asserts NFC
+    // support via an extension.
+    EXPECT_EQ(blink::mojom::AuthenticatorTransport::NFC, transports[1]);
+  }
+}
+
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
@@ -31,6 +32,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
+#include "device/fido/attestation_statement.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -42,6 +44,10 @@
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cert/asn1_util.h"
+#include "net/der/input.h"
+#include "net/der/parse_values.h"
+#include "net/der/parser.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -261,10 +267,63 @@ ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
   return CreateApplicationParameter(appid);
 }
 
+// Parses the FIDO transport types extension from the DER-encoded, X.509
+// certificate in |der_cert| and appends any unique transport types found to
+// |out_transports|.
+void AppendUniqueTransportsFromCertificate(
+    base::span<const uint8_t> der_cert,
+    std::vector<device::FidoTransportProtocol>* out_transports) {
+  // See
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
+  static constexpr uint8_t kTransportTypesOID[] = {
+      0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
+  bool present, critical;
+  base::StringPiece contents;
+  if (!net::asn1::ExtractExtensionFromDERCert(
+          base::StringPiece(reinterpret_cast<const char*>(der_cert.data()),
+                            der_cert.size()),
+          base::StringPiece(reinterpret_cast<const char*>(kTransportTypesOID),
+                            sizeof(kTransportTypesOID)),
+          &present, &critical, &contents) ||
+      !present) {
+    return;
+  }
+
+  const net::der::Input contents_der(contents);
+  net::der::Parser contents_parser(contents_der);
+  net::der::BitString transport_bits;
+  if (!contents_parser.ReadBitString(&transport_bits)) {
+    return;
+  }
+
+  // The certificate extension contains a BIT STRING where different bits
+  // indicate support for different transports. The following array maps
+  // between these bit indexes and the FidoTransportProtocol enum.
+  static constexpr struct {
+    uint8_t bit_index;
+    device::FidoTransportProtocol transport;
+  } kTransportMapping[] = {
+      // Bit 0 is "Bluetooth Classic", not BLE. Since webauthn doesn't define a
+      // transport type for this we ignore it.
+      {1, device::FidoTransportProtocol::kBluetoothLowEnergy},
+      {2, device::FidoTransportProtocol::kUsbHumanInterfaceDevice},
+      {3, device::FidoTransportProtocol::kNearFieldCommunication},
+      {4, device::FidoTransportProtocol::kInternal},
+  };
+
+  for (const auto& mapping : kTransportMapping) {
+    if (transport_bits.AssertsBit(mapping.bit_index) &&
+        !base::ContainsValue(*out_transports, mapping.transport)) {
+      out_transports->push_back(mapping.transport);
+    }
+  }
+}
+
 blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
-    device::AuthenticatorMakeCredentialResponse response_data) {
+    device::AuthenticatorMakeCredentialResponse response_data,
+    bool preserve_attestation) {
   auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -272,8 +331,31 @@ CreateMakeCredentialResponse(
   common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
+
+  // The transport used for the registration is always first in the list.
+  std::vector<device::FidoTransportProtocol> transports = {
+      response_data.transport_used()};
+  // If the attestation certificate specifies that the token supports any other
+  // transports, include them in the list.
+  base::Optional<base::span<const uint8_t>> leaf_cert =
+      response_data.attestation_object()
+          .attestation_statement()
+          .GetLeafCertificate();
+  if (leaf_cert) {
+    AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
+  }
+
+  for (auto transport : transports) {
+    response->transports.push_back(
+        mojo::ConvertTo<blink::mojom::AuthenticatorTransport>(transport));
+  }
+
+  if (!preserve_attestation) {
+    response_data.EraseAttestationStatement();
+  }
   response->attestation_object =
       response_data.GetCBOREncodedAttestationObject();
+
   return response;
 }
 
@@ -696,15 +778,13 @@ void AuthenticatorImpl::OnRegisterResponse(
         return;
       }
 
-      if (!response_data->IsSelfAttestation()) {
-        response_data->EraseAttestationStatement();
-      }
-
+      const bool include_attestation = response_data->IsSelfAttestation();
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::SUCCESS,
           CreateMakeCredentialResponse(std::move(client_data_json_),
-                                       std::move(*response_data)),
+                                       std::move(*response_data),
+                                       include_attestation),
           Focus::kDoCheck);
       return;
   }
@@ -731,6 +811,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     return;
   }
 
+  bool include_attestation = true;
+
   // The check for IsAttestationCertificateInappropriatelyIdentifying is
   // performed after the permissions prompt, even though we know the answer
   // before, because this still effectively discloses the make & model of the
@@ -748,15 +830,15 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     // The only way to get the underlying attestation will be to list the RP ID
     // in the enterprise policy, because that enables the individual attestation
     // bit in the register request and permits individual attestation generally.
-    response_data.EraseAttestationStatement();
+    include_attestation = false;
   }
 
-  InvokeCallbackAndCleanup(
-      std::move(make_credential_response_callback_),
-      blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateMakeCredentialResponse(std::move(client_data_json_),
-                                   std::move(response_data)),
-      Focus::kDoCheck);
+  InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
+                           blink::mojom::AuthenticatorStatus::SUCCESS,
+                           CreateMakeCredentialResponse(
+                               std::move(client_data_json_),
+                               std::move(response_data), include_attestation),
+                           Focus::kDoCheck);
 }
 
 void AuthenticatorImpl::OnSignResponse(

@@ -335,8 +335,8 @@ void OnMakePublicKeyCredentialComplete(
     DOMArrayBuffer* attestation_buffer =
         VectorToDOMArrayBuffer(std::move(credential->attestation_object));
     AuthenticatorAttestationResponse* authenticator_response =
-        AuthenticatorAttestationResponse::Create(client_data_buffer,
-                                                 attestation_buffer);
+        AuthenticatorAttestationResponse::Create(
+            client_data_buffer, attestation_buffer, credential->transports);
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
                                                   authenticator_response,
                                                   {} /* extensions_outputs */));
