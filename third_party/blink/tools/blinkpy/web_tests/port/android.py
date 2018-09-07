@@ -793,7 +793,7 @@ class ChromiumAndroidDriver(driver.Driver):
                 stderr += '********* [%s] breakpad minidump %s:\n%s' % (
                     self._port.host.filesystem.basename(crash),
                     self._device.serial,
-                    stack)
+                    stack.encode('ascii', 'replace'))
 
         return super(ChromiumAndroidDriver, self)._get_crash_log(
             stdout, stderr, newer_than)
