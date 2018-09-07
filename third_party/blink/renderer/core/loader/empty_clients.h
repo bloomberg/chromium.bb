@@ -300,6 +300,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+  void UpdateDocumentLoader(
+      DocumentLoader* document_loader,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override {}
 
   String UserAgent() override { return ""; }
 

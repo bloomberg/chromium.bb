@@ -357,6 +357,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kWebHistoryInertCommit, type == WebFrameLoadType::kReload,
       frame_->IsLocalRoot());
+
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
   probe::didNavigateWithinDocument(frame_);

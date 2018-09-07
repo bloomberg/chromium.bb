@@ -2303,13 +2303,13 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // Go back, then forward, then back again.
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
 
   // Click a different anchor
   main_frame_local->Loader().StartNavigation(FrameLoadRequest(
@@ -2322,10 +2322,10 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // forward navigation.
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }

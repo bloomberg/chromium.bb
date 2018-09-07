@@ -645,8 +645,7 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
-                                              bool is_new_navigation,
-                                              bool content_initiated) {
+                                              bool is_new_navigation) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.Initialize();
@@ -661,7 +660,7 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
       item,
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,
-      content_initiated);
+      false /* content_initiated */);
 }
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {

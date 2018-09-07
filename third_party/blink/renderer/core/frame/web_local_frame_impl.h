@@ -271,7 +271,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebURL&,
       WebFrameLoadType,
       const WebHistoryItem&,
-      bool is_client_redirect) override;
+      bool is_client_redirect,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   void LoadJavaScriptURL(const WebURL&) override;
   void CommitDataNavigation(
       const WebData&,

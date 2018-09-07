@@ -3419,13 +3419,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
       common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
                                      : nullptr);
 
-  // TODO(ahemery): |pending_navigation_params_| below is solely used by
-  // IsBrowserInitiated() in DecidePolicyForNavigation. Try and find a a way to
-  // avoid having to create the entire structure just for this.
-  pending_navigation_params_.reset(new PendingNavigationParams(
-      common_params, request_params,
-      base::TimeTicks(),  // Not used for same-document navigation.
-      CommitNavigationCallback()));
   PrepareFrameForCommit(common_params.url, request_params);
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
@@ -3452,10 +3445,19 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
     bool is_client_redirect =
         !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+    std::unique_ptr<DocumentState> document_state =
+        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader())->Clone();
+    NavigationStateImpl* navigation_state =
+        NavigationStateImpl::CreateBrowserInitiated(
+            common_params, request_params,
+            base::TimeTicks(),  // Not used for same-document navigation.
+            CommitNavigationCallback());
+    document_state->set_navigation_state(navigation_state);
+
     // Load the request.
     commit_status = frame_->CommitSameDocumentNavigation(
         common_params.url, load_type, item_for_history_navigation,
-        is_client_redirect);
+        is_client_redirect, std::move(document_state));
 
     // The load of the URL can result in this frame being removed. Use a
     // WeakPtr as an easy way to detect whether this has occured. If so, this
@@ -4612,23 +4614,16 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
                routing_id_);
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-
-  // If this was a browser-initiated navigation, then there could be pending
-  // navigation params, so use them. Otherwise, just reset the document state
-  // here, since if pending navigation params exist they are for some other
-  // navigation <https://crbug.com/597239>.
-  if (!pending_navigation_params_ || content_initiated) {
+  if (content_initiated) {
     document_state->set_navigation_state(
         NavigationStateImpl::CreateContentInitiated());
-  } else {
-    DCHECK(
-        !pending_navigation_params_->common_params.navigation_start.is_null());
-    document_state->set_navigation_state(CreateNavigationStateFromPending());
-    pending_navigation_params_.reset();
   }
-
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
+
+  // Just reset pending navigation params here, if they exist they are for some
+  // other navigation <https://crbug.com/597239>.
+  pending_navigation_params_.reset();
 
   DidCommitNavigationInternal(item, commit_type,
                               true /* was_within_same_document */,
@@ -6964,18 +6959,6 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
 
   const WebURLRequest& request = document_loader->GetRequest();
   return request.Url();
-}
-
-
-NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
-  if (IsBrowserInitiated(pending_navigation_params_.get())) {
-    return NavigationStateImpl::CreateBrowserInitiated(
-        pending_navigation_params_->common_params,
-        pending_navigation_params_->request_params,
-        pending_navigation_params_->time_commit_requested,
-        std::move(pending_navigation_params_->commit_callback_));
-  }
-  return NavigationStateImpl::CreateContentInitiated();
 }
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {

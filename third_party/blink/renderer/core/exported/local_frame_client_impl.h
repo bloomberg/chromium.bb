@@ -164,6 +164,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+
+  // Updates the underlying |WebDocumentLoaderImpl| of |DocumentLoader| with
+  // extra_data.
+  void UpdateDocumentLoader(
+      DocumentLoader* document_loader,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   WTF::String UserAgent() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;

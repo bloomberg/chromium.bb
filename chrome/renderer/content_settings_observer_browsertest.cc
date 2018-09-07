@@ -224,7 +224,7 @@ TEST_F(ContentSettingsObserverBrowserTest, PluginsTemporarilyAllowed) {
   EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
   // Simulate same document navigation.
-  OnSameDocumentNavigation(GetMainFrame(), true, true);
+  OnSameDocumentNavigation(GetMainFrame(), true);
   EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(foo_plugin));
   EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
@@ -462,7 +462,7 @@ TEST_F(ContentSettingsObserverBrowserTest,
 
   // The page shouldn't see the change to script blocking setting after a
   // same document navigation.
-  OnSameDocumentNavigation(GetMainFrame(), true, true);
+  OnSameDocumentNavigation(GetMainFrame(), true);
   EXPECT_TRUE(observer->AllowScript(true));
 }
 

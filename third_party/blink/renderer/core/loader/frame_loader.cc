@@ -539,7 +539,8 @@ void FrameLoader::LoadInSameDocument(
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect,
-    Document* initiating_document) {
+    Document* initiating_document,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   // If we have a state object, we cannot also be a new navigation.
   DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
 
@@ -564,6 +565,8 @@ void FrameLoader::LoadInSameDocument(
                                         ClientRedirectPolicy::kClientRedirect);
   if (history_item)
     document_loader_->SetItemForHistoryNavigation(history_item);
+  if (extra_data)
+    Client()->UpdateDocumentLoader(document_loader_, std::move(extra_data));
   UpdateForSameDocumentNavigation(url, kSameDocumentNavigationDefault, nullptr,
                                   kScrollRestorationAuto, frame_load_type,
                                   initiating_document);
@@ -847,7 +850,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     CommitSameDocumentNavigation(
         url, frame_load_type, nullptr, request.ClientRedirect(),
         origin_document,
-        request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
+        request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent,
+        nullptr /* extra_data */);
     return;
   }
 
@@ -1056,7 +1060,8 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect_policy,
     Document* origin_document,
-    bool has_event) {
+    bool has_event,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
 
@@ -1092,7 +1097,8 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
 
   // Perform the same-document navigation.
   LoadInSameDocument(url, state_object, frame_load_type, history_item,
-                     client_redirect_policy, origin_document);
+                     client_redirect_policy, origin_document,
+                     std::move(extra_data));
   return mojom::CommitResult::Ok;
 }
 

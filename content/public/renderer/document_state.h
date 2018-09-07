@@ -33,6 +33,10 @@ class CONTENT_EXPORT DocumentState : public blink::WebDocumentLoader::ExtraData,
     return static_cast<DocumentState*>(document_loader->GetExtraData());
   }
 
+  // Returns a copy of the DocumentState. This is a shallow copy,
+  // |navigation_state_| of the new DocumentState is set to nullptr.
+  std::unique_ptr<DocumentState> Clone();
+
   // Indicator if SPDY was used as part of this page load.
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
   void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
@@ -80,6 +84,8 @@ class CONTENT_EXPORT DocumentState : public blink::WebDocumentLoader::ExtraData,
   }
 
   NavigationState* navigation_state() { return navigation_state_.get(); }
+  // TODO(ahemery): set_navigation_state should take a std::unique_ptr for
+  // |navigation_state|.
   void set_navigation_state(NavigationState* navigation_state);
 
   bool can_load_local_resources() const { return can_load_local_resources_; }
