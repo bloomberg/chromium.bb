@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "extensions/browser/extension_prefs.h"
@@ -399,11 +400,16 @@ class InternalDataSource : public AppSearchProvider::DataSource,
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
     for (const auto& internal_app : GetInternalAppList(profile())) {
-      if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading) &&
-          (!features::IsContinueReadingEnabled() ||
-           !profile()->GetPrefs()->GetBoolean(
-               prefs::kAppListContinueReadingEnabled))) {
-        continue;
+      if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
+        if (!features::IsContinueReadingEnabled())
+          continue;
+
+        auto* service =
+            ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
+        if (!service ||
+            !service->GetActiveDataTypes().Has(syncer::PROXY_TABS)) {
+          continue;
+        }
       }
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
