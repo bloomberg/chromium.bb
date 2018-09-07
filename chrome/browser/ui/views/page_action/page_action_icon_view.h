@@ -60,6 +60,9 @@ class PageActionIconView : public IconLabelBubbleView {
   // Returns true if there was a change.
   virtual bool Update();
 
+  // Retrieve the text to be used for a tooltip or accessible name.
+  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,
@@ -136,9 +139,6 @@ class PageActionIconView : public IconLabelBubbleView {
   content::WebContents* GetWebContents() const;
 
   bool active() const { return active_; }
-
-  // Retrieve the text to be used for a tooltip or accessible name.
-  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
 
  private:
   class WidgetObserver : public views::WidgetObserver {
