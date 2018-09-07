@@ -313,12 +313,6 @@ ALWAYS_INLINE void PartitionFree(void* ptr) {
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   DCHECK(internal::PartitionRootBase::IsValidPage(page));
-
-  // This is somewhat redundant with |PartitionPage::Free|.
-  // TODO(crbug.com/680657): Doing this here might? make it OK to not do it
-  // there.
-  memset(original_ptr, 0xCD, PartitionAllocGetSize(original_ptr));
-
   page->Free(ptr);
 #endif
 }
@@ -345,9 +339,10 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
                                                size_t size,
                                                const char* type_name) {
   DCHECK_LT(flags, PartitionAllocLastFlag << 1);
+  const bool zero_fill = flags & PartitionAllocZeroFill;
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  void* result = malloc(size);
+  void* result = zero_fill ? calloc(1, size) : malloc(size);
   CHECK(result || flags & PartitionAllocReturnNull);
   return result;
 #else
@@ -361,6 +356,14 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
     ret = root->AllocFromBucket(bucket, flags, size);
   }
   PartitionAllocHooks::AllocationHookIfEnabled(ret, requested_size, type_name);
+
+  // TODO(crbug.com/864462): This is suboptimal. Change `AllocFromBucket` such
+  // that it tells callers if the allocation was satisfied with a fresh mapping
+  // from the OS, so that we can skip this step and save some time.
+  if (zero_fill) {
+    memset(ret, 0, requested_size);
+  }
+
   return ret;
 #endif
 }

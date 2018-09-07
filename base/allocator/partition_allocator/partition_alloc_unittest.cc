@@ -728,19 +728,14 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
   EXPECT_EQ(ptr3, new_ptr);
   new_ptr = generic_allocator.root()->Alloc(size, type_name);
   EXPECT_EQ(ptr2, new_ptr);
-#if defined(OS_LINUX) && !DCHECK_IS_ON()
-  // On Linux, we have a guarantee that freelisting a page should cause its
-  // contents to be nulled out. We check for null here to detect an bug we
-  // had where a large slot size was causing us to not properly free all
-  // resources back to the system.
-  // We only run the check when asserts are disabled because when they are
-  // enabled, the allocated area is overwritten with an "uninitialized"
-  // byte pattern.
-  EXPECT_EQ(0, *(reinterpret_cast<char*>(new_ptr) + (size - 1)));
-#endif
+
   generic_allocator.root()->Free(new_ptr);
   generic_allocator.root()->Free(ptr3);
   generic_allocator.root()->Free(ptr4);
+
+  // |PartitionPage::Free| must poison the slot's contents with |kFreedByte|.
+  EXPECT_EQ(kFreedByte,
+            *(reinterpret_cast<unsigned char*>(new_ptr) + (size - 1)));
 
   // Can we allocate a massive (512MB) size?
   // Allocate 512MB, but +1, to test for cookie writing alignment issues.
@@ -2156,6 +2151,36 @@ TEST_F(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
   EXPECT_TRUE(ptr);
 
   generic_allocator.root()->Free(ptr);
+}
+
+TEST_F(PartitionAllocTest, ZeroFill) {
+  const size_t test_sizes[] = {
+      1,
+      17,
+      100,
+      kSystemPageSize,
+      kSystemPageSize + 1,
+      internal::PartitionBucket::get_direct_map_size(100),
+      1 << 20,
+      1 << 21,
+  };
+
+  constexpr static size_t kAllZerosSentinel =
+      std::numeric_limits<size_t>::max();
+  for (size_t size : test_sizes) {
+    char* p = static_cast<char*>(PartitionAllocGenericFlags(
+        generic_allocator.root(), PartitionAllocZeroFill, size, nullptr));
+    size_t non_zero_position = kAllZerosSentinel;
+    for (size_t i = 0; i < size; ++i) {
+      if (0 != p[i]) {
+        non_zero_position = i;
+        break;
+      }
+    }
+    EXPECT_EQ(kAllZerosSentinel, non_zero_position)
+        << "test allocation size: " << size;
+    PartitionFree(p);
+  }
 }
 
 }  // namespace internal
