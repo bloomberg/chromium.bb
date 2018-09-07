@@ -25,6 +25,7 @@ component("presenter") {
     "//ui/aura",
     "//ui/compositor",
     "//ui/gfx/geometry",
+    "//ui/keyboard",
     "//ui/views",
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
