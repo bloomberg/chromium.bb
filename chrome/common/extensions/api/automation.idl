@@ -667,9 +667,6 @@
     // The input type, like email or number.
     DOMString? textInputType;
 
-    // An array of indexes of the break between lines in editable text.
-    long[] lineBreaks;
-
     // An array of indexes of the start position of each text marker.
     long[] markerStarts;
 

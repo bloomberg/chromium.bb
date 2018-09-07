@@ -1592,8 +1592,6 @@ const char* ToString(ax::mojom::IntListAttribute int_list_attribute) {
       return "labelledbyIds";
     case ax::mojom::IntListAttribute::kRadioGroupIds:
       return "radioGroupIds";
-    case ax::mojom::IntListAttribute::kLineBreaks:
-      return "lineBreaks";
     case ax::mojom::IntListAttribute::kMarkerTypes:
       return "markerTypes";
     case ax::mojom::IntListAttribute::kMarkerStarts:
@@ -1631,8 +1629,6 @@ ax::mojom::IntListAttribute ParseIntListAttribute(
     return ax::mojom::IntListAttribute::kLabelledbyIds;
   if (0 == strcmp(int_list_attribute, "radioGroupIds"))
     return ax::mojom::IntListAttribute::kRadioGroupIds;
-  if (0 == strcmp(int_list_attribute, "lineBreaks"))
-    return ax::mojom::IntListAttribute::kLineBreaks;
   if (0 == strcmp(int_list_attribute, "markerTypes"))
     return ax::mojom::IntListAttribute::kMarkerTypes;
   if (0 == strcmp(int_list_attribute, "markerStarts"))

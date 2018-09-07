@@ -174,7 +174,6 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
     // add a new attribute without explicitly considering whether it's
     // a node id attribute or not.
     case ax::mojom::IntListAttribute::kNone:
-    case ax::mojom::IntListAttribute::kLineBreaks:
     case ax::mojom::IntListAttribute::kMarkerTypes:
     case ax::mojom::IntListAttribute::kMarkerStarts:
     case ax::mojom::IntListAttribute::kMarkerEnds:
@@ -1072,9 +1071,6 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntListAttribute::kRadioGroupIds:
         result += " radio_group_ids=" + IntVectorToString(values);
-        break;
-      case ax::mojom::IntListAttribute::kLineBreaks:
-        result += " line_breaks=" + IntVectorToString(values);
         break;
       case ax::mojom::IntListAttribute::kMarkerTypes: {
         std::string types_str;
