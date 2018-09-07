@@ -151,16 +151,11 @@ static const size_t kMaxFreeableSpans = 16;
 // "out of physical memory" in crash reports.
 static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1GB
 
-// These two byte values match tcmalloc.
-static const unsigned char kUninitializedByte = 0xAB;
-static const unsigned char kFreedByte = 0xCD;
-
 // Flags for PartitionAllocGenericFlags.
 enum PartitionAllocFlags {
   PartitionAllocReturnNull = 1 << 0,
-  PartitionAllocZeroFill = 1 << 1,
 
-  PartitionAllocLastFlag = PartitionAllocZeroFill
+  PartitionAllocLastFlag = PartitionAllocReturnNull
 };
 
 }  // namespace base
