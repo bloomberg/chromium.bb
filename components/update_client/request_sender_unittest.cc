@@ -229,7 +229,7 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
   std::vector<GURL> urls;
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
-      urls, std::map<std::string, std::string>(), "test", false,
+      urls, {}, "test", false,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
                      base::Unretained(this)));
   RunThreads();

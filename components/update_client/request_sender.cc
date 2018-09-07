@@ -60,7 +60,7 @@ RequestSender::~RequestSender() {
 
 void RequestSender::Send(
     const std::vector<GURL>& urls,
-    const std::map<std::string, std::string>& request_extra_headers,
+    const base::flat_map<std::string, std::string>& request_extra_headers,
     const std::string& request_body,
     bool use_signing,
     RequestSenderCallback request_sender_callback) {

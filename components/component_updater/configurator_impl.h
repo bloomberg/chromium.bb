@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "url/gurl.h"
 
@@ -61,9 +62,8 @@ class ConfiguratorImpl {
   std::string GetOSLongName() const;
 
   // Parameters added to each url request. It can be empty if none are needed.
-  // The return string must be safe for insertion as an attribute in an
-  // XML element.
-  std::string ExtraRequestParams() const;
+  // Returns a map of name-value pairs that match ^[-_a-zA-Z0-9]$ regex.
+  base::flat_map<std::string, std::string> ExtraRequestParams() const;
 
   // Provides a hint for the server to control the order in which multiple
   // download urls are returned.
@@ -90,7 +90,7 @@ class ConfiguratorImpl {
   std::string GetAppGuid() const;
 
  private:
-  std::string extra_info_;
+  base::flat_map<std::string, std::string> extra_info_;
   const bool background_downloads_enabled_;
   const bool deltas_enabled_;
   const bool fast_update_;
