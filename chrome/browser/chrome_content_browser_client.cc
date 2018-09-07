@@ -100,7 +100,7 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory_manager.h"
+#include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -4515,13 +4515,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   }
 #endif
 
-  auto* signin_proxy_manager =
-      signin::ProxyingURLLoaderFactoryManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context));
-  if (signin_proxy_manager) {
-    use_proxy |= signin_proxy_manager->MaybeProxyURLLoaderFactory(
-        frame, is_navigation, url, factory_request);
-  }
+  use_proxy |= signin::ProxyingURLLoaderFactory::MaybeProxyRequest(
+      frame, is_navigation, url, factory_request);
 
   return use_proxy;
 }

@@ -1396,8 +1396,6 @@ jumbo_split_static_library("browser") {
     "signin/chrome_signin_helper.h",
     "signin/chrome_signin_proxying_url_loader_factory.cc",
     "signin/chrome_signin_proxying_url_loader_factory.h",
-    "signin/chrome_signin_proxying_url_loader_factory_manager.cc",
-    "signin/chrome_signin_proxying_url_loader_factory_manager.h",
     "signin/chrome_signin_url_loader_throttle.cc",
     "signin/chrome_signin_url_loader_throttle.h",
     "signin/gaia_cookie_manager_service_factory.cc",
