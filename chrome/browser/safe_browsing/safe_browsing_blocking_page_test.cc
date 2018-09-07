@@ -366,15 +366,15 @@ class SafeBrowsingBlockingPageBrowserTest
 
   ~SafeBrowsingBlockingPageBrowserTest() override {}
 
-  void SetUp() override {
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
     // Test UI manager and test database manager should be set before
-    // InProcessBrowserTest::SetUp().
+    // the browser is started but after threads are created.
     factory_.SetTestUIManager(new FakeSafeBrowsingUIManager());
     factory_.SetTestDatabaseManager(new FakeSafeBrowsingDatabaseManager());
     SafeBrowsingService::RegisterFactory(&factory_);
     SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     ThreatDetails::RegisterFactory(&details_factory_);
-    InProcessBrowserTest::SetUp();
   }
 
   void TearDown() override {
