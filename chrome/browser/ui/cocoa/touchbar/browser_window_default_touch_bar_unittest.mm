@@ -51,9 +51,11 @@ class BrowserWindowDefaultTouchBarUnitTest : public CocoaProfileTest {
 
     command_updater_ = browser()->command_controller();
 
-    touch_bar_.reset([[BrowserWindowDefaultTouchBar alloc]
-        initWithBrowser:browser()
-             controller:nil]);
+    if (@available(macOS 10.12.2, *)) {
+      touch_bar_.reset([[BrowserWindowDefaultTouchBar alloc]
+          initWithBrowser:browser()
+               controller:nil]);
+    }
   }
 
   NSString* GetFullscreenTouchBarItemId(NSString* id) {
@@ -69,12 +71,14 @@ class BrowserWindowDefaultTouchBarUnitTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    touch_bar_.reset();
+    if (@available(macOS 10.12.2, *))
+      touch_bar_.reset();
     CocoaProfileTest::TearDown();
   }
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
+  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<BrowserWindowDefaultTouchBar> touch_bar_;
 };
 

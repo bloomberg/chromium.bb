@@ -395,7 +395,8 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Returns the BrowserWindowTouchBarController object associated with the
 // window.
-- (BrowserWindowTouchBarController*)browserWindowTouchBarController;
+- (BrowserWindowTouchBarController*)browserWindowTouchBarController
+    API_AVAILABLE(macos(10.12.2));
 
 // Indicates whether the toolbar is visible to the user. Toolbar is usually
 // triggered by moving mouse cursor to the top of the monitor.
@@ -625,7 +626,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 
 // Sets |touchbarController_|.
 - (void)setBrowserWindowTouchBarController:
-    (BrowserWindowTouchBarController*)controller;
+    (BrowserWindowTouchBarController*)controller API_AVAILABLE(macos(10.12.2));
 
 @end  // @interface BrowserWindowController (TestingAPI)
 
