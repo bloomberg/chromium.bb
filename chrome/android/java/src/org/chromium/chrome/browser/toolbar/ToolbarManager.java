@@ -745,8 +745,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 mActivity.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard);
         final CharSequence incognitoAccessibilityString =
                 mActivity.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito);
-        final Drawable drawable =
-                ContextCompat.getDrawable(mActivity, R.drawable.incognito_statusbar);
+        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.incognito_simple);
         return new ToolbarButtonData(drawable, normalAccessibilityString,
                 incognitoAccessibilityString, incognitoToggleClickHandler, mActivity);
     }
