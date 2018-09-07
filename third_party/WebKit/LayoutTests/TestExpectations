@@ -301,10 +301,11 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html
 
 # [css-contain]
 
+crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
+crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-formatting-context-margin-001.html [ Failure ]
-crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-stacking-context-001.html [ Failure ]
 crbug.com/881057 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-002.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
 crbug.com/881057 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
@@ -2887,8 +2888,6 @@ crbug.com/626703 external/wpt/css/css-contain/contain-layout-cell-002.html [ Fai
 crbug.com/626703 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-size-monolithic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-style-counters-004.html [ Failure ]
-crbug.com/868102 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
-crbug.com/870157 external/wpt/css/css-contain/contain-layout-016.html [ Failure ]
 crbug.com/626703 external/wpt/clear-site-data/executionContexts.sub.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]
 crbug.com/626703 [ Linux Mac Win7 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-column-row-gap-004.html [ Failure ]

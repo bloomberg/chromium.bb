@@ -93,6 +93,14 @@ TEST(ComputedStyleTest, Preserve3dForceStackingContext) {
   EXPECT_TRUE(style->IsStackingContext());
 }
 
+TEST(ComputedStyleTest, LayoutContainmentStackingContext) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  EXPECT_FALSE(style->IsStackingContext());
+  style->SetContain(kContainsLayout);
+  style->UpdateIsStackingContext(false, false, false);
+  EXPECT_TRUE(style->IsStackingContext());
+}
+
 TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetHasPseudoStyle(kPseudoIdFirstLine);
