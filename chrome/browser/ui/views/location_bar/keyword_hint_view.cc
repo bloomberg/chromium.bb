@@ -92,17 +92,12 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 KeywordHintView::~KeywordHintView() {}
 
 void KeywordHintView::SetKeyword(const base::string16& keyword,
-                                 bool popup_open,
-                                 OmniboxTint tint) {
+                                 SkColor background_color) {
   // In the newer MD style, the KeywordHintView chip background should match the
   // LocationBarView's background, which changes when the popup is open.
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    OmniboxPart background_part = popup_open
-                                      ? OmniboxPart::RESULTS_BACKGROUND
-                                      : OmniboxPart::LOCATION_BAR_BACKGROUND;
-    SkColor tab_bg_color = GetOmniboxColor(background_part, tint);
-    chip_label_->SetBackgroundColor(tab_bg_color);
-    chip_container_->background()->SetNativeControlColor(tab_bg_color);
+    chip_label_->SetBackgroundColor(background_color);
+    chip_container_->background()->SetNativeControlColor(background_color);
   }
 
   // When the virtual keyboard is visible, we show a modified touch UI
