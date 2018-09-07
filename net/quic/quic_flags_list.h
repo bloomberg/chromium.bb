@@ -120,10 +120,6 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
 
-// Only send an ack immediately when a previously missing packet is received if
-// an ack with a larger largest acked has already been sent.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_reordered_packets, true)
-
 // Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
 // instead rely on the existing check that bytes_in_flight > 0
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
@@ -131,12 +127,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
 // When you\'re app-limited entering recovery, stay app-limited until you exit
 // recovery in QUIC BBR.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, false)
-
-// If true, mark QUIC as app-limited after sending queued packets or
-// retransmisssions and we then become congestion control blocked.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_retransmissions_app_limited,
-          true)
 
 // If true, stop resetting ideal_next_packet_send_time_ in pacing sender.
 QUIC_FLAG(
@@ -218,4 +208,24 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, false)
 // If true, increase size of random bytes in IETF stateless reset packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_more_random_bytes_in_stateless_reset,
+          false)
+
+// If true, use new, lower-overhead implementation of LRU cache for compressed
+// certificates.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_new_lru_cache, false)
+
+// When true and the BBR9 connection option is present, BBR only considers
+// bandwidth samples app-limited if they're not filling the pipe.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
+
+// If true, QuicSpdySession::OnStreamHeaderList() will close the connection
+// if the stream id referenced indicates a static stream."
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list,
+          false)
+
+// If true, calling StopReading() on a level-triggered QUIC stream sequencer
+// will cause the sequencer to discard future data.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
           false)

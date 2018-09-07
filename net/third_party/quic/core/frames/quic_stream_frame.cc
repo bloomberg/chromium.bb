@@ -27,9 +27,10 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  QuicStreamOffset offset,
                                  const char* data_buffer,
                                  QuicPacketLength data_length)
-    : stream_id(stream_id),
+    : type(STREAM_FRAME),
       fin(fin),
       data_length(data_length),
+      stream_id(stream_id),
       data_buffer(data_buffer),
       offset(offset) {}
 

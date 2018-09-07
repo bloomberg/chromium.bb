@@ -250,7 +250,6 @@ QuicConnection::QuicConnection(
       received_packet_manager_(&stats_),
       ack_queued_(false),
       num_retransmittable_packets_received_since_last_ack_sent_(0),
-      last_ack_had_missing_packets_(false),
       num_packets_received_since_last_ack_sent_(0),
       stop_waiting_count_(0),
       ack_mode_(GetQuicReloadableFlag(quic_enable_ack_decimation)
@@ -324,9 +323,6 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(writer->SupportsReleaseTime()),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      ack_reordered_packets_(GetQuicReloadableFlag(quic_ack_reordered_packets)),
-      retransmissions_app_limited_(
-          GetQuicReloadableFlag(quic_retransmissions_app_limited)),
       donot_retransmit_old_window_updates_(false),
       notify_debug_visitor_on_connectivity_probing_sent_(GetQuicReloadableFlag(
           quic_notify_debug_visitor_on_connectivity_probing_sent)) {
@@ -1291,22 +1287,11 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   // Determine whether the newly received packet was missing before recording
   // the received packet.
   if (was_missing) {
-    if (ack_reordered_packets_) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_ack_reordered_packets);
-      // Only ack immediately if an ACK frame was sent with a larger
-      // largest acked than the newly received packet number.
-      if (last_header_.packet_number <
-          sent_packet_manager_.unacked_packets().largest_sent_largest_acked()) {
-        ack_queued_ = true;
-      }
-    } else {
-      // Ack decimation with reordering relies on the timer to send an ack,
-      // but if missing packets we reported in the previous ack, send an ack
-      // immediately.
-      if (ack_mode_ != ACK_DECIMATION_WITH_REORDERING ||
-          last_ack_had_missing_packets_) {
-        ack_queued_ = true;
-      }
+    // Only ack immediately if an ACK frame was sent with a larger
+    // largest acked than the newly received packet number.
+    if (last_header_.packet_number <
+        sent_packet_manager_.unacked_packets().largest_sent_largest_acked()) {
+      ack_queued_ = true;
     }
   }
 
@@ -1669,12 +1654,8 @@ void QuicConnection::OnBlockedWriterCanWrite() {
 void QuicConnection::OnCanWrite() {
   DCHECK(!writer_->IsWriteBlocked());
 
-  std::unique_ptr<ScopedPacketFlusher> flusher;
-  if (retransmissions_app_limited_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_retransmissions_app_limited);
-    // Add a flusher to ensure the connection is marked app-limited.
-    flusher.reset(new ScopedPacketFlusher(this, NO_ACK));
-  }
+  // Add a flusher to ensure the connection is marked app-limited.
+  ScopedPacketFlusher flusher(this, NO_ACK);
 
   WriteQueuedPackets();
   if (!session_decides_what_to_write()) {
@@ -1898,7 +1879,8 @@ void QuicConnection::WritePendingRetransmissions() {
 }
 
 void QuicConnection::SendProbingRetransmissions() {
-  while (CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+  while (sent_packet_manager_.GetSendAlgorithm()->ShouldSendProbingPacket() &&
+         CanWrite(HAS_RETRANSMITTABLE_DATA)) {
     const bool can_retransmit =
         sent_packet_manager_.MaybeRetransmitOldestPacket(
             PROBING_RETRANSMISSION);
@@ -2318,10 +2300,6 @@ void QuicConnection::SendAck() {
   ack_queued_ = false;
   stop_waiting_count_ = 0;
   num_retransmittable_packets_received_since_last_ack_sent_ = 0;
-  if (!ack_reordered_packets_) {
-    last_ack_had_missing_packets_ =
-        received_packet_manager_.HasMissingPackets();
-  }
   num_packets_received_since_last_ack_sent_ = 0;
 
   packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
@@ -3042,12 +3020,9 @@ bool QuicConnection::MaybeConsiderAsMemoryCorruption(
 void QuicConnection::MaybeSendProbingRetransmissions() {
   DCHECK(fill_up_link_during_probing_);
 
+  // Don't send probing retransmissions until the handshake has completed.
   if (!sent_packet_manager_.handshake_confirmed() ||
       sent_packet_manager().HasUnackedCryptoPackets()) {
-    return;
-  }
-
-  if (!sent_packet_manager_.GetSendAlgorithm()->ShouldSendProbingPacket()) {
     return;
   }
 

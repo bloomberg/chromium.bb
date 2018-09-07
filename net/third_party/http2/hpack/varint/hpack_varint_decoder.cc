@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/http2/hpack/decoder/hpack_varint_decoder.h"
+#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
 
 DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
-                                       uint8_t prefix_mask,
+                                       uint8_t prefix_length,
                                        DecodeBuffer* db) {
-  DCHECK_LE(7, prefix_mask) << std::hex << prefix_mask;
-  DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
-  // Confirm that |prefix_mask| is a contiguous sequence of bits.
-  DCHECK_EQ(0, (prefix_mask + 1) & prefix_mask) << std::hex << prefix_mask;
+  DCHECK_LE(3u, prefix_length);
+  DCHECK_LE(prefix_length, 7u);
+
+  // |prefix_mask| defines the sequence of low-order bits of the first byte
+  // that encode the prefix of the value. It is also the marker in those bits
+  // of the first byte indicating that at least one extension byte is needed.
+  const uint8_t prefix_mask = (1 << prefix_length) - 1;
 
   // Ignore the bits that aren't a part of the prefix of the varint.
   value_ = prefix_value & prefix_mask;
@@ -28,14 +31,12 @@ DecodeStatus HpackVarintDecoder::Start(uint8_t prefix_value,
   return Resume(db);
 }
 
-DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_mask,
+DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_length,
                                                DecodeBuffer* db) {
-  DCHECK_LE(7, prefix_mask) << std::hex << prefix_mask;
-  DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
-  // Confirm that |prefix_mask| is a contiguous sequence of bits.
-  DCHECK_EQ(0, prefix_mask & (prefix_mask + 1)) << std::hex << prefix_mask;
+  DCHECK_LE(3u, prefix_length);
+  DCHECK_LE(prefix_length, 7u);
 
-  value_ = prefix_mask;
+  value_ = (1 << prefix_length) - 1;
   offset_ = 0;
   return Resume(db);
 }
@@ -78,14 +79,14 @@ Http2String HpackVarintDecoder::DebugString() const {
 }
 
 DecodeStatus HpackVarintDecoder::StartForTest(uint8_t prefix_value,
-                                              uint8_t prefix_mask,
+                                              uint8_t prefix_length,
                                               DecodeBuffer* db) {
-  return Start(prefix_value, prefix_mask, db);
+  return Start(prefix_value, prefix_length, db);
 }
 
-DecodeStatus HpackVarintDecoder::StartExtendedForTest(uint8_t prefix_mask,
+DecodeStatus HpackVarintDecoder::StartExtendedForTest(uint8_t prefix_length,
                                                       DecodeBuffer* db) {
-  return StartExtended(prefix_mask, db);
+  return StartExtended(prefix_length, db);
 }
 
 DecodeStatus HpackVarintDecoder::ResumeForTest(DecodeBuffer* db) {

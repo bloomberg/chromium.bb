@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
-#include "net/third_party/http2/hpack/decoder/hpack_varint_decoder.h"
+#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
@@ -132,7 +132,7 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
     }
     uint8_t h_and_prefix = db->DecodeUInt8();
     huffman_encoded_ = (h_and_prefix & 0x80) == 0x80;
-    *status = length_decoder_.Start(h_and_prefix, 0x7f, db);
+    *status = length_decoder_.Start(h_and_prefix, 7, db);
     if (*status == DecodeStatus::kDecodeDone) {
       OnStringStart(cb, status);
       return true;

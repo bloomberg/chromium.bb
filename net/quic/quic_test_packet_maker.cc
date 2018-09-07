@@ -112,8 +112,7 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(quic::QuicPacketNumber packet_num) {
 
   quic::CryptoHandshakeMessage message =
       MockCryptoClientStream::GetDummyCHLOMessage();
-  const quic::QuicData& data =
-      message.GetSerialized(quic::Perspective::IS_CLIENT);
+  const quic::QuicData& data = message.GetSerialized();
 
   quic::QuicFrames frames;
   quic::QuicStreamFrame frame(

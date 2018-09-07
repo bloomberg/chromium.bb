@@ -8532,7 +8532,7 @@ void QuicFramerFuzzFunc(unsigned char* data,
   // Test the CryptoFramer.
   QuicStringPiece crypto_input(packet_bytes, size);
   std::unique_ptr<CryptoHandshakeMessage> handshake_message(
-      CryptoFramer::ParseMessage(crypto_input, framer.perspective()));
+      CryptoFramer::ParseMessage(crypto_input));
 
   // Test the regular QuicFramer with the same input.
   NoOpFramerVisitor visitor;

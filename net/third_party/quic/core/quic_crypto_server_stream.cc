@@ -65,7 +65,9 @@ QuicCryptoServerStream::QuicCryptoServerStream(
 QuicCryptoServerStream::~QuicCryptoServerStream() {}
 
 void QuicCryptoServerStream::CancelOutstandingCallbacks() {
-  handshaker()->CancelOutstandingCallbacks();
+  if (handshaker()) {
+    handshaker()->CancelOutstandingCallbacks();
+  }
 }
 
 bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(

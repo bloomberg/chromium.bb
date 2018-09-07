@@ -38,11 +38,11 @@ class Alarm : public QuicAlarm {
         : Actor(simulator, name), parent_(parent) {}
     ~Adapter() override {}
 
-    void Set(QuicTime time) { Schedule(time); }
+    void Set(QuicTime time) { Schedule(std::max(time, clock_->Now())); }
     void Cancel() { Unschedule(); }
 
     void Act() override {
-      DCHECK(clock_->Now() == parent_->deadline());
+      DCHECK(clock_->Now() >= parent_->deadline());
       parent_->Fire();
     }
 

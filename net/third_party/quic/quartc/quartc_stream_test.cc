@@ -132,11 +132,12 @@ class DummyPacketWriter : public QuicPacketWriter {
 
 class MockQuartcStreamDelegate : public QuartcStream::Delegate {
  public:
-  MockQuartcStreamDelegate(int id, QuicString* read_buffer)
+  MockQuartcStreamDelegate(QuicStreamId id, QuicString* read_buffer)
       : id_(id), read_buffer_(read_buffer) {}
 
   void OnBufferChanged(QuartcStream* stream) override {
     last_bytes_buffered_ = stream->BufferedDataBytes();
+    last_bytes_pending_retransmission_ = stream->BytesPendingRetransmission();
   }
 
   void OnReceived(QuartcStream* stream,
@@ -150,17 +151,21 @@ class MockQuartcStreamDelegate : public QuartcStream::Delegate {
 
   bool closed() { return closed_; }
 
-  uint64_t last_bytes_buffered() { return last_bytes_buffered_; }
+  QuicByteCount last_bytes_buffered() { return last_bytes_buffered_; }
+  QuicByteCount last_bytes_pending_retransmission() {
+    return last_bytes_pending_retransmission_;
+  }
 
  protected:
-  uint32_t id_;
+  QuicStreamId id_;
   // Data read by the QuicStream.
   QuicString* read_buffer_;
   // Whether the QuicStream is closed.
   bool closed_ = false;
 
   // Last amount of data observed as buffered.
-  uint64_t last_bytes_buffered_ = 0;
+  QuicByteCount last_bytes_buffered_ = 0;
+  QuicByteCount last_bytes_pending_retransmission_ = 0;
 };
 
 class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
@@ -297,6 +302,7 @@ TEST_F(QuartcStreamTest, FinishWriting) {
 // Read an entire string.
 TEST_F(QuartcStreamTest, ReadDataWhole) {
   CreateReliableQuicStream();
+  stream_->set_deliver_on_complete(false);
   QuicStreamFrame frame(kStreamId, false, 0, "Hello, World!");
   stream_->OnStreamFrame(frame);
 
@@ -306,6 +312,7 @@ TEST_F(QuartcStreamTest, ReadDataWhole) {
 // Read part of a string.
 TEST_F(QuartcStreamTest, ReadDataPartial) {
   CreateReliableQuicStream();
+  stream_->set_deliver_on_complete(false);
   QuicStreamFrame frame(kStreamId, false, 0, "Hello, World!");
   frame.data_length = 5;
   stream_->OnStreamFrame(frame);
@@ -329,6 +336,28 @@ TEST_F(QuartcStreamTest, StopReading) {
 
   EXPECT_EQ(0ul, read_buffer_.size());
   EXPECT_TRUE(stream_->fin_received());
+}
+
+// Streams set to deliver_on_complete do not deliver data to the delegate
+// until all data is available.
+TEST_F(QuartcStreamTest, DeliverOnComplete) {
+  CreateReliableQuicStream();
+  stream_->set_deliver_on_complete(true);
+
+  QuicStreamFrame first_frame(kStreamId, /*fin=*/false, 0, "Hello");
+  stream_->OnStreamFrame(first_frame);
+
+  EXPECT_EQ(0ul, read_buffer_.size());
+
+  QuicStreamFrame last_frame(kStreamId, /*fin=*/true, 7, "World!");
+  stream_->OnStreamFrame(last_frame);
+
+  EXPECT_EQ(0ul, read_buffer_.size());
+
+  QuicStreamFrame middle_frame(kStreamId, /*fin=*/false, 5, ", ");
+  stream_->OnStreamFrame(middle_frame);
+
+  EXPECT_EQ("Hello, World!", read_buffer_);
 }
 
 // Test that closing the stream results in a callback.
@@ -383,6 +412,58 @@ TEST_F(QuartcStreamTest, TestCancelOnLossEnabled) {
 
   stream_->OnStreamFrameLost(0, 7, false);
   stream_->OnCanWrite();
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_CANCELLED);
+}
+
+TEST_F(QuartcStreamTest, TestBytesPendingRetransmission) {
+  CreateReliableQuicStream();
+  stream_->set_cancel_on_loss(false);
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 4, false);
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 4u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 4u);
+
+  stream_->OnStreamFrameLost(4, 3, false);
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 7u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 7u);
+
+  stream_->OnCanWrite();
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 0u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 0u);
+
+  EXPECT_EQ("Foo barFoo bar", write_buffer_);
+  EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_NO_ERROR);
+}
+
+TEST_F(QuartcStreamTest, TestBytesPendingRetransmissionWithCancelOnLoss) {
+  CreateReliableQuicStream();
+  stream_->set_cancel_on_loss(true);
+
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->WriteMemSlices(data.span(), /*fin=*/false);
+
+  EXPECT_EQ("Foo bar", write_buffer_);
+
+  stream_->OnStreamFrameLost(0, 4, false);
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 0u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 0u);
+
+  stream_->OnStreamFrameLost(4, 3, false);
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 0u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 0u);
+
+  stream_->OnCanWrite();
+  EXPECT_EQ(stream_->BytesPendingRetransmission(), 0u);
+  EXPECT_EQ(mock_stream_delegate_->last_bytes_pending_retransmission(), 0u);
 
   EXPECT_EQ("Foo bar", write_buffer_);
   EXPECT_EQ(stream_->stream_error(), QUIC_STREAM_CANCELLED);

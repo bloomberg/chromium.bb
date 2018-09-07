@@ -240,10 +240,10 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                                           bool fin_retransmitted);
 
   // Called when data [offset, offset + data_length) is considered as lost.
-  // |fin_lost| inidacates whether the fin is considered as lost.
-  void OnStreamFrameLost(QuicStreamOffset offset,
-                         QuicByteCount data_length,
-                         bool fin_lost);
+  // |fin_lost| indicates whether the fin is considered as lost.
+  virtual void OnStreamFrameLost(QuicStreamOffset offset,
+                                 QuicByteCount data_length,
+                                 bool fin_lost);
 
   // Called to retransmit outstanding portion in data [offset, offset +
   // data_length) and |fin|. Returns true if all data gets retransmitted.

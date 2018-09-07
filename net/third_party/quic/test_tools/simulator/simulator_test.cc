@@ -536,6 +536,24 @@ TEST_F(SimulatorTest, AlarmCancelling) {
   EXPECT_EQ(0u, alarm_counter);
 }
 
+// Verifies that alarms can be scheduled into the past.
+TEST_F(SimulatorTest, AlarmInPast) {
+  Simulator simulator;
+  QuicAlarmFactory* alarm_factory = simulator.GetAlarmFactory();
+
+  size_t alarm_counter = 0;
+  std::unique_ptr<QuicAlarm> alarm(
+      alarm_factory->CreateAlarm(new CounterDelegate(&alarm_counter)));
+
+  const QuicTime start_time = simulator.GetClock()->Now();
+  simulator.RunFor(QuicTime::Delta::FromMilliseconds(400));
+
+  alarm->Set(start_time);
+  simulator.RunFor(QuicTime::Delta::FromMilliseconds(1));
+  EXPECT_FALSE(alarm->IsSet());
+  EXPECT_EQ(1u, alarm_counter);
+}
+
 // Tests Simulator::RunUntilOrTimeout() interface.
 TEST_F(SimulatorTest, RunUntilOrTimeout) {
   Simulator simulator;

@@ -68,6 +68,11 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnPacketLoss(QuicPacketNumber lost_packet_number,
                               TransmissionType transmission_type,
                               QuicTime detection_time) {}
+
+    virtual void OnApplicationLimited() {}
+
+    virtual void OnAdjustNetworkParameters(QuicBandwidth bandwidth,
+                                           QuicTime::Delta rtt) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -423,6 +428,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // a pending retransmission.
   void MarkForRetransmission(QuicPacketNumber packet_number,
                              TransmissionType transmission_type);
+
+  // Performs whatever work is need to retransmit the data correctly, either
+  // by retransmitting the frames directly or by notifying that the frames
+  // are lost.
+  void HandleRetransmission(TransmissionType transmission_type,
+                            QuicTransmissionInfo* transmission_info);
 
   // Called after packets have been marked handled with last received ack frame.
   void PostProcessAfterMarkingPacketHandled(

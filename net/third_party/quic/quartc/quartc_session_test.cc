@@ -13,6 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
+#include "net/third_party/quic/quartc/counting_packet_filter.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/simulated_packet_transport.h"
@@ -30,29 +31,6 @@ namespace quic {
 namespace {
 
 static QuicByteCount kDefaultMaxPacketSize = 1200;
-
-// Simple packet filter which drops the first N packets it observes.
-class CountingPacketFilter : public simulator::PacketFilter {
- public:
-  CountingPacketFilter(simulator::Simulator* simulator,
-                       const QuicString& name,
-                       simulator::Endpoint* endpoint)
-      : PacketFilter(simulator, name, endpoint) {}
-
-  void set_packets_to_drop(int count) { packets_to_drop_ = count; }
-
- protected:
-  bool FilterPacket(const simulator::Packet& packet) override {
-    if (packets_to_drop_ > 0) {
-      --packets_to_drop_;
-      return false;
-    }
-    return true;
-  }
-
- private:
-  int packets_to_drop_ = 0;
-};
 
 class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
  public:
@@ -72,6 +50,7 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
   void OnIncomingStream(QuartcStream* quartc_stream) override {
     last_incoming_stream_ = quartc_stream;
     last_incoming_stream_->SetDelegate(stream_delegate_);
+    quartc_stream->set_deliver_on_complete(false);
   }
 
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
@@ -126,7 +105,7 @@ class QuartcSessionTest : public QuicTest {
             &simulator_, "server_transport", "client_transport",
             10 * kDefaultMaxPacketSize);
 
-    client_filter_ = QuicMakeUnique<CountingPacketFilter>(
+    client_filter_ = QuicMakeUnique<simulator::CountingPacketFilter>(
         &simulator_, "client_filter", client_transport_.get());
 
     client_server_link_ = QuicMakeUnique<simulator::SymmetricLink>(
@@ -205,6 +184,7 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
+    outgoing_stream->set_deliver_on_complete(false);
 
     // Send a test message from peer 1 to peer 2.
     char kTestMessage[] = "Hello";
@@ -251,7 +231,7 @@ class QuartcSessionTest : public QuicTest {
 
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> client_transport_;
   std::unique_ptr<simulator::SimulatedQuartcPacketTransport> server_transport_;
-  std::unique_ptr<CountingPacketFilter> client_filter_;
+  std::unique_ptr<simulator::CountingPacketFilter> client_filter_;
   std::unique_ptr<simulator::SymmetricLink> client_server_link_;
 
   std::unique_ptr<QuartcPacketWriter> client_writer_;

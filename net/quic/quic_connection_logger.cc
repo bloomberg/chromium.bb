@@ -225,8 +225,7 @@ std::unique_ptr<base::Value> NetLogQuicCryptoHandshakeMessageCallback(
     const quic::CryptoHandshakeMessage* message,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("quic_crypto_handshake_message",
-                  message->DebugString(quic::Perspective::IS_CLIENT));
+  dict->SetString("quic_crypto_handshake_message", message->DebugString());
   return std::move(dict);
 }
 

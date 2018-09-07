@@ -309,6 +309,20 @@ TEST_P(QuicSpdyClientSessionTest, ReceivedMalformedTrailersAfterSendingRst) {
   session_->OnStreamHeaderList(stream_id, /*fin=*/false, 0, trailers);
 }
 
+TEST_P(QuicSpdyClientSessionTest, OnHeaderListWithStaticStream) {
+  // Test situation where OnStreamHeadList is called by stream with static id.
+  FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list = true;
+  CompleteCryptoHandshake();
+
+  QuicHeaderList trailers;
+  trailers.OnHeaderBlockStart();
+  trailers.OnHeader(kFinalOffsetHeaderKey, "0");
+  trailers.OnHeaderBlockEnd(0, 0);
+
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
+  session_->OnStreamHeaderList(kCryptoStreamId, /*fin=*/false, 0, trailers);
+}
+
 TEST_P(QuicSpdyClientSessionTest, GoAwayReceived) {
   CompleteCryptoHandshake();
 
