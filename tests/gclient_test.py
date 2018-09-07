@@ -772,6 +772,45 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testRelativeRecursionInNestedDir(self):
+    """Verifies a gotcha of relative recursion where the parent uses relative
+    paths but not the dependency being recursed in. In that case the recursed
+    dependencies will only take into account the first directory of its path.
+    In this test it can be seen in baz being placed in foo/third_party."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'use_relative_paths = True\n'
+        'deps = {\n'
+        '  "third_party/bar": "/bar",\n'
+        '}\n'
+        'recursedeps = ["third_party/bar"]')
+    write(
+        os.path.join('foo/third_party/bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+    write(
+        os.path.join('baz', 'DEPS'),
+        'deps = {\n'
+        '  "fizz": "/fizz",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          ('foo', 'svn://example.com/foo'),
+          ('foo/third_party/bar', 'svn://example.com/bar'),
+          ('foo/third_party/baz', 'svn://example.com/baz'),
+        ],
+        self._get_processed())
+
   def testRecursedepsAltfile(self):
     """Verifies gclient respects the |recursedeps| var syntax with overridden
     target DEPS file.

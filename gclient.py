@@ -796,7 +796,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     ])
 
   def findDepsFromNotAllowedHosts(self):
-    """Returns a list of depenecies from not allowed hosts.
+    """Returns a list of dependencies from not allowed hosts.
 
     If allowed_hosts is not set, allows all hosts and returns empty list.
     """
