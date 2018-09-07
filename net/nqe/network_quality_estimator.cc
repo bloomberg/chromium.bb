@@ -259,14 +259,28 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
       this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
+                 // It is safe to use base::Unretained here since
+                 // |throughput_analyzer_| is owned by |this|. This ensures that
+                 // |throughput_analyzer_| will be destroyed before |this|.
                  base::Unretained(this)),
       tick_clock_, net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(),
       params_->min_socket_watcher_notification_interval(),
+      // OnUpdatedTransportRTTAvailable() may be called via PostTask() by
+      // socket watchers that live on a different thread than the current thread
+      // (i.e., base::ThreadTaskRunnerHandle::Get()).
+      // Use WeakPtr() to avoid crashes where the socket watcher is destroyed
+      // after |this| is destroyed.
       base::Bind(&NetworkQualityEstimator::OnUpdatedTransportRTTAvailable,
-                 base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
+      // ShouldSocketWatcherNotifyRTT() below is called by only the socket
+      // watchers that live on the same thread as the current thread
+      // (i.e., base::ThreadTaskRunnerHandle::Get()). Also, network quality
+      // estimator is destroyed after network contexts and URLRequestContexts.
+      // It's safe to use base::Unretained() below since the socket watcher
+      // (owned by sockets) would be destroyed before |this|.
       base::Bind(&NetworkQualityEstimator::ShouldSocketWatcherNotifyRTT,
                  base::Unretained(this)),
       tick_clock_));
