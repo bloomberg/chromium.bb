@@ -5,7 +5,6 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 action("create_test_main") {
-  testonly = true
   script = "//ui/file_manager/file_manager/test/scripts/create_test_main.py"
   output = "$target_gen_dir/../test.html"
   sources = [
@@ -24,11 +23,7 @@ action("create_test_main") {
     "quick_view.js",
     "uma.js",
   ]
-  args = [
-    "--output=" + rebase_path(output, root_build_dir),
-    "--file_manager_strings=" +
-        rebase_path("$root_out_dir/file_manager_strings"),
-  ]
+  args = [ "--output=" + rebase_path(output, root_build_dir) ]
   outputs = [
     output,
     "$target_gen_dir/gen/css/text_defaults.css",
@@ -37,9 +32,6 @@ action("create_test_main") {
     "$target_gen_dir/gen/elements/files_safe_media.html",
     "$target_gen_dir/gen/elements/files_safe_media.js",
     "$target_gen_dir/gen/js/elements_importer.js",
-  ]
-  deps = [
-    "//chrome/browser/chromeos/extensions/file_manager/test:file_manager_strings",
   ]
 }
 
