@@ -360,7 +360,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 maxIso = iso_range.getUpper();
             }
             builder.setMinIso(minIso).setMaxIso(maxIso).setStepIso(1);
-            if (mPreviewRequestBuilder.get(CaptureRequest.SENSOR_SENSITIVITY) != null) {
+            if (mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY) != null) {
                 builder.setCurrentIso(mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY));
             }
 
@@ -383,10 +383,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     (mPhotoHeight > 0) ? mPhotoHeight : mCaptureFormat.getHeight());
             builder.setCurrentWidth((mPhotoWidth > 0) ? mPhotoWidth : mCaptureFormat.getWidth());
 
-            final float currentZoom =
-                    cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
-                            .width()
-                    / (float) mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
+            float currentZoom = 1.0f;
+            if (cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+                            != null
+                    && mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION) != null) {
+                currentZoom = cameraCharacteristics
+                                      .get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+                                      .width()
+                        / (float) mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
+            }
             // There is no min-zoom per se, so clamp it to always 1.
             builder.setMinZoom(1.0).setMaxZoom(mMaxZoom);
             builder.setCurrentZoom(currentZoom).setStepZoom(0.1);
@@ -470,21 +475,23 @@ public class VideoCaptureCamera2 extends VideoCapture {
             }
             builder.setFocusModes(integerArrayListToArray(focusModes));
 
-            final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
             int jniFocusMode = AndroidMeteringMode.NONE;
-            if (focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
-                    || focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-                jniFocusMode = AndroidMeteringMode.CONTINUOUS;
-            } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_AUTO
-                    || focusMode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
-                jniFocusMode = AndroidMeteringMode.SINGLE_SHOT;
-            } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF) {
-                jniFocusMode = AndroidMeteringMode.FIXED;
-                // Set focus distance here.
-                if (mCurrentFocusDistance > 0)
-                    builder.setCurrentFocusDistance(1 / mCurrentFocusDistance);
-            } else {
-                assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
+            if (mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE) != null) {
+                final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
+                if (focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+                        || focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
+                    jniFocusMode = AndroidMeteringMode.CONTINUOUS;
+                } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_AUTO
+                        || focusMode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
+                    jniFocusMode = AndroidMeteringMode.SINGLE_SHOT;
+                } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF) {
+                    jniFocusMode = AndroidMeteringMode.FIXED;
+                    // Set focus distance here.
+                    if (mCurrentFocusDistance > 0)
+                        builder.setCurrentFocusDistance(1 / mCurrentFocusDistance);
+                } else {
+                    assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
+                }
             }
             builder.setFocusMode(jniFocusMode);
 
@@ -513,8 +520,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
             builder.setExposureModes(integerArrayListToArray(exposureModes));
 
             int jniExposureMode = AndroidMeteringMode.CONTINUOUS;
-            if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)
-                    == CameraMetadata.CONTROL_AE_MODE_OFF) {
+            if ((mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE) != null)
+                    && mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)
+                            == CameraMetadata.CONTROL_AE_MODE_OFF) {
                 jniExposureMode = AndroidMeteringMode.NONE;
             }
             if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
@@ -530,8 +538,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
             builder.setMinExposureCompensation(exposureCompensationRange.getLower() * step);
             builder.setMaxExposureCompensation(exposureCompensationRange.getUpper() * step);
-            builder.setCurrentExposureCompensation(
-                    mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) * step);
+            if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) != null) {
+                builder.setCurrentExposureCompensation(
+                        mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION)
+                        * step);
+            }
 
             final int[] jniWhiteBalanceMode =
                     cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES);
@@ -551,13 +562,16 @@ public class VideoCaptureCamera2 extends VideoCapture {
             }
             builder.setWhiteBalanceModes(integerArrayListToArray(whiteBalanceModes));
 
-            final int whiteBalanceMode = mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE);
-            if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
-                builder.setWhiteBalanceMode(AndroidMeteringMode.NONE);
-            } else if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_AUTO) {
-                builder.setWhiteBalanceMode(AndroidMeteringMode.CONTINUOUS);
-            } else {
-                builder.setWhiteBalanceMode(AndroidMeteringMode.FIXED);
+            int whiteBalanceMode = CameraMetadata.CONTROL_AWB_MODE_AUTO;
+            if (mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE) != null) {
+                whiteBalanceMode = mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE);
+                if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
+                    builder.setWhiteBalanceMode(AndroidMeteringMode.NONE);
+                } else if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_AUTO) {
+                    builder.setWhiteBalanceMode(AndroidMeteringMode.CONTINUOUS);
+                } else {
+                    builder.setWhiteBalanceMode(AndroidMeteringMode.FIXED);
+                }
             }
             builder.setMinColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(0));
             builder.setMaxColorTemperature(
@@ -575,8 +589,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 // There's no way to query if torch and/or red eye reduction modes are available
                 // using Camera2 API but since there's a Flash unit, we assume so.
                 builder.setSupportsTorch(true);
-                builder.setTorch(mPreviewRequest.get(CaptureRequest.FLASH_MODE)
-                        == CameraMetadata.FLASH_MODE_TORCH);
+                if (mPreviewRequest.get(CaptureRequest.FLASH_MODE) != null) {
+                    builder.setTorch(mPreviewRequest.get(CaptureRequest.FLASH_MODE)
+                            == CameraMetadata.FLASH_MODE_TORCH);
+                }
 
                 builder.setRedEyeReduction(true);
 
