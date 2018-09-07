@@ -74,11 +74,16 @@
         inner-h-t-m-l="[[summary_]]">
     </span>
     <div id="button-strip">
+<if expr="not chromeos and not is_win">
       <button class="cancel" on-click="onCancelClick_">$i18n{cancel}</button>
+</if>
       <button class="print default" on-click="onPrintClick_"
           disabled$="[[!printButtonEnabled_]]">
         [[getPrintButton_(destination.id)]]
       </button>
+<if expr="chromeos or is_win">
+      <button class="cancel" on-click="onCancelClick_">$i18n{cancel}</button>
+</if>
     </div>
   </template>
   <script src="header.js"></script>
