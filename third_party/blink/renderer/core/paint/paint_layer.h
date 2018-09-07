@@ -378,6 +378,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Layer::paint*() methods.
   PaintLayer* EnclosingLayerForPaintInvalidation() const;
 
+  // https://crbug.com/751768, this function can return nullptr sometimes.
+  // Always check the result before using it, don't just DCHECK.
   PaintLayer* EnclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
 
   bool HasAncestorWithFilterThatMovesPixels() const;
