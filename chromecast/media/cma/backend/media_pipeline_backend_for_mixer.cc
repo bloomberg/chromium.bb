@@ -79,6 +79,7 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   audio_ready_to_play_ = !audio_decoder_;
   first_resume_processed_ = false;
 
+  start_playback_timestamp_us_ = INT64_MIN;
   start_playback_pts_us_ = start_pts;
 
   int64_t effective_start_pts =
@@ -92,7 +93,11 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   if (video_decoder_ && !video_decoder_->Start(start_playback_pts_us_, true))
     return false;
 
-  state_ = kStatePlaying;
+  if (av_sync_) {
+    state_ = kStatePaused;
+  } else {
+    state_ = kStatePlaying;
+  }
   return true;
 }
 
@@ -111,14 +116,19 @@ void MediaPipelineBackendForMixer::Stop() {
 }
 
 bool MediaPipelineBackendForMixer::Pause() {
-  DCHECK_EQ(kStatePlaying, state_);
-  if (!first_resume_processed_) {
+  if (av_sync_ && !first_resume_processed_) {
+    DCHECK_EQ(kStatePaused, state_);
     return true;
   }
-  if (audio_decoder_ && !audio_decoder_->Pause())
+
+  DCHECK_EQ(kStatePlaying, state_);
+
+  if (audio_decoder_ && !audio_decoder_->Pause()) {
     return false;
-  if (video_decoder_ && !video_decoder_->Pause())
+  }
+  if (video_decoder_ && !video_decoder_->Pause()) {
     return false;
+  }
   if (av_sync_) {
     av_sync_->NotifyPause();
   }
@@ -128,8 +138,8 @@ bool MediaPipelineBackendForMixer::Pause() {
 }
 
 bool MediaPipelineBackendForMixer::Resume() {
-  if (!first_resume_processed_) {
-    DCHECK_EQ(kStatePlaying, state_);
+  DCHECK_EQ(kStatePaused, state_);
+  if (av_sync_ && !first_resume_processed_) {
 
     LOG(INFO) << "First resume received.";
     first_resume_processed_ = true;
@@ -137,7 +147,6 @@ bool MediaPipelineBackendForMixer::Resume() {
     return true;
   }
 
-  DCHECK_EQ(kStatePaused, state_);
   if (av_sync_) {
     av_sync_->NotifyResume();
   }
@@ -238,54 +247,52 @@ void MediaPipelineBackendForMixer::VideoReadyToPlay() {
 void MediaPipelineBackendForMixer::OnVideoReadyToPlay() {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!video_ready_to_play_);
+  DCHECK(video_decoder_);
 
   LOG(INFO) << "Video ready to play";
-
   video_ready_to_play_ = true;
 
-  TryStartPlayback();
-}
+  if (av_sync_) {
+    TryStartPlayback();
+  } else if (!IsIgnorePtsMode()) {
+    start_playback_timestamp_us_ = MonotonicClockNow();
+    LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
 
-void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
-  LOG(INFO) << "The audio is ready for playback.";
-  DCHECK(!audio_ready_to_play_);
-
-  audio_ready_to_play_ = true;
-
-  TryStartPlayback();
-}
-
-void MediaPipelineBackendForMixer::TryStartPlayback() {
-  DCHECK(state_ == kStatePlaying || state_ == kStatePaused);
-
-  if (av_sync_ && !(audio_ready_to_play_ && first_resume_processed_ &&
-                    video_ready_to_play_)) {
-    return;
-  }
-
-  if (IsIgnorePtsMode()) {
-    start_playback_timestamp_us_ = INT64_MIN;
-  } else {
-    start_playback_timestamp_us_ =
-        MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
-  }
-
-  LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
-
-  // Note that SetPts needs to be called even if the playback is not AV sync'd
-  // (for example we only have a video stream).
-  if (video_decoder_ && !IsIgnorePtsMode()) {
     video_decoder_->SetPts(start_playback_timestamp_us_,
                            start_playback_pts_us_);
   }
+}
 
-  if (audio_decoder_ && av_sync_) {
-    audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
-  }
+void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
+  DCHECK(!audio_ready_to_play_);
+
+  LOG(INFO) << "Audio ready to play";
+  audio_ready_to_play_ = true;
 
   if (av_sync_) {
-    av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
+    TryStartPlayback();
   }
+}
+
+void MediaPipelineBackendForMixer::TryStartPlayback() {
+  DCHECK(av_sync_);
+  DCHECK(state_ == kStatePaused);
+  DCHECK(!IsIgnorePtsMode());
+  DCHECK(video_decoder_);
+  DCHECK(audio_decoder_);
+
+  if (!audio_ready_to_play_ || !video_ready_to_play_ ||
+      !first_resume_processed_) {
+    return;
+  }
+
+  start_playback_timestamp_us_ =
+      MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+  LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
+
+  video_decoder_->SetPts(start_playback_timestamp_us_, start_playback_pts_us_);
+  audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
+  av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
   state_ = kStatePlaying;
 }
 
