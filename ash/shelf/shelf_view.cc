@@ -496,6 +496,9 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   // TODO(msw): Push this app list state into ShelfItem::shows_tooltip.
   if (view == GetAppListButton() && GetAppListButton()->is_showing_app_list())
     return false;
+  // Don't show a tooltip for a view that's currently being dragged.
+  if (view == drag_view_)
+    return false;
   const ShelfItem* item = ShelfItemForView(view);
   return item != nullptr;
 }
