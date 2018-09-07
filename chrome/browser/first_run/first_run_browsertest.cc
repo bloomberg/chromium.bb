@@ -133,7 +133,7 @@ int MaskExpectedImportState(int expected_import_state) {
 
 }  // namespace
 
-extern const char kImportDefault[] =
+const char kImportDefault[] =
     "{\n"
     "}\n";
 typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
             auto_import_state);
 }
 
-extern const char kImportAll[] =
+const char kImportAll[] =
     "{\n"
     "  \"distribution\": {\n"
     "    \"import_bookmarks\": true,\n"
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportAll, MAYBE_ImportAll) {
 
 // The bookmarks file doesn't actually need to exist for this integration test
 // to trigger the interaction being tested.
-extern const char kImportBookmarksFile[] =
+const char kImportBookmarksFile[] =
     "{\n"
     "  \"distribution\": {\n"
     "     \"import_bookmarks_from_file\": \"/foo/doesntexists.wtv\"\n"
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
 // Test an import with all import options disabled. This is a regression test
 // for http://crbug.com/169984 where this would cause the import process to
 // stay running, and the NTP to be loaded with no apps.
-extern const char kImportNothing[] =
+const char kImportNothing[] =
     "{\n"
     "  \"distribution\": {\n"
     "    \"import_bookmarks\": false,\n"
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
 }
 
 // Test first run with some tracked preferences.
-extern const char kWithTrackedPrefs[] =
+const char kWithTrackedPrefs[] =
     "{\n"
     "  \"homepage\": \"example.com\",\n"
     "  \"homepage_is_newtabpage\": false\n"

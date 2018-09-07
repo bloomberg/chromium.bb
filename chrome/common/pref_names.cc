@@ -864,7 +864,7 @@ const char kManagedSessionEnabled[] = "managed_session.enabled";
 // Boolean pref indicating whether the user has previously dismissed the
 // one-time notification indicating the need for a cleanup powerwash after TPM
 // firmware update that didn't flush the TPM SRK.
-extern const char kTPMFirmwareUpdateCleanupDismissed[] =
+const char kTPMFirmwareUpdateCleanupDismissed[] =
     "tpm_firmware_update.cleanup_dismissed";
 
 // Boolean pref indicating whether the NetBios Name Query Request Protocol is
