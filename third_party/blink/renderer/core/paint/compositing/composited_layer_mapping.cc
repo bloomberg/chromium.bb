@@ -1482,6 +1482,11 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   LayoutPoint host_layer_position;
 
   if (NeedsToReparentOverflowControls()) {
+    // This should never be true, but for some reason it is.
+    // See https://crbug.com/880930.
+    if (!compositing_stacking_context)
+      return;
+
     CompositedLayerMapping* stacking_clm =
         compositing_stacking_context->GetCompositedLayerMapping();
     DCHECK(stacking_clm);

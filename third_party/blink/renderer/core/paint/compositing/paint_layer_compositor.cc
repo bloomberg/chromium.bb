@@ -398,6 +398,16 @@ GraphicsLayer* PaintLayerCompositor::ParentForContentLayers(
   return GetVisualViewport().ScrollLayer();
 }
 
+#if DCHECK_IS_ON()
+static void AssertWholeTreeNotComposited(const PaintLayer& paint_layer) {
+  DCHECK(paint_layer.GetCompositingState() == kNotComposited);
+  for (PaintLayer* child = paint_layer.FirstChild(); child;
+       child = child->NextSibling()) {
+    AssertWholeTreeNotComposited(*child);
+  }
+}
+#endif
+
 void PaintLayerCompositor::UpdateIfNeeded(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
@@ -484,6 +494,12 @@ void PaintLayerCompositor::UpdateIfNeeded(
                          ->ChildForSuperlayers()
                          ->Parent();
   }
+
+#if DCHECK_IS_ON()
+  if (update_root->GetCompositingState() != kPaintsIntoOwnBacking) {
+    AssertWholeTreeNotComposited(*update_root);
+  }
+#endif
 
   GraphicsLayerUpdater updater;
   updater.Update(*update_root, layers_needing_paint_invalidation);
