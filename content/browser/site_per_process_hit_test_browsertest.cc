@@ -1093,20 +1093,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
 }
 #endif  // defined(USE_AURA)
 
-#if defined(OS_CHROMEOS)
-// Times out flakily on Chrome OS. crbug.com/833380
-#define MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion \
-  DISABLED_CancelWheelScrollBubblingOnWheelTargetDeletion
-#else
-#define MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion \
-  CancelWheelScrollBubblingOnWheelTargetDeletion
-#endif
-
 // Tests that wheel scroll bubbling gets cancelled when the wheel target view
 // gets destroyed in the middle of a wheel scroll seqeunce. This happens in
 // cases like overscroll navigation from inside an oopif.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion) {
+                       CancelWheelScrollBubblingOnWheelTargetDeletion) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
   GURL main_url(embedded_test_server()->GetURL(
@@ -1972,16 +1963,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(THREAD_SANITIZER) || defined(OS_CHROMEOS)
-// The test times out often on TSAN bot.
-// https://crbug.com/591170.
-// Also times out flakily on Chrome OS. crbug.com/833380
-#define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
-#else
-#define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
-#endif
-IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_SurfaceHitTestTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, SurfaceHitTestTest) {
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
@@ -1993,9 +1975,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // High DPI browser tests are not needed on Android, and confuse some of the
 // coordinate calculations. Android uses fixed device scale factor.
 // Windows is disabled because of https://crbug.com/545547.
-#define MAYBE_HighDPISurfaceHitTestTest DISABLED_HighDPISurfaceHitTestTest
-#elif defined(THREAD_SANITIZER)
-// Flaky: https://crbug.com/833380
 #define MAYBE_HighDPISurfaceHitTestTest DISABLED_HighDPISurfaceHitTestTest
 #else
 #define MAYBE_HighDPISurfaceHitTestTest HighDPISurfaceHitTestTest
@@ -3032,16 +3011,14 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
 }  // namespace
 
-// Flaky: https://crbug.com/833380
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_CursorUpdateReceivedFromCrossSiteIframe) {
+                       CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
 
-// Flaky: https://crbug.com/833380
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       DISABLED_CursorUpdateReceivedFromCrossSiteIframe) {
+                       CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }
@@ -4163,13 +4140,9 @@ void CreateContextMenuTestHelper(
   EXPECT_NEAR(point.y(), params.y, 2);
 }
 
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 // High DPI tests don't work properly on Android, which has fixed scale factor.
 // Windows is disabled because of https://crbug.com/545547.
-// The test is flaky on Linux:  https://crbug.com/833380.
-#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
-#elif defined(THREAD_SANITIZER)
-// TSAN is flaky on both standard and High DPI: https://crbug.com/833380
 #define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
 #else
 #define MAYBE_CreateContextMenuTest CreateContextMenuTest
