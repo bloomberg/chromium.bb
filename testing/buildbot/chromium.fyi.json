@@ -5300,6 +5300,10 @@
         }
       },
       {
+        "args": [
+          "--xvfb",
+          "--jobs=1"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
         "swarming": {
