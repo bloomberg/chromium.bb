@@ -7,6 +7,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -31,11 +32,6 @@ constexpr float kIndicatorsThresholdRatio = 0.1;
 // The threshold to compute the vertical distance to hide the drag indicators
 // and maximize the dragged window after the drag ends.
 constexpr float kMaximizeThresholdRatio = 0.4;
-
-// The duration of the animation that occurs on restoring the dragged window
-// back to its original state.
-constexpr base::TimeDelta kRestoreDraggedWindowAnimationDurationMs =
-    base::TimeDelta::FromMilliseconds(250);
 
 // Returns the window selector if overview mode is active, otherwise returns
 // nullptr.
@@ -67,34 +63,6 @@ gfx::Rect GetBoundsOfSelectedNewSelectorItem(aura::Window* dragged_window) {
     return gfx::Rect();
 
   return new_selector_item->GetBoundsOfSelectedItem();
-}
-
-// Set |transform| to |window| and its transient child windows, animate the
-// process if |animate| is true. |transform| is the transform that applies to
-// |window| and needes to be adjusted for the transient child windows.
-void SetTransform(aura::Window* window,
-                  const gfx::Transform& transform,
-                  bool animate) {
-  gfx::Point target_origin(window->GetTargetBounds().origin());
-  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
-    aura::Window* parent_window = window_iter->parent();
-    gfx::Rect original_bounds(window_iter->GetTargetBounds());
-    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
-    gfx::Transform new_transform =
-        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
-                                       target_origin.y() - original_bounds.y()),
-                            transform);
-
-    if (animate && window_iter->layer()) {
-      ui::ScopedLayerAnimationSettings settings(
-          window_iter->layer()->GetAnimator());
-      settings.SetTransitionDuration(kRestoreDraggedWindowAnimationDurationMs);
-      settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-      window_iter->SetTransform(new_transform);
-    } else {
-      window_iter->SetTransform(new_transform);
-    }
-  }
 }
 
 }  // namespace
@@ -240,18 +208,6 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
                                             location_in_screen);
   split_view_drag_indicators_->SetIndicatorState(IndicatorState::kNone,
                                                  location_in_screen);
-
-  const bool snapped_or_into_overview =
-      snap_position != SplitViewController::NONE ||
-      (GetWindowSelector() &&
-       GetWindowSelector()->IsWindowInOverview(dragged_window_));
-  // If |dragged_window_|'s transform has changed during dragging, and it was
-  // not snapped into splitscreen or dropped into overview. Then restore its
-  // transform to identity.
-  if (!dragged_window_->layer()->GetTargetTransform().IsIdentity() &&
-      !snapped_or_into_overview) {
-    SetTransform(dragged_window_, gfx::Transform(), /*animate=*/true);
-  }
 
   // Reset the dragged window's window shadow elevation.
   ::wm::SetShadowElevation(dragged_window_, original_shadow_elevation_);
@@ -412,7 +368,7 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
       (location_in_screen.y() - window_bounds.y()) -
           (initial_location_in_screen_.y() - window_bounds.y()) * scale);
   transform.Scale(scale, scale);
-  SetTransform(dragged_window_, transform, /*animate=*/false);
+  SetTransform(dragged_window_, transform);
 }
 
 }  // namespace ash

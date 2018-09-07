@@ -187,6 +187,27 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
+// static
+float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
+                                                  const gfx::Size& target,
+                                                  int top_view_inset,
+                                                  int title_height) {
+  return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
+                            (source.height() - top_view_inset));
+}
+
+// static
+gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
+    const gfx::Rect& src_rect,
+    const gfx::Rect& dst_rect) {
+  DCHECK(!src_rect.IsEmpty());
+  gfx::Transform transform;
+  transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
+  transform.Scale(static_cast<float>(dst_rect.width()) / src_rect.width(),
+                  static_cast<float>(dst_rect.height()) / src_rect.height());
+  return transform;
+}
+
 void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform,
                                                   bool use_slide_animation) {
   // Shadow controller may be null on shutdown.
@@ -211,7 +232,7 @@ void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform,
                          &animation_settings_list);
     // Use identity transform directly to reset window's transform when exiting
     // overview.
-    SetTransform(window()->GetRootWindow(), gfx::Transform());
+    SetTransform(GetOverviewWindow(), gfx::Transform());
     // Add requests to cache render surface and perform trilinear filtering for
     // the exit animation of overview mode. The requests will be removed when
     // the exit animation finishes.
@@ -270,24 +291,6 @@ bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
   return mirror && mirror->Contains(target);
 }
 
-gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
-  gfx::Rect bounds;
-  aura::Window* overview_window = GetOverviewWindow();
-  for (auto* window : wm::GetTransientTreeIterator(overview_window)) {
-    // Ignore other window types when computing bounding box of window
-    // selector target item.
-    if (window != overview_window &&
-        window->type() != aura::client::WINDOW_TYPE_NORMAL &&
-        window->type() != aura::client::WINDOW_TYPE_PANEL) {
-      continue;
-    }
-    gfx::Rect target_bounds = window->GetTargetBounds();
-    ::wm::ConvertRectToScreen(window->parent(), &target_bounds);
-    bounds.Union(target_bounds);
-  }
-  return bounds;
-}
-
 gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
   return ::ash::GetTransformedBounds(GetOverviewWindow(), GetTopInset());
 }
@@ -310,45 +313,6 @@ int ScopedTransformOverviewWindow::GetTopInset() const {
 
 void ScopedTransformOverviewWindow::OnWindowDestroyed() {
   window_ = nullptr;
-}
-
-float ScopedTransformOverviewWindow::GetItemScale(const gfx::Size& source,
-                                                  const gfx::Size& target,
-                                                  int top_view_inset,
-                                                  int title_height) {
-  return std::min(2.0f, static_cast<float>((target.height() - title_height)) /
-                            (source.height() - top_view_inset));
-}
-
-gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
-    const gfx::Rect& src_rect,
-    const gfx::Rect& dst_rect) {
-  DCHECK(!src_rect.IsEmpty());
-  gfx::Transform transform;
-  transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
-  transform.Scale(static_cast<float>(dst_rect.width()) / src_rect.width(),
-                  static_cast<float>(dst_rect.height()) / src_rect.height());
-  return transform;
-}
-
-void ScopedTransformOverviewWindow::SetTransform(
-    aura::Window* root_window,
-    const gfx::Transform& transform) {
-  // TODO(oshima): Consolidate with SetTransform in
-  // tablet_mode_window_drag_delegate.cc.
-  DCHECK(overview_started_);
-
-  gfx::Point target_origin(GetTargetBoundsInScreen().origin());
-  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
-    aura::Window* parent_window = window->parent();
-    gfx::Rect original_bounds(window->GetTargetBounds());
-    ::wm::ConvertRectToScreen(parent_window, &original_bounds);
-    gfx::Transform new_transform =
-        TransformAboutPivot(gfx::Point(target_origin.x() - original_bounds.x(),
-                                       target_origin.y() - original_bounds.y()),
-                            transform);
-    window->SetTransform(new_transform);
-  }
 }
 
 void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
