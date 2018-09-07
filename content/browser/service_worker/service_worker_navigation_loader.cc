@@ -234,9 +234,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
           resource_request_, url_loader_factory_getter_.get(),
           base::DoNothing(/* TODO(crbug/762357): metrics? */));
+
+  // Record worker start time here as |fetch_dispatcher_| will start a service
+  // worker if there is no running service worker.
   response_head_.service_worker_start_time = base::TimeTicks::Now();
-  response_head_.load_timing.send_start = base::TimeTicks::Now();
-  response_head_.load_timing.send_end = base::TimeTicks::Now();
   fetch_dispatcher_->Run();
 }
 
@@ -276,7 +277,12 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
       "initial_worker_status",
       EmbeddedWorkerInstance::StatusToString(initial_worker_status));
 
-  response_head_.service_worker_ready_time = base::TimeTicks::Now();
+  // At this point a service worker is running and the fetch event is about
+  // to dispatch. Record some load timings.
+  base::TimeTicks now = base::TimeTicks::Now();
+  response_head_.service_worker_ready_time = now;
+  response_head_.load_timing.send_start = now;
+  response_head_.load_timing.send_end = now;
 
   // Note that we don't record worker preparation time in S13nServiceWorker
   // path for now. If we want to measure worker preparation time we can
