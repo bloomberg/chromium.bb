@@ -14,7 +14,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
@@ -25,7 +24,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
-#include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::BrowserContext;
@@ -108,15 +106,13 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
     const std::string& view_id,
     int32_t element_instance_id,
     const gfx::Size& element_size,
-    mime_handler::BeforeUnloadControlPtr before_unload_control,
-    int32_t plugin_frame_routing_id) {
+    mime_handler::BeforeUnloadControlPtr before_unload_control) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&ExtensionsGuestViewMessageFilter::
                          CreateMimeHandlerViewGuestOnUIThread,
                      this, render_frame_id, view_id, element_instance_id,
-                     element_size, before_unload_control.PassInterface(),
-                     plugin_frame_routing_id, false));
+                     element_size, before_unload_control.PassInterface()));
 }
 
 void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
@@ -124,12 +120,8 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
     const std::string& view_id,
     int element_instance_id,
     const gfx::Size& element_size,
-    mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
-    int32_t plugin_frame_routing_id,
-    bool is_full_page_plugin) {
+    mime_handler::BeforeUnloadControlPtrInfo before_unload_control) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame() ||
-         plugin_frame_routing_id == MSG_ROUTING_NONE);
   auto* manager = GetOrCreateGuestViewManager();
 
   auto* rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
@@ -140,8 +132,7 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
   GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
       &ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback,
       this, element_instance_id, render_process_id_, render_frame_id,
-      plugin_frame_routing_id, element_size, std::move(before_unload_control),
-      is_full_page_plugin);
+      element_size, std::move(before_unload_control));
 
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, view_id);
@@ -179,8 +170,7 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
     const GURL& original_url,
     int32_t element_instance_id,
     const gfx::Size& element_size,
-    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader,
-    int32_t plugin_frame_routing_id) {
+    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -188,8 +178,7 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
                            CreateEmbeddedMimeHandlerViewGuest,
                        this, render_frame_id, tab_id, original_url,
                        element_instance_id, element_size,
-                       base::Passed(&transferrable_url_loader),
-                       plugin_frame_routing_id));
+                       base::Passed(&transferrable_url_loader)));
     return;
   }
 
@@ -226,19 +215,16 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
                   -1 /* frame_tree_node_id*/, render_process_id_,
                   render_frame_id);
 
-  CreateMimeHandlerViewGuestOnUIThread(render_frame_id, view_id,
-                                       element_instance_id, element_size,
-                                       nullptr, plugin_frame_routing_id, false);
+  CreateMimeHandlerViewGuestOnUIThread(
+      render_frame_id, view_id, element_instance_id, element_size, nullptr);
 }
 
 void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
     int element_instance_id,
     int embedder_render_process_id,
     int embedder_render_frame_id,
-    int32_t plugin_frame_routing_id,
     const gfx::Size& element_size,
     mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
-    bool is_full_page_plugin,
     WebContents* web_contents) {
   auto* guest_view = MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
@@ -257,29 +243,14 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   base::DictionaryValue attach_params;
   attach_params.SetInteger(guest_view::kElementWidth, element_size.width());
   attach_params.SetInteger(guest_view::kElementHeight, element_size.height());
-  auto uses_cross_process_frame =
-      content::MimeHandlerViewMode::UsesCrossProcessFrame();
-  if (uses_cross_process_frame) {
-    int32_t plugin_frame_tree_node_id =
-        content::RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
-            render_process_id_, plugin_frame_routing_id);
-    // These parameters are later used in finalizing the guest attaching to its
-    // embedder.
-    attach_params.SetInteger(mime_handler_view::kPluginFrameTreeNodeId,
-                             plugin_frame_tree_node_id);
-    attach_params.SetInteger(guest_view::kParameterInstanceId,
-                             element_instance_id);
-  }
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
   manager->AttachGuest(embedder_render_process_id, element_instance_id,
                        guest_instance_id, attach_params);
-  if (uses_cross_process_frame) {
-    guest_view->AttachToEmbedder(is_full_page_plugin);
-  } else {
-    rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
-        element_instance_id));
-  }
+
+  rfh->Send(
+      new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
+          element_instance_id));
 }
 
 }  // namespace extensions

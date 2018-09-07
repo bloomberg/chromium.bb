@@ -43,14 +43,15 @@ void MimeHandlerViewContainer::OnReady() {
 }
 
 bool MimeHandlerViewContainer::OnMessage(const IPC::Message& message) {
-  if (MimeHandlerViewContainerBase::OnHandleMessage(message))
-    return true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainer, message)
-    IPC_MESSAGE_HANDLER(ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK,
-                        OnCreateMimeHandlerViewGuestACK)
-    IPC_MESSAGE_HANDLER(GuestViewMsg_GuestAttached, OnGuestAttached)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_MESSAGE_HANDLER(ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK,
+                      OnCreateMimeHandlerViewGuestACK)
+  IPC_MESSAGE_HANDLER(
+      ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
+      OnMimeHandlerViewGuestOnLoadCompleted)
+  IPC_MESSAGE_HANDLER(GuestViewMsg_GuestAttached, OnGuestAttached)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -90,6 +91,16 @@ v8::Local<v8::Object> MimeHandlerViewContainer::V8ScriptableObject(
   return GetScriptableObject(isolate);
 }
 
+void MimeHandlerViewContainer::DidReceiveData(const char* data,
+                                              int data_length) {
+  view_id_ += std::string(data, data_length);
+}
+
+void MimeHandlerViewContainer::DidFinishLoading() {
+  DCHECK(is_embedded_);
+  CreateMimeHandlerViewGuestIfNecessary();
+}
+
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
     int element_instance_id) {
   DCHECK_NE(this->element_instance_id(), guest_view::kInstanceIDNone);
@@ -108,6 +119,11 @@ void MimeHandlerViewContainer::OnGuestAttached(int /* unused */,
   guest_proxy_routing_id_ = guest_proxy_routing_id;
 }
 
+void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
+    int /* unused */) {
+  DidCompleteLoad();
+}
+
 content::RenderFrame* MimeHandlerViewContainer::GetEmbedderRenderFrame() const {
   return render_frame();
 }
@@ -118,12 +134,12 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
   MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary();
 }
 
-blink::WebRemoteFrame* MimeHandlerViewContainer::GetGuestProxyFrame() const {
+blink::WebFrame* MimeHandlerViewContainer::GetGuestProxyFrame() const {
   content::RenderView* guest_proxy_render_view =
       content::RenderView::FromRoutingID(guest_proxy_routing_id_);
   if (!guest_proxy_render_view)
     return nullptr;
-  return guest_proxy_render_view->GetWebView()->MainFrame()->ToWebRemoteFrame();
+  return guest_proxy_render_view->GetWebView()->MainFrame();
 }
 
 int32_t MimeHandlerViewContainer::GetInstanceId() const {

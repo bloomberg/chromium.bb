@@ -94,8 +94,6 @@ class MimeHandlerViewGuest
   void SetBeforeUnloadController(
       mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control);
 
-  void AttachToEmbedder(bool is_full_page_plugin);
-
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
@@ -113,7 +111,6 @@ class MimeHandlerViewGuest
   void EmbedderFullscreenToggled(bool entered_fullscreen) final;
   bool ZoomPropagatesFromEmbedderToGuest() const final;
   bool ShouldDestroyOnDetach() const final;
-  void WillAttachToEmbedder() override;
 
   // WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(
@@ -164,8 +161,6 @@ class MimeHandlerViewGuest
 
   void FuseBeforeUnloadControl(
       mime_handler::BeforeUnloadControlRequest request);
-
-  content::RenderFrameHost* GetEmbedderFrame() const;
 
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;

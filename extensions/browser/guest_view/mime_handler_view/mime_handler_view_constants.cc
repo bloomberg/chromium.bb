@@ -7,6 +7,5 @@
 namespace mime_handler_view {
 
 const char kViewId[] = "viewId";
-const char kPluginFrameTreeNodeId[] = "pluginFrameTreeNodeId";
 
 }  // namespace mime_handler_view

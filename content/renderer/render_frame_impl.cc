@@ -3540,7 +3540,7 @@ bool RenderFrameImpl::IsPluginHandledExternally(
   // externally.
   int32_t tentative_element_instance_id =
       BrowserPluginManager::Get()->GetNextInstanceID();
-  return GetContentClient()->renderer()->MaybeCreateMimeHandlerView(
+  return GetContentClient()->renderer()->IsPluginHandledByMimeHandlerView(
       this, plugin_element, GURL(url), suggested_mime_type.Utf8(),
       tentative_element_instance_id);
 #else

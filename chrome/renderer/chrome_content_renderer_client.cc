@@ -638,7 +638,7 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
                                    .ToSkBitmap());
 }
 
-bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
+bool ChromeContentRendererClient::IsPluginHandledByMimeHandlerView(
     content::RenderFrame* render_frame,
     const blink::WebElement& plugin_element,
     const GURL& original_url,
@@ -659,7 +659,7 @@ bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
       render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), mime_type,
       &plugin_info);
   if (plugin_info->status == chrome::mojom::PluginStatus::kNotFound ||
-      !ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
+      !ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
           plugin_element, original_url, plugin_info->actual_mime_type,
           plugin_info->plugin, instance_id_to_use)) {
     return false;
