@@ -115,7 +115,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   }
   cache_writer_ = std::make_unique<ServiceWorkerCacheWriter>(
       std::move(compare_reader), std::move(copy_reader),
-      storage->CreateResponseWriter(cache_resource_id));
+      storage->CreateResponseWriter(cache_resource_id),
+      false /* pause_when_not_identical */);
 
   version_->script_cache_map()->NotifyStartedCaching(request_url_,
                                                      cache_resource_id);
