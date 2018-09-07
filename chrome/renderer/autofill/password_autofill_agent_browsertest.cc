@@ -57,8 +57,6 @@ using blink::WebView;
 
 namespace {
 
-const int kPasswordFillFormDataId = 1234;
-
 // The name of the username/password element in the form.
 const char kUsernameName[] = "username";
 const char kPasswordName[] = "password";
@@ -272,16 +270,14 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // protected.
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
-    password_autofill_agent_->FillPasswordForm(kPasswordFillFormDataId,
-                                               fill_data);
+    password_autofill_agent_->FillPasswordForm(fill_data);
   }
 
   // Simulates the show initial password account suggestions message being sent
   // to the renderer.
   void SimulateOnShowInitialPasswordAccountSuggestions(
       const PasswordFormFillData& fill_data) {
-    autofill_agent_->ShowInitialPasswordAccountSuggestions(
-        kPasswordFillFormDataId, fill_data);
+    autofill_agent_->ShowInitialPasswordAccountSuggestions(fill_data);
   }
 
   void SendVisiblePasswordForms() {
@@ -577,7 +573,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(fake_driver_.called_show_pw_suggestions());
-    EXPECT_EQ(kPasswordFillFormDataId, fake_driver_.show_pw_suggestions_key());
     ASSERT_TRUE(static_cast<bool>(fake_driver_.show_pw_suggestions_username()));
     EXPECT_EQ(ASCIIToUTF16(username),
               *(fake_driver_.show_pw_suggestions_username()));
@@ -3505,31 +3500,31 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
 TEST_F(PasswordAutofillAgentTest,
        UpdateSuggestionsIfNewerCredentialsAreSupplied) {
   // Supply old fill data
-  password_autofill_agent_->FillPasswordForm(0, fill_data_);
+  password_autofill_agent_->FillPasswordForm(fill_data_);
   // The username and password should have been autocompleted.
   CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
 
   // Change fill data
   fill_data_.password_field.value = ASCIIToUTF16("a-changed-password");
   // Supply changed fill data
-  password_autofill_agent_->FillPasswordForm(1 /* New key means new data */,
-                                             fill_data_);
+  password_autofill_agent_->FillPasswordForm(fill_data_);
   CheckTextFieldsSuggestedState(kAliceUsername, true, "a-changed-password",
                                 true);
 }
 
 TEST_F(PasswordAutofillAgentTest, SuggestLatestCredentials) {
-  password_autofill_agent_->FillPasswordForm(0, fill_data_);
+  password_autofill_agent_->FillPasswordForm(fill_data_);
   SimulateElementClick(kPasswordName);
   EXPECT_TRUE(GetCalledShowPasswordSuggestions());
-  EXPECT_EQ(0, fake_driver_.show_pw_suggestions_key());
 
   fake_driver_.reset_show_pw_suggestions();
+  // Change fill data
+  fill_data_.username_field.value = ASCIIToUTF16("a-changed-username");
 
-  password_autofill_agent_->FillPasswordForm(1, fill_data_);
+  password_autofill_agent_->FillPasswordForm(fill_data_);
   SimulateElementClick(kPasswordName);
-  EXPECT_TRUE(GetCalledShowPasswordSuggestions());
-  EXPECT_EQ(1, fake_driver_.show_pw_suggestions_key());
+  // Empty value because nothing was typed into the field.
+  CheckSuggestions("", false);
 }
 
 // Tests that PSL matched password is not autofilled even when there is
@@ -3631,7 +3626,6 @@ TEST_F(PasswordAutofillAgentTest, FillDataWithNoPasswordId) {
   // Check that the correct suggestions were requested.
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_driver_.called_show_pw_suggestions());
-  EXPECT_EQ(kPasswordFillFormDataId, fake_driver_.show_pw_suggestions_key());
   fake_driver_.reset_show_pw_suggestions();
 
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);

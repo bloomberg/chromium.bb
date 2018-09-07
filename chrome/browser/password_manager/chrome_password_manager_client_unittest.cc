@@ -146,7 +146,6 @@ class FakePasswordAutofillAgent
  private:
   // autofill::mojom::PasswordAutofillAgent:
   void FillPasswordForm(
-      int key,
       const autofill::PasswordFormFillData& form_data) override {}
 
   void FillIntoFocusedField(bool is_password,

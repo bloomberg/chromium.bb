@@ -992,7 +992,6 @@ void ChromePasswordManagerClient::SameDocumentNavigation(
 }
 
 void ChromePasswordManagerClient::ShowPasswordSuggestions(
-    int key,
     base::i18n::TextDirection text_direction,
     const base::string16& typed_username,
     int options,
@@ -1001,7 +1000,7 @@ void ChromePasswordManagerClient::ShowPasswordSuggestions(
       driver_factory_->GetDriverForFrame(
           password_manager_driver_bindings_.GetCurrentTargetFrame());
   driver->GetPasswordAutofillManager()->OnShowPasswordSuggestions(
-      key, text_direction, typed_username, options,
+      text_direction, typed_username, options,
       TransformToRootCoordinates(
           password_manager_driver_bindings_.GetCurrentTargetFrame(), bounds));
 }

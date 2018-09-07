@@ -200,7 +200,6 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
                                  const base::string16& password) override {}
 
   void ShowInitialPasswordAccountSuggestions(
-      int32_t key,
       const PasswordFormFillData& form_data) override {}
 
   void SetUserGestureRequired(bool required) override {}

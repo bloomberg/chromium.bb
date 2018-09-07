@@ -86,8 +86,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
   // mojom::PasswordAutofillAgent:
-  void FillPasswordForm(int key,
-                        const PasswordFormFillData& form_data) override;
+  void FillPasswordForm(const PasswordFormFillData& form_data) override;
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential,
                             FillIntoFocusedFieldCallback callback) override;
@@ -159,13 +158,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // JavaScript.
   void UserGestureObserved();
 
-  // Given password form data |form_data| and a supplied key |key| for
-  // referencing the password info, returns a set of WebInputElements in
+  // Given password form data |form_data| returns a set of WebInputElements in
   // |elements|, which must be non-null, that the password manager has values
   // for filling. Also takes an optional logger |logger| for logging password
   // autofill behavior.
   void GetFillableElementFromFormData(
-      int key,
       const PasswordFormFillData& form_data,
       RendererSavePasswordProgressLogger* logger,
       std::vector<blink::WebInputElement>* elements);
@@ -202,8 +199,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
     bool password_was_edited_last = false;
     // The user accepted a suggestion from a dropdown on a password field.
     bool password_field_suggestion_was_accepted = false;
-    // The key under which PasswordAutofillManager can find info for filling.
-    int key = -1;
   };
   using WebInputToPasswordInfoMap =
       std::map<blink::WebInputElement, PasswordInfo>;
@@ -366,7 +361,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // TODO(https://crbug.com/831123): Rename to FillPasswordForm when browser
   // form parsing is launched.
-  void FillUsingRendererIDs(int key, const PasswordFormFillData& form_data);
+  void FillUsingRendererIDs(const PasswordFormFillData& form_data);
 
   // Returns pair(username_element, password_element) based on renderer ids from
   // |username_field| and |password_field| from |form_data|.
@@ -376,8 +371,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Populates |web_input_to_password_info_| and |password_to_username_| in
   // order to provide fill on account select on |username_element| and
   // |password_element| with credentials from |form_data|.
-  void StoreDataForFillOnAccountSelect(int key,
-                                       const PasswordFormFillData& form_data,
+  void StoreDataForFillOnAccountSelect(const PasswordFormFillData& form_data,
                                        blink::WebInputElement username_element,
                                        blink::WebInputElement password_element);
 
@@ -386,7 +380,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // |web_input_to_password_info_| in order to provide fill on account select on
   // any password field (aka filling fallback) with credentials from
   // |form_data|.
-  void MaybeStoreFallbackData(int key, const PasswordFormFillData& form_data);
+  void MaybeStoreFallbackData(const PasswordFormFillData& form_data);
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;

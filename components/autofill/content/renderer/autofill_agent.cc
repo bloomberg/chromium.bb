@@ -549,7 +549,6 @@ void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
 }
 
 void AutofillAgent::ShowInitialPasswordAccountSuggestions(
-    int32_t key,
     const PasswordFormFillData& form_data) {
   std::vector<blink::WebInputElement> elements;
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
@@ -560,7 +559,7 @@ void AutofillAgent::ShowInitialPasswordAccountSuggestions(
                            STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
   }
   password_autofill_agent_->GetFillableElementFromFormData(
-      key, form_data, logger.get(), &elements);
+      form_data, logger.get(), &elements);
 
   // If wait_for_username is true, we don't want to initially show form options
   // until the user types in a valid username.

@@ -78,8 +78,9 @@ interface AutofillDriver {
               array<mojo_base.mojom.String16> labels);
 };
 
-// There is one instance of this interface per render frame host in the browser
-// process.
+// There is one instance of this interface per web contents in the browser
+// process that handles all the frames. The motivation was to make the interface
+// associated with PasswordManagerClient.
 interface PasswordManagerDriver {
   // Notification that password forms have been seen that are candidates for
   // filling/submitting by the password manager.
@@ -116,11 +117,9 @@ interface PasswordManagerDriver {
   // password field.
   UserModifiedPasswordField();
 
-  // Instructs the browser to show a popup with suggestions filled from data
-  // associated with |key|. The popup will use |text_direction| for displaying
-  // text.
-  ShowPasswordSuggestions(int32 key,
-                          mojo_base.mojom.TextDirection text_direction,
+  // Instructs the browser to show a popup with password suggestions. The popup
+  // will use |text_direction| for displaying text.
+  ShowPasswordSuggestions(mojo_base.mojom.TextDirection text_direction,
                           mojo_base.mojom.String16 typed_username,
                           int32 options, gfx.mojom.RectF bounds);
 
