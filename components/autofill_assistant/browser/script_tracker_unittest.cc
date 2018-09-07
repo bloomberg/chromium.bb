@@ -53,7 +53,11 @@ class ScriptTrackerTest : public testing::Test,
   ClientMemory* GetClientMemory() override { return &client_memory_; }
 
   // Overrides ScriptTracker::Listener
-  void OnRunnableScriptsChanged() override { runnable_scripts_changed_++; }
+  void OnRunnableScriptsChanged(
+      const std::vector<ScriptHandle>& runnable_scripts) override {
+    runnable_scripts_changed_++;
+    runnable_scripts_ = runnable_scripts;
+  }
 
   void SetAndCheckScripts(const SupportsScriptResponseProto& response) {
     std::string response_str;
@@ -77,7 +81,7 @@ class ScriptTrackerTest : public testing::Test,
   }
 
   const std::vector<ScriptHandle>& runnable_scripts() {
-    return tracker_.runnable_scripts();
+    return runnable_scripts_;
   }
 
   NiceMock<MockService> mock_service_;
@@ -87,6 +91,7 @@ class ScriptTrackerTest : public testing::Test,
 
   // Number of times OnRunnableScriptsChanged was called.
   int runnable_scripts_changed_;
+  std::vector<ScriptHandle> runnable_scripts_;
   ScriptTracker tracker_;
 };
 

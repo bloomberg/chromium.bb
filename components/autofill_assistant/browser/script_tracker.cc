@@ -97,7 +97,7 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   pending_runnable_scripts_.clear();
 
   if (runnables_changed)
-    listener_->OnRunnableScriptsChanged();
+    listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 
 bool ScriptTracker::RunnablesHaveChanged() {

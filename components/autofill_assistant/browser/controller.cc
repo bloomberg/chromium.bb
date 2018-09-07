@@ -81,9 +81,14 @@ void Controller::OnDestroy() {
   delete this;
 }
 
-void Controller::OnRunnableScriptsChanged() {
-  // TODO(crbug.com/806868): Take the set of runnable script from the tracker
-  // and make them available for selection. Run the selected script.
+void Controller::OnRunnableScriptsChanged(
+    const std::vector<ScriptHandle>& runnable_scripts) {
+  // Script selection is disabled when a script is already running. We will
+  // check again and maybe update when the current script has finished.
+  if (script_tracker_->running())
+    return;
+
+  GetUiController()->UpdateScripts(runnable_scripts);
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,

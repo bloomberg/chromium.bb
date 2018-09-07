@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.WebContents;
 @JNINamespace("autofill_assistant")
 public class AutofillAssistantUiController {
     private final long mUiControllerAndroid;
+    private final BottomBarController mBottomBarController;
 
     /**
      * Construct Autofill Assistant UI controller.
@@ -56,11 +57,13 @@ public class AutofillAssistantUiController {
                 // selected Tab.
             }
         });
+
+        mBottomBarController = new BottomBarController(activity);
     }
 
     @CalledByNative
     private void onShowStatusMessage(String message) {
-        // TODO(crbug.com/806868): Implement corresponding UI.
+        mBottomBarController.showStatusMessage(message);
     }
 
     @CalledByNative
@@ -71,6 +74,13 @@ public class AutofillAssistantUiController {
     @CalledByNative
     private void onHideOverlay() {
         // TODO(crbug.com/806868): Implement corresponding UI.
+    }
+
+    @CalledByNative
+    private void onUpdateScripts(String[] scripts) {
+        // TODO(crbug.com/806868): Pass a Script handle instead of a string so that we can report
+        // back what script got selected.
+        mBottomBarController.updateScripts(scripts);
     }
 
     // native methods.

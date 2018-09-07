@@ -32,8 +32,10 @@ class ScriptTracker {
    public:
     virtual ~Listener() = default;
 
-    // Called when the set of runnable scripts have changed.
-    virtual void OnRunnableScriptsChanged() = 0;
+    // Called when the set of runnable scripts have changed. |runnable_scripts|
+    // are the new runnable scripts.
+    virtual void OnRunnableScriptsChanged(
+        const std::vector<ScriptHandle>& runnable_scripts) = 0;
   };
 
   // |delegate| and |listener| should outlive this object and should not be
@@ -65,12 +67,6 @@ class ScriptTracker {
 
  private:
   friend ScriptTrackerTest;
-
-  // Returns a set of scripts that can be run, according to the last round of
-  // checks.
-  const std::vector<ScriptHandle>& runnable_scripts() const {
-    return runnable_scripts_;
-  }
 
   void OnScriptRun(base::OnceCallback<void(bool)> original_callback,
                    bool success);
