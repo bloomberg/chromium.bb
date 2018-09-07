@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
+#include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
@@ -334,6 +335,11 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<KioskInfoService>()));
 
+    metrics_event_service_ = CrosDBusService::Create(
+        kMetricsEventServiceName, dbus::ObjectPath(kMetricsEventServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<MetricsEventServiceProvider>()));
+
     screen_lock_service_ = CrosDBusService::Create(
         kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
         CrosDBusService::CreateServiceProviderList(
@@ -407,6 +413,7 @@ class DBusServices {
     TPMTokenLoader::Shutdown();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
+    metrics_event_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -423,6 +430,7 @@ class DBusServices {
  private:
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
+  std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
