@@ -164,12 +164,7 @@ inline RawResource* ToRawResource(Resource* resource) {
 
 class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
  public:
-  static bool IsExpectedType(ResourceClient* client) {
-    return client->GetResourceClientType() == kRawResourceType;
-  }
-  ResourceClientType GetResourceClientType() const final {
-    return kRawResourceType;
-  }
+  bool IsRawResourceClient() const final { return true; }
 
   // The order of the callbacks is as follows:
   // [Case 1] A successful load:

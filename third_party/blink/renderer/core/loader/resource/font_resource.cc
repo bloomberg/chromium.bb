@@ -94,7 +94,7 @@ FontResource::FontResource(const ResourceRequest& resource_request,
 FontResource::~FontResource() = default;
 
 void FontResource::DidAddClient(ResourceClient* c) {
-  DCHECK(FontResourceClient::IsExpectedType(c));
+  DCHECK(c->IsFontResourceClient());
   Resource::DidAddClient(c);
 
   // Block client callbacks if currently loading from cache.
