@@ -1018,6 +1018,11 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     x = shelf_->PrimaryAxisValue(x + w + (i == 0 ? 0 : button_spacing), x);
     y = shelf_->PrimaryAxisValue(y, y + h + button_spacing);
 
+    // In the new UI, padding between the back & app list buttons is smaller
+    // than between all other shelf items.
+    if (i == kBackButtonIndex && chromeos::switches::ShouldUseShelfNewUi())
+      x -= button_spacing;
+
     if (i == kAppListButtonIndex) {
       app_list_button_position = shelf_->PrimaryAxisValue(x, y);
       if (chromeos::switches::ShouldUseShelfNewUi()) {
@@ -1026,7 +1031,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
             (ShelfConstants::shelf_size() - kShelfControlSizeNewUi) / 2;
         const int back_and_app_list_background_size =
             kShelfControlSizeNewUi +
-            (IsTabletModeEnabled() ? kShelfControlSizeNewUi + 2 * button_spacing
+            (IsTabletModeEnabled() ? kShelfControlSizeNewUi + button_spacing
                                    : 0);
         back_and_app_list_background_->SetBounds(
             shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
