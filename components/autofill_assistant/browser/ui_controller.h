@@ -12,6 +12,8 @@
 #include "base/callback_forward.h"
 
 namespace autofill_assistant {
+struct ScriptHandle;
+
 // Controller to control autofill assistant UI.
 class UiController {
  public:
@@ -28,6 +30,9 @@ class UiController {
 
   // Hide the overlay.
   virtual void HideOverlay() = 0;
+
+  // Update the list of scripts in the UI.
+  virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
 
   // Show UI to ask user to choose an address in personal data manager. GUID of
   // the chosen address will be returned through callback if succeed, otherwise

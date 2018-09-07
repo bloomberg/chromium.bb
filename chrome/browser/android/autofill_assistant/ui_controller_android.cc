@@ -5,6 +5,7 @@
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "chrome/common/channel_info.h"
@@ -58,6 +59,20 @@ void UiControllerAndroid::ShowOverlay() {
 void UiControllerAndroid::HideOverlay() {
   Java_AutofillAssistantUiController_onHideOverlay(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
+void UiControllerAndroid::UpdateScripts(
+    const std::vector<ScriptHandle>& scripts) {
+  // TODO(crbug.com/806868): Pass the handles directly instead of the path.
+  std::vector<std::string> script_paths;
+  for (const auto& script : scripts) {
+    script_paths.emplace_back(script.path);
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  auto jscripts = base::android::ToJavaArrayOfStrings(env, script_paths);
+  Java_AutofillAssistantUiController_onUpdateScripts(
+      env, java_autofill_assistant_ui_controller_, jscripts);
 }
 
 void UiControllerAndroid::ChooseAddress(

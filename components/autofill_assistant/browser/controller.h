@@ -54,7 +54,8 @@ class Controller : public ScriptExecutorDelegate,
   void OnDestroy() override;
 
   // Overrides ScriptTracker::Listener:
-  void OnRunnableScriptsChanged() override;
+  void OnRunnableScriptsChanged(
+      const std::vector<ScriptHandle>& runnable_scripts) override;
 
   // Overrides content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
