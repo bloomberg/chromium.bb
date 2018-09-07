@@ -191,7 +191,8 @@ Polymer({
             (CrOnc.proxyMatches(jsonHttp, proxy.Manual.SecureHTTPProxy) &&
              CrOnc.proxyMatches(jsonHttp, proxy.Manual.FTPProxy) &&
              CrOnc.proxyMatches(jsonHttp, proxy.Manual.SOCKS)) ||
-            (!proxy.Manual.SecureHTTPProxy.Host &&
+            (!proxy.Manual.HTTPProxy.Host &&
+             !proxy.Manual.SecureHTTPProxy.Host &&
              !proxy.Manual.FTPProxy.Host && !proxy.Manual.SOCKS.Host);
       }
       if (proxySettings.ExcludeDomains) {
