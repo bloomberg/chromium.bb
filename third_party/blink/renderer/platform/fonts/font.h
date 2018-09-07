@@ -147,7 +147,7 @@ class PLATFORM_EXPORT Font {
                         BreakGlyphsOption) const;
   FloatRect SelectionRectForText(const TextRun&,
                                  const FloatPoint&,
-                                 int h,
+                                 float height,
                                  int from = 0,
                                  int to = -1) const;
   FloatRect BoundingBox(const TextRun&, int from = 0, int to = -1) const;

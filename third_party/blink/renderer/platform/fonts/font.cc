@@ -364,7 +364,7 @@ static inline FloatRect PixelSnappedSelectionRect(FloatRect rect) {
 
 FloatRect Font::SelectionRectForText(const TextRun& run,
                                      const FloatPoint& point,
-                                     int height,
+                                     float height,
                                      int from,
                                      int to) const {
   to = (to == -1 ? run.length() : to);
