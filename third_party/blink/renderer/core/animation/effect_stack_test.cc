@@ -71,7 +71,7 @@ class AnimationEffectStackTest : public PageTestBase {
                                      double duration = 10) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
-    timing.iteration_duration = duration;
+    timing.iteration_duration = AnimationTimeDelta::FromSecondsD(duration);
     return KeyframeEffect::Create(element.Get(), effect, timing);
   }
 

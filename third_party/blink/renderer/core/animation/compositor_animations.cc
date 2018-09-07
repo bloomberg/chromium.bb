@@ -495,13 +495,13 @@ bool CompositorAnimations::ConvertTimingForCompositor(
   if (timing.end_delay != 0)
     return false;
 
-  if (std::isnan(timing.iteration_duration) || !timing.iteration_count ||
-      !timing.iteration_duration)
+  if (!timing.iteration_duration || !timing.iteration_count ||
+      timing.iteration_duration->is_zero())
     return false;
 
   out.adjusted_iteration_count =
       std::isfinite(timing.iteration_count) ? timing.iteration_count : -1;
-  out.scaled_duration = timing.iteration_duration;
+  out.scaled_duration = timing.iteration_duration.value();
   out.direction = timing.direction;
   // Compositor's time offset is positive for seeking into the animation.
   out.scaled_time_offset =
@@ -512,7 +512,7 @@ bool CompositorAnimations::ConvertTimingForCompositor(
                       : timing.fill_mode;
   out.iteration_start = timing.iteration_start;
 
-  DCHECK_GT(out.scaled_duration, 0);
+  DCHECK_GT(out.scaled_duration, AnimationTimeDelta());
   DCHECK(std::isfinite(out.scaled_time_offset));
   DCHECK(out.adjusted_iteration_count > 0 ||
          out.adjusted_iteration_count == -1);
@@ -600,7 +600,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     // the keyframe offset, so use a scale of 1.0. This is connected to
     // the known issue of how the Web Animations spec handles infinite
     // durations. See https://github.com/w3c/web-animations/issues/142
-    double scale = compositor_timing.scaled_duration;
+    double scale = compositor_timing.scaled_duration.InSecondsF();
     if (!std::isfinite(scale))
       scale = 1.0;
     const PropertySpecificKeyframeVector& values =

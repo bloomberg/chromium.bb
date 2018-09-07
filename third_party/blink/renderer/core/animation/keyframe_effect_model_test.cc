@@ -89,7 +89,7 @@ class AnimationKeyframeEffectModel : public PageTestBase {
   Persistent<Element> element;
 };
 
-const double kDuration = 1.0;
+const AnimationTimeDelta kDuration = AnimationTimeDelta::FromSecondsD(1);
 
 StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
                                            const String& zero_value,

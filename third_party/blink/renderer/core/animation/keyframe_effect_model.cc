@@ -75,7 +75,7 @@ template CORE_EXPORT void KeyframeEffectModelBase::SetFrames(
 bool KeyframeEffectModelBase::Sample(
     int iteration,
     double fraction,
-    double iteration_duration,
+    AnimationTimeDelta iteration_duration,
     HeapVector<Member<Interpolation>>& result) const {
   DCHECK_GE(iteration, 0);
   EnsureKeyframeGroups();
@@ -86,8 +86,8 @@ bool KeyframeEffectModelBase::Sample(
   last_iteration_ = iteration;
   last_fraction_ = fraction;
   last_iteration_duration_ = iteration_duration;
-  interpolation_effect_->GetActiveInterpolations(fraction, iteration_duration,
-                                                 result);
+  interpolation_effect_->GetActiveInterpolations(
+      fraction, iteration_duration.InSecondsF(), result);
   return changed;
 }
 
