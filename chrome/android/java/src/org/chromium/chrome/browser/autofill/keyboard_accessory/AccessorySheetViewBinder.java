@@ -39,6 +39,7 @@ class AccessorySheetViewBinder
     @Override
     public void bind(AccessorySheetModel model, ViewPager inflatedView, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
+            inflatedView.bringToFront(); // Ensure toolbars and other containers are overlaid.
             inflatedView.setVisibility(model.isVisible() ? View.VISIBLE : View.GONE);
             return;
         }
