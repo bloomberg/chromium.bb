@@ -899,6 +899,7 @@ void ShelfView::LayoutToIdealBounds() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
   overflow_button_->SetBoundsRect(overflow_bounds);
   UpdateBackButton();
+  LayoutAppListAndBackButtonHighlight();
 }
 
 bool ShelfView::IsItemPinned(const ShelfItem& item) const {
@@ -954,6 +955,29 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
     else
       view_model_->view_at(i)->SetVisible(visible);
   }
+}
+
+void ShelfView::LayoutAppListAndBackButtonHighlight() const {
+  // Don't show anything if this is the overflow menu or if this is not the
+  // new UI.
+  if (is_overflow_mode() || !chromeos::switches::ShouldUseShelfNewUi()) {
+    back_and_app_list_background_->SetVisible(false);
+    return;
+  }
+  const int button_spacing = ShelfConstants::button_spacing();
+  // "Secondary" as in "orthogonal to the shelf primary axis".
+  const int control_secondary_padding =
+      (ShelfConstants::shelf_size() - kShelfControlSizeNewUi) / 2;
+  const int back_and_app_list_background_size =
+      kShelfControlSizeNewUi +
+      (IsTabletModeEnabled() ? kShelfControlSizeNewUi + button_spacing : 0);
+  back_and_app_list_background_->SetBounds(
+      shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
+      shelf_->PrimaryAxisValue(control_secondary_padding, button_spacing),
+      shelf_->PrimaryAxisValue(back_and_app_list_background_size,
+                               kShelfControlSizeNewUi),
+      shelf_->PrimaryAxisValue(kShelfControlSizeNewUi,
+                               back_and_app_list_background_size));
 }
 
 void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
@@ -1026,20 +1050,6 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     if (i == kAppListButtonIndex) {
       app_list_button_position = shelf_->PrimaryAxisValue(x, y);
       if (chromeos::switches::ShouldUseShelfNewUi()) {
-        // "Secondary" as in "orthogonal to the shelf primary axis".
-        const int control_secondary_padding =
-            (ShelfConstants::shelf_size() - kShelfControlSizeNewUi) / 2;
-        const int back_and_app_list_background_size =
-            kShelfControlSizeNewUi +
-            (IsTabletModeEnabled() ? kShelfControlSizeNewUi + button_spacing
-                                   : 0);
-        back_and_app_list_background_->SetBounds(
-            shelf_->PrimaryAxisValue(button_spacing, control_secondary_padding),
-            shelf_->PrimaryAxisValue(control_secondary_padding, button_spacing),
-            shelf_->PrimaryAxisValue(back_and_app_list_background_size,
-                                     kShelfControlSizeNewUi),
-            shelf_->PrimaryAxisValue(kShelfControlSizeNewUi,
-                                     back_and_app_list_background_size));
         // In the new UI, a larger minimum padding after the app list button
         // is required: increment with the necessary extra amount.
         x += shelf_->PrimaryAxisValue(kAppListButtonMargin - button_spacing, 0);
@@ -1146,6 +1156,7 @@ void ShelfView::AnimateToIdealBounds() {
       view->SetBorder(views::NullBorder());
   }
   overflow_button_->SetBoundsRect(overflow_bounds);
+  LayoutAppListAndBackButtonHighlight();
 }
 
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
