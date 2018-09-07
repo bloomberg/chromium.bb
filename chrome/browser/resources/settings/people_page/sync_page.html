@@ -27,6 +27,10 @@
 <dom-module id="settings-sync-page">
   <template>
     <style include="settings-shared iron-flex">
+      #sync-section-toggle:not([actionable]) {
+        opacity: var(--cr-disabled-opacity);
+      }
+
       #create-password-box,
       #reset-sync-message-box-encryption,
       #reset-sync-message-box-user-events {
