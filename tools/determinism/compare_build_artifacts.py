@@ -268,7 +268,7 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
     raw_whitelist = ast.literal_eval(f.read())
     whitelist_list = raw_whitelist[target_platform]
     if re.search(r'\bis_component_build\b\w*=\w*true\b',
-                 open(os.path.join(first_dir, 'args.gn').read())):
+                 open(os.path.join(first_dir, 'args.gn')).read()):
       whitelist_list += raw_whitelist.get(target_platform + '_component', [])
     whitelist = frozenset(whitelist_list)
 
