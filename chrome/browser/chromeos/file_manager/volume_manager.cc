@@ -553,10 +553,11 @@ void VolumeManager::AddSshfsCrostiniVolume(
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
 
   // Listen for crostini container shutdown and remove volume.
-  crostini::CrostiniManager::GetInstance()->AddShutdownContainerCallback(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
-                     weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path));
+  crostini::CrostiniManager::GetForProfile(profile_)
+      ->AddShutdownContainerCallback(
+          kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+          base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
+                         weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path));
 }
 
 void VolumeManager::RemoveSshfsCrostiniVolume(

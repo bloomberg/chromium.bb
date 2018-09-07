@@ -84,8 +84,8 @@ bool CrostiniUninstallerView::Accept() {
       l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALLING_MESSAGE));
 
   // Kick off the Crostini Remove sequence.
-  crostini::CrostiniManager::GetInstance()->RemoveCrostini(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  crostini::CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&CrostiniUninstallerView::UninstallCrostiniFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 

@@ -661,8 +661,8 @@ bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
   Profile* profile =
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(IsCrostiniEnabled(profile));
-  crostini::CrostiniManager::GetInstance()->RestartCrostini(
-      profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(
           &FileManagerPrivateMountCrostiniContainerFunction::RestartCallback,
           this));

@@ -58,8 +58,8 @@ void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
     case ash::MENU_CLOSE:
       if (app_id() == kCrostiniTerminalId) {
-        crostini::CrostiniManager::GetInstance()->StopVm(
-            profile(), kCrostiniDefaultVmName, base::DoNothing());
+        crostini::CrostiniManager::GetForProfile(profile())->StopVm(
+            kCrostiniDefaultVmName, base::DoNothing());
         return;
       }
       break;

@@ -22,7 +22,6 @@
 namespace crostini {
 
 namespace {
-const char kOwnerId[] = "owner_id";
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
 }  // namespace
@@ -95,8 +94,7 @@ class CrostiniManagerTest : public testing::Test {
   void OnStartTremplinRecordsRunningVmCallback(base::OnceClosure closure,
                                                ConciergeClientResult result) {
     // Check that running_vms_ contains the running vm.
-    EXPECT_TRUE(
-        CrostiniManager::GetInstance()->IsVmRunning(profile(), kVmName));
+    EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
     std::move(closure).Run();
   }
 
@@ -117,25 +115,15 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : fake_cicerone_client_(new chromeos::FakeCiceroneClient()),
-        fake_concierge_client_(new chromeos::FakeConciergeClient()),
-        scoped_task_environment_(
+      : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
-    // Initialization between D-Bus, fake clients, and the singleton
-    // CrostiniManager is tricky since CrostiniManager is a global singleton and
-    // doesn't add itself as an observer for the new Concierge/Cicerone clients
-    // created for each test.  We must first get a handle on the D-Bus setter
-    // and initialize it, then reset CrostiniManager and add it as an observer
-    // for the clients in this test, then set the fake clients into D-Bus.
-    auto dbus_setter = chromeos::DBusThreadManager::GetSetterForTesting();
     chromeos::DBusThreadManager::Initialize();
-    CrostiniManager::GetInstance()->ResetForTesting();
-    fake_concierge_client_->AddObserver(CrostiniManager::GetInstance());
-    fake_cicerone_client_->AddObserver(CrostiniManager::GetInstance());
-    dbus_setter->SetConciergeClient(base::WrapUnique(fake_concierge_client_));
-    dbus_setter->SetCiceroneClient(base::WrapUnique(fake_cicerone_client_));
+    fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
+        chromeos::DBusThreadManager::Get()->GetCiceroneClient());
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
@@ -143,16 +131,19 @@ class CrostiniManagerTest : public testing::Test {
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
+    crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
   }
 
   void TearDown() override {
-    run_loop_.reset();
+    crostini_manager_.reset();
     profile_.reset();
+    run_loop_.reset();
   }
 
  protected:
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
+  CrostiniManager* crostini_manager() { return crostini_manager_.get(); }
 
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
@@ -161,6 +152,7 @@ class CrostiniManagerTest : public testing::Test {
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<CrostiniManager> crostini_manager_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -171,19 +163,8 @@ class CrostiniManagerTest : public testing::Test {
 TEST_F(CrostiniManagerTest, CreateDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
-  CrostiniManager::GetInstance()->CreateDiskImage(
-      "a_cryptohome_id", disk_path,
-      vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
-      base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, CreateDiskImageCryptohomeError) {
-  const base::FilePath& disk_path = base::FilePath(kVmName);
-
-  CrostiniManager::GetInstance()->CreateDiskImage(
-      "", disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
+  crostini_manager()->CreateDiskImage(
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -192,8 +173,8 @@ TEST_F(CrostiniManagerTest, CreateDiskImageCryptohomeError) {
 TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->CreateDiskImage(
-      "a_cryptohome_id", disk_path,
+  crostini_manager()->CreateDiskImage(
+      disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -203,9 +184,8 @@ TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
 TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->CreateDiskImage(
-      "a_cryptohome_id", disk_path,
-      vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
+  crostini_manager()->CreateDiskImage(
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -214,19 +194,8 @@ TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
 TEST_F(CrostiniManagerTest, DestroyDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
-  CrostiniManager::GetInstance()->DestroyDiskImage(
-      "a_cryptohome_id", disk_path,
-      vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
-      base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, DestroyDiskImageCryptohomeError) {
-  const base::FilePath& disk_path = base::FilePath(kVmName);
-
-  CrostiniManager::GetInstance()->DestroyDiskImage(
-      "", disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
+  crostini_manager()->DestroyDiskImage(
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -235,8 +204,8 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageCryptohomeError) {
 TEST_F(CrostiniManagerTest, DestroyDiskImageStorageLocationError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->DestroyDiskImage(
-      "a_cryptohome_id", disk_path,
+  crostini_manager()->DestroyDiskImage(
+      disk_path,
       vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
@@ -246,35 +215,16 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageStorageLocationError) {
 TEST_F(CrostiniManagerTest, DestroyDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->DestroyDiskImage(
-      "a_cryptohome_id", disk_path,
-      vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
+  crostini_manager()->DestroyDiskImage(
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, ListVmDisksCryptohomeError) {
-  CrostiniManager::GetInstance()->ListVmDisks(
-      "", base::BindOnce(&CrostiniManagerTest::ListVmDisksClientErrorCallback,
-                         base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
 TEST_F(CrostiniManagerTest, ListVmDisksSuccess) {
-  CrostiniManager::GetInstance()->ListVmDisks(
-      "a_cryptohome_id",
+  crostini_manager()->ListVmDisks(
       base::BindOnce(&CrostiniManagerTest::ListVmDisksSuccessCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, StartTerminaVmOwnerIdError) {
-  const base::FilePath& disk_path = base::FilePath(kVmName);
-
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      "", kVmName, disk_path,
-      base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -282,8 +232,8 @@ TEST_F(CrostiniManagerTest, StartTerminaVmOwnerIdError) {
 TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      kOwnerId, "", disk_path,
+  crostini_manager()->StartTerminaVm(
+      "", disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -292,8 +242,8 @@ TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
 TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   const base::FilePath& disk_path = base::FilePath();
 
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      kOwnerId, kVmName, disk_path,
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -302,8 +252,8 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
 TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      kOwnerId, kVmName, disk_path,
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -314,29 +264,28 @@ TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
   const std::string owner_id = CryptohomeIdForProfile(profile());
 
   // Start the Vm.
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      owner_id, kVmName, disk_path,
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
       base::BindOnce(
           &CrostiniManagerTest::OnStartTremplinRecordsRunningVmCallback,
           base::Unretained(this), run_loop()->QuitClosure()));
 
   // Check that the Vm start is not recorded (without tremplin start).
-  EXPECT_FALSE(CrostiniManager::GetInstance()->IsVmRunning(profile(), kVmName));
+  EXPECT_FALSE(crostini_manager()->IsVmRunning(kVmName));
 
   run_loop()->Run();
 }
 
 TEST_F(CrostiniManagerTest, StopVmNameError) {
-  CrostiniManager::GetInstance()->StopVm(
-      profile(), "",
-      base::BindOnce(&CrostiniManagerTest::StopVmClientErrorCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
+  crostini_manager()->StopVm(
+      "", base::BindOnce(&CrostiniManagerTest::StopVmClientErrorCallback,
+                         base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniManagerTest, StopVmSuccess) {
-  CrostiniManager::GetInstance()->StopVm(
-      profile(), kVmName,
+  crostini_manager()->StopVm(
+      kVmName,
       base::BindOnce(&CrostiniManagerTest::StopVmSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -345,8 +294,8 @@ TEST_F(CrostiniManagerTest, StopVmSuccess) {
 TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalNotConnectedError) {
   fake_cicerone_client_->set_install_linux_package_progress_signal_connected(
       false);
-  CrostiniManager::GetInstance()->InstallLinuxPackage(
-      profile(), kVmName, kContainerName, "/tmp/package.deb",
+  crostini_manager()->InstallLinuxPackage(
+      kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
@@ -358,8 +307,8 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalSuccess) {
   vm_tools::cicerone::InstallLinuxPackageResponse response;
   response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
   fake_cicerone_client_->set_install_linux_package_response(response);
-  CrostiniManager::GetInstance()->InstallLinuxPackage(
-      profile(), kVmName, kContainerName, "/tmp/package.deb",
+  crostini_manager()->InstallLinuxPackage(
+      kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      ConciergeClientResult::SUCCESS, std::string()));
@@ -372,8 +321,8 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
   response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
   response.set_failure_reason(failure_reason);
   fake_cicerone_client_->set_install_linux_package_response(response);
-  CrostiniManager::GetInstance()->InstallLinuxPackage(
-      profile(), kVmName, kContainerName, "/tmp/package.deb",
+  crostini_manager()->InstallLinuxPackage(
+      kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
                      ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
@@ -386,7 +335,6 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
  public:
   void SetUp() override {
     CrostiniManagerTest::SetUp();
-    owner_id_ = CryptohomeIdForProfile(profile());
   }
 
   void RestartCrostiniCallback(base::OnceClosure closure,
@@ -434,8 +382,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
  protected:
   void Abort() {
-    CrostiniManager::GetInstance()->AbortRestartCrostini(profile(),
-                                                         restart_id_);
+    crostini_manager()->AbortRestartCrostini(restart_id_);
     run_loop()->Quit();
   }
 
@@ -456,7 +403,6 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 
   CrostiniManager::RestartId restart_id_ =
       CrostiniManager::kUninitializedRestartId;
-  std::string owner_id_;
   bool abort_on_component_loaded_ = false;
   bool abort_on_concierge_started_ = false;
   bool abort_on_disk_image_created_ = false;
@@ -468,8 +414,8 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
 };
 
 TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -483,8 +429,8 @@ TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnComponentLoaded) {
   abort_on_component_loaded_ = true;
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -497,8 +443,8 @@ TEST_F(CrostiniManagerRestartTest, AbortOnComponentLoaded) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnConciergeStarted) {
   abort_on_concierge_started_ = true;
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -511,8 +457,8 @@ TEST_F(CrostiniManagerRestartTest, AbortOnConciergeStarted) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
   abort_on_disk_image_created_ = true;
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -525,8 +471,8 @@ TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
 
 TEST_F(CrostiniManagerRestartTest, AbortOnVmStarted) {
   abort_on_vm_started_ = true;
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -540,8 +486,8 @@ TEST_F(CrostiniManagerRestartTest, AbortOnVmStarted) {
 TEST_F(CrostiniManagerRestartTest, AbortOnContainerStarted) {
   abort_on_container_started_ = true;
   // Use termina/penguin names to allow fetch ssh keys.
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -554,8 +500,8 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerStarted) {
 
 TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {
   // Use names other than termina/penguin.  Will not mount sshfs.
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
@@ -567,16 +513,16 @@ TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {
 }
 
 TEST_F(CrostiniManagerRestartTest, MultiRestartAllowed) {
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
-  CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kVmName, kContainerName,
+  crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -609,8 +555,8 @@ TEST_F(CrostiniManagerRestartTest, MountForTerminaPenguin) {
           &CrostiniManagerRestartTest_MountForTerminaPenguin_Test::SshfsMount));
 
   // Use termina/penguin to perform mount.
-  restart_id_ = CrostiniManager::GetInstance()->RestartCrostini(
-      profile(), kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();

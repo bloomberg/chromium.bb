@@ -562,6 +562,8 @@ source_set("chromeos") {
     "chrome_service_name.h",
     "crostini/crostini_manager.cc",
     "crostini/crostini_manager.h",
+    "crostini/crostini_manager_factory.cc",
+    "crostini/crostini_manager_factory.h",
     "crostini/crostini_mime_types_service.cc",
     "crostini/crostini_mime_types_service.h",
     "crostini/crostini_mime_types_service_factory.cc",

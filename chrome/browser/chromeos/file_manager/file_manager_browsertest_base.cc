@@ -1027,7 +1027,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     // crostini interface allowed for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
-    crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+    crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile())
+        ->set_skip_restart_for_testing();
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(

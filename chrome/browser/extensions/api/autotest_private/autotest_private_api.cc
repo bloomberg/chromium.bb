@@ -754,8 +754,8 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   CrostiniInstallerView::Show(profile);
   CrostiniInstallerView::GetActiveViewForTesting()->Accept();
-  crostini::CrostiniManager::GetInstance()->RestartCrostini(
-      profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(
           &AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted,
           this));

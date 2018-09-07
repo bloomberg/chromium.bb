@@ -35,7 +35,7 @@ CrostiniRemover::~CrostiniRemover() = default;
 
 void CrostiniRemover::RemoveCrostini() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  CrostiniManager::GetInstance()->InstallTerminaComponent(
+  CrostiniManager::GetForProfile(profile_)->InstallTerminaComponent(
       base::BindOnce(&CrostiniRemover::OnComponentLoaded, this));
 }
 
@@ -44,7 +44,7 @@ void CrostiniRemover::OnComponentLoaded(bool is_successful) {
     std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
     return;
   }
-  CrostiniManager::GetInstance()->StartConcierge(
+  CrostiniManager::GetForProfile(profile_)->StartConcierge(
       base::BindOnce(&CrostiniRemover::OnConciergeStarted, this));
 }
 
@@ -53,9 +53,8 @@ void CrostiniRemover::OnConciergeStarted(bool is_successful) {
     std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
     return;
   }
-  CrostiniManager::GetInstance()->StopVm(
-      profile_, vm_name_,
-      base::BindOnce(&CrostiniRemover::StopVmFinished, this));
+  CrostiniManager::GetForProfile(profile_)->StopVm(
+      vm_name_, base::BindOnce(&CrostiniRemover::StopVmFinished, this));
 }
 
 void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
@@ -68,8 +67,8 @@ void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
       vm_name_, container_name_);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
       vm_name_, container_name_);
-  CrostiniManager::GetInstance()->DestroyDiskImage(
-      CryptohomeIdForProfile(profile_), base::FilePath(vm_name_),
+  CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(
+      base::FilePath(vm_name_),
       vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniRemover::DestroyDiskImageFinished, this));
 }
@@ -81,7 +80,7 @@ void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
     return;
   }
   // Only set kCrostiniEnabled to false once cleanup is completely finished.
-  CrostiniManager::GetInstance()->StopConcierge(
+  CrostiniManager::GetForProfile(profile_)->StopConcierge(
       base::BindOnce(&CrostiniRemover::StopConciergeFinished, this));
 }
 

@@ -144,8 +144,11 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
-    crostini::CrostiniManager::GetInstance()->MaybeUpgradeCrostini(
-        user_profile);
+
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(user_profile);
+    if (crostini_manager)
+      crostini_manager->MaybeUpgradeCrostini();
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
       ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
