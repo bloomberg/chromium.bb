@@ -2941,6 +2941,19 @@ const char kTraceExportEventsToEtwDesription[] =
     "Windows (ETW) and can then be captured by tools such as UIForETW or "
     "Xperf.";
 
+const char kUseAngleName[] = "Choose ANGLE graphics backend";
+const char kUseAngleDescription[] =
+    "Choose the graphics backend for ANGLE. D3D11 is used on most Windows "
+    "computers by default. Using the OpenGL driver as the graphics backend may "
+    "result in higher performance in some graphics-heavy applications, "
+    "particularly on NVIDIA GPUs. It can increase battery and memory usage of "
+    "video playback.";
+
+const char kUseAngleDefault[] = "Default";
+const char kUseAngleGL[] = "OpenGL";
+const char kUseAngleD3D11[] = "D3D11";
+const char kUseAngleD3D9[] = "D3D9";
+
 const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 const char kUseWinrtMidiApiDescription[] =
     "Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or "

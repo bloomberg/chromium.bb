@@ -1771,6 +1771,14 @@ extern const char kIncreaseInputAudioBufferSizeDescription[];
 extern const char kTraceExportEventsToEtwName[];
 extern const char kTraceExportEventsToEtwDesription[];
 
+extern const char kUseAngleName[];
+extern const char kUseAngleDescription[];
+
+extern const char kUseAngleDefault[];
+extern const char kUseAngleGL[];
+extern const char kUseAngleD3D11[];
+extern const char kUseAngleD3D9[];
+
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
 

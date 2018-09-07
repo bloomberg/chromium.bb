@@ -361,6 +361,17 @@ const FeatureEntry::Choice kDefaultTileHeightChoices[] = {
     {flag_descriptions::kDefaultTileHeightVenti, switches::kDefaultTileHeight,
      "1024"}};
 
+#if defined(OS_WIN)
+const FeatureEntry::Choice kUseAngleChoices[] = {
+    {flag_descriptions::kUseAngleDefault, "", ""},
+    {flag_descriptions::kUseAngleGL, switches::kUseANGLE,
+     gl::kANGLEImplementationOpenGLName},
+    {flag_descriptions::kUseAngleD3D11, switches::kUseANGLE,
+     gl::kANGLEImplementationD3D11Name},
+    {flag_descriptions::kUseAngleD3D9, switches::kUseANGLE,
+     gl::kANGLEImplementationD3D9Name}};
+#endif
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const FeatureEntry::FeatureParam kAccountConsistencyDice[] = {
     {kAccountConsistencyFeatureMethodParameter,
@@ -4436,6 +4447,12 @@ const FeatureEntry kFeatureEntries[] = {
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
     // AboutFlagsHistogramTest unit test to verify this process).
+
+#if defined(OS_WIN)
+    {"use-angle", flag_descriptions::kUseAngleName,
+     flag_descriptions::kUseAngleDescription, kOsWin,
+     MULTI_VALUE_TYPE(kUseAngleChoices)},
+#endif
 };
 
 class FlagsStateSingleton {
