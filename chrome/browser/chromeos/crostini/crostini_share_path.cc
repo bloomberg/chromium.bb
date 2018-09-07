@@ -29,8 +29,8 @@ void CrostiniSharePath::SharePath(
     std::string path,
     base::OnceCallback<void(bool, std::string)> callback) {
   base::Optional<vm_tools::concierge::VmInfo> vm_info =
-      crostini::CrostiniManager::GetInstance()->GetVmInfo(profile,
-                                                          std::move(vm_name));
+      crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(
+          std::move(vm_name));
   if (!vm_info) {
     std::move(callback).Run(false, "Cannot share, VM not running");
     return;

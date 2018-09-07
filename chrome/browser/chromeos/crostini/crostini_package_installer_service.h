@@ -25,6 +25,9 @@ class CrostiniPackageInstallerService
   explicit CrostiniPackageInstallerService(Profile* profile);
   ~CrostiniPackageInstallerService() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   void NotificationClosed(CrostiniPackageInstallerNotification* notification);
 
   // Install a Linux package. If successfully started, a system notification

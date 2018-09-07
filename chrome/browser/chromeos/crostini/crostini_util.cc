@@ -92,15 +92,15 @@ void OnContainerApplicationLaunched(const std::string& app_id,
 
 Browser* CreateTerminal(const AppLaunchParams& launch_params,
                         const GURL& vsh_in_crosh_url) {
-  return crostini::CrostiniManager::GetInstance()->CreateContainerTerminal(
-      launch_params, vsh_in_crosh_url);
+  return crostini::CrostiniManager::CreateContainerTerminal(launch_params,
+                                                            vsh_in_crosh_url);
 }
 
 void ShowTerminal(const AppLaunchParams& launch_params,
                   const GURL& vsh_in_crosh_url,
                   Browser* browser) {
-  crostini::CrostiniManager::GetInstance()->ShowContainerTerminal(
-      launch_params, vsh_in_crosh_url, browser);
+  crostini::CrostiniManager::ShowContainerTerminal(launch_params,
+                                                   vsh_in_crosh_url, browser);
   browser->window()->GetNativeWindow()->SetProperty(
       kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }
@@ -118,8 +118,8 @@ void LaunchContainerApplication(
       chrome_launcher_controller->crostini_app_window_shelf_controller();
   DCHECK_NE(observer, nullptr);
   observer->OnAppLaunchRequested(app_id, display_id);
-  crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
-      profile, registration.VmName(), registration.ContainerName(),
+  crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
+      registration.VmName(), registration.ContainerName(),
       registration.DesktopFileId(), files,
       base::BindOnce(OnContainerApplicationLaunched, app_id));
 }
@@ -238,8 +238,8 @@ bool IsCrostiniEnabled(Profile* profile) {
 }
 
 bool IsCrostiniRunning(Profile* profile) {
-  return crostini::CrostiniManager::GetInstance()->IsVmRunning(
-      profile, kCrostiniDefaultVmName);
+  return crostini::CrostiniManager::GetForProfile(profile)->IsVmRunning(
+      kCrostiniDefaultVmName);
 }
 
 void LaunchCrostiniApp(Profile* profile,
@@ -255,8 +255,8 @@ void AddSpinner(const std::string& app_id,
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   if (chrome_controller &&
-      !crostini::CrostiniManager::GetInstance()->IsContainerRunning(
-          profile, vm_name, container_name)) {
+      !crostini::CrostiniManager::GetForProfile(profile)->IsContainerRunning(
+          vm_name, container_name)) {
     chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
         app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
   }
@@ -266,7 +266,7 @@ void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
                        const std::vector<std::string>& files) {
-  auto* crostini_manager = crostini::CrostiniManager::GetInstance();
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   base::Optional<crostini::CrostiniRegistryService::Registration> registration =
@@ -318,7 +318,7 @@ void LaunchCrostiniApp(Profile* profile,
       base::BindOnce(&AddSpinner, app_id, profile, vm_name, container_name),
       base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
   crostini_manager->RestartCrostini(
-      profile, vm_name, container_name,
+      vm_name, container_name,
       base::BindOnce(OnCrostiniRestarted, app_id, browser,
                      std::move(launch_closure)));
 }

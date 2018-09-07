@@ -1422,7 +1422,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
     }
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
-    crostini::CrostiniManager::GetInstance()->MaybeUpgradeCrostini(profile);
+
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(profile);
+    if (crostini_manager)
+      crostini_manager->MaybeUpgradeCrostini();
 
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)

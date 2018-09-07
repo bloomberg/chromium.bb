@@ -159,11 +159,12 @@ bool CrostiniInstallerView::Accept() {
   }
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
-  restart_id_ = crostini::CrostiniManager::GetInstance()->RestartCrostini(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      base::BindOnce(&CrostiniInstallerView::MountContainerFinished,
-                     weak_ptr_factory_.GetWeakPtr()),
-      this);
+  restart_id_ =
+      crostini::CrostiniManager::GetForProfile(profile_)->RestartCrostini(
+          kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+          base::BindOnce(&CrostiniInstallerView::MountContainerFinished,
+                         weak_ptr_factory_.GetWeakPtr()),
+          this);
   return false;
 }
 
@@ -172,8 +173,8 @@ bool CrostiniInstallerView::Cancel() {
       restart_id_ != crostini::CrostiniManager::kUninitializedRestartId) {
     // Abort the long-running flow, and prevent our RestartObserver methods
     // being called after "this" has been destroyed.
-    crostini::CrostiniManager::GetInstance()->AbortRestartCrostini(profile_,
-                                                                   restart_id_);
+    crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
+        restart_id_);
     RecordSetupResultHistogram(SetupResult::kUserCancelled);
   } else {
     RecordSetupResultHistogram(SetupResult::kNotStarted);
@@ -425,8 +426,8 @@ void CrostiniInstallerView::ShowLoginShell() {
   DCHECK_EQ(state_, State::MOUNT_CONTAINER);
   state_ = State::SHOW_LOGIN_SHELL;
 
-  crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-      profile_, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+  crostini::CrostiniManager::GetForProfile(profile_)->LaunchContainerTerminal(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       std::vector<std::string>());
 
   StepProgress();

@@ -8,7 +8,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -23,6 +22,7 @@
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -84,7 +84,8 @@ class InstallLinuxPackageProgressObserver {
 // communication with the Cicerone service and both should remain as thin as
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
-class CrostiniManager : public chromeos::ConciergeClient::Observer,
+class CrostiniManager : public KeyedService,
+                        public chromeos::ConciergeClient::Observer,
                         public chromeos::CiceroneClient::Observer {
  public:
   using ConciergeClientCallback =
@@ -149,6 +150,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
     virtual void OnSshKeysFetched(ConciergeClientResult result) = 0;
   };
 
+  static CrostiniManager* GetForProfile(Profile* profile);
+
+  explicit CrostiniManager(Profile* profile);
+  ~CrostiniManager() override;
+
   // Checks if the cros-termina component is installed.
   bool IsCrosTerminaInstalled() const;
 
@@ -163,7 +169,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static AppLaunchParams GenerateTerminalAppLaunchParams(Profile* profile);
 
   // Upgrades cros-termina component if the current version is not compatible.
-  void MaybeUpgradeCrostini(Profile* profile);
+  void MaybeUpgradeCrostini();
 
   // Installs the current version of cros-termina component. Attempts to apply
   // pending upgrades if a MaybeUpgradeCrostini failed.
@@ -182,8 +188,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // |callback| is called if the arguments are bad, or after the method call
   // finishes.
   void CreateDiskImage(
-      // The cryptohome id for the user's encrypted storage.
-      const std::string& cryptohome_id,
       // The path to the disk image, including the name of
       // the image itself. The image name should match the
       // name of the VM that it will be used for.
@@ -197,8 +201,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // |callback| is called if the arguments are bad, or after the method call
   // finishes.
   void DestroyDiskImage(
-      // The cryptohome id for the user's encrypted storage.
-      const std::string& cryptohome_id,
       // The path to the disk image, including the name of
       // the image itself.
       const base::FilePath& disk_path,
@@ -206,32 +208,28 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       vm_tools::concierge::StorageLocation storage_location,
       DestroyDiskImageCallback callback);
 
-  void ListVmDisks(
-      // The cryptohome id for the user's encrypted storage.
-      const std::string& cryptohome_id,
-      ListVmDisksCallback callback);
+  void ListVmDisks(ListVmDisksCallback callback);
 
   // Checks the arguments for starting a Termina VM. Starts a Termina VM via
   // ConciergeClient::StartTerminaVm. |callback| is called if the arguments
   // are bad, or after the method call finishes.
-  void StartTerminaVm(std::string owner_id,
-                      // The human-readable name to be assigned to this VM.
-                      std::string name,
-                      // Path to the disk image on the host.
-                      const base::FilePath& disk_path,
-                      StartTerminaVmCallback callback);
+  void StartTerminaVm(
+      // The human-readable name to be assigned to this VM.
+      std::string name,
+      // Path to the disk image on the host.
+      const base::FilePath& disk_path,
+      StartTerminaVmCallback callback);
 
   // Checks the arguments for stopping a Termina VM. Stops the Termina VM via
   // ConciergeClient::StopVm. |callback| is called if the arguments are bad,
   // or after the method call finishes.
-  void StopVm(Profile* profile, std::string name, StopVmCallback callback);
+  void StopVm(std::string name, StopVmCallback callback);
 
   // Checks the arguments for creating an Lxd container via
   // CiceroneClient::CreateLxdContainer. |callback| is called immediately if the
   // arguments are bad, or once the container has been created.
   void CreateLxdContainer(std::string vm_name,
                           std::string container_name,
-                          std::string owner_id,
                           CrostiniResultCallback callback);
 
   // Checks the arguments for starting an Lxd container via
@@ -239,7 +237,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // arguments are bad, or once the container has been created.
   void StartLxdContainer(std::string vm_name,
                          std::string container_name,
-                         std::string owner_id,
                          CrostiniResultCallback callback);
 
   // Checks the arguments for setting up an Lxd container user via
@@ -247,15 +244,13 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // the arguments are bad, or once garcon has been started.
   void SetUpLxdContainerUser(std::string vm_name,
                              std::string container_name,
-                             std::string owner_id,
                              std::string container_username,
                              CrostiniResultCallback callback);
 
   // Asynchronously launches an app as specified by its desktop file id.
   // |callback| is called with SUCCESS when the relevant process is started
   // or LAUNCH_CONTAINER_APPLICATION_FAILED if there was an error somewhere.
-  void LaunchContainerApplication(Profile* profile,
-                                  std::string vm_name,
+  void LaunchContainerApplication(std::string vm_name,
                                   std::string container_name,
                                   std::string desktop_file_id,
                                   const std::vector<std::string>& files,
@@ -263,8 +258,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Asynchronously gets app icons as specified by their desktop file ids.
   // |callback| is called after the method call finishes.
-  void GetContainerAppIcons(Profile* profile,
-                            std::string vm_name,
+  void GetContainerAppIcons(std::string vm_name,
                             std::string container_name,
                             std::vector<std::string> desktop_file_ids,
                             int icon_size,
@@ -274,8 +268,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
   // added InstallLinuxPackageProgressObservers.
-  void InstallLinuxPackage(Profile* profile,
-                           std::string vm_name,
+  void InstallLinuxPackage(std::string vm_name,
                            std::string container_name,
                            std::string package_path,
                            InstallLinuxPackageCallback callback);
@@ -285,24 +278,22 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // |callback| is called after the method call finishes.
   void GetContainerSshKeys(std::string vm_name,
                            std::string container_name,
-                           std::string cryptohome_id,
                            GetContainerSshKeysCallback callback);
 
   // Create the crosh-in-a-window that displays a shell in an container on a VM.
-  Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
-                                   const GURL& vsh_in_crosh_url);
+  static Browser* CreateContainerTerminal(const AppLaunchParams& launch_params,
+                                          const GURL& vsh_in_crosh_url);
 
   // Shows the already created crosh-in-a-window that displays a shell in an
   // already running container on a VM.
-  void ShowContainerTerminal(const AppLaunchParams& launch_params,
-                             const GURL& vsh_in_crosh_url,
-                             Browser* browser);
+  static void ShowContainerTerminal(const AppLaunchParams& launch_params,
+                                    const GURL& vsh_in_crosh_url,
+                                    Browser* browser);
 
   // Launches the crosh-in-a-window that displays a shell in an already running
   // container on a VM and passes |terminal_args| as parameters to that shell
   // which will cause them to be executed as program inside that shell.
-  void LaunchContainerTerminal(Profile* profile,
-                               const std::string& vm_name,
+  void LaunchContainerTerminal(const std::string& vm_name,
                                const std::string& container_name,
                                const std::vector<std::string>& terminal_args);
 
@@ -310,27 +301,25 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
   // The optional |observer| tracks progress.
-  RestartId RestartCrostini(Profile* profile,
-                            std::string vm_name,
+  RestartId RestartCrostini(std::string vm_name,
                             std::string container_name,
                             RestartCrostiniCallback callback,
                             RestartObserver* observer = nullptr);
 
-  void AbortRestartCrostini(Profile* profile, RestartId id);
+  // Aborts a restart. A "next" restarter with the same <vm_name,
+  // container_name> will run, if there is one.
+  void AbortRestartCrostini(RestartId id);
 
   // Adds a callback to receive notification of container shutdown.
   void AddShutdownContainerCallback(
-      Profile* profile,
       std::string vm_name,
       std::string container_name,
       ShutdownContainerCallback shutdown_callback);
 
   // Add/remove observers for package install progress.
   void AddInstallLinuxPackageProgressObserver(
-      Profile* profile,
       InstallLinuxPackageProgressObserver* observer);
   void RemoveInstallLinuxPackageProgressObserver(
-      Profile* profile,
       InstallLinuxPackageProgressObserver* observer);
 
   // ConciergeClient::Observer:
@@ -352,38 +341,24 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   void OnTremplinStarted(
       const vm_tools::cicerone::TremplinStartedSignal& signal) override;
 
-  void RemoveCrostini(Profile* profile,
-                      std::string vm_name,
+  void RemoveCrostini(std::string vm_name,
                       std::string container_name,
                       RemoveCrostiniCallback callback);
 
-  // Returns the singleton instance of CrostiniManager.
-  static CrostiniManager* GetInstance();
-
-  bool IsVmRunning(Profile* profile, std::string vm_name);
+  bool IsVmRunning(std::string vm_name);
   // Returns null if VM is not running.
-  base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(Profile* profile,
-                                                        std::string vm_name);
-  void AddRunningVmForTesting(std::string owner_id,
-                              std::string vm_name,
+  base::Optional<vm_tools::concierge::VmInfo> GetVmInfo(std::string vm_name);
+  void AddRunningVmForTesting(std::string vm_name,
                               vm_tools::concierge::VmInfo vm_info);
-  bool IsContainerRunning(Profile* profile,
-                          std::string vm_name,
-                          std::string container_name);
+  bool IsContainerRunning(std::string vm_name, std::string container_name);
 
   // Clear the lists of running VMs and containers.
-  // TODO(timloh): This is fragile. We should make the CrostiniManager a keyed
-  // service so that separate tests get new instances of it.
-  void ResetForTesting();
   // Can be called for testing to skip restart.
   void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
   bool skip_restart_for_testing() { return skip_restart_for_testing_; }
 
  private:
-  friend struct base::DefaultSingletonTraits<CrostiniManager>;
-
-  CrostiniManager();
-  ~CrostiniManager() override;
+  class CrostiniRestarter;
 
   // Callback for ConciergeClient::CreateDiskImage. Called after the Concierge
   // service method finishes.
@@ -407,7 +382,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // service method finishes. |callback| is called if the container has already
   // been started, otherwise it is passed to OnStartTremplin.
   void OnStartTerminaVm(
-      std::string owner_id,
       std::string vm_name,
       StartTerminaVmCallback callback,
       base::Optional<vm_tools::concierge::StartVmResponse> reply);
@@ -415,15 +389,14 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Callback for ConciergeClient::TremplinStartedSignal. Called after the
   // Tremplin service starts. Updates running containers list and then calls the
   // |callback|.
-  void OnStartTremplin(std::pair<std::string, std::string> key,
+  void OnStartTremplin(std::string vm_name,
                        vm_tools::concierge::VmInfo vm_info,
                        StartTerminaVmCallback callback,
                        ConciergeClientResult result);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
-  void OnStopVm(std::string owner_id,
-                std::string vm_name,
+  void OnStopVm(std::string vm_name,
                 StopVmCallback callback,
                 base::Optional<vm_tools::concierge::StopVmResponse> reply);
 
@@ -447,7 +420,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // is still being created, in which case we will wait for an
   // OnLxdContainerCreated event.
   void OnCreateLxdContainer(
-      std::string owner_id,
       std::string vm_name,
       std::string container_name,
       CrostiniResultCallback callback,
@@ -455,7 +427,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Callback for CiceroneClient::StartLxdContainer.
   void OnStartLxdContainer(
-      std::string owner_id,
       std::string vm_name,
       std::string container_name,
       CrostiniResultCallback callback,
@@ -463,7 +434,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
 
   // Callback for CiceroneClient::SetUpLxdContainerUser.
   void OnSetUpLxdContainerUser(
-      std::string owner_id,
       std::string vm_name,
       std::string container_name,
       CrostiniResultCallback callback,
@@ -503,50 +473,53 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       CreateDiskImageCallback callback,
       int64_t free_disk_size);
 
-  bool IsContainerRunning(std::string owner_id,
-                          std::string vm_name,
-                          std::string container_name);
+  void FinishRestart(CrostiniRestarter* restarter,
+                     ConciergeClientResult result);
+
+  Profile* profile_;
+  std::string owner_id_;
 
   bool skip_restart_for_testing_ = false;
   bool is_cros_termina_registered_ = false;
   bool termina_update_check_needed_ = false;
 
-  // Pending container started callbacks are keyed by <owner_id, vm_name,
-  // container_name> string tuples.
-  std::multimap<std::tuple<std::string, std::string, std::string>,
-                StartContainerCallback>
+  // Pending container started callbacks are keyed by <vm_name, container_name>
+  // string pairs.
+  std::multimap<std::pair<std::string, std::string>, StartContainerCallback>
       start_container_callbacks_;
 
-  // Pending ShutdownContainer callbacks are keyed by <owner_id, vm_name,
-  // container_name> string tuples.
-  std::multimap<std::tuple<std::string, std::string, std::string>,
-                ShutdownContainerCallback>
+  // Pending ShutdownContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs.
+  std::multimap<std::pair<std::string, std::string>, ShutdownContainerCallback>
       shutdown_container_callbacks_;
 
-  // Pending CreateLxdContainer callbacks are keyed by <owner_id, vm_name,
-  // container_name> string tuples. These are used if CreateLxdContainer
-  // indicates we need to wait for an LxdContainerCreate signal.
-  std::multimap<std::tuple<std::string, std::string, std::string>,
-                CrostiniResultCallback>
+  // Pending CreateLxdContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs. These are used if CreateLxdContainer indicates we need to
+  // wait for an LxdContainerCreate signal.
+  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
       create_lxd_container_callbacks_;
 
-  // Callbacks to run after Tremplin is started, keyed by <owner_id, vm_name>
-  // pairs. These are used if StartTerminaVm completes but we need to wait from
-  // Tremplin to start.
-  std::multimap<std::pair<std::string, std::string>, base::OnceClosure>
-      tremplin_started_callbacks_;
+  // Callbacks to run after Tremplin is started, keyed by vm_name. These are
+  // used if StartTerminaVm completes but we need to wait from Tremplin to
+  // start.
+  std::multimap<std::string, base::OnceClosure> tremplin_started_callbacks_;
 
-  // Running vms as <owner_id, vm_name> pairs.
-  std::map<std::pair<std::string, std::string>, vm_tools::concierge::VmInfo>
-      running_vms_;
+  std::map<std::string, vm_tools::concierge::VmInfo> running_vms_;
 
-  // Running containers as keyed by <owner_id, vm_name> string pairs.
-  std::multimap<std::pair<std::string, std::string>, std::string>
-      running_containers_;
+  // Running containers as keyed by vm name.
+  std::multimap<std::string, std::string> running_containers_;
 
-  // Keyed by owner_id.
-  std::multimap<std::string, InstallLinuxPackageProgressObserver*>
+  base::ObserverList<InstallLinuxPackageProgressObserver>::Unchecked
       install_linux_package_progress_observers_;
+
+  // Restarts by <vm_name, container_name>. Only one restarter flow is actually
+  // running for a given container, other restarters will just have their
+  // callback called when the running restarter completes.
+  std::multimap<std::pair<std::string, std::string>, CrostiniManager::RestartId>
+      restarters_by_container_;
+
+  std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
+      restarters_by_id_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

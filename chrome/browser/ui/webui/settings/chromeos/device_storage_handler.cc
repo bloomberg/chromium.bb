@@ -336,8 +336,7 @@ void StorageHandler::UpdateCrostiniSize() {
     return;
   updating_crostini_size_ = true;
 
-  crostini::CrostiniManager::GetInstance()->ListVmDisks(
-      CryptohomeIdForProfile(profile_),
+  crostini::CrostiniManager::GetForProfile(profile_)->ListVmDisks(
       base::BindOnce(&StorageHandler::OnGetCrostiniSize,
                      weak_ptr_factory_.GetWeakPtr()));
 }

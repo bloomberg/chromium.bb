@@ -67,27 +67,15 @@ class CrostiniSharePathTest : public testing::Test {
   }
 
   CrostiniSharePathTest()
-      : fake_seneschal_client_(new chromeos::FakeSeneschalClient()),
-        fake_concierge_client_(new chromeos::FakeConciergeClient()),
-        fake_cicerone_client_(new chromeos::FakeCiceroneClient()),
-        scoped_task_environment_(
+      : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
-    // Initialization between D-Bus, fake clients, and the singleton
-    // CrostiniManager is tricky since CrostiniManager is a global singleton and
-    // doesn't add itself as an observer for the new Concierge/Cicerone clients
-    // created for each test.  We must first get a handle on the D-Bus setter
-    // and initialize it, then reset CrostiniManager and add it as an observer
-    // for the clients in this test, then set the fake clients into D-Bus.
-    auto dbus_setter = chromeos::DBusThreadManager::GetSetterForTesting();
     chromeos::DBusThreadManager::Initialize();
-    CrostiniManager::GetInstance()->ResetForTesting();
-    fake_concierge_client_->AddObserver(CrostiniManager::GetInstance());
-    fake_cicerone_client_->AddObserver(CrostiniManager::GetInstance());
-    dbus_setter->SetConciergeClient(base::WrapUnique(fake_concierge_client_));
-    dbus_setter->SetCiceroneClient(base::WrapUnique(fake_cicerone_client_));
-    dbus_setter->SetSeneschalClient(base::WrapUnique(fake_seneschal_client_));
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_seneschal_client_ = static_cast<chromeos::FakeSeneschalClient*>(
+        chromeos::DBusThreadManager::Get()->GetSeneschalClient());
   }
 
   ~CrostiniSharePathTest() override { chromeos::DBusThreadManager::Shutdown(); }
@@ -109,7 +97,6 @@ class CrostiniSharePathTest : public testing::Test {
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeSeneschalClient* fake_seneschal_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
-  chromeos::FakeCiceroneClient* fake_cicerone_client_;
 
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
@@ -127,8 +114,8 @@ TEST_F(CrostiniSharePathTest, Success) {
   start_vm_response.mutable_vm_info()->set_seneschal_server_handle(123);
   fake_concierge_client_->set_start_vm_response(start_vm_response);
 
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      "test", "vm-running-success", base::FilePath("path"),
+  CrostiniManager::GetForProfile(profile())->StartTerminaVm(
+      "vm-running-success", base::FilePath("path"),
       base::BindOnce(
           &CrostiniSharePathTest::SharePathSuccessStartTerminaVmCallback,
           base::Unretained(this)));
@@ -146,8 +133,8 @@ TEST_F(CrostiniSharePathTest, SharePathError) {
   share_path_response.set_failure_reason("test failure");
   fake_seneschal_client_->set_share_path_response(share_path_response);
 
-  CrostiniManager::GetInstance()->StartTerminaVm(
-      "test", "vm-running-error", base::FilePath("path"),
+  CrostiniManager::GetForProfile(profile())->StartTerminaVm(
+      "vm-running-error", base::FilePath("path"),
       base::BindOnce(
           &CrostiniSharePathTest::SharePathErrorStartTerminaVmCallback,
           base::Unretained(this)));

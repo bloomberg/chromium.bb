@@ -106,8 +106,8 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (IsCrostiniEnabled(profile) &&
       request.owner_id() == CryptohomeIdForProfile(profile)) {
-    crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-        profile, request.vm_name(), request.container_name(),
+    crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerTerminal(
+        request.vm_name(), request.container_name(),
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
   }

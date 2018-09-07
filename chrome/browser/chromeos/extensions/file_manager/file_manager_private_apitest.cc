@@ -540,11 +540,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   EnableCrostiniForProfile(&scoped_feature_list);
 
   // Setup CrostiniManager for testing.
-  crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(browser()->profile());
+  crostini_manager->set_skip_restart_for_testing();
   vm_tools::concierge::VmInfo vm_info;
-  crostini::CrostiniManager::GetInstance()->AddRunningVmForTesting(
-      CryptohomeIdForProfile(browser()->profile()), kCrostiniDefaultVmName,
-      std::move(vm_info));
+  crostini_manager->AddRunningVmForTesting(kCrostiniDefaultVmName,
+                                           std::move(vm_info));
 
   ExpectCrostiniMount();
 
@@ -565,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
   base::test::ScopedFeatureList scoped_feature_list;
   EnableCrostiniForProfile(&scoped_feature_list);
-  crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+  crostini::CrostiniManager::GetForProfile(browser()->profile())
+      ->set_skip_restart_for_testing();
   ExpectCrostiniMount();
 
   scoped_refptr<extensions::FileManagerPrivateMountCrostiniContainerFunction>
