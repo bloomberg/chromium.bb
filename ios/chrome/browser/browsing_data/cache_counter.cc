@@ -22,7 +22,7 @@ class IOThreadCacheCounter {
  public:
   IOThreadCacheCounter(
       const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-      const net::CompletionCallback& result_callback)
+      const net::Int64CompletionCallback& result_callback)
       : next_step_(STEP_GET_BACKEND),
         context_getter_(context_getter),
         result_callback_(result_callback),
@@ -44,7 +44,7 @@ class IOThreadCacheCounter {
     STEP_DONE          // Calculation completed.
   };
 
-  void CountInternal(int rv) {
+  void CountInternal(int64_t rv) {
     DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
     while (rv != net::ERR_IO_PENDING && next_step_ != STEP_DONE) {
@@ -63,9 +63,11 @@ class IOThreadCacheCounter {
                                            ->GetCache();
 
           rv = http_cache->GetBackend(
-              &backend_,
-              base::BindRepeating(&IOThreadCacheCounter::CountInternal,
-                                  base::Unretained(this)));
+              &backend_, base::BindRepeating(
+                             [](IOThreadCacheCounter* self, int rv) {
+                               self->CountInternal(static_cast<int64_t>(rv));
+                             },
+                             base::Unretained(this)));
           break;
         }
 
@@ -105,8 +107,8 @@ class IOThreadCacheCounter {
 
   Step next_step_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  net::CompletionCallback result_callback_;
-  int result_;
+  net::Int64CompletionCallback result_callback_;
+  int64_t result_;
   disk_cache::Backend* backend_;
 };
 
@@ -134,7 +136,7 @@ void CacheCounter::Count() {
       ->Count();
 }
 
-void CacheCounter::OnCacheSizeCalculated(int result_bytes) {
+void CacheCounter::OnCacheSizeCalculated(int64_t result_bytes) {
   // A value less than 0 means a net error code.
   if (result_bytes < 0)
     return;

@@ -391,7 +391,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void UpdateCacheSize(base::OnceClosure callback);
   void UpdateCacheSizeGotSize(CacheStorageCacheHandle,
                               base::OnceClosure callback,
-                              int current_cache_size);
+                              int64_t current_cache_size);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
   void Delete(blink::mojom::BatchOperationPtr operation,
@@ -429,22 +429,22 @@ class CONTENT_EXPORT CacheStorageCache {
   // Calculate the size and padding of the cache.
   void CalculateCacheSizePadding(SizePaddingCallback callback);
   void CalculateCacheSizePaddingGotSize(SizePaddingCallback callback,
-                                        int cache_size);
+                                        int64_t cache_size);
   void PaddingDidQueryCache(
       SizePaddingCallback callback,
-      int cache_size,
+      int64_t cache_size,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
   // Calculate the size (but not padding) of the cache.
-  void CalculateCacheSize(const net::CompletionCallback& callback);
+  void CalculateCacheSize(const net::Int64CompletionCallback& callback);
 
   void InitBackend();
   void InitDidCreateBackend(base::OnceClosure callback,
                             blink::mojom::CacheStorageError cache_create_error);
   void InitGotCacheSize(base::OnceClosure callback,
                         blink::mojom::CacheStorageError cache_create_error,
-                        int cache_size);
+                        int64_t cache_size);
   void InitGotCacheSizeAndPadding(
       base::OnceClosure callback,
       blink::mojom::CacheStorageError cache_create_error,

@@ -64,13 +64,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Note: only pass non-nullptr for |file_tracker| if you don't want the global
   // one (which things other than tests would want). |file_tracker| must outlive
   // the backend and all the entries, including their asynchronous close.
-  SimpleBackendImpl(
-      const base::FilePath& path,
-      scoped_refptr<BackendCleanupTracker> cleanup_tracker,
-      SimpleFileTracker* file_tracker,
-      int max_bytes,
-      net::CacheType cache_type,
-      net::NetLog* net_log);
+  SimpleBackendImpl(const base::FilePath& path,
+                    scoped_refptr<BackendCleanupTracker> cleanup_tracker,
+                    SimpleFileTracker* file_tracker,
+                    int64_t max_bytes,
+                    net::CacheType cache_type,
+                    net::NetLog* net_log);
 
   ~SimpleBackendImpl() override;
 
@@ -82,7 +81,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   int Init(CompletionOnceCallback completion_callback);
 
   // Sets the maximum size for the total amount of data stored by this instance.
-  bool SetMaxSize(int max_bytes);
+  bool SetMaxSize(int64_t max_bytes);
 
   // Returns the maximum file size permitted in this backend.
   int GetMaxFileSize() const;
@@ -123,10 +122,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          CompletionOnceCallback callback) override;
   int DoomEntriesSince(base::Time initial_time,
                        CompletionOnceCallback callback) override;
-  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override;
-  int CalculateSizeOfEntriesBetween(base::Time initial_time,
-                                    base::Time end_time,
-                                    CompletionOnceCallback callback) override;
+  int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) override;
+  int64_t CalculateSizeOfEntriesBetween(
+      base::Time initial_time,
+      base::Time end_time,
+      Int64CompletionOnceCallback callback) override;
   std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
@@ -183,14 +184,14 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          int result);
 
   // Calculates the size of the entire cache. Invoked when the index is ready.
-  void IndexReadyForSizeCalculation(CompletionOnceCallback callback,
+  void IndexReadyForSizeCalculation(Int64CompletionOnceCallback callback,
                                     int result);
 
   // Calculates the size all cache entries between |initial_time| and
   // |end_time|. Invoked when the index is ready.
   void IndexReadyForSizeBetweenCalculation(base::Time initial_time,
                                            base::Time end_time,
-                                           CompletionOnceCallback callback,
+                                           Int64CompletionOnceCallback callback,
                                            int result);
 
   // Try to create the directory if it doesn't exist. This must run on the IO
@@ -266,7 +267,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // This is used for all the entry I/O.
   scoped_refptr<net::PrioritizedTaskRunner> prioritized_task_runner_;
 
-  int orig_max_size_;
+  int64_t orig_max_size_;
   const SimpleEntryImpl::OperationsMode entry_operations_mode_;
 
   EntryMap active_entries_;

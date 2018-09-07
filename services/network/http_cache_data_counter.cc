@@ -78,7 +78,7 @@ void HttpCacheDataCounter::GotBackend(
     return;
   }
 
-  int rv;
+  int64_t rv;
   disk_cache::Backend* cache = *backend;
 
   // Handle this here since some backends would DCHECK on this.
@@ -106,7 +106,7 @@ void HttpCacheDataCounter::GotBackend(
 }
 
 void HttpCacheDataCounter::PostResult(bool is_upper_limit,
-                                      int result_or_error) {
+                                      int64_t result_or_error) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback_), this, is_upper_limit,
                                 result_or_error));

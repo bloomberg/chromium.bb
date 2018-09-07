@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   scoped_refptr<EntryImpl> OpenNextEntryImpl(Rankings::Iterator* iter);
 
   // Sets the maximum size for the total amount of data stored by this instance.
-  bool SetMaxSize(int max_bytes);
+  bool SetMaxSize(int64_t max_bytes);
 
   // Sets the cache type for this backend.
   void SetType(net::CacheType type);
@@ -294,7 +294,8 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
                          CompletionOnceCallback callback) override;
   int DoomEntriesSince(base::Time initial_time,
                        CompletionOnceCallback callback) override;
-  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override;
+  int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) override;
   // NOTE: The blockfile Backend::Iterator::OpenNextEntry method does not modify
   // the last_used field of the entry, and therefore it does not impact the
   // eviction ranking of the entry. However, an enumeration will go through all

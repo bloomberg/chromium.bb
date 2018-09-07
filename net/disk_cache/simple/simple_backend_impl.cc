@@ -228,7 +228,7 @@ SimpleBackendImpl::SimpleBackendImpl(
     const FilePath& path,
     scoped_refptr<BackendCleanupTracker> cleanup_tracker,
     SimpleFileTracker* file_tracker,
-    int max_bytes,
+    int64_t max_bytes,
     net::CacheType cache_type,
     net::NetLog* net_log)
     : cleanup_tracker_(std::move(cleanup_tracker)),
@@ -288,7 +288,7 @@ int SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
   return net::ERR_IO_PENDING;
 }
 
-bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
+bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
   if (max_bytes < 0)
     return false;
   orig_max_size_ = max_bytes;
@@ -297,7 +297,7 @@ bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
 }
 
 int SimpleBackendImpl::GetMaxFileSize() const {
-  return static_cast<int>(index_->max_size() / kMaxFileRatio);
+  return base::saturated_cast<int>(index_->max_size() / kMaxFileRatio);
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64_t entry_hash) {
@@ -510,17 +510,17 @@ int SimpleBackendImpl::DoomEntriesSince(const Time initial_time,
   return DoomEntriesBetween(initial_time, Time(), std::move(callback));
 }
 
-int SimpleBackendImpl::CalculateSizeOfAllEntries(
-    CompletionOnceCallback callback) {
+int64_t SimpleBackendImpl::CalculateSizeOfAllEntries(
+    Int64CompletionOnceCallback callback) {
   return index_->ExecuteWhenReady(
       base::BindOnce(&SimpleBackendImpl::IndexReadyForSizeCalculation,
                      AsWeakPtr(), std::move(callback)));
 }
 
-int SimpleBackendImpl::CalculateSizeOfEntriesBetween(
+int64_t SimpleBackendImpl::CalculateSizeOfEntriesBetween(
     base::Time initial_time,
     base::Time end_time,
-    CompletionOnceCallback callback) {
+    Int64CompletionOnceCallback callback) {
   return index_->ExecuteWhenReady(
       base::BindOnce(&SimpleBackendImpl::IndexReadyForSizeBetweenCalculation,
                      AsWeakPtr(), initial_time, end_time, std::move(callback)));
@@ -680,23 +680,21 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
 }
 
 void SimpleBackendImpl::IndexReadyForSizeCalculation(
-    CompletionOnceCallback callback,
+    Int64CompletionOnceCallback callback,
     int result) {
-  if (result == net::OK)
-    result = static_cast<int>(index_->GetCacheSize());
-  std::move(callback).Run(result);
+  int64_t rv = result == net::OK ? index_->GetCacheSize() : result;
+  std::move(callback).Run(rv);
 }
 
 void SimpleBackendImpl::IndexReadyForSizeBetweenCalculation(
     base::Time initial_time,
     base::Time end_time,
-    CompletionOnceCallback callback,
+    Int64CompletionOnceCallback callback,
     int result) {
-  if (result == net::OK) {
-    result =
-        static_cast<int>(index_->GetCacheSizeBetween(initial_time, end_time));
-  }
-  std::move(callback).Run(result);
+  int64_t rv = result == net::OK
+                   ? index_->GetCacheSizeBetween(initial_time, end_time)
+                   : result;
+  std::move(callback).Run(rv);
 }
 
 // static

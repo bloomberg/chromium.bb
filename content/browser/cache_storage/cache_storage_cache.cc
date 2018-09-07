@@ -83,10 +83,6 @@ const int32_t kCachePaddingAlgorithmVersion = 2;
 using MetadataCallback =
     base::OnceCallback<void(std::unique_ptr<proto::CacheMetadata>)>;
 
-// The maximum size of each cache. Ultimately, cache size
-// is controlled per-origin by the QuotaManager.
-const int kMaxCacheBytes = std::numeric_limits<int>::max();
-
 network::mojom::FetchResponseType ProtoResponseTypeToFetchResponseType(
     proto::CacheResponse::ResponseType response_type) {
   switch (response_type) {
@@ -1637,19 +1633,19 @@ void CacheStorageCache::PutDidWriteBlobToCache(
 
 void CacheStorageCache::CalculateCacheSizePadding(
     SizePaddingCallback got_sizes_callback) {
-  net::CompletionCallback got_size_callback =
+  net::Int64CompletionCallback got_size_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::CalculateCacheSizePaddingGotSize,
           weak_ptr_factory_.GetWeakPtr(), std::move(got_sizes_callback)));
 
-  int rv = backend_->CalculateSizeOfAllEntries(got_size_callback);
+  int64_t rv = backend_->CalculateSizeOfAllEntries(got_size_callback);
   if (rv != net::ERR_IO_PENDING)
     std::move(got_size_callback).Run(rv);
 }
 
 void CacheStorageCache::CalculateCacheSizePaddingGotSize(
     SizePaddingCallback callback,
-    int cache_size) {
+    int64_t cache_size) {
   // Enumerating entries is only done during cache initialization and only if
   // necessary.
   DCHECK_EQ(backend_state_, BACKEND_UNINITIALIZED);
@@ -1665,7 +1661,7 @@ void CacheStorageCache::CalculateCacheSizePaddingGotSize(
 
 void CacheStorageCache::PaddingDidQueryCache(
     SizePaddingCallback callback,
-    int cache_size,
+    int64_t cache_size,
     CacheStorageError error,
     std::unique_ptr<QueryCacheResults> query_cache_results) {
   int64_t cache_padding = 0;
@@ -1684,8 +1680,8 @@ void CacheStorageCache::PaddingDidQueryCache(
 }
 
 void CacheStorageCache::CalculateCacheSize(
-    const net::CompletionCallback& callback) {
-  int rv = backend_->CalculateSizeOfAllEntries(callback);
+    const net::Int64CompletionCallback& callback) {
+  int64_t rv = backend_->CalculateSizeOfAllEntries(callback);
   if (rv != net::ERR_IO_PENDING)
     callback.Run(rv);
 }
@@ -1706,7 +1702,7 @@ void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
 void CacheStorageCache::UpdateCacheSizeGotSize(
     CacheStorageCacheHandle cache_handle,
     base::OnceClosure callback,
-    int current_cache_size) {
+    int64_t current_cache_size) {
   DCHECK_NE(current_cache_size, CacheStorage::kSizeUnknown);
   cache_size_ = current_cache_size;
   int64_t size_delta = PaddedCacheSize() - last_reported_size_;
@@ -1863,6 +1859,11 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
   // Use APP_CACHE as opposed to DISK_CACHE to prevent cache eviction.
   net::CacheType cache_type = memory_only_ ? net::MEMORY_CACHE : net::APP_CACHE;
 
+  // The maximum size of each cache. Ultimately, cache size
+  // is controlled per-origin by the QuotaManager.
+  uint64_t max_bytes = memory_only_ ? std::numeric_limits<int>::max()
+                                    : std::numeric_limits<int64_t>::max();
+
   std::unique_ptr<ScopedBackendPtr> backend_ptr(new ScopedBackendPtr());
 
   // Temporary pointer so that backend_ptr can be Pass()'d in Bind below.
@@ -1875,7 +1876,7 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
                          std::move(backend_ptr)));
 
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, net::CACHE_BACKEND_SIMPLE, path_, kMaxCacheBytes,
+      cache_type, net::CACHE_BACKEND_SIMPLE, path_, max_bytes,
       false, /* force */
       nullptr, backend,
       base::BindOnce(&CacheStorageCache::DeleteBackendCompletedIO,
@@ -1922,7 +1923,7 @@ void CacheStorageCache::InitDidCreateBackend(
 
   auto calculate_size_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  int rv = backend_->CalculateSizeOfAllEntries(base::BindOnce(
+  int64_t rv = backend_->CalculateSizeOfAllEntries(base::BindOnce(
       &CacheStorageCache::InitGotCacheSize, weak_ptr_factory_.GetWeakPtr(),
       calculate_size_callback, cache_create_error));
 
@@ -1933,7 +1934,7 @@ void CacheStorageCache::InitDidCreateBackend(
 
 void CacheStorageCache::InitGotCacheSize(base::OnceClosure callback,
                                          CacheStorageError cache_create_error,
-                                         int cache_size) {
+                                         int64_t cache_size) {
   if (cache_create_error != CacheStorageError::kSuccess) {
     InitGotCacheSizeAndPadding(std::move(callback), cache_create_error, 0, 0);
     return;

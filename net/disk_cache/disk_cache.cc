@@ -27,7 +27,7 @@ class CacheCreator {
  public:
   CacheCreator(const base::FilePath& path,
                bool force,
-               int max_bytes,
+               int64_t max_bytes,
                net::CacheType type,
                net::BackendType backend_type,
                uint32_t flags,
@@ -52,7 +52,7 @@ class CacheCreator {
   const base::FilePath path_;
   bool force_;
   bool retry_;
-  int max_bytes_;
+  int64_t max_bytes_;
   net::CacheType type_;
   net::BackendType backend_type_;
 #if !defined(OS_ANDROID)
@@ -70,7 +70,7 @@ class CacheCreator {
 
 CacheCreator::CacheCreator(const base::FilePath& path,
                            bool force,
-                           int max_bytes,
+                           int64_t max_bytes,
                            net::CacheType type,
                            net::BackendType backend_type,
                            uint32_t flags,
@@ -198,7 +198,7 @@ namespace disk_cache {
 int CreateCacheBackendImpl(net::CacheType type,
                            net::BackendType backend_type,
                            const base::FilePath& path,
-                           int max_bytes,
+                           int64_t max_bytes,
                            bool force,
                            net::NetLog* net_log,
                            std::unique_ptr<Backend>* backend,
@@ -237,7 +237,7 @@ int CreateCacheBackendImpl(net::CacheType type,
 int CreateCacheBackend(net::CacheType type,
                        net::BackendType backend_type,
                        const base::FilePath& path,
-                       int max_bytes,
+                       int64_t max_bytes,
                        bool force,
                        net::NetLog* net_log,
                        std::unique_ptr<Backend>* backend,
@@ -250,7 +250,7 @@ int CreateCacheBackend(net::CacheType type,
 int CreateCacheBackend(net::CacheType type,
                        net::BackendType backend_type,
                        const base::FilePath& path,
-                       int max_bytes,
+                       int64_t max_bytes,
                        bool force,
                        net::NetLog* net_log,
                        std::unique_ptr<Backend>* backend,
@@ -270,9 +270,10 @@ void FlushCacheThreadForTesting() {
   BackendImpl::FlushForTesting();
 }
 
-int Backend::CalculateSizeOfEntriesBetween(base::Time initial_time,
-                                           base::Time end_time,
-                                           CompletionOnceCallback callback) {
+int64_t Backend::CalculateSizeOfEntriesBetween(
+    base::Time initial_time,
+    base::Time end_time,
+    Int64CompletionOnceCallback callback) {
   return net::ERR_NOT_IMPLEMENTED;
 }
 

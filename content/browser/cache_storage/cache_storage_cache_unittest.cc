@@ -135,7 +135,8 @@ class DelayableBackend : public disk_cache::Backend {
                        CompletionOnceCallback callback) override {
     return backend_->DoomEntriesSince(initial_time, std::move(callback));
   }
-  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override {
+  int64_t CalculateSizeOfAllEntries(
+      Int64CompletionOnceCallback callback) override {
     return backend_->CalculateSizeOfAllEntries(std::move(callback));
   }
   std::unique_ptr<Iterator> CreateIterator() override {
