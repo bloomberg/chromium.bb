@@ -629,7 +629,7 @@ const char kEnableNetworkLoggingToFileDescription[] =
 const char kEnableNetworkServiceName[] = "Enable network service";
 const char kEnableNetworkServiceDescription[] =
     "Enables the network service, which makes network requests through a "
-    "separate service. Note: most features don't work with this yet.";
+    "separate process.";
 
 const char kEnableNetworkServiceInProcessName[] =
     "Runs network service in-process";
