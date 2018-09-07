@@ -30,6 +30,9 @@ constexpr int kEndPadding = 16;
 // Distance between overflow bubble and the main shelf.
 constexpr int kDistanceToMainShelf = 4;
 
+// Minimum margin around the bubble so that it doesn't hug the screen edges.
+constexpr int kMinimumMargin = 8;
+
 }  // namespace
 
 OverflowBubbleView::OverflowBubbleView(Shelf* shelf)
@@ -188,6 +191,8 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
           .work_area();
+  // Make sure no part of the bubble touches a screen edge.
+  monitor_rect.Inset(gfx::Insets(kMinimumMargin));
 
   if (shelf_->IsHorizontalAlignment()) {
     gfx::Rect bounds(
@@ -198,8 +203,8 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
         content_size.width() + 2 * kEndPadding, content_size.height());
     if (bounds.x() < monitor_rect.x())
       bounds.Offset(monitor_rect.x() - bounds.x(), 0);
-    else if (bounds.right() > monitor_rect.right())
-      bounds.Offset(monitor_rect.right() - bounds.right(), 0);
+    if (bounds.right() > monitor_rect.right())
+      bounds.set_width(monitor_rect.right() - bounds.x());
     return bounds;
   }
   gfx::Rect bounds(
@@ -211,8 +216,8 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
     bounds.set_x(anchor_rect.x() - kDistanceToMainShelf - content_size.width());
   if (bounds.y() < monitor_rect.y())
     bounds.Offset(0, monitor_rect.y() - bounds.y());
-  else if (bounds.bottom() > monitor_rect.bottom())
-    bounds.Offset(monitor_rect.bottom() - bounds.bottom(), 0);
+  if (bounds.bottom() > monitor_rect.bottom())
+    bounds.set_height(monitor_rect.bottom() - bounds.y());
   return bounds;
 }
 
