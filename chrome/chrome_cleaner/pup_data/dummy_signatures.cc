@@ -7,14 +7,14 @@
 namespace chrome_cleaner {
 
 // An array of signatures that only contains the sentinel value and represents
-// an empty array
+// an empty array.
 const PUPData::UwSSignature dummy_signatures[] = {
     {PUPData::kInvalidUwSId, PUPData::FLAGS_NONE, nullptr,
      PUPData::kMaxFilesToRemoveSmallUwS, kNoDisk, kNoRegistry,
      kNoCustomMatcher}};
 
 // While testing we will set up special signatures but we still can't have
-// unitialized pointers to pass the DCHECKS during setup
+// uninitialized pointers to pass the DCHECKS during setup.
 const PUPData::UwSSignature* PUPData::kRemovedPUPs = dummy_signatures;
 const PUPData::UwSSignature* PUPData::kPUPs = dummy_signatures;
 const PUPData::UwSSignature* PUPData::kObservedPUPs = dummy_signatures;

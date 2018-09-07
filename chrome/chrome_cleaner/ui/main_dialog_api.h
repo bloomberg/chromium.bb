@@ -38,14 +38,8 @@ class MainDialogAPI {
   // Create the dialog. This must be called before any of the other methods.
   virtual bool Create() = 0;
 
-  // Set the dialog to a "scanning in progress" state.
-  virtual void StartScanning() = 0;
-
   // Show the "No PUPs found" message.
   virtual void NoPUPsFound() = 0;
-
-  // Set the dialog to a "cleanup in progress" state.
-  virtual void StartCleanup(size_t num_pups) = 0;
 
   // Set the dialog to the "done cleanup" state. The message to be displayed
   // depends on the value of |cleanup_result|.

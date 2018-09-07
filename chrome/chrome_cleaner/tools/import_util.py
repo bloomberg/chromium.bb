@@ -21,14 +21,17 @@ def AddImportPath(path):
 
 
 def GetBuildDirectory(build_configuration):
-  """Returns the path to the build directory relative to this file. Will assert
-  if not used from inside the source tree.
+  """Returns the path to the build directory relative to this file.
 
   Args:
     build_configuration: name of the build configuration whose directory
         should be looked up, e.g. 'Debug' or 'Release'.
+
+  Returns:
+    Path to the build directory or None if used from outside the source tree.
   """
-  assert(_InSourceTree())
+  if not _InSourceTree():
+    return None
   return os.path.join(_ROOT_DIRECTORY, 'out', build_configuration)
 
 
@@ -38,6 +41,7 @@ def AddProtosToPath(root_path):
   Args:
     root_path: root directory where the pyproto subdir is located.
   """
+  assert root_path is not None
   # Add the root pyproto dir so Python packages under that dir (such as
   # google.protobuf, which is built by //third_party/protobuf:py_proto) can be
   # imported with fully-qualified package names. (eg. "from google.protobuf

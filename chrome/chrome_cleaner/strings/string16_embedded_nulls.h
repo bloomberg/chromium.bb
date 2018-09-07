@@ -29,6 +29,7 @@ class String16EmbeddedNulls {
   explicit String16EmbeddedNulls(const std::vector<wchar_t>& str);
   explicit String16EmbeddedNulls(const base::string16& str);
   explicit String16EmbeddedNulls(base::StringPiece16 str);
+  explicit String16EmbeddedNulls(std::initializer_list<wchar_t> chars);
 
   ~String16EmbeddedNulls();
 
@@ -42,6 +43,9 @@ class String16EmbeddedNulls {
   const base::StringPiece16 CastAsStringPiece16() const;
   const wchar_t* CastAsWCharArray() const;
   const uint16_t* CastAsUInt16Array() const;
+
+  const std::vector<wchar_t>& data() const { return data_; }
+  std::vector<wchar_t>& data() { return data_; }
 
  private:
   std::vector<wchar_t> data_;

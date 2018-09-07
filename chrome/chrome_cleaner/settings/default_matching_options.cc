@@ -9,25 +9,21 @@
 namespace chrome_cleaner {
 
 // For the cleaner we should always perform full scan so we know exactly what is
-// found, even for report only UwS, and we should always look for incomplete
-// matches.
+// found, even for report only UwS.
 MatchingOptions DefaultCleanerMatchingOptions() {
   MatchingOptions options;
   options.set_only_one_footprint(false);
-  options.set_find_incomplete_matches(true);
   return options;
 }
 
 // For the reporter, we should only perform a full scan if we report back to
 // Google what files and registry entries were matched. Otherwise, we should
 // stop looking as soon as any piece of the UwS is found, since we just care if
-// it is present. In addition, we should never look for incomplete matches,
-// since they will not be available anyway in logs.
+// it is present.
 MatchingOptions DefaultReporterMatchingOptions() {
   MatchingOptions options;
   options.set_only_one_footprint(
       !Settings::GetInstance()->logs_collection_enabled());
-  options.set_find_incomplete_matches(false);
   return options;
 }
 
