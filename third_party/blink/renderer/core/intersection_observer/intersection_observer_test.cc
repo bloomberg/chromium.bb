@@ -99,6 +99,51 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
+TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+<style>
+#target {
+  width: 100px;
+  height: 100px;
+}
+</style>
+<div id='root'>
+  <div id='target'></div>
+</div>
+  )HTML");
+
+  Element* root = GetDocument().getElementById("root");
+  ASSERT_TRUE(root);
+  IntersectionObserverInit observer_init;
+  observer_init.setRoot(root);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exception_state);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+
+  root->remove();
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_EQ(observer_delegate->EntryCount(), 2);
+  EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
+}
+
 TEST_F(IntersectionObserverTest, ResumePostsTask) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
