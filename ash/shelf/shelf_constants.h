@@ -128,7 +128,10 @@ class ShelfConstants {
   }
 
   // The radius of the circular material design app list button.
-  static int app_list_button_radius() { return overflow_button_size() / 2; }
+  static int app_list_button_radius() { return control_border_radius(); }
+
+  // The radius of shelf control buttons.
+  static int control_border_radius() { return kShelfControlSizeNewUi / 2; }
 
   // The distance between the edge of the shelf and the status indicators.
   static int status_indicator_offset_from_edge() {
