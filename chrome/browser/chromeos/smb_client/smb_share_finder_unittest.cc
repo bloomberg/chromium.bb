@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/discovery/in_memory_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
@@ -67,14 +68,22 @@ class SmbShareFinderTest : public testing::Test {
 
   // Helper function when expecting shares to be found in the network.
   void ExpectSharesFound() {
-    share_finder_->GatherSharesInNetwork(base::BindRepeating(
-        &SmbShareFinderTest::SharesFoundCallback, base::Unretained(this)));
+    share_finder_->GatherSharesInNetwork(
+        base::BindOnce(&SmbShareFinderTest::HostsDiscoveredCallback,
+                       base::Unretained(this)),
+        base::BindRepeating(&SmbShareFinderTest::SharesFoundCallback,
+                            base::Unretained(this)));
+    EXPECT_TRUE(discovery_callback_called_);
   }
 
   // Helper function when expecting no shares to be found in the network.
   void ExpectNoSharesFound() {
-    share_finder_->GatherSharesInNetwork(base::BindRepeating(
-        &SmbShareFinderTest::EmptySharesCallback, base::Unretained(this)));
+    share_finder_->GatherSharesInNetwork(
+        base::BindOnce(&SmbShareFinderTest::HostsDiscoveredCallback,
+                       base::Unretained(this)),
+        base::BindRepeating(&SmbShareFinderTest::EmptySharesCallback,
+                            base::Unretained(this)));
+    EXPECT_TRUE(discovery_callback_called_);
   }
 
   // Helper function that expects expected_shares_ to be empty.
@@ -86,7 +95,9 @@ class SmbShareFinderTest : public testing::Test {
   }
 
  private:
-  // Removes shares discovered from expected_shares_.
+  void HostsDiscoveredCallback() { discovery_callback_called_ = true; }
+
+  // Removes shares discovered from |expected_shares_|.
   void SharesFoundCallback(const std::vector<SmbUrl>& shares_found) {
     EXPECT_GE(shares_found.size(), 0u);
 
@@ -98,6 +109,8 @@ class SmbShareFinderTest : public testing::Test {
   void EmptySharesCallback(const std::vector<SmbUrl>& shares_found) {
     EXPECT_EQ(0u, shares_found.size());
   }
+
+  bool discovery_callback_called_ = false;
 
   // Keeps track of expected shares across multiple hosts.
   std::set<std::string> expected_shares_;
