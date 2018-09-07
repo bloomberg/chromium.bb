@@ -73,10 +73,6 @@ syncer::SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
   return token;
 }
 
-AccountInfo TestSyncService::GetAuthenticatedAccountInfo() const {
-  return account_info_;
-}
-
 void TestSyncService::SetInAuthError(bool is_in_auth_error) {
   is_in_auth_error_ = is_in_auth_error;
 

@@ -30,7 +30,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
@@ -112,7 +111,7 @@ class PersonalDataManager : public KeyedService,
   void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // AccountInfoGetter:
-  AccountInfo GetAccountInfoForPaymentsServer() const override;
+  std::string GetActiveSignedInAccountId() const override;
   bool IsSyncFeatureEnabled() const override;
 
   // Adds a listener to be notified of PersonalDataManager events.
