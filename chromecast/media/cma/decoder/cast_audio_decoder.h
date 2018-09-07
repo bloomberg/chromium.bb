@@ -40,7 +40,9 @@ class CastAudioDecoder {
   typedef base::Callback<void(bool success)> InitializedCallback;
   typedef base::Callback<void(
       Status status,
-      const scoped_refptr<media::DecoderBufferBase>& decoded)> DecodeCallback;
+      const AudioConfig& config,
+      const scoped_refptr<media::DecoderBufferBase>& decoded)>
+      DecodeCallback;
 
   // Creates a CastAudioDecoder instance for the given |config|. Decoding must
   // occur on the same thread as |task_runner|. Returns an empty unique_ptr if

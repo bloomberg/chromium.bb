@@ -217,7 +217,7 @@ AudioDecoderAndroid::BufferStatus AudioDecoderAndroid::PushBuffer(
         FROM_HERE,
         base::Bind(&AudioDecoderAndroid::OnBufferDecoded,
                    weak_factory_.GetWeakPtr(), input_bytes,
-                   CastAudioDecoder::Status::kDecodeOk, buffer_base));
+                   CastAudioDecoder::Status::kDecodeOk, config_, buffer_base));
     return MediaPipelineBackendAndroid::kBufferPending;
   }
 
@@ -369,6 +369,7 @@ void AudioDecoderAndroid::OnDecoderInitialized(bool success) {
 void AudioDecoderAndroid::OnBufferDecoded(
     uint64_t input_bytes,
     CastAudioDecoder::Status status,
+    const AudioConfig& config,
     const scoped_refptr<DecoderBufferBase>& decoded) {
   if (decoded->end_of_stream()) {
     VLOG(3) << __func__ << ": EOS";
@@ -406,6 +407,8 @@ void AudioDecoderAndroid::OnBufferDecoded(
     int input_frames = decoded->data_size() / (kNumChannels * sizeof(float));
 
     DCHECK(!rate_shifter_info_.empty());
+
+    // TODO(yfa): handle sample rate change correctly here (from AudioConfig)
 
     // If not AudioChannel::kAll, wipe all other channels for stereo sound.
     if (backend_->AudioChannel() != AudioChannel::kAll) {

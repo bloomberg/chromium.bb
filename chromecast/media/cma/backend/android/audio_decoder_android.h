@@ -80,6 +80,7 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
+                       const AudioConfig& config,
                        const scoped_refptr<DecoderBufferBase>& decoded);
   void CheckBufferComplete();
   void PushRateShifted();
