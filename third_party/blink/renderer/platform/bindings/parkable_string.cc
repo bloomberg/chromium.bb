@@ -27,9 +27,19 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
       lock_depth_(0),
       string_(std::move(impl)),
       is_parked_(false),
-      is_parkable_(parkable == ParkableState::kParkable) {}
+      is_parkable_(parkable == ParkableState::kParkable)
+#if DCHECK_IS_ON()
+      ,
+      owning_thread_(CurrentThread())
+#endif
+{
+}
 
 ParkableStringImpl::~ParkableStringImpl() {
+  // Null strings (default-constructed) can be destroyed on a different thread.
+  if (!string_.IsNull())
+    AssertOnValidThread();
+
   if (is_parkable_)
     ParkableStringManager::Instance().Remove(string_.Impl());
 }
@@ -46,24 +56,29 @@ void ParkableStringImpl::Unlock() {
 }
 
 bool ParkableStringImpl::Is8Bit() const {
+  AssertOnValidThread();
   return string_.Is8Bit();
 }
 
 bool ParkableStringImpl::IsNull() const {
+  AssertOnValidThread();
   return string_.IsNull();
 }
 
 const String& ParkableStringImpl::ToString() {
+  AssertOnValidThread();
   MutexLocker locker(mutex_);
   Unpark();
   return string_;
 }
 
 unsigned ParkableStringImpl::CharactersSizeInBytes() const {
+  AssertOnValidThread();
   return string_.CharactersSizeInBytes();
 }
 
 bool ParkableStringImpl::Park() {
+  AssertOnValidThread();
   MutexLocker locker(mutex_);
   DCHECK(is_parkable_);
 
@@ -79,6 +94,7 @@ bool ParkableStringImpl::Park() {
 }
 
 void ParkableStringImpl::Unpark() {
+  AssertOnValidThread();
   mutex_.AssertAcquired();
   if (!is_parked_)
     return;
