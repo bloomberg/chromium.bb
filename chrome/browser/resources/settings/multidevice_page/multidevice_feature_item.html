@@ -36,7 +36,7 @@
             subpageRoute, pageContentData, feature)]]">
       <iron-icon icon="[[getIconName(feature)]]"></iron-icon>
       <div id="item-text-container" class="middle">
-        [[getFeatureName(feature)]]
+        <div id="featureName">[[getFeatureName(feature)]]</div>
         <div class="secondary"
             id="featureSecondary"
             inner-h-t-m-l="[[getFeatureSummaryHtml(feature)]]">
@@ -47,7 +47,7 @@
               subpageRoute, pageContentData, feature)]]"
           restamp>
         <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="[[getFeatureName(feature)]]"
+          <button aria-labelledby="featureName"
               aria-describedby="featureSecondary"></button>
         </paper-icon-button-light>
         <div class="separator"></div>
