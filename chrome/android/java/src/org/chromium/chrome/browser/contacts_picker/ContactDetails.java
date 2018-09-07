@@ -24,15 +24,21 @@ public class ContactDetails implements Comparable<ContactDetails> {
     // The list of emails registered for this contact.
     private List<String> mEmails;
 
+    // The list of phone numbers registered for this contact.
+    private List<String> mPhoneNumbers;
+
     /**
      * The ContactDetails constructor.
      * @param id The unique identifier of this contact.
      * @param displayName The display name of this contact.
      * @param emails The emails registered for this contact.
+     * @param phoneNumbers The phone numbers registered for this contact.
      */
-    public ContactDetails(String id, String displayName, List<String> emails) {
+    public ContactDetails(
+            String id, String displayName, List<String> emails, List<String> phoneNumbers) {
         mDisplayName = displayName;
         mEmails = emails;
+        mPhoneNumbers = phoneNumbers;
         mId = id;
     }
 
@@ -64,10 +70,11 @@ public class ContactDetails implements Comparable<ContactDetails> {
     }
 
     /**
-     * Accessor for the list of emails (as strings separated by newline).
-     * @return A string containing all the emails registered for this contact.
+     * Accessor for the list of contact details (emails and phone numbers). Returned as strings
+     * separated by newline).
+     * @return A string containing all the contact details registered for this contact.
      */
-    public String getEmailsAsString() {
+    public String getContactDetailsAsString() {
         int count = 0;
         StringBuilder builder = new StringBuilder();
         for (String email : mEmails) {
@@ -75,6 +82,12 @@ public class ContactDetails implements Comparable<ContactDetails> {
                 builder.append("\n");
             }
             builder.append(email);
+        }
+        for (String phoneNumber : mPhoneNumbers) {
+            if (count++ > 0) {
+                builder.append("\n");
+            }
+            builder.append(phoneNumber);
         }
 
         return builder.toString();
@@ -87,13 +100,23 @@ public class ContactDetails implements Comparable<ContactDetails> {
     public void appendJson(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("name");
+
         writer.value(getDisplayName());
         writer.name("emails");
+
         writer.beginArray();
         for (String email : mEmails) {
             writer.value(email);
         }
         writer.endArray();
+
+        writer.name("phoneNumbers");
+        writer.beginArray();
+        for (String phoneNumber : mPhoneNumbers) {
+            writer.value(phoneNumber);
+        }
+        writer.endArray();
+
         writer.endObject();
     }
 

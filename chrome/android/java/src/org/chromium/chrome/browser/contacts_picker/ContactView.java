@@ -45,8 +45,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     // The display name of the contact.
     public TextView mDisplayName;
 
-    // The emails for the contact.
-    public TextView mEmails;
+    // The contact details for the contact.
+    public TextView mDetailsView;
 
     /**
      * Constructor for inflating from XML.
@@ -62,7 +62,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         mImage = (ImageView) findViewById(R.id.image);
         mDisplayName = (TextView) findViewById(R.id.name);
-        mEmails = (TextView) findViewById(R.id.email);
+        mDetailsView = (TextView) findViewById(R.id.details);
         mSelectedView = (ImageView) findViewById(R.id.selected);
     }
 
@@ -122,7 +122,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
-        mEmails.setText(contactDetails.getEmailsAsString());
+        mDetailsView.setText(contactDetails.getContactDetailsAsString());
         Bitmap icon = mCategoryView.getIconGenerator().generateIconForText(
                 contactDetails.getDisplayNameAbbreviation(), 2);
         mImage.setImageBitmap(icon);
@@ -137,7 +137,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     private void resetTile() {
         mImage.setImageBitmap(null);
         mDisplayName.setText("");
-        mEmails.setText("");
+        mDetailsView.setText("");
         mSelectedView.setVisibility(View.GONE);
     }
 
