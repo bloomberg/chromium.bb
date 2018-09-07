@@ -2474,6 +2474,7 @@ jumbo_split_static_library("browser") {
     deps += [
       ":client_discourse_context_proto",
       ":delta_file_proto",
+      ":explore_sites_proto",
       ":jni_headers",
       "//chrome/browser/android/webapk:proto",
       "//chrome/services/media_gallery_util:manifest",  # TODO(xingliu): Tries to remove this.
@@ -4742,6 +4743,12 @@ if (is_android) {
   proto_library("delta_file_proto") {
     sources = [
       "android/proto/delta_file.proto",
+    ]
+  }
+
+  proto_library("explore_sites_proto") {
+    sources = [
+      "android/explore_sites/catalog.proto",
     ]
   }
 }
