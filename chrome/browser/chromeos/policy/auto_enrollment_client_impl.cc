@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -566,7 +565,6 @@ void AutoEnrollmentClientImpl::SendBucketDownloadRequest() {
   VLOG(1) << "Request bucket #" << remainder;
   request_job_.reset(device_management_service_->CreateJob(
       DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, url_loader_factory_));
-  request_job_->SetAuthData(DMAuth::NoAuth());
   request_job_->SetClientID(device_id_);
   em::DeviceAutoEnrollmentRequest* request =
       request_job_->GetRequest()->mutable_auto_enrollment_request();
@@ -585,7 +583,6 @@ void AutoEnrollmentClientImpl::SendDeviceStateRequest() {
 
   request_job_.reset(device_management_service_->CreateJob(
       state_download_message_processor_->GetJobType(), url_loader_factory_));
-  request_job_->SetAuthData(DMAuth::NoAuth());
   request_job_->SetClientID(device_id_);
   state_download_message_processor_->FillRequest(request_job_->GetRequest());
   request_job_->Start(base::BindRepeating(

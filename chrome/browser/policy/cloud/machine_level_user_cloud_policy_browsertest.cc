@@ -32,7 +32,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
@@ -210,11 +209,8 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
       job->GetRequest()->mutable_register_browser_request()->set_machine_name(
           machine_name);
     }
-    if (!enrollment_token.empty()) {
-      job->SetAuthData(DMAuth::FromEnrollmentToken(enrollment_token));
-    } else {
-      job->SetAuthData(DMAuth::NoAuth());
-    }
+    if (!enrollment_token.empty())
+      job->SetEnrollmentToken(enrollment_token);
     job->SetClientID(kClientID);
     job->Start(base::Bind(
         &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
@@ -242,7 +238,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
           *chrome_desktop_report;
     }
 
-    job->SetAuthData(DMAuth::FromDMToken(kDMToken));
+    job->SetDMToken(kDMToken);
     job->SetClientID(kClientID);
     job->Start(base::Bind(
         &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,

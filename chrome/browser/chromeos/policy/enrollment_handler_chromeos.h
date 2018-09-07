@@ -41,7 +41,6 @@ class AttestationFlow;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
-class DMAuth;
 class DMTokenStorage;
 class ServerBackedStateKeysBroker;
 
@@ -75,7 +74,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
       const EnrollmentConfig& enrollment_config,
-      std::unique_ptr<DMAuth> dm_auth,
+      const std::string& auth_token,
       const std::string& client_id,
       const std::string& requisition,
       const EnrollmentCallback& completion_callback);
@@ -235,7 +234,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
   EnrollmentConfig enrollment_config_;
-  std::unique_ptr<policy::DMAuth> dm_auth_;
+  std::string auth_token_;
   std::string client_id_;
   std::string requisition_;
   EnrollmentCallback completion_callback_;
