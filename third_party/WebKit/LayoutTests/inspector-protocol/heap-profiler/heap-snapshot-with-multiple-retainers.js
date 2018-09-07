@@ -31,25 +31,12 @@
   else
     return testRunner.fail('cannot find the leaking node');
 
-  var v8EventListener = helper.firstRetainingPath(node)[0];
-  var eventListener = helper.firstRetainingPath(node)[1];
-
-  if (v8EventListener.name() == 'V8EventListener') {
-    testRunner.log('SUCCESS: immediate retainer is V8EventListener.');
-  } else {
-    return testRunner.fail('cannot find the V8EventListener.');
-  }
+  var eventListener = helper.firstRetainingPath(node)[0];
 
   if (eventListener.name() == 'EventListener') {
     testRunner.log('SUCCESS: immediate retainer is EventListener.');
   } else {
     return testRunner.fail('cannot find the EventListener.');
-  }
-
-  if (v8EventListener.retainersCount() === 1) {
-    testRunner.log('SUCCESS: found single retaining path for v8EventListener.');
-  } else {
-    return testRunner.fail('cannot find single retaining path for v8EventListener.');
   }
 
   var retainingPaths = [];

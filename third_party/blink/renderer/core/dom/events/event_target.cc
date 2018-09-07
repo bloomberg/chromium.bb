@@ -39,8 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
@@ -290,34 +289,31 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
       event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
       event_listener && !options.hasPassive()) {
-    v8::Local<v8::Object> callback_object;
-    if (V8AbstractEventHandler* v8_listener =
-            V8AbstractEventHandler::Cast(event_listener))
-      callback_object = v8_listener->GetExistingListenerObject();
-    if (V8EventListenerImpl* v8_listener =
-            V8EventListenerImpl::Cast(event_listener))
-      callback_object = v8_listener->GetListenerObject();
-    if (!callback_object.IsEmpty() && callback_object->IsFunction() &&
-        strcmp(
-            "ssc_wheel",
-            *v8::String::Utf8Value(
-                v8::Isolate::GetCurrent(),
-                v8::Local<v8::Function>::Cast(callback_object)->GetName())) ==
-            0) {
-      options.setPassive(true);
-      if (executing_window) {
-        UseCounter::Count(executing_window->document(),
-                          WebFeature::kSmoothScrollJSInterventionActivated);
+    if (V8AbstractEventListener* v8_listener =
+            V8AbstractEventListener::Cast(event_listener)) {
+      v8::Local<v8::Object> function = v8_listener->GetExistingListenerObject();
+      if (function->IsFunction() &&
+          strcmp("ssc_wheel",
+                 *v8::String::Utf8Value(
+                     v8::Isolate::GetCurrent(),
+                     v8::Local<v8::Function>::Cast(function)->GetName())) ==
+              0) {
+        options.setPassive(true);
+        if (executing_window) {
+          UseCounter::Count(executing_window->document(),
+                            WebFeature::kSmoothScrollJSInterventionActivated);
 
-        executing_window->GetFrame()->Console().AddMessage(
-            ConsoleMessage::Create(
-                kInterventionMessageSource, kWarningMessageLevel,
-                "Registering mousewheel event as passive due to "
-                "smoothscroll.js usage. The smoothscroll.js library is "
-                "buggy, no longer necessary and degrades performance. See "
-                "https://www.chromestatus.com/feature/5749447073988608"));
+          executing_window->GetFrame()->Console().AddMessage(
+              ConsoleMessage::Create(
+                  kInterventionMessageSource, kWarningMessageLevel,
+                  "Registering mousewheel event as passive due to "
+                  "smoothscroll.js usage. The smoothscroll.js library is "
+                  "buggy, no longer necessary and degrades performance. See "
+                  "https://www.chromestatus.com/feature/5749447073988608"));
+        }
+
+        return;
       }
-      return;
     }
   }
 
@@ -406,7 +402,8 @@ bool EventTarget::AddEventListenerInternal(
       event_type, listener, options, &registered_listener);
   if (added) {
     AddedEventListener(event_type, registered_listener);
-    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
+    if (V8AbstractEventListener::Cast(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
   }
@@ -541,7 +538,8 @@ bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
     return false;
   }
   if (registered_listener) {
-    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
+    if (V8AbstractEventListener::Cast(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
     registered_listener->SetCallback(listener);
