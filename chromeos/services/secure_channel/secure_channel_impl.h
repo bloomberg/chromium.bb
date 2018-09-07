@@ -56,7 +56,8 @@ class SecureChannelImpl : public mojom::SecureChannel,
   ~SecureChannelImpl() override;
 
  private:
-  SecureChannelImpl(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+  explicit SecureChannelImpl(
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
 
   enum class InvalidRemoteDeviceReason { kInvalidPublicKey, kInvalidPsk };
 
@@ -136,6 +137,12 @@ class SecureChannelImpl : public mojom::SecureChannel,
       ClientConnectionParameters* client_connection_parameters,
       bool is_local_device);
 
+  // Checks if |bluetooth_adapter_| is disabled or not present and rejects the
+  // connection request if so. Returns whether the request was rejected.
+  bool CheckIfBluetoothAdapterDisabledOrNotPresent(
+      ApiFunctionName api_fn_name,
+      ClientConnectionParameters* client_connection_parameters);
+
   // Validates |device| and adds it to the |remote_device_cache_| if it is
   // valid. If it is not valid, the reason is provided as a return type, and the
   // device is not added to the cache.
@@ -143,6 +150,7 @@ class SecureChannelImpl : public mojom::SecureChannel,
       ApiFunctionName api_fn_name,
       const cryptauth::RemoteDevice& device);
 
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TimerFactory> timer_factory_;
   std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
   std::unique_ptr<BleServiceDataHelper> ble_service_data_helper_;
