@@ -2901,7 +2901,6 @@ public class Tab
      */
     public void setFullscreenManager(FullscreenManager manager) {
         mFullscreenManager = manager;
-        mControlsOffsetHelper.resetPositions();
     }
 
     /**
@@ -3358,13 +3357,6 @@ public class Tab
      */
     boolean areRendererInputEventsIgnored() {
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
-    }
-
-    /**
-     * @return The {@link TabBrowserControlsOffsetHelper} for this tab.
-     */
-    public TabBrowserControlsOffsetHelper getControlsOffsetHelper() {
-        return mControlsOffsetHelper;
     }
 
     @CalledByNative

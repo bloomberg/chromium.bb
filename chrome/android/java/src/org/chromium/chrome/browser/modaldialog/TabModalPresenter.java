@@ -109,7 +109,7 @@ public class TabModalPresenter
         if (mDialogContainer == null) initDialogContainer();
         setBrowserControlsAccess(true);
         // Don't show the dialog container before browser controls are guaranteed fully visible.
-        if (mActiveTab.getControlsOffsetHelper().areBrowserControlsFullyVisible()) {
+        if (TabBrowserControlsOffsetHelper.from(mActiveTab).areBrowserControlsFullyVisible()) {
             runEnterAnimation(dialogView);
         } else {
             mRunEnterAnimationOnCallback = true;
@@ -224,7 +224,7 @@ public class TabModalPresenter
             assert mActiveTab
                     != null : "Tab modal dialogs should be shown on top of an active tab.";
 
-            mActiveTab.getControlsOffsetHelper().addObserver(this);
+            TabBrowserControlsOffsetHelper.from(mActiveTab).addObserver(this);
             // Hide contextual search panel so that bottom toolbar will not be
             // obscured and back press is not overridden.
             ContextualSearchManager contextualSearchManager =
@@ -259,7 +259,7 @@ public class TabModalPresenter
             }
             menuButton.setEnabled(false);
         } else {
-            mActiveTab.getControlsOffsetHelper().removeObserver(this);
+            TabBrowserControlsOffsetHelper.from(mActiveTab).removeObserver(this);
             // Show the action bar back if it was dismissed when the dialogs were showing.
             if (mDidClearTextControls) {
                 mDidClearTextControls = false;
