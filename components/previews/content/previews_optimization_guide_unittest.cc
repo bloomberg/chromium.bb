@@ -656,7 +656,7 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
 
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.ProcessedCount", 2, 1);
+      "ResourceLoadingHints.PageHints.ProcessedCount", 2, 1);
 
   // Verify loaded hint data for www.somedomain.org
   EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),

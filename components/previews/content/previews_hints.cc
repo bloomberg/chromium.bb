@@ -219,7 +219,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 
     // Cache hints that have PageHints.
     if (ShouldProcessPageHints() && !hint.page_hints().empty()) {
-      UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.ResourceHints.ProcessedCount",
+      UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
                            hint.page_hints().size());
       hints->initial_hints_.push_back(hint);
     }
