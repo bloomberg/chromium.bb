@@ -81,6 +81,10 @@ void SVGElement::DetachLayoutTree(const AttachContext& context) {
   Element::DetachLayoutTree(context);
   if (SVGElement* element = CorrespondingElement())
     element->RemoveInstanceMapping(this);
+  // To avoid a noncollectable Blink GC reference cycle, we must clear the
+  // ComputedStyle here. See http://crbug.com/878032#c11
+  if (HasSVGRareData())
+    SvgRareData()->ClearOverriddenComputedStyle();
 }
 
 void SVGElement::AttachLayoutTree(AttachContext& context) {

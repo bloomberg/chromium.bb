@@ -86,6 +86,7 @@ class SVGElementRareData
   MutableCSSPropertyValueSet* EnsureAnimatedSMILStyleProperties();
 
   ComputedStyle* OverrideComputedStyle(Element*, const ComputedStyle*);
+  void ClearOverriddenComputedStyle();
 
   bool UseOverrideComputedStyle() const { return use_override_computed_style_; }
   void SetUseOverrideComputedStyle(bool value) {
