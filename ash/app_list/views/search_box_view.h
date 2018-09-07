@@ -108,6 +108,10 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Accepts one character in the autocomplete text and fires query.
   void AcceptOneCharInAutocompleteText();
 
+  // Returns true if there is currently an autocomplete suggestion in
+  // search_box().
+  bool HasAutocompleteText();
+
   // Removes all autocomplete text.
   void ClearAutocompleteText();
 
