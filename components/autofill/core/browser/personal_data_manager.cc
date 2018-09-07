@@ -713,9 +713,21 @@ void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
   sync_service_ = nullptr;
 }
 
-std::string PersonalDataManager::GetActiveSignedInAccountId() const {
-  // Get the account that is used for Sync (whether it's full Sync or not).
-  return sync_service_->GetAuthenticatedAccountInfo().account_id;
+AccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
+  // If butter is enabled or the feature to get the Payment Identity from Sync
+  // is enabled, return the account of the active signed-in user irrespective of
+  // whether they enabled sync or not.
+  // Otherwise, return the latest cached AccountInfo of the user's primary
+  // account, which is empty if the user has disabled sync.
+  // In both cases, the AccountInfo will be empty if the user is not signed in.
+  bool should_use_active_signed_in_account =
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountWalletStorage) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillGetPaymentsIdentityFromSync);
+  return should_use_active_signed_in_account
+             ? sync_service_->GetAuthenticatedAccountInfo()
+             : identity_manager_->GetPrimaryAccountInfo();
 }
 
 bool PersonalDataManager::IsSyncFeatureEnabled() const {

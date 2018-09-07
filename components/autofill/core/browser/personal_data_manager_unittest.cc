@@ -6733,4 +6733,56 @@ TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
   EXPECT_EQ(validities.at(EMAIL_ADDRESS), AutofillProfile::VALID);
 }
 
+TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
+  const std::string kIdentityManagerAccountEmail = "identity_account@email.com";
+  const std::string kSyncServiceAccountEmail = "active_sync_account@email.com";
+
+  // Make the IdentityManager return a non-empty AccountInfo when
+  // GetPrimaryAccountInfo() is called.
+  identity_test_env_.SetPrimaryAccount(kIdentityManagerAccountEmail);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Make the sync service return a non-empty AccountInfo when
+  // GetAuthenticatedAccountInfo() is called.
+  AccountInfo active_info;
+  active_info.email = kSyncServiceAccountEmail;
+  sync_service_.SetAuthenticatedAccountInfo(active_info);
+
+  // The IdentityManager's AccountInfo should be returned by default.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage,
+                               features::kAutofillGetPaymentsIdentityFromSync});
+
+    EXPECT_EQ(kIdentityManagerAccountEmail,
+              personal_data_->GetAccountInfoForPaymentsServer().email);
+  }
+
+  // The Active Sync AccountInfo should be returned if
+  // kAutofillEnableAccountWalletStorage is enabled.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+        /*disabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync});
+
+    EXPECT_EQ(kSyncServiceAccountEmail,
+              personal_data_->GetAccountInfoForPaymentsServer().email);
+  }
+
+  // The Active Sync AccountInfo should be returned if
+  // kAutofillGetPaymentsIdentityFromSync is enabled.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillGetPaymentsIdentityFromSync},
+        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage});
+
+    EXPECT_EQ(kSyncServiceAccountEmail,
+              personal_data_->GetAccountInfoForPaymentsServer().email);
+  }
+}
+
 }  // namespace autofill

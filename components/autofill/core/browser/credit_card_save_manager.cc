@@ -201,7 +201,7 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
   return observer_for_testing_ ||
          ::autofill::IsCreditCardUploadEnabled(
              client_->GetPrefs(), client_->GetSyncService(),
-             client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
+             personal_data_manager_->GetAccountInfoForPaymentsServer().email);
 }
 
 bool CreditCardSaveManager::IsUploadEnabledForNetwork(
