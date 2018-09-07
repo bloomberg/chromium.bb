@@ -193,10 +193,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
       MAP_MEM_NAMED_CREATE | VM_PROT_READ | VM_PROT_WRITE,
       named_right.receive(),
       MACH_PORT_NULL);  // Parent handle.
-  if (kr != KERN_SUCCESS) {
-    MACH_DLOG(ERROR, kr) << "mach_make_memory_entry_64";
-    return {};
-  }
+  // Crash as soon as shm allocation fails to debug the issue
+  // https://crbug.com/872237.
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_make_memory_entry_64";
   DCHECK_GE(vm_size, size);
 
   return PlatformSharedMemoryRegion(std::move(named_right), mode, size,
