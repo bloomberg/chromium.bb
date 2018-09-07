@@ -6,6 +6,7 @@
 
 #import "base/ios/block_types.h"
 #include "base/logging.h"
+#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -171,8 +172,13 @@
 }
 
 - (void)showAccountsSettings {
-  [self.dispatcher
-      showAccountsSettingsFromViewController:self.presentingViewController];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:
+                         self.presentingViewController];
+  } else {
+    [self.dispatcher
+        showAccountsSettingsFromViewController:self.presentingViewController];
+  }
 }
 
 - (BOOL)isPresenting {

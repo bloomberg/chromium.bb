@@ -5988,14 +5988,15 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
     didFinishNeedingToShowSettings:(BOOL)shouldShowSettings {
   DCHECK(self.consentBumpCoordinator);
   DCHECK(self.consentBumpCoordinator.viewController);
+  auto completion = ^{
+    if (shouldShowSettings) {
+      [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+    }
+  };
   [self.consentBumpCoordinator.viewController
       dismissViewControllerAnimated:YES
-                         completion:nil];
+                         completion:completion];
   self.consentBumpCoordinator = nil;
-  if (shouldShowSettings) {
-    // TODO(crbug.com/827072): Needs to open the sync and Google services
-    // panel from the settings.
-  }
 }
 
 @end

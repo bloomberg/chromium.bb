@@ -42,6 +42,8 @@ source_set("settings") {
     "content_settings_collection_view_controller.mm",
     "dataplan_usage_collection_view_controller.h",
     "dataplan_usage_collection_view_controller.mm",
+    "google_services_navigation_coordinator.h",
+    "google_services_navigation_coordinator.mm",
     "google_services_settings_consumer.h",
     "google_services_settings_coordinator.h",
     "google_services_settings_coordinator.mm",

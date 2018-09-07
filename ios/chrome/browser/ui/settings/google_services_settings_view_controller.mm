@@ -152,10 +152,18 @@ constexpr NSInteger kSectionOffset = 1000;
 }
 
 - (void)reloadSections:(NSIndexSet*)sections {
+  if (!self.collectionViewModel) {
+    // No need to reload since the model has not been loaded yet.
+    return;
+  }
   [self.collectionView reloadSections:sections];
 }
 
 - (void)reloadItem:(CollectionViewItem*)item {
+  if (!self.collectionViewModel) {
+    // No need to reload since the model has not been loaded yet.
+    return;
+  }
   NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
