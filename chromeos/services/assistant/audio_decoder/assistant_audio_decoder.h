@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 
 namespace media {

@@ -33,8 +33,8 @@ AssistantAudioDecoder::AssistantAudioDecoder(
     : service_ref_(std::move(service_ref)),
       client_(std::move(client)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      media_thread_(std::make_unique<base::Thread>("media_thread")),
-      data_source_(std::make_unique<IPCDataSource>(std::move(data_source))) {
+      data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
+      media_thread_(std::make_unique<base::Thread>("media_thread")) {
   CHECK(media_thread_->Start());
 }
 
@@ -78,7 +78,7 @@ void AssistantAudioDecoder::OpenDecoderOnMediaThread(
 void AssistantAudioDecoder::DecodeOnMediaThread() {
   std::vector<std::unique_ptr<media::AudioBus>> decoded_audio_packets;
   // Experimental number of decoded packets before sending to |client_|.
-  constexpr int kPacketsToRead = 128;
+  constexpr int kPacketsToRead = 16;
   decoder_->Read(&decoded_audio_packets, kPacketsToRead);
 
   task_runner_->PostTask(

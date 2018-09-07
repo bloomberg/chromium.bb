@@ -7,7 +7,8 @@
         "ash": [ "system_ui" ],
         "identity": [ "identity_manager" ],
         "device": [ "device:battery_monitor" ],
-        "audio": [ "stream_factory" ]
+        "audio": [ "stream_factory" ],
+        "assistant_audio_decoder": [ "assistant:audio_decoder" ]
       },
       "provides": {
         "assistant": [
