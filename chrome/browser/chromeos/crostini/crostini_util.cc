@@ -266,6 +266,10 @@ void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
                        const std::vector<std::string>& files) {
+  // Policies can change under us, and crostini may now be forbidden.
+  if (!IsCrostiniUIAllowedForProfile(profile)) {
+    return;
+  }
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
