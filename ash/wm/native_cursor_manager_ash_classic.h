@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_
-#define ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_
+#ifndef ASH_WM_NATIVE_CURSOR_MANAGER_ASH_H_
+#define ASH_WM_NATIVE_CURSOR_MANAGER_ASH_H_
 
-#include "ash/wm/native_cursor_manager_ash.h"
+#include "ash/ash_export.h"
+#include "base/macros.h"
+#include "ui/display/display.h"
+#include "ui/wm/core/native_cursor_manager.h"
 
 namespace ui {
 class ImageCursors;
@@ -17,18 +20,20 @@ namespace ash {
 // visibility. It communicates back with the CursorManager through the
 // NativeCursorManagerDelegate interface, which receives messages about what
 // changes were acted on.
-class ASH_EXPORT NativeCursorManagerAshClassic : public NativeCursorManagerAsh {
+class ASH_EXPORT NativeCursorManagerAsh : public ::wm::NativeCursorManager {
  public:
-  NativeCursorManagerAshClassic();
-  ~NativeCursorManagerAshClassic() override;
+  NativeCursorManagerAsh();
+  ~NativeCursorManagerAsh() override;
 
- private:
-  friend class CursorManagerTestApi;
+  // Toggle native cursor enabled/disabled.
+  // The native cursor is enabled by default. When disabled, we hide the native
+  // cursor regardless of visibility state, and let CursorWindowManager draw
+  // the cursor.
+  void SetNativeCursorEnabled(bool enabled);
 
-  // Overridden from NativeCursorManagerAsh:
-  void SetNativeCursorEnabled(bool enabled) override;
-  float GetScale() const override;
-  display::Display::Rotation GetRotation() const override;
+  // Returns the scale and rotation of the currently loaded cursor.
+  float GetScale() const;
+  display::Display::Rotation GetRotation() const;
 
   // Overridden from ::wm::NativeCursorManager:
   void SetDisplay(const display::Display& display,
@@ -43,6 +48,9 @@ class ASH_EXPORT NativeCursorManagerAshClassic : public NativeCursorManagerAsh {
       bool enabled,
       ::wm::NativeCursorManagerDelegate* delegate) override;
 
+ private:
+  friend class CursorManagerTestApi;
+
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;
 
@@ -50,9 +58,9 @@ class ASH_EXPORT NativeCursorManagerAshClassic : public NativeCursorManagerAsh {
 
   std::unique_ptr<ui::ImageCursors> image_cursors_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerAshClassic);
+  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerAsh);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_NATIVE_CURSOR_MANAGER_ASH_CLASSIC_H_
+#endif  // ASH_WM_NATIVE_CURSOR_MANAGER_ASH_H_
