@@ -13,9 +13,14 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
+namespace gfx {
+class PointF;
+}
+
 namespace ui {
 
 class BitmapCursorOzone;
+class OSExchangeData;
 class PlatformWindowDelegate;
 class WaylandConnection;
 class XDGPopupWrapper;
@@ -100,6 +105,14 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
                               bool is_activated);
 
   void OnCloseRequest();
+
+  void OnDragEnter(const gfx::PointF& point,
+                   std::unique_ptr<OSExchangeData> data,
+                   int operation);
+  int OnDragMotion(const gfx::PointF& point, uint32_t time, int operation);
+  void OnDragDrop(std::unique_ptr<OSExchangeData> data);
+  void OnDragLeave();
+  void OnDragSessionClose(uint32_t dnd_action);
 
  private:
   bool IsMinimized() const;

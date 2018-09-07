@@ -40,6 +40,15 @@ void delete_touch(wl_touch* touch) {
     wl_touch_destroy(touch);
 }
 
+void delete_data_device(wl_data_device* data_device) {
+  if (wl_data_device_get_version(data_device) >=
+      WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
+    wl_data_device_release(data_device);
+  } else {
+    wl_data_device_destroy(data_device);
+  }
+}
+
 }  // namespace
 
 const wl_interface* ObjectTraits<wl_buffer>::interface = &wl_buffer_interface;
@@ -62,7 +71,7 @@ void (*ObjectTraits<wl_data_device_manager>::deleter)(wl_data_device_manager*) =
 const wl_interface* ObjectTraits<wl_data_device>::interface =
     &wl_data_device_interface;
 void (*ObjectTraits<wl_data_device>::deleter)(wl_data_device*) =
-    &wl_data_device_destroy;
+    &delete_data_device;
 
 const wl_interface* ObjectTraits<wl_data_offer>::interface =
     &wl_data_offer_interface;
