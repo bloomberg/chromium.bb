@@ -8,20 +8,30 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "tools/accessibility/inspect/ax_tree_server.h"
 
 char kWindowSwitch[] = "window";
+char kPatternSwitch[] = "pattern";
 char kFiltersSwitch[] = "filters";
 char kJsonSwitch[] = "json";
 
 // Convert from string to int, whether in 0x hex format or decimal format.
-bool StringToInt(std::string str, int* result) {
+bool StringToInt(std::string str, unsigned* result) {
   if (str.empty())
     return false;
   bool is_hex =
       str.size() > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X');
-  return is_hex ? base::HexStringToInt(str, result)
-                : base::StringToInt(str, result);
+  return is_hex ? base::HexStringToUInt(str, result)
+                : base::StringToUint(str, result);
+}
+
+gfx::AcceleratedWidget CastToAcceleratedWidget(unsigned window_id) {
+#if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
+  return static_cast<gfx::AcceleratedWidget>(window_id);
+#else
+  return reinterpret_cast<gfx::AcceleratedWidget>(window_id);
+#endif
 }
 
 int main(int argc, char** argv) {
@@ -29,9 +39,9 @@ int main(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
 
-  base::string16 filters_path = base::ASCIIToUTF16(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kFiltersSwitch));
+  base::FilePath filters_path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kFiltersSwitch);
 
   bool use_json =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kJsonSwitch);
@@ -40,17 +50,29 @@ int main(int argc, char** argv) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kWindowSwitch);
   if (!window_str.empty()) {
-    int window;
-    if (StringToInt(window_str, &window)) {
-      gfx::AcceleratedWidget widget(
-          reinterpret_cast<gfx::AcceleratedWidget>(window));
-      std::unique_ptr<content::AXTreeServer> server(
-          new content::AXTreeServer(widget, filters_path, use_json));
-      return 0;
+    unsigned window_id;
+    if (!StringToInt(window_str, &window_id)) {
+      std::cout << "* Error: Could not convert window id string to integer."
+                << std::endl;
+      return 1;
     }
-  } else {
-    std::cout
-        << "* Error: No window handle provided via --window=[window-handle].";
+    gfx::AcceleratedWidget widget(CastToAcceleratedWidget(window_id));
+
+    std::unique_ptr<content::AXTreeServer> server(
+        new content::AXTreeServer(widget, filters_path, use_json));
+    return 0;
   }
-  return 0;
+
+  std::string pattern_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kPatternSwitch);
+  if (!pattern_str.empty()) {
+    std::unique_ptr<content::AXTreeServer> server(
+        new content::AXTreeServer(pattern_str, filters_path, use_json));
+    return 0;
+  }
+
+  std::cout << "* Error: Neither window handle (--window=[window-handle]) "
+            << "nor pattern (--pattern=[pattern]) provided." << std::endl;
+  return 1;
 }

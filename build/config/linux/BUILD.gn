@@ -100,6 +100,12 @@ if (use_glib) {
   }
 }
 
+if (use_atk) {
+  pkg_config("atspi2") {
+    packages = [ "atspi-2" ]
+  }
+}
+
 # Ensures all exported symbols are added to the dynamic symbol table.  This is
 # necessary to expose Chrome's custom operator new() and operator delete() (and
 # other memory-related symbols) to libraries.  Otherwise, they might
