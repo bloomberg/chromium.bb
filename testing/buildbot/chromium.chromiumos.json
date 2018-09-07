@@ -391,6 +391,17 @@
         "test": "ash_unittests"
       },
       {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter"
+        ],
+        "name": "single_process_mash_ash_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -653,6 +664,17 @@
         "test": "events_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "exo_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
+        ],
+        "name": "single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1060,6 +1082,17 @@
         "test": "ash_unittests"
       },
       {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter"
+        ],
+        "name": "single_process_mash_ash_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1321,6 +1354,17 @@
         "test": "events_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "exo_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
+        ],
+        "name": "single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

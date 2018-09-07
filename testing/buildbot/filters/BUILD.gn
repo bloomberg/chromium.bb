@@ -20,7 +20,7 @@ source_set("ash_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/chromeos.single_process_mash.fyi.ash_unittests.filter",
+    "//testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter",
   ]
 }
 
@@ -31,7 +31,6 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/chromeos.mash.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter",
     "//testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter",
-    "//testing/buildbot/filters/chromeos.single_process_mash.fyi.browser_tests.filter",
     "//testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
     "//testing/buildbot/filters/webui_polymer2_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
@@ -68,7 +67,7 @@ source_set("exo_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/chromeos.single_process_mash.fyi.exo_unittests.filter",
+    "//testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter",
   ]
 }
 
