@@ -244,15 +244,22 @@ bool SecurityOrigin::SerializesAsNull() const {
   return false;
 }
 
-bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
-  if (universal_access_)
+bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
+                               AccessResultDomainDetail& detail) const {
+  if (universal_access_) {
+    detail = AccessResultDomainDetail::kDomainNotRelevant;
     return true;
+  }
 
-  if (this == other)
+  if (this == other) {
+    detail = AccessResultDomainDetail::kDomainNotRelevant;
     return true;
+  }
 
-  if (IsOpaque() || other->IsOpaque())
+  if (IsOpaque() || other->IsOpaque()) {
+    detail = AccessResultDomainDetail::kDomainNotRelevant;
     return false;
+  }
 
   // document.domain handling, as per
   // https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
@@ -266,6 +273,7 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
   bool can_access = false;
   if (protocol_ == other->protocol_) {
     if (!domain_was_set_in_dom_ && !other->domain_was_set_in_dom_) {
+      detail = AccessResultDomainDetail::kDomainNotSet;
       if (host_ == other->host_ && port_ == other->port_)
         can_access = true;
     } else if (domain_was_set_in_dom_ && other->domain_was_set_in_dom_) {
@@ -274,12 +282,25 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
       // https://crbug.com/733150
       if (domain_ == other->domain_ && domain_ != "null") {
         can_access = true;
+        detail = (host_ == other->host_ && port_ == other->port_)
+                     ? AccessResultDomainDetail::kDomainMatchUnnecessary
+                     : AccessResultDomainDetail::kDomainMatchNecessary;
+      } else {
+        detail = (host_ == other->host_ && port_ == other->port_)
+                     ? AccessResultDomainDetail::kDomainMismatch
+                     : AccessResultDomainDetail::kDomainNotRelevant;
       }
+    } else {
+      detail = (host_ == other->host_ && port_ == other->port_)
+                   ? AccessResultDomainDetail::kDomainSetByOnlyOneOrigin
+                   : AccessResultDomainDetail::kDomainNotRelevant;
     }
   }
 
-  if (can_access && IsLocal())
-    can_access = PassesFileCheck(other);
+  if (can_access && IsLocal() && !PassesFileCheck(other)) {
+    detail = AccessResultDomainDetail::kDomainNotRelevant;
+    can_access = false;
+  }
 
   return can_access;
 }
