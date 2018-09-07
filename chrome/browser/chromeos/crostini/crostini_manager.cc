@@ -381,26 +381,46 @@ class CrostiniManager::CrostiniRestarter
 CrostiniManager::RestartId
     CrostiniManager::CrostiniRestarter::next_restart_id_ = 0;
 
+void CrostiniManager::SetVmState(std::string vm_name, VmState vm_state) {
+  auto vm_info = running_vms_.find(std::move(vm_name));
+  if (vm_info != running_vms_.end()) {
+    vm_info->second.first = vm_state;
+    return;
+  }
+  // This can happen normally when StopVm is called right after start up.
+  LOG(WARNING) << "Attempted to set state for unknown vm: " << vm_name;
+}
+
 bool CrostiniManager::IsVmRunning(std::string vm_name) {
-  return running_vms_.find(std::move(vm_name)) != running_vms_.end();
+  auto vm_info = running_vms_.find(std::move(vm_name));
+  if (vm_info != running_vms_.end()) {
+    return vm_info->second.first == VmState::STARTED;
+  }
+  return false;
 }
 
 base::Optional<vm_tools::concierge::VmInfo> CrostiniManager::GetVmInfo(
     std::string vm_name) {
   auto it = running_vms_.find(std::move(vm_name));
   if (it != running_vms_.end())
-    return it->second;
+    return it->second.second;
   return base::nullopt;
 }
 
 void CrostiniManager::AddRunningVmForTesting(
     std::string vm_name,
     vm_tools::concierge::VmInfo vm_info) {
-  running_vms_[std::move(vm_name)] = std::move(vm_info);
+  running_vms_[std::move(vm_name)] =
+      std::make_pair(VmState::STARTED, std::move(vm_info));
 }
 
 bool CrostiniManager::IsContainerRunning(std::string vm_name,
                                          std::string container_name) {
+  if (!IsVmRunning(vm_name)) {
+    return false;
+  }
+  // TODO(jopra): Ensure the container not marked running if the vm is not
+  // running.
   auto range = running_containers_.equal_range(std::move(vm_name));
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second == container_name) {
@@ -674,8 +694,7 @@ void CrostiniManager::DestroyDiskImage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::ListVmDisks(
-    ListVmDisksCallback callback) {
+void CrostiniManager::ListVmDisks(ListVmDisksCallback callback) {
   vm_tools::concierge::ListVmDisksRequest request;
   request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
   request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
@@ -725,6 +744,8 @@ void CrostiniManager::StopVm(std::string name, StopVmCallback callback) {
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
+
+  SetVmState(name, VmState::STOPPING);
 
   vm_tools::concierge::StopVmRequest request;
   request.set_owner_id(owner_id_);
@@ -1149,31 +1170,34 @@ void CrostiniManager::OnStartTerminaVm(
     std::move(callback).Run(ConciergeClientResult::VM_START_FAILED);
     return;
   }
-  // Wait for the Tremplin signal if the vm isn't already marked "running".
-  if (running_vms_.find(vm_name) == running_vms_.end()) {
-    VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
-            << vm_name;
 
-    // Record the container start and run the callback after the VM starts.
-    tremplin_started_callbacks_.emplace(
-        vm_name,
-        base::BindOnce(&CrostiniManager::OnStartTremplin,
-                       weak_ptr_factory_.GetWeakPtr(), vm_name,
-                       std::move(response.vm_info()), std::move(callback),
-                       ConciergeClientResult::SUCCESS));
+  // If the vm is already marked "running" run the callback.
+  if (IsVmRunning(vm_name)) {
+    std::move(callback).Run(ConciergeClientResult::SUCCESS);
     return;
   }
-  std::move(callback).Run(ConciergeClientResult::SUCCESS);
+
+  // Otherwise, record the container start and run the callback after the VM
+  // starts.
+  VLOG(1) << "Awaiting TremplinStartedSignal for " << owner_id_ << ", "
+          << vm_name;
+  running_vms_[vm_name] =
+      std::make_pair(VmState::STARTING, std::move(response.vm_info()));
+
+  tremplin_started_callbacks_.emplace(
+      vm_name,
+      base::BindOnce(&CrostiniManager::OnStartTremplin,
+                     weak_ptr_factory_.GetWeakPtr(), vm_name,
+                     std::move(callback), ConciergeClientResult::SUCCESS));
 }
 
 void CrostiniManager::OnStartTremplin(std::string vm_name,
-                                      vm_tools::concierge::VmInfo vm_info,
                                       StartTerminaVmCallback callback,
                                       ConciergeClientResult result) {
   // Record the running vm.
   VLOG(1) << "Received TremplinStartedSignal, VM: " << owner_id_ << ", "
           << vm_name;
-  running_vms_[vm_name] = std::move(vm_info);
+  SetVmState(vm_name, VmState::STARTED);
 
   // Run the original callback.
   std::move(callback).Run(result);
