@@ -306,10 +306,7 @@ bool ResourceLoader::ShouldFetchCodeCache() {
     return false;
   if (request.DownloadToBlob())
     return false;
-  // If the resource type is script or MainResource (for inline scripts) fetch
-  // code cache. For others we need not fetch code cache.
-  if (resource_->GetType() != Resource::Type::kScript &&
-      resource_->GetType() != Resource::Type::kMainResource)
+  if (resource_->GetType() != Resource::Type::kScript)
     return false;
   return true;
 }
