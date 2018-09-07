@@ -165,7 +165,8 @@ public class SigninHelper {
                         // Here we have to sign out though to ensure account consistency,
                         // so override the flag.
                         mSigninManager.prohibitSignout(false);
-                        mSigninManager.signOut();
+                        // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
+                        mSigninManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
                     } else {
                         validateAccountSettings(true);
                     }
@@ -209,7 +210,7 @@ public class SigninHelper {
 
         // TODO(acleung): Deal with passphrase or just prompt user to re-enter it?
         // Perform a sign-out with a callback to sign-in again.
-        mSigninManager.signOut(() -> {
+        mSigninManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, () -> {
             // Clear the shared perf only after signOut is successful.
             // If Chrome dies, we can try it again on next run.
             // Otherwise, if re-sign-in fails, we'll just leave chrome

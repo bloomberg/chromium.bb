@@ -46,7 +46,9 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& username);
 
-  void SignOut(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void SignOut(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& obj,
+               jint signoutReason);
 
   base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(
       JNIEnv* env,

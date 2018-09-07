@@ -504,12 +504,12 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     /**
      * Invokes signOut and returns a {@link Promise} that will be fulfilled on completion.
-     * This is equivalent to calling {@link #signOut(Runnable callback)} with a callback that
-     * fulfills the returned {@link Promise}.
+     * This is equivalent to calling {@link #signOut(@SignoutReason int signoutSource, Runnable
+     * callback)} with a callback that fulfills the returned {@link Promise}.
      */
-    public Promise<Void> signOutPromise() {
+    public Promise<Void> signOutPromise(@SignoutReason int signoutSource) {
         final Promise<Void> promise = new Promise<>();
-        signOut(() -> promise.fulfill(null));
+        signOut(signoutSource, () -> promise.fulfill(null));
 
         return promise;
     }
@@ -517,15 +517,15 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     /**
      * Invokes signOut with no callback or wipeDataHooks.
      */
-    public void signOut() {
-        signOut(null, null);
+    public void signOut(@SignoutReason int signoutSource) {
+        signOut(signoutSource, null, null);
     }
 
     /**
      * Invokes signOut() with no wipeDataHooks.
      */
-    public void signOut(Runnable callback) {
-        signOut(callback, null);
+    public void signOut(@SignoutReason int signoutSource, Runnable callback) {
+        signOut(signoutSource, callback, null);
     }
 
     /**
@@ -534,10 +534,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * This method clears the signed-in username, stops sync and sends out a
      * sign-out notification on the native side.
      *
+     * @param signoutSource describes the event driving the signout (e.g.
+     *         {@link SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS}).
      * @param callback Will be invoked after sign-out completes, if not null.
      * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
      */
-    public void signOut(Runnable callback, WipeDataHooks wipeDataHooks) {
+    public void signOut(
+            @SignoutReason int signoutSource, Runnable callback, WipeDataHooks wipeDataHooks) {
         // Only one signOut at a time!
         assert mSignOutState == null;
 
@@ -547,7 +550,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         Log.d(TAG, "Signing out, managementDomain: " + mSignOutState.managementDomain);
 
         // User data will be wiped in resetAccountData(), called from onNativeSignOut().
-        nativeSignOut(mNativeSigninManagerAndroid);
+        nativeSignOut(mNativeSigninManagerAndroid, signoutSource);
     }
 
     /**
@@ -735,7 +738,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     @VisibleForTesting
     native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username);
     @VisibleForTesting
-    native void nativeSignOut(long nativeSigninManagerAndroid);
+    native void nativeSignOut(long nativeSigninManagerAndroid, @SignoutReason int reason);
     @VisibleForTesting
     native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     @VisibleForTesting

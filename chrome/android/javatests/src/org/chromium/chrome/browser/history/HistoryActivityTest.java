@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
@@ -741,7 +742,7 @@ public class HistoryActivityTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get().signOut(null);
+                SigninManager.get().signOut(SignoutReason.SIGNOUT_TEST);
             }
         });
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);

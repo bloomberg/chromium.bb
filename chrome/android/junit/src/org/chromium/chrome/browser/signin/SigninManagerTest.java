@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.signin;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -58,18 +60,18 @@ public class SigninManagerTest {
     public void signOutFromJavaWithManagedDomain() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.
-        doNothing().when(mSigninManager).nativeSignOut(anyLong());
+        doNothing().when(mSigninManager).nativeSignOut(anyLong(), anyInt());
         doNothing().when(mSigninManager).nativeWipeProfileData(anyLong());
         doNothing().when(mSigninManager).nativeWipeGoogleServiceWorkerCaches(anyLong());
         // See verification of nativeWipeProfileData below.
         doReturn("TestDomain").when(mSigninManager).nativeGetManagementDomain(anyLong());
 
         // Trigger the sign out flow!
-        mSigninManager.signOut();
+        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
         // nativeSignOut should be called *before* clearing any account data.
         // http://crbug.com/589028
-        verify(mSigninManager, times(1)).nativeSignOut(anyLong());
+        verify(mSigninManager, times(1)).nativeSignOut(anyLong(), eq(SignoutReason.SIGNOUT_TEST));
         verify(mSigninManager, never()).nativeWipeGoogleServiceWorkerCaches(anyLong());
         verify(mSigninManager, never()).nativeWipeProfileData(anyLong());
 
@@ -85,18 +87,18 @@ public class SigninManagerTest {
     public void signOutFromJavaWithNullDomain() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.
-        doNothing().when(mSigninManager).nativeSignOut(anyLong());
+        doNothing().when(mSigninManager).nativeSignOut(anyLong(), anyInt());
         doNothing().when(mSigninManager).nativeWipeProfileData(anyLong());
         doNothing().when(mSigninManager).nativeWipeGoogleServiceWorkerCaches(anyLong());
         // See verification of nativeWipeGoogleServiceWorkerCaches below.
         doReturn(null).when(mSigninManager).nativeGetManagementDomain(anyLong());
 
         // Trigger the sign out flow!
-        mSigninManager.signOut();
+        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST);
 
         // nativeSignOut should be called *before* clearing any account data.
         // http://crbug.com/589028
-        verify(mSigninManager, times(1)).nativeSignOut(anyLong());
+        verify(mSigninManager, times(1)).nativeSignOut(anyLong(), eq(SignoutReason.SIGNOUT_TEST));
         verify(mSigninManager, never()).nativeWipeGoogleServiceWorkerCaches(anyLong());
         verify(mSigninManager, never()).nativeWipeProfileData(anyLong());
 
@@ -112,7 +114,7 @@ public class SigninManagerTest {
     public void signOutFromNativeWithManagedDomain() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.
-        doNothing().when(mSigninManager).nativeSignOut(anyLong());
+        doNothing().when(mSigninManager).nativeSignOut(anyLong(), anyInt());
         doNothing().when(mSigninManager).nativeWipeProfileData(anyLong());
         doNothing().when(mSigninManager).nativeWipeGoogleServiceWorkerCaches(anyLong());
         // See verification of nativeWipeProfileData below.
@@ -124,7 +126,7 @@ public class SigninManagerTest {
         // nativeSignOut should only be called when signOut() is triggered on
         // the Java side of the JNI boundary. This test instead initiates sign-out
         // from the native side.
-        verify(mSigninManager, never()).nativeSignOut(anyLong());
+        verify(mSigninManager, never()).nativeSignOut(anyLong(), anyInt());
 
         // Sign-out should wipe profile data when user has managed domain.
         verify(mSigninManager, times(1)).nativeWipeProfileData(anyLong());
@@ -135,7 +137,7 @@ public class SigninManagerTest {
     public void signOutFromNativeWithNullDomain() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.
-        doNothing().when(mSigninManager).nativeSignOut(anyLong());
+        doNothing().when(mSigninManager).nativeSignOut(anyLong(), anyInt());
         doNothing().when(mSigninManager).nativeWipeProfileData(anyLong());
         doNothing().when(mSigninManager).nativeWipeGoogleServiceWorkerCaches(anyLong());
         // See verification of nativeWipeGoogleServiceWorkerCaches below.
@@ -147,7 +149,7 @@ public class SigninManagerTest {
         // nativeSignOut should only be called when signOut() is triggered on
         // the Java side of the JNI boundary. This test instead initiates sign-out
         // from the native side.
-        verify(mSigninManager, never()).nativeSignOut(anyLong());
+        verify(mSigninManager, never()).nativeSignOut(anyLong(), anyInt());
 
         // Sign-out should only clear the service worker cache when the domain is null.
         verify(mSigninManager, never()).nativeWipeProfileData(anyLong());
