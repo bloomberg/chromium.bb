@@ -1403,8 +1403,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
-            mBottomSheetController = new BottomSheetController(this, getTabModelSelector(),
-                    getCompositorViewHolder().getLayoutManager(), mScrimView, mBottomSheet,
+            mBottomSheetController = new BottomSheetController(this, mActivityTabProvider,
+                    mScrimView, mBottomSheet,
                     getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
 

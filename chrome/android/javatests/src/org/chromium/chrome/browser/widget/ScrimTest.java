@@ -70,8 +70,8 @@ public class ScrimTest {
 
             mScrim = activity.getScrim();
 
-            mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
-                    activity.getCompositorViewHolder().getLayoutManager(), mScrim, mBottomSheet,
+            mSheetController = new BottomSheetController(activity,
+                    activity.getActivityTabProvider(), mScrim, mBottomSheet,
                     activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     true);
         });
