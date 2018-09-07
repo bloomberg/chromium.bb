@@ -50,15 +50,24 @@ test(() => {
 
 test(() => {
   setUp();
-  // TODO(rakina): modify this test when we have levels ("invisible"/"static")
   outerDiv.setAttribute("invisible", "x");
   assert_equals(outerDiv.getAttribute("invisible"), "x");
+  assert_equals(outerDiv.invisible, "invisible");
   assert_true(outerDiv.hasAttribute("invisible"));
 
   outerDiv.setAttribute("invisible", "");
   assert_equals(outerDiv.getAttribute("invisible"), "");
+  assert_equals(outerDiv.invisible, "invisible");
   assert_true(outerDiv.hasAttribute("invisible"));
-}, "Setting/removing invisible attribute preserves original value.");
+
+  outerDiv.removeAttribute("invisible");
+  assert_equals(outerDiv.invisible, "");
+
+  outerDiv.setAttribute("invisible", "static");
+  assert_equals(outerDiv.getAttribute("invisible"), "static");
+  assert_equals(outerDiv.invisible, "static");
+  assert_true(outerDiv.hasAttribute("invisible"));
+}, "Setting/removing invisible attribute preserves original value, but property returns only invisible/static");
 
 test(() => {
   setUp();

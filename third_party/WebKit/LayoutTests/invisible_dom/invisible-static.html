@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<title>Invisible-static level</title>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div>
+  <div id="normal"></div>
+  <div id="basicInvisible" invisible></div>
+  <div id="staticInvisible" invisible="static"></div>
+</div>
+
+<script>
+'use strict';
+
+class TestElement extends HTMLElement {
+  constructor() {
+    super();
+    this.innerHTML = "upgraded";
+  }
+}
+
+customElements.define("test-element", TestElement);
+
+const testElementString =  "<test-element></test-element>";
+const testElementUpgradedString = "<test-element>upgraded</test-element>";
+
+function setUp() {
+  normal.innerHTML = basicInvisible.innerHTML = staticInvisible.innerHTML = "";
+  basicInvisible.invisible = "invisible";
+  staticInvisible.invisible = "static";
+}
+
+test(() => {
+  setUp();
+  normal.innerHTML = testElementString;
+  basicInvisible.innerHTML = testElementString;
+  staticInvisible.innerHTML = testElementString;
+  assert_equals(normal.innerHTML, testElementUpgradedString);
+  assert_equals(basicInvisible.innerHTML, testElementUpgradedString);
+  assert_equals(staticInvisible.innerHTML, testElementString);
+}, "Custom elements inside invisible-static subtree is not upgraded.");
+
+test(() => {
+  setUp();
+  staticInvisible.removeAttribute("invisible");
+  staticInvisible.innerHTML = testElementString;
+  assert_equals(staticInvisible.innerHTML, testElementUpgradedString);
+}, "Previously-static subtree should not block custom element upgrade");
+
+test(() => {
+  setUp();
+  staticInvisible.innerHTML = testElementString;
+  staticInvisible.invisible = "invisible";
+  assert_equals(staticInvisible.innerHTML, testElementUpgradedString);
+}, "Making an element not invisible='static' upgrades the custom elements inside");
+
+test(() => {
+  setUp();
+  staticInvisible.innerHTML = testElementString;
+  assert_equals(staticInvisible.innerHTML, testElementString, "Normally not upgraded");
+  customElements.upgrade(staticInvisible);
+  assert_equals(staticInvisible.innerHTML, testElementUpgradedString, "After forcing got upgraded");
+}, "Upgrade by customElements.upgrade is not deferred");
+
+test(() => {
+  setUp();
+  staticInvisible.innerHTML = "<another-element></another-element>";
+  customElements.define("another-element", class extends HTMLElement {
+    constructor() {
+      super();
+      this.innerHTML = "upgraded";
+    }
+  });
+  assert_equals(staticInvisible.innerHTML, "<another-element></another-element>");
+  staticInvisible.invisible = "invisible";
+  assert_equals(staticInvisible.innerHTML, "<another-element>upgraded</another-element>");
+}, "Upgrade after defined is deferred");
+</script>

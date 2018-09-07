@@ -567,7 +567,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                   element->LayoutObjectIsNeeded(style))) {
     // TODO(rakina): Move this attribute check somewhere else.
     if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-        !element->invisible().IsNull())
+        element->Invisible() != InvisibleState::kMissing)
       style.SetDisplay(EDisplay::kNone);
     else if (element->IsHTMLElement())
       AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
