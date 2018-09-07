@@ -205,7 +205,7 @@ void ServiceWorkerDevToolsManager::NavigationPreloadResponseReceived(
     return;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(it->second.get()))
     network->ResponseReceived(request_id, std::string(), url,
-                              protocol::Page::ResourceTypeEnum::Other, head,
+                              protocol::Network::ResourceTypeEnum::Other, head,
                               protocol::Maybe<std::string>());
 }
 
@@ -219,8 +219,8 @@ void ServiceWorkerDevToolsManager::NavigationPreloadCompleted(
   if (it == live_hosts_.end())
     return;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(it->second.get()))
-    network->LoadingComplete(request_id,
-                             protocol::Page::ResourceTypeEnum::Other, status);
+    network->LoadingComplete(
+        request_id, protocol::Network::ResourceTypeEnum::Other, status);
 }
 
 }  // namespace content

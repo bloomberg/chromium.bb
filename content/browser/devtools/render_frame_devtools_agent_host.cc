@@ -209,7 +209,7 @@ void RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(
   std::string frame_id = ftn->devtools_frame_token().ToString();
   GURL url = nav_request.common_params().url;
   DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
-                   url, protocol::Page::ResourceTypeEnum::Document,
+                   url, protocol::Network::ResourceTypeEnum::Document,
                    response.head, frame_id);
 }
 
@@ -220,7 +220,7 @@ void RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
   FrameTreeNode* ftn = nav_request.frame_tree_node();
   std::string id = nav_request.devtools_navigation_token().ToString();
   DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
-                   protocol::Page::ResourceTypeEnum::Document, status);
+                   protocol::Network::ResourceTypeEnum::Document, status);
 }
 
 // static
@@ -261,7 +261,7 @@ void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
     const network::ResourceResponseHead& head) {
   DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::ResponseReceived,
                    request_id.ToString(), loader_id.ToString(), url,
-                   protocol::Page::ResourceTypeEnum::Other, head,
+                   protocol::Network::ResourceTypeEnum::Other, head,
                    protocol::Maybe<std::string>());
 }
 
@@ -272,7 +272,7 @@ void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
     const network::URLLoaderCompletionStatus& status) {
   DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::LoadingComplete,
                    request_id.ToString(),
-                   protocol::Page::ResourceTypeEnum::Other, status);
+                   protocol::Network::ResourceTypeEnum::Other, status);
 }
 
 // static

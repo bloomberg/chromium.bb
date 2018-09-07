@@ -373,35 +373,35 @@ String InspectorPageAgent::ResourceTypeJson(
     InspectorPageAgent::ResourceType resource_type) {
   switch (resource_type) {
     case kDocumentResource:
-      return protocol::Page::ResourceTypeEnum::Document;
+      return protocol::Network::ResourceTypeEnum::Document;
     case kFontResource:
-      return protocol::Page::ResourceTypeEnum::Font;
+      return protocol::Network::ResourceTypeEnum::Font;
     case kImageResource:
-      return protocol::Page::ResourceTypeEnum::Image;
+      return protocol::Network::ResourceTypeEnum::Image;
     case kMediaResource:
-      return protocol::Page::ResourceTypeEnum::Media;
+      return protocol::Network::ResourceTypeEnum::Media;
     case kScriptResource:
-      return protocol::Page::ResourceTypeEnum::Script;
+      return protocol::Network::ResourceTypeEnum::Script;
     case kStylesheetResource:
-      return protocol::Page::ResourceTypeEnum::Stylesheet;
+      return protocol::Network::ResourceTypeEnum::Stylesheet;
     case kTextTrackResource:
-      return protocol::Page::ResourceTypeEnum::TextTrack;
+      return protocol::Network::ResourceTypeEnum::TextTrack;
     case kXHRResource:
-      return protocol::Page::ResourceTypeEnum::XHR;
+      return protocol::Network::ResourceTypeEnum::XHR;
     case kFetchResource:
-      return protocol::Page::ResourceTypeEnum::Fetch;
+      return protocol::Network::ResourceTypeEnum::Fetch;
     case kEventSourceResource:
-      return protocol::Page::ResourceTypeEnum::EventSource;
+      return protocol::Network::ResourceTypeEnum::EventSource;
     case kWebSocketResource:
-      return protocol::Page::ResourceTypeEnum::WebSocket;
+      return protocol::Network::ResourceTypeEnum::WebSocket;
     case kManifestResource:
-      return protocol::Page::ResourceTypeEnum::Manifest;
+      return protocol::Network::ResourceTypeEnum::Manifest;
     case kSignedExchangeResource:
-      return protocol::Page::ResourceTypeEnum::SignedExchange;
+      return protocol::Network::ResourceTypeEnum::SignedExchange;
     case kOtherResource:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
   }
-  return protocol::Page::ResourceTypeEnum::Other;
+  return protocol::Network::ResourceTypeEnum::Other;
 }
 
 InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(

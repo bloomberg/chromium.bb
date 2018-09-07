@@ -663,48 +663,49 @@ String NetErrorToString(int net_error) {
 bool AddInterceptedResourceType(
     const std::string& resource_type,
     base::flat_set<ResourceType>* intercepted_resource_types) {
-  if (resource_type == protocol::Page::ResourceTypeEnum::Document) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Document) {
     intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
     intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Stylesheet) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Stylesheet) {
     intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Image) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Image) {
     intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Media) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Media) {
     intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Font) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Font) {
     intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Script) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Script) {
     intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::XHR) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::XHR) {
     intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Fetch) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Fetch) {
     intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::CSPViolationReport) {
+  if (resource_type ==
+      protocol::Network::ResourceTypeEnum::CSPViolationReport) {
     intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Ping) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Ping) {
     intercepted_resource_types->insert(RESOURCE_TYPE_PING);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Other) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Other) {
     intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
     intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
     intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
@@ -1602,7 +1603,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
   frontend_->RequestWillBeSent(
       id, id, url_without_fragment, std::move(request), current_ticks,
       current_wall_time, std::move(initiator), std::move(redirect_response),
-      std::string(Page::ResourceTypeEnum::Document), std::move(frame_token),
+      std::string(Network::ResourceTypeEnum::Document), std::move(frame_token),
       common_params.has_user_gesture);
 }
 
@@ -1639,7 +1640,7 @@ void NetworkHandler::RequestSent(const std::string& request_id,
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
       base::Time::Now().ToDoubleT(), std::move(initiator),
       std::unique_ptr<Network::Response>(),
-      std::string(Page::ResourceTypeEnum::Other),
+      std::string(Network::ResourceTypeEnum::Other),
       Maybe<std::string>() /* frame_id */, request.has_user_gesture);
 }
 
@@ -2040,43 +2041,43 @@ namespace {
 const char* ResourceTypeToString(ResourceType resource_type) {
   switch (resource_type) {
     case RESOURCE_TYPE_MAIN_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
+      return protocol::Network::ResourceTypeEnum::Document;
     case RESOURCE_TYPE_SUB_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
+      return protocol::Network::ResourceTypeEnum::Document;
     case RESOURCE_TYPE_STYLESHEET:
-      return protocol::Page::ResourceTypeEnum::Stylesheet;
+      return protocol::Network::ResourceTypeEnum::Stylesheet;
     case RESOURCE_TYPE_SCRIPT:
-      return protocol::Page::ResourceTypeEnum::Script;
+      return protocol::Network::ResourceTypeEnum::Script;
     case RESOURCE_TYPE_IMAGE:
-      return protocol::Page::ResourceTypeEnum::Image;
+      return protocol::Network::ResourceTypeEnum::Image;
     case RESOURCE_TYPE_FONT_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Font;
+      return protocol::Network::ResourceTypeEnum::Font;
     case RESOURCE_TYPE_SUB_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_OBJECT:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_MEDIA:
-      return protocol::Page::ResourceTypeEnum::Media;
+      return protocol::Network::ResourceTypeEnum::Media;
     case RESOURCE_TYPE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_SHARED_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_PREFETCH:
-      return protocol::Page::ResourceTypeEnum::Fetch;
+      return protocol::Network::ResourceTypeEnum::Fetch;
     case RESOURCE_TYPE_FAVICON:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_XHR:
-      return protocol::Page::ResourceTypeEnum::XHR;
+      return protocol::Network::ResourceTypeEnum::XHR;
     case RESOURCE_TYPE_PING:
-      return protocol::Page::ResourceTypeEnum::Ping;
+      return protocol::Network::ResourceTypeEnum::Ping;
     case RESOURCE_TYPE_SERVICE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_CSP_REPORT:
-      return protocol::Page::ResourceTypeEnum::CSPViolationReport;
+      return protocol::Network::ResourceTypeEnum::CSPViolationReport;
     case RESOURCE_TYPE_PLUGIN_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     default:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
   }
 }
 
