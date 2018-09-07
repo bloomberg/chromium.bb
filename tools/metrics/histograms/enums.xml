@@ -17327,6 +17327,13 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="WebManifestIcon">Icon listed in a Web Manifest.</int>
 </enum>
 
+<enum name="FCMInvalidationMessageStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Public topic empty"/>
+  <int value="2" label="Private topic empty"/>
+  <int value="3" label="Version empty"/>
+</enum>
+
 <enum name="FCMInvalidationSubscriptionStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Network failure"/>

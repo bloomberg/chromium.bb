@@ -9,6 +9,16 @@
 
 namespace syncer {
 
+// Status of the message arrived from FCM.
+// Used by UMA histogram, so entries shouldn't be reordered or removed.
+enum class InvalidationParsingStatus {
+  kSuccess = 0,
+  kPublicTopicEmpty = 1,
+  kPrivateTopicEmpty = 2,
+  kVersionEmpty = 3,
+  kMaxValue = kVersionEmpty,
+};
+
 // This enum indicates how an operation was completed. These values are written
 // to logs.  New enum values can be added, but existing enums must never be
 // renumbered or deleted and reused.

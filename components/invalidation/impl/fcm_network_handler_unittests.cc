@@ -10,12 +10,14 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/status.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -41,6 +43,15 @@ base::Time GetDummyNow() {
   base::Time out_time;
   EXPECT_TRUE(base::Time::FromUTCString("2017-01-02T00:00:01Z", &out_time));
   return out_time;
+}
+
+gcm::IncomingMessage CreateValidMessage() {
+  gcm::IncomingMessage message;
+  message.data["payload"] = "payload";
+  message.data["version"] = "version";
+  message.data["external_name"] = "public_topic";
+  message.sender_id = "private_topic";
+  return message;
 }
 
 class MockInstanceID : public InstanceID {
@@ -215,6 +226,17 @@ class FCMNetworkHandlerTest : public testing::Test {
                                                mock_instance_id_driver_.get());
   }
 
+  std::unique_ptr<FCMNetworkHandler> MakeHandlerReadyForMessage(
+      MessageCallback mock_on_message_callback) {
+    std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
+    handler->SetMessageReceiver(mock_on_message_callback);
+    EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+        .WillOnce(
+            InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+    handler->StartListening();
+    return handler;
+  }
+
   StrictMock<MockInstanceID>* mock_instance_id() {
     return mock_instance_id_.get();
   }
@@ -271,6 +293,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceSubscribed) {
 
 TEST_F(FCMNetworkHandlerTest, ShouldNotInvokeMessageCallbackOnEmptyMessage) {
   MockOnMessageCallback mock_on_message_callback;
+  gcm::IncomingMessage message;
 
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
   EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
@@ -284,18 +307,83 @@ TEST_F(FCMNetworkHandlerTest, ShouldNotInvokeMessageCallbackOnEmptyMessage) {
 }
 
 TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
+  base::HistogramTester histogram_tester;
   MockOnMessageCallback mock_on_message_callback;
-  gcm::IncomingMessage message;
-  message.data["data"] = "test";
+  gcm::IncomingMessage message = CreateValidMessage();
 
-  std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
-      .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
-  handler->StartListening();
-  EXPECT_CALL(mock_on_message_callback, Run("test", _, _, _)).Times(0);
-  handler->SetMessageReceiver(mock_on_message_callback.Get());
-  handler->OnMessage(kInvalidationsAppId, gcm::IncomingMessage());
+  std::unique_ptr<FCMNetworkHandler> handler =
+      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
+  EXPECT_CALL(mock_on_message_callback,
+              Run("payload", "private_topic", "public_topic", "version"))
+      .Times(1);
+  handler->OnMessage(kInvalidationsAppId, message);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(InvalidationParsingStatus::kSuccess) /* min */,
+          1 /* count */)));
+}
+
+TEST_F(FCMNetworkHandlerTest,
+       ShouldNotInvokeMessageCallbackOnMessageWithEmptyVersion) {
+  base::HistogramTester histogram_tester;
+  MockOnMessageCallback mock_on_message_callback;
+  gcm::IncomingMessage message = CreateValidMessage();
+  // Clear version.
+  auto it = message.data.find("version");
+  message.data.erase(it);
+
+  std::unique_ptr<FCMNetworkHandler> handler =
+      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
+  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
+  handler->OnMessage(kInvalidationsAppId, message);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(InvalidationParsingStatus::kVersionEmpty) /* min */,
+          1 /* count */)));
+}
+
+TEST_F(FCMNetworkHandlerTest,
+       ShouldNotInvokeMessageCallbackOnMessageWithEmptyPublicTopic) {
+  base::HistogramTester histogram_tester;
+  MockOnMessageCallback mock_on_message_callback;
+  gcm::IncomingMessage message = CreateValidMessage();
+  // Clear public topic.
+  auto it = message.data.find("external_name");
+  message.data.erase(it);
+
+  std::unique_ptr<FCMNetworkHandler> handler =
+      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
+  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
+  handler->OnMessage(kInvalidationsAppId, message);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(
+              InvalidationParsingStatus::kPublicTopicEmpty) /* min */,
+          1 /* count */)));
+}
+
+TEST_F(FCMNetworkHandlerTest,
+       ShouldNotInvokeMessageCallbackOnMessageWithEmptyPrivateTopic) {
+  base::HistogramTester histogram_tester;
+  MockOnMessageCallback mock_on_message_callback;
+  gcm::IncomingMessage message = CreateValidMessage();
+  // Clear private topic.
+  message.sender_id = std::string();
+
+  std::unique_ptr<FCMNetworkHandler> handler =
+      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
+  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
+  handler->OnMessage(kInvalidationsAppId, message);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
+      testing::ElementsAre(base::Bucket(
+          static_cast<int>(
+              InvalidationParsingStatus::kPrivateTopicEmpty) /* min */,
+          1 /* count */)));
 }
 
 TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
