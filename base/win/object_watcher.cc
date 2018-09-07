@@ -78,9 +78,9 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
 
   run_once_ = execute_only_once;
 
-  // Since our job is to just notice when an object is signaled and report the
-  // result back to this sequence, we can just run on a Windows wait thread.
-  DWORD wait_flags = WT_EXECUTEINWAITTHREAD;
+  // WT_EXECUTEINWAITTHREAD is theoretically slightly more efficient but comes
+  // with the risk of deadlocks. WT_EXECUTEDEFAULT is safer.
+  DWORD wait_flags = WT_EXECUTEDEFAULT;
   if (run_once_)
     wait_flags |= WT_EXECUTEONLYONCE;
 
