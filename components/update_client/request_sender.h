@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -54,11 +54,12 @@ class RequestSender {
   // If this optional parameter is set, the values of "fg" or "bg" are sent
   // for true or false values of this parameter. Otherwise the header is not
   // sent at all.
-  void Send(const std::vector<GURL>& urls,
-            const std::map<std::string, std::string>& request_extra_headers,
-            const std::string& request_body,
-            bool use_signing,
-            RequestSenderCallback request_sender_callback);
+  void Send(
+      const std::vector<GURL>& urls,
+      const base::flat_map<std::string, std::string>& request_extra_headers,
+      const std::string& request_body,
+      bool use_signing,
+      RequestSenderCallback request_sender_callback);
 
  private:
   // Combines the |url| and |query_params| parameters.
@@ -99,7 +100,7 @@ class RequestSender {
   const scoped_refptr<Configurator> config_;
 
   std::vector<GURL> urls_;
-  std::map<std::string, std::string> request_extra_headers_;
+  base::flat_map<std::string, std::string> request_extra_headers_;
   std::string request_body_;
   bool use_signing_;  // True if CUP signing is used.
   RequestSenderCallback request_sender_callback_;

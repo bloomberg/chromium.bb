@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -40,7 +39,8 @@ namespace update_client {
 
 std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
     const GURL& url,
-    const std::map<std::string, std::string>& protocol_request_extra_headers,
+    const base::flat_map<std::string, std::string>&
+        protocol_request_extra_headers,
     const std::string& protocol_request,
     network::SimpleURLLoader::BodyAsStringCallback callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {

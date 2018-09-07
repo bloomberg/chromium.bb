@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -245,12 +246,13 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
@@ -363,12 +365,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -579,12 +582,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -786,12 +790,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -974,12 +979,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
   };
@@ -1080,12 +1086,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -1354,12 +1361,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
       static int num_call = 0;
@@ -1682,12 +1690,13 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -1873,12 +1882,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
       static int num_call = 0;
@@ -2173,12 +2183,13 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
@@ -2288,12 +2299,13 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -2466,12 +2478,13 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
   };
@@ -2580,12 +2593,13 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
@@ -2689,12 +2703,13 @@ TEST_F(UpdateClientTest, EmptyIdList) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
   };
@@ -2750,12 +2765,13 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       return nullptr;
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       NOTREACHED();
     }
   };
@@ -2854,12 +2870,13 @@ TEST_F(UpdateClientTest, RetryAfter) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
 
       static int num_call = 0;
@@ -3036,12 +3053,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -3282,12 +3300,13 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
@@ -3422,12 +3441,13 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(4u, ids_to_check.size());
@@ -3579,12 +3599,13 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 
@@ -3743,12 +3764,13 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       return std::make_unique<MockUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::string& session_id,
-                         const std::vector<std::string>& ids_to_check,
-                         const IdToComponentPtrMap& components,
-                         const std::string& additional_attributes,
-                         bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
       /*
       Mock the following response:
 

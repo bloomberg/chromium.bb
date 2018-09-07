@@ -108,8 +108,9 @@ std::string TestConfigurator::GetOSLongName() const {
   return "Fake Operating System";
 }
 
-std::string TestConfigurator::ExtraRequestParams() const {
-  return "extra=\"foo\"";
+base::flat_map<std::string, std::string> TestConfigurator::ExtraRequestParams()
+    const {
+  return {{"extra", "foo"}};
 }
 
 std::string TestConfigurator::GetDownloadPreference() const {
