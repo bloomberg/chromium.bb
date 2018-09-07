@@ -49,10 +49,9 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     UpdateEntries(GetTypeString(type), entries);
   }
 
-  void UpdateManagedStateProperties(
-      ManagedState::ManagedType type,
-      const std::string& path,
-      const base::DictionaryValue& properties) override {
+  void UpdateManagedStateProperties(ManagedState::ManagedType type,
+                                    const std::string& path,
+                                    const base::Value& properties) override {
     VLOG(2) << "UpdateManagedStateProperties: " << GetTypeString(type);
     initial_property_updates(GetTypeString(type))[path] += 1;
   }
@@ -71,11 +70,10 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(shill::kDevicesProperty, device_path);
   }
 
-  void UpdateIPConfigProperties(
-      ManagedState::ManagedType type,
-      const std::string& path,
-      const std::string& ip_config_path,
-      const base::DictionaryValue& properties) override {
+  void UpdateIPConfigProperties(ManagedState::ManagedType type,
+                                const std::string& path,
+                                const std::string& ip_config_path,
+                                const base::Value& properties) override {
     AddPropertyUpdate(shill::kIPConfigsProperty, ip_config_path);
   }
 

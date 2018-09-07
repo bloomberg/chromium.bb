@@ -22,7 +22,6 @@ class NetworkIconTest;
 
 namespace base {
 class Value;
-class DictionaryValue;
 }
 
 namespace chromeos {
@@ -69,15 +68,15 @@ class CHROMEOS_EXPORT ManagedState {
 
   // Called by NetworkStateHandler after all calls to PropertyChanged for the
   // initial set of properties. Used to update state requiring multiple
-  // properties, e.g. name from hex_ssid in NetworkState.
-  // |properties| contains the complete set of initial properties.
+  // properties, e.g. name from hex_ssid in NetworkState. |properties| must be
+  // of type DICTIONARY and contain the complete set of initial properties.
   // Returns true if any additional properties are updated.
-  virtual bool InitialPropertiesReceived(
-      const base::DictionaryValue& properties);
+  virtual bool InitialPropertiesReceived(const base::Value& properties);
 
-  // Fills |dictionary| with a minimal set of state properties for the network
-  // type. See implementations for which properties are included.
-  virtual void GetStateProperties(base::DictionaryValue* dictionary) const;
+  // Fills |dictionary|, which must be of type DICTIONARY, with a minimal set of
+  // state properties for the network type. See implementations for which
+  // properties are included.
+  virtual void GetStateProperties(base::Value* dictionary) const;
 
   ManagedType managed_type() const { return managed_type_; }
   const std::string& path() const { return path_; }

@@ -65,12 +65,11 @@ DeviceState* ManagedState::AsDeviceState() {
   return NULL;
 }
 
-bool ManagedState::InitialPropertiesReceived(
-    const base::DictionaryValue& properties) {
+bool ManagedState::InitialPropertiesReceived(const base::Value& properties) {
   return false;
 }
 
-void ManagedState::GetStateProperties(base::DictionaryValue* dictionary) const {
+void ManagedState::GetStateProperties(base::Value* dictionary) const {
   dictionary->SetKey(shill::kNameProperty, base::Value(name()));
   dictionary->SetKey(shill::kTypeProperty, base::Value(type()));
 }

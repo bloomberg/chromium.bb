@@ -1207,7 +1207,7 @@ void NetworkStateHandler::ProfileListChanged() {
 void NetworkStateHandler::UpdateManagedStateProperties(
     ManagedState::ManagedType type,
     const std::string& path,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   ManagedStateList* managed_list = GetManagedList(type);
   ManagedState* managed = GetModifiableManagedState(managed_list, path);
   if (!managed) {
@@ -1224,10 +1224,8 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     UpdateNetworkStateProperties(managed->AsNetworkState(), properties);
   } else {
     // Device
-    for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
-         iter.Advance()) {
-      managed->PropertyChanged(iter.key(), iter.value());
-    }
+    for (const auto iter : properties.DictItems())
+      managed->PropertyChanged(iter.first, iter.second);
     managed->InitialPropertiesReceived(properties);
   }
   managed->set_update_requested(false);
@@ -1235,14 +1233,13 @@ void NetworkStateHandler::UpdateManagedStateProperties(
 
 void NetworkStateHandler::UpdateNetworkStateProperties(
     NetworkState* network,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   DCHECK(network);
   bool network_property_updated = false;
   std::string prev_connection_state = network->connection_state();
   bool prev_is_captive_portal = network->is_captive_portal();
-  for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
-       iter.Advance()) {
-    if (network->PropertyChanged(iter.key(), iter.value()))
+  for (const auto iter : properties.DictItems()) {
+    if (network->PropertyChanged(iter.first, iter.second))
       network_property_updated = true;
   }
   if (network->Matches(NetworkTypePattern::WiFi()))
@@ -1377,7 +1374,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    const base::DictionaryValue& properties) {
+    const base::Value& properties) {
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     NetworkState* network = GetModifiableNetworkState(path);
     if (!network)
@@ -1680,6 +1677,8 @@ DeviceState* NetworkStateHandler::GetModifiableDeviceState(
 DeviceState* NetworkStateHandler::GetModifiableDeviceStateByType(
     const NetworkTypePattern& type) const {
   for (const auto& device : device_list_) {
+    if (device->type().empty())
+      continue;  // kTypeProperty not set yet, skip.
     if (device->Matches(type))
       return device->AsDeviceState();
   }
