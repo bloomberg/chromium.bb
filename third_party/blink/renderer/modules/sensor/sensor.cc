@@ -177,7 +177,7 @@ void Sensor::InitSensorProxyIfNeeded() {
   if (!document || !document->GetFrame())
     return;
 
-  auto* provider = SensorProviderProxy::From(document->GetFrame());
+  auto* provider = SensorProviderProxy::From(document);
   sensor_proxy_ = provider->GetSensorProxy(type_);
 
   if (!sensor_proxy_)

@@ -13,14 +13,14 @@
 namespace blink {
 
 // SensorProviderProxy
-SensorProviderProxy::SensorProviderProxy(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame), inspector_mode_(false) {}
+SensorProviderProxy::SensorProviderProxy(Document& document)
+    : Supplement<Document>(document), inspector_mode_(false) {}
 
 void SensorProviderProxy::InitializeIfNeeded() {
   if (IsInitialized())
     return;
 
-  GetSupplementable()->GetInterfaceProvider().GetInterface(
+  GetSupplementable()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&sensor_provider_));
   sensor_provider_.set_connection_error_handler(
       WTF::Bind(&SensorProviderProxy::OnSensorProviderConnectionError,
@@ -31,13 +31,13 @@ void SensorProviderProxy::InitializeIfNeeded() {
 const char SensorProviderProxy::kSupplementName[] = "SensorProvider";
 
 // static
-SensorProviderProxy* SensorProviderProxy::From(LocalFrame* frame) {
-  DCHECK(frame);
+SensorProviderProxy* SensorProviderProxy::From(Document* document) {
+  DCHECK(document);
   SensorProviderProxy* provider_proxy =
-      Supplement<LocalFrame>::From<SensorProviderProxy>(*frame);
+      Supplement<Document>::From<SensorProviderProxy>(*document);
   if (!provider_proxy) {
-    provider_proxy = new SensorProviderProxy(*frame);
-    Supplement<LocalFrame>::ProvideTo(*frame, provider_proxy);
+    provider_proxy = new SensorProviderProxy(*document);
+    Supplement<Document>::ProvideTo(*document, provider_proxy);
   }
   provider_proxy->InitializeIfNeeded();
   return provider_proxy;
@@ -47,7 +47,7 @@ SensorProviderProxy::~SensorProviderProxy() = default;
 
 void SensorProviderProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(sensor_proxies_);
-  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
 }
 
 SensorProxy* SensorProviderProxy::CreateSensorProxy(
