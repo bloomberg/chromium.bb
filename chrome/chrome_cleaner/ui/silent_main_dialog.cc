@@ -19,8 +19,6 @@ bool SilentMainDialog::Create() {
   return true;
 }
 
-void SilentMainDialog::StartScanning() {}
-
 void SilentMainDialog::NoPUPsFound() {
   delegate()->OnClose();
 }
@@ -31,8 +29,6 @@ void SilentMainDialog::ConfirmCleanup(
     const std::vector<base::string16>& registry_keys) {
   delegate()->AcceptedCleanup(true);
 }
-
-void SilentMainDialog::StartCleanup(size_t num_pups) {}
 
 void SilentMainDialog::CleanupDone(ResultCode cleanup_result) {
   delegate()->OnClose();

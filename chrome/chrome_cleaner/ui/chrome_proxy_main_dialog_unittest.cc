@@ -45,10 +45,6 @@ TEST_F(ChromeProxyMainDialogTest, Create) {
   dialog_->Create();
 }
 
-TEST_F(ChromeProxyMainDialogTest, StartScanning) {
-  dialog_->StartScanning();
-}
-
 TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
   base::MessageLoopForUI ui_message_loop_;
 
@@ -64,10 +60,6 @@ TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
 
   dialog_->NoPUPsFound();
   run_loop.Run();
-}
-
-TEST_F(ChromeProxyMainDialogTest, StartCleanup) {
-  dialog_->StartCleanup(10);
 }
 
 TEST_F(ChromeProxyMainDialogTest, CleanupDone) {

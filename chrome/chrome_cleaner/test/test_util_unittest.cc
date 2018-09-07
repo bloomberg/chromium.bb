@@ -6,6 +6,7 @@
 
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 // The following include is needed to use EXPECT_NONFATAL_FAILURE.
 #include "testing/gtest/include/gtest/gtest-spi.h"
 

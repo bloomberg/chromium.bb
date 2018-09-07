@@ -72,7 +72,6 @@ source_set("scanner") {
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/logging:common",
-    "//chrome/chrome_cleaner/logging:logging_definitions",
     "//chrome/chrome_cleaner/logging:scoped_timed_task_logger",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
