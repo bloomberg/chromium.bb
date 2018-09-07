@@ -8,7 +8,6 @@
         "lifecycle_unittest_parent": [ "lifecycle_unittest:parent" ],
         "service_manager": [
           "service_manager:service_manager",
-          "service_manager:instance_name",
           "service_manager:client_process"
         ]
       }

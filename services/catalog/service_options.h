@@ -16,7 +16,7 @@ struct ServiceOptions {
 
   InstanceSharingType instance_sharing = InstanceSharingType::NONE;
   bool can_connect_to_other_services_as_any_user = false;
-  bool allow_other_instance_names = false;
+  bool can_connect_to_other_services_with_any_instance_name = false;
   bool instance_for_client_process = false;
 };
 

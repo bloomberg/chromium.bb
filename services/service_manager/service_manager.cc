@@ -48,7 +48,6 @@ namespace service_manager {
 namespace {
 
 const char kCapability_ClientProcess[] = "service_manager:client_process";
-const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
@@ -621,17 +620,16 @@ class ServiceManager::Instance
                  << " running as: " << identity_.user_id()
                  << " attempting to connect to: " << target.name()
                  << " as: " << target.user_id() << " without "
-                 << " the service:service_manager{user_id} capability.";
+                 << " the 'can_connect_to_other_services_as_any_user' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
-    if (!target.instance().empty() &&
-        target.instance() != target.name() &&
-        !HasCapability(connection_spec, kCapability_InstanceName)) {
-      LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
-                 << "connect to " << target.name()
-                 << " using Instance name: " << target.instance()
-                 << " without the "
-                 << "service_manager{instance_name} capability.";
+    if (!target.instance().empty() && target.instance() != target.name() &&
+        !options_.can_connect_to_other_services_with_any_instance_name) {
+      LOG(ERROR)
+          << "Instance: " << identity_.name() << " attempting to "
+          << "connect to " << target.name()
+          << " using Instance name: " << target.instance() << " without the "
+          << " 'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
 

@@ -189,10 +189,12 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
       options_struct.can_connect_to_other_services_as_any_user =
           can_connect_to_other_services_as_any_user_value->GetBool();
 
-    if (const base::Value* allow_other_instance_names_value =
-            options->FindKey("allow_other_instance_names"))
-      options_struct.allow_other_instance_names =
-          allow_other_instance_names_value->GetBool();
+    if (const base::Value*
+            can_connect_to_other_services_with_any_instance_name_value =
+                options->FindKey(
+                    "can_connect_to_other_services_with_any_instance_name"))
+      options_struct.can_connect_to_other_services_with_any_instance_name =
+          can_connect_to_other_services_with_any_instance_name_value->GetBool();
 
     if (const base::Value* instance_for_client_process_value =
             options->FindKey("instance_for_client_process"))
