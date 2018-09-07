@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -21,11 +22,11 @@ public class SnapScrollHelper {
 
     private final NewTabPageManager mManager;
     private final NewTabPageLayout mNewTabPageLayout;
-    private final View mView;
     private final Runnable mSnapScrollRunnable;
     private final int mToolbarHeight;
     private final int mSearchBoxTransitionLength;
 
+    private View mView;
     private boolean mPendingSnapScroll;
     private int mLastScrollY = -1;
 
@@ -33,20 +34,30 @@ public class SnapScrollHelper {
      * @param manager The {@link NewTabPageManager} to get information about user interactions on
      *                the {@link NewTabPage}.
      * @param newTabPageLayout The {@link NewTabPageLayout} associated with the {@link NewTabPage}.
-     * @param view The view on which this class needs to handle snap scroll.
      */
-    public SnapScrollHelper(NewTabPageView.NewTabPageManager manager,
-            NewTabPageLayout newTabPageLayout, View view) {
+    public SnapScrollHelper(
+            NewTabPageView.NewTabPageManager manager, NewTabPageLayout newTabPageLayout) {
         mManager = manager;
         mNewTabPageLayout = newTabPageLayout;
-        mView = view;
         mSnapScrollRunnable = new SnapScrollRunnable();
 
-        Resources res = view.getResources();
+        Resources res = newTabPageLayout.getResources();
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         mSearchBoxTransitionLength =
                 res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+    }
+
+    /** @param view The view on which this class needs to handle snap scroll. */
+    public void setView(@NonNull View view) {
+        if (mView != null) {
+            mPendingSnapScroll = false;
+            mLastScrollY = -1;
+            mView.removeCallbacks(mSnapScrollRunnable);
+            mView.setOnTouchListener(null);
+        }
+
+        mView = view;
 
         @SuppressLint("ClickableViewAccessibility")
         View.OnTouchListener onTouchListener = (v, event) -> {

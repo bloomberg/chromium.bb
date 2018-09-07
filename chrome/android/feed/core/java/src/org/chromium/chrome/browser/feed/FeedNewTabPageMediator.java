@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import android.content.res.Resources;
+import android.graphics.Rect;
+import android.widget.ScrollView;
 
 import com.google.android.libraries.feed.api.stream.ContentChangedListener;
 import com.google.android.libraries.feed.api.stream.ScrollListener;
@@ -36,6 +38,7 @@ class FeedNewTabPageMediator
     private SectionHeader mSectionHeader;
     private MemoryPressureCallback mMemoryPressureCallback;
 
+    private boolean mFeedEnabled;
     private boolean mTouchEnabled = true;
     private boolean mStreamContentChanged;
     private int mThumbnailWidth;
@@ -44,31 +47,26 @@ class FeedNewTabPageMediator
 
     /**
      * @param feedNewTabPage The {@link FeedNewTabPage} that interacts with this class.
+     * @param snapScrollHelper The {@link SnapScrollHelper} that handles snap scrolling.
      */
     FeedNewTabPageMediator(FeedNewTabPage feedNewTabPage, SnapScrollHelper snapScrollHelper) {
         mCoordinator = feedNewTabPage;
         mSnapScrollHelper = snapScrollHelper;
-        initializeProperties();
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
-        mPrefChangeRegistrar.addObserver(
-                Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
+        mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
+        initialize();
+        // Create the content.
+        updateContent();
     }
 
     /** Clears any dependencies. */
     void destroy() {
-        Stream stream = mCoordinator.getStream();
-        stream.removeScrollListener(mStreamScrollListener);
-        stream.removeOnContentChangedListener(mStreamContentChangedListener);
+        destroyPropertiesForStream();
         mPrefChangeRegistrar.destroy();
-        MemoryPressureListener.removeCallback(mMemoryPressureCallback);
     }
 
-    /**
-     * Initialize properties for UI components in the {@link FeedNewTabPage}.
-     * TODO(huayinz): Introduce a Model for these properties.
-     */
-    private void initializeProperties() {
+    private void initialize() {
         // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
         // position that are due to layout changes after e.g. device rotation. This contrasts with
         // regular scrolling, which is observed through an OnScrollListener.
@@ -76,7 +74,33 @@ class FeedNewTabPageMediator
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                     mSnapScrollHelper.handleScroll();
                 });
+    }
 
+    /** Update the content based on supervised user or enterprise policy. */
+    private void updateContent() {
+        mFeedEnabled =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+        if ((mFeedEnabled && mCoordinator.getStream() != null)
+                || (!mFeedEnabled && mCoordinator.getScrollViewForPolicy() != null))
+            return;
+
+        if (mFeedEnabled) {
+            mCoordinator.createStream();
+            mSnapScrollHelper.setView(mCoordinator.getStream().getView());
+            initializePropertiesForStream();
+        } else {
+            destroyPropertiesForStream();
+            mCoordinator.createScrollViewForPolicy();
+            mSnapScrollHelper.setView(mCoordinator.getScrollViewForPolicy());
+            initializePropertiesForPolicy();
+        }
+    }
+
+    /**
+     * Initialize properties for UI components in the {@link FeedNewTabPage}.
+     * TODO(huayinz): Introduce a Model for these properties.
+     */
+    private void initializePropertiesForStream() {
         Stream stream = mCoordinator.getStream();
         mStreamScrollListener = new ScrollListener() {
             @Override
@@ -97,11 +121,35 @@ class FeedNewTabPageMediator
                 new SectionHeader(res.getString(R.string.ntp_article_suggestions_section_header),
                         PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE),
                         this::onSectionHeaderToggled);
+        mPrefChangeRegistrar.addObserver(
+                Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
         mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
         stream.setStreamContentVisibility(mSectionHeader.isExpanded());
 
         mMemoryPressureCallback = pressure -> mCoordinator.getStream().trim();
         MemoryPressureListener.addCallback(mMemoryPressureCallback);
+    }
+
+    /** Clear any dependencies related to the {@link Stream}. */
+    private void destroyPropertiesForStream() {
+        Stream stream = mCoordinator.getStream();
+        if (stream == null) return;
+
+        stream.removeScrollListener(mStreamScrollListener);
+        stream.removeOnContentChangedListener(mStreamContentChangedListener);
+        MemoryPressureListener.removeCallback(mMemoryPressureCallback);
+        mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
+        mStreamScrollListener = null;
+        mStreamContentChangedListener = null;
+        mMemoryPressureCallback = null;
+    }
+
+    /**
+     * Initialize properties for the scroll view shown under supervised user or enterprise policy.
+     */
+    private void initializePropertiesForPolicy() {
+        ScrollView view = mCoordinator.getScrollViewForPolicy();
+        view.getViewTreeObserver().addOnScrollChangedListener(mSnapScrollHelper::handleScroll);
     }
 
     /** Update whether the section header should be expanded. */
@@ -158,26 +206,42 @@ class FeedNewTabPageMediator
 
     @Override
     public boolean isScrollViewInitialized() {
-        Stream stream = mCoordinator.getStream();
-        // During startup the view may not be fully initialized, so we check to see if some basic
-        // view properties (height of the RecyclerView) are sane.
-        return stream != null && stream.getView().getHeight() > 0;
+        if (mFeedEnabled) {
+            Stream stream = mCoordinator.getStream();
+            // During startup the view may not be fully initialized, so we check to see if some
+            // basic view properties (height of the RecyclerView) are sane.
+            return stream != null && stream.getView().getHeight() > 0;
+        } else {
+            ScrollView scrollView = mCoordinator.getScrollViewForPolicy();
+            return scrollView != null && scrollView.getHeight() > 0;
+        }
     }
 
     @Override
     public int getVerticalScrollOffset() {
         // This method returns a valid vertical scroll offset only when the first header view in the
-        // Stream is visible. In all other cases, this returns 0.
+        // Stream is visible.
         if (!isScrollViewInitialized()) return 0;
 
-        int firstChildTop = mCoordinator.getStream().getChildTopAt(0);
-        return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : Integer.MIN_VALUE;
+        if (mFeedEnabled) {
+            int firstChildTop = mCoordinator.getStream().getChildTopAt(0);
+            return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : Integer.MIN_VALUE;
+        } else {
+            return mCoordinator.getScrollViewForPolicy().getScrollY();
+        }
     }
 
     @Override
     public boolean isChildVisibleAtPosition(int position) {
-        return isScrollViewInitialized()
-                && mCoordinator.getStream().isChildAtPositionVisible(position);
+        if (mFeedEnabled) {
+            return isScrollViewInitialized()
+                    && mCoordinator.getStream().isChildAtPositionVisible(position);
+        } else {
+            ScrollView scrollView = mCoordinator.getScrollViewForPolicy();
+            Rect rect = new Rect();
+            scrollView.getHitRect(rect);
+            return scrollView.getChildAt(position).getLocalVisibleRect(rect);
+        }
     }
 
     @Override
@@ -189,6 +253,11 @@ class FeedNewTabPageMediator
 
         // Calculating the snap position should be idempotent.
         assert scrollTo == mSnapScrollHelper.calculateSnapPosition(scrollTo);
-        mCoordinator.getStream().smoothScrollBy(0, scrollTo - initialScroll);
+
+        if (mFeedEnabled) {
+            mCoordinator.getStream().smoothScrollBy(0, scrollTo - initialScroll);
+        } else {
+            mCoordinator.getScrollViewForPolicy().smoothScrollBy(0, scrollTo - initialScroll);
+        }
     }
 }
