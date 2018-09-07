@@ -196,7 +196,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus5_16_shard_map.json",
+          "--test-shard-map-filename=android_nexus5_perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -247,7 +247,7 @@
           "--browser=android-webview",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json",
+          "--test-shard-map-filename=android_nexus5x_webview_perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -298,7 +298,7 @@
           "--browser=android-webview",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android_nexus6_webview_shard_map.json",
+          "--test-shard-map-filename=android_nexus6_webview_perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -584,7 +584,7 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win7_nvidia_shard_map.json",
+          "--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -762,7 +762,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win7_shard_map.json"
+          "--test-shard-map-filename=win_7_perf_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -820,7 +820,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_go_shard_map.json"
+          "--test-shard-map-filename=android-go-perf_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1096,7 +1096,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus5x_16_shard_map.json",
+          "--test-shard-map-filename=android-nexus5x-perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1319,7 +1319,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=linux_perf_shard_map.json",
+          "--test-shard-map-filename=linux-perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1454,7 +1454,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=mac_1012_low_end_26_shard_map.json",
+          "--test-shard-map-filename=mac-10_12_laptop_low_end-perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1632,7 +1632,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=mac_1013_high_end_26_shard_map.json",
+          "--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1810,7 +1810,7 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win10_shard_map.json",
+          "--test-shard-map-filename=win-10-perf_map.json",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
