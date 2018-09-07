@@ -34,6 +34,7 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
+#include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
@@ -790,6 +792,28 @@ CastContentBrowserClient::CreateCrashHandlerHost(
   return crash_handler;
 }
 #endif  // !defined(OS_ANDROID)
+
+std::vector<std::unique_ptr<content::NavigationThrottle>>
+CastContentBrowserClient::CreateThrottlesForNavigation(
+    content::NavigationHandle* handle) {
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  // If this isn't an extension renderer there's nothing to do.
+  content::SiteInstance* site_instance = handle->GetStartingSiteInstance();
+  if (site_instance) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext());
+    const extensions::Extension* extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(
+            site_instance->GetSiteURL());
+    if (extension) {
+      throttles.push_back(std::make_unique<DefaultNavigationThrottle>(
+          handle, content::NavigationThrottle::CANCEL_AND_IGNORE));
+    }
+  }
+#endif
+  return throttles;
+}
 
 }  // namespace shell
 }  // namespace chromecast
