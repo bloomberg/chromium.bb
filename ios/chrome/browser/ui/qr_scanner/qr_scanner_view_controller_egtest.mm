@@ -113,10 +113,7 @@ id<GREYMatcher> DialogCancelButton() {
 // Opens the QR Scanner view.
 void ShowQRScanner() {
   // Tap the omnibox to get the keyboard accessory view to show up.
-  id<GREYMatcher> locationbarButton = grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
-      grey_minimumVisiblePercent(0.2), nil);
-  [[EarlGrey selectElementWithMatcher:locationbarButton]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];

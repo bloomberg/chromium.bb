@@ -461,4 +461,10 @@ id<GREYMatcher> ContextMenuCopyButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_COPY);
 }
 
+id<GREYMatcher> NewTabPageOmnibox() {
+  return grey_allOf(
+      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
+      grey_minimumVisiblePercent(0.2), nil);
+}
+
 }  // namespace chrome_test_util

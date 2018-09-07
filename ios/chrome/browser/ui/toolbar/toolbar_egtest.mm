@@ -36,6 +36,17 @@ using chrome_test_util::OmniboxText;
 using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
 
+namespace {
+// Returns matcher for the Paste and Go button on the system callout.
+id<GREYMatcher> PasteAndGoCalloutButton() {
+  return grey_allOf(
+      grey_accessibilityLabel(@"Paste and Go"),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitButton)),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitStaticText)), nil);
+}
+
+}  // namespace
+
 // Toolbar integration tests for Chrome.
 @interface ToolbarTestCase : ChromeTestCase
 @end
@@ -361,6 +372,28 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
       assertWithMatcher:chrome_test_util::OmniboxText(URL.spec().c_str())];
 }
 
+// Verifies that PasteAndGo removes javascript scheme from the URL before
+// navigation.
+- (void)testJavascriptPasteAndGo {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Paste and Go is only availble for UI Refresh.");
+  }
+  // Clear generalPasteboard after the test.
+  [self setTearDownHandler:^{
+    [UIPasteboard generalPasteboard].string = @"";
+  }];
+  [UIPasteboard generalPasteboard].string = @"javascript:notavalidurl";
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:PasteAndGoCalloutButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(
+                            "www.google.com/search?q=notavalidurl")];
+}
+
 // Verifies that the clear text button clears any text in the omnibox.
 - (void)testOmniboxClearTextButton {
   // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
@@ -433,11 +466,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a simulator bug.");
   }
 
-  id<GREYMatcher> locationbarButton = grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
-      grey_minimumVisiblePercent(0.2), nil);
-
-  [[EarlGrey selectElementWithMatcher:locationbarButton]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_typeText(@"a")];
   [[EarlGrey selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"a"),
                                                  grey_kindOfClass(
@@ -531,10 +560,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 // Tests typing in the omnibox using the keyboard accessory view.
 - (void)testToolbarOmniboxKeyboardAccessoryView {
   // Select the omnibox to get the keyboard up.
-  id<GREYMatcher> locationbarButton = grey_allOf(
-      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
-      grey_minimumVisiblePercent(0.2), nil);
-  [[EarlGrey selectElementWithMatcher:locationbarButton]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
