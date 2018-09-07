@@ -41,6 +41,7 @@
 /cacheinvalidation/cacheinvalidation_unittests_run.xml
 /cardboard-java/src
 /catapult
+/cct_dynamic_module/src
 /ced/src
 /checkstyle/*.jar
 /chromeos_login_manager
@@ -58,7 +59,6 @@
 /devtools-node-modules
 /directxsdk
 /dom_distiller_js/dist
-/dynamicmodule
 /elfutils/src
 /errorprone/lib
 /espresso/lib/
