@@ -193,9 +193,9 @@ void DefaultGpuHost::DidLoseContext(bool offscreen,
 
 void DefaultGpuHost::DisableGpuCompositing() {}
 
+#if defined(OS_WIN)
 void DefaultGpuHost::SetChildSurface(gpu::SurfaceHandle parent,
                                      gpu::SurfaceHandle child) {
-#if defined(OS_WIN)
   // Verify that |parent| was created by the window server.
   DWORD process_id = 0;
   DWORD thread_id = GetWindowThreadProcessId(parent, &process_id);
@@ -210,10 +210,8 @@ void DefaultGpuHost::SetChildSurface(gpu::SurfaceHandle parent,
                                                                  child)) {
     OnBadMessageFromGpu();
   }
-#else
-  NOTREACHED();
-#endif
 }
+#endif  // defined(OS_WIN)
 
 void DefaultGpuHost::StoreShaderToDisk(int32_t client_id,
                                        const std::string& key,

@@ -110,8 +110,10 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
+#if defined(OS_WIN)
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
+#endif
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;

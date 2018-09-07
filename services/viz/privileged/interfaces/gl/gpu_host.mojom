@@ -35,8 +35,10 @@ interface GpuHost {
   // track of this decision in case the GPU process crashes.
   DisableGpuCompositing();
 
+  [EnableIf=is_win]
   SetChildSurface(gpu.mojom.SurfaceHandle parent,
                   gpu.mojom.SurfaceHandle child);
+
   StoreShaderToDisk(int32 client_id, string key, string shader);
 
   RecordLogMessage(int32 severity, string header, string message);

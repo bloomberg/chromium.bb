@@ -105,14 +105,14 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     bool in_process = false;
 
     // Whether caching GPU shader on disk is disabled or not.
-    bool disable_gpu_shader_disk_cache;
+    bool disable_gpu_shader_disk_cache = false;
 
     // A string representing the product name and version; used to build a
     // prefix for shader keys.
     std::string product;
 
     // Number of frames to CompositorFrame activation deadline.
-    base::Optional<uint32_t> deadline_to_synchronize_surfaces = base::nullopt;
+    base::Optional<uint32_t> deadline_to_synchronize_surfaces;
 
     // Task runner corresponding to the main thread.
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner;
@@ -203,8 +203,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
+#if defined(OS_WIN)
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
+#endif
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
