@@ -53,7 +53,9 @@ const RecorderMsgEnum = {
   CANCEL: 'cancel-recording',
   GET_IFRAME_NAME: 'get-iframe-name',
   ADD_ACTION: 'record-action',
-  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params'
+  SET_PASSWORD_MANAGER_ACTION_PARAMS: 'set-password-manager-action-params',
+  SET_AUTOFILL_PROFILE_ENTRY: 'set-autofill-profile-entry',
+  SET_PASSWORD_MANAGER_PROFILE_ENTRY: 'set-password-manager-profile-entry'
 };
 
 const Local_Storage_Vars = {
@@ -74,4 +76,8 @@ const Indexed_DB_Vars = {
   // actions.
   SAVED_ACTION_PARAMS: 'Saved_Action_Params',
   PASSWORD_MANAGER_PARAMS: 'password_manager_params',
+  // The 'Profile' tables stores the user's Chrome autofill profile and Chrome
+  // password manager profile.
+  AUTOFILL_PROFILE: 'autofill_profile',
+  PASSWORD_MANAGER_PROFILE: 'password_manager_profile'
 };

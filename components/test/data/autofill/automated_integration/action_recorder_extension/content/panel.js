@@ -127,9 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       case ActionTypeEnum.VALIDATE_FIELD:
         actionLabel.textContent = 'validate field';
-        actionDetailLabel.textContent = `check that field
-            (${action.expectedAutofillType}) has the value
-            '${action.expectedValue}'`;
+        if (action.expectedAutofillType) {
+          actionDetailLabel.textContent = `check that field
+              (${action.expectedAutofillType}) has the value
+              '${action.expectedValue}'`;
+        } else {
+          actionDetailLabel.textContent = `check that field
+              has the value '${action.expectedValue}'`;
+        }
         break;
       case ActionTypeEnum.SAVE_PASSWORD:
         actionLabel.textContent = 'save password';

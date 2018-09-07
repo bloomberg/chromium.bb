@@ -187,10 +187,8 @@
   let started = false;
   let iframeContextMap = {};
 
-  function isAutofillableElement(element) {
-     const autofillPrediction = element.getAttribute('autofill-prediction');
-    return (autofillPrediction !== null && autofillPrediction !== '' &&
-            autofillPrediction !== 'UNKNOWN_TYPE');
+  function resetAutofillTriggerElement() {
+    autofillTriggerElementInfo = null;
   }
 
   function isEditableInputElement(element) {
@@ -221,103 +219,169 @@
             .indexOf(element.getAttribute('type')) === -1);
   }
 
-  /**
-   * Returns true if |element| is probably a clickable element.
-   *
-   * @param  {Element} element The element to be checked.
-   * @return {boolean}         True if the element is probably clickable.
-   */
-  function isClickableElementOrInput(element) {
-    return (element.tagName == 'A' ||
-            element.tagName == 'BUTTON' ||
-            element.tagName == 'IMG' ||
-            element.tagName == 'INPUT' ||
-            element.tagName == 'LABEL' ||
-            element.tagName == 'SPAN' ||
-            element.tagName == 'SUBMIT' ||
-            element.getAttribute('href'));
+  async function extractAndSendChromePasswordManagerProfile(passwordField) {
+    // Extract the user name field.
+    const form = passwordField.form;
+    const usernameField = form.querySelector(
+        `*[form_signature][pm_parser_annotation='username_element']`);
+    if (!usernameField) {
+      console.warn('Failed to detect the user name field!');
+      return;
+    }
+
+    const autofilledPasswordManagerProfile = {
+      username: usernameField.value,
+      password: passwordField.value,
+      website: window.location.origin
+    };
+    return await sendRuntimeMessageToBackgroundScript({
+        type: RecorderMsgEnum.SET_PASSWORD_MANAGER_PROFILE_ENTRY,
+        entry: autofilledPasswordManagerProfile
+      });
   }
 
-  function addActionToRecipe(action) {
-    return sendRuntimeMessageToBackgroundScript({
+  async function sendChromeAutofillProfileEntry(field) {
+    const entry = {
+      type: field.getAttribute('autofill-prediction'),
+      value: field.value
+    };
+    return await sendRuntimeMessageToBackgroundScript({
+      type: RecorderMsgEnum.SET_AUTOFILL_PROFILE_ENTRY,
+      entry: entry
+    });
+  }
+
+  async function addActionToRecipe(action) {
+    return await sendRuntimeMessageToBackgroundScript({
       type: RecorderMsgEnum.ADD_ACTION,
       action: action
     });
   }
 
-  function onInputChangeActionHandler(event) {
-    const selector = buildXPathForElement(event.target);
-    const elementReadyState = automation_helper.getElementState(event.target);
-    const autofillPrediction =
-        event.target.getAttribute('autofill-prediction');
-    let action = {
-      selector: selector,
+  async function onUserMakingSelectionChange(element) {
+    const selector = buildXPathForElement(element);
+    const elementReadyState = automation_helper.getElementState(element);
+    const index = element.options.selectedIndex;
+
+    console.log(`Select detected on: ${selector} with '${index}'`);
+    const action = {
       context: frameContext,
+      index: index,
+      selector: selector,
+      type: ActionTypeEnum.SELECT,
+      visibility: elementReadyState
+    };
+    await addActionToRecipe(action);
+  }
+
+  async function onUserFinishingTypingInput(element) {
+    const selector = buildXPathForElement(element);
+    const elementReadyState = automation_helper.getElementState(element);
+
+    console.log(`Typing detected on: ${selector}`);
+    // Distinguish between typing inside password input fields and
+    // other type of text input fields.
+    //
+    // This extension generates test recipes to be consumed by the Captured
+    // Sites Automation Framework. The automation framework replays a typing
+    // action by using JavaScript to set the value of a text input field.
+    //
+    // However, to trigger the Chrome Password Manager, the automation
+    // framework must simulate user typing inside the password field by
+    // sending individual character keyboard input - because Chrome Password
+    // Manager deliberately ignores forms filled by JavaScript.
+    //
+    // Simulating keyboard input is a less reliable and therefore the less
+    // preferred way for filling text inputs. The Automation Framework uses
+    // keyboard input only when necessary. So this extension separates
+    // typing password actions from other typing actions.
+    const isPasswordField = isPasswordInputElement(event.target);
+
+    const action = {
+      context: frameContext,
+      selector: selector,
+      type:
+        isPasswordField ? ActionTypeEnum.TYPE_PASSWORD: ActionTypeEnum.TYPE,
+      value: element.value,
       visibility: elementReadyState
     };
 
-    if (event.target.localName === 'select') {
-      if (document.activeElement === event.target) {
-        const index = event.target.options.selectedIndex;
-        console.log(`Select detected on: ${selector} with '${index}'`);
-        action.type = ActionTypeEnum.SELECT;
-        action.index = index;
-        addActionToRecipe(action);
-      } else {
-        action.type = ActionTypeEnum.VALIDATE_FIELD;
-        action.expectedValue = event.target.value;
-        if (autofillPrediction) {
-          action.expectedAutofillType = autofillPrediction;
-        }
-        addActionToRecipe(action);
-      }
-    } else if (lastTypingEventInfo &&
-               lastTypingEventInfo.target === event.target &&
-               lastTypingEventInfo.value === event.target.value) {
-      console.log(`Typing detected on: ${selector}`);
+    await addActionToRecipe(action);
+  }
 
-      // Distinguish between typing inside password input fields and
-      // other type of text input fields.
-      //
-      // This extension generates test recipes to be consumed by the Captured
-      // Sites Automation Framework. The automation framework replays a typing
-      // action by using JavaScript to set the value of a text input field.
-      // However, to trigger the Chrome Password Manager, the automation
-      // framework must simulate user typing inside the password field by
-      // sending individual character keyboard input - because Chrome Password
-      // Manager deliberately ignores forms filled by JavaScript.
-      //
-      // Simulating keyboard input is a less reliable and therefore the less
-      // preferred way for filling text inputs. The Automation Framework uses
-      // keyboard input only when necessary. So this extension separates
-      // typing password actions from other typing actions.
-      const isPasswordField = isPasswordInputElement(event.target);
-      action.type =
-          isPasswordField ?
-            ActionTypeEnum.TYPE_PASSWORD:
-            ActionTypeEnum.TYPE;
-      action.value = event.target.value;
-      addActionToRecipe(action);
-    } else {
+  async function onUserInvokingAutofill() {
+    console.log(
+        `Triggered autofill on ${autofillTriggerElementInfo.selector}`);
+    const autofillAction = {
+      selector: autofillTriggerElementInfo.selector,
+      context: frameContext,
+      type: ActionTypeEnum.AUTOFILL,
+      visibility: autofillTriggerElementInfo.visibility
+    };
+    resetAutofillTriggerElement();
+    await addActionToRecipe(autofillAction);
+  }
+
+  async function onChromeAutofillingNonPasswordInput(element) {
+    const selector = buildXPathForElement(element);
+    const elementReadyState = automation_helper.getElementState(element);
+    const value = element.value;
+    const autofillType = element.getAttribute('autofill-prediction');
+
+    console.log(`Autofill detected on: ${selector} with value '${value}'`);
+    let action = {
+      context: frameContext,
+      expectedValue: value,
+      selector: selector,
+      type: ActionTypeEnum.VALIDATE_FIELD,
+      visibility: elementReadyState
+    };
+
+    if (autofillType) {
+      action.expectedAutofillType = autofillType;
+    }
+    await addActionToRecipe(action);
+
+    if (autofillType) {
+      await sendChromeAutofillProfileEntry(element);
+    }
+  }
+
+  async function onChromeAutofillingPasswordInput(element) {
+    const elementReadyState = automation_helper.getElementState(element);
+    const selector = buildXPathForElement(element);
+    const value = element.value;
+
+    console.log(`Autofill detected on: ${selector} with value '${value}'`);
+    let validateAction = {
+      selector: selector,
+      context: frameContext,
+      expectedValue: value,
+      type: ActionTypeEnum.VALIDATE_FIELD,
+      visibility: elementReadyState
+    };
+    await addActionToRecipe(validateAction);
+
+    await extractAndSendChromePasswordManagerProfile(element);
+  }
+
+  async function onInputChangeActionHandler(event) {
+    if (event.target.autofilledByChrome &&
+        isChromeRecognizedPasswordField(event.target)) {
+      await onChromeAutofillingPasswordInput(event.target);
+    } else if (event.target.autofilledByChrome) {
       // If the user has previously clicked on a field that can trigger
       // autofill, add a trigger autofill action.
       if (autofillTriggerElementInfo !== null) {
-        console.log(`Triggered autofill on ${autofillTriggerElementInfo.selector}`);
-        let autofillAction = {
-          selector: autofillTriggerElementInfo.selector,
-          context: frameContext,
-          visibility: autofillTriggerElementInfo.visibility
-        };
-        autofillAction.type = ActionTypeEnum.AUTOFILL;
-        addActionToRecipe(autofillAction);
-        autofillTriggerElementInfo = null;
+        await onUserInvokingAutofill();
       }
-      action.type = ActionTypeEnum.VALIDATE_FIELD;
-      action.expectedValue = event.target.value;
-      if (autofillPrediction) {
-        action.expectedAutofillType = autofillPrediction;
-      }
-      addActionToRecipe(action);
+      await onChromeAutofillingNonPasswordInput(event.target);
+    } else if (event.target.localName === 'select') {
+      await onUserMakingSelectionChange(event.target);
+    } else if (lastTypingEventInfo &&
+               lastTypingEventInfo.target === event.target &&
+               lastTypingEventInfo.value === event.target.value) {
+      await onUserFinishingTypingInput(event.target);
     }
   }
 
@@ -326,6 +390,8 @@
     inputElements.forEach((element) => {
       if (isEditableInputElement(element)) {
         element.addEventListener('change', onInputChangeActionHandler, true);
+        element.addEventListener('animationstart', onAnimationStartHandler,
+                                 true);
       }
     });
   }
@@ -335,67 +401,96 @@
     inputElements.forEach((element) => {
       if (isEditableInputElement(element)) {
         element.removeEventListener('change', onInputChangeActionHandler, true);
+        element.removeEventListener('animationstart', onAnimationStartHandler,
+                                    true);
       }
     });
   }
 
-  function onClickActionHander(event) {
-    if (event.button === Buttons.LEFT_BUTTON &&
-        // Ignore if the event target is the html element. The click event
-        // triggers with the entire html element as the target when the user
-        // clicks on a scroll bar.
-        event.target.localName !== 'html') {
-      const element = event.target;
-      const elementReadyState =
-          automation_helper.getElementState(event.target);
-      const selector = buildXPathForElement(element);
-      console.log(`Left-click detected on: ${selector}`);
-
-      if (isEditableInputElement(element)) {
-        // If a field that can trigger autofill is clicked, save the
-        // the element selector path, as the user could have clicked
-        // this element to trigger autofill.
-        if (isAutofillableElement(element) && canTriggerAutofill(element)) {
-          autofillTriggerElementInfo = {
-            selector: selector,
-            visibility: elementReadyState
-          }
-        }
-      } else {
-        addActionToRecipe({
-          selector: selector,
-          visibility: elementReadyState,
-          context: frameContext,
-          type: ActionTypeEnum.CLICK
-        });
-        autofillTriggerElementInfo = null;
-      }
-    } else if (event.button === Buttons.RIGHT_BUTTON) {
-      const element = event.target;
-      const selector = buildXPathForElement(element);
-      const elementReadyState =
-          automation_helper.getElementState(event.target);
-      console.log(`Right-click detected on: ${selector}`);
-      addActionToRecipe({
-          selector: selector,
-          visibility: elementReadyState,
-          context: frameContext,
-          type: ActionTypeEnum.HOVER
-        });
+  // If a field that can trigger autofill is clicked, save the the element
+  // selector path, as the user could have clicked this element to trigger
+  // autofill.
+  function onClickingAutofillableElement(element) {
+    const selector = buildXPathForElement(event.target);
+    const elementReadyState = automation_helper.getElementState(event.target);
+    autofillTriggerElementInfo = {
+      selector: selector,
+      visibility: elementReadyState
     }
   }
 
-  function onKeyUpActionHandler(event) {
-    if (event.key === 'Enter') {
-      const elementReadyState =
-          automation_helper.getElementState(event.target);
-      const selector = buildXPathForElement(event.target);
-      addActionToRecipe({
+  async function onLeftMouseClickingPageElement(element) {
+    // Reset the autofill trigger element.
+    resetAutofillTriggerElement();
+
+    // Do not record left mouse clicks on editable inputs.
+    // These clicks should always precede either a typing action, or an
+    // autofill action. The extension will record typing actions and
+    // autofill actions separately.
+    if (isEditableInputElement(element)) {
+      if (canTriggerAutofill(element)) {
+        onClickingAutofillableElement(element);
+      }
+      return;
+    }
+
+    // Ignore left mouse clicks on the html element. A page fires an event
+    // with the entire html element as the target when the user clicks on
+    // Chrome's side scroll bar.
+    if (event.target.localName === 'html')
+      return;
+
+    const elementReadyState =
+        automation_helper.getElementState(element);
+    const selector = buildXPathForElement(element);
+
+    console.log(`Left-click detected on: ${selector}`);
+    await addActionToRecipe({
+      selector: selector,
+      visibility: elementReadyState,
+      context: frameContext,
+      type: ActionTypeEnum.CLICK
+    });
+  }
+
+  async function onRightMouseClickingPageElement(element) {
+    const selector = buildXPathForElement(element);
+    const elementReadyState =
+        automation_helper.getElementState(element);
+
+    console.log(`Right-click detected on: ${selector}`);
+    await addActionToRecipe({
         selector: selector,
         visibility: elementReadyState,
         context: frameContext,
-        type: ActionTypeEnum.PRESS_ENTER
+        type: ActionTypeEnum.HOVER
       });
+  }
+
+  async function onClickActionHander(event) {
+    if (event.button === Buttons.LEFT_BUTTON) {
+      await onLeftMouseClickingPageElement(event.target);
+    } else if (event.button === Buttons.RIGHT_BUTTON) {
+      await onRightMouseClickingPageElement(event.target);
+    }
+  }
+
+  async function onEnterKeyUp(element) {
+    const elementReadyState = automation_helper.getElementState(element);
+    const selector = buildXPathForElement(element);
+
+    console.log(`Enter detected on: ${selector}'`);
+    await addActionToRecipe({
+      selector: selector,
+      visibility: elementReadyState,
+      context: frameContext,
+      type: ActionTypeEnum.PRESS_ENTER
+    });
+  }
+
+  async function onKeyUpActionHandler(event) {
+    if (event.key === 'Enter') {
+      return await onEnterKeyUp(event.target);
     }
 
     if (isEditableInputElement(event.target)) {
@@ -408,13 +503,13 @@
     }
   }
 
-  function onPasswordFormSubmitHandler(event) {
+  async function onPasswordFormSubmitHandler(event) {
     const form = event.target;
 
     // Extract the form signature value from the form.
     const fields = form.querySelectorAll(
         `*[form_signature][pm_parser_annotation]`);
-    let userName = null;
+    let username = null;
     let password = null;
     for (const field of fields) {
       const passwordManagerAnnotation =
@@ -426,22 +521,25 @@
           password = field.value;
           break;
         case 'username_element':
-          userName = field.value;
+          username = field.value;
           break;
         default:
       }
     }
 
-    if (!userName || !password) {
+    if (!username || !password) {
       // The form is missing a user name field or a password field.
       // The content script should not forward an incomplete password form to
       // the recorder extension. Exit.
       return;
     }
 
-    sendRuntimeMessageToBackgroundScript({
+    await sendRuntimeMessageToBackgroundScript({
       type: RecorderMsgEnum.SET_PASSWORD_MANAGER_ACTION_PARAMS,
-      params: { userName: userName, password: password }
+      params: {
+        username: username,
+        password: password,
+        website: window.location.origin }
     });
   }
 
@@ -459,8 +557,48 @@
     });
   }
 
+  function addCssStyleToTriggerAutofillEvents() {
+    let style = document.createElement("style");
+    style.type = 'text/css';
+    const css = `@keyframes onAutoFillStart {
+                   from {/**/}  to {/**/}
+                 }
+                 @keyframes onAutoFillCancel {
+                   from {/**/}  to {/**/}
+                 }
+
+                 input:-webkit-autofill,
+                 select:-webkit-autofill,
+                 textarea:-webkit-autofill {
+                   animation-name: onAutoFillStart;
+                 }
+
+                 input:not(:-webkit-autofill),
+                 select:not(:-webkit-autofill),
+                 textarea:not(:-webkit-autofill) {
+                   animation-name: onAutoFillCancel;
+                 }`;
+    style.appendChild(document.createTextNode(css));
+    document.getElementsByTagName('head')[0].appendChild(style);
+  }
+
+  function onAnimationStartHandler(event) {
+    switch (event.animationName) {
+      case 'onAutoFillStart':
+        event.target.autofilledByChrome = true;
+        break;
+      case 'onAutoFillCancel':
+        event.target.autofilledByChrome = false;
+        break;
+      default:
+    }
+  }
+
   function startRecording(context) {
       frameContext = context;
+      // Add a css rule to allow the extension to detect when Chrome
+      // autofills password input fields.
+      addCssStyleToTriggerAutofillEvents();
       // Register on change listeners on all the input elements.
       registerOnInputChangeActionListener(document);
       registerOnPasswordFormSubmitHandler(document);

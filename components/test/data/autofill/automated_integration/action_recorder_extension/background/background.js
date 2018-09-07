@@ -57,6 +57,10 @@
                              { keyPath: 'action_index', autoIncrement: true });
         db.createObjectStore(Indexed_DB_Vars.SAVED_ACTION_PARAMS,
                              { autoIncrement: true });
+        db.createObjectStore(Indexed_DB_Vars.AUTOFILL_PROFILE,
+                             { keyPath: 'type' });
+        db.createObjectStore(Indexed_DB_Vars.PASSWORD_MANAGER_PROFILE,
+                             { keyPath: ['website', 'username'] });
         event.target.transaction.oncomplete = (event) => {
           resolve(db);
         };
@@ -85,10 +89,13 @@
   async function performTransactionOnRecipeIndexedDB(transactionToPerform) {
     const db = await openRecipeIndexedDB();
     return await new Promise((resolve, reject) => {
-      const transaction = db.transaction([Indexed_DB_Vars.ATTRIBUTES,
-                                          Indexed_DB_Vars.ACTIONS,
-                                          Indexed_DB_Vars.SAVED_ACTION_PARAMS],
-                                         'readwrite');
+      const transaction = db.transaction([
+            Indexed_DB_Vars.ATTRIBUTES,
+            Indexed_DB_Vars.ACTIONS,
+            Indexed_DB_Vars.SAVED_ACTION_PARAMS,
+            Indexed_DB_Vars.AUTOFILL_PROFILE,
+            Indexed_DB_Vars.PASSWORD_MANAGER_PROFILE],
+          'readwrite');
       transaction.oncomplete = (event) => {
         resolve(event);
       };
@@ -115,7 +122,7 @@
       });
   }
 
-  async function addActionToRecipe(action, tabId) {
+  async function addActionToRecipe(action, tabId, skipUpdatingUi) {
     const db = await openRecipeIndexedDB();
     const key = await new Promise((resolve, reject) => {
       const transaction = db.transaction([Indexed_DB_Vars.ACTIONS],
@@ -145,13 +152,15 @@
       db.close();
     });
 
-    // Update the recording UI with the new action.
-    const frameId = await getRecorderUiFrameId();
-    action.action_index = key;
-    await sendMessageToTab(
-        tabId,
-        { type: RecorderUiMsgEnum.ADD_ACTION, action: action},
-        { frameId: frameId });
+    if (!skipUpdatingUi) {
+      // Update the recording UI with the new action.
+      const frameId = await getRecorderUiFrameId();
+      action.action_index = key;
+      await sendMessageToTab(
+          tabId,
+          { type: RecorderUiMsgEnum.ADD_ACTION, action: action},
+          { frameId: frameId });
+    }
   }
 
   function removeActionFromRecipe(index) {
@@ -160,13 +169,32 @@
     });
   }
 
+  function insertChromeAutofillProfileEntry(entry) {
+    return performTransactionOnRecipeIndexedDB((transaction) => {
+        const autofillProfileStore =
+            transaction.objectStore(Indexed_DB_Vars.AUTOFILL_PROFILE);
+        autofillProfileStore.add(entry);
+      });
+  }
+
+  function insertChromePasswordManagerProfileEntry(entry) {
+    return performTransactionOnRecipeIndexedDB((transaction) => {
+        const passwordManagerProfileStore =
+            transaction.objectStore(Indexed_DB_Vars.PASSWORD_MANAGER_PROFILE);
+        passwordManagerProfileStore.add(entry);
+      });
+  }
+
   async function getRecipe() {
     const db = await openRecipeIndexedDB();
     let recipe = {};
     return await new Promise((resolve, reject) => {
-      const transaction = db.transaction([Indexed_DB_Vars.ATTRIBUTES,
-                                          Indexed_DB_Vars.ACTIONS],
-                                         'readonly');
+      const transaction = db.transaction([
+          Indexed_DB_Vars.ATTRIBUTES,
+          Indexed_DB_Vars.ACTIONS,
+          Indexed_DB_Vars.AUTOFILL_PROFILE,
+          Indexed_DB_Vars.PASSWORD_MANAGER_PROFILE],
+          'readonly');
       transaction.oncomplete = (event) => {
         resolve(recipe);
       };
@@ -180,6 +208,30 @@
       const urlReq = attributeStore.get(Indexed_DB_Vars.URL);
       urlReq.onsuccess = (event) => {
         recipe.startingURL = urlReq.result;
+      };
+
+      const autofillProfileStore =
+          transaction.objectStore(Indexed_DB_Vars.AUTOFILL_PROFILE);
+      const autofillProfileReq = autofillProfileStore.getAll();
+      autofillProfileReq.onsuccess = (event) => {
+        recipe.autofillProfile =
+            autofillProfileReq.result ? autofillProfileReq.result : [];
+      };
+
+      const passwordManagerProfileStore =
+          transaction.objectStore(Indexed_DB_Vars.PASSWORD_MANAGER_PROFILE);
+      const passwordManagerProfileReq = passwordManagerProfileStore.getAll();
+      passwordManagerProfileReq.onsuccess = (event) => {
+        recipe.passwordManagerProfiles = [];
+        // Filter out passwords submitted by the user during the course of
+        // recording.
+        if (passwordManagerProfileReq.result) {
+          for (const entry of passwordManagerProfileReq.result) {
+            if (entry.submittedByUser === undefined) {
+              recipe.passwordManagerProfiles.push(entry);
+            }
+          }
+        }
       };
 
       const actionsStore = transaction.objectStore(Indexed_DB_Vars.ACTIONS);
@@ -223,13 +275,14 @@
     });
   }
 
-  function savePasswordEventParams(userName, password) {
+  function savePasswordEventParams(username, password, website) {
     return performTransactionOnRecipeIndexedDB((transaction) => {
         const attributeStore =
             transaction.objectStore(Indexed_DB_Vars.SAVED_ACTION_PARAMS);
         attributeStore.put({
-          userName: userName,
-          password: password
+          username: username,
+          password: password,
+          website: website
         }, Indexed_DB_Vars.PASSWORD_MANAGER_PARAMS);
       });
   }
@@ -538,23 +591,47 @@
   }
 
   async function setPasswordEventParams(params, mainFrameIsReady) {
-    await savePasswordEventParams(params.userName, params.password);
+    // Add an empty entry to the Password Manager Profile Table.
+    //
+    // The Password Manager Profile Table stores the saved passwords a user
+    // has at the start of recording.
+    //
+    // An empty entry is an entry consisting of an origin and a user name,
+    // but not a password.
+    //
+    // The background script adds Password Manager Profile table entries by
+    // insertion - in other words, the background script cannot override an
+    // existing entry. The background script creates an empty entry to denote
+    // that at the start of recording, Chrome did not have a saved password for
+    // the specified username on the specified origin. If a user saves a new
+    // password during the course of recording, the empty entry prevents the
+    // background from erroneously recording the new entry as present at the
+    // start of recording.
+    await insertChromePasswordManagerProfileEntry({
+        submittedByUser: true,
+        username: params.username,
+        website: params.website
+      });
+
+    await savePasswordEventParams(params.username, params.password,
+                                  params.website);
 
     if (!mainFrameIsReady) {
       return true;
     }
 
-    return await sendPasswordEventParamsToUi(params.userName, params.password);
+    return await sendPasswordEventParamsToUi(params.username, params.password);
   }
 
-  async function sendPasswordEventParamsToUi(userName, password) {
+  async function sendPasswordEventParamsToUi(username, password, website) {
     const tabId = await getRecordingTabId();
     const frameId = await getRecorderUiFrameId();
     const response = await sendMessageToTab(
         tabId,
         { type: RecorderUiMsgEnum.SET_PASSWORD_MANAGER_ACTION_PARAMS,
-          userName: userName,
-          password: password },
+          username: username,
+          password: password,
+          website: website },
         { frameId: frameId });
     return response;
   }
@@ -669,7 +746,7 @@
           url: details.url,
           context: { 'isIframe': false },
           type: ActionTypeEnum.LOAD_PAGE
-        });
+        }, tabId, true);
 
         const state = await getRecordingState();
         if (state === RecorderStateEnum.HIDDEN) {
@@ -758,6 +835,14 @@
            // is ready if the message originates from an iframe, but not if the
            // message originates from the main frame.
                                sender.frameId != 0);
+        return false;
+      case RecorderMsgEnum.SET_AUTOFILL_PROFILE_ENTRY:
+        insertChromeAutofillProfileEntry(request.entry);
+        sendResponse(true);
+        return false;
+      case RecorderMsgEnum.SET_PASSWORD_MANAGER_PROFILE_ENTRY:
+        insertChromePasswordManagerProfileEntry(request.entry);
+        sendResponse(true);
         return false;
       default:
     }
