@@ -1125,17 +1125,6 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   if (!page)
     return;
 
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetFrame()->Loader().GetDocumentLoader()) {
-    GetFrame()
-        ->Loader()
-        .GetDocumentLoader()
-        ->GetInitialScrollState()
-        .was_scrolled_by_js = true;
-  }
-
   double x = 0.0;
   double y = 0.0;
   if (scroll_to_options.hasLeft())
@@ -1185,17 +1174,6 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   Page* page = GetFrame()->GetPage();
   if (!page)
     return;
-
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetFrame()->Loader().GetDocumentLoader()) {
-    GetFrame()
-        ->Loader()
-        .GetDocumentLoader()
-        ->GetInitialScrollState()
-        .was_scrolled_by_js = true;
-  }
 
   // It is only necessary to have an up-to-date layout if the position may be
   // clamped, which is never the case for (0, 0).
