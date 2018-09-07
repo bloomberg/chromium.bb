@@ -267,6 +267,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsPingingEnabled(
       LoginReputationClientRequest::TriggerType trigger_type,
+      ReusedPasswordType password_type,
       RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
