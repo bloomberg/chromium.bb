@@ -60,8 +60,6 @@ source_set("public") {
     "url_schemes.h",
     "url_schemes.mm",
     "url_util.h",
-    "web_capabilities.cc",
-    "web_capabilities.h",
     "web_client.h",
     "web_kit_constants.h",
     "web_state/context_menu_params.h",
