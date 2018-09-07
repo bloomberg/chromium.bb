@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   receiver.WaitForActivationDecision();
   receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::ENABLED));
   histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
-                                      VerifyStatus::kPass, 1);
+                                      VerifyStatus::kPassValidChecksum, 1);
 }
 
 // TODO(ericrobinson): Add a test using a PRE_ phase that corrupts the ruleset
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   // a call to Verify.  Make sure we see that and the later failure.
   if (base::FeatureList::IsEnabled(kAdTagging)) {
     histogram_tester.ExpectBucketCount(kIndexedRulesetVerifyHistogram,
-                                       VerifyStatus::kPass, 1);
+                                       VerifyStatus::kPassValidChecksum, 1);
     histogram_tester.ExpectBucketCount(kIndexedRulesetVerifyHistogram,
                                        VerifyStatus::kChecksumFailVerifierPass,
                                        1);

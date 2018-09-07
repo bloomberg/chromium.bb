@@ -26,6 +26,28 @@ int LocalGetChecksum(const uint8_t* data, size_t size) {
   // which don't support unsigned ints.
   return static_cast<int>(hash & 0x7fffffff);
 }
+
+VerifyStatus GetVerifyStatus(const uint8_t* buffer,
+                             size_t size,
+                             int expected_checksum) {
+  // TODO(ericrobinson): Remove the verifier once we've updated the ruleset at
+  // least once.  The verifier detects a subset of the errors detected by the
+  // checksum, and is unneeded once expected_checksum is consistently nonzero.
+  flatbuffers::Verifier verifier(buffer, size);
+  if (expected_checksum != 0 &&
+      expected_checksum != LocalGetChecksum(buffer, size)) {
+    return flat::VerifyIndexedRulesetBuffer(verifier)
+               ? VerifyStatus::kChecksumFailVerifierPass
+               : VerifyStatus::kChecksumFailVerifierFail;
+  }
+  if (!flat::VerifyIndexedRulesetBuffer(verifier)) {
+    return expected_checksum == 0 ? VerifyStatus::kVerifierFailChecksumZero
+                                  : VerifyStatus::kVerifierFailChecksumPass;
+  }
+  return expected_checksum == 0 ? VerifyStatus::kPassChecksumZero
+                                : VerifyStatus::kPassValidChecksum;
+}
+
 }  // namespace
 
 // RulesetIndexer --------------------------------------------------------------
@@ -92,27 +114,14 @@ bool IndexedRulesetMatcher::Verify(const uint8_t* buffer,
                      "IndexedRulesetMatcher::Verify", "size", size);
   SCOPED_UMA_HISTOGRAM_TIMER(
       "SubresourceFilter.IndexRuleset.Verify2.WallDuration");
-  // TODO(ericrobinson): Log metrics for how often a zero checksum is
-  // encountered.  Remove the verifier once we've updated the ruleset at least
-  // once.  The verifier detects a subset of the errors detected by the
-  // checksum, and is unneeded once expected_checksum is consistently nonzero.
-  flatbuffers::Verifier verifier(buffer, size);
-  VerifyStatus status = VerifyStatus::kPass;
-  if (expected_checksum &&
-      expected_checksum != LocalGetChecksum(buffer, size)) {
-    status = flat::VerifyIndexedRulesetBuffer(verifier)
-                 ? VerifyStatus::kChecksumFailVerifierPass
-                 : VerifyStatus::kChecksumFailVerifierFail;
-  } else if (!flat::VerifyIndexedRulesetBuffer(verifier)) {
-    status = expected_checksum == 0 ? VerifyStatus::kVerifierFailChecksumZero
-                                    : VerifyStatus::kVerifierFailChecksumPass;
-  }
+  VerifyStatus status = GetVerifyStatus(buffer, size, expected_checksum);
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.IndexRuleset.Verify.Status",
                             status);
-  bool valid = (status == VerifyStatus::kPass);
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "IndexedRulesetMatcher::Verify", "valid", valid);
-  return valid;
+                   "IndexedRulesetMatcher::Verify", "status",
+                   static_cast<int>(status));
+  return status == VerifyStatus::kPassValidChecksum ||
+         status == VerifyStatus::kPassChecksumZero;
 }
 
 IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
