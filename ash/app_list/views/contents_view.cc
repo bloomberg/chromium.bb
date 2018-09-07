@@ -239,6 +239,11 @@ void ContentsView::ShowSearchResults(bool show) {
       GetPageIndexForState(ash::AppListState::kStateSearchResults);
   DCHECK_GE(search_page, 0);
 
+  // Search results page is hidden when it is behind the search box, so reshow
+  // it here.
+  if (show)
+    GetPageView(search_page)->SetVisible(true);
+
   SetActiveStateInternal(show ? search_page : page_before_search_, show, true);
 }
 

@@ -297,6 +297,12 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   first_result_view_->SetBackgroundHighlighted(true);
 }
 
+void SearchResultPageView::OnHidden() {
+  // Hide the search results page when it is behind search box to avoid focus
+  // being moved onto suggested apps when zero state is enabled.
+  SetVisible(false);
+}
+
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     ash::AppListState state) const {
   if (state != ash::AppListState::kStateSearchResults) {
