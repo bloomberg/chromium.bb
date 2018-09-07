@@ -190,10 +190,14 @@ void ImageLoader::DispatchDecodeRequestsIfComplete() {
     if (request->state() != DecodeRequest::kPendingLoad)
       continue;
     Image* image = GetContent()->GetImage();
+
+    // ImageLoader should be kept alive when decode is still pending. JS may
+    // invoke 'decode' without capturing the Image object. If GC kicks in,
+    // ImageLoader will be destroyed, leading to unresolved/unrejected Promise.
     frame->GetChromeClient().RequestDecode(
         frame, image->PaintImageForCurrentFrame(),
         WTF::Bind(&ImageLoader::DecodeRequestFinished,
-                  WrapCrossThreadWeakPersistent(this), request->request_id()));
+                  WrapCrossThreadPersistent(this), request->request_id()));
     request->NotifyDecodeDispatched();
   }
 }
