@@ -9,6 +9,7 @@
 #include <xf86drm.h>
 
 #include "base/posix/eintr_wrapper.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
@@ -118,7 +119,10 @@ class Buffer final : public ui::GbmBuffer {
         size_(size),
         planes_(std::move(planes)) {}
 
-  ~Buffer() override { gbm_bo_destroy(bo_); }
+  ~Buffer() override {
+    DCHECK(!mmap_data_);
+    gbm_bo_destroy(bo_);
+  }
 
   uint32_t GetFormat() const override { return format_; }
   uint64_t GetFormatModifier() const override { return format_modifier_; }
@@ -184,8 +188,24 @@ class Buffer final : public ui::GbmBuffer {
     return handle;
   }
 
+  sk_sp<SkSurface> GetSurface() override {
+    DCHECK(!mmap_data_);
+    uint32_t stride;
+    void* addr;
+    addr = gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
+                      GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_, 0);
+
+    if (!addr)
+      return nullptr;
+    SkImageInfo info =
+        SkImageInfo::MakeN32Premul(size_.width(), size_.height());
+    return SkSurface::MakeRasterDirectReleaseProc(info, addr, stride,
+                                                  &Buffer::UnmapGbmBo, this);
+  }
+
  private:
   gbm_bo* bo_ = nullptr;
+  void* mmap_data_ = nullptr;
 
   uint32_t format_ = 0;
   uint64_t format_modifier_ = 0;
@@ -196,6 +216,12 @@ class Buffer final : public ui::GbmBuffer {
   gfx::Size size_;
 
   std::vector<gfx::NativePixmapPlane> planes_;
+
+  static void UnmapGbmBo(void* pixels, void* context) {
+    Buffer* buffer = static_cast<Buffer*>(context);
+    gbm_bo_unmap(buffer->bo_, buffer->mmap_data_);
+    buffer->mmap_data_ = nullptr;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
