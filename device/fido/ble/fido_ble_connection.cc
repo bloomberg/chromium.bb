@@ -4,12 +4,15 @@
 
 #include "device/fido/ble/fido_ble_connection.h"
 
+#include <algorithm>
+#include <ostream>
 #include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -22,6 +25,9 @@
 namespace device {
 
 namespace {
+
+using ServiceRevisionsCallback =
+    base::OnceCallback<void(std::vector<FidoBleConnection::ServiceRevision>)>;
 
 constexpr const char* ToString(BluetoothDevice::ConnectErrorCode error_code) {
   switch (error_code) {
@@ -69,6 +75,74 @@ constexpr const char* ToString(BluetoothGattService::GattErrorCode error_code) {
       NOTREACHED();
       return "";
   }
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         FidoBleConnection::ServiceRevision revision) {
+  switch (revision) {
+    case FidoBleConnection::ServiceRevision::kU2f11:
+      return os << "U2F 1.1";
+    case FidoBleConnection::ServiceRevision::kU2f12:
+      return os << "U2F 1.2";
+    case FidoBleConnection::ServiceRevision::kFido2:
+      return os << "FIDO2";
+  }
+
+  NOTREACHED();
+  return os;
+}
+
+void OnWriteRemoteCharacteristic(FidoBleConnection::WriteCallback callback) {
+  VLOG(2) << "Writing Remote Characteristic Succeeded.";
+  std::move(callback).Run(true);
+}
+
+void OnWriteRemoteCharacteristicError(
+    FidoBleConnection::WriteCallback callback,
+    BluetoothGattService::GattErrorCode error_code) {
+  VLOG(2) << "Writing Remote Characteristic Failed: " << ToString(error_code);
+  std::move(callback).Run(false);
+}
+
+void OnReadServiceRevisionBitfield(ServiceRevisionsCallback callback,
+                                   const std::vector<uint8_t>& value) {
+  if (value.empty()) {
+    VLOG(2) << "Service Revision Bitfield is empty.";
+    std::move(callback).Run({});
+    return;
+  }
+
+  if (value.size() != 1u) {
+    VLOG(2) << "Service Revision Bitfield has unexpected size: " << value.size()
+            << ". Ignoring all but the first byte.";
+  }
+
+  const uint8_t bitset = value[0];
+  if (bitset & 0x1F) {
+    VLOG(2) << "Service Revision Bitfield has unexpected bits set: "
+            << base::StringPrintf("0x%02X", bitset)
+            << ". Ignoring all but the first three bits.";
+  }
+
+  std::vector<FidoBleConnection::ServiceRevision> service_revisions;
+  for (auto revision : {FidoBleConnection::ServiceRevision::kU2f11,
+                        FidoBleConnection::ServiceRevision::kU2f12,
+                        FidoBleConnection::ServiceRevision::kFido2}) {
+    if (bitset & static_cast<uint8_t>(revision)) {
+      VLOG(2) << "Detected Support for " << revision << ".";
+      service_revisions.push_back(revision);
+    }
+  }
+
+  std::move(callback).Run(std::move(service_revisions));
+}
+
+void OnReadServiceRevisionBitfieldError(
+    ServiceRevisionsCallback callback,
+    BluetoothGattService::GattErrorCode error_code) {
+  VLOG(2) << "Error while reading Service Revision Bitfield: "
+          << ToString(error_code);
+  std::move(callback).Run({});
 }
 
 }  // namespace
@@ -145,89 +219,6 @@ void FidoBleConnection::ReadControlPointLength(
       base::Bind(OnReadControlPointLengthError, copyable_callback));
 }
 
-void FidoBleConnection::ReadServiceRevisions(
-    ServiceRevisionsCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetFidoService();
-  if (!u2f_service) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::set<ServiceRevision>()));
-    return;
-  }
-
-  DCHECK(service_revision_id_ || service_revision_bitfield_id_);
-  BluetoothRemoteGattCharacteristic* service_revision =
-      service_revision_id_
-          ? u2f_service->GetCharacteristic(*service_revision_id_)
-          : nullptr;
-
-  BluetoothRemoteGattCharacteristic* service_revision_bitfield =
-      service_revision_bitfield_id_
-          ? u2f_service->GetCharacteristic(*service_revision_bitfield_id_)
-          : nullptr;
-
-  if (!service_revision && !service_revision_bitfield) {
-    DLOG(ERROR) << "Service Revision Characteristics do not exist.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::set<ServiceRevision>()));
-    return;
-  }
-
-  // Start from a clean state.
-  service_revisions_.clear();
-
-  // In order to obtain the full set of supported service revisions it is
-  // possible that both the |service_revision_| and |service_revision_bitfield_|
-  // characteristics must be read. Potentially we need to take the union of
-  // the individually supported service revisions, hence the indirection to
-  // ReturnServiceRevisions() is introduced.
-  base::Closure copyable_callback = base::AdaptCallbackForRepeating(
-      base::BindOnce(&FidoBleConnection::ReturnServiceRevisions,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-
-  // If the Service Revision Bitfield characteristic is not present, only
-  // attempt to read the Service Revision characteristic.
-  if (!service_revision_bitfield) {
-    service_revision->ReadRemoteCharacteristic(
-        base::Bind(&FidoBleConnection::OnReadServiceRevision,
-                   weak_factory_.GetWeakPtr(), copyable_callback),
-        base::Bind(&FidoBleConnection::OnReadServiceRevisionError,
-                   weak_factory_.GetWeakPtr(), copyable_callback));
-    return;
-  }
-
-  // If the Service Revision characteristic is not present, only
-  // attempt to read the Service Revision Bitfield characteristic.
-  if (!service_revision) {
-    service_revision_bitfield->ReadRemoteCharacteristic(
-        base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfield,
-                   weak_factory_.GetWeakPtr(), copyable_callback),
-        base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfieldError,
-                   weak_factory_.GetWeakPtr(), copyable_callback));
-    return;
-  }
-
-  // This is the case where both characteristics are present. These reads can
-  // happen in parallel, but both must finish before a result can be returned.
-  // Hence a BarrierClosure is introduced invoking ReturnServiceRevisions() once
-  // both characteristic reads are done.
-  base::RepeatingClosure barrier_closure =
-      base::BarrierClosure(2, copyable_callback);
-
-  service_revision->ReadRemoteCharacteristic(
-      base::Bind(&FidoBleConnection::OnReadServiceRevision,
-                 weak_factory_.GetWeakPtr(), barrier_closure),
-      base::Bind(&FidoBleConnection::OnReadServiceRevisionError,
-                 weak_factory_.GetWeakPtr(), barrier_closure));
-
-  service_revision_bitfield->ReadRemoteCharacteristic(
-      base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfield,
-                 weak_factory_.GetWeakPtr(), barrier_closure),
-      base::Bind(&FidoBleConnection::OnReadServiceRevisionBitfieldError,
-                 weak_factory_.GetWeakPtr(), barrier_closure));
-}
-
 void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
                                           WriteCallback callback) {
   const BluetoothRemoteGattService* u2f_service = GetFidoService();
@@ -260,48 +251,8 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   control_point->WriteRemoteCharacteristic(
-      data, base::Bind(OnWrite, copyable_callback),
-      base::Bind(OnWriteError, copyable_callback));
-}
-
-void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,
-                                             WriteCallback callback) {
-  const BluetoothRemoteGattService* u2f_service = GetFidoService();
-  if (!u2f_service) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
-    return;
-  }
-
-  BluetoothRemoteGattCharacteristic* service_revision_bitfield =
-      u2f_service->GetCharacteristic(*service_revision_bitfield_id_);
-  if (!service_revision_bitfield) {
-    DLOG(ERROR) << "Service Revision Bitfield characteristic not present.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
-    return;
-  }
-
-  std::vector<uint8_t> payload;
-  switch (service_revision) {
-    case ServiceRevision::VERSION_1_1:
-      payload.push_back(0x80);
-      break;
-    case ServiceRevision::VERSION_1_2:
-      payload.push_back(0x40);
-      break;
-    default:
-      DLOG(ERROR)
-          << "Write Service Revision Failed: Unsupported Service Revision.";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false));
-      return;
-  }
-
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  service_revision_bitfield->WriteRemoteCharacteristic(
-      payload, base::Bind(OnWrite, copyable_callback),
-      base::Bind(OnWriteError, copyable_callback));
+      data, base::Bind(OnWriteRemoteCharacteristic, copyable_callback),
+      base::Bind(OnWriteRemoteCharacteristicError, copyable_callback));
 }
 
 void FidoBleConnection::OnCreateGattConnection(
@@ -387,7 +338,80 @@ void FidoBleConnection::ConnectToU2fService() {
     return;
   }
 
-  u2f_service->GetCharacteristic(*status_id_)
+  // In case the bitfield characteristic is present, the client has to select a
+  // supported bersion by writing the corresponding bit. Reference:
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#ble-protocol-overview
+  if (service_revision_bitfield_id_) {
+    auto callback = base::BindRepeating(
+        &FidoBleConnection::OnReadServiceRevisions, weak_factory_.GetWeakPtr());
+    u2f_service->GetCharacteristic(*service_revision_bitfield_id_)
+        ->ReadRemoteCharacteristic(
+            base::Bind(OnReadServiceRevisionBitfield, callback),
+            base::Bind(OnReadServiceRevisionBitfieldError, callback));
+    return;
+  }
+
+  StartNotifySession();
+}
+
+void FidoBleConnection::OnReadServiceRevisions(
+    std::vector<ServiceRevision> service_revisions) {
+  if (service_revisions.empty()) {
+    VLOG(2) << "Error: Could not obtain Service Revisions.";
+    OnConnectionError();
+    return;
+  }
+
+  // Write the most recent supported service revision back to the
+  // characteristic. Note that this information is currently not used in another
+  // way, as we will still attempt a CTAP GetInfo() command, even if only U2F is
+  // supported.
+  // TODO(https://crbug.com/780078): Consider short circuiting to the
+  // U2F logic if FIDO2 is not supported.
+  DCHECK_EQ(
+      *std::min_element(service_revisions.begin(), service_revisions.end()),
+      service_revisions.back());
+  WriteServiceRevision(service_revisions.back());
+}
+
+void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision) {
+  auto callback = base::BindOnce(&FidoBleConnection::OnServiceRevisionWritten,
+                                 weak_factory_.GetWeakPtr());
+
+  const BluetoothRemoteGattService* fido_service = GetFidoService();
+  if (!fido_service) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  DCHECK(service_revision_bitfield_id_);
+  fido_service->GetCharacteristic(*service_revision_bitfield_id_)
+      ->WriteRemoteCharacteristic(
+          {static_cast<uint8_t>(service_revision)},
+          base::Bind(OnWriteRemoteCharacteristic, copyable_callback),
+          base::Bind(OnWriteRemoteCharacteristicError, copyable_callback));
+}
+
+void FidoBleConnection::OnServiceRevisionWritten(bool success) {
+  if (success) {
+    StartNotifySession();
+    return;
+  }
+
+  OnConnectionError();
+}
+
+void FidoBleConnection::StartNotifySession() {
+  const BluetoothRemoteGattService* fido_service = GetFidoService();
+  if (!fido_service) {
+    OnConnectionError();
+    return;
+  }
+
+  DCHECK(status_id_);
+  fido_service->GetCharacteristic(*status_id_)
       ->StartNotifySession(
           base::Bind(&FidoBleConnection::OnStartNotifySession,
                      weak_factory_.GetWeakPtr()),
@@ -507,95 +531,6 @@ void FidoBleConnection::OnReadControlPointLengthError(
     BluetoothGattService::GattErrorCode error_code) {
   DLOG(ERROR) << "Error reading Control Point Length: " << ToString(error_code);
   std::move(callback).Run(base::nullopt);
-}
-
-void FidoBleConnection::OnReadServiceRevision(
-    base::OnceClosure callback,
-    const std::vector<uint8_t>& value) {
-  std::string service_revision(value.begin(), value.end());
-  DVLOG(2) << "Service Revision: " << service_revision;
-
-  if (service_revision == "1.0") {
-    service_revisions_.insert(ServiceRevision::VERSION_1_0);
-  } else if (service_revision == "1.1") {
-    service_revisions_.insert(ServiceRevision::VERSION_1_1);
-  } else if (service_revision == "1.2") {
-    service_revisions_.insert(ServiceRevision::VERSION_1_2);
-  } else {
-    DLOG(ERROR) << "Unknown Service Revision: " << service_revision;
-    std::move(callback).Run();
-    return;
-  }
-
-  std::move(callback).Run();
-}
-
-void FidoBleConnection::OnReadServiceRevisionError(
-    base::OnceClosure callback,
-    BluetoothGattService::GattErrorCode error_code) {
-  DLOG(ERROR) << "Error reading Service Revision: " << ToString(error_code);
-  std::move(callback).Run();
-}
-
-void FidoBleConnection::OnReadServiceRevisionBitfield(
-    base::OnceClosure callback,
-    const std::vector<uint8_t>& value) {
-  if (value.empty()) {
-    DLOG(ERROR) << "Service Revision Bitfield is empty.";
-    std::move(callback).Run();
-    return;
-  }
-
-  if (value.size() != 1u) {
-    DLOG(ERROR) << "Service Revision Bitfield has unexpected size: "
-                << value.size() << ". Ignoring all but the first byte.";
-  }
-
-  const uint8_t bitset = value[0];
-  if (bitset & 0x3F) {
-    DLOG(ERROR) << "Service Revision Bitfield has unexpected bits set: 0x"
-                << std::hex << (bitset & 0x3F)
-                << ". Ignoring all but the first two bits.";
-  }
-
-  if (bitset & 0x80) {
-    service_revisions_.insert(ServiceRevision::VERSION_1_1);
-    DVLOG(2) << "Detected Support for Service Revision 1.1";
-  }
-
-  if (bitset & 0x40) {
-    service_revisions_.insert(ServiceRevision::VERSION_1_2);
-    DVLOG(2) << "Detected Support for Service Revision 1.2";
-  }
-
-  std::move(callback).Run();
-}
-
-void FidoBleConnection::OnReadServiceRevisionBitfieldError(
-    base::OnceClosure callback,
-    BluetoothGattService::GattErrorCode error_code) {
-  DLOG(ERROR) << "Error reading Service Revision Bitfield: "
-              << ToString(error_code);
-  std::move(callback).Run();
-}
-
-void FidoBleConnection::ReturnServiceRevisions(
-    ServiceRevisionsCallback callback) {
-  std::move(callback).Run(std::move(service_revisions_));
-}
-
-// static
-void FidoBleConnection::OnWrite(WriteCallback callback) {
-  DVLOG(2) << "Write succeeded.";
-  std::move(callback).Run(true);
-}
-
-// static
-void FidoBleConnection::OnWriteError(
-    WriteCallback callback,
-    BluetoothGattService::GattErrorCode error_code) {
-  DLOG(ERROR) << "Write Failed: " << ToString(error_code);
-  std::move(callback).Run(false);
 }
 
 }  // namespace device

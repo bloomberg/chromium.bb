@@ -29,25 +29,18 @@ class BluetoothGattNotifySession;
 class BluetoothRemoteGattCharacteristic;
 class BluetoothRemoteGattService;
 
-// A connection to the U2F service of an authenticator over BLE. Detailed
+// A connection to the Fido service of an authenticator over BLE. Detailed
 // specification of the BLE device can be found here:
-// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-bt-protocol-v1.2-ps-20170411.html#h2_gatt-service-description
-//
-// Currently this code does not handle devices that need pairing. This is fine
-// for non-BlueZ platforms, as here accessing a protected characteristic will
-// trigger an OS level dialog if pairing is required. However, for BlueZ
-// platforms pairing must have been done externally, for example using the
-// `bluetoothctl` command.
-//
-// TODO(crbug.com/763303): Add support for pairing from within this class and
-// provide users with an option to manually specify a PIN code.
+// https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#ble
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
     : public BluetoothAdapter::Observer {
  public:
-  enum class ServiceRevision {
-    VERSION_1_0,
-    VERSION_1_1,
-    VERSION_1_2,
+  // Valid Service Revisions. Reference:
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#ble-fido-service
+  enum class ServiceRevision : uint8_t {
+    kU2f11 = 1 << 7,
+    kU2f12 = 1 << 6,
+    kFido2 = 1 << 5,
   };
 
   // This callback informs clients repeatedly about changes in the device
@@ -59,8 +52,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   using ReadCallback = base::RepeatingCallback<void(std::vector<uint8_t>)>;
   using ControlPointLengthCallback =
       base::OnceCallback<void(base::Optional<uint16_t>)>;
-  using ServiceRevisionsCallback =
-      base::OnceCallback<void(std::set<ServiceRevision>)>;
 
   FidoBleConnection(BluetoothAdapter* adapter,
                     std::string device_address,
@@ -73,11 +64,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
 
   virtual void Connect();
   virtual void ReadControlPointLength(ControlPointLengthCallback callback);
-  virtual void ReadServiceRevisions(ServiceRevisionsCallback callback);
   virtual void WriteControlPoint(const std::vector<uint8_t>& data,
                                  WriteCallback callback);
-  virtual void WriteServiceRevision(ServiceRevision service_revision,
-                                    WriteCallback callback);
 
  protected:
   // Used for testing.
@@ -109,7 +97,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
       BluetoothDevice::ConnectErrorCode error_code);
 
   void ConnectToU2fService();
+  void OnReadServiceRevisions(std::vector<ServiceRevision> service_revisions);
 
+  void WriteServiceRevision(ServiceRevision service_revision);
+  void OnServiceRevisionWritten(bool success);
+
+  void StartNotifySession();
   void OnStartNotifySession(
       std::unique_ptr<BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionError(
@@ -125,23 +118,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
       ControlPointLengthCallback callback,
       BluetoothGattService::GattErrorCode error_code);
 
-  void OnReadServiceRevision(base::OnceClosure callback,
-                             const std::vector<uint8_t>& value);
-  void OnReadServiceRevisionError(
-      base::OnceClosure callback,
-      BluetoothGattService::GattErrorCode error_code);
-
-  void OnReadServiceRevisionBitfield(base::OnceClosure callback,
-                                     const std::vector<uint8_t>& value);
-  void OnReadServiceRevisionBitfieldError(
-      base::OnceClosure callback,
-      BluetoothGattService::GattErrorCode error_code);
-  void ReturnServiceRevisions(ServiceRevisionsCallback callback);
-
-  static void OnWrite(WriteCallback callback);
-  static void OnWriteError(WriteCallback callback,
-                           BluetoothGattService::GattErrorCode error_code);
-
   std::unique_ptr<BluetoothGattConnection> connection_;
   std::unique_ptr<BluetoothGattNotifySession> notify_session_;
 
@@ -151,8 +127,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   base::Optional<std::string> status_id_;
   base::Optional<std::string> service_revision_id_;
   base::Optional<std::string> service_revision_bitfield_id_;
-
-  std::set<ServiceRevision> service_revisions_;
 
   base::WeakPtrFactory<FidoBleConnection> weak_factory_;
 
