@@ -38,6 +38,10 @@ ComputedStyle* SVGElementRareData::OverrideComputedStyle(
   return override_computed_style_.get();
 }
 
+void SVGElementRareData::ClearOverriddenComputedStyle() {
+  override_computed_style_ = nullptr;
+}
+
 SVGResourceClient& SVGElementRareData::EnsureSVGResourceClient(
     SVGElement* element) {
   if (!resource_client_)
