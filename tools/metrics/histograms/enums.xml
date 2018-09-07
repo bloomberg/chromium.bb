@@ -19952,8 +19952,6 @@ Called by update_net_error_codes.py.-->
   <int value="2540" label="TextDecoderStreamConstructor"/>
   <int value="2541" label="SignedExchangeInnerResponse"/>
   <int value="2542" label="PaymentAddressLanguageCode"/>
-  <int value="2543" label="DocumentDomainBlockedCrossOriginAccess"/>
-  <int value="2544" label="DocumentDomainEnabledCrossOriginAccess"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

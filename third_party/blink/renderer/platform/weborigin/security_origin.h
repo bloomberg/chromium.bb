@@ -55,15 +55,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   WTF_MAKE_NONCOPYABLE(SecurityOrigin);
 
  public:
-  enum class AccessResultDomainDetail {
-    kDomainNotRelevant,
-    kDomainNotSet,
-    kDomainSetByOnlyOneOrigin,
-    kDomainMatchNecessary,
-    kDomainMatchUnnecessary,
-    kDomainMismatch,
-  };
-
   static scoped_refptr<SecurityOrigin> Create(const KURL&);
   // Creates a new opaque SecurityOrigin that is guaranteed to be cross-origin
   // to all currently existing SecurityOrigins.
@@ -121,17 +112,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // SecurityOrigin. For example, call this function before allowing
   // script from one security origin to read or write objects from
   // another SecurityOrigin.
-  bool CanAccess(const SecurityOrigin* other) const {
-    AccessResultDomainDetail unused_detail;
-    return CanAccess(other, unused_detail);
-  }
-
-  // Returns true if this SecurityOrigin can script objects in |other|, just
-  // as above, but also returns the category into which the access check fell.
-  //
-  // TODO(crbug.com/787905): Remove this variant once we have enough data to
-  // make decisions about `document.domain`.
-  bool CanAccess(const SecurityOrigin* other, AccessResultDomainDetail&) const;
+  bool CanAccess(const SecurityOrigin*) const;
 
   // Returns true if this SecurityOrigin can read content retrieved from
   // the given URL.

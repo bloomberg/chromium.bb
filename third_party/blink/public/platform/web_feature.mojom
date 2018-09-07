@@ -1995,8 +1995,6 @@ enum WebFeature {
   kTextDecoderStreamConstructor = 2540,
   kSignedExchangeInnerResponse = 2541,
   kPaymentAddressLanguageCode = 2542,
-  kDocumentDomainBlockedCrossOriginAccess = 2543,
-  kDocumentDomainEnabledCrossOriginAccess = 2544,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
