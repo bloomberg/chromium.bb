@@ -52,12 +52,9 @@ js_library("dimmable_ui_controller_unittest") {
 
 js_library("entry_list_watcher") {
   deps = [
+    "../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:array_data_model",
-  ]
-  externs_list = [
-    "$externs_path/file_system_provider.js",
-    "$externs_path/file_manager_private.js",
   ]
 }
 
