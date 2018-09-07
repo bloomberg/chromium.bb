@@ -155,6 +155,8 @@ class ASH_EXPORT ShelfLayoutManager
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
 
