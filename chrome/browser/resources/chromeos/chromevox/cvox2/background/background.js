@@ -293,8 +293,16 @@ Background.prototype = {
     for (var prop in opt_speechProps)
       o.format('!' + prop);
 
-    if (!skipOutput)
+    if (!skipOutput) {
       o.go();
+
+      if (range.start.node) {
+        // Update the DesktopAutomationHandler's state as well to ensure event
+        // handlers don't repeat this output.
+        DesktopAutomationHandler.instance.updateLastAttributeState(
+            range.start.node, o);
+      }
+    }
   },
 
   /**

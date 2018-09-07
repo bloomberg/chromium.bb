@@ -1051,6 +1051,27 @@ Output.prototype = {
   },
 
   /**
+   * @return {boolean} True if this object is equal to |rhs|.
+   */
+  equals: function(rhs) {
+    if (this.speechBuffer_.length != rhs.speechBuffer_.length ||
+        this.brailleBuffer_.length != rhs.brailleBuffer_.length)
+      return false;
+
+    for (var i = 0; i < this.speechBuffer_.length; i++) {
+      if (this.speechBuffer_[i].toString() != rhs.speechBuffer_[i].toString())
+        return false;
+    }
+
+    for (var j = 0; j < this.brailleBuffer_.length; j++) {
+      if (this.brailleBuffer_[j].toString() != rhs.brailleBuffer_[j].toString())
+        return false;
+    }
+
+    return true;
+  },
+
+  /**
    * Renders the given range using optional context previous range and event
    * type.
    * @param {!cursors.Range} range
