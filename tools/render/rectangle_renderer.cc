@@ -78,8 +78,6 @@ void RectangleRenderer::AddRectangleWithBorder(Box box, uint32_t rgba) {
 }
 
 void RectangleRenderer::Render() {
-  glUseProgram(*shader_);
-
   GlVertexBuffer point_buffer;
   glBufferData(GL_ARRAY_BUFFER, points_.size() * sizeof(Point), points_.data(),
                GL_STREAM_DRAW);
@@ -99,27 +97,42 @@ void RectangleRenderer::Render() {
     indices[6 * i + 5] = 4 * i + 1;
   }
 
+  glUseProgram(*shader_);
   state_->Bind(shader_);
 
   {
+    GlVertexArray array;
+    glBindVertexArray(*array);
+
+    GlElementBuffer index_buffer;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, point_count * sizeof(indices[0]),
+                 indices.get(), GL_STREAM_DRAW);
+
     GlVertexArrayAttrib coord(shader_, "coord");
     glVertexAttribPointer(*coord, 2, GL_FLOAT, GL_FALSE, sizeof(Point), 0);
     GlVertexArrayAttrib color(shader_, "color_in");
     glVertexAttribPointer(*color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Point),
                           (void*)offsetof(Point, rgba));
 
-    glDrawElements(GL_TRIANGLES, point_count, GL_UNSIGNED_SHORT, indices.get());
+    glDrawElements(GL_TRIANGLES, point_count, GL_UNSIGNED_SHORT, nullptr);
     points_.clear();
   }
 
   glUseProgram(*line_shader_);
   state_->Bind(line_shader_);
   {
+    GlVertexArray array;
+    glBindVertexArray(*array);
+
+    GlElementBuffer index_buffer;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 line_indices_.size() * sizeof(line_indices_[0]),
+                 line_indices_.data(), GL_STREAM_DRAW);
+
     GlVertexArrayAttrib coord(shader_, "coord");
     glVertexAttribPointer(*coord, 2, GL_FLOAT, GL_FALSE, sizeof(Point), 0);
 
-    glDrawElements(GL_LINES, line_indices_.size(), GL_UNSIGNED_SHORT,
-                   line_indices_.data());
+    glDrawElements(GL_LINES, line_indices_.size(), GL_UNSIGNED_SHORT, nullptr);
     line_indices_.clear();
   }
 }

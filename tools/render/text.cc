@@ -175,6 +175,9 @@ void Text::Draw(int x, int y) const {
   glBindBuffer(GL_ARRAY_BUFFER, *buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 
+  GlVertexArray array;
+  glBindVertexArray(*array);
+
   glBindTexture(GL_TEXTURE_2D, *texture_);
   factory_->shader_.SetUniform("texture_w", width_ / texture_size_);
   factory_->shader_.SetUniform("texture_h", height_ / texture_size_);

@@ -31,9 +31,7 @@ TraceProgram::TraceProgram()
                                state_.window.x,
                                state_.window.y,
                                SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)),
-      context_(SDL_GL_CreateContext(*window_)) {
-  CHECK(*context_ != nullptr) << "GL context is null: " << SDL_GetError();
-  InitOpenGl();
+      context_(*window_) {
   state_buffer_ = absl::make_unique<ProgramState>(&state_);
   renderer_ = absl::make_unique<TraceRenderer>(state_buffer_.get());
   text_renderer_ = absl::make_unique<TextRenderer>(state_buffer_.get());

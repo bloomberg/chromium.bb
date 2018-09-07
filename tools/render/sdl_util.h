@@ -57,10 +57,18 @@ class ScopedSdlType {
 };
 
 using ScopedSdlWindow = ScopedSdlType<SDL_Window*, SDL_DestroyWindow>;
-using ScopedSdlGlContext = ScopedSdlType<SDL_GLContext, SDL_GL_DeleteContext>;
 using ScopedSdlSurface = ScopedSdlType<SDL_Surface*, SDL_FreeSurface>;
 
-void InitOpenGl();
+class OpenGlContext {
+ public:
+  OpenGlContext(SDL_Window* window);
+  ~OpenGlContext() { SDL_GL_DeleteContext(context_); }
+
+  SDL_GLContext context() const { return context_; }
+
+ private:
+  SDL_GLContext context_;
+};
 
 // Utility wrapper around an OpenGL shader.
 class GlShader {
@@ -145,6 +153,7 @@ class GlBuffer {
 
 using GlVertexBuffer = GlBuffer<GL_ARRAY_BUFFER>;
 using GlUniformBuffer = GlBuffer<GL_UNIFORM_BUFFER>;
+using GlElementBuffer = GlBuffer<GL_ELEMENT_ARRAY_BUFFER>;
 
 class GlVertexArray {
  public:

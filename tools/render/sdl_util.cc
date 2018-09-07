@@ -29,7 +29,13 @@ DEFINE_bool(opengl_debug,
 namespace quic_trace {
 namespace render {
 
-void InitOpenGl() {
+OpenGlContext::OpenGlContext(SDL_Window* window) {
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  context_ = SDL_GL_CreateContext(window);
+  CHECK(context_ != nullptr) << "GL context is null: " << SDL_GetError();
+
   GLenum err = glewInit();
   if (err != GLEW_OK) {
     LOG(FATAL) << "Failed to initalize GLEW: " << glewGetErrorString(err);

@@ -50,7 +50,7 @@ class TraceProgram {
 
   ScopedSDL sdl_;
   ScopedSdlWindow window_;
-  ScopedSdlGlContext context_;
+  OpenGlContext context_;
 
   std::unique_ptr<ProcessedTrace> trace_;
 
