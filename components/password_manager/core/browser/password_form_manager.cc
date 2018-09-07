@@ -473,9 +473,7 @@ void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
 
   PasswordFormMetricsRecorder::SubmittedFormType type =
       PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified;
-  if (form.layout == PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP) {
-    type = PasswordFormMetricsRecorder::kSubmittedFormTypeLoginAndSignup;
-  } else if (is_change_password_form) {
+  if (is_change_password_form) {
     type = PasswordFormMetricsRecorder::kSubmittedFormTypeChangePasswordEnabled;
   } else if (is_signup_form) {
     if (no_username)

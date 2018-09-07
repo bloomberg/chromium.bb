@@ -60,9 +60,6 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("icon_url", form.icon_url.possibly_invalid_spec());
   target->SetString("federation_origin", form.federation_origin.Serialize());
   target->SetBoolean("skip_next_zero_click", form.skip_zero_click);
-  std::ostringstream layout_string_stream;
-  layout_string_stream << form.layout;
-  target->SetString("layout", layout_string_stream.str());
   target->SetBoolean("was_parsed_using_autofill_predictions",
                      form.was_parsed_using_autofill_predictions);
   target->SetString("affiliated_web_realm", form.affiliated_web_realm);
@@ -89,7 +86,6 @@ PasswordForm::PasswordForm()
       times_used(0),
       generation_upload_status(NO_SIGNAL_SENT),
       skip_zero_click(false),
-      layout(Layout::LAYOUT_OTHER),
       was_parsed_using_autofill_predictions(false),
       is_public_suffix_match(false),
       is_affiliation_based_match(false),
@@ -108,8 +104,7 @@ PasswordForm& PasswordForm::operator=(const PasswordForm& form) = default;
 PasswordForm& PasswordForm::operator=(PasswordForm&& form) = default;
 
 bool PasswordForm::IsPossibleChangePasswordForm() const {
-  return !new_password_element.empty() &&
-         layout != PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
+  return !new_password_element.empty();
 }
 
 bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
@@ -144,7 +139,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          // We compare the serialization of the origins here, as we want unique
          // origins to compare as '=='.
          federation_origin.Serialize() == form.federation_origin.Serialize() &&
-         skip_zero_click == form.skip_zero_click && layout == form.layout &&
+         skip_zero_click == form.skip_zero_click &&
          was_parsed_using_autofill_predictions ==
              form.was_parsed_using_autofill_predictions &&
          is_public_suffix_match == form.is_public_suffix_match &&
@@ -201,18 +196,6 @@ base::string16 ValueElementVectorToString(
                    return p.first + base::ASCIIToUTF16("+") + p.second;
                  });
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
-}
-
-std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout) {
-  switch (layout) {
-    case PasswordForm::Layout::LAYOUT_OTHER:
-      os << "LAYOUT_OTHER";
-      break;
-    case PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP:
-      os << "LAYOUT_LOGIN_AND_SIGNUP";
-      break;
-  }
-  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {

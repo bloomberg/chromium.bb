@@ -133,40 +133,6 @@ bool EnumTraits<autofill::mojom::GenerationUploadStatus,
 }
 
 // static
-autofill::mojom::PasswordFormLayout EnumTraits<
-    autofill::mojom::PasswordFormLayout,
-    autofill::PasswordForm::Layout>::ToMojom(autofill::PasswordForm::Layout
-                                                 input) {
-  switch (input) {
-    case autofill::PasswordForm::Layout::LAYOUT_OTHER:
-      return autofill::mojom::PasswordFormLayout::LAYOUT_OTHER;
-    case autofill::PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP:
-      return autofill::mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP;
-  }
-
-  NOTREACHED();
-  return autofill::mojom::PasswordFormLayout::LAYOUT_OTHER;
-}
-
-// static
-bool EnumTraits<autofill::mojom::PasswordFormLayout,
-                autofill::PasswordForm::Layout>::
-    FromMojom(autofill::mojom::PasswordFormLayout input,
-              autofill::PasswordForm::Layout* output) {
-  switch (input) {
-    case autofill::mojom::PasswordFormLayout::LAYOUT_OTHER:
-      *output = autofill::PasswordForm::Layout::LAYOUT_OTHER;
-      return true;
-    case autofill::mojom::PasswordFormLayout::LAYOUT_LOGIN_AND_SIGNUP:
-      *output = autofill::PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
 autofill::mojom::PasswordFormType EnumTraits<
     autofill::mojom::PasswordFormType,
     autofill::PasswordForm::Type>::ToMojom(autofill::PasswordForm::Type input) {
@@ -814,9 +780,6 @@ bool StructTraits<
     return false;
 
   out->skip_zero_click = data.skip_zero_click();
-
-  if (!data.ReadLayout(&out->layout))
-    return false;
 
   out->was_parsed_using_autofill_predictions =
       data.was_parsed_using_autofill_predictions();
