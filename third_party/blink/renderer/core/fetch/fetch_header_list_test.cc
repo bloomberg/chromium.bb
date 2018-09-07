@@ -117,26 +117,6 @@ TEST(FetchHeaderListTest, Contains) {
   EXPECT_FALSE(headerList->Has("X-Bar"));
 }
 
-TEST(FetchHeaderListTest, ContainsNonCORSSafelistedHeader) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
-  EXPECT_FALSE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->Append("Host", "foobar");
-  headerList->Append("X-Foo", "bar");
-  EXPECT_TRUE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->ClearList();
-  headerList->Append("ConTenT-TyPe", "text/plain");
-  headerList->Append("content-type", "application/xml");
-  headerList->Append("X-Foo", "bar");
-  EXPECT_TRUE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->ClearList();
-  headerList->Append("ConTenT-TyPe", "multipart/form-data");
-  headerList->Append("Accept", "xyz");
-  EXPECT_FALSE(headerList->ContainsNonCORSSafelistedHeader());
-}
-
 TEST(FetchHeaderListTest, SortAndCombine) {
   FetchHeaderList* headerList = FetchHeaderList::Create();
   EXPECT_TRUE(headerList->SortAndCombine().IsEmpty());

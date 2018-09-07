@@ -135,15 +135,15 @@ const TestCase header_cases[] = {
     {"GET", "", mojom::FetchCredentialsMode::kOmit, "GET", "X-MY-HEADER:t",
      mojom::FetchCredentialsMode::kOmit,
      CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
-                     "X-MY-HEADER")},
+                     "x-my-header")},
     {"GET", "X-SOME-OTHER-HEADER", mojom::FetchCredentialsMode::kOmit, "GET",
      "X-MY-HEADER:t", mojom::FetchCredentialsMode::kOmit,
      CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
-                     "X-MY-HEADER")},
+                     "x-my-header")},
     {"GET", "X-MY-HEADER", mojom::FetchCredentialsMode::kOmit, "GET",
      "X-MY-HEADER:t\r\nY-MY-HEADER:t", mojom::FetchCredentialsMode::kOmit,
      CORSErrorStatus(mojom::CORSError::kHeaderDisallowedByPreflightResponse,
-                     "Y-MY-HEADER")},
+                     "y-my-header")},
 };
 
 TEST_F(PreflightResultTest, MaxAge) {

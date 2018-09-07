@@ -6,9 +6,11 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/optional.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -117,6 +119,26 @@ COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsNoCORSSafelistedHeader(const std::string& name,
+                              const std::string& value);
+
+// https://fetch.spec.whatwg.org/#cors-unsafe-request-header-names
+// |headers| must not contain multiple headers for the same name.
+// The returned list is NOT sorted.
+// The returned list consists of lower-cased names.
+COMPONENT_EXPORT(NETWORK_CPP)
+std::vector<std::string> CORSUnsafeRequestHeaderNames(
+    const net::HttpRequestHeaders::HeaderVector& headers);
+
+// https://fetch.spec.whatwg.org/#cors-unsafe-request-header-names
+// Returns header names which are not CORS-safelisted AND not forbidden.
+// |headers| must not contain multiple headers for the same name.
+// The returned list is NOT sorted.
+// The returned list consists of lower-cased names.
+COMPONENT_EXPORT(NETWORK_CPP)
+std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
+    const net::HttpRequestHeaders::HeaderVector& headers);
 
 // Checks forbidden method in the fetch spec.
 // See https://fetch.spec.whatwg.org/#forbidden-method.

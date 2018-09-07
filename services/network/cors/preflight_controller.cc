@@ -41,18 +41,11 @@ base::Optional<std::string> GetHeaderString(
 //  - byte-lowercased
 std::string CreateAccessControlRequestHeadersHeader(
     const net::HttpRequestHeaders& headers) {
-  std::vector<std::string> filtered_headers;
-  for (const auto& header : headers.GetHeaderVector()) {
-    // Exclude CORS-safelisted headers.
-    if (cors::IsCORSSafelistedHeader(header.key, header.value))
-      continue;
-    // Exclude the forbidden headers because they may be added by the user
-    // agent. They must be checked separately and rejected for
-    // JavaScript-initiated requests.
-    if (cors::IsForbiddenHeader(header.key))
-      continue;
-    filtered_headers.push_back(base::ToLowerASCII(header.key));
-  }
+  // Exclude the forbidden headers because they may be added by the user
+  // agent. They must be checked separately and rejected for
+  // JavaScript-initiated requests.
+  std::vector<std::string> filtered_headers =
+      CORSUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector());
   if (filtered_headers.empty())
     return std::string();
 

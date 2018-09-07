@@ -4,6 +4,8 @@
 
 #include "services/network/public/cpp/cors/cors.h"
 
+#include <limits.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -377,7 +379,7 @@ TEST_F(CORSTest, CalculateResponseTainting) {
           cross_origin_url, FetchRequestMode::kNavigate, no_origin, false));
 }
 
-TEST_F(CORSTest, CheckCORSSafelist) {
+TEST_F(CORSTest, SafelistedMethod) {
   // Method check should be case-insensitive.
   EXPECT_TRUE(cors::IsCORSSafelistedMethod("get"));
   EXPECT_TRUE(cors::IsCORSSafelistedMethod("Get"));
@@ -385,28 +387,122 @@ TEST_F(CORSTest, CheckCORSSafelist) {
   EXPECT_TRUE(cors::IsCORSSafelistedMethod("HEAD"));
   EXPECT_TRUE(cors::IsCORSSafelistedMethod("POST"));
   EXPECT_FALSE(cors::IsCORSSafelistedMethod("OPTIONS"));
+}
 
-  // Content-Type check should be case-insensitive, and should ignore spaces and
-  // parameters such as charset after a semicolon.
-  EXPECT_TRUE(
-      cors::IsCORSSafelistedContentType("application/x-www-form-urlencoded"));
-  EXPECT_TRUE(cors::IsCORSSafelistedContentType("multipart/form-data"));
-  EXPECT_TRUE(cors::IsCORSSafelistedContentType("text/plain"));
-  EXPECT_TRUE(cors::IsCORSSafelistedContentType("TEXT/PLAIN"));
-  EXPECT_TRUE(cors::IsCORSSafelistedContentType("text/plain;charset=utf-8"));
-  EXPECT_TRUE(cors::IsCORSSafelistedContentType(" text/plain ;charset=utf-8"));
-  EXPECT_FALSE(cors::IsCORSSafelistedContentType("text/html"));
+TEST_F(CORSTest, SafelistedHeader) {
+  // See SafelistedAccept/AcceptLanguage/ContentLanguage/ContentType also.
 
-  // Header check should be case-insensitive. Value must be considered only for
-  // Content-Type.
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept", "foo"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("foo", "bar"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("user-agent", "foo"));
+}
+
+TEST_F(CORSTest, SafelistedAccept) {
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept", "text/html"));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Accept-Language", "en"));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Language", "ja"));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("SAVE-DATA", "on"));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Intervention", ""));
-  EXPECT_FALSE(cors::IsCORSSafelistedHeader("Cache-Control", ""));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Type", "text/plain"));
-  EXPECT_FALSE(cors::IsCORSSafelistedHeader("Content-Type", "image/png"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("AccepT", "text/html"));
+
+  constexpr char kAllowed[] =
+      "\t !#$%&'*+,-./0123456789;="
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~";
+  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+    SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
+    char c = static_cast<char>(i);
+    // 1 for the trailing null character.
+    auto* end = kAllowed + base::size(kAllowed) - 1;
+    EXPECT_EQ(std::find(kAllowed, end, c) != end,
+              cors::IsCORSSafelistedHeader("accept", std::string(1, c)));
+    EXPECT_EQ(std::find(kAllowed, end, c) != end,
+              cors::IsCORSSafelistedHeader("AccepT", std::string(1, c)));
+  }
+
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept", std::string(128, 'a')));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("accept", std::string(129, 'a')));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("AccepT", std::string(128, 'a')));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("AccepT", std::string(129, 'a')));
+}
+
+TEST_F(CORSTest, SafelistedAcceptLanguage) {
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept-language", "en,ja"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("aCcEPT-lAngUAge", "en,ja"));
+
+  constexpr char kAllowed[] =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz *,-.;=";
+  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+    SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
+    char c = static_cast<char>(i);
+    // 1 for the trailing null character.
+    auto* end = kAllowed + base::size(kAllowed) - 1;
+    EXPECT_EQ(
+        std::find(kAllowed, end, c) != end,
+        cors::IsCORSSafelistedHeader("aCcEPT-lAngUAge", std::string(1, c)));
+  }
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("accept-language", std::string(128, 'a')));
+  EXPECT_FALSE(
+      cors::IsCORSSafelistedHeader("accept-language", std::string(129, 'a')));
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("aCcEPT-lAngUAge", std::string(128, 'a')));
+  EXPECT_FALSE(
+      cors::IsCORSSafelistedHeader("aCcEPT-lAngUAge", std::string(129, 'a')));
+}
+
+TEST_F(CORSTest, SafelistedContentLanguage) {
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-language", "en,ja"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("cONTent-LANguaGe", "en,ja"));
+
+  constexpr char kAllowed[] =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz *,-.;=";
+  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+    SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
+    char c = static_cast<char>(i);
+    // 1 for the trailing null character.
+    auto* end = kAllowed + base::size(kAllowed) - 1;
+    EXPECT_EQ(
+        std::find(kAllowed, end, c) != end,
+        cors::IsCORSSafelistedHeader("content-language", std::string(1, c)));
+    EXPECT_EQ(
+        std::find(kAllowed, end, c) != end,
+        cors::IsCORSSafelistedHeader("cONTent-LANguaGe", std::string(1, c)));
+  }
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("content-language", std::string(128, 'a')));
+  EXPECT_FALSE(
+      cors::IsCORSSafelistedHeader("content-language", std::string(129, 'a')));
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("cONTent-LANguaGe", std::string(128, 'a')));
+  EXPECT_FALSE(
+      cors::IsCORSSafelistedHeader("cONTent-LANguaGe", std::string(129, 'a')));
+}
+
+TEST_F(CORSTest, SafelistedContentType) {
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-type", "text/plain"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("CoNtEnt-TyPE", "text/plain"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-type",
+                                           "text/plain; charset=utf-8"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-type",
+                                           "  text/plain ; charset=UTF-8"));
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("content-type", "text/plain; param=BOGUS"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader(
+      "content-type", "application/x-www-form-urlencoded"));
+  EXPECT_TRUE(
+      cors::IsCORSSafelistedHeader("content-type", "multipart/form-data"));
+
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-type", "Text/plain"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader("content-type", "tEXT/PLAIN"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("content-type", "text/html"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("CoNtEnt-TyPE", "text/html"));
+
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("content-type", "image/png"));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader("CoNtEnt-TyPE", "image/png"));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader(
+      "content-type", "text/plain; charset=" + std::string(108, 'a')));
+  EXPECT_TRUE(cors::IsCORSSafelistedHeader(
+      "cONTent-tYPE", "text/plain; charset=" + std::string(108, 'a')));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader(
+      "content-type", "text/plain; charset=" + std::string(109, 'a')));
+  EXPECT_FALSE(cors::IsCORSSafelistedHeader(
+      "cONTent-tYPE", "text/plain; charset=" + std::string(109, 'a')));
 }
 
 TEST_F(CORSTest, CheckCORSClientHintsSafelist) {
@@ -458,6 +554,156 @@ TEST_F(CORSTest, CheckCORSClientHintsSafelist) {
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-Width", "125"));
   EXPECT_FALSE(cors::IsCORSSafelistedHeader("viewport-width", "125.2"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("viewport-width", "2147483648"));
+}
+
+TEST_F(CORSTest, CORSUnsafeRequestHeaderNames) {
+  // Needed because initializer list is not allowed for a macro argument.
+  using List = std::vector<std::string>;
+
+  // Empty => Empty
+  EXPECT_EQ(cors::CORSUnsafeRequestHeaderNames({}), List({}));
+
+  // Some headers are safelisted.
+  EXPECT_EQ(cors::CORSUnsafeRequestHeaderNames({{"content-type", "text/plain"},
+                                                {"dpr", "12345"},
+                                                {"aCCept", "en,ja"},
+                                                {"accept-charset", "utf-8"},
+                                                {"uSer-Agent", "foo"},
+                                                {"hogE", "fuga"}}),
+            List({"accept-charset", "user-agent", "hoge"}));
+
+  // All headers are not safelisted.
+  EXPECT_EQ(
+      cors::CORSUnsafeRequestHeaderNames({{"content-type", "text/html"},
+                                          {"dpr", "123-45"},
+                                          {"aCCept", "en,ja"},
+                                          {"accept-charset", "utf-8"},
+                                          {"uSer-Agent", "foo"},
+                                          {"hogE", "fuga"}}),
+      List({"content-type", "dpr", "accept-charset", "user-agent", "hoge"}));
+
+  // |safelistValueSize| is 1024.
+  EXPECT_EQ(
+      cors::CORSUnsafeRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(126, '1')},
+           {"hogE", "fuga"}}),
+      List({"hoge"}));
+
+  // |safelistValueSize| is 1025.
+  EXPECT_EQ(
+      cors::CORSUnsafeRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(127, '1')},
+           {"hogE", "fuga"}}),
+      List({"hoge", "content-type", "accept", "accept-language",
+            "content-language", "dpr", "device-memory", "save-data",
+            "viewport-width", "width"}));
+
+  // |safelistValueSize| is 897 because "content-type" is not safelisted.
+  EXPECT_EQ(
+      cors::CORSUnsafeRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(128, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(127, '1')},
+           {"hogE", "fuga"}}),
+      List({"content-type", "hoge"}));
+}
+
+TEST_F(CORSTest, CORSUnsafeNotForbiddenRequestHeaderNames) {
+  // Needed because initializer list is not allowed for a macro argument.
+  using List = std::vector<std::string>;
+
+  // Empty => Empty
+  EXPECT_EQ(cors::CORSUnsafeNotForbiddenRequestHeaderNames({}), List({}));
+
+  // "user-agent" is NOT forbidden per spec, but forbidden in Chromium.
+  EXPECT_EQ(cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+                {{"content-type", "text/plain"},
+                 {"dpr", "12345"},
+                 {"aCCept", "en,ja"},
+                 {"accept-charset", "utf-8"},
+                 {"uSer-Agent", "foo"},
+                 {"hogE", "fuga"}}),
+            List({"hoge"}));
+
+  EXPECT_EQ(cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+                {{"content-type", "text/html"},
+                 {"dpr", "123-45"},
+                 {"aCCept", "en,ja"},
+                 {"accept-charset", "utf-8"},
+                 {"hogE", "fuga"}}),
+            List({"content-type", "dpr", "hoge"}));
+
+  // |safelistValueSize| is 1024.
+  EXPECT_EQ(
+      cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(126, '1')},
+           {"accept-charset", "utf-8"},
+           {"hogE", "fuga"}}),
+      List({"hoge"}));
+
+  // |safelistValueSize| is 1025.
+  EXPECT_EQ(
+      cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(127, '1')},
+           {"accept-charset", "utf-8"},
+           {"hogE", "fuga"}}),
+      List({"hoge", "content-type", "accept", "accept-language",
+            "content-language", "dpr", "device-memory", "save-data",
+            "viewport-width", "width"}));
+
+  // |safelistValueSize| is 897 because "content-type" is not safelisted.
+  EXPECT_EQ(
+      cors::CORSUnsafeNotForbiddenRequestHeaderNames(
+          {{"content-type", "text/plain; charset=" + std::string(128, '1')},
+           {"accept", std::string(128, '1')},
+           {"accept-language", std::string(128, '1')},
+           {"content-language", std::string(128, '1')},
+           {"dpr", std::string(128, '1')},
+           {"device-memory", std::string(128, '1')},
+           {"save-data", "on"},
+           {"viewport-width", std::string(128, '1')},
+           {"width", std::string(127, '1')},
+           {"accept-charset", "utf-8"},
+           {"hogE", "fuga"}}),
+      List({"content-type", "hoge"}));
 }
 
 }  // namespace
