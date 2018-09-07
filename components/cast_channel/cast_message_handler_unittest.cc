@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,6 +57,7 @@ class CastMessageHandlerTest : public testing::Test {
   CastMessageHandlerTest()
       : environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP),
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
                  /* connector */ nullptr,
@@ -98,6 +100,7 @@ class CastMessageHandlerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<base::RunLoop> run_loop_;
   MockCastSocketService cast_socket_service_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;

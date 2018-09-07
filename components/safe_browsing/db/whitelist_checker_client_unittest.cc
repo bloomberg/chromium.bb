@@ -6,15 +6,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,16 +46,14 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class WhitelistCheckerClientTest : public testing::Test {
  public:
-  WhitelistCheckerClientTest() : target_url_("http://foo.bar") {}
+  WhitelistCheckerClientTest()
+      : environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP),
+        target_url_("http://foo.bar") {}
 
   void SetUp() override {
     database_manager_ = new MockSafeBrowsingDatabaseManager;
-    task_runner_ = new base::TestMockTimeTaskRunner(base::Time::Now(),
-                                                    base::TimeTicks::Now());
-    message_loop_.reset(new base::MessageLoop);
-    io_thread_ = std::make_unique<content::TestBrowserThread>(
-        content::BrowserThread::IO, base::MessageLoopCurrent::Get());
-    message_loop_->SetTaskRunner(task_runner_);
   }
 
   void TearDown() override {
@@ -67,18 +63,15 @@ class WhitelistCheckerClientTest : public testing::Test {
     // Verify no callback is remaining.
     // TODO(nparker): We should somehow EXPECT that no entry is remaining,
     // rather than just invoking it.
-    task_runner_->FastForwardUntilNoTasksRemain();
+    environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
+  base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
+
   GURL target_url_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
-
-  // Needed for |database_manager_| teardown tasks.
-  std::unique_ptr<content::TestBrowserThread> io_thread_;
-
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 };
 
 TEST_F(WhitelistCheckerClientTest, TestMatch) {
@@ -125,11 +118,11 @@ TEST_F(WhitelistCheckerClientTest, TestAsyncTimeout) {
   MockBoolCallback callback;
   WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   // No callback yet.
 
   EXPECT_CALL(callback, Run(true /* is_whitelisted */));
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 }  // namespace safe_browsing
