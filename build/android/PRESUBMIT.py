@@ -79,6 +79,7 @@ def CommonChecks(input_api, output_api):
           J('pylib', 'utils', 'device_dependencies_test.py'),
           J('pylib', 'utils', 'dexdump_test.py'),
           J('pylib', 'utils', 'proguard_test.py'),
+          J('pylib', 'utils', 'test_filter_test.py'),
       ],
       env=pylib_test_env))
 
