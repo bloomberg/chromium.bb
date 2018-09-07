@@ -17,13 +17,12 @@
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_client_view.h"
 
+using bubble_anchor_util::AnchorConfiguration;
+
 namespace {
 
-constexpr views::BubbleBorder::Arrow kChooserAnchorArrow =
-    views::BubbleBorder::TOP_LEFT;
-
-views::View* GetChooserAnchorView(Browser* browser) {
-  return bubble_anchor_util::GetPageInfoAnchorView(browser);
+AnchorConfiguration GetChooserAnchorConfiguration(Browser* browser) {
+  return bubble_anchor_util::GetPageInfoAnchorConfiguration(browser);
 }
 
 gfx::Rect GetChooserAnchorRect(Browser* browser) {
@@ -79,9 +78,7 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
 ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     Browser* browser,
     std::unique_ptr<ChooserController> chooser_controller)
-    : views::BubbleDialogDelegateView(GetChooserAnchorView(browser),
-                                      kChooserAnchorArrow),
-      device_chooser_content_view_(nullptr) {
+    : device_chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -99,8 +96,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
 
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
-  if (!GetAnchorView())
-    SetAnchorRect(GetChooserAnchorRect(browser));
+  UpdateAnchor(browser);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
@@ -166,10 +162,11 @@ void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
 }
 
 void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
-  views::View* anchor_view = GetChooserAnchorView(browser);
-  SetAnchorView(anchor_view);
-  if (!anchor_view)
+  AnchorConfiguration configuration = GetChooserAnchorConfiguration(browser);
+  SetAnchorView(configuration.anchor_view);
+  if (!configuration.anchor_view)
     SetAnchorRect(GetChooserAnchorRect(browser));
+  set_arrow(configuration.bubble_arrow);
 }
 
 void ChooserBubbleUiViewDelegate::set_bubble_reference(

@@ -37,18 +37,17 @@
 #include "chrome/common/chrome_features.h"
 #endif
 
+using bubble_anchor_util::AnchorConfiguration;
+
 namespace {
 
 // (Square) pixel size of icon.
 constexpr int kPermissionIconSize = 18;
 
-// The type of arrow to display on the permission bubble.
-constexpr views::BubbleBorder::Arrow kPermissionAnchorArrow =
-    views::BubbleBorder::TOP_LEFT;
-
-// Returns the view to anchor the permission bubble to. May be null.
-views::View* GetPermissionAnchorView(Browser* browser) {
-  return bubble_anchor_util::GetPageInfoAnchorView(browser);
+// Returns the view to anchor the permission bubble to (may be null) and the
+// arrow position of the bubble.
+AnchorConfiguration GetPermissionAnchorConfiguration(Browser* browser) {
+  return bubble_anchor_util::GetPageInfoAnchorConfiguration(browser);
 }
 
 // Returns the anchor rect to anchor the permission bubble to, as a fallback.
@@ -104,7 +103,6 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
-  set_arrow(kPermissionAnchorArrow);
 
 #if defined(OS_MACOSX)
   // On Mac, the browser UI flips depending on a runtime feature. TODO(tapted):
@@ -237,10 +235,12 @@ bool PermissionsBubbleDialogDelegateView::Close() {
 }
 
 void PermissionsBubbleDialogDelegateView::UpdateAnchor() {
-  views::View* anchor_view = GetPermissionAnchorView(owner_->browser());
-  SetAnchorView(anchor_view);
-  if (!anchor_view)
+  AnchorConfiguration configuration =
+      GetPermissionAnchorConfiguration(owner_->browser());
+  SetAnchorView(configuration.anchor_view);
+  if (!configuration.anchor_view)
     SetAnchorRect(GetPermissionAnchorRect(owner_->browser()));
+  set_arrow(configuration.bubble_arrow);
 }
 
 //////////////////////////////////////////////////////////////////////////////

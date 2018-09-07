@@ -57,17 +57,19 @@ void ShowPageInfoBubbleViews(Browser* browser,
     return;
   }
 
-  views::View* anchor_view =
-      bubble_anchor_util::GetPageInfoAnchorView(browser, anchor);
+  bubble_anchor_util::AnchorConfiguration configuration =
+      bubble_anchor_util::GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
-      anchor_view ? gfx::Rect()
-                  : bubble_anchor_util::GetPageInfoAnchorRect(browser);
+      configuration.anchor_view
+          ? gfx::Rect()
+          : bubble_anchor_util::GetPageInfoAnchorRect(browser);
   gfx::NativeWindow parent_window = browser->window()->GetNativeWindow();
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          anchor_view, anchor_rect, parent_window, browser->profile(),
-          web_contents, virtual_url, security_info);
+          configuration.anchor_view, anchor_rect, parent_window,
+          browser->profile(), web_contents, virtual_url, security_info);
   bubble->GetWidget()->Show();
+  bubble->set_arrow(configuration.bubble_arrow);
   KeepBubbleAnchored(bubble, GetPageInfoDecoration(parent_window));
 }
 
