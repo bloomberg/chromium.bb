@@ -44,8 +44,8 @@ a {
 
 .icon-offline {
   content: -webkit-image-set(
-      url(../../../../components/neterror/resources/default_100_percent/offline/100-error-offline.png) 1x,
-      url(../../../../components/neterror/resources/default_200_percent/offline/200-error-offline.png) 2x);
+      url(../../../../components/neterror/resources/images/default_100_percent/offline/100-error-offline.png) 1x,
+      url(../../../../components/neterror/resources/images/default_200_percent/offline/200-error-offline.png) 2x);
 }
 
 #help-box-outer {
