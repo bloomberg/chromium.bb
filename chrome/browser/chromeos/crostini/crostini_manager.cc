@@ -94,7 +94,7 @@ class CrostiniManager::CrostiniRestarter
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (is_aborted_)
       return;
-
+    is_running_ = true;
     // Skip to the end immediately if testing.
     if (crostini_manager_->skip_restart_for_testing()) {
       content::BrowserThread::PostTask(
@@ -120,6 +120,16 @@ class CrostiniManager::CrostiniRestarter
   void Abort() {
     is_aborted_ = true;
     observer_list_.Clear();
+  }
+
+  void OnContainerDownloading(int download_percent) {
+    if (!is_running_) {
+      return;
+    }
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerDownloading(download_percent);
+    }
   }
 
   CrostiniManager::RestartId restart_id() const { return restart_id_; }
@@ -218,7 +228,10 @@ class CrostiniManager::CrostiniRestarter
 
   void CreateLxdContainerFinished(ConciergeClientResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // TODO(timloh): Does this need an observer callback?
+    // Tell observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerCreated(result);
+    }
     if (is_aborted_)
       return;
     if (result != ConciergeClientResult::SUCCESS) {
@@ -360,6 +373,7 @@ class CrostiniManager::CrostiniRestarter
       observer_list_;
   CrostiniManager::RestartId restart_id_;
   bool is_aborted_ = false;
+  bool is_running_ = false;
 
   static CrostiniManager::RestartId next_restart_id_;
 };
@@ -1368,7 +1382,17 @@ void CrostiniManager::OnLxdContainerCreated(
 }
 
 void CrostiniManager::OnLxdContainerDownloading(
-    const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {}
+    const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {
+  if (owner_id_ != signal.owner_id()) {
+    return;
+  }
+  auto range = restarters_by_container_.equal_range(
+      std::make_pair(signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    restarters_by_id_[it->second]->OnContainerDownloading(
+        signal.download_progress());
+  }
+}
 
 void CrostiniManager::OnTremplinStarted(
     const vm_tools::cicerone::TremplinStartedSignal& signal) {
