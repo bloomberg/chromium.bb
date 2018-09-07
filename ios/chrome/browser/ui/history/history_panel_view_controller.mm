@@ -28,7 +28,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -56,8 +56,8 @@ CGFloat kShadowOpacity = 0.2f;
   // Container view for history collection and clear browsing button to enable
   // use of autolayout in conjunction with Material App Bar.
   UIView* _containerView;
-  // The header view.
-  MDCAppBar* _appBar;
+  // The header view controller.
+  MDCAppBarViewController* _appBarViewController;
   // Left bar button item for Search.
   UIBarButtonItem* _leftBarButtonItem;
   // Right bar button item for Dismiss history action.
@@ -129,8 +129,7 @@ CGFloat kShadowOpacity = 0.2f;
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
 
     // Add and configure header.
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:_appBar.headerViewController];
+    _appBarViewController = [[MDCAppBarViewController alloc] init];
   }
   return self;
 }
@@ -173,14 +172,16 @@ CGFloat kShadowOpacity = 0.2f;
   [_containerView addSubview:_clearBrowsingBar];
   [self configureClearBrowsingBar];
 
-  ConfigureAppBarWithCardStyle(_appBar);
-  [_appBar headerViewController].headerView.trackingScrollView =
+  ConfigureAppBarViewControllerWithCardStyle(_appBarViewController);
+  [self addChildViewController:_appBarViewController];
+  _appBarViewController.headerView.trackingScrollView =
       [_historyCollectionController collectionView];
-  [_appBar addSubviewsToParent];
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
   // Prevent the touch events on appBar from being forwarded to the
   // collectionView.  See https://crbug.com/773580
-  [_appBar.headerViewController.headerView
-      stopForwardingTouchEventsForView:_appBar.navigationBar];
+  [_appBarViewController.headerView
+      stopForwardingTouchEventsForView:_appBarViewController.navigationBar];
 
   // Add navigation bar buttons.
   _leftBarButtonItem =
@@ -234,7 +235,7 @@ CGFloat kShadowOpacity = 0.2f;
             (LegacyHistoryCollectionViewController*)controller
                       didScrollToOffset:(CGPoint)offset {
   // Display a shadow on the header when the collection is scrolled.
-  MDCFlexibleHeaderView* headerView = _appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = _appBarViewController.headerView;
   headerView.visibleShadowOpacity =
       offset.y > -CGRectGetHeight(headerView.frame) ? kShadowOpacity : 0.0f;
 }
@@ -341,7 +342,7 @@ CGFloat kShadowOpacity = 0.2f;
 
   // Constraints to make search bar cover header.
   [searchBarView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  MDCFlexibleHeaderView* headerView = _appBar.headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = _appBarViewController.headerView;
   NSArray* constraints = @[
     [[searchBarView topAnchor] constraintEqualToAnchor:headerView.topAnchor],
     [[searchBarView leadingAnchor]
