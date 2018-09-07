@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
 /**
@@ -85,7 +86,7 @@ public class AutofillPaymentMethodsFragment
             }
 
             Bundle args = card_pref.getExtras();
-            args.putString(AutofillAndPaymentsPreferences.AUTOFILL_GUID, card.getGUID());
+            args.putString(MainPreferences.AUTOFILL_GUID, card.getGUID());
             getPreferenceScreen().addPreference(card_pref);
         }
 

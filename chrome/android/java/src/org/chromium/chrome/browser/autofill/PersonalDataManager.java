@@ -12,8 +12,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -156,10 +156,10 @@ public class PersonalDataManager {
          * locale. All other fields are empty strings, because JNI does not handle null strings.
          */
         public AutofillProfile() {
-            this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /* origin */,
-                    true /* isLocal */, "" /* fullName */, "" /* companyName */,
-                    "" /* streetAddress */, "" /* region */, "" /* locality */,
-                    "" /* dependentLocality */, "" /* postalCode */, "" /* sortingCode */,
+            this("" /* guid */, MainPreferences.SETTINGS_ORIGIN /* origin */, true /* isLocal */,
+                    "" /* fullName */, "" /* companyName */, "" /* streetAddress */,
+                    "" /* region */, "" /* locality */, "" /* dependentLocality */,
+                    "" /* postalCode */, "" /* sortingCode */,
                     Locale.getDefault().getCountry() /* country */, "" /* phoneNumber */,
                     "" /* emailAddress */, "" /* languageCode */);
         }
@@ -402,11 +402,11 @@ public class PersonalDataManager {
         }
 
         public CreditCard() {
-            this("" /* guid */, AutofillAndPaymentsPreferences.SETTINGS_ORIGIN /*origin */,
-                    true /* isLocal */, false /* isCached */, "" /* name */, "" /* number */,
-                    "" /* obfuscatedNumber */, "" /* month */, "" /* year */,
-                    "" /* basicCardIssuerNetwork */, 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
-                    "" /* billingAddressId */, "" /* serverId */);
+            this("" /* guid */, MainPreferences.SETTINGS_ORIGIN /*origin */, true /* isLocal */,
+                    false /* isCached */, "" /* name */, "" /* number */, "" /* obfuscatedNumber */,
+                    "" /* month */, "" /* year */, "" /* basicCardIssuerNetwork */,
+                    0 /* issuerIconDrawableId */, CardType.UNKNOWN, "" /* billingAddressId */,
+                    "" /* serverId */);
         }
 
         /** TODO(estade): remove this constructor. */
