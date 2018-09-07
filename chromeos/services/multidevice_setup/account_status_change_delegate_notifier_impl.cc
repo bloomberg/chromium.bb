@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -26,19 +27,6 @@ namespace {
 
 const int64_t kTimestampNotSet = 0;
 const char kNoHost[] = "";
-
-base::Optional<std::pair<std::string, std::string>> GetHostPublicKeyAndName(
-    const cryptauth::RemoteDeviceRefList& device_ref_list) {
-  for (const auto& device_ref : device_ref_list) {
-    if (device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST) ==
-        cryptauth::SoftwareFeatureState::kEnabled) {
-      DCHECK(!device_ref.public_key().empty());
-      return std::make_pair(device_ref.public_key(), device_ref.name());
-    }
-  }
-  return base::nullopt;
-}
 
 }  // namespace
 
@@ -66,12 +54,13 @@ AccountStatusChangeDelegateNotifierImpl::Factory::~Factory() = default;
 
 std::unique_ptr<AccountStatusChangeDelegateNotifier>
 AccountStatusChangeDelegateNotifierImpl::Factory::BuildInstance(
-    device_sync::DeviceSyncClient* device_sync_client,
+    HostStatusProvider* host_status_provider,
     PrefService* pref_service,
     SetupFlowCompletionRecorder* setup_flow_completion_recorder,
     base::Clock* clock) {
   return base::WrapUnique(new AccountStatusChangeDelegateNotifierImpl(
-      device_sync_client, pref_service, setup_flow_completion_recorder, clock));
+      host_status_provider, pref_service, setup_flow_completion_recorder,
+      clock));
 }
 
 // static
@@ -86,17 +75,17 @@ void AccountStatusChangeDelegateNotifierImpl::RegisterPrefs(
                               kTimestampNotSet);
   registry->RegisterInt64Pref(kExistingUserChromebookAddedPrefName,
                               kTimestampNotSet);
-  registry->RegisterStringPref(kHostPublicKeyFromMostRecentSyncPrefName,
-                               kNoHost);
+  registry->RegisterStringPref(
+      kHostDeviceIdFromMostRecentHostStatusUpdatePrefName, kNoHost);
 }
 
 AccountStatusChangeDelegateNotifierImpl::
     ~AccountStatusChangeDelegateNotifierImpl() {
-  device_sync_client_->RemoveObserver(this);
+  host_status_provider_->RemoveObserver(this);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::OnDelegateSet() {
-  CheckForMultiDeviceEvents();
+  CheckForMultiDeviceEvents(host_status_provider_->GetHostWithStatus());
 }
 
 // static
@@ -116,41 +105,31 @@ const char AccountStatusChangeDelegateNotifierImpl::
 
 // static
 const char AccountStatusChangeDelegateNotifierImpl::
-    kHostPublicKeyFromMostRecentSyncPrefName[] =
-        "multidevice_setup.host_public_key_from_most_recent_sync";
+    kHostDeviceIdFromMostRecentHostStatusUpdatePrefName[] =
+        "multidevice_setup.host_device_id_from_most_recent_sync";
 
 AccountStatusChangeDelegateNotifierImpl::
     AccountStatusChangeDelegateNotifierImpl(
-        device_sync::DeviceSyncClient* device_sync_client,
+        HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         SetupFlowCompletionRecorder* setup_flow_completion_recorder,
         base::Clock* clock)
-    : device_sync_client_(device_sync_client),
+    : host_status_provider_(host_status_provider),
       pref_service_(pref_service),
       setup_flow_completion_recorder_(setup_flow_completion_recorder),
       clock_(clock) {
-  host_public_key_from_most_recent_sync_ =
-      LoadHostPublicKeyFromEndOfPreviousSession();
-  cryptauth::RemoteDeviceRefList device_ref_list =
-      device_sync_client_->GetSyncedDevices();
-  base::Optional<cryptauth::RemoteDeviceRef> local_device =
-      device_sync_client_->GetLocalDeviceMetadata();
-
-  // AccountStatusChangeDelegateNotifierImpl should not be constructed if
-  // DeviceSyncClient is not initialized.
-  DCHECK(local_device);
-  local_device_is_enabled_client_ =
-      local_device->GetSoftwareFeatureState(
-          cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT) ==
-      cryptauth::SoftwareFeatureState::kEnabled;
-  device_sync_client_->AddObserver(this);
+  host_device_id_from_most_recent_update_ =
+      LoadHostDeviceIdFromEndOfPreviousSession();
+  host_status_provider_->AddObserver(this);
 }
 
-void AccountStatusChangeDelegateNotifierImpl::OnNewDevicesSynced() {
-  CheckForMultiDeviceEvents();
+void AccountStatusChangeDelegateNotifierImpl::OnHostStatusChange(
+    const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
+  CheckForMultiDeviceEvents(host_status_with_device);
 }
 
-void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents() {
+void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
+    const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   if (!delegate()) {
     PA_LOG(INFO) << "AccountStatusChangeDelegateNotifierImpl::"
                  << "CheckForMultiDeviceEvents(): Tried to check for potential "
@@ -158,45 +137,34 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents() {
     return;
   }
 
-  cryptauth::RemoteDeviceRefList device_ref_list =
-      device_sync_client_->GetSyncedDevices();
-
   // Track and update host info.
-  base::Optional<std::string> host_public_key_before_sync =
-      host_public_key_from_most_recent_sync_;
+  base::Optional<std::string> host_device_id_before_update =
+      host_device_id_from_most_recent_update_;
 
-  base::Optional<std::pair<std::string, std::string>> public_key_and_name =
-      GetHostPublicKeyAndName(device_ref_list);
-  if (public_key_and_name) {
-    host_public_key_from_most_recent_sync_ = public_key_and_name->first;
-    pref_service_->SetString(kHostPublicKeyFromMostRecentSyncPrefName,
-                             *host_public_key_from_most_recent_sync_);
+  // Check if a host has been set.
+  if (host_status_with_device.host_device()) {
+    host_device_id_from_most_recent_update_ =
+        host_status_with_device.host_device()->GetDeviceId();
+    pref_service_->SetString(
+        kHostDeviceIdFromMostRecentHostStatusUpdatePrefName,
+        *host_device_id_from_most_recent_update_);
   } else {
-    host_public_key_from_most_recent_sync_.reset();
+    // No host set.
+    host_device_id_from_most_recent_update_.reset();
   }
 
-  // Track and update local client info.
-  bool local_device_was_enabled_client_before_sync =
-      local_device_is_enabled_client_;
-  local_device_is_enabled_client_ =
-      device_sync_client_->GetLocalDeviceMetadata()->GetSoftwareFeatureState(
-          cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT) ==
-      cryptauth::SoftwareFeatureState::kEnabled;
-
-  CheckForNewUserPotentialHostExistsEvent(device_ref_list);
-  if (public_key_and_name) {
-    CheckForExistingUserHostSwitchedEvent(host_public_key_before_sync,
-                                          public_key_and_name->second);
-  }
-  CheckForExistingUserChromebookAddedEvent(
-      local_device_was_enabled_client_before_sync);
+  CheckForNewUserPotentialHostExistsEvent(host_status_with_device);
+  CheckForExistingUserHostSwitchedEvent(host_status_with_device,
+                                        host_device_id_before_update);
+  CheckForExistingUserChromebookAddedEvent(host_device_id_before_update);
 }
 
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForNewUserPotentialHostExistsEvent(
-        const cryptauth::RemoteDeviceRefList& device_ref_list) {
+        const HostStatusProvider::HostStatusWithDevice&
+            host_status_with_device) {
   // We only check for new user events if there is no enabled host.
-  if (host_public_key_from_most_recent_sync_)
+  if (host_device_id_from_most_recent_update_)
     return;
 
   // If the observer has been notified of this event before, the user is not
@@ -206,59 +174,45 @@ void AccountStatusChangeDelegateNotifierImpl::
     return;
   }
 
-  for (const auto& device_ref : device_ref_list) {
-    if (device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST) !=
-        cryptauth::SoftwareFeatureState::kSupported) {
-      continue;
-    }
-
-    delegate()->OnPotentialHostExistsForNewUser();
-    pref_service_->SetInt64(kNewUserPotentialHostExistsPrefName,
-                            clock_->Now().ToJavaTime());
+  // kEligibleHostExistsButNoHostSet is the only HostStatus that can describe
+  // a new user.
+  if (host_status_with_device.host_status() !=
+      mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
     return;
   }
+
+  delegate()->OnPotentialHostExistsForNewUser();
+  pref_service_->SetInt64(kNewUserPotentialHostExistsPrefName,
+                          clock_->Now().ToJavaTime());
 }
 
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserHostSwitchedEvent(
-        const base::Optional<std::string>& host_public_key_before_sync,
-        const std::string& new_host_device_name) {
-  // If the local device is not an enabled client, the account's new host is not
-  // yet the local device's new host.
-  if (!local_device_is_enabled_client_)
+        const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
+        const base::Optional<std::string>& host_device_id_before_update) {
+  // The host switched event requires both a pre-update and a post-update host.
+  if (!host_device_id_from_most_recent_update_ ||
+      !host_device_id_before_update) {
     return;
-
-  // The host switched event requires both a pre-sync and a post-sync host.
-  if (!host_public_key_from_most_recent_sync_ || !host_public_key_before_sync)
-    return;
-
+  }
   // If the host stayed the same, there was no switch.
-  if (host_public_key_before_sync == host_public_key_from_most_recent_sync_)
+  if (*host_device_id_from_most_recent_update_ == *host_device_id_before_update)
     return;
 
-  delegate()->OnConnectedHostSwitchedForExistingUser(new_host_device_name);
+  delegate()->OnConnectedHostSwitchedForExistingUser(
+      host_status_with_device.host_device()->name());
   pref_service_->SetInt64(kExistingUserHostSwitchedPrefName,
                           clock_->Now().ToJavaTime());
 }
 
 void AccountStatusChangeDelegateNotifierImpl::
     CheckForExistingUserChromebookAddedEvent(
-        bool local_device_was_enabled_client_before_sync) {
-  // The chromebook added event requires that the local device changed its
-  // client status in the sync from not being enabled to being enabled.
-  if (!local_device_is_enabled_client_ ||
-      local_device_was_enabled_client_before_sync) {
+        const base::Optional<std::string>& host_device_id_before_update) {
+  // The Chromebook added event requires that a set host was found by the
+  // update, i.e. there was no host before the host status update but afterward
+  // there is a set host.
+  if (!host_device_id_from_most_recent_update_ || host_device_id_before_update)
     return;
-  }
-
-  // This event only applies if the user completed the setup flow on a different
-  // device.
-  if (setup_flow_completion_recorder_->GetCompletionTimestamp())
-    return;
-
-  // Without an enabled host, the local device cannot be an enabled client.
-  DCHECK(host_public_key_from_most_recent_sync_);
 
   delegate()->OnNewChromebookAddedForExistingUser();
   pref_service_->SetInt64(kExistingUserChromebookAddedPrefName,
@@ -266,12 +220,12 @@ void AccountStatusChangeDelegateNotifierImpl::
 }
 
 base::Optional<std::string> AccountStatusChangeDelegateNotifierImpl::
-    LoadHostPublicKeyFromEndOfPreviousSession() {
-  std::string host_public_key_from_most_recent_sync =
-      pref_service_->GetString(kHostPublicKeyFromMostRecentSyncPrefName);
-  if (host_public_key_from_most_recent_sync.empty())
+    LoadHostDeviceIdFromEndOfPreviousSession() {
+  std::string host_device_id_from_most_recent_update = pref_service_->GetString(
+      kHostDeviceIdFromMostRecentHostStatusUpdatePrefName);
+  if (host_device_id_from_most_recent_update.empty())
     return base::nullopt;
-  return host_public_key_from_most_recent_sync;
+  return host_device_id_from_most_recent_update;
 }
 
 }  // namespace multidevice_setup

@@ -98,7 +98,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               base::DefaultClock::GetInstance())),
       delegate_notifier_(
           AccountStatusChangeDelegateNotifierImpl::Factory::Get()
-              ->BuildInstance(device_sync_client,
+              ->BuildInstance(host_status_provider_.get(),
                               pref_service,
                               setup_flow_completion_recorder_.get(),
                               base::DefaultClock::GetInstance())),
