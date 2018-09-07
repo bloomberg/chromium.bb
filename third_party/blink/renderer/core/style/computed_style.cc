@@ -932,7 +932,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       HasBlendMode() || HasIsolation() || HasViewportConstrainedPosition() ||
       GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
-      ContainsPaint()) {
+      ContainsPaint() || ContainsLayout()) {
     SetIsStackingContext(true);
   }
 }
