@@ -79,11 +79,17 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
     return start_service_worker_and_dispatch_long_running_message_calls_;
   };
 
+  const std::vector<GURL>& stop_all_service_workers_for_origin_calls() {
+    return stop_all_service_workers_for_origin_calls_;
+  }
+
  private:
   bool start_service_worker_for_navigation_hint_called_ = false;
 
   std::vector<StartServiceWorkerAndDispatchLongRunningMessageArgs>
       start_service_worker_and_dispatch_long_running_message_calls_;
+
+  std::vector<GURL> stop_all_service_workers_for_origin_calls_;
 
   base::ObserverList<ServiceWorkerContextObserver, true>::Unchecked observers_;
 
