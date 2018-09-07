@@ -31,8 +31,8 @@ static  amdgpu_device_handle device_handle;
 static  uint32_t  major_version;
 static  uint32_t  minor_version;
 
-
 static void amdgpu_vmid_reserve_test(void);
+static void amdgpu_vm_unaligned_map(void);
 
 CU_BOOL suite_vm_tests_enable(void)
 {
@@ -84,6 +84,7 @@ int suite_vm_tests_clean(void)
 
 CU_TestInfo vm_tests[] = {
 	{ "resere vmid test",  amdgpu_vmid_reserve_test },
+	{ "unaligned map",  amdgpu_vm_unaligned_map },
 	CU_TEST_INFO_NULL,
 };
 
@@ -166,4 +167,46 @@ static void amdgpu_vmid_reserve_test(void)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_vm_unaligned_map(void)
+{
+	const uint64_t map_size = (4ULL << 30) - (2 << 12);
+	struct amdgpu_bo_alloc_request request = {};
+	amdgpu_bo_handle buf_handle;
+	amdgpu_va_handle handle;
+	uint64_t vmc_addr;
+	int r;
+
+	request.alloc_size = 4ULL << 30;
+	request.phys_alignment = 4096;
+	request.preferred_heap = AMDGPU_GEM_DOMAIN_VRAM;
+	request.flags = AMDGPU_GEM_CREATE_NO_CPU_ACCESS;
+
+	r = amdgpu_bo_alloc(device_handle, &request, &buf_handle);
+	/* Don't let the test fail if the device doesn't have enough VRAM */
+	if (r)
+		return;
+
+	r = amdgpu_va_range_alloc(device_handle, amdgpu_gpu_va_range_general,
+				  4ULL << 30, 1ULL << 30, 0, &vmc_addr,
+				  &handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+	if (r)
+		goto error_va_alloc;
+
+	vmc_addr += 1 << 12;
+
+	r = amdgpu_bo_va_op(buf_handle, 0, map_size, vmc_addr, 0,
+			    AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+	if (r)
+		goto error_va_alloc;
+
+	amdgpu_bo_va_op(buf_handle, 0, map_size, vmc_addr, 0,
+			AMDGPU_VA_OP_UNMAP);
+
+error_va_alloc:
+	amdgpu_bo_free(buf_handle);
+
 }
