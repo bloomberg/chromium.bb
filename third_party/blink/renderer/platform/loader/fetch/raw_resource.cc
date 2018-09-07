@@ -151,7 +151,7 @@ void RawResource::DidAddClient(ResourceClient* c) {
   CHECK(!IsCacheValidator());
   if (!HasClient(c))
     return;
-  DCHECK(RawResourceClient::IsExpectedType(c));
+  DCHECK(c->IsRawResourceClient());
   RevalidationStartForbiddenScope revalidation_start_forbidden_scope(this);
   RawResourceClient* client = static_cast<RawResourceClient*>(c);
   for (const auto& redirect : RedirectChain()) {

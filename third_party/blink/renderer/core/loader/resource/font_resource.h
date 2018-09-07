@@ -113,10 +113,8 @@ DEFINE_RESOURCE_TYPE_CASTS(Font);
 class FontResourceClient : public ResourceClient {
  public:
   ~FontResourceClient() override = default;
-  static bool IsExpectedType(ResourceClient* client) {
-    return client->GetResourceClientType() == kFontType;
-  }
-  ResourceClientType GetResourceClientType() const final { return kFontType; }
+
+  bool IsFontResourceClient() const final { return true; }
 
   // If cache-aware loading is activated, both callbacks will be blocked until
   // disk cache miss. Calls to addClient() and removeClient() in both callbacks
