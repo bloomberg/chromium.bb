@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/file_manager/js_unit_tests.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
   deps = [
     ":actions_controller",
     ":actions_model",
@@ -586,6 +587,15 @@ js_library("thumbnail_loader") {
   ]
 }
 
+js_library("thumbnail_loader_unittest") {
+  deps = [
+    ":thumbnail_loader",
+    "../../common/js:mock_entry",
+    "../../common/js:unittest_util",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
 js_library("toolbar_controller") {
   deps = [
     ":file_selection",
@@ -598,6 +608,7 @@ js_library("toolbar_controller") {
 
 js_library("volume_manager_wrapper") {
   deps = [
+    "../../../externs:file_manager_private",
     "../../common/js:async_util",
     "../../common/js:volume_manager_common",
     "//ui/webui/resources/js:cr",
@@ -605,11 +616,6 @@ js_library("volume_manager_wrapper") {
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
   externs_list = [
-    # Note: volume_info has a dependency on chrome.fileManagerPrivate.IconSet.
-    # Also, fileManagerPrivate depends on chrome.fileSystemProvider, so these
-    # must be introduced together.
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "../../../externs/background/volume_manager_factory.js",
     "../../../externs/volume_info.js",
     "../../../externs/volume_info_list.js",
@@ -627,5 +633,18 @@ js_library("webui_command_extender") {
   deps = [
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:command",
+  ]
+}
+
+js_unit_tests("unit_tests") {
+  deps = [
+    ":thumbnail_loader_unittest",
+  ]
+}
+
+group("closure_compile") {
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests_type_check",
   ]
 }

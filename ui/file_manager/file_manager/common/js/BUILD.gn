@@ -58,13 +58,10 @@ js_library("lru_cache") {
 js_library("metrics") {
   deps = [
     ":metrics_base",
+    "../../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
   ]
   externs_list = [
-    "$externs_path/chrome.js",
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "$externs_path/metrics_private.js",
     "//third_party/analytics/externs.js",
   ]
@@ -99,14 +96,13 @@ js_library("util") {
   deps = [
     ":files_app_entry_types",
     ":volume_manager_common",
+    "../../../externs:file_manager_private",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
   ]
   externs_list = [
-    "$externs_path/chrome.js",
-    "$externs_path/chrome_extensions.js",
     "$externs_path/command_line_private.js",
     "../../../externs/app_window_common.js",
     "../../../externs/entry_location.js",

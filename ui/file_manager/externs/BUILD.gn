@@ -15,3 +15,16 @@ js_library("webview_tag") {
     "webview_tag.js",
   ]
 }
+
+js_library("file_manager_private") {
+  sources = []
+
+  # The file_manager_private extern depends on file_system_provider and
+  # extension APIs. Ensure they're pulled in together.
+  externs_list = [
+    "$externs_path/chrome.js",
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/file_manager_private.js",
+    "$externs_path/file_system_provider.js",
+  ]
+}

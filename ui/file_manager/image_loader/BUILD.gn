@@ -40,10 +40,7 @@ js_library("image_loader") {
     ":piex_loader",
     ":request",
     ":scheduler",
-  ]
-  externs_list = [
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
+    "../externs:file_manager_private",
   ]
 }
 
