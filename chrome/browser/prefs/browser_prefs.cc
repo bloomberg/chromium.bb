@@ -795,10 +795,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 5/2018
   profile_prefs->ClearPref(kDismissedRecentOfflineTabSuggestions);
+#endif  // defined(OS_ANDROID)
 
   // Added 8/2018.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(profile_prefs);
-#endif  // defined(OS_ANDROID)
 
   // Added 8/2018
   profile_prefs->ClearPref(kDnsPrefetchingStartupList);
