@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -114,9 +115,12 @@ void ArcProvisionNotificationService::OnArcPlayStoreEnabledChanged(
 }
 
 void ArcProvisionNotificationService::OnArcStarted() {
-  // Show notification only for Public Session when ARC is going to start.
-  if (profiles::IsPublicSession())
+  // Show notification only for Public Session (except for Demo Session) when
+  // ARC is going to start.
+  if (profiles::IsPublicSession() &&
+      !chromeos::DemoSession::IsDeviceInDemoMode()) {
     ShowNotification();
+  }
 }
 
 void ArcProvisionNotificationService::OnArcOptInManagementCheckStarted() {
