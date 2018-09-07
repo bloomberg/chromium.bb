@@ -149,14 +149,18 @@ void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
   if (!IsActive())
     return;
 
+  // Make sure we can access a transform node.
+  LayoutObject& layout_object = paint_layer.GetLayoutObject();
+  if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
+    return;
+
   // Convert to the local transform space, whose origin is the layer's previous
   // location because the property trees haven't been updated yet.
   FloatPoint transform_parent_offset = -old_layer_rect.Location();
   old_layer_rect.MoveBy(transform_parent_offset);
   new_layer_rect.MoveBy(transform_parent_offset);
 
-  AccumulateJank(paint_layer.GetLayoutObject(), paint_layer, old_layer_rect,
-                 new_layer_rect);
+  AccumulateJank(layout_object, paint_layer, old_layer_rect, new_layer_rect);
 }
 
 void JankTracker::NotifyPrePaintFinished() {

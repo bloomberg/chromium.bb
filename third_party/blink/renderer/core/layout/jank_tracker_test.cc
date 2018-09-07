@@ -167,4 +167,31 @@ TEST_F(JankTrackerTest, CompositedElementMovement) {
   EXPECT_FLOAT_EQ(0.25, GetJankTracker().Score());
 }
 
+TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
+  // Tests that we don't crash if a new layer janks during a second compositing
+  // update before prepaint sets up property tree state.  See crbug.com/881735
+  // (which invokes UpdateLifecycleToCompositingCleanPlusScrolling through
+  // accessibilityController.accessibleElementById).
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .hide { display: none; }
+      .tr { will-change: transform; }
+      body { margin: 0; }
+      div { height: 100px; }
+    </style>
+    <div id="container">
+      <div id="A">A</div>
+      <div id="B" class="tr hide">B</div>
+    </div>
+  )HTML");
+
+  GetDocument().getElementById("B")->setAttribute(HTMLNames::classAttr,
+                                                  AtomicString("tr"));
+  GetFrameView().UpdateLifecycleToCompositingCleanPlusScrolling();
+  GetDocument().getElementById("A")->setAttribute(HTMLNames::classAttr,
+                                                  AtomicString("hide"));
+  GetFrameView().UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink
