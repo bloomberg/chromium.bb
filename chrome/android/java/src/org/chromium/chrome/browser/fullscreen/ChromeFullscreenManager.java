@@ -23,6 +23,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -543,7 +544,8 @@ public class ChromeFullscreenManager
 
     private boolean shouldShowAndroidControls() {
         if (mBrowserControlsAndroidViewHidden) return false;
-        if (getTab() != null && getTab().getControlsOffsetHelper().isControlsOffsetOverridden()) {
+        if (getTab() != null
+                && TabBrowserControlsOffsetHelper.from(getTab()).isControlsOffsetOverridden()) {
             return true;
         }
 

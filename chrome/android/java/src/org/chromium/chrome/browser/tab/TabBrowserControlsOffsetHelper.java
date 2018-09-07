@@ -154,7 +154,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     /**
      * Resets the controls positions in {@link FullscreenManager} to the cached positions.
      */
-    void resetPositions() {
+    public void resetPositions() {
         resetControlsOffsetOverridden();
         if (mTab.getFullscreenManager() == null) return;
 
