@@ -1138,6 +1138,13 @@
           'shards': 1,
         },
       },
+      # chromium.fyi
+      'linux-chromium-tests-staging-tests': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
+      },
       # chromium.linux
       'Linux Tests': {
         'args': [
