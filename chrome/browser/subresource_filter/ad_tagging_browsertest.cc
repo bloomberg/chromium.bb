@@ -137,7 +137,9 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   content::TestNavigationObserver navigation_observer(web_contents, 1);
-  EXPECT_TRUE(content::ExecuteScript(rfh, script));
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(rfh, script, &result));
+  EXPECT_TRUE(result);
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
@@ -222,8 +224,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
-                       DISABLED_VerifyCrossOriginWithoutNavigate) {
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
   base::HistogramTester histogram_tester;
 
   // Main frame.

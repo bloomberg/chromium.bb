@@ -25,6 +25,9 @@ async function createDocWrittenFrame(name, base_url) {
   document.body.appendChild(frame);
 
   frame.contentDocument.open();
+  frame.onload = function() {
+    window.domAutomationController.send(true);
+  }
   frame.contentDocument.write(doc_text);
   frame.contentDocument.close();
 }
