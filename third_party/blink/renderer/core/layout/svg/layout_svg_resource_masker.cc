@@ -21,8 +21,9 @@
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
@@ -77,7 +78,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(
     if (!layout_object ||
         layout_object->StyleRef().Display() == EDisplay::kNone)
       continue;
-    SVGPaintContext::PaintResourceSubtree(builder.Context(), layout_object);
+    SVGObjectPainter(*layout_object).PaintResourceSubtree(builder.Context());
   }
 
   cached_paint_record_ = builder.EndRecording();

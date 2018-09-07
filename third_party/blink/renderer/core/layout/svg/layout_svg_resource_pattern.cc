@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/svg_object_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_fit_to_view_box.h"
 #include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -212,7 +212,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
   PaintRecordBuilder builder;
   for (LayoutObject* child = pattern_layout_object->FirstChild(); child;
        child = child->NextSibling())
-    SVGPaintContext::PaintResourceSubtree(builder.Context(), child);
+    SVGObjectPainter(*child).PaintResourceSubtree(builder.Context());
   PaintRecorder paint_recorder;
   cc::PaintCanvas* canvas = paint_recorder.beginRecording(bounds);
   canvas->save();
