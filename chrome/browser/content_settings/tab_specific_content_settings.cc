@@ -72,6 +72,17 @@ static TabSpecificContentSettings* GetForWCGetter(
   return TabSpecificContentSettings::FromWebContents(web_contents);
 }
 
+bool ShouldSendUpdatedContentSettingsRulesToRenderer(
+    ContentSettingsType content_type) {
+  // CONTENT_SETTINGS_TYPE_DEFAULT signals that multiple content settings may
+  // have been updated, e.g. by the PolicyProvider. This should always be sent
+  // to the renderer in case a relevant setting is updated.
+  if (content_type == CONTENT_SETTINGS_TYPE_DEFAULT)
+    return true;
+
+  return RendererContentSettingRules::IsRendererContentSetting((content_type));
+}
+
 }  // namespace
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
@@ -91,18 +102,14 @@ void TabSpecificContentSettings::SiteDataObserver::ContentSettingsDestroyed() {
 
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
+      map_(HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(tab->GetBrowserContext()))),
       allowed_local_shared_objects_(
           Profile::FromBrowserContext(tab->GetBrowserContext())),
       blocked_local_shared_objects_(
           Profile::FromBrowserContext(tab->GetBrowserContext())),
-      geolocation_usages_state_(
-          HostContentSettingsMapFactory::GetForProfile(
-              Profile::FromBrowserContext(tab->GetBrowserContext())),
-          CONTENT_SETTINGS_TYPE_GEOLOCATION),
-      midi_usages_state_(
-          HostContentSettingsMapFactory::GetForProfile(
-              Profile::FromBrowserContext(tab->GetBrowserContext())),
-          CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
+      geolocation_usages_state_(map_, CONTENT_SETTINGS_TYPE_GEOLOCATION),
+      midi_usages_state_(map_, CONTENT_SETTINGS_TYPE_MIDI_SYSEX),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
@@ -112,8 +119,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
   ClearContentSettingsExceptForNavigationRelatedSettings();
   ClearNavigationRelatedContentSettings();
 
-  observer_.Add(HostContentSettingsMapFactory::GetForProfile(
-      Profile::FromBrowserContext(tab->GetBrowserContext())));
+  observer_.Add(map_);
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
@@ -757,49 +763,50 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     const std::string& resource_identifier) {
   const ContentSettingsDetails details(
       primary_pattern, secondary_pattern, content_type, resource_identifier);
-  const GURL& visible_url = web_contents()->GetVisibleURL();
-  if (details.update_all() ||
+  if (!details.update_all() &&
       // The visible URL is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
-      details.primary_pattern().Matches(visible_url)) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    const HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile);
-
-    if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-        content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-      const GURL media_origin = media_stream_access_origin();
-      ContentSetting setting = map->GetContentSetting(media_origin,
-                                                      media_origin,
-                                                      content_type,
-                                                      std::string());
-      ContentSettingsStatus& status = content_settings_status_[content_type];
-      status.allowed = setting == CONTENT_SETTING_ALLOW;
-      status.blocked = setting == CONTENT_SETTING_BLOCK;
-    }
-
-    content::RenderProcessHost* process =
-        web_contents()->GetMainFrame()->GetProcess();
-
-    // Only send a message to the renderer if it is initialised and not dead.
-    // Otherwise, the IPC messages will be queued in the browser process,
-    // potentially causing large memory leaks. See https://crbug.com/875937.
-    if (!process->IsInitializedAndNotDead())
-      return;
-
-    // |channel| may be null in tests.
-    IPC::ChannelProxy* channel = process->GetChannel();
-    if (!channel)
-      return;
-
-    RendererContentSettingRules rules;
-    GetRendererContentSettingRules(map, &rules);
-
-    chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
-    channel->GetRemoteAssociatedInterface(&rc_interface);
-    rc_interface->SetContentSettingRules(rules);
+      !details.primary_pattern().Matches(web_contents()->GetVisibleURL())) {
+    return;
   }
+
+  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    const GURL media_origin = media_stream_access_origin();
+    ContentSetting setting = map_->GetContentSetting(
+        media_origin, media_origin, content_type, std::string());
+    ContentSettingsStatus& status = content_settings_status_[content_type];
+    status.allowed = setting == CONTENT_SETTING_ALLOW;
+    status.blocked = setting == CONTENT_SETTING_BLOCK;
+  }
+
+  if (!ShouldSendUpdatedContentSettingsRulesToRenderer(content_type))
+    return;
+
+  MaybeSendRendererContentSettingsRules(web_contents());
+}
+
+void TabSpecificContentSettings::MaybeSendRendererContentSettingsRules(
+    content::WebContents* web_contents) {
+  // Only send a message to the renderer if it is initialised and not dead.
+  // Otherwise, the IPC messages will be queued in the browser process,
+  // potentially causing large memory leaks. See https://crbug.com/875937.
+  content::RenderProcessHost* process =
+      web_contents->GetMainFrame()->GetProcess();
+  if (!process->IsInitializedAndNotDead())
+    return;
+
+  // |channel| may be null in tests.
+  IPC::ChannelProxy* channel = process->GetChannel();
+  if (!channel)
+    return;
+
+  RendererContentSettingRules rules;
+  GetRendererContentSettingRules(map_, &rules);
+
+  chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
+  channel->GetRemoteAssociatedInterface(&rc_interface);
+  rc_interface->SetContentSettingRules(rules);
 }
 
 void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
@@ -840,6 +847,19 @@ void TabSpecificContentSettings::DidStartNavigation(
   ClearMidiContentSettings();
   ClearPendingProtocolHandler();
   ClearContentSettingsChangedViaPageInfo();
+}
+
+void TabSpecificContentSettings::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  // There may be content settings that were updated for the navigated URL.
+  // These would not have been sent before if we're navigating cross-origin.
+  // Ensure up to date rules are sent before navigation commits.
+  MaybeSendRendererContentSettingsRules(navigation_handle->GetWebContents());
 }
 
 void TabSpecificContentSettings::DidFinishNavigation(
