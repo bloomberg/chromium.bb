@@ -116,11 +116,9 @@ void AudioStreamHandler::OnDecoderInitializedOnThread(bool success,
           : assistant_client::OutputStreamEncoding::STREAM_PCM_S32,
       /*pcm_sample_rate=*/samples_per_second,
       /*pcm_num_channels=*/channels};
-  if (!device_owner_started_) {
-    DCHECK(start_device_owner_on_main_thread_);
+  if (start_device_owner_on_main_thread_) {
     DCHECK(!on_filled_);
     std::move(start_device_owner_on_main_thread_).Run(format);
-    device_owner_started_ = true;
   }
 }
 
