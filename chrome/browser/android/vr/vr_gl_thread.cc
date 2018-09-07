@@ -12,11 +12,11 @@
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
+#include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
-#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -41,7 +41,7 @@ VrGLThread::VrGLThread(
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr::GvrApi::WrapNonOwned(gvr_api)),
-      factory_params_(std::make_unique<RenderLoopFactory::Params>(
+      factory_params_(std::make_unique<BrowserRendererFactory::Params>(
           gvr_api_.get(),
           ui_initial_state,
           reprojected_rendering,
@@ -58,8 +58,8 @@ VrGLThread::~VrGLThread() {
   Stop();
 }
 
-base::WeakPtr<RenderLoop> VrGLThread::GetRenderLoop() {
-  return render_loop_->GetWeakPtr();
+base::WeakPtr<BrowserRenderer> VrGLThread::GetBrowserRenderer() {
+  return browser_renderer_->GetWeakPtr();
 }
 
 void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
@@ -69,13 +69,13 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 
 void VrGLThread::Init() {
   ui_factory_ = std::make_unique<UiFactory>();
-  render_loop_ = RenderLoopFactory::Create(this, ui_factory_.get(),
-                                           std::move(factory_params_));
-  weak_browser_ui_ = render_loop_->GetBrowserUiWeakPtr();
+  browser_renderer_ = BrowserRendererFactory::Create(
+      this, ui_factory_.get(), std::move(factory_params_));
+  weak_browser_ui_ = browser_renderer_->GetBrowserUiWeakPtr();
 }
 
 void VrGLThread::CleanUp() {
-  render_loop_.reset();
+  browser_renderer_.reset();
 }
 
 void VrGLThread::ContentSurfaceCreated(jobject surface,
@@ -173,7 +173,7 @@ void VrGLThread::ExitPresent() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::ExitPresent, weak_vr_shell_));
-  render_loop_->OnExitPresent();
+  browser_renderer_->OnExitPresent();
 }
 
 void VrGLThread::ExitFullscreen() {

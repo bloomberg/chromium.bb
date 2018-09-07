@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/android/vr/android_vsync_helper.h"
-#include "chrome/browser/android/vr/vr_shell_gl.h"
+#include "chrome/browser/android/vr/gvr_graphics_delegate.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/scheduler_delegate.h"
@@ -59,7 +59,7 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   GvrSchedulerDelegate(GlBrowserInterface* browser,
                        SchedulerUiInterface* ui,
                        gvr::GvrApi* gvr_api,
-                       VrShellGl* graphics,
+                       GvrGraphicsDelegate* graphics,
                        bool start_in_web_xr_mode,
                        bool cardboard_gamepad,
                        size_t sliding_time_size);
@@ -77,7 +77,8 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   void OnTriggerEvent(bool pressed) override;
   void SetWebXrMode(bool enabled) override;
   void SetShowingVrDialog(bool showing) override;
-  void SetRenderLoop(SchedulerRenderLoopInterface* render_loop) override;
+  void SetBrowserRenderer(
+      SchedulerBrowserRendererInterface* browser_renderer) override;
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options) override;
@@ -179,7 +180,7 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   gvr::GvrApi* gvr_api_;
 
   SchedulerUiInterface* ui_ = nullptr;
-  SchedulerRenderLoopInterface* render_loop_ = nullptr;
+  SchedulerBrowserRendererInterface* browser_renderer_ = nullptr;
 
   // Set from feature flags.
   const bool webvr_vsync_align_;
@@ -221,7 +222,7 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
 
   int webvr_unstuff_ratelimit_frames_ = 0;
 
-  VrShellGl* graphics_;
+  GvrGraphicsDelegate* graphics_;
 
   // Attributes tracking WebVR rAF/VSync animation loop state. Blink schedules
   // a callback using the GetFrameData mojo call which is stored in

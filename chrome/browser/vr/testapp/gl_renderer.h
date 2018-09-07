@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/base_compositor_delegate.h"
+#include "chrome/browser/vr/base_graphics_delegate.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gl {
@@ -20,12 +20,12 @@ namespace vr {
 class VrTestContext;
 
 // This class manages an OpenGL context and initiates per-frame rendering.
-class GlRenderer : public BaseCompositorDelegate {
+class GlRenderer : public BaseGraphicsDelegate {
  public:
   GlRenderer();
   ~GlRenderer() override;
 
-  // CompositorDelegate implementation.
+  // GraphicsDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
   void OnResume() override;
   FovRectangles GetRecommendedFovs() override;

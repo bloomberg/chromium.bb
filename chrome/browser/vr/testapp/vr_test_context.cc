@@ -15,8 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
-#include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
+#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
@@ -102,9 +102,9 @@ InputEventList CreateScrollGestureEventList(InputEvent::Type type,
 
 }  // namespace
 
-VrTestContext::VrTestContext(CompositorDelegate* compositor_delegate)
+VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
     : view_scale_factor_(kDefaultViewScaleFactor),
-      compositor_delegate_(compositor_delegate) {
+      graphics_delegate_(graphics_delegate) {
   base::FilePath pak_path;
   base::PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
@@ -183,7 +183,7 @@ void VrTestContext::DrawFrame() {
 
   UpdateController(render_info, current_time);
 
-  compositor_delegate_->RunInSkiaContext(
+  graphics_delegate_->RunInSkiaContext(
       base::BindOnce(&UiInterface::UpdateSceneTextures, base::Unretained(ui_)));
 
   auto load_progress = (current_time - page_load_start_).InMilliseconds() /

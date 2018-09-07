@@ -11,14 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/vr/browser_renderer_factory.h"
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
-#include "chrome/browser/android/vr/render_loop_factory.h"
+#include "chrome/browser/vr/browser_renderer_browser_interface.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/platform_input_handler.h"
-#include "chrome/browser/vr/render_loop_browser_interface.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -40,7 +40,7 @@ class VrShell;
 
 class VrGLThread : public base::android::JavaHandlerThread,
                    public PlatformInputHandler,
-                   public RenderLoopBrowserInterface,
+                   public BrowserRendererBrowserInterface,
                    public GlBrowserInterface,
                    public UiBrowserInterface,
                    public BrowserUiInterface {
@@ -58,7 +58,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
       base::OnceCallback<gfx::AcceleratedWidget()> surface_callback);
 
   ~VrGLThread() override;
-  base::WeakPtr<RenderLoop> GetRenderLoop();
+  base::WeakPtr<BrowserRenderer> GetBrowserRenderer();
   void SetInputConnection(VrInputConnection* input_connection);
 
   // GlBrowserInterface implementation (GL calling to VrShell).
@@ -72,7 +72,9 @@ class VrGLThread : public base::android::JavaHandlerThread,
                             gl::SurfaceTexture* texture) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
   void ToggleCardboardGamepad(bool enabled) override;
-  // RenderLoopBrowserInterface implementation (RenderLoop calling to VrShell).
+
+  // BrowserRendererBrowserInterface implementation (BrowserRenderer calling to
+  // VrShell).
   void ForceExitVr() override;
   void ReportUiActivityResultForTesting(
       const VrUiTestActivityResult& result) override;
@@ -171,11 +173,11 @@ class VrGLThread : public base::android::JavaHandlerThread,
 
   // Created on GL thread.
   std::unique_ptr<UiFactory> ui_factory_;
-  std::unique_ptr<RenderLoop> render_loop_;
+  std::unique_ptr<BrowserRenderer> browser_renderer_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
 
-  // This state is used for initializing the RenderLoop.
-  std::unique_ptr<RenderLoopFactory::Params> factory_params_;
+  // This state is used for initializing the BrowserRenderer.
+  std::unique_ptr<BrowserRendererFactory::Params> factory_params_;
 
   DISALLOW_COPY_AND_ASSIGN(VrGLThread);
 };

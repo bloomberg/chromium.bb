@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_RENDER_LOOP_FACTORY_H_
-#define CHROME_BROWSER_ANDROID_VR_RENDER_LOOP_FACTORY_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_BROWSER_RENDERER_FACTORY_H_
+#define CHROME_BROWSER_ANDROID_VR_BROWSER_RENDERER_FACTORY_H_
 
 #include <memory>
 
@@ -22,11 +22,11 @@ class WaitableEvent;
 
 namespace vr {
 
-class RenderLoop;
+class BrowserRenderer;
 class UiFactory;
 class VrGLThread;
 
-class VR_EXPORT RenderLoopFactory {
+class VR_EXPORT BrowserRendererFactory {
  public:
   struct VR_EXPORT Params {
     Params(gvr::GvrApi* gvr_api,
@@ -48,11 +48,12 @@ class VR_EXPORT RenderLoopFactory {
     base::OnceCallback<gfx::AcceleratedWidget()> surface_callback;
   };
 
-  static std::unique_ptr<RenderLoop> Create(VrGLThread* vr_gl_thread,
-                                            UiFactory* ui_factory,
-                                            std::unique_ptr<Params> params);
+  static std::unique_ptr<BrowserRenderer> Create(
+      VrGLThread* vr_gl_thread,
+      UiFactory* ui_factory,
+      std::unique_ptr<Params> params);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_RENDER_LOOP_FACTORY_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_BROWSER_RENDERER_FACTORY_H_

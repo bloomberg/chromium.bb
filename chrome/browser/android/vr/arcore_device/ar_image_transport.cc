@@ -29,7 +29,7 @@ constexpr int kSharedBufferSwapChainSize = 3;
 
 }  // namespace
 
-// TODO(klausw): share this with VrShellGl.
+// TODO(klausw): share this with WebXrPresentationState.
 struct SharedFrameBuffer {
   SharedFrameBuffer() = default;
   ~SharedFrameBuffer() = default;

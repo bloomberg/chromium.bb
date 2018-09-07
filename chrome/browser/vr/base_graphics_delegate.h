@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_BASE_COMPOSITOR_DELEGATE_H_
-#define CHROME_BROWSER_VR_BASE_COMPOSITOR_DELEGATE_H_
+#ifndef CHROME_BROWSER_VR_BASE_GRAPHICS_DELEGATE_H_
+#define CHROME_BROWSER_VR_BASE_GRAPHICS_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "chrome/browser/vr/compositor_delegate.h"
+#include "chrome/browser/vr/graphics_delegate.h"
 
 namespace gl {
 class GLContext;
@@ -17,12 +17,12 @@ class GLSurface;
 
 namespace vr {
 
-class VR_EXPORT BaseCompositorDelegate : public CompositorDelegate {
+class VR_EXPORT BaseGraphicsDelegate : public GraphicsDelegate {
  public:
-  BaseCompositorDelegate();
-  ~BaseCompositorDelegate() override;
+  BaseGraphicsDelegate();
+  ~BaseGraphicsDelegate() override;
 
-  // CompositorDelegate implementation.
+  // GraphicsDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
   bool RunInSkiaContext(SkiaContextCallback callback) override;
 
@@ -39,9 +39,9 @@ class VR_EXPORT BaseCompositorDelegate : public CompositorDelegate {
   scoped_refptr<gl::GLContext> contexts_[kNumContexts];
   ContextId curr_context_id_ = kNone;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseCompositorDelegate);
+  DISALLOW_COPY_AND_ASSIGN(BaseGraphicsDelegate);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_BASE_COMPOSITOR_DELEGATE_H_
+#endif  // CHROME_BROWSER_VR_BASE_GRAPHICS_DELEGATE_H_

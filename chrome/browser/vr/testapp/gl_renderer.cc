@@ -9,7 +9,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "ui/gl/gl_bindings.h"
@@ -35,7 +34,7 @@ GlRenderer::GlRenderer() : weak_ptr_factory_(this) {}
 GlRenderer::~GlRenderer() {}
 
 bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
-  if (!BaseCompositorDelegate::Initialize(surface))
+  if (!BaseGraphicsDelegate::Initialize(surface))
     return false;
   PostRenderFrameTask();
   return true;

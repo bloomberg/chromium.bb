@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/render_loop.h"
+#include "chrome/browser/vr/browser_renderer.h"
 
 #include <utility>
 
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "chrome/browser/vr/browser_renderer_browser_interface.h"
 #include "chrome/browser/vr/controller_delegate_for_testing.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "chrome/browser/vr/render_info.h"
-#include "chrome/browser/vr/render_loop_browser_interface.h"
 #include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -22,46 +22,47 @@
 
 namespace vr {
 
-RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
-                       std::unique_ptr<SchedulerDelegate> scheduler_delegate,
-                       std::unique_ptr<CompositorDelegate> compositor_delegate,
-                       std::unique_ptr<ControllerDelegate> controller_delegate,
-                       RenderLoopBrowserInterface* browser,
-                       size_t sliding_time_size)
+BrowserRenderer::BrowserRenderer(
+    std::unique_ptr<UiInterface> ui,
+    std::unique_ptr<SchedulerDelegate> scheduler_delegate,
+    std::unique_ptr<GraphicsDelegate> graphics_delegate,
+    std::unique_ptr<ControllerDelegate> controller_delegate,
+    BrowserRendererBrowserInterface* browser,
+    size_t sliding_time_size)
     : ui_(std::move(ui)),
       scheduler_delegate_(std::move(scheduler_delegate)),
-      compositor_delegate_(std::move(compositor_delegate)),
+      graphics_delegate_(std::move(graphics_delegate)),
       controller_delegate_(std::move(controller_delegate)),
       browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size),
       weak_ptr_factory_(this) {
-  scheduler_delegate_->SetRenderLoop(this);
+  scheduler_delegate_->SetBrowserRenderer(this);
 }
 
-RenderLoop::~RenderLoop() = default;
+BrowserRenderer::~BrowserRenderer() = default;
 
-void RenderLoop::DrawBrowserFrame(base::TimeTicks current_time) {
-  Draw(CompositorDelegate::kUiFrame, current_time);
+void BrowserRenderer::DrawBrowserFrame(base::TimeTicks current_time) {
+  Draw(GraphicsDelegate::kUiFrame, current_time);
 }
 
-void RenderLoop::DrawWebXrFrame(base::TimeTicks current_time) {
-  Draw(CompositorDelegate::kWebXrFrame, current_time);
+void BrowserRenderer::DrawWebXrFrame(base::TimeTicks current_time) {
+  Draw(GraphicsDelegate::kWebXrFrame, current_time);
 }
 
-void RenderLoop::Draw(CompositorDelegate::FrameType frame_type,
-                      base::TimeTicks current_time) {
+void BrowserRenderer::Draw(GraphicsDelegate::FrameType frame_type,
+                           base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", __func__, "frame_type", frame_type);
-  const auto& render_info = compositor_delegate_->GetRenderInfo(
+  const auto& render_info = graphics_delegate_->GetRenderInfo(
       frame_type, scheduler_delegate_->GetHeadPose());
   UpdateUi(render_info, current_time, frame_type);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   bool use_quad_layer = ui_->IsContentVisibleAndOpaque() &&
-                        compositor_delegate_->IsContentQuadReady();
+                        graphics_delegate_->IsContentQuadReady();
   ui_->SetContentUsesQuadLayer(use_quad_layer);
 
-  compositor_delegate_->InitializeBuffers();
-  if (frame_type == CompositorDelegate::kWebXrFrame) {
+  graphics_delegate_->InitializeBuffers();
+  if (frame_type == GraphicsDelegate::kWebXrFrame) {
     DCHECK(!use_quad_layer);
     DrawWebXr();
     if (ui_->HasWebXrOverlayElementsToDraw())
@@ -78,92 +79,92 @@ void RenderLoop::Draw(CompositorDelegate::FrameType frame_type,
                  ui_controller_update_time_.GetAverage().InMicroseconds());
 }
 
-void RenderLoop::DrawWebXr() {
+void BrowserRenderer::DrawWebXr() {
   TRACE_EVENT0("gpu", __func__);
-  compositor_delegate_->PrepareBufferForWebXr();
+  graphics_delegate_->PrepareBufferForWebXr();
 
   int texture_id;
-  CompositorDelegate::Transform uv_transform;
-  compositor_delegate_->GetWebXrDrawParams(&texture_id, &uv_transform);
+  GraphicsDelegate::Transform uv_transform;
+  graphics_delegate_->GetWebXrDrawParams(&texture_id, &uv_transform);
   ui_->DrawWebXr(texture_id, uv_transform);
-  compositor_delegate_->OnFinishedDrawingBuffer();
+  graphics_delegate_->OnFinishedDrawingBuffer();
 }
 
-void RenderLoop::DrawWebXrOverlay(const RenderInfo& render_info) {
+void BrowserRenderer::DrawWebXrOverlay(const RenderInfo& render_info) {
   TRACE_EVENT0("gpu", __func__);
   // Calculate optimized viewport and corresponding render info.
-  const auto& recommended_fovs = compositor_delegate_->GetRecommendedFovs();
+  const auto& recommended_fovs = graphics_delegate_->GetRecommendedFovs();
   const auto& fovs = ui_->GetMinimalFovForWebXrOverlayElements(
       render_info.left_eye_model.view_matrix, recommended_fovs.first,
       render_info.right_eye_model.view_matrix, recommended_fovs.second,
-      compositor_delegate_->GetZNear());
+      graphics_delegate_->GetZNear());
   const auto& webxr_overlay_render_info =
-      compositor_delegate_->GetOptimizedRenderInfoForFovs(fovs);
+      graphics_delegate_->GetOptimizedRenderInfoForFovs(fovs);
 
-  compositor_delegate_->PrepareBufferForWebXrOverlayElements();
+  graphics_delegate_->PrepareBufferForWebXrOverlayElements();
   ui_->DrawWebVrOverlayForeground(webxr_overlay_render_info);
-  compositor_delegate_->OnFinishedDrawingBuffer();
+  graphics_delegate_->OnFinishedDrawingBuffer();
 }
 
-void RenderLoop::DrawContentQuad() {
+void BrowserRenderer::DrawContentQuad() {
   TRACE_EVENT0("gpu", __func__);
-  compositor_delegate_->PrepareBufferForContentQuadLayer(
+  graphics_delegate_->PrepareBufferForContentQuadLayer(
       ui_->GetContentWorldSpaceTransform());
 
-  CompositorDelegate::Transform uv_transform;
+  GraphicsDelegate::Transform uv_transform;
   float border_x;
   float border_y;
-  compositor_delegate_->GetContentQuadDrawParams(&uv_transform, &border_x,
-                                                 &border_y);
+  graphics_delegate_->GetContentQuadDrawParams(&uv_transform, &border_x,
+                                               &border_y);
   ui_->DrawContent(uv_transform, border_x, border_y);
-  compositor_delegate_->OnFinishedDrawingBuffer();
+  graphics_delegate_->OnFinishedDrawingBuffer();
 }
 
-void RenderLoop::DrawBrowserUi(const RenderInfo& render_info) {
+void BrowserRenderer::DrawBrowserUi(const RenderInfo& render_info) {
   TRACE_EVENT0("gpu", __func__);
-  compositor_delegate_->PrepareBufferForBrowserUi();
+  graphics_delegate_->PrepareBufferForBrowserUi();
   ui_->Draw(render_info);
-  compositor_delegate_->OnFinishedDrawingBuffer();
+  graphics_delegate_->OnFinishedDrawingBuffer();
 }
 
-void RenderLoop::OnPause() {
+void BrowserRenderer::OnPause() {
   DCHECK(controller_delegate_);
   controller_delegate_->OnPause();
   scheduler_delegate_->OnPause();
   ui_->OnPause();
 }
 
-void RenderLoop::OnResume() {
+void BrowserRenderer::OnResume() {
   DCHECK(controller_delegate_);
   scheduler_delegate_->OnResume();
   controller_delegate_->OnResume();
 }
 
-void RenderLoop::OnExitPresent() {
+void BrowserRenderer::OnExitPresent() {
   scheduler_delegate_->OnExitPresent();
 }
 
-void RenderLoop::OnTriggerEvent(bool pressed) {
+void BrowserRenderer::OnTriggerEvent(bool pressed) {
   scheduler_delegate_->OnTriggerEvent(pressed);
 }
 
-void RenderLoop::SetWebXrMode(bool enabled) {
+void BrowserRenderer::SetWebXrMode(bool enabled) {
   scheduler_delegate_->SetWebXrMode(enabled);
 }
 
-void RenderLoop::OnSwapContents(int new_content_id) {
+void BrowserRenderer::OnSwapContents(int new_content_id) {
   ui_->OnSwapContents(new_content_id);
 }
 
-void RenderLoop::EnableAlertDialog(PlatformInputHandler* input_handler,
-                                   float width,
-                                   float height) {
+void BrowserRenderer::EnableAlertDialog(PlatformInputHandler* input_handler,
+                                        float width,
+                                        float height) {
   scheduler_delegate_->SetShowingVrDialog(true);
   vr_dialog_input_delegate_ =
       std::make_unique<PlatformUiInputDelegate>(input_handler);
   vr_dialog_input_delegate_->SetSize(width, height);
   if (ui_->IsContentVisibleAndOpaque()) {
-    auto content_width = compositor_delegate_->GetContentBufferWidth();
+    auto content_width = graphics_delegate_->GetContentBufferWidth();
     DCHECK(content_width);
     ui_->SetContentOverlayAlertDialogEnabled(
         true, vr_dialog_input_delegate_.get(), width / content_width,
@@ -174,13 +175,13 @@ void RenderLoop::EnableAlertDialog(PlatformInputHandler* input_handler,
   }
 }
 
-void RenderLoop::DisableAlertDialog() {
+void BrowserRenderer::DisableAlertDialog() {
   ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
   vr_dialog_input_delegate_ = nullptr;
   scheduler_delegate_->SetShowingVrDialog(false);
 }
 
-void RenderLoop::SetAlertDialogSize(float width, float height) {
+void BrowserRenderer::SetAlertDialogSize(float width, float height) {
   if (vr_dialog_input_delegate_)
     vr_dialog_input_delegate_->SetSize(width, height);
   // If not floating, dialogs are rendered with a fixed width, so that only the
@@ -188,7 +189,7 @@ void RenderLoop::SetAlertDialogSize(float width, float height) {
   // the contents. During a WebXR presentation, the contents are not present
   // but, in this case, the dialogs are never floating.
   if (ui_->IsContentVisibleAndOpaque()) {
-    auto content_width = compositor_delegate_->GetContentBufferWidth();
+    auto content_width = graphics_delegate_->GetContentBufferWidth();
     DCHECK(content_width);
     ui_->SetContentOverlayAlertDialogEnabled(
         true, vr_dialog_input_delegate_.get(), width / content_width,
@@ -199,42 +200,43 @@ void RenderLoop::SetAlertDialogSize(float width, float height) {
   }
 }
 
-void RenderLoop::SetDialogLocation(float x, float y) {
+void BrowserRenderer::SetDialogLocation(float x, float y) {
   ui_->SetDialogLocation(x, y);
 }
 
-void RenderLoop::SetDialogFloating(bool floating) {
+void BrowserRenderer::SetDialogFloating(bool floating) {
   ui_->SetDialogFloating(floating);
 }
 
-void RenderLoop::ShowToast(const base::string16& text) {
+void BrowserRenderer::ShowToast(const base::string16& text) {
   ui_->ShowPlatformToast(text);
 }
 
-void RenderLoop::CancelToast() {
+void BrowserRenderer::CancelToast() {
   ui_->CancelPlatformToast();
 }
 
-void RenderLoop::ResumeContentRendering() {
-  compositor_delegate_->ResumeContentRendering();
+void BrowserRenderer::ResumeContentRendering() {
+  graphics_delegate_->ResumeContentRendering();
 }
 
-void RenderLoop::ContentBoundsChanged(int width, int height) {
+void BrowserRenderer::ContentBoundsChanged(int width, int height) {
   TRACE_EVENT0("gpu", __func__);
   ui_->OnContentBoundsChanged(width, height);
 }
 
-void RenderLoop::BufferBoundsChanged(const gfx::Size& content_buffer_size,
-                                     const gfx::Size& overlay_buffer_size) {
-  compositor_delegate_->BufferBoundsChanged(content_buffer_size,
-                                            overlay_buffer_size);
+void BrowserRenderer::BufferBoundsChanged(
+    const gfx::Size& content_buffer_size,
+    const gfx::Size& overlay_buffer_size) {
+  graphics_delegate_->BufferBoundsChanged(content_buffer_size,
+                                          overlay_buffer_size);
 }
 
-base::WeakPtr<BrowserUiInterface> RenderLoop::GetBrowserUiWeakPtr() {
+base::WeakPtr<BrowserUiInterface> BrowserRenderer::GetBrowserUiWeakPtr() {
   return ui_->GetBrowserUiWeakPtr();
 }
 
-void RenderLoop::SetUiExpectingActivityForTesting(
+void BrowserRenderer::SetUiExpectingActivityForTesting(
     UiTestActivityExpectation ui_expectation) {
   DCHECK(ui_test_state_ == nullptr)
       << "Attempted to set a UI activity expectation with one in progress";
@@ -243,13 +245,13 @@ void RenderLoop::SetUiExpectingActivityForTesting(
       base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
 }
 
-void RenderLoop::AcceptDoffPromptForTesting() {
+void BrowserRenderer::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
 
-void RenderLoop::UpdateUi(const RenderInfo& render_info,
-                          base::TimeTicks current_time,
-                          CompositorDelegate::FrameType frame_type) {
+void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
+                               base::TimeTicks current_time,
+                               GraphicsDelegate::FrameType frame_type) {
   TRACE_EVENT0("gpu", __func__);
 
   // Update the render position of all UI elements.
@@ -258,11 +260,11 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
 
   // WebXR handles controller input in OnVsync.
   base::TimeDelta controller_time;
-  if (frame_type == CompositorDelegate::kUiFrame)
+  if (frame_type == GraphicsDelegate::kUiFrame)
     controller_time = ProcessControllerInput(render_info, current_time);
 
   if (ui_->SceneHasDirtyTextures()) {
-    if (!compositor_delegate_->RunInSkiaContext(base::BindOnce(
+    if (!graphics_delegate_->RunInSkiaContext(base::BindOnce(
             &UiInterface::UpdateSceneTextures, base::Unretained(ui_.get())))) {
       browser_->ForceExitVr();
       return;
@@ -276,7 +278,8 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   ui_processing_time_.AddSample(scene_time - controller_time);
 }
 
-void RenderLoop::ProcessControllerInputForWebXr(base::TimeTicks current_time) {
+void BrowserRenderer::ProcessControllerInputForWebXr(
+    base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(controller_delegate_);
   DCHECK(ui_);
@@ -293,14 +296,14 @@ void RenderLoop::ProcessControllerInputForWebXr(base::TimeTicks current_time) {
       controller_delegate_->GetInputSourceState());
 }
 
-void RenderLoop::ConnectPresentingService(
+void BrowserRenderer::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRRuntimeSessionOptionsPtr options) {
   scheduler_delegate_->ConnectPresentingService(std::move(display_info),
                                                 std::move(options));
 }
 
-base::TimeDelta RenderLoop::ProcessControllerInput(
+base::TimeDelta BrowserRenderer::ProcessControllerInput(
     const RenderInfo& render_info,
     base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
@@ -323,7 +326,7 @@ base::TimeDelta RenderLoop::ProcessControllerInput(
   return controller_time;
 }
 
-void RenderLoop::PerformControllerActionForTesting(
+void BrowserRenderer::PerformControllerActionForTesting(
     ControllerTestInput controller_input) {
   DCHECK(controller_delegate_);
   if (controller_input.action ==
@@ -353,8 +356,9 @@ void RenderLoop::PerformControllerActionForTesting(
   }
 }
 
-void RenderLoop::ReportUiStatusForTesting(const base::TimeTicks& current_time,
-                                          bool ui_updated) {
+void BrowserRenderer::ReportUiStatusForTesting(
+    const base::TimeTicks& current_time,
+    bool ui_updated) {
   if (ui_test_state_ == nullptr)
     return;
   base::TimeDelta time_since_start = current_time - ui_test_state_->start_time;
@@ -377,11 +381,11 @@ void RenderLoop::ReportUiStatusForTesting(const base::TimeTicks& current_time,
   }
 }
 
-base::WeakPtr<RenderLoop> RenderLoop::GetWeakPtr() {
+base::WeakPtr<BrowserRenderer> BrowserRenderer::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void RenderLoop::ReportUiActivityResultForTesting(
+void BrowserRenderer::ReportUiActivityResultForTesting(
     VrUiTestActivityResult result) {
   ui_test_state_ = nullptr;
   browser_->ReportUiActivityResultForTesting(result);

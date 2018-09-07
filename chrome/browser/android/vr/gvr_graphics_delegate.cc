@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/vr_shell_gl.h"
+#include "chrome/browser/android/vr/gvr_graphics_delegate.h"
 
 #include <algorithm>
 
@@ -37,7 +37,7 @@ constexpr int kNoMultiSampleBuffer = 1;
 constexpr float kDefaultRenderTargetSizeScale = 0.75f;
 constexpr float kLowDpiDefaultRenderTargetSizeScale = 0.9f;
 
-// When display UI on top of WebVR, we use a seperate buffer. Normally, the
+// When display UI on top of WebVR, we use a separate buffer. Normally, the
 // buffer is set to recommended size to get best visual (i.e the buffer for
 // rendering ChromeVR). We divide the recommended buffer size by this number to
 // improve performance.
@@ -123,13 +123,14 @@ FovRectangle ToUiFovRect(const gvr::Rectf& rect) {
 }  // namespace
 
 // TODO(acondor): Rename to GvrGraphicsDelegate.
-VrShellGl::VrShellGl(GlBrowserInterface* browser,
-                     TexturesInitializedCallback textures_initialized_callback,
-                     gvr::GvrApi* gvr_api,
-                     bool reprojected_rendering,
-                     bool pause_content,
-                     bool low_density,
-                     size_t sliding_time_size)
+GvrGraphicsDelegate::GvrGraphicsDelegate(
+    GlBrowserInterface* browser,
+    TexturesInitializedCallback textures_initialized_callback,
+    gvr::GvrApi* gvr_api,
+    bool reprojected_rendering,
+    bool pause_content,
+    bool low_density,
+    size_t sliding_time_size)
     : gvr_api_(gvr_api),
       low_density_(low_density),
       surfaceless_rendering_(reprojected_rendering),
@@ -140,11 +141,12 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
       webvr_submit_time_(sliding_time_size),
       weak_ptr_factory_(this) {}
 
-VrShellGl::~VrShellGl() = default;
+GvrGraphicsDelegate::~GvrGraphicsDelegate() = default;
 
-void VrShellGl::Init(base::WaitableEvent* gl_surface_created_event,
-                     base::OnceCallback<gfx::AcceleratedWidget()> callback,
-                     bool start_in_webxr_mode) {
+void GvrGraphicsDelegate::Init(
+    base::WaitableEvent* gl_surface_created_event,
+    base::OnceCallback<gfx::AcceleratedWidget()> callback,
+    bool start_in_webxr_mode) {
   if (surfaceless_rendering_) {
     InitializeGl(nullptr, start_in_webxr_mode);
   } else {
@@ -153,8 +155,8 @@ void VrShellGl::Init(base::WaitableEvent* gl_surface_created_event,
   }
 }
 
-void VrShellGl::InitializeGl(gfx::AcceleratedWidget window,
-                             bool start_in_webxr_mode) {
+void GvrGraphicsDelegate::InitializeGl(gfx::AcceleratedWidget window,
+                                       bool start_in_webxr_mode) {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
@@ -175,7 +177,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window,
     return;
   }
 
-  if (!BaseCompositorDelegate::Initialize(surface)) {
+  if (!BaseGraphicsDelegate::Initialize(surface)) {
     browser_->ForceExitVr();
     return;
   }
@@ -210,13 +212,15 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window,
   browser_->DialogSurfaceCreated(ui_surface_->j_surface().obj(),
                                  ui_surface_texture_.get());
 
-  content_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
-      &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-  content_overlay_surface_texture_->SetFrameAvailableCallback(
-      base::BindRepeating(&VrShellGl::OnContentOverlayFrameAvailable,
+  content_surface_texture_->SetFrameAvailableCallback(
+      base::BindRepeating(&GvrGraphicsDelegate::OnContentFrameAvailable,
                           weak_ptr_factory_.GetWeakPtr()));
-  ui_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
-      &VrShellGl::OnUiFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+  content_overlay_surface_texture_->SetFrameAvailableCallback(
+      base::BindRepeating(&GvrGraphicsDelegate::OnContentOverlayFrameAvailable,
+                          weak_ptr_factory_.GetWeakPtr()));
+  ui_surface_texture_->SetFrameAvailableCallback(
+      base::BindRepeating(&GvrGraphicsDelegate::OnUiFrameAvailable,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
@@ -233,7 +237,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window,
            content_overlay_texture_id, platform_ui_texture_id);
 }
 
-bool VrShellGl::CreateOrResizeWebXrSurface(
+bool GvrGraphicsDelegate::CreateOrResizeWebXrSurface(
     const gfx::Size& size,
     base::RepeatingClosure on_webxr_frame_available) {
   DVLOG(2) << __func__ << ": size=" << size.width() << "x" << size.height();
@@ -269,15 +273,15 @@ bool VrShellGl::CreateOrResizeWebXrSurface(
   return true;
 }
 
-base::TimeDelta VrShellGl::GetAcquireTimeAverage() const {
+base::TimeDelta GvrGraphicsDelegate::GetAcquireTimeAverage() const {
   return webvr_acquire_time_.GetAverage();
 }
 
-int VrShellGl::GetContentBufferWidth() {
+int GvrGraphicsDelegate::GetContentBufferWidth() {
   return content_tex_buffer_size_.width();
 }
 
-void VrShellGl::ResumeContentRendering() {
+void GvrGraphicsDelegate::ResumeContentRendering() {
   if (!content_paused_)
     return;
   content_paused_ = false;
@@ -287,21 +291,21 @@ void VrShellGl::ResumeContentRendering() {
   content_surface_texture_->UpdateTexImage();
 }
 
-void VrShellGl::OnContentFrameAvailable() {
+void GvrGraphicsDelegate::OnContentFrameAvailable() {
   if (content_paused_)
     return;
   content_surface_texture_->UpdateTexImage();
 }
 
-void VrShellGl::OnContentOverlayFrameAvailable() {
+void GvrGraphicsDelegate::OnContentOverlayFrameAvailable() {
   content_overlay_surface_texture_->UpdateTexImage();
 }
 
-void VrShellGl::OnUiFrameAvailable() {
+void GvrGraphicsDelegate::OnUiFrameAvailable() {
   ui_surface_texture_->UpdateTexImage();
 }
 
-void VrShellGl::OnWebXrFrameAvailable() {
+void GvrGraphicsDelegate::OnWebXrFrameAvailable() {
   webxr_surface_texture_->UpdateTexImage();
   // The usual transform matrix we get for the Surface flips Y, so we need to
   // apply it in the copy shader to get the correct image orientation:
@@ -313,7 +317,7 @@ void VrShellGl::OnWebXrFrameAvailable() {
       &webvr_surface_texture_uv_transform_[0]);
 }
 
-void VrShellGl::InitializeRenderer(bool start_in_webxr_mode) {
+void GvrGraphicsDelegate::InitializeRenderer(bool start_in_webxr_mode) {
   gvr_api_->InitializeGl();
 
   std::vector<gvr::BufferSpec> specs;
@@ -354,7 +358,7 @@ void VrShellGl::InitializeRenderer(bool start_in_webxr_mode) {
   browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
-void VrShellGl::UpdateViewports() {
+void GvrGraphicsDelegate::UpdateViewports() {
   if (!viewports_need_updating_)
     return;
   viewports_need_updating_ = false;
@@ -390,14 +394,14 @@ void VrShellGl::UpdateViewports() {
   content_underlay_viewport_.SetSourceUv(kContentUv);
 }
 
-void VrShellGl::SetWebXrBounds(const WebVrBounds& bounds) {
+void GvrGraphicsDelegate::SetWebXrBounds(const WebVrBounds& bounds) {
   webvr_viewport_.left.SetSourceUv(UVFromGfxRect(bounds.left_bounds));
   webvr_viewport_.right.SetSourceUv(UVFromGfxRect(bounds.right_bounds));
   current_webvr_frame_bounds_ =
       bounds;  // If we recreate the viewports, keep these bounds.
 }
 
-bool VrShellGl::ResizeForWebXr() {
+bool GvrGraphicsDelegate::ResizeForWebXr() {
   // Resize the webvr overlay buffer, which may have been used by the content
   // quad buffer previously.
   gvr::Sizei size = swap_chain_.GetBufferSize(kMultiSampleBuffer);
@@ -423,7 +427,7 @@ bool VrShellGl::ResizeForWebXr() {
   return true;
 }
 
-void VrShellGl::ResizeForBrowser() {
+void GvrGraphicsDelegate::ResizeForBrowser() {
   gvr::Sizei size = swap_chain_.GetBufferSize(kMultiSampleBuffer);
   gfx::Size target_size = render_size_default_;
   if (size.width != target_size.width() ||
@@ -441,10 +445,10 @@ void VrShellGl::ResizeForBrowser() {
   }
 }
 
-void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
-                               const Viewport& viewport,
-                               const gfx::Size& render_size,
-                               RenderInfo* out_render_info) {
+void GvrGraphicsDelegate::UpdateEyeInfos(const gfx::Transform& head_pose,
+                                         const Viewport& viewport,
+                                         const gfx::Size& render_size,
+                                         RenderInfo* out_render_info) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     CameraModel& eye_info = (eye == GVR_LEFT_EYE)
                                 ? out_render_info->left_eye_model
@@ -468,7 +472,7 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
   }
 }
 
-void VrShellGl::UpdateContentViewportTransforms(
+void GvrGraphicsDelegate::UpdateContentViewportTransforms(
     const gfx::Transform& quad_transform) {
   // The Texture Quad renderer draws quads that extend from -0.5 to 0.5 in X and
   // Y, while Daydream's quad layers are implicitly -1.0 to 1.0. Thus to ensure
@@ -489,7 +493,7 @@ void VrShellGl::UpdateContentViewportTransforms(
   }
 }
 
-bool VrShellGl::AcquireGvrFrame(int frame_index) {
+bool GvrGraphicsDelegate::AcquireGvrFrame(int frame_index) {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(!acquired_frame_);
   base::TimeTicks acquire_start = base::TimeTicks::Now();
@@ -498,8 +502,8 @@ bool VrShellGl::AcquireGvrFrame(int frame_index) {
   return !!acquired_frame_;
 }
 
-RenderInfo VrShellGl::GetRenderInfo(FrameType frame_type,
-                                    const gfx::Transform& head_pose) {
+RenderInfo GvrGraphicsDelegate::GetRenderInfo(FrameType frame_type,
+                                              const gfx::Transform& head_pose) {
   gfx::Size render_size =
       frame_type == kWebXrFrame ? render_size_webvr_ui_ : render_size_default_;
   UpdateEyeInfos(head_pose, main_viewport_, render_size, &render_info_);
@@ -507,11 +511,11 @@ RenderInfo VrShellGl::GetRenderInfo(FrameType frame_type,
   return render_info_;
 }
 
-void VrShellGl::InitializeBuffers() {
+void GvrGraphicsDelegate::InitializeBuffers() {
   viewport_list_ = gvr_api_->CreateEmptyBufferViewportList();
 }
 
-void VrShellGl::PrepareBufferForWebXr() {
+void GvrGraphicsDelegate::PrepareBufferForWebXr() {
   DCHECK_EQ(viewport_list_.GetSize(), 0U);
   viewport_list_.SetBufferViewport(0, webvr_viewport_.left);
   viewport_list_.SetBufferViewport(1, webvr_viewport_.right);
@@ -536,7 +540,7 @@ void VrShellGl::PrepareBufferForWebXr() {
   glViewport(0, 0, webxr_surface_size_.width(), webxr_surface_size_.height());
 }
 
-void VrShellGl::PrepareBufferForWebXrOverlayElements() {
+void GvrGraphicsDelegate::PrepareBufferForWebXrOverlayElements() {
   // WebVR content may use an arbitrary size buffer. We need to draw browser
   // UI on a different buffer to make sure that our UI has enough resolution.
   acquired_frame_.BindBuffer(kMultiSampleBuffer);
@@ -546,7 +550,7 @@ void VrShellGl::PrepareBufferForWebXrOverlayElements() {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void VrShellGl::PrepareBufferForContentQuadLayer(
+void GvrGraphicsDelegate::PrepareBufferForContentQuadLayer(
     const gfx::Transform& quad_transform) {
   DCHECK_EQ(viewport_list_.GetSize(), 0U);
   UpdateContentViewportTransforms(quad_transform);
@@ -573,7 +577,7 @@ void VrShellGl::PrepareBufferForContentQuadLayer(
              content_tex_buffer_size_.height() + 2 * kContentBorderPixels);
 }
 
-void VrShellGl::PrepareBufferForBrowserUi() {
+void GvrGraphicsDelegate::PrepareBufferForBrowserUi() {
   DCHECK_LE(viewport_list_.GetSize(), 2U);
   viewport_list_.SetBufferViewport(viewport_list_.GetSize(),
                                    main_viewport_.left);
@@ -583,16 +587,17 @@ void VrShellGl::PrepareBufferForBrowserUi() {
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-FovRectangles VrShellGl::GetRecommendedFovs() {
+FovRectangles GvrGraphicsDelegate::GetRecommendedFovs() {
   return {ToUiFovRect(main_viewport_.left.GetSourceFov()),
           ToUiFovRect(main_viewport_.right.GetSourceFov())};
 }
 
-float VrShellGl::GetZNear() {
+float GvrGraphicsDelegate::GetZNear() {
   return kZNear;
 }
 
-RenderInfo VrShellGl::GetOptimizedRenderInfoForFovs(const FovRectangles& fovs) {
+RenderInfo GvrGraphicsDelegate::GetOptimizedRenderInfoForFovs(
+    const FovRectangles& fovs) {
   webvr_overlay_viewport_.left.SetSourceFov(ToGvrRectf(fovs.first));
   webvr_overlay_viewport_.right.SetSourceFov(ToGvrRectf(fovs.second));
 
@@ -605,17 +610,17 @@ RenderInfo VrShellGl::GetOptimizedRenderInfoForFovs(const FovRectangles& fovs) {
   return render_info_webxr_overlay;
 }
 
-void VrShellGl::OnFinishedDrawingBuffer() {
+void GvrGraphicsDelegate::OnFinishedDrawingBuffer() {
   acquired_frame_.Unbind();
 }
 
-bool VrShellGl::IsContentQuadReady() {
+bool GvrGraphicsDelegate::IsContentQuadReady() {
   return !content_tex_buffer_size_.IsEmpty();
 }
 
-void VrShellGl::GetContentQuadDrawParams(Transform* uv_transform,
-                                         float* border_x,
-                                         float* border_y) {
+void GvrGraphicsDelegate::GetContentQuadDrawParams(Transform* uv_transform,
+                                                   float* border_x,
+                                                   float* border_y) {
   std::copy(kContentUvTransform,
             kContentUvTransform + base::size(kContentUvTransform),
             *uv_transform);
@@ -624,7 +629,8 @@ void VrShellGl::GetContentQuadDrawParams(Transform* uv_transform,
   *border_y = kContentBorderPixels / content_tex_buffer_size_.height();
 }
 
-void VrShellGl::GetWebXrDrawParams(int* texture_id, Transform* uv_transform) {
+void GvrGraphicsDelegate::GetWebXrDrawParams(int* texture_id,
+                                             Transform* uv_transform) {
   if (webxr_use_shared_buffer_draw_) {
     WebXrSharedBuffer* buffer =
         webxr_->GetProcessingFrame()->shared_buffer.get();
@@ -644,7 +650,7 @@ void VrShellGl::GetWebXrDrawParams(int* texture_id, Transform* uv_transform) {
   }
 }
 
-void VrShellGl::WebVrWaitForServerFence() {
+void GvrGraphicsDelegate::WebVrWaitForServerFence() {
   DCHECK(webxr_->HaveProcessingFrame());
 
   std::unique_ptr<gl::GLFence> gpu_fence(
@@ -661,7 +667,7 @@ void VrShellGl::WebVrWaitForServerFence() {
   return;
 }
 
-void VrShellGl::SubmitToGvr(const gfx::Transform& head_pose) {
+void GvrGraphicsDelegate::SubmitToGvr(const gfx::Transform& head_pose) {
   TRACE_EVENT0("gpu", __func__);
   gvr::Mat4f mat;
   TransformToGvrMat(head_pose, &mat);
@@ -677,24 +683,25 @@ void VrShellGl::SubmitToGvr(const gfx::Transform& head_pose) {
   }
 }
 
-void VrShellGl::OnResume() {
+void GvrGraphicsDelegate::OnResume() {
   viewports_need_updating_ = true;
 }
 
-void VrShellGl::BufferBoundsChanged(const gfx::Size& content_buffer_size,
-                                    const gfx::Size& overlay_buffer_size) {
+void GvrGraphicsDelegate::BufferBoundsChanged(
+    const gfx::Size& content_buffer_size,
+    const gfx::Size& overlay_buffer_size) {
   content_tex_buffer_size_ = content_buffer_size;
 }
 
-base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
+base::WeakPtr<GvrGraphicsDelegate> GvrGraphicsDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool VrShellGl::DoesSurfacelessRendering() const {
+bool GvrGraphicsDelegate::DoesSurfacelessRendering() const {
   return surfaceless_rendering_;
 }
 
-void VrShellGl::RecordFrameTimeTraces() const {
+void GvrGraphicsDelegate::RecordFrameTimeTraces() const {
   TRACE_COUNTER2("gpu", "GVR frame time (ms)", "acquire",
                  webvr_acquire_time_.GetAverage().InMilliseconds(), "submit",
                  webvr_submit_time_.GetAverage().InMilliseconds());

@@ -15,7 +15,7 @@
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/scoped_gpu_trace.h"
-#include "chrome/browser/vr/scheduler_render_loop_interface.h"
+#include "chrome/browser/vr/scheduler_browser_renderer_interface.h"
 #include "chrome/browser/vr/scheduler_ui_interface.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
@@ -63,7 +63,7 @@ namespace vr {
 GvrSchedulerDelegate::GvrSchedulerDelegate(GlBrowserInterface* browser,
                                            SchedulerUiInterface* ui,
                                            gvr::GvrApi* gvr_api,
-                                           VrShellGl* graphics,
+                                           GvrGraphicsDelegate* graphics,
                                            bool start_in_web_xr_mode,
                                            bool cardboard_gamepad,
                                            size_t sliding_time_size)
@@ -93,9 +93,9 @@ GvrSchedulerDelegate::~GvrSchedulerDelegate() {
   webxr_.EndPresentation();
 }
 
-void GvrSchedulerDelegate::SetRenderLoop(
-    SchedulerRenderLoopInterface* render_loop) {
-  render_loop_ = render_loop;
+void GvrSchedulerDelegate::SetBrowserRenderer(
+    SchedulerBrowserRendererInterface* browser_renderer) {
+  browser_renderer_ = browser_renderer;
 }
 
 gfx::Transform GvrSchedulerDelegate::GetHeadPose() {
@@ -445,8 +445,8 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
     // rendering as WebVR uses the gamepad api. To ensure we always handle input
     // like app button presses, process the controller here.
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_, &head_pose_);
-    DCHECK(render_loop_);
-    render_loop_->ProcessControllerInputForWebXr(frame_time);
+    DCHECK(browser_renderer_);
+    browser_renderer_->ProcessControllerInputForWebXr(frame_time);
   } else {
     DrawFrame(-1, frame_time);
   }
@@ -454,7 +454,7 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
 
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
                                      base::TimeTicks current_time) {
-  // TODO(acondor): Move this logic to RenderLoop::Draw.
+  // TODO(acondor): Move this logic to BrowserRenderer::Draw.
   TRACE_EVENT1("gpu", __func__, "frame", frame_index);
   bool is_webxr_frame = frame_index >= 0;
   if (!webxr_delayed_gvr_submit_.IsCancelled()) {
@@ -464,9 +464,9 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
     DCHECK(!is_webxr_frame)
         << "Unexpected WebXR DrawFrame during acquired frame";
     webxr_delayed_gvr_submit_.Cancel();
-    render_loop_->DrawBrowserFrame(current_time);
+    browser_renderer_->DrawBrowserFrame(current_time);
   }
-  DCHECK(render_loop_);
+  DCHECK(browser_renderer_);
 
   if (web_xr_mode_ && !ShouldDrawWebVr()) {
     // We're in a WebVR session, but don't want to draw WebVR frames, i.e.
@@ -520,9 +520,9 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
     return;
 
   if (is_webxr_frame)
-    render_loop_->DrawWebXrFrame(current_time);
+    browser_renderer_->DrawWebXrFrame(current_time);
   else
-    render_loop_->DrawBrowserFrame(current_time);
+    browser_renderer_->DrawBrowserFrame(current_time);
 
   SubmitDrawnFrame(is_webxr_frame);
 }
@@ -672,8 +672,8 @@ void GvrSchedulerDelegate::AddWebVrRenderTimeEstimate(
 
 void GvrSchedulerDelegate::DrawFrameSubmitNow(bool is_webxr_frame,
                                               const gfx::Transform& head_pose) {
-  TRACE_EVENT1("gpu", "VrShellGl::DrawFrameSubmitNow", "is_webxr_frame",
-               is_webxr_frame);
+  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::DrawFrameSubmitNow",
+               "is_webxr_frame", is_webxr_frame);
 
   {
     std::unique_ptr<ScopedGpuTrace> browser_gpu_trace;
@@ -685,7 +685,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(bool is_webxr_frame,
       // that was inserted after Submit may not be complete yet when the next
       // Submit finishes.
       browser_gpu_trace = std::make_unique<ScopedGpuTrace>(
-          "gpu", "VrShellGl::PostSubmitDrawOnGpu");
+          "gpu", "GvrSchedulerDelegate::PostSubmitDrawOnGpu");
     }
     graphics_->SubmitToGvr(head_pose);
 
@@ -960,11 +960,11 @@ void GvrSchedulerDelegate::SendVSync() {
   int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
 
   gfx::Transform head_mat;
-  TRACE_EVENT_BEGIN0("gpu", "VrShellGl::GetVRPosePtrWithNeckModel");
+  TRACE_EVENT_BEGIN0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
   device::mojom::VRPosePtr pose =
       device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_, &head_mat,
                                                      prediction_nanos);
-  TRACE_EVENT_END0("gpu", "VrShellGl::GetVRPosePtrWithNeckModel");
+  TRACE_EVENT_END0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
 
   // Process all events. Check for ones we wish to react to.
   gvr::Event last_event;
@@ -972,7 +972,7 @@ void GvrSchedulerDelegate::SendVSync() {
     pose->pose_reset |= last_event.type == GVR_EVENT_RECENTER;
   }
 
-  TRACE_EVENT0("gpu", "VrShellGl::XRInput");
+  TRACE_EVENT0("gpu", "GvrSchedulerDelegate::XRInput");
   if (cardboard_gamepad_) {
     std::vector<device::mojom::XRInputSourceStatePtr> input_states;
     input_states.push_back(GetGazeInputSourceState());
@@ -989,7 +989,7 @@ void GvrSchedulerDelegate::SendVSync() {
 
   frame_data->time_delta = pending_time_ - base::TimeTicks();
 
-  TRACE_EVENT0("gpu", "VrShellGl::RunCallback");
+  TRACE_EVENT0("gpu", "GvrSchedulerDelegate::RunCallback");
   std::move(get_frame_data_callback_).Run(std::move(frame_data));
 }
 
@@ -1162,7 +1162,8 @@ void GvrSchedulerDelegate::GetFrameData(
 void GvrSchedulerDelegate::SubmitFrameMissing(
     int16_t frame_index,
     const gpu::SyncToken& sync_token) {
-  TRACE_EVENT1("gpu", "VrShellGl::SubmitWebVRFrame", "frame", frame_index);
+  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::SubmitWebVRFrame", "frame",
+               frame_index);
 
   if (!IsSubmitFrameExpected(frame_index))
     return;
@@ -1263,7 +1264,8 @@ bool GvrSchedulerDelegate::IsSubmitFrameExpected(int16_t frame_index) {
 
 bool GvrSchedulerDelegate::SubmitFrameCommon(int16_t frame_index,
                                              base::TimeDelta time_waited) {
-  TRACE_EVENT1("gpu", "VrShellGl::SubmitWebVRFrame", "frame", frame_index);
+  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::SubmitWebVRFrame", "frame",
+               frame_index);
   DVLOG(2) << __func__ << ": frame=" << frame_index;
 
   if (!IsSubmitFrameExpected(frame_index))
