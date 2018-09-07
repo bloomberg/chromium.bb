@@ -269,6 +269,15 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
   return CalculateClipTransform(reference_box).MapRect(local_clip_bounds_);
 }
 
+void LayoutSVGResourceClipper::StyleDidChange(StyleDifference diff,
+                                              const ComputedStyle* old_style) {
+  LayoutSVGResourceContainer::StyleDidChange(diff, old_style);
+  if (diff.TransformChanged()) {
+    MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
+                                  SVGResourceClient::kPaintInvalidation);
+  }
+}
+
 void LayoutSVGResourceClipper::WillBeDestroyed() {
   MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
                                 SVGResourceClient::kPaintInvalidation);
