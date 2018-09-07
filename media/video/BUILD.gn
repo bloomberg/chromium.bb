@@ -21,6 +21,8 @@ source_set("video") {
     "gpu_video_accelerator_factories.h",
     "h264_bit_reader.cc",
     "h264_bit_reader.h",
+    "h264_level_limits.cc",
+    "h264_level_limits.h",
     "h264_parser.cc",
     "h264_parser.h",
     "h264_poc.cc",

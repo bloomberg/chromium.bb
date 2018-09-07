@@ -72,10 +72,7 @@ class VP8Encoder : public AcceleratedVideoEncoder {
   ~VP8Encoder() override;
 
   // AcceleratedVideoEncoder implementation.
-  bool Initialize(const gfx::Size& visible_size,
-                  VideoCodecProfile profile,
-                  uint32_t initial_bitrate,
-                  uint32_t initial_framerate) override;
+  bool Initialize(const VideoEncodeAccelerator::Config& config) override;
   bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;

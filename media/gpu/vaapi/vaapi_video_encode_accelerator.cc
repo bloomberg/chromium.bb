@@ -55,8 +55,6 @@ constexpr size_t kMinNumFramesInFlight = 4;
 // reconstructed picture, which is later used for reference.
 constexpr size_t kNumSurfacesPerFrame = 2;
 
-constexpr int kDefaultFramerate = 30;
-
 // Percentage of bitrate set to be targeted by the HW encoder.
 constexpr unsigned int kTargetBitratePercentage = 90;
 
@@ -293,12 +291,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       return;
   }
 
-  // TODO(johnylin): pass |config.h264_output_level| to H264Encoder.
-  //                 https://crbug.com/863327
-  if (!encoder_->Initialize(
-          config.input_visible_size, config.output_profile,
-          config.initial_bitrate,
-          config.initial_framerate.value_or(kDefaultFramerate))) {
+  if (!encoder_->Initialize(config)) {
     NOTIFY_ERROR(kInvalidArgumentError, "Failed initializing encoder");
     return;
   }

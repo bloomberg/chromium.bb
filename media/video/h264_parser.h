@@ -92,6 +92,29 @@ struct MEDIA_EXPORT H264SPS {
     kProfileIDHigh444Predictive = 244,
   };
 
+  enum H264LevelIDC : uint8_t {
+    kLevelIDC1p0 = 10,
+    kLevelIDC1B = 9,
+    kLevelIDC1p1 = 11,
+    kLevelIDC1p2 = 12,
+    kLevelIDC1p3 = 13,
+    kLevelIDC2p0 = 20,
+    kLevelIDC2p1 = 21,
+    kLevelIDC2p2 = 22,
+    kLevelIDC3p0 = 30,
+    kLevelIDC3p1 = 31,
+    kLevelIDC3p2 = 32,
+    kLevelIDC4p0 = 40,
+    kLevelIDC4p1 = 41,
+    kLevelIDC4p2 = 42,
+    kLevelIDC5p0 = 50,
+    kLevelIDC5p1 = 51,
+    kLevelIDC5p2 = 52,
+    kLevelIDC6p0 = 60,
+    kLevelIDC6p1 = 61,
+    kLevelIDC6p2 = 62,
+  };
+
   enum AspectRatioIdc {
     kExtendedSar = 255,
   };
@@ -183,12 +206,27 @@ struct MEDIA_EXPORT H264SPS {
 
   int chroma_array_type;
 
+  // Get corresponding SPS |level_idc| and |constraint_set3_flag| value from
+  // requested |profile| and |level| (see Spec A.3.1).
+  static void GetLevelConfigFromProfileLevel(VideoCodecProfile profile,
+                                             uint8_t level,
+                                             int* level_idc,
+                                             bool* constraint_set3_flag);
+
   // Helpers to compute frequently-used values. These methods return
   // base::nullopt if they encounter integer overflow. They do not verify that
   // the results are in-spec for the given profile or level.
   base::Optional<gfx::Size> GetCodedSize() const;
   base::Optional<gfx::Rect> GetVisibleRect() const;
   VideoColorSpace GetColorSpace() const;
+
+  // Helper to compute indicated level from parsed SPS data. The value of
+  // indicated level would be included in H264LevelIDC enum representing the
+  // level as in name.
+  uint8_t GetIndicatedLevel() const;
+  // Helper to check if indicated level is lower than or equal to
+  // |target_level|.
+  bool CheckIndicatedLevelWithinTarget(uint8_t target_level) const;
 };
 
 struct MEDIA_EXPORT H264PPS {

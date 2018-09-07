@@ -49,6 +49,10 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Convert format requirements requested by a V4L2 device to gfx::Size.
   static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
 
+  // Convert required H264 profile and level to V4L2 enums.
+  static int32_t VideoCodecProfileToV4L2H264Profile(VideoCodecProfile profile);
+  static int32_t H264LevelIdcToV4L2H264Level(uint8_t level_idc);
+
   enum class Type {
     kDecoder,
     kEncoder,
