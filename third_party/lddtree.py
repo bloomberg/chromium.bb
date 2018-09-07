@@ -142,7 +142,12 @@ def GenerateLdsoWrapper(root, path, interp, libpaths=(), elfsubdir=None):
   # build output and leads directory independent cache sharing in distributed
   # build system.
   wrapper = """#!/bin/sh
-if ! base=$(dirname "$0")/$(readlink "$0" 2>/dev/null); then
+if base=$(readlink "$0" 2>/dev/null); then
+  case $base in
+  /*) base=$(readlink -f "$0" 2>/dev/null);; # if $0 is abspath symlink, make symlink fully resolved.
+  *)  base=$(dirname "$0")/"${base}";;
+  esac
+else
   case $0 in
   /*) base=$0;;
   *)  base=${PWD:-`pwd`}/$0;;
