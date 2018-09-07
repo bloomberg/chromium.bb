@@ -5,6 +5,7 @@
 #include "chromeos/services/secure_channel/pending_ble_listener_connection_request.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -12,6 +13,7 @@
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,12 +38,14 @@ class SecureChannelPendingBleListenerConnectionRequestTest
         std::make_unique<FakeClientConnectionParameters>(kTestFeature);
     fake_client_connection_parameters_ =
         fake_client_connection_parameters.get();
+    mock_adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
 
     pending_ble_listener_request_ =
         PendingBleListenerConnectionRequest::Factory::Get()->BuildInstance(
             std::move(fake_client_connection_parameters),
             ConnectionPriority::kLow,
-            fake_pending_connection_request_delegate_.get());
+            fake_pending_connection_request_delegate_.get(), mock_adapter_);
   }
 
   const base::Optional<
@@ -67,6 +71,7 @@ class SecureChannelPendingBleListenerConnectionRequestTest
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;
   FakeClientConnectionParameters* fake_client_connection_parameters_;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 
   std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
       pending_ble_listener_request_;

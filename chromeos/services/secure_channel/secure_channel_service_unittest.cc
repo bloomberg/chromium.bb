@@ -178,7 +178,8 @@ class FakePendingConnectionManagerFactory
   // PendingConnectionManagerImpl::Factory:
   std::unique_ptr<PendingConnectionManager> BuildInstance(
       PendingConnectionManager::Delegate* delegate,
-      BleConnectionManager* ble_connection_manager) override {
+      BleConnectionManager* ble_connection_manager,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_ble_connection_manager_factory_->instance(),
               ble_connection_manager);
