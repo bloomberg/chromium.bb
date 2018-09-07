@@ -5,6 +5,7 @@
   },
 
   data: [
+    "element",
     "event",
     "firstInput",
     "longtask",

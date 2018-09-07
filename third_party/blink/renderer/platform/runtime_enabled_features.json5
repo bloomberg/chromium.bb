@@ -386,6 +386,11 @@
       name: "EditingNG",
     },
     {
+      // https://crbug.com/879270
+      name: "ElementTiming",
+      status: "test",
+    },
+    {
       name: "EncodingStreams",
       status: "experimental",
     },

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -335,10 +336,6 @@ bool WindowPerformance::ShouldBufferEventTiming() {
   return !timing() || !timing()->loadEventStart();
 }
 
-bool WindowPerformance::ObservingEventTimingEntries() {
-  return HasObserverFor(PerformanceEntry::kEvent);
-}
-
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks start_time,
                                             TimeTicks processing_start,
@@ -395,7 +392,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
     if (duration_in_ms <= kEventTimingDurationThresholdInMs)
       continue;
 
-    if (ObservingEventTimingEntries()) {
+    if (HasObserverFor(PerformanceEntry::kEvent)) {
       UseCounter::Count(GetFrame(),
                         WebFeature::kEventTimingExplicitlyRequested);
       NotifyObserversOfEntry(*entry);
@@ -405,6 +402,15 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
+}
+
+void WindowPerformance::AddElementTiming(const AtomicString& name,
+                                         const IntRect& rect,
+                                         TimeTicks timestamp) {
+  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled());
+  PerformanceEntry* entry = PerformanceElementTiming::Create(
+      name, rect, MonotonicTimeToDOMHighResTimeStamp(timestamp));
+  NotifyObserversOfEntry(*entry);
 }
 
 void WindowPerformance::DispatchFirstInputTiming(

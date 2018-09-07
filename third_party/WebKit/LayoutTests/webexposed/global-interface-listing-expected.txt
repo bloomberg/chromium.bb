@@ -5096,6 +5096,11 @@ interface Performance : EventTarget
     method toJSON
     setter oneventtimingbufferfull
     setter onresourcetimingbufferfull
+interface PerformanceElementTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter intersectionRect
+    method constructor
+    method toJSON
 interface PerformanceEntry
     attribute @@toStringTag
     getter duration
