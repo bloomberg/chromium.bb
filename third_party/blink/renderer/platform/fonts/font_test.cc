@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/platform/fonts/font.h"
 
+#include "cc/paint/paint_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
@@ -45,7 +45,7 @@ TEST_F(FontTest, TextIntercepts) {
                                               0x70, 0xc9, 0x70, 0xc9};
   TextRun ahem_above_below_baseline(ahem_above_below_baseline_string, 9);
   TextRunPaintInfo text_run_paint_info(ahem_above_below_baseline);
-  PaintFlags default_paint;
+  cc::PaintFlags default_paint;
   float device_scale_factor = 1;
 
   std::tuple<float, float> below_baseline_bounds = std::make_tuple(2, 4);
