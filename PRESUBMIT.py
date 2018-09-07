@@ -3366,28 +3366,6 @@ def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None):
   return []
 
 
-def _CheckCrbugLinksHaveHttps(input_api, output_api):
-  """Checks that crbug(.com) links are correctly prefixed by https://,
-   unless they come in the accepted form TODO(crbug.com/...)
-  """
-
-  # The cr bug strings are split to avoid matching in real presubmit
-  # checkings.
-  pattern = input_api.re.compile(r'//.*(?<!:\/\/)cr''bug[.com]*')
-  accepted_pattern = input_api.re.compile(r'//.*TODO\(cr''bug[.com]*')
-  problems = []
-  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
-    for line_num, line in f.ChangedContents():
-      if pattern.search(line) and not accepted_pattern.search(line):
-        problems.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
-
-  if problems:
-    return [output_api.PresubmitPromptWarning(
-      'Found unprefixed crbug.com URL(s), consider prepending https://\n' +
-      '\n'.join(problems))]
-  return []
-
-
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
@@ -3398,7 +3376,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_AndroidSpecificOnUploadChecks(input_api, output_api))
   results.extend(_CheckSyslogUseWarning(input_api, output_api))
   results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
-  results.extend(_CheckCrbugLinksHaveHttps(input_api, output_api))
   results.extend(_CheckUniquePtr(input_api, output_api))
   results.extend(_CheckNewHeaderWithoutGnChange(input_api, output_api))
   return results
