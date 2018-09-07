@@ -138,7 +138,8 @@
         label="$i18n{syncUnifiedConsentToggleTitle}"
         on-settings-boolean-control-change="onUnifiedConsentToggleChange_"
         hidden="[[!shouldShowUnifiedConsentToggle_(unifiedConsentEnabled,
-                   syncStatus.disabled, syncStatus.signedIn)]]">
+                   syncStatus.disabled, syncStatus.signedIn)]]"
+        disabled="[[syncPrefs.encryptAllData]]">
     </settings-toggle-button>
     <div class="settings-box two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
