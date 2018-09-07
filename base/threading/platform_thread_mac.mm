@@ -148,7 +148,7 @@ void SetPriorityRealtimeAudio() {
 }  // anonymous namespace
 
 // static
-bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
   return true;
 }
 

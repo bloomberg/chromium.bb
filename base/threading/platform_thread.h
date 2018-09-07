@@ -196,9 +196,9 @@ class BASE_EXPORT PlatformThread {
   // and |thread_handle| is invalidated after this call.
   static void Detach(PlatformThreadHandle thread_handle);
 
-  // Returns true if SetCurrentThreadPriority() can be used to increase the
-  // priority of the current thread.
-  static bool CanIncreaseCurrentThreadPriority();
+  // Returns true if SetCurrentThreadPriority() should be able to increase the
+  // priority of a thread to |priority|.
+  static bool CanIncreaseThreadPriority(ThreadPriority priority);
 
   // Toggles the current thread's priority at runtime.
   //
