@@ -48,6 +48,12 @@ DesktopAutomationHandler = function(node) {
   /** @private {AutomationNode} */
   this.lastValueTarget_ = null;
 
+  /** @private {AutomationNode} */
+  this.lastAttributeTarget_;
+
+  /** @private {Output} */
+  this.lastAttributeOutput_;
+
   /** @private {string} */
   this.lastRootUrl_ = '';
 
@@ -151,6 +157,11 @@ DesktopAutomationHandler.prototype = {
     output.withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
     output.go();
+
+    // Update some state here to ensure attribute changes don't duplicate
+    // output.
+    this.lastAttributeTarget_ = evt.target;
+    this.lastAttributeOutput_ = output;
   },
 
   /**
@@ -166,12 +177,17 @@ DesktopAutomationHandler.prototype = {
 
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
-      // Intentionally skip setting range.
-      new Output()
-          .withRichSpeechAndBraille(
-              cursors.Range.fromNode(evt.target), prev,
-              Output.EventType.NAVIGATE)
-          .go();
+      var prevTarget = this.lastAttributeTarget_;
+      this.lastAttributeTarget_ = evt.target;
+      var prevOutput = this.lastAttributeOutput_;
+      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
+          cursors.Range.fromNode(evt.target), prev, Output.EventType.NAVIGATE);
+
+      if (evt.target == prevTarget && prevOutput &&
+          prevOutput.equals(this.lastAttributeOutput_))
+        return;
+
+      this.lastAttributeOutput_.go();
     }
   },
 
@@ -464,6 +480,17 @@ DesktopAutomationHandler.prototype = {
    */
   ignoreDocumentSelectionFromAction: function(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
+  },
+
+  /**
+   * Update the state for the last attribute change that occurred in ChromeVox
+   * output.
+   * @param {!AutomationNode} node
+   * @param {!Output} output
+   */
+  updateLastAttributeState: function(node, output) {
+    this.lastAttributeTarget_ = node;
+    this.lastAttributeOutput_ = output;
   },
 
   /**
