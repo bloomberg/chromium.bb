@@ -21,6 +21,8 @@ class CastExtensionsAPIClient : public ExtensionsAPIClient {
   // ExtensionsAPIClient implementation.
   void AttachWebContentsHelpers(
       content::WebContents* web_contents) const override;
+  WebViewGuestDelegate* CreateWebViewGuestDelegate(
+      WebViewGuest* web_view_guest) const override;
   MessagingDelegate* GetMessagingDelegate() override;
 
  private:

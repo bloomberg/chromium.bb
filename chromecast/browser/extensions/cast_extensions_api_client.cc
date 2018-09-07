@@ -11,8 +11,19 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
 namespace extensions {
+namespace {
+class CastWebViewGuestDelegate : public WebViewGuestDelegate {
+ public:
+  bool HandleContextMenu(const content::ContextMenuParams& params) override {
+    return true;
+  }
+
+  void OnShowContextMenu(int request_id) override {}
+};
+}  // namespace
 
 CastExtensionsAPIClient::CastExtensionsAPIClient() {}
 
@@ -21,6 +32,11 @@ CastExtensionsAPIClient::~CastExtensionsAPIClient() {}
 void CastExtensionsAPIClient::AttachWebContentsHelpers(
     content::WebContents* web_contents) const {
   CastExtensionWebContentsObserver::CreateForWebContents(web_contents);
+}
+
+WebViewGuestDelegate* CastExtensionsAPIClient::CreateWebViewGuestDelegate(
+    WebViewGuest* web_view_guest) const {
+  return new CastWebViewGuestDelegate();
 }
 
 MessagingDelegate* CastExtensionsAPIClient::GetMessagingDelegate() {
