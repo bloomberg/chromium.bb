@@ -20,6 +20,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
@@ -282,6 +283,9 @@ void V4L2VideoDecodeAccelerator::InitializeTask() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kInitialized);
 
+  if (IsDestroyPending())
+    return;
+
   // Subscribe to the resolution change event.
   struct v4l2_event_subscription sub;
   memset(&sub, 0, sizeof(sub));
@@ -335,6 +339,9 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kAwaitingPictureBuffers);
+
+  if (IsDestroyPending())
+    return;
 
   uint32_t req_buffer_count = output_dpb_size_ + kDpbOutputBufferExtraCount;
   if (image_processor_device_)
@@ -480,6 +487,9 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(
   DVLOGF(3) << "index=" << buffer_index << ", picture_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
+  if (IsDestroyPending())
+    return;
+
   // It's possible that while waiting for the EGLImages to be allocated and
   // assigned, we have already decoded more of the stream and saw another
   // resolution change. This is a normal situation, in such a case either there
@@ -567,6 +577,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
             << ", dmabuf_fds.size()=" << dmabuf_fds.size()
             << ", stride=" << stride;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  if (IsDestroyPending())
+    return;
 
   const auto iter =
       std::find_if(output_buffer_map_.begin(), output_buffer_map_.end(),
@@ -705,6 +718,10 @@ void V4L2VideoDecodeAccelerator::Destroy() {
   VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  // Signal any waiting/sleeping tasks to early exit as soon as possible to
+  // avoid waiting too long for the decoder_thread_ to Stop().
+  destroy_pending_.Signal();
+
   // We're destroying; cancel all callbacks.
   client_ptr_factory_.reset();
   weak_this_factory_.InvalidateWeakPtrs();
@@ -753,6 +770,9 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
   TRACE_EVENT1("media,gpu", "V4L2VDA::DecodeTask", "input_id",
                bitstream_buffer.id());
 
+  if (IsDestroyPending())
+    return;
+
   std::unique_ptr<BitstreamBufferRef> bitstream_record(
       new BitstreamBufferRef(decode_client_, decode_task_runner_,
                              &bitstream_buffer, bitstream_buffer.id()));
@@ -792,6 +812,9 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("media,gpu", "V4L2VDA::DecodeBufferTask");
+
+  if (IsDestroyPending())
+    return;
 
   decoder_decode_buffer_tasks_scheduled_--;
 
@@ -1157,6 +1180,9 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("media,gpu", "V4L2VDA::ServiceDeviceTask");
 
+  if (IsDestroyPending())
+    return;
+
   if (decoder_state_ == kResetting) {
     DVLOGF(3) << "early out: kResetting state";
     return;
@@ -1512,16 +1538,30 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   DCHECK_EQ(output_record.state, kFree);
   DCHECK_NE(output_record.picture_id, -1);
   if (output_record.egl_fence) {
-    TRACE_EVENT0("media,gpu",
-                 "V4L2VDA::EnqueueOutputRecord: eglClientWaitSyncKHR");
-    // If we have to wait for completion, wait.  Note that
-    // free_output_buffers_ is a FIFO queue, so we always wait on the
-    // buffer that has been in the queue the longest.
-    if (output_record.egl_fence->ClientWaitWithTimeoutNanos(EGL_FOREVER_KHR) ==
-        EGL_FALSE) {
-      // This will cause tearing, but is safe otherwise.
-      DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
+    TRACE_EVENT0(
+        "media,gpu",
+        "V4L2VDA::EnqueueOutputRecord: GLFenceEGL::ClientWaitWithTimeoutNanos");
+    // If we have to wait for completion, wait. Note that free_output_buffers_
+    // is a FIFO queue, so we always wait on the buffer that has been in the
+    // queue the longest. Every 100ms we check whether the decoder is shutting
+    // down, or we might get stuck waiting on a fence that will never come.
+    while (!IsDestroyPending()) {
+      const EGLTimeKHR wait_ns =
+          base::TimeDelta::FromMilliseconds(100).InNanoseconds();
+      EGLint result =
+          output_record.egl_fence->ClientWaitWithTimeoutNanos(wait_ns);
+      if (result == EGL_CONDITION_SATISFIED_KHR) {
+        break;
+      } else if (result == EGL_FALSE) {
+        // This will cause tearing, but is safe otherwise.
+        DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
+        break;
+      }
+      DCHECK_EQ(result, EGL_TIMEOUT_EXPIRED_KHR);
     }
+
+    if (IsDestroyPending())
+      return false;
 
     output_record.egl_fence.reset();
   }
@@ -1558,6 +1598,9 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::ReusePictureBufferTask");
+
+  if (IsDestroyPending())
+    return;
 
   // We run ReusePictureBufferTask even if we're in kResetting.
   if (decoder_state_ == kError) {
@@ -1608,6 +1651,9 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::FlushTask");
+
+  if (IsDestroyPending())
+    return;
 
   if (decoder_state_ == kError) {
     VLOGF(2) << "early out: kError state";
@@ -1723,6 +1769,9 @@ void V4L2VideoDecodeAccelerator::ResetTask() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::ResetTask");
 
+  if (IsDestroyPending())
+    return;
+
   if (decoder_state_ == kError) {
     VLOGF(2) << "early out: kError state";
     return;
@@ -1794,6 +1843,9 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VDA::ResetDoneTask");
 
+  if (IsDestroyPending())
+    return;
+
   if (decoder_state_ == kError) {
     VLOGF(2) << "early out: kError state";
     return;
@@ -1829,6 +1881,8 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
 
   // DestroyTask() should run regardless of decoder_state_.
 
+  decoder_state_ = kDestroying;
+
   StopDevicePoll();
   StopOutputStream();
   StopInputStream();
@@ -1842,9 +1896,6 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   decoder_flushing_ = false;
 
   image_processor_ = nullptr;
-
-  // Set our state to kError.  Just in case.
-  decoder_state_ = kError;
 
   DestroyInputBuffers();
   DestroyOutputBuffers();
@@ -2022,9 +2073,14 @@ void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
                             base::Unretained(this), event_pending));
 }
 
+bool V4L2VideoDecodeAccelerator::IsDestroyPending() {
+  return destroy_pending_.IsSignaled();
+}
+
 void V4L2VideoDecodeAccelerator::NotifyError(Error error) {
   VLOGF(1);
 
+  // Notifying the client should only happen from the client's thread.
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
         FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::NotifyError,
@@ -2032,6 +2088,7 @@ void V4L2VideoDecodeAccelerator::NotifyError(Error error) {
     return;
   }
 
+  // Notify the decoder's client an error has occurred.
   if (client_) {
     client_->NotifyError(error);
     client_ptr_factory_.reset();
@@ -2049,9 +2106,11 @@ void V4L2VideoDecodeAccelerator::SetErrorState(Error error) {
     return;
   }
 
-  // Post NotifyError only if we are already initialized, as the API does
-  // not allow doing so before that.
-  if (decoder_state_ != kError && decoder_state_ != kUninitialized)
+  // Notifying the client of an error will only happen if we are already
+  // initialized, as the API does not allow doing so before that. Subsequent
+  // errors and errors while destroying will be suppressed.
+  if (decoder_state_ != kError && decoder_state_ != kUninitialized &&
+      decoder_state_ != kDestroying)
     NotifyError(error);
 
   decoder_state_ = kError;

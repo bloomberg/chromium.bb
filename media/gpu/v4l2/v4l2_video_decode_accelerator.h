@@ -151,7 +151,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
     // AssignPictureBuffers().
     kAwaitingPictureBuffers,
-    kError,  // Error in kDecoding state.
+    kError,       // Error in kDecoding state.
+    kDestroying,  // Destroying state, when shutting down the decoder.
   };
 
   enum OutputRecordState {
@@ -360,6 +361,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Safe from any thread.
   //
 
+  // Check whether a destroy is scheduled.
+  bool IsDestroyPending();
+
   // Error notification (using PostTask() to child thread, if necessary).
   void NotifyError(Error error);
 
@@ -453,6 +457,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   base::Thread decoder_thread_;
   // Decoder state machine state.
   State decoder_state_;
+
+  // Waitable event signaled when the decoder is destroying.
+  base::WaitableEvent destroy_pending_;
 
   Config::OutputMode output_mode_;
 
