@@ -54,9 +54,6 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
       WebUChar32 character,
       const char* preferred_locale,
       blink::OutOfProcessFont* fallbackFont) override;
-  void MatchFontByPostscriptNameOrFullFontName(
-      const char* font_unique_name,
-      blink::OutOfProcessFont* fallback_font) override;
   void GetWebFontRenderStyleForStrike(const char* family,
                                       int size,
                                       bool is_bold,
@@ -125,14 +122,6 @@ void PpapiBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
     blink::WebFontRenderStyle* out) {
   GetRenderStyleForStrike(font_loader_, family, size, is_bold, is_italic,
                           device_scale_factor, out);
-}
-
-void PpapiBlinkPlatformImpl::SandboxSupport::
-    MatchFontByPostscriptNameOrFullFontName(
-        const char* font_unique_name,
-        blink::OutOfProcessFont* uniquely_matched_font) {
-  content::MatchFontByPostscriptNameOrFullFontName(
-      font_loader_, font_unique_name, uniquely_matched_font);
 }
 
 #endif

@@ -16,7 +16,6 @@
 namespace content {
 namespace {
 
-#if defined(OS_ANDROID)
 const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto",
                                           "Droid Sans Mono",
@@ -60,34 +59,6 @@ const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto Condensed",
                                           "Roboto Condensed",
                                           "Roboto"};
-#elif defined(OS_LINUX)
-const char* kExpectedFontFamilyNames[] = {"Ahem",
-                                          "Arimo",
-                                          "Arimo",
-                                          "Arimo",
-                                          "Arimo",
-                                          "Cousine",
-                                          "Cousine",
-                                          "Cousine",
-                                          "Cousine",
-                                          "DejaVu Sans",
-                                          "DejaVu Sans",
-                                          "Garuda",
-                                          "Gelasio",
-                                          "Gelasio",
-                                          "Gelasio",
-                                          "Gelasio",
-                                          "Lohit Devanagari",
-                                          "Lohit Gurmukhi",
-                                          "Lohit Tamil",
-                                          "Noto Sans Khmer",
-                                          "Tinos",
-                                          "Tinos",
-                                          "Tinos",
-                                          "Tinos",
-                                          "Mukti Narrow",
-                                          "Tinos"};
-#endif
 
 }  // namespace
 
@@ -109,9 +80,13 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(drott): Enable this on all platforms.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
+#if defined(OS_ANDROID)
+#define MAYBE_ContentLocalFontsMatching ContentLocalFontsMatching
+#else
+#define MAYBE_ContentLocalFontsMatching DISABLED_ContentLocalFontsMatching
+#endif
+IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
+                       MAYBE_ContentLocalFontsMatching) {
   LoadAndWait("/font_src_local_matching.html");
   Attach();
 
@@ -161,6 +136,5 @@ IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
     ASSERT_EQ(first_font_name->GetString(), kExpectedFontFamilyNames[i]);
   }
 }
-#endif
 
 }  // namespace content
