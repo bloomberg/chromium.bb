@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -49,8 +50,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
   void SetUp() override {
     auth_library_ = new MockAuthLibrary();
     resolver_.reset(new MockHostResolver());
-    resolver_->rules()->AddIPLiteralRule("alias", "10.0.0.2",
-                                           "canonical.example.com");
+    resolver_->rules_map()[HostResolverSource::SYSTEM]->AddIPLiteralRule(
+        "alias", "10.0.0.2", "canonical.example.com");
 
     http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
     factory_.reset(new HttpAuthHandlerNegotiate::Factory());
