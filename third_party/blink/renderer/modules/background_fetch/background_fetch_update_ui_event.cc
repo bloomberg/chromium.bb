@@ -72,7 +72,8 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   ScriptPromise promise = resolver->Promise();
 
   if (ui_options.icons().IsEmpty()) {
-    DidGetIcon(resolver, ui_options.title(), SkBitmap());
+    DidGetIcon(resolver, ui_options.title(), SkBitmap(),
+               -1 /* ideal_to_chosen_icon_size */);
   } else {
     DCHECK(!loader_);
     loader_ = new BackgroundFetchIconLoader();
@@ -87,9 +88,11 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   return promise;
 }
 
-void BackgroundFetchUpdateUIEvent::DidGetIcon(ScriptPromiseResolver* resolver,
-                                              const String& title,
-                                              const SkBitmap& icon) {
+void BackgroundFetchUpdateUIEvent::DidGetIcon(
+    ScriptPromiseResolver* resolver,
+    const String& title,
+    const SkBitmap& icon,
+    int64_t ideal_to_chosen_icon_size) {
   BackgroundFetchBridge::From(service_worker_registration_)
       ->UpdateUI(registration_->id(), registration_->unique_id(), title, icon,
                  WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,

@@ -76,7 +76,8 @@ class MODULES_EXPORT BackgroundFetchManager final
                     Vector<WebServiceWorkerRequest> web_requests,
                     mojom::blink::BackgroundFetchOptionsPtr options,
                     ScriptPromiseResolver* resolver,
-                    const SkBitmap& icon);
+                    const SkBitmap& icon,
+                    int64_t ideal_to_chosen_icon_size);
   void DidFetch(ScriptPromiseResolver* resolver,
                 base::Time time_started,
                 mojom::blink::BackgroundFetchError error,

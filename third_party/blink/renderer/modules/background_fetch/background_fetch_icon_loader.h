@@ -24,9 +24,11 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
     : public GarbageCollectedFinalized<BackgroundFetchIconLoader>,
       public ThreadableLoaderClient {
  public:
-  // The bitmap may be empty if the request failed or the image data
-  // could not be decoded.
-  using IconCallback = base::OnceCallback<void(const SkBitmap&)>;
+  // The bitmap may be empty if the request failed or the image data could not
+  // be decoded. The int64_t returned is the scale of the ideal to chosen icon,
+  // before resizing. This is -1 if the ideal icon size is empty, or if no icon
+  // provided was suitable.
+  using IconCallback = base::OnceCallback<void(const SkBitmap&, int64_t)>;
 
   BackgroundFetchIconLoader();
   ~BackgroundFetchIconLoader() override;
@@ -56,7 +58,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
  private:
   friend class BackgroundFetchIconLoaderTest;
 
-  void RunCallback();
+  void RunCallback(int64_t ideal_to_chosen_icon_size_times_hundred);
   void RunCallbackWithEmptyBitmap();
 
   // Callback for BackgroundFetchBridge::GetIconDisplaySize()

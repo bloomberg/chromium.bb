@@ -91,6 +91,7 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const std::vector<ServiceWorkerFetchRequest>& requests,
                   const BackgroundFetchOptions& options,
                   const SkBitmap& icon,
+                  blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                   RenderFrameHost* render_frame_host,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
@@ -275,6 +276,7 @@ class CONTENT_EXPORT BackgroundFetchContext
                         const std::vector<ServiceWorkerFetchRequest>& requests,
                         const BackgroundFetchOptions& options,
                         const SkBitmap& icon,
+                        blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                         int frame_tree_node_id,
                         bool has_permission);
 

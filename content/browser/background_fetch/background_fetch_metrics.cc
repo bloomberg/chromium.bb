@@ -36,6 +36,7 @@ void RecordBackgroundFetchUkmEvent(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
     bool has_permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -56,6 +57,7 @@ void RecordBackgroundFetchUkmEvent(
   ukm::builders::BackgroundFetch(source_id)
       .SetHasTitle(!options.title.empty())
       .SetNumIcons(options.icons.size())
+      .SetRatioOfIdealToChosenIconSize(ukm_data->ideal_to_chosen_icon_size)
       .SetDownloadTotal(ukm::GetExponentialBucketMin(
           options.download_total, kUkmEventDataBucketSpacing))
       .SetNumRequestsInFetch(ukm::GetExponentialBucketMin(

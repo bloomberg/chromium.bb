@@ -50,6 +50,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
              const SkBitmap& icon,
+             blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
   void MatchRequests(

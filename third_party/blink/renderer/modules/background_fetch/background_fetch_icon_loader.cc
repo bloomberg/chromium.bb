@@ -71,14 +71,16 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   // If |icon_display_size_pixels_| is empty then no image will be displayed by
   // the UI powering Background Fetch. Bail out immediately.
   if (icon_display_size_pixels_.IsEmpty()) {
-    std::move(icon_callback).Run(SkBitmap());
+    std::move(icon_callback)
+        .Run(SkBitmap(), -1 /* ideal_to_chosen_icon_size_times_hundred */);
     return;
   }
 
   KURL best_icon_url = PickBestIconForDisplay(execution_context);
   if (best_icon_url.IsEmpty()) {
     // None of the icons provided was suitable.
-    std::move(icon_callback).Run(SkBitmap());
+    std::move(icon_callback)
+        .Run(SkBitmap(), -1 /* ideal_to_chosen_icon_size_times_hundred */);
     return;
   }
 
@@ -169,6 +171,7 @@ void BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread(
       ColorBehavior::TransformToSRGB(),
       {icon_display_size_pixels_.width, icon_display_size_pixels_.height});
 
+  int64_t ideal_to_chosen_icon_size_times_hundred = -1;
   if (decoder) {
     ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
     if (image_frame) {
@@ -183,6 +186,8 @@ void BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread(
       double scale = std::min(
           static_cast<double>(icon_display_size_pixels_.width) / width,
           static_cast<double>(icon_display_size_pixels_.height) / height);
+
+      ideal_to_chosen_icon_size_times_hundred = std::round(scale * 100.0);
 
       if (scale < 1) {
         width = ClampToRange(scale * width, 1, icon_display_size_pixels_.width);
@@ -200,7 +205,8 @@ void BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread(
 
   PostCrossThreadTask(*task_runner, FROM_HERE,
                       CrossThreadBind(&BackgroundFetchIconLoader::RunCallback,
-                                      WrapCrossThreadPersistent(this)));
+                                      WrapCrossThreadPersistent(this),
+                                      ideal_to_chosen_icon_size_times_hundred));
 }
 
 void BackgroundFetchIconLoader::DidFail(const ResourceError& error) {
@@ -211,18 +217,20 @@ void BackgroundFetchIconLoader::DidFailRedirectCheck() {
   RunCallbackWithEmptyBitmap();
 }
 
-void BackgroundFetchIconLoader::RunCallback() {
+void BackgroundFetchIconLoader::RunCallback(
+    int64_t ideal_to_chosen_icon_size_times_hundred) {
   // If this has been stopped it is not desirable to trigger further work,
   // there is a shutdown of some sort in progress.
   if (stopped_)
     return;
 
-  std::move(icon_callback_).Run(decoded_icon_);
+  std::move(icon_callback_)
+      .Run(decoded_icon_, ideal_to_chosen_icon_size_times_hundred);
 }
 
 void BackgroundFetchIconLoader::RunCallbackWithEmptyBitmap() {
   DCHECK(decoded_icon_.isNull());
-  RunCallback();
+  RunCallback(-1 /* ideal_to_chosen_icon_size_times_hundred */);
 }
 
 }  // namespace blink

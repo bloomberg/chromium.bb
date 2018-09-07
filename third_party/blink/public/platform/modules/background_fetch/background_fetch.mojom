@@ -87,6 +87,15 @@ struct BackgroundFetchRegistration {
   BackgroundFetchFailureReason failure_reason;
 };
 
+// This contains the data we need to record UKM metrics, that isn't needed for
+// the background fetch itself.
+struct BackgroundFetchUkmData {
+  // Ratio of the icon size we display and that of the most suitable icon
+  // provided by the developer, times 100. -1 means that either the display
+  // size is empty, or no suitable icons have been provided.
+  int64 ideal_to_chosen_icon_size = -1;
+};
+
 interface BackgroundFetchRegistrationObserver {
   // Notifies the BackgroundFetchRegistration about progress in the fetches that
   // are part of it. The JavaScript `progress` event will be fired.
@@ -106,7 +115,8 @@ interface BackgroundFetchService {
         string developer_id,
         array<FetchAPIRequest> requests,
         BackgroundFetchOptions options,
-        skia.mojom.Bitmap? icon)
+        skia.mojom.Bitmap? icon,
+        BackgroundFetchUkmData ukm_data)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 

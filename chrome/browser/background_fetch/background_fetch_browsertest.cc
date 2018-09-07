@@ -47,6 +47,9 @@ using offline_items_collection::OfflineItemVisuals;
 
 namespace {
 
+// Scripts run by this test are defined in
+// chrome/test/data/background_fetch/background_fetch.js.
+
 // URL of the test helper page that helps drive these tests.
 const char kHelperPage[] = "/background_fetch/background_fetch.html";
 
@@ -63,19 +66,19 @@ const char kSingleFileDownloadTitle[] = "Single-file Background Fetch";
 const int kDownloadedResourceSizeInBytes = 82;
 
 // Incorrect downloadTotal, when it's set too high in the JavaScript file
-// loaded by this test (chrome/test/data/background_fetch/background_fetch.js)
+// loaded by this test.
 const int kDownloadTotalBytesTooHigh = 1000;
 
 // Incorrect downloadTotal, when it's set too low in the JavaScript file
-// loaded by this test (chrome/test/data/background_fetch/background_fetch.js)
+// loaded by this test.
 const int kDownloadTotalBytesTooLow = 80;
 
 // Number of requests in the fetch() call from the JavaScript file loaded by
-// this test (chrome/test/data/background_fetch/background_fetch.js)
+// this test.
 const int kNumRequestsInFetch = 1;
 
 // Number of icons in the fetch() call from the JavaScript file loaded by this
-// test (chrome/test/data/background_fetch/background_fetch.js)
+// test.
 const int kNumIconsInFetch = 1;
 
 // Exponential bucket spacing for UKM event data.
@@ -303,6 +306,28 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ("ok", result);
   }
 
+  // Gets the ideal display size.
+  gfx::Size GetIconDisplaySize() {
+    gfx::Size out_display_size;
+    base::RunLoop run_loop;
+    browser()->profile()->GetBackgroundFetchDelegate()->GetIconDisplaySize(
+        base::BindOnce(&BackgroundFetchBrowserTest::DidGetIconDisplaySize,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       &out_display_size));
+    run_loop.Run();
+    return out_display_size;
+  }
+
+  // Called when we've received the ideal icon display size from
+  // BackgroundFetchDelegate.
+  void DidGetIconDisplaySize(base::OnceClosure quit_closure,
+                             gfx::Size* out_display_size,
+                             const gfx::Size& display_size) {
+    DCHECK(out_display_size);
+    *out_display_size = display_size;
+    std::move(quit_closure).Run();
+  }
+
   // Callback for WaitableDownloadLoggerObserver::DownloadAcceptedCallback().
   void DidAcceptDownloadCallback(base::OnceClosure quit_closure,
                                  std::string* out_guid,
@@ -424,6 +449,13 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                                    kUkmEventDataBucketSpacing));
   test_ukm_recorder_->ExpectEntryMetric(
       entry, ukm::builders::BackgroundFetch::kDeniedDueToPermissionsName, 0);
+  // There is currently no desktop UI for BackgroundFetch, hence the icon
+  // display size is set to 0,0. Once that's no longer the case, this ASSERT
+  // will start failing and the unit test will have to be updated.
+  ASSERT_TRUE(GetIconDisplaySize().IsEmpty());
+  test_ukm_recorder_->ExpectEntryMetric(
+      entry, ukm::builders::BackgroundFetch::kRatioOfIdealToChosenIconSizeName,
+      -1);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
