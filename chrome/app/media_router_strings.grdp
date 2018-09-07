@@ -28,6 +28,9 @@
   <message name="IDS_MEDIA_ROUTER_VIEW_DEVICE_LIST_BUTTON_TITLE" desc="View device list button title, which is spoken when a screen reader is being used.">
     View device list
   </message>
+  <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON_ACCESSIBLE_NAME" desc="A label for the stop button that is read by screen readers when the button is in focus. It mentions device name and status to indicate which device the button is for.">
+    Stop, <ph name="SINK_NAME">$1<ex>Living Room TV</ex></ph>, <ph name="SINK_STATUS">$2<ex>Casting YouTube</ex></ph>
+  </message>
 
   <!-- Cast Modes -->
   <message name="IDS_MEDIA_ROUTER_AUTO_CAST_MODE" desc="Title for auto cast mode that appears as the header of a list of devices. This represents the mode that will be initially shown, if the list of sinks supports more than one of the cast modes below. Note that auto mode is not a real cast mode and merely serves as a proxy for the other cast modes. This is NOT shown as a dropdown option.">

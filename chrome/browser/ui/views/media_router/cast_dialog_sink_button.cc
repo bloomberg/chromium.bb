@@ -34,6 +34,7 @@ namespace {
 class StopButton : public views::LabelButton {
  public:
   StopButton(views::ButtonListener* button_listener,
+             const UIMediaSink& sink,
              int button_tag,
              bool enabled)
       : views::LabelButton(button_listener, base::string16()) {
@@ -47,6 +48,9 @@ class StopButton : public views::LabelButton {
     SetEnabled(enabled);
     // Make it possible to navigate to this button by pressing the tab key.
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON_ACCESSIBLE_NAME,
+        sink.friendly_name, sink.status_text));
   }
 
   ~StopButton() override = default;
@@ -117,7 +121,8 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
   if (sink.state == UIMediaSinkState::CONNECTED ||
       sink.state == UIMediaSinkState::DISCONNECTING) {
     return std::make_unique<StopButton>(
-        button_listener, button_tag, sink.state == UIMediaSinkState::CONNECTED);
+        button_listener, sink, button_tag,
+        sink.state == UIMediaSinkState::CONNECTED);
   } else if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
