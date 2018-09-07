@@ -2423,8 +2423,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
   GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
       scriptMessage.frameInfo.securityOrigin);
-  if (messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
+  if (!scriptMessage.frameInfo.mainFrame &&
+      messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
     // Messages from cross-origin iframes are not currently supported.
+    // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
+    // about:blank pages, so it is important to allow all messages coming from
+    // the main frame, even if messageFrameOrigin and _documentURL have
+    // different origins.
     return NO;
   }
 
