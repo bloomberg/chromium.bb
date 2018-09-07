@@ -9,6 +9,12 @@
 namespace content {
 namespace signed_exchange_utils {
 
+TEST(SignedExchangeUtilsTest, VersionParam_WrongEssence) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-foo");
+  EXPECT_FALSE(version.has_value());
+}
+
 TEST(SignedExchangeUtilsTest, VersionParam_None) {
   base::Optional<SignedExchangeVersion> version =
       GetSignedExchangeVersion("application/signed-exchange");
@@ -60,6 +66,24 @@ TEST(SignedExchangeUtilsTest, VersionParam_ExtraParam) {
 TEST(SignedExchangeUtilsTest, VersionParam_Quoted) {
   base::Optional<SignedExchangeVersion> version =
       GetSignedExchangeVersion("application/signed-exchange;v=\"b2\"");
+  EXPECT_EQ(version, SignedExchangeVersion::kB2);
+}
+
+TEST(SignedExchangeUtilsTest, VersionParam_QuotesOpen) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\"b2");
+  EXPECT_EQ(version, SignedExchangeVersion::kB2);
+}
+
+TEST(SignedExchangeUtilsTest, VersionParam_QuotesOpenNonV) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\"b2;r=\"b2");
+  EXPECT_EQ(version, SignedExchangeVersion::kUnknown);
+}
+
+TEST(SignedExchangeUtilsTest, VersionParam_QuotesOpenNonV2) {
+  base::Optional<SignedExchangeVersion> version =
+      GetSignedExchangeVersion("application/signed-exchange;v=\"b2\";r=\"b2");
   EXPECT_EQ(version, SignedExchangeVersion::kB2);
 }
 
