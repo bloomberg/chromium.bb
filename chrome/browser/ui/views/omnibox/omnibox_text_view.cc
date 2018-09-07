@@ -175,7 +175,8 @@ void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
       style = {part_color, .baseline = gfx::SUPERIOR};
       break;
     case SuggestionAnswer::TextStyle::BOLD:
-      style = {part_color, .weight = gfx::Font::Weight::BOLD};
+      style = {part_color, .baseline = gfx::NORMAL_BASELINE,
+               .weight = gfx::Font::Weight::BOLD};
       break;
     case SuggestionAnswer::TextStyle::NORMAL:
     case SuggestionAnswer::TextStyle::NORMAL_DIM:
