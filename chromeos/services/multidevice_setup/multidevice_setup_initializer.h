@@ -16,6 +16,10 @@
 
 class PrefService;
 
+namespace cryptauth {
+class GcmDeviceInfoProvider;
+}  // namespace cryptauth
+
 namespace chromeos {
 
 namespace secure_channel {
@@ -45,7 +49,8 @@ class MultiDeviceSetupInitializer
         secure_channel::SecureChannelClient* secure_channel_client,
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
-            android_sms_app_helper_delegate);
+            android_sms_app_helper_delegate,
+        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
     static Factory* test_factory_;
@@ -60,7 +65,8 @@ class MultiDeviceSetupInitializer
       secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate);
+          android_sms_app_helper_delegate,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -94,6 +100,7 @@ class MultiDeviceSetupInitializer
   secure_channel::SecureChannelClient* secure_channel_client_;
   AuthTokenValidator* auth_token_validator_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
+  const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_impl_;
 

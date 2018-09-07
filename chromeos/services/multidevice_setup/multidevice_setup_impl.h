@@ -17,6 +17,10 @@
 
 class PrefService;
 
+namespace cryptauth {
+class GcmDeviceInfoProvider;
+}  // namespace cryptauth
+
 namespace chromeos {
 
 namespace device_sync {
@@ -32,6 +36,7 @@ namespace multidevice_setup {
 class AccountStatusChangeDelegateNotifier;
 class AndroidSmsAppHelperDelegate;
 class AuthTokenValidator;
+class DeviceReenroller;
 class HostBackendDelegate;
 class HostStatusProvider;
 class HostVerifier;
@@ -54,7 +59,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
         secure_channel::SecureChannelClient* secure_channel_client,
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
-            android_sms_app_helper_delegate);
+            android_sms_app_helper_delegate,
+        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
     static Factory* test_factory_;
@@ -72,7 +78,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
       secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate);
+          android_sms_app_helper_delegate,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -114,6 +121,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
+  std::unique_ptr<DeviceReenroller> device_reenroller_;
   AuthTokenValidator* auth_token_validator_;
 
   mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;

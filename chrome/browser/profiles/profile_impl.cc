@@ -1533,7 +1533,8 @@ ProfileImpl::CreateMultiDeviceSetupService() {
       chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
           this),
       std::make_unique<
-          chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this));
+          chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
+      chromeos::GcmDeviceInfoProviderImpl::GetInstance());
 }
 
 #endif  // defined(OS_CHROMEOS)

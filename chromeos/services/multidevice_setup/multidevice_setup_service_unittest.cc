@@ -18,6 +18,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
+#include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -39,13 +40,16 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       device_sync::FakeDeviceSyncClient* expected_device_sync_client,
       secure_channel::FakeSecureChannelClient* expected_secure_channel_client,
       FakeAuthTokenValidator* expected_auth_token_validator,
-      FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate)
+      FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate,
+      const cryptauth::FakeGcmDeviceInfoProvider*
+          expected_gcm_device_info_provider)
       : expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client),
         expected_secure_channel_client_(expected_secure_channel_client),
         expected_auth_token_validator_(expected_auth_token_validator),
         expected_android_sms_app_helper_delegate_(
-            expected_android_sms_app_helper_delegate) {}
+            expected_android_sms_app_helper_delegate),
+        expected_gcm_device_info_provider_(expected_gcm_device_info_provider) {}
 
   ~FakeMultiDeviceSetupFactory() override = default;
 
@@ -58,7 +62,9 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate) override {
+          android_sms_app_helper_delegate,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+      override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
@@ -66,6 +72,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
     EXPECT_EQ(expected_auth_token_validator_, auth_token_validator);
     EXPECT_EQ(expected_android_sms_app_helper_delegate_,
               android_sms_app_helper_delegate.get());
+    EXPECT_EQ(expected_gcm_device_info_provider_, gcm_device_info_provider);
 
     auto instance = std::make_unique<FakeMultiDeviceSetup>();
     instance_ = instance.get();
@@ -77,6 +84,8 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   secure_channel::FakeSecureChannelClient* expected_secure_channel_client_;
   FakeAuthTokenValidator* expected_auth_token_validator_;
   FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
+  const cryptauth::FakeGcmDeviceInfoProvider*
+      expected_gcm_device_info_provider_;
 
   FakeMultiDeviceSetup* instance_ = nullptr;
 
@@ -105,12 +114,16 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_app_helper_delegate_ =
         fake_android_sms_app_helper_delegate.get();
+    fake_gcm_device_info_provider_ =
+        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+            cryptauth::GcmDeviceInfo());
 
     fake_multidevice_setup_factory_ =
         std::make_unique<FakeMultiDeviceSetupFactory>(
             test_pref_service_.get(), fake_device_sync_client_.get(),
             fake_secure_channel_client_.get(), fake_auth_token_validator_.get(),
-            fake_android_sms_app_helper_delegate_);
+            fake_android_sms_app_helper_delegate_,
+            fake_gcm_device_info_provider_.get());
     MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
         fake_multidevice_setup_factory_.get());
 
@@ -120,7 +133,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
                 test_pref_service_.get(), fake_device_sync_client_.get(),
                 fake_secure_channel_client_.get(),
                 fake_auth_token_validator_.get(),
-                std::move(fake_android_sms_app_helper_delegate)));
+                std::move(fake_android_sms_app_helper_delegate),
+                fake_gcm_device_info_provider_.get()));
 
     auto connector = connector_factory_->CreateConnector();
     connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
@@ -178,6 +192,8 @@ class MultiDeviceSetupServiceTest : public testing::Test {
       fake_secure_channel_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
   FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
+  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+      fake_gcm_device_info_provider_;
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 
