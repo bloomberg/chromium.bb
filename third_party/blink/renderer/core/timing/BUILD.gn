@@ -14,6 +14,8 @@ blink_core_sources("timing") {
     "memory_info.h",
     "performance.cc",
     "performance.h",
+    "performance_element_timing.cc",
+    "performance_element_timing.h",
     "performance_entry.cc",
     "performance_entry.h",
     "performance_event_timing.cc",

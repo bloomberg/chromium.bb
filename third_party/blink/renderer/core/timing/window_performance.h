@@ -67,7 +67,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void UpdateLongTaskInstrumentation() override;
 
-  bool ObservingEventTimingEntries();
   bool ShouldBufferEventTiming();
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
@@ -78,6 +77,10 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            TimeTicks processing_start,
                            TimeTicks processing_end,
                            bool cancelable);
+
+  void AddElementTiming(const AtomicString& name,
+                        const IntRect& rect,
+                        TimeTicks timestamp);
 
   void Trace(blink::Visitor*) override;
 

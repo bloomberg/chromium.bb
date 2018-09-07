@@ -14,6 +14,7 @@ class GraphicsContext;
 class LayoutPoint;
 class LayoutRect;
 class LayoutImage;
+class PaintLayer;
 
 class ImagePainter {
   STACK_ALLOCATED();
@@ -29,7 +30,8 @@ class ImagePainter {
   // offset.
   void PaintIntoRect(GraphicsContext&,
                      const LayoutRect& dest_rect,
-                     const LayoutRect& content_rect);
+                     const LayoutRect& content_rect,
+                     const PaintLayer*);
 
  private:
   void PaintAreaElementFocusRing(const PaintInfo&);

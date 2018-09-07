@@ -79,6 +79,8 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     return kEvent;
   if (entry_type == PerformanceEntryNames::firstInput)
     return kFirstInput;
+  if (entry_type == PerformanceEntryNames::element)
+    return kElement;
   return kInvalid;
 }
 
