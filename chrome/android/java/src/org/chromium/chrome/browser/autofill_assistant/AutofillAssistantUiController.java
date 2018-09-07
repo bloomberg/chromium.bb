@@ -19,7 +19,7 @@ import org.chromium.content_public.browser.WebContents;
  * Autofill Assistant related UIs and forward UI events to native side.
  */
 @JNINamespace("autofill_assistant")
-public class AutofillAssistantUiController {
+public class AutofillAssistantUiController implements BottomBarController.Client {
     private final long mUiControllerAndroid;
     private final BottomBarController mBottomBarController;
 
@@ -58,7 +58,12 @@ public class AutofillAssistantUiController {
             }
         });
 
-        mBottomBarController = new BottomBarController(activity);
+        mBottomBarController = new BottomBarController(activity, this);
+    }
+
+    @Override
+    public void onScriptSelected(String scriptPath) {
+        nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
 
     @CalledByNative
@@ -86,4 +91,5 @@ public class AutofillAssistantUiController {
     // native methods.
     private native long nativeInit(WebContents webContents);
     private native void nativeDestroy(long nativeUiControllerAndroid);
+    private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
 }

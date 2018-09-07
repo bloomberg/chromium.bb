@@ -23,17 +23,34 @@ class BottomBarController {
     private static final String SCRIPTS_STATUS_MESSAGE = "Scripts";
 
     private final Activity mActivity;
+    private final Client mClient;
     private final LinearLayout mBottomBar;
     private ViewGroup mScriptsViewContainer;
     private TextView mStatusMessageView;
 
     /**
+     * This is a client interface that relays interactions from the UI.
+     *
+     * Java version of the native autofill_assistant::UiDelegate.
+     */
+    public interface Client {
+        /**
+         * Called when a script has been selected.
+         *
+         * @param scriptPath The path for the selected script.
+         */
+        void onScriptSelected(String scriptPath);
+    }
+
+    /**
      * Constructs a bottom bar.
      *
      * @param activity The Activity
+     * @param client The client to forward events to
      */
-    public BottomBarController(Activity activity) {
+    public BottomBarController(Activity activity, Client client) {
         mActivity = activity;
+        mClient = client;
 
         mBottomBar = createBottomBar();
         ((ViewGroup) mActivity.findViewById(R.id.coordinator)).addView(mBottomBar);
@@ -64,9 +81,10 @@ class BottomBarController {
         if (scripts.length == 0) {
             return;
         }
-
         for (String script : scripts) {
-            mScriptsViewContainer.addView(createScriptView(script));
+            TextView scriptView = createScriptView(script);
+            scriptView.setOnClickListener((unusedView) -> { mClient.onScriptSelected(script); });
+            mScriptsViewContainer.addView(scriptView);
         }
     }
 
