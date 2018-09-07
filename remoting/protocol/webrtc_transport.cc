@@ -53,13 +53,6 @@ const int kTransportInfoSendDelayMs = 20;
 // XML namespace for the transport elements.
 const char kTransportNamespace[] = "google:remoting:webrtc";
 
-// Bitrate cap applied to relay connections. This is done to prevent
-// large amounts of packet loss, since the Google TURN/relay server drops
-// packets to limit the connection to ~10Mbps. The rate-limiting behavior works
-// badly with WebRTC's bandwidth-estimation, which results in the host process
-// trying to send frames too rapidly over the connection.
-constexpr int kMaxBitrateOnRelayKbps = 8000;
-
 #if !defined(NDEBUG)
 // Command line switch used to disable signature verification.
 // TODO(sergeyu): Remove this flag.
@@ -757,6 +750,16 @@ void WebrtcTransport::OnStatsDelivered(
   VLOG(0) << "Relay connection: " << (is_relay ? "true" : "false");
 
   if (is_relay) {
+    int max_bitrate_kbps = transport_context_->GetTurnMaxRateKbps();
+    if (max_bitrate_kbps <= 0) {
+      VLOG(0) << "No bitrate cap set.";
+      return;
+    }
+    VLOG(0) << "Capping bitrate to " << max_bitrate_kbps << "kbps.";
+
+    // Apply the suggested bitrate cap to prevent large amounts of packet loss.
+    // The Google TURN/relay server limits the connection speed by dropping
+    // packets, which may interact badly with WebRTC's bandwidth-estimation.
     auto senders = peer_connection()->GetSenders();
     for (rtc::scoped_refptr<webrtc::RtpSenderInterface> sender : senders) {
       // x-google-max-bitrate is only set for video codecs in the SDP exchange.
@@ -777,7 +780,7 @@ void WebrtcTransport::OnStatsDelivered(
                    << sender->id();
       }
 
-      parameters.encodings[0].max_bitrate_bps = kMaxBitrateOnRelayKbps * 1000;
+      parameters.encodings[0].max_bitrate_bps = max_bitrate_kbps * 1000;
       sender->SetParameters(parameters);
     }
   }
