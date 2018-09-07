@@ -103,54 +103,6 @@ void ImmersiveFullscreenController::Init(
   EnableWindowObservers(true);
 }
 
-void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
-                                               bool enabled) {
-  if (enabled_ == enabled)
-    return;
-  enabled_ = enabled;
-
-  EnableEventObservers(enabled_);
-
-  ImmersiveContext::Get()->OnEnteringOrExitingImmersive(this, enabled);
-
-  if (enabled_) {
-    // Animate enabling immersive mode by sliding out the top-of-window views.
-    // No animation occurs if a lock is holding the top-of-window views open.
-
-    // Do a reveal to set the initial state for the animation. (And any
-    // required state in case the animation cannot run because of a lock holding
-    // the top-of-window views open.)
-    MaybeStartReveal(ANIMATE_NO);
-
-    // Reset the located event so that it does not affect whether the
-    // top-of-window views are hidden.
-    located_event_revealed_lock_.reset();
-
-    // Try doing the animation.
-    MaybeEndReveal(ANIMATE_SLOW);
-
-    if (reveal_state_ == REVEALED) {
-      // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
-      UpdateLocatedEventRevealedLock();
-      if (immersive_focus_watcher_)
-        immersive_focus_watcher_->UpdateFocusRevealedLock();
-    }
-
-    delegate_->OnImmersiveFullscreenEntered();
-  } else {
-    // Stop cursor-at-top tracking.
-    top_edge_hover_timer_.Stop();
-    reveal_state_ = CLOSED;
-
-    delegate_->OnImmersiveFullscreenExited();
-  }
-
-  if (enabled_) {
-    UMA_HISTOGRAM_ENUMERATION("Ash.ImmersiveFullscreen.WindowType", window_type,
-                              WINDOW_TYPE_COUNT);
-  }
-}
-
 bool ImmersiveFullscreenController::IsEnabled() const {
   return enabled_;
 }
@@ -272,10 +224,8 @@ void ImmersiveFullscreenController::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (key == kImmersiveIsActive) {
-    SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-               window->GetProperty(kImmersiveIsActive));
-  }
+  if (key == kImmersiveIsActive)
+    UpdateEnabled();
 }
 
 void ImmersiveFullscreenController::OnWindowDestroying(aura::Window* window) {
@@ -389,11 +339,6 @@ void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
 
     animation_->Stop();
   }
-}
-
-bool ImmersiveFullscreenController::IsTargetForWidget(
-    views::Widget* target) const {
-  return target == widget_ || target == top_container_->GetWidget();
 }
 
 void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
@@ -718,6 +663,67 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
 
 gfx::Rect ImmersiveFullscreenController::GetDisplayBoundsInScreen() const {
   return ImmersiveContext::Get()->GetDisplayBoundsInScreen(widget_);
+}
+
+bool ImmersiveFullscreenController::IsTargetForWidget(
+    views::Widget* target) const {
+  return target == widget_ || target == top_container_->GetWidget();
+}
+
+void ImmersiveFullscreenController::UpdateEnabled() {
+  if (!widget_)
+    return;
+
+  const bool enabled =
+      widget_->GetNativeWindow()->GetProperty(kImmersiveIsActive);
+
+  if (enabled_ == enabled)
+    return;
+  enabled_ = enabled;
+
+  EnableEventObservers(enabled_);
+
+  ImmersiveContext::Get()->OnEnteringOrExitingImmersive(this, enabled);
+
+  if (enabled_) {
+    // Animate enabling immersive mode by sliding out the top-of-window views.
+    // No animation occurs if a lock is holding the top-of-window views open.
+
+    // Do a reveal to set the initial state for the animation. (And any
+    // required state in case the animation cannot run because of a lock holding
+    // the top-of-window views open.)
+    MaybeStartReveal(ANIMATE_NO);
+
+    // Reset the located event so that it does not affect whether the
+    // top-of-window views are hidden.
+    located_event_revealed_lock_.reset();
+
+    // Try doing the animation.
+    MaybeEndReveal(ANIMATE_SLOW);
+
+    if (reveal_state_ == REVEALED) {
+      // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
+      UpdateLocatedEventRevealedLock();
+      if (immersive_focus_watcher_)
+        immersive_focus_watcher_->UpdateFocusRevealedLock();
+    }
+
+    delegate_->OnImmersiveFullscreenEntered();
+  } else {
+    // Stop cursor-at-top tracking.
+    top_edge_hover_timer_.Stop();
+    reveal_state_ = CLOSED;
+
+    delegate_->OnImmersiveFullscreenExited();
+  }
+
+  if (enabled_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Ash.ImmersiveFullscreen.WindowType",
+        static_cast<WindowType>(
+            widget_->GetNativeWindow()->GetProperty(kImmersiveWindowType)),
+        WINDOW_TYPE_COUNT);
+  }
 }
 
 }  // namespace ash

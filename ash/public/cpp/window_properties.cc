@@ -5,6 +5,7 @@
 #include "ash/public/cpp/window_properties.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -172,6 +173,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveIsActive, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kImmersiveTopContainerBoundsInScreen,
                                    nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(
+    int,
+    kImmersiveWindowType,
+    ImmersiveFullscreenController::WindowType::WINDOW_TYPE_OTHER);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool,
                              kIsDeferredTabDraggingTargetWindowKey,
                              false);

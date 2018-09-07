@@ -117,6 +117,9 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kImmersiveTopContainerBoundsInScreen) {
     MirrorOwnedProperty(window, root_window,
                         kImmersiveTopContainerBoundsInScreen);
+  } else if (key == kImmersiveWindowType) {
+    root_window->SetProperty(kImmersiveWindowType,
+                             window->GetProperty(kImmersiveWindowType));
   }
 }
 
