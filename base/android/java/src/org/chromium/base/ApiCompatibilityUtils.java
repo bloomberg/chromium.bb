@@ -702,4 +702,13 @@ public class ApiCompatibilityUtils {
         options.setLaunchDisplayId(displayId);
         return options.toBundle();
     }
+
+    /**
+     * @see View#setAccessibilityTraversalBefore(int)
+     */
+    public static void setAccessibilityTraversalBefore(View view, int viewFocusedAfter) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            view.setAccessibilityTraversalBefore(viewFocusedAfter);
+        }
+    }
 }
