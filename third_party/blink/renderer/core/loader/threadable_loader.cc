@@ -81,12 +81,6 @@ AtomicString CreateAccessControlRequestHeadersHeader(
     const HTTPHeaderMap& headers) {
   Vector<String> filtered_headers = CORS::CORSUnsafeRequestHeaderNames(headers);
 
-  // FetchManager may add a "referer" header.
-  // TODO(yhirano): Remove this.
-  auto it = filtered_headers.Find("referer");
-  if (it != kNotFound)
-    filtered_headers.EraseAt(it);
-
   if (!filtered_headers.size())
     return g_null_atom;
 
@@ -170,9 +164,7 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
   preflight_request->SetSkipServiceWorker(true);
-  // TODO(domfarolino): Use ReferrerString() once https://crbug.com/850813 is
-  // closed and we stop storing the referrer string as a `Referer` header.
-  preflight_request->SetReferrerString(request.HttpReferrer());
+  preflight_request->SetReferrerString(request.ReferrerString());
   preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
