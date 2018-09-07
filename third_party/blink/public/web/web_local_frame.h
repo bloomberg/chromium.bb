@@ -226,7 +226,8 @@ class WebLocalFrame : public WebFrame {
       const WebURL&,
       WebFrameLoadType,
       const WebHistoryItem&,
-      bool is_client_redirect) = 0;
+      bool is_client_redirect,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   // Loads a JavaScript URL in the frame.
   virtual void LoadJavaScriptURL(const WebURL&) = 0;

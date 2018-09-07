@@ -2063,7 +2063,8 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
     const WebURL& url,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
-    bool is_client_redirect) {
+    bool is_client_redirect,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
   DCHECK(!url.ProtocolIs("javascript"));
 
@@ -2071,7 +2072,10 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
   return GetFrame()->Loader().CommitSameDocumentNavigation(
       url, web_frame_load_type, history_item,
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
-                         : ClientRedirectPolicy::kNotClientRedirect);
+                         : ClientRedirectPolicy::kNotClientRedirect,
+      nullptr, /* origin_document */
+      false,   /* has_event */
+      std::move(extra_data));
 }
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {

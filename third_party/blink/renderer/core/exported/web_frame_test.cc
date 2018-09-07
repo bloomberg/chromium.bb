@@ -7737,7 +7737,7 @@ class TestDidNavigateCommitTypeWebFrameClient
   // FrameTestHelpers::TestWebFrameClient:
   void DidFinishSameDocumentNavigation(const WebHistoryItem&,
                                        WebHistoryCommitType type,
-                                       bool) override {
+                                       bool content_initiated) override {
     last_commit_type_ = type;
   }
 
@@ -7762,9 +7762,12 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
 
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
       ->Loader()
-      .CommitSameDocumentNavigation(
-          item->Url(), WebFrameLoadType::kBackForward, item.Get(),
-          ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      .CommitSameDocumentNavigation(item->Url(), WebFrameLoadType::kBackForward,
+                                    item.Get(),
+                                    ClientRedirectPolicy::kNotClientRedirect,
+                                    nullptr, /* origin_document */
+                                    false,   /* has_event */
+                                    nullptr /* extra_data */);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 

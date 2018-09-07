@@ -275,10 +275,10 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // The main frame's and subframe's LoFi states should stay the same on
   // same-document navigations.
   frame()->DidFinishSameDocumentNavigation(item, blink::kWebStandardCommit,
-                                           true);
+                                           false /* content_initiated */);
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
   GetMainRenderFrame()->DidFinishSameDocumentNavigation(
-      item, blink::kWebStandardCommit, true);
+      item, blink::kWebStandardCommit, false /* content_initiated */);
   EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
 
   // The subframe's LoFi state should not be reset on commit.
@@ -337,10 +337,10 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     // The main frame's and subframe's effective connection type should stay the
     // same on same-document navigations.
     frame()->DidFinishSameDocumentNavigation(item, blink::kWebStandardCommit,
-                                             true);
+                                             false /* content_initiated */);
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
     GetMainRenderFrame()->DidFinishSameDocumentNavigation(
-        item, blink::kWebStandardCommit, true);
+        item, blink::kWebStandardCommit, false /* content_initiated */);
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The subframe's effective connection type should not be reset on commit.
@@ -1232,8 +1232,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest();
 
   FrameHostTestInterfaceRequestIssuer requester(GetMainRenderFrame());
-  OnSameDocumentNavigation(GetMainFrame(), true /* is_new_navigation */,
-                           true /* is_contenet_initiated */);
+  OnSameDocumentNavigation(GetMainFrame(), true /* is_new_navigation */);
 
   EXPECT_FALSE(
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest().is_pending());

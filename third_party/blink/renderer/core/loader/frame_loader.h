@@ -122,8 +122,9 @@ class CORE_EXPORT FrameLoader final {
       WebFrameLoadType,
       HistoryItem*,
       ClientRedirectPolicy,
-      Document* origin_document = nullptr,
-      bool has_event = false);
+      Document* origin_document,
+      bool has_event,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
   // Warning: stopAllLoaders can and will detach the LocalFrame out from under
   // you. All callers need to either protect the LocalFrame or guarantee they
@@ -245,7 +246,8 @@ class CORE_EXPORT FrameLoader final {
                           WebFrameLoadType,
                           HistoryItem*,
                           ClientRedirectPolicy,
-                          Document*);
+                          Document*,
+                          std::unique_ptr<WebDocumentLoader::ExtraData>);
   void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
                                          HistoryItem::ViewState*,
