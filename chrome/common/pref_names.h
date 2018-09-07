@@ -441,6 +441,8 @@ extern const char kHasSeenWelcomePage[];
 extern const char kHasSeenWin10PromoPage[];
 #if defined(GOOGLE_CHROME_BUILD)
 extern const char kHasSeenGoogleAppsPromoPage[];
+extern const char kHasSeenEmailPromoPage[];
+extern const char kOnboardDuringNUX[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 

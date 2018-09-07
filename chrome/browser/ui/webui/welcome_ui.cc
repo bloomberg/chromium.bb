@@ -121,7 +121,15 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     // experiments launch.
   }
 
-  if (base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
+  // To avoid diluting data collection, existing users should not be assigned
+  // an NUX group. So, the kOnboardDuringNUX flag is used to short-circuit the
+  // feature checks below.
+  PrefService* prefs = profile->GetPrefs();
+  bool onboard_during_nux =
+      prefs && prefs->GetBoolean(prefs::kOnboardDuringNUX);
+
+  if (onboard_during_nux &&
+      base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
     content::BrowserContext* browser_context =
         web_ui->GetWebContents()->GetBrowserContext();
     web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
@@ -133,7 +141,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
   }
 
-  if (base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {
+  if (onboard_during_nux &&
+      base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {
     content::BrowserContext* browser_context =
         web_ui->GetWebContents()->GetBrowserContext();
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
@@ -161,6 +170,15 @@ void WelcomeUI::StorePageSeen(Profile* profile, const GURL& url) {
     UMA_HISTOGRAM_ENUMERATION(nux::kGoogleAppsInteractionHistogram,
                               nux::GoogleAppsInteraction::kPromptShown,
                               nux::GoogleAppsInteraction::kCount);
+    return;
+  }
+
+  if (url.EqualsIgnoringRef(GURL(nux::kNuxEmailUrl))) {
+    // Record that the new user experience page was visited.
+    profile->GetPrefs()->SetBoolean(prefs::kHasSeenEmailPromoPage, true);
+
+    // TODO(scottchen): Record UMA.
+
     return;
   }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
