@@ -25,6 +25,7 @@ class TestSyncService : public syncer::FakeSyncService {
   const GoogleServiceAuthError& GetAuthError() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool IsAuthenticatedAccountPrimary() const override;
+  AccountInfo GetAuthenticatedAccountInfo() const override;
 
   void SetDisableReasons(int disable_reasons) {
     disable_reasons_ = disable_reasons;
@@ -46,6 +47,10 @@ class TestSyncService : public syncer::FakeSyncService {
 
   void SetInAuthError(bool is_in_auth_error);
 
+  void SetAuthenticatedAccountInfo(const AccountInfo& account_info) {
+    account_info_ = account_info;
+  }
+
  private:
   int disable_reasons_ = DISABLE_REASON_NONE;
   // Used as both "preferred" and "active" data types.
@@ -55,6 +60,7 @@ class TestSyncService : public syncer::FakeSyncService {
   GoogleServiceAuthError auth_error_;
   bool is_in_auth_error_ = false;
   bool is_authenticated_account_primary_ = true;
+  AccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };

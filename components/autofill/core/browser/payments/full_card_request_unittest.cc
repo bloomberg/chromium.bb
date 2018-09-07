@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -57,15 +58,16 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
 };
 
 // The personal data manager.
-class MockPersonalDataManager : public PersonalDataManager {
+class MockPersonalDataManager : public TestPersonalDataManager {
  public:
-  MockPersonalDataManager() : PersonalDataManager("en-US") {}
+  MockPersonalDataManager() {}
   ~MockPersonalDataManager() override {}
   MOCK_CONST_METHOD0(IsSyncFeatureEnabled, bool());
   MOCK_METHOD1(UpdateCreditCard, void(const CreditCard& credit_card));
   MOCK_METHOD1(UpdateServerCreditCard, void(const CreditCard& credit_card));
 };
 
+// TODO(crbug.com/881835): Simplify this test setup.
 // The test fixture for full card request.
 class FullCardRequestTest : public testing::Test {
  public:
@@ -85,6 +87,8 @@ class FullCardRequestTest : public testing::Test {
         autofill_client_.GetIdentityManager(), &personal_data_);
     request_ = std::make_unique<FullCardRequest>(
         &autofill_client_, payments_client_.get(), &personal_data_);
+    personal_data_.SetAccountInfoForPayments(
+        autofill_client_.GetIdentityManager()->GetPrimaryAccountInfo());
     // Silence the warning from PaymentsClient about matching sync and Payments
     // server types.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

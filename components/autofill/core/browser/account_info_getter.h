@@ -7,14 +7,17 @@
 
 #include <string>
 
+#include "components/signin/core/browser/account_info.h"
+
 namespace autofill {
 
 // Interface to get account information in Autofill.
 class AccountInfoGetter {
  public:
-  // Returns the account id of the active signed-in user irrespective of
-  // whether they enabled sync or not.
-  virtual std::string GetActiveSignedInAccountId() const = 0;
+  // Returns the account info that should be used when communicating with the
+  // Payments server. The AccountInfo could be empty if there is no account to
+  // be used by the Payments server.
+  virtual AccountInfo GetAccountInfoForPaymentsServer() const = 0;
 
   // Returns true - When user is both signed-in and enabled sync.
   // Returns false - When user is not signed-in or does not have sync the
