@@ -36,16 +36,11 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
 
   // The associated web state.
   WebState* GetWebState();
-  // Detaches the receiver from the associated  WebState.
-  void DetachFromWebState();
 
   // WebFrame implementation
   std::string GetFrameId() const override;
   bool IsMainFrame() const override;
   GURL GetSecurityOrigin() const override;
-
-  // WebStateObserver implementation
-  void WebStateDestroyed(web::WebState* web_state) override;
 
   bool CallJavaScriptFunction(
       const std::string& name,
@@ -56,6 +51,9 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
       base::OnceCallback<void(const base::Value*)> callback,
       base::TimeDelta timeout) override;
 
+  // WebStateObserver implementation
+  void WebStateDestroyed(web::WebState* web_state) override;
+
  private:
   // Calls the JavaScript function |name| in the frame context in the same
   // manner as the inherited CallJavaScriptFunction functions. If
@@ -64,6 +62,11 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   bool CallJavaScriptFunction(const std::string& name,
                               const std::vector<base::Value>& parameters,
                               bool reply_with_result);
+
+  // Detaches the receiver from the associated  WebState.
+  void DetachFromWebState();
+  // Returns the script command name to use for this WebFrame.
+  const std::string GetScriptCommandPrefix();
 
   // A structure to store the callbacks associated with the
   // |CallJavaScriptFunction| requests.
