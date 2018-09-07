@@ -28,7 +28,7 @@ public final class SuggestionsConfig {
      * Default value for referrer URL.
      * It must be kept in sync with //components/ntp_suggestions/features.cc
      */
-    private static final String DEFAULT_REFERRER_URL = "https://feed.google.com/";
+    private static final String DEFAULT_REFERRER_URL = "https://discover.google.com/";
 
     private SuggestionsConfig() {}
 

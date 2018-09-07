@@ -20,12 +20,12 @@ const char kTestFeedURL[] = "https://test.google.com/";
 TEST(FeaturesTest, GetContentSuggestionsReferrerURL_DefaultValue) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kArticleSuggestionsFeature);
-  EXPECT_EQ("https://feed.google.com/", GetContentSuggestionsReferrerURL());
+  EXPECT_EQ("https://discover.google.com/", GetContentSuggestionsReferrerURL());
 
   // In code this will be often used inside of a GURL.
-  EXPECT_EQ("https://feed.google.com/",
+  EXPECT_EQ("https://discover.google.com/",
             GURL(GetContentSuggestionsReferrerURL()));
-  EXPECT_EQ("https://feed.google.com/",
+  EXPECT_EQ("https://discover.google.com/",
             GURL(GetContentSuggestionsReferrerURL()).spec());
 }
 
