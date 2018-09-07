@@ -329,14 +329,19 @@ TEST(GURLTest, GetOrigin) {
     const char* input;
     const char* expected;
   } cases[] = {
-    {"http://www.google.com", "http://www.google.com/"},
-    {"javascript:window.alert(\"hello,world\");", ""},
-    {"http://user:pass@www.google.com:21/blah#baz", "http://www.google.com:21/"},
-    {"http://user@www.google.com", "http://www.google.com/"},
-    {"http://:pass@www.google.com", "http://www.google.com/"},
-    {"http://:@www.google.com", "http://www.google.com/"},
-    {"filesystem:http://www.google.com/temp/foo?q#b", "http://www.google.com/"},
-    {"filesystem:http://user:pass@google.com:21/blah#baz", "http://google.com:21/"},
+      {"http://www.google.com", "http://www.google.com/"},
+      {"javascript:window.alert(\"hello,world\");", ""},
+      {"http://user:pass@www.google.com:21/blah#baz",
+       "http://www.google.com:21/"},
+      {"http://user@www.google.com", "http://www.google.com/"},
+      {"http://:pass@www.google.com", "http://www.google.com/"},
+      {"http://:@www.google.com", "http://www.google.com/"},
+      {"filesystem:http://www.google.com/temp/foo?q#b",
+       "http://www.google.com/"},
+      {"filesystem:http://user:pass@google.com:21/blah#baz",
+       "http://google.com:21/"},
+      {"blob:null/guid-goes-here", ""},
+      {"blob:http://origin/guid-goes-here", "" /* should be http://origin/ */},
   };
   for (size_t i = 0; i < arraysize(cases); i++) {
     GURL url(cases[i].input);

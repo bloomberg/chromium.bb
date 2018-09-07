@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 namespace url {
 
@@ -37,6 +38,24 @@ void ExpectParsedUrlsEqual(const GURL& a, const GURL& b) {
 
 class OriginTest : public ::testing::Test {
  protected:
+  void SetUp() override {
+    // Add two schemes which are local but nonstandard.
+    AddLocalScheme("local-but-nonstandard");
+    AddLocalScheme("also-local-but-nonstandard");
+
+    // Add a scheme that's both local and standard.
+    AddStandardScheme("local-and-standard", SchemeType::SCHEME_WITH_HOST);
+    AddLocalScheme("local-and-standard");
+
+    // Add a scheme that's standard but no-access. We still want these to
+    // form valid SchemeHostPorts, even though they always commit as opaque
+    // origins, so that they can represent the source of the resource even if
+    // it's not committable as a non-opaque origin.
+    AddStandardScheme("standard-but-noaccess", SchemeType::SCHEME_WITH_HOST);
+    AddNoAccessScheme("standard-but-noaccess");
+  }
+  void TearDown() override { url::Shutdown(); }
+
   Origin CreateUniqueOpaque() { return Origin::CreateUniqueOpaque(); }
 
   Origin CreateCanonical(const GURL& url) {
@@ -66,12 +85,35 @@ TEST_F(OriginTest, OpaqueOriginComparison) {
   // cross origin to each other.
   EXPECT_FALSE(opaque_origin.IsSameOriginWith(unique_origin));
 
-  const char* const urls[] = {"data:text/html,Hello!",
-                              "javascript:alert(1)",
-                              "about:blank",
-                              "file://example.com:443/etc/passwd",
-                              "yay",
-                              "http::///invalid.example.com/"};
+  const char* const urls[] = {
+      "data:text/html,Hello!",
+      "javascript:alert(1)",
+      "about:blank",
+      "file://example.com:443/etc/passwd",
+      "unknown-scheme:foo",
+      "unknown-scheme://bar",
+      "http",
+      "http:",
+      "http:/",
+      "http://",
+      "http://:",
+      "http://:1",
+      "yay",
+      "http::///invalid.example.com/",
+      "blob:null/foo",                   // blob:null (actually a valid URL)
+      "blob:data:foo",                   // blob + data (which is nonstandard)
+      "blob:about://blank/",             // blob + about (which is nonstandard)
+      "blob:about:blank/",               // blob + about (which is nonstandard)
+      "filesystem:http://example.com/",  // Invalid (missing /type/)
+      "filesystem:local-but-nonstandard:baz./type/",  // fs requires standard
+      "filesystem:local-but-nonstandard://hostname/type/",
+      "filesystem:unknown-scheme://hostname/type/",
+      "local-but-nonstandar:foo",  // Prefix of registered scheme.
+      "but-nonstandard:foo",       // Suffix of registered scheme.
+      "local-and-standard:",       // Standard scheme needs a hostname.
+      "standard-but-noaccess:",    // Standard scheme needs a hostname.
+      "blob:blob:http://www.example.com/guid-goes-here",  // Double blob.
+  };
 
   for (auto* test_url : urls) {
     SCOPED_TRACE(test_url);
@@ -169,6 +211,9 @@ TEST_F(OriginTest, ConstructFromGURL) {
       // IP Addresses
       {"http://192.168.9.1/", "http", "192.168.9.1", 80},
       {"http://[2001:db8::1]/", "http", "[2001:db8::1]", 80},
+      {"http://1/", "http", "0.0.0.1", 80},
+      {"http://1:1/", "http", "0.0.0.1", 1},
+      {"http://3232237825/", "http", "192.168.9.1", 80},
 
       // Punycode
       {"http://☃.net/", "http", "xn--n3h.net", 80},
@@ -189,6 +234,34 @@ TEST_F(OriginTest, ConstructFromGURL) {
       {"gopher://example.com/", "gopher", "example.com", 70},
       {"ws://example.com/", "ws", "example.com", 80},
       {"wss://example.com/", "wss", "example.com", 443},
+      {"wss://user:pass@example.com/", "wss", "example.com", 443},
+
+      // Scheme (registered in SetUp()) that's both local and standard.
+      // TODO: Is it really appropriate to do network-host canonicalization of
+      // schemes without ports?
+      {"local-and-standard:20", "local-and-standard", "0.0.0.20", 0},
+      {"local-and-standard:20.", "local-and-standard", "0.0.0.20", 0},
+      {"local-and-standard:↑↑↓↓←→←→ba.↑↑↓↓←→←→ba.0.bg", "local-and-standard",
+       "xn--ba-rzuadaibfa.xn--ba-rzuadaibfa.0.bg", 0},
+      {"local-and-standard:foo", "local-and-standard", "foo", 0},
+      {"local-and-standard://bar:20", "local-and-standard", "bar", 0},
+      {"local-and-standard:baz.", "local-and-standard", "baz.", 0},
+      {"local-and-standard:baz..", "local-and-standard", "baz..", 0},
+      {"local-and-standard:baz..bar", "local-and-standard", "baz..bar", 0},
+      {"local-and-standard:baz...", "local-and-standard", "baz...", 0},
+
+      // Scheme (registered in SetUp()) that's local but nonstandard. These
+      // always have empty hostnames, but are allowed to be url::Origins.
+      {"local-but-nonstandard:", "local-but-nonstandard", "", 0},
+      {"local-but-nonstandard:foo", "local-but-nonstandard", "", 0},
+      {"local-but-nonstandard://bar", "local-but-nonstandard", "", 0},
+      {"also-local-but-nonstandard://bar", "also-local-but-nonstandard", "", 0},
+
+      // Scheme (registered in SetUp()) that's standard but marked as noaccess.
+      // url::Origin doesn't currently take the noaccess property into account,
+      // so these aren't expected to result in opaque origins.
+      {"standard-but-noaccess:foo", "standard-but-noaccess", "foo", 0},
+      {"standard-but-noaccess://bar", "standard-but-noaccess", "bar", 0},
 
       // file: URLs
       {"file:///etc/passwd", "file", "", 0},
@@ -199,10 +272,13 @@ TEST_F(OriginTest, ConstructFromGURL) {
       {"filesystem:http://example.com:123/type/", "http", "example.com", 123},
       {"filesystem:https://example.com/type/", "https", "example.com", 443},
       {"filesystem:https://example.com:123/type/", "https", "example.com", 123},
+      {"filesystem:local-and-standard:baz./type/", "local-and-standard", "baz.",
+       0},
 
       // Blob:
       {"blob:http://example.com/guid-goes-here", "http", "example.com", 80},
-      {"blob:http://example.com:123/guid-goes-here", "http", "example.com", 123},
+      {"blob:http://example.com:123/guid-goes-here", "http", "example.com",
+       123},
       {"blob:https://example.com/guid-goes-here", "https", "example.com", 443},
       {"blob:http://u:p@example.com/guid-goes-here", "http", "example.com", 80},
   };

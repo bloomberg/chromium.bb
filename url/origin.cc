@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -20,7 +21,7 @@ namespace url {
 Origin::Origin() {}
 
 Origin Origin::Create(const GURL& url) {
-  if (!url.is_valid() || (!url.IsStandard() && !url.SchemeIsBlob()))
+  if (!url.is_valid())
     return Origin();
 
   SchemeHostPort tuple;
@@ -35,18 +36,22 @@ Origin Origin::Create(const GURL& url) {
     tuple = SchemeHostPort(GURL(url.GetContent()));
   } else {
     tuple = SchemeHostPort(url);
+
+    // It's SchemeHostPort's responsibility to filter out unrecognized schemes;
+    // sanity check that this is happening.
+    DCHECK(tuple.IsInvalid() || url.IsStandard() ||
+           base::ContainsValue(GetLocalSchemes(), url.scheme_piece()));
   }
 
   if (tuple.IsInvalid())
     return Origin();
-
   return Origin(std::move(tuple));
 }
 
 // Note: this is very similar to Create(const GURL&), but opaque origins are
 // created with CreateUniqueOpaque() rather than the default constructor.
 Origin Origin::CreateCanonical(const GURL& url) {
-  if (!url.is_valid() || (!url.IsStandard() && !url.SchemeIsBlob()))
+  if (!url.is_valid())
     return CreateUniqueOpaque();
 
   SchemeHostPort tuple;
@@ -61,6 +66,11 @@ Origin Origin::CreateCanonical(const GURL& url) {
     tuple = SchemeHostPort(GURL(url.GetContent()));
   } else {
     tuple = SchemeHostPort(url);
+
+    // It's SchemeHostPort's responsibility to filter out unrecognized schemes;
+    // sanity check that this is happening.
+    DCHECK(tuple.IsInvalid() || url.IsStandard() ||
+           base::ContainsValue(GetLocalSchemes(), url.scheme_piece()));
   }
 
   if (tuple.IsInvalid())

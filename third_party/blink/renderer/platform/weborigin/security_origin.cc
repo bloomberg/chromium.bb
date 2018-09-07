@@ -110,6 +110,16 @@ static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
   if (SchemeRegistry::ShouldTreatURLSchemeAsNoAccess(relevant_url.Protocol()))
     return true;
 
+  // Nonstandard schemes and unregistered schemes aren't known to contain hosts
+  // and/or ports, so they'll usually be placed in opaque origins. An exception
+  // is made for non-standard local schemes.
+  // TODO: Migrate "content:" and "externalfile:" to be standard schemes, and
+  // remove the local scheme exception.
+  if (!relevant_url.CanSetHostOrPort() &&
+      !SchemeRegistry::ShouldTreatURLSchemeAsLocal(relevant_url.Protocol())) {
+    return true;
+  }
+
   // This is the common case.
   return false;
 }
