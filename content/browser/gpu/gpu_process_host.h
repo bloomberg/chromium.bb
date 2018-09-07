@@ -144,7 +144,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
           gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
-  void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) override;
+  void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt) override;
   void DisableGpuCompositing() override;
   bool GpuAccessAllowed() const override;
   gpu::ShaderCacheFactory* GetShaderCacheFactory() override;

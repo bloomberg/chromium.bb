@@ -945,17 +945,9 @@ void GpuProcessHost::DidCreateContextSuccessfully() {
 #endif
 }
 
-void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) {
-  GpuDataManagerImpl::DomainGuilt gpu_data_manager_guilt;
-  switch (guilt) {
-    case DomainGuilt::kKnown:
-      gpu_data_manager_guilt = GpuDataManagerImpl::DOMAIN_GUILT_KNOWN;
-      break;
-    case DomainGuilt::kUnknown:
-      gpu_data_manager_guilt = GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN;
-  }
-  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
-      url, gpu_data_manager_guilt);
+void GpuProcessHost::BlockDomainFrom3DAPIs(const GURL& url,
+                                           gpu::DomainGuilt guilt) {
+  GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(url, guilt);
 }
 
 bool GpuProcessHost::GpuAccessAllowed() const {

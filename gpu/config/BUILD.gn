@@ -102,6 +102,7 @@ source_set("config_sources") {
     "gpu_control_list.h",
     "gpu_crash_keys.cc",
     "gpu_crash_keys.h",
+    "gpu_domain_guilt.h",
     "gpu_driver_bug_list.cc",
     "gpu_driver_bug_list.h",
     "gpu_driver_bug_workaround_type.h",

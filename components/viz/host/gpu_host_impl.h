@@ -22,6 +22,7 @@
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_domain_guilt.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
@@ -49,15 +50,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
  public:
   class VIZ_HOST_EXPORT Delegate {
    public:
-    // Indicates the guilt level of a domain which caused a GPU reset.
-    // If a domain is 100% known to be guilty of resetting the GPU, then
-    // it will generally not cause other domains' use of 3D APIs to be
-    // blocked, unless system stability would be compromised.
-    enum class DomainGuilt {
-      kKnown,
-      kUnknown,
-    };
-
     virtual gpu::GPUInfo GetGPUInfo() const = 0;
     virtual gpu::GpuFeatureInfo GetGpuFeatureInfo() const = 0;
     virtual void UpdateGpuInfo(
@@ -68,7 +60,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
             gpu_feature_info_for_hardware_gpu) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
-    virtual void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt) = 0;
+    virtual void BlockDomainFrom3DAPIs(const GURL& url,
+                                       gpu::DomainGuilt guilt) = 0;
     virtual void DisableGpuCompositing() = 0;
     virtual bool GpuAccessAllowed() const = 0;
     virtual gpu::ShaderCacheFactory* GetShaderCacheFactory() = 0;

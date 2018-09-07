@@ -94,10 +94,8 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
 
   base::Time JustBeforeExpiration(const GpuDataManagerImplPrivate* manager);
   base::Time JustAfterExpiration(const GpuDataManagerImplPrivate* manager);
-  void TestBlockingDomainFrom3DAPIs(
-      GpuDataManagerImpl::DomainGuilt guilt_level);
-  void TestUnblockingDomainFrom3DAPIs(
-      GpuDataManagerImpl::DomainGuilt guilt_level);
+  void TestBlockingDomainFrom3DAPIs(gpu::DomainGuilt guilt_level);
+  void TestUnblockingDomainFrom3DAPIs(gpu::DomainGuilt guilt_level);
 
   base::MessageLoop message_loop_;
 };
@@ -141,7 +139,7 @@ base::Time GpuDataManagerImplPrivateTest::JustAfterExpiration(
 }
 
 void GpuDataManagerImplPrivateTest::TestBlockingDomainFrom3DAPIs(
-    GpuDataManagerImpl::DomainGuilt guilt_level) {
+    gpu::DomainGuilt guilt_level) {
   ScopedGpuDataManagerImplPrivate manager;
 
   manager->BlockDomainFrom3DAPIsAtTime(GetDomain1ForTesting(),
@@ -149,19 +147,19 @@ void GpuDataManagerImplPrivateTest::TestBlockingDomainFrom3DAPIs(
                                       GetTimeForTesting());
 
   // This domain should be blocked no matter what.
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kBlocked,
             manager->Are3DAPIsBlockedAtTime(GetDomain1ForTesting(),
-                                           GetTimeForTesting()));
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_BLOCKED,
+                                            GetTimeForTesting()));
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain1ForTesting(), JustBeforeExpiration(manager.get())));
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain1ForTesting(), JustAfterExpiration(manager.get())));
 }
 
 void GpuDataManagerImplPrivateTest::TestUnblockingDomainFrom3DAPIs(
-    GpuDataManagerImpl::DomainGuilt guilt_level) {
+    gpu::DomainGuilt guilt_level) {
   ScopedGpuDataManagerImplPrivate manager;
 
   manager->BlockDomainFrom3DAPIsAtTime(GetDomain1ForTesting(),
@@ -170,64 +168,62 @@ void GpuDataManagerImplPrivateTest::TestUnblockingDomainFrom3DAPIs(
 
   // Unblocking the domain should work.
   manager->UnblockDomainFrom3DAPIs(GetDomain1ForTesting());
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(GetDomain1ForTesting(),
                                             GetTimeForTesting()));
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain1ForTesting(), JustBeforeExpiration(manager.get())));
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain1ForTesting(), JustAfterExpiration(manager.get())));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, BlockGuiltyDomainFrom3DAPIs) {
-  TestBlockingDomainFrom3DAPIs(GpuDataManagerImpl::DOMAIN_GUILT_KNOWN);
+  TestBlockingDomainFrom3DAPIs(gpu::DomainGuilt::kKnown);
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, BlockDomainOfUnknownGuiltFrom3DAPIs) {
-  TestBlockingDomainFrom3DAPIs(GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN);
+  TestBlockingDomainFrom3DAPIs(gpu::DomainGuilt::kUnknown);
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, BlockAllDomainsFrom3DAPIs) {
   ScopedGpuDataManagerImplPrivate manager;
 
-  manager->BlockDomainFrom3DAPIsAtTime(GetDomain1ForTesting(),
-                                       GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN,
-                                       GetTimeForTesting());
+  manager->BlockDomainFrom3DAPIsAtTime(
+      GetDomain1ForTesting(), gpu::DomainGuilt::kUnknown, GetTimeForTesting());
 
   // Blocking of other domains should expire.
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kAllDomainsBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustBeforeExpiration(manager.get())));
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustAfterExpiration(manager.get())));
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, UnblockGuiltyDomainFrom3DAPIs) {
-  TestUnblockingDomainFrom3DAPIs(GpuDataManagerImpl::DOMAIN_GUILT_KNOWN);
+  TestUnblockingDomainFrom3DAPIs(gpu::DomainGuilt::kKnown);
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, UnblockDomainOfUnknownGuiltFrom3DAPIs) {
-  TestUnblockingDomainFrom3DAPIs(GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN);
+  TestUnblockingDomainFrom3DAPIs(gpu::DomainGuilt::kUnknown);
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, UnblockOtherDomainFrom3DAPIs) {
   ScopedGpuDataManagerImplPrivate manager;
 
-  manager->BlockDomainFrom3DAPIsAtTime(GetDomain1ForTesting(),
-                                       GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN,
-                                       GetTimeForTesting());
+  manager->BlockDomainFrom3DAPIsAtTime(
+      GetDomain1ForTesting(), gpu::DomainGuilt::kUnknown, GetTimeForTesting());
 
   manager->UnblockDomainFrom3DAPIs(GetDomain2ForTesting());
 
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustBeforeExpiration(manager.get())));
 
   // The original domain should still be blocked.
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain1ForTesting(), JustBeforeExpiration(manager.get())));
 }
@@ -235,15 +231,14 @@ TEST_F(GpuDataManagerImplPrivateTest, UnblockOtherDomainFrom3DAPIs) {
 TEST_F(GpuDataManagerImplPrivateTest, UnblockThisDomainFrom3DAPIs) {
   ScopedGpuDataManagerImplPrivate manager;
 
-  manager->BlockDomainFrom3DAPIsAtTime(GetDomain1ForTesting(),
-                                       GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN,
-                                       GetTimeForTesting());
+  manager->BlockDomainFrom3DAPIsAtTime(
+      GetDomain1ForTesting(), gpu::DomainGuilt::kUnknown, GetTimeForTesting());
 
   manager->UnblockDomainFrom3DAPIs(GetDomain1ForTesting());
 
   // This behavior is debatable. Perhaps the GPU reset caused by
   // domain 1 should still cause other domains to be blocked.
-  EXPECT_EQ(GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED,
+  EXPECT_EQ(GpuDataManagerImplPrivate::DomainBlockStatus::kNotBlocked,
             manager->Are3DAPIsBlockedAtTime(
                 GetDomain2ForTesting(), JustBeforeExpiration(manager.get())));
 }

@@ -83,8 +83,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void HandleGpuSwitch();
 
-  void BlockDomainFrom3DAPIs(
-      const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);
+  void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt);
   bool Are3DAPIsBlocked(const GURL& top_origin_url,
                         int render_process_id,
                         int render_frame_id,
@@ -125,11 +124,16 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplPrivateTest,
                            UnblockThisDomainFrom3DAPIs);
 
-  struct DomainBlockEntry {
-    GpuDataManagerImpl::DomainGuilt last_guilt;
+  // Indicates the reason that access to a given client API (like
+  // WebGL or Pepper 3D) was blocked or not. This state is distinct
+  // from blacklisting of an entire feature.
+  enum class DomainBlockStatus {
+    kBlocked,
+    kAllDomainsBlocked,
+    kNotBlocked,
   };
 
-  using DomainBlockMap = std::map<std::string, DomainBlockEntry>;
+  using DomainGuiltMap = std::map<std::string, gpu::DomainGuilt>;
 
   using GpuDataManagerObserverList =
       base::ObserverListThreadSafe<GpuDataManagerObserver>;
@@ -157,10 +161,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Implementation functions for blocking of 3D graphics APIs, used
   // for unit testing.
   void BlockDomainFrom3DAPIsAtTime(const GURL& url,
-                                   GpuDataManagerImpl::DomainGuilt guilt,
+                                   gpu::DomainGuilt guilt,
                                    base::Time at_time);
-  GpuDataManagerImpl::DomainBlockStatus Are3DAPIsBlockedAtTime(
-      const GURL& url, base::Time at_time) const;
+  DomainBlockStatus Are3DAPIsBlockedAtTime(const GURL& url,
+                                           base::Time at_time) const;
   int64_t GetBlockAllDomainsDurationInMs() const;
 
   // This is platform specific. At the moment:
@@ -197,7 +201,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // they cause random failures.
   bool update_histograms_ = true;
 
-  DomainBlockMap blocked_domains_;
+  DomainGuiltMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
   bool domain_blocking_enabled_ = true;
 
