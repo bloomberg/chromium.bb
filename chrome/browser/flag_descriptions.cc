@@ -1535,13 +1535,6 @@ const char kRemoveNavigationHistoryDescription[] =
     "Remove a navigation entry when the corresponding history entry has been "
     "deleted.";
 
-const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[] =
-    "Remove usage of the deprecated GAIA sign-in endpoint";
-const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[] =
-    "The Gaia sign-in endpoint used for full-tab sign-in page is deprecated. "
-    "This flags controls wheter it should no longer be used during a sign-in "
-    " flow.";
-
 const char kRendererSideResourceSchedulerName[] =
     "Renderer side ResourceScheduler";
 const char kRendererSideResourceSchedulerDescription[] =

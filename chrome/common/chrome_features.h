@@ -324,11 +324,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNupPrinting;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSafeSearchUrlReporting;
 

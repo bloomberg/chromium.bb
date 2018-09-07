@@ -3588,14 +3588,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDirectManipulationStylus)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-#if !defined(OS_ANDROID)
-    {"remove-deprecared-gaia-signin-endpoint",
-     flag_descriptions::kRemoveUsageOfDeprecatedGaiaSigninEndpointName,
-     flag_descriptions::kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kRemoveUsageOfDeprecatedGaiaSigninEndpoint)},
-#endif
-
 #if defined(OS_ANDROID)
     {"third-party-doodles", flag_descriptions::kThirdPartyDoodlesName,
      flag_descriptions::kThirdPartyDoodlesDescription, kOsAndroid,

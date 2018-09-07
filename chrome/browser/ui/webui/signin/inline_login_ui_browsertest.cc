@@ -161,7 +161,6 @@ class MockInlineSigninHelper : public InlineSigninHelper {
       const std::string& email,
       const std::string& gaia_id,
       const std::string& password,
-      const std::string& session_index,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
       bool choose_what_to_sync,
@@ -191,7 +190,6 @@ MockInlineSigninHelper::MockInlineSigninHelper(
     const std::string& email,
     const std::string& gaia_id,
     const std::string& password,
-    const std::string& session_index,
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
     bool choose_what_to_sync,
@@ -204,7 +202,6 @@ MockInlineSigninHelper::MockInlineSigninHelper(
                          email,
                          gaia_id,
                          password,
-                         session_index,
                          auth_code,
                          signin_scoped_device_id,
                          choose_what_to_sync,
@@ -223,7 +220,6 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
       const std::string& email,
       const std::string& gaia_id,
       const std::string& password,
-      const std::string& session_index,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
       bool choose_what_to_sync,
@@ -250,7 +246,6 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
     const std::string& email,
     const std::string& gaia_id,
     const std::string& password,
-    const std::string& session_index,
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
     bool choose_what_to_sync,
@@ -264,7 +259,6 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
                          email,
                          gaia_id,
                          password,
-                         session_index,
                          auth_code,
                          signin_scoped_device_id,
                          choose_what_to_sync,
@@ -500,13 +494,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
 
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    deprecated_client_login_to_oauth2_response_ =
-        std::make_unique<net::test_server::ControllableHttpResponse>(
-            embedded_test_server(),
-            GaiaUrls::GetInstance()
-                ->deprecated_client_login_to_oauth2_url()
-                .path(),
-            /*relative_url_is_prefix=*/true);
     oauth2_token_exchange_success_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
             embedded_test_server(),
@@ -524,14 +511,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
         ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
             profile));
     ASSERT_TRUE(token_service_);
-  }
-
-  void SimulateStartCookieForOAuthLoginTokenExchangeSuccess(
-      const std::string& cookie_string) {
-    deprecated_client_login_to_oauth2_response_->WaitForRequest();
-    deprecated_client_login_to_oauth2_response_->Send(
-        net::HTTP_OK, "text/html; charset=utf-8", "", {cookie_string});
-    deprecated_client_login_to_oauth2_response_->Done();
   }
 
   void SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
@@ -559,8 +538,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
 
  protected:
   std::unique_ptr<net::test_server::ControllableHttpResponse>
-      deprecated_client_login_to_oauth2_response_;
-  std::unique_ptr<net::test_server::ControllableHttpResponse>
       oauth2_token_exchange_success_;
 
  private:
@@ -573,34 +550,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHelperBrowserTest);
 };
 
-// Test signin helper calls correct fetcher methods when called with a session
-// index.
-IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithSessionIndex) {
-  base::WeakPtr<InlineLoginHandlerImpl> handler;
-  MockInlineSigninHelper helper(handler, test_shared_loader_factory(),
-                                browser()->profile(), GURL(), "foo@gmail.com",
-                                "gaiaid-12345", "password",
-                                "0",            // session index from above
-                                std::string(),  // auth code
-                                std::string(),
-                                false,   // choose what to sync
-                                false);  // confirm untrusted signin
-  base::RunLoop run_loop;
-  EXPECT_CALL(helper, OnClientOAuthSuccess(_))
-      .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-
-  SimulateStartCookieForOAuthLoginTokenExchangeSuccess(
-      "oauth_code=code; secure; httponly");
-
-  SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
-      R"({
-           "access_token": "access_token",
-           "expires_in": 1234567890,
-           "refresh_token": "refresh_token"
-         })");
-  run_loop.Run();
-}
-
 // Test signin helper calls correct fetcher methods when called with an
 // auth code.
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
@@ -608,7 +557,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
   MockInlineSigninHelper helper(handler, test_shared_loader_factory(),
                                 browser()->profile(), GURL(), "foo@gmail.com",
                                 "gaiaid-12345", "password",
-                                "",           // session index
                                 "auth_code",  // auth code
                                 std::string(),
                                 false,   // choose what to sync
@@ -645,7 +593,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
               ->GetURLLoaderFactoryForBrowserProcess(),
           browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
-          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
@@ -689,7 +636,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
       new MockSyncStarterInlineSigninHelper(
           handler, test_shared_loader_factory(), browser()->profile(), url,
           "foo@gmail.com", "gaiaid-12345", "password",
-          "",           // session index
           "auth_code",  // auth code
           std::string(),
           true,   // choose what to sync
@@ -720,7 +666,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
       new MockSyncStarterInlineSigninHelper(
           handler, test_shared_loader_factory(), browser()->profile(), url,
           "foo@gmail.com", "gaiaid-12345", "password",
-          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
@@ -752,7 +697,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
       new MockSyncStarterInlineSigninHelper(
           handler, test_shared_loader_factory(), browser()->profile(), url,
           "foo@gmail.com", "gaiaid-12345", "password",
-          "",           // session index
           "auth_code",  // auth code
           std::string(),
           false,  // choose what to sync
@@ -784,7 +728,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             browser()->profile(),
                             Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
-                            "",           // session index
                             "auth_code",  // auth code
                             std::string(),
                             false,  // choose what to sync
@@ -809,7 +752,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             browser()->profile(),
                             Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
-                            "",           // session index
                             "auth_code",  // auth code
                             std::string(),
                             false,  // choose what to sync
@@ -830,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
           handler, test_shared_loader_factory(), browser()->profile(), url,
-          "foo@gmail.com", "gaiaid-12345", "password", "", "auth_code",
+          "foo@gmail.com", "gaiaid-12345", "password", "auth_code",
           std::string(), false, false, true);
   EXPECT_CALL(
       *helper,

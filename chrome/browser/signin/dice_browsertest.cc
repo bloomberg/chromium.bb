@@ -277,10 +277,11 @@ std::unique_ptr<HttpResponse> HandleOAuth2TokenRevokeURL(
 // Handler for ServiceLogin on the embedded test server.
 // Calls the callback with the dice request header, or kNoDiceRequestHeader if
 // there is no Dice header.
-std::unique_ptr<HttpResponse> HandleServiceLoginURL(
+std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
     const base::RepeatingCallback<void(const std::string&)>& callback,
     const HttpRequest& request) {
-  if (!net::test_server::ShouldHandle(request, "/ServiceLogin"))
+  if (!net::test_server::ShouldHandle(request,
+                                      "/embedded/setup/chrome/usermenu"))
     return nullptr;
 
   std::string dice_request_header(kNoDiceRequestHeader);
@@ -336,8 +337,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         base::BindRepeating(&DiceBrowserTestBase::OnTokenRevocationRequest,
                             base::Unretained(this))));
     https_server_.RegisterDefaultHandler(base::BindRepeating(
-        &FakeGaia::HandleServiceLoginURL,
-        base::BindRepeating(&DiceBrowserTestBase::OnServiceLoginRequest,
+        &FakeGaia::HandleChromeSigninEmbeddedURL,
+        base::BindRepeating(&DiceBrowserTestBase::OnChromeSigninEmbeddedRequest,
                             base::Unretained(this))));
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
@@ -496,9 +497,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     dice_request_header_ = dice_request_header;
   }
 
-  void OnServiceLoginRequest(const std::string& dice_request_header) {
+  void OnChromeSigninEmbeddedRequest(const std::string& dice_request_header) {
     dice_request_header_ = dice_request_header;
-    RunClosureIfValid(std::move(service_login_quit_closure_));
+    RunClosureIfValid(std::move(chrome_signin_embedded_quit_closure_));
   }
 
   void OnEnableSyncRequest(base::OnceClosure unblock_response_closure) {
@@ -617,7 +618,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   base::OnceClosure token_requested_quit_closure_;
   base::OnceClosure token_revoked_quit_closure_;
   base::OnceClosure refresh_token_available_quit_closure_;
-  base::OnceClosure service_login_quit_closure_;
+  base::OnceClosure chrome_signin_embedded_quit_closure_;
   base::OnceClosure unblock_count_quit_closure_;
   base::OnceClosure tokens_loaded_quit_closure_;
   base::OnceClosure google_signin_succeeded_quit_closure_;
@@ -782,13 +783,12 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
 // Checks that Dice request header is not set from request from WebUI.
 // See https://crbug.com/428396
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, NoDiceFromWebUI) {
-
   // Navigate to Gaia and from the native tab, which uses an extension.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome:chrome-signin"));
 
   // Check that the request had no Dice request header.
   if (dice_request_header_.empty())
-    WaitForClosure(&service_login_quit_closure_);
+    WaitForClosure(&chrome_signin_embedded_quit_closure_);
   EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(0);

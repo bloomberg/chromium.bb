@@ -495,12 +495,6 @@ const base::Feature kNupPrinting{"NupPrinting",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint{
-    "RemoveUsageOfDeprecatedGaiaSigninEndpoint",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 

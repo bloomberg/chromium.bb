@@ -64,7 +64,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
                               const std::string& email,
                               const std::string& gaia_id,
                               const std::string& password,
-                              const std::string& session_index,
                               const std::string& auth_code,
                               bool choose_what_to_sync,
                               bool is_force_sign_in_with_usermanager);
@@ -89,9 +88,6 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
     std::string gaia_id;
     // Password of the account used to sign in.
     std::string password;
-    // Index within gaia cookie of the account used to sign in.  Used only
-    // with password combined signin flow.
-    std::string session_index;
     // Authentication code used to exchange for a login scoped refresh token
     // for the account used to sign in.  Used only with password separated
     // signin flow.
@@ -136,7 +132,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const std::string& email,
       const std::string& gaia_id,
       const std::string& password,
-      const std::string& session_index,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
       bool choose_what_to_sync,
@@ -192,7 +187,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   std::string email_;
   std::string gaia_id_;
   std::string password_;
-  std::string session_index_;
   std::string auth_code_;
   bool choose_what_to_sync_;
   bool confirm_untrusted_signin_;
