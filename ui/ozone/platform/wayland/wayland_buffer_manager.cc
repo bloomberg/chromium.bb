@@ -5,8 +5,8 @@
 #include "ui/ozone/platform/wayland/wayland_buffer_manager.h"
 
 #include <drm_fourcc.h>
-
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <presentation-time-client-protocol.h>
 
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
@@ -14,6 +14,33 @@
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 namespace ui {
+
+namespace {
+
+uint32_t GetPresentationKindFlags(uint32_t flags) {
+  uint32_t presentation_flags = 0;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_VSYNC)
+    presentation_flags |= gfx::PresentationFeedback::kVSync;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK)
+    presentation_flags |= gfx::PresentationFeedback::kHWClock;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION)
+    presentation_flags |= gfx::PresentationFeedback::kHWCompletion;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY)
+    presentation_flags |= gfx::PresentationFeedback::kZeroCopy;
+
+  return presentation_flags;
+}
+
+base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
+                                                 uint32_t tv_sec_lo,
+                                                 uint32_t tv_nsec) {
+  const int64_t seconds = (static_cast<int64_t>(tv_sec_hi) << 32) + tv_sec_lo;
+  const int64_t microseconds = seconds * base::Time::kMicrosecondsPerSecond +
+                               tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+  return base::TimeTicks() + base::TimeDelta::FromMicroseconds(microseconds);
+}
+
+}  // namespace
 
 WaylandBufferManager::Buffer::Buffer() = default;
 WaylandBufferManager::Buffer::Buffer(uint32_t id,
@@ -132,8 +159,12 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
   // It can happen that a buffer is destroyed before a frame callback comes.
   // Thus, just mark this as a successful swap, which is ok to do.
   Buffer* buffer = it->second.get();
-  if (!buffer->buffer_swap_callback.is_null())
-    std::move(buffer->buffer_swap_callback).Run(gfx::SwapResult::SWAP_ACK);
+  if (!buffer->buffer_swap_callback.is_null()) {
+    std::move(buffer->buffer_swap_callback)
+        .Run(gfx::SwapResult::SWAP_ACK,
+             gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                       base::TimeDelta(), 0));
+  }
   buffers_.erase(it);
 
   connection_->ScheduleFlush();
@@ -167,6 +198,19 @@ bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
   buffer->wl_frame_callback.reset(wl_surface_frame(window->surface()));
   wl_callback_add_listener(buffer->wl_frame_callback.get(), &frame_listener,
                            this);
+
+  // Set up presentation feedback.
+  static const wp_presentation_feedback_listener feedback_listener = {
+      WaylandBufferManager::FeedbackSyncOutput,
+      WaylandBufferManager::FeedbackPresented,
+      WaylandBufferManager::FeedbackDiscarded};
+  if (connection_->presentation()) {
+    DCHECK(!buffer->wp_presentation_feedback);
+    buffer->wp_presentation_feedback.reset(wp_presentation_feedback(
+        connection_->presentation(), window->surface()));
+    wp_presentation_feedback_add_listener(
+        buffer->wp_presentation_feedback.get(), &feedback_listener, this);
+  }
 
   wl_surface_commit(window->surface());
 
@@ -268,6 +312,12 @@ void WaylandBufferManager::CreateSucceededInternal(
     SwapBuffer(buffer);
 }
 
+void WaylandBufferManager::OnBufferSwapped(Buffer* buffer) {
+  DCHECK(!buffer->buffer_swap_callback.is_null());
+  std::move(buffer->buffer_swap_callback)
+      .Run(buffer->swap_result, std::move(buffer->feedback));
+}
+
 // static
 void WaylandBufferManager::Modifiers(
     void* data,
@@ -318,8 +368,81 @@ void WaylandBufferManager::FrameCallbackDone(void* data,
   for (auto& item : self->buffers_) {
     Buffer* buffer = item.second.get();
     if (buffer->wl_frame_callback.get() == callback) {
-      std::move(buffer->buffer_swap_callback).Run(gfx::SwapResult::SWAP_ACK);
+      buffer->swap_result = gfx::SwapResult::SWAP_ACK;
       buffer->wl_frame_callback.reset();
+
+      // If presentation feedback is not supported, use fake feedback and
+      // trigger the callback.
+      if (!self->connection_->presentation()) {
+        buffer->feedback = gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                                     base::TimeDelta(), 0);
+        self->OnBufferSwapped(buffer);
+      }
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+// static
+void WaylandBufferManager::FeedbackSyncOutput(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback,
+    struct wl_output* output) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+// static
+void WaylandBufferManager::FeedbackPresented(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback,
+    uint32_t tv_sec_hi,
+    uint32_t tv_sec_lo,
+    uint32_t tv_nsec,
+    uint32_t refresh,
+    uint32_t seq_hi,
+    uint32_t seq_lo,
+    uint32_t flags) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
+      // Frame callback must come before a feedback is presented.
+      DCHECK(!buffer->wl_frame_callback);
+
+      buffer->feedback = gfx::PresentationFeedback(
+          GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
+          base::TimeDelta::FromNanoseconds(refresh),
+          GetPresentationKindFlags(flags));
+
+      buffer->wp_presentation_feedback.reset();
+      self->OnBufferSwapped(buffer);
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+// static
+void WaylandBufferManager::FeedbackDiscarded(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
+      // Frame callback must come before a feedback is presented.
+      DCHECK(!buffer->wl_frame_callback);
+      buffer->feedback = gfx::PresentationFeedback::Failure();
+
+      buffer->wp_presentation_feedback.reset();
+      self->OnBufferSwapped(buffer);
       return;
     }
   }

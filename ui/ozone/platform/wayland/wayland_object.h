@@ -27,6 +27,8 @@ struct wl_subcompositor;
 struct wl_subsurface;
 struct wl_surface;
 struct wl_touch;
+struct wp_presentation;
+struct wp_presentation_feedback;
 struct xdg_shell;
 struct xdg_surface;
 struct xdg_popup;
@@ -154,6 +156,18 @@ template <>
 struct ObjectTraits<wl_touch> {
   static const wl_interface* interface;
   static void (*deleter)(wl_touch*);
+};
+
+template <>
+struct ObjectTraits<wp_presentation> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_presentation*);
+};
+
+template <>
+struct ObjectTraits<wp_presentation_feedback> {
+  static const wl_interface* interface;
+  static void (*deleter)(wp_presentation_feedback*);
 };
 
 template <>

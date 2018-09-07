@@ -12,11 +12,14 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_util.h"
 
 struct zwp_linux_dmabuf_v1;
 struct zwp_linux_buffer_params_v1;
+struct wp_presentation_feedback;
 
 namespace gfx {
 enum class BufferFormat;
@@ -84,6 +87,13 @@ class WaylandBufferManager {
     // Widget to attached/being attach WaylandWindow.
     gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
 
+    // A buffer swap result once the buffer is committed.
+    gfx::SwapResult swap_result;
+
+    // A feedback, which is received if a presentation feedback protocol is
+    // supported.
+    gfx::PresentationFeedback feedback;
+
     // Params that are used to create a wl_buffer.
     zwp_linux_buffer_params_v1* params = nullptr;
 
@@ -98,6 +108,10 @@ class WaylandBufferManager {
     // and it is right time to notify the GPU that it can start a new drawing
     // operation.
     wl::Object<wl_callback> wl_frame_callback;
+
+    // A presentation feedback provided by the Wayland server once frame is
+    // shown.
+    wl::Object<wp_presentation_feedback> wp_presentation_feedback;
 
     DISALLOW_COPY_AND_ASSIGN(Buffer);
   };
@@ -121,6 +135,8 @@ class WaylandBufferManager {
   void CreateSucceededInternal(struct zwp_linux_buffer_params_v1* params,
                                struct wl_buffer* new_buffer);
 
+  void OnBufferSwapped(Buffer* buffer);
+
   // zwp_linux_dmabuf_v1_listener
   static void Modifiers(void* data,
                         struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
@@ -142,6 +158,25 @@ class WaylandBufferManager {
   static void FrameCallbackDone(void* data,
                                 wl_callback* callback,
                                 uint32_t time);
+
+  // wp_presentation_feedback_listener
+  static void FeedbackSyncOutput(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback,
+      struct wl_output* output);
+  static void FeedbackPresented(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback,
+      uint32_t tv_sec_hi,
+      uint32_t tv_sec_lo,
+      uint32_t tv_nsec,
+      uint32_t refresh,
+      uint32_t seq_hi,
+      uint32_t seq_lo,
+      uint32_t flags);
+  static void FeedbackDiscarded(
+      void* data,
+      struct wp_presentation_feedback* wp_presentation_feedback);
 
   // Stores announced buffer formats supported by the compositor.
   std::vector<gfx::BufferFormat> supported_buffer_formats_;

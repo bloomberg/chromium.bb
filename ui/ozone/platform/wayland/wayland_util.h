@@ -20,12 +20,14 @@ class SharedMemory;
 namespace gfx {
 class Size;
 enum class SwapResult;
+struct PresentationFeedback;
 }
 
 namespace wl {
 
 // Corresponds to mojom::WaylandConnection::ScheduleBufferSwapCallback.
-using BufferSwapCallback = base::OnceCallback<void(gfx::SwapResult)>;
+using BufferSwapCallback =
+    base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
 
 wl_buffer* CreateSHMBuffer(const gfx::Size& size,
                            base::SharedMemory* shared_memory,
