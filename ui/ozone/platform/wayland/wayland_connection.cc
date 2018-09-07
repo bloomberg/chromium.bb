@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/wayland_buffer_manager.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
@@ -182,10 +183,13 @@ void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
   }
 }
 
-void WaylandConnection::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                                           uint32_t buffer_id) {
+void WaylandConnection::ScheduleBufferSwap(
+    gfx::AcceleratedWidget widget,
+    uint32_t buffer_id,
+    ScheduleBufferSwapCallback callback) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id)) {
+  if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id,
+                                           std::move(callback))) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
 }

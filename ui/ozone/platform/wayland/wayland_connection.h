@@ -60,7 +60,8 @@ class WaylandConnection : public PlatformEventSource,
   // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
   // WaylandWindow with the specified |widget|.
   void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                          uint32_t buffer_id) override;
+                          uint32_t buffer_id,
+                          ScheduleBufferSwapCallback callback) override;
 
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();

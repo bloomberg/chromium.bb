@@ -89,9 +89,10 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
 
 // TODO(msisov): handle buffer swap failure or success.
 bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
-                                              uint32_t buffer_id) {
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
-               buffer_id);
+                                              uint32_t buffer_id,
+                                              wl::BufferSwapCallback callback) {
+  TRACE_EVENT1("Wayland", "WaylandBufferManager::ScheduleSwapBuffer",
+               "Buffer id", buffer_id);
 
   if (!ValidateDataFromGpu(widget, buffer_id))
     return false;
@@ -109,6 +110,7 @@ bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
   // Assign a widget to this buffer, which is used to find a corresponding
   // WaylandWindow.
   buffer->widget = widget;
+  buffer->buffer_swap_callback = std::move(callback);
 
   if (buffer->wl_buffer) {
     // A wl_buffer might not exist by this time. Silently return.
@@ -127,6 +129,11 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
     error_message_ = "Trying to destroy non-existing buffer";
     return false;
   }
+  // It can happen that a buffer is destroyed before a frame callback comes.
+  // Thus, just mark this as a successful swap, which is ok to do.
+  Buffer* buffer = it->second.get();
+  if (!buffer->buffer_swap_callback.is_null())
+    std::move(buffer->buffer_swap_callback).Run(gfx::SwapResult::SWAP_ACK);
   buffers_.erase(it);
 
   connection_->ScheduleFlush();
@@ -139,6 +146,9 @@ void WaylandBufferManager::ClearState() {
 
 // TODO(msisov): handle buffer swap failure or success.
 bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
+  TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
+               buffer->buffer_id);
+
   WaylandWindow* window = connection_->GetWindow(buffer->widget);
   if (!window) {
     error_message_ = "A WaylandWindow with current widget does not exist";
@@ -147,12 +157,17 @@ bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
 
   // TODO(msisov): it would be beneficial to use real damage regions to improve
   // performance.
-  //
-  // TODO(msisov): also start using wl_surface_frame callbacks for better
-  // performance.
   wl_surface_damage(window->surface(), 0, 0, window->GetBounds().width(),
                     window->GetBounds().height());
   wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
+
+  static const wl_callback_listener frame_listener = {
+      WaylandBufferManager::FrameCallbackDone};
+  DCHECK(!buffer->wl_frame_callback);
+  buffer->wl_frame_callback.reset(wl_surface_frame(window->surface()));
+  wl_callback_add_listener(buffer->wl_frame_callback.get(), &frame_listener,
+                           this);
+
   wl_surface_commit(window->surface());
 
   connection_->ScheduleFlush();
@@ -250,7 +265,7 @@ void WaylandBufferManager::CreateSucceededInternal(
   zwp_linux_buffer_params_v1_destroy(params);
 
   if (buffer->widget != gfx::kNullAcceleratedWidget)
-    ScheduleBufferSwap(buffer->widget, buffer->buffer_id);
+    SwapBuffer(buffer);
 }
 
 // static
@@ -292,6 +307,24 @@ void WaylandBufferManager::CreateFailed(
     struct zwp_linux_buffer_params_v1* params) {
   zwp_linux_buffer_params_v1_destroy(params);
   LOG(FATAL) << "zwp_linux_buffer_params.create failed";
+}
+
+// static
+void WaylandBufferManager::FrameCallbackDone(void* data,
+                                             wl_callback* callback,
+                                             uint32_t time) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wl_frame_callback.get() == callback) {
+      std::move(buffer->buffer_swap_callback).Run(gfx::SwapResult::SWAP_ACK);
+      buffer->wl_frame_callback.reset();
+      return;
+    }
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace ui

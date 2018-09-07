@@ -198,16 +198,12 @@ void GbmSurfacelessWayland::SubmitFrame() {
       return;
     }
 
+    auto callback =
+        base::BindOnce(&GbmSurfacelessWayland::OnScheduleBufferSwapDone,
+                       weak_factory_.GetWeakPtr());
     uint32_t buffer_id = planes_.back().pixmap->GetUniqueId();
-    surface_factory_->ScheduleBufferSwap(widget_, buffer_id);
-
-    // Check comment in ::SupportsPresentationCallback.
-    OnSubmission(gfx::SwapResult::SWAP_ACK, nullptr);
-    OnPresentation(
-        gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
-                                  gfx::PresentationFeedback::kZeroCopy));
-
-    planes_.clear();
+    surface_factory_->ScheduleBufferSwap(widget_, buffer_id,
+                                         std::move(callback));
   }
 }
 
@@ -222,6 +218,15 @@ EGLSyncKHR GbmSurfacelessWayland::InsertFence(bool implicit) {
 void GbmSurfacelessWayland::FenceRetired(PendingFrame* frame) {
   frame->ready = true;
   SubmitFrame();
+}
+
+void GbmSurfacelessWayland::OnScheduleBufferSwapDone(gfx::SwapResult result) {
+  OnSubmission(result, nullptr);
+  // TODO: presentation.
+  OnPresentation(
+      gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                gfx::PresentationFeedback::kZeroCopy));
+  planes_.clear();
 }
 
 void GbmSurfacelessWayland::OnSubmission(
