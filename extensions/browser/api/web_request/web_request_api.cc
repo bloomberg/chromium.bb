@@ -861,9 +861,11 @@ ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
 }
 
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
-    : request_time_tracker_(new ExtensionWebRequestTimeTracker),
-      web_request_event_router_delegate_(
-          ExtensionsAPIClient::Get()->CreateWebRequestEventRouterDelegate()) {}
+    : request_time_tracker_(new ExtensionWebRequestTimeTracker) {
+  DCHECK(ExtensionsAPIClient::Get());
+  web_request_event_router_delegate_ =
+      ExtensionsAPIClient::Get()->CreateWebRequestEventRouterDelegate();
+}
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* browser_context,
