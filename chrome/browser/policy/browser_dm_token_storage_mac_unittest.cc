@@ -106,4 +106,22 @@ TEST_F(BrowserDMTokenStorageMacTest, SaveDMToken) {
   EXPECT_EQ(kDMToken, dm_token);
 }
 
+TEST_F(BrowserDMTokenStorageMacTest, InitDMTokenWithoutDirectory) {
+  std::unique_ptr<base::ScopedPathOverride> path_override;
+  base::ScopedTempDir fake_app_data_dir;
+
+  ASSERT_TRUE(fake_app_data_dir.CreateUniqueTempDir());
+  path_override.reset(new base::ScopedPathOverride(
+      base::DIR_APP_DATA, fake_app_data_dir.GetPath()));
+
+  TestStoreDMTokenDelegate delegate;
+  BrowserDMTokenStorageMac storage;
+
+  base::FilePath dm_token_dir_path =
+      fake_app_data_dir.GetPath().Append(kDmTokenBaseDir);
+
+  EXPECT_EQ(std::string(), storage.InitDMToken());
+  EXPECT_FALSE(base::PathExists(dm_token_dir_path));
+}
+
 }  // namespace policy

@@ -102,6 +102,23 @@ TEST_F(BrowserDMTokenStorageLinuxTest, InitDMToken) {
   EXPECT_EQ(kDMToken, storage.InitDMToken());
 }
 
+TEST_F(BrowserDMTokenStorageLinuxTest, InitDMTokenWithoutDirectory) {
+  std::unique_ptr<base::ScopedPathOverride> path_override;
+  base::ScopedTempDir fake_user_data_dir;
+
+  ASSERT_TRUE(fake_user_data_dir.CreateUniqueTempDir());
+  path_override.reset(new base::ScopedPathOverride(
+      chrome::DIR_USER_DATA, fake_user_data_dir.GetPath()));
+
+  base::FilePath dm_token_dir_path =
+      fake_user_data_dir.GetPath().Append(kDmTokenBaseDir);
+
+  MockBrowserDMTokenStorageLinux storage;
+  EXPECT_EQ(std::string(), storage.InitDMToken());
+
+  EXPECT_FALSE(base::PathExists(dm_token_dir_path));
+}
+
 class TestStoreDMTokenDelegate {
  public:
   TestStoreDMTokenDelegate() : called_(false), success_(false) {}
