@@ -13,6 +13,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -137,6 +138,8 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 }
 @end
 
+namespace views {
+
 namespace {
 
 using RankMap = std::map<NSView*, int>;
@@ -178,8 +181,8 @@ gfx::Size GetClientSizeForWindowSize(NSWindow* window,
   return gfx::Size([window contentRectForFrameRect:frame_rect].size);
 }
 
-void RankNSViews(views::View* view,
-                 const views::BridgedNativeWidgetImpl::AssociatedViews& hosts,
+void RankNSViews(View* view,
+                 const BridgedNativeWidgetImpl::AssociatedViews& hosts,
                  RankMap* rank) {
   auto it = hosts.find(view);
   if (it != hosts.end())
@@ -223,9 +226,10 @@ NSUInteger CountBridgedWindows(NSArray* child_windows) {
   return count;
 }
 
-}  // namespace
+static base::NoDestructor<std::map<uint64_t, BridgedNativeWidgetImpl*>>
+    g_id_map;
 
-namespace views {
+}  // namespace
 
 // static
 gfx::Size BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
@@ -237,18 +241,36 @@ gfx::Size BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
   return gfx::Size(NSWidth(frame_rect), NSHeight(frame_rect));
 }
 
+// static
+BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
+    uint64_t bridged_native_widget_id) {
+  auto found = g_id_map.get()->find(bridged_native_widget_id);
+  if (found == g_id_map.get()->end())
+    return nullptr;
+  return found->second;
+}
+
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
+    uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
     BridgedNativeWidgetHostHelper* host_helper,
     NativeWidgetMac* parent)
-    : host_(host), host_helper_(host_helper), native_widget_mac_(parent) {
+    : id_(bridged_native_widget_id),
+      host_(host),
+      host_helper_(host_helper),
+      native_widget_mac_(parent) {
+  DCHECK(g_id_map.get()->find(id_) == g_id_map.get()->end());
+  g_id_map.get()->insert(std::make_pair(id_, this));
   DCHECK(parent);
-  window_delegate_.reset(
-      [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
-  ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
+  // Ensure that |this| cannot be reached by its id while it is being destroyed.
+  auto found = g_id_map.get()->find(id_);
+  DCHECK(found != g_id_map.get()->end());
+  DCHECK_EQ(found->second, this);
+  g_id_map.get()->erase(found);
+
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
   // destructor is called.
@@ -263,9 +285,13 @@ BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
 void BridgedNativeWidgetImpl::SetWindow(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
   DCHECK(!window_);
+  window_delegate_.reset(
+      [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
   window_ = std::move(window);
+  [window_ setBridgedNativeWidgetId:id_];
   [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   [window_ setDelegate:window_delegate_];
+  ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
@@ -426,7 +452,7 @@ void BridgedNativeWidgetImpl::CreateContentView(const gfx::Rect& bounds) {
   [window_ setContentView:bridged_view_];
 }
 
-void BridgedNativeWidgetImpl::CreateDragDropClient(views::View* view) {
+void BridgedNativeWidgetImpl::CreateDragDropClient(View* view) {
   drag_drop_client_.reset(new DragDropClientMac(this, view));
 }
 
@@ -880,14 +906,14 @@ void BridgedNativeWidgetImpl::InitCompositorView() {
   UpdateWindowGeometry();
 }
 
-void BridgedNativeWidgetImpl::SetAssociationForView(const views::View* view,
+void BridgedNativeWidgetImpl::SetAssociationForView(const View* view,
                                                     NSView* native_view) {
   DCHECK_EQ(0u, associated_views_.count(view));
   associated_views_[view] = native_view;
   native_widget_mac_->GetWidget()->ReorderNativeViews();
 }
 
-void BridgedNativeWidgetImpl::ClearAssociationForView(const views::View* view) {
+void BridgedNativeWidgetImpl::ClearAssociationForView(const View* view) {
   auto it = associated_views_.find(view);
   DCHECK(it != associated_views_.end());
   associated_views_.erase(it);
