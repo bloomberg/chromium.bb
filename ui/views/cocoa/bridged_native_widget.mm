@@ -227,7 +227,7 @@ NSUInteger CountBridgedWindows(NSArray* child_windows) {
 }
 
 static base::NoDestructor<std::map<uint64_t, BridgedNativeWidgetImpl*>>
-    g_id_to_impl_map;
+    g_id_map;
 
 }  // namespace
 
@@ -244,8 +244,8 @@ gfx::Size BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
 // static
 BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
     uint64_t bridged_native_widget_id) {
-  auto found = g_id_to_impl_map.get()->find(bridged_native_widget_id);
-  if (found == g_id_to_impl_map.get()->end())
+  auto found = g_id_map.get()->find(bridged_native_widget_id);
+  if (found == g_id_map.get()->end())
     return nullptr;
   return found->second;
 }
@@ -259,17 +259,17 @@ BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
       host_(host),
       host_helper_(host_helper),
       native_widget_mac_(parent) {
-  DCHECK(g_id_to_impl_map.get()->find(id_) == g_id_to_impl_map.get()->end());
-  g_id_to_impl_map.get()->insert(std::make_pair(id_, this));
+  DCHECK(g_id_map.get()->find(id_) == g_id_map.get()->end());
+  g_id_map.get()->insert(std::make_pair(id_, this));
   DCHECK(parent);
 }
 
 BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
-  auto found = g_id_to_impl_map.get()->find(id_);
-  DCHECK(found != g_id_to_impl_map.get()->end());
+  auto found = g_id_map.get()->find(id_);
+  DCHECK(found != g_id_map.get()->end());
   DCHECK_EQ(found->second, this);
-  g_id_to_impl_map.get()->erase(found);
+  g_id_map.get()->erase(found);
 
   // The delegate should be cleared already. Note this enforces the precondition
   // that -[NSWindow close] is invoked on the hosted window before the
