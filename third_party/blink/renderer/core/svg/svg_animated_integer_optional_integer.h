@@ -52,11 +52,9 @@ class SVGAnimatedIntegerOptionalInteger
   static SVGAnimatedIntegerOptionalInteger* Create(
       SVGElement* context_element,
       const QualifiedName& attribute_name,
-      float initial_first_value = 0,
-      float initial_second_value = 0) {
-    return new SVGAnimatedIntegerOptionalInteger(
-        context_element, attribute_name, initial_first_value,
-        initial_second_value);
+      int initial_value) {
+    return new SVGAnimatedIntegerOptionalInteger(context_element,
+                                                 attribute_name, initial_value);
   }
 
   void SetAnimatedValue(SVGPropertyBase*) override;
@@ -71,8 +69,7 @@ class SVGAnimatedIntegerOptionalInteger
  protected:
   SVGAnimatedIntegerOptionalInteger(SVGElement* context_element,
                                     const QualifiedName& attribute_name,
-                                    float initial_first_value,
-                                    float initial_second_value);
+                                    int initial_value);
 
   Member<SVGAnimatedInteger> first_integer_;
   Member<SVGAnimatedInteger> second_integer_;

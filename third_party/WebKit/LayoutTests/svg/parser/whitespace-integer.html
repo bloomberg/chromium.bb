@@ -25,7 +25,7 @@ var validunits = [ "", "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%" ];
 testType("<integer>",
          document.getElementsByTagName("feTurbulence")[0], // workaround for broken querySelector on camelcased elements
 		 "numOctaves",
-		 0, // expected default value (FIXME: should be 1)
+		 1, // expected default value
 		 whitespace,
 		 [ "-47", "0", "+32", "1241245" ],
 		 validunits,

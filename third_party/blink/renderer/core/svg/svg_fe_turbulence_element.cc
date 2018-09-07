@@ -61,9 +61,8 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
           this,
           SVGNames::typeAttr,
           FETURBULENCE_TYPE_TURBULENCE)),
-      num_octaves_(SVGAnimatedInteger::Create(this,
-                                              SVGNames::numOctavesAttr,
-                                              SVGInteger::Create(1))) {
+      num_octaves_(
+          SVGAnimatedInteger::Create(this, SVGNames::numOctavesAttr, 1)) {
   AddToPropertyMap(base_frequency_);
   AddToPropertyMap(seed_);
   AddToPropertyMap(stitch_tiles_);
