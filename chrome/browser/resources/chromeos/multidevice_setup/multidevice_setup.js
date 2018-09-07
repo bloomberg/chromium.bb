@@ -33,7 +33,7 @@ cr.define('multidevice_setup', function() {
        */
       visiblePageName_: {
         type: String,
-        value: PageName.PASSWORD,
+        value: PageName.START,
         // For testing purporses only
         notify: true,
       },
@@ -52,7 +52,6 @@ cr.define('multidevice_setup', function() {
        */
       authToken_: {
         type: String,
-        observer: 'onAuthTokenChanged_',
       },
 
       /**
@@ -138,12 +137,6 @@ cr.define('multidevice_setup', function() {
           return;
         case PageName.PASSWORD:
           this.$.passwordPage.clearPasswordTextInput();
-          this.visiblePageName_ = PageName.START;
-          return;
-        case PageName.SUCCESS:
-          this.exitSetupFlow_();
-          return;
-        case PageName.START:
           let deviceId = /** @type {string} */ (this.selectedDeviceId_);
           this.multideviceSetup.setHostDevice(deviceId, this.authToken_)
               .then((responseParams) => {
@@ -151,11 +144,6 @@ cr.define('multidevice_setup', function() {
                   console.warn(
                       'Failure setting device with device ID: ' +
                       this.selectedDeviceId_);
-
-                  // If setting the host failed, it was likely due to an expired
-                  // auth token, so go back to the password page to get a new
-                  // token.
-                  this.visiblePageName_ = PageName.PASSWORD;
                   return;
                 }
 
@@ -171,6 +159,13 @@ cr.define('multidevice_setup', function() {
               .catch((error) => {
                 console.warn('Mojo service failure: ' + error);
               });
+          return;
+        case PageName.SUCCESS:
+          this.exitSetupFlow_();
+          return;
+        case PageName.START:
+          this.visiblePageName_ = PageName.PASSWORD;
+          return;
       }
     },
 
@@ -186,16 +181,6 @@ cr.define('multidevice_setup', function() {
     shouldForwardButtonBeDisabled_: function() {
       return (this.visiblePageName_ == PageName.PASSWORD) &&
           this.passwordPageForwardButtonDisabled_;
-    },
-
-    /** @private */
-    onAuthTokenChanged_: function() {
-      // If the auth token has expired but the user is still on the "Start
-      // Setup" page (i.e., the user has not yet chosen a device to be the host
-      // device for this account), go back to the password page and require that
-      // the user enter their password again.
-      if (!this.authToken_ && this.visiblePageName_ == PageName.START)
-        this.visiblePageName_ = PageName.PASSWORD;
     },
 
     /**
