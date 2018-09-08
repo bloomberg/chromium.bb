@@ -1,12 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="settings_setup_pin_keyboard.html">
 
 <dom-module id="settings-setup-pin-dialog">
   <template>
@@ -17,13 +17,15 @@
       <div slot="body">
         <!-- PIN keyboard -->
         <div id="pinKeyboardDiv" class="settings-box continuation">
-          <settings-setup-pin-keyboard id="pinKeyboard"
+          <setup-pin-keyboard id="pinKeyboard"
               enable-submit="{{enableSubmit_}}"
               is-confirm-step="{{isConfirmStep_}}"
               on-pin-submit="onPinSubmit_"
               on-set-pin-done="onSetPinDone_"
-              set-modes="{{setModes}}">
-          </settings-setup-pin-keyboard>
+              set-modes="{{setModes}}"
+              quick-unlock-private="[[quickUnlockPrivate]]"
+              write-uma="[[writeUma_]]">
+          </setup-pin-keyboard>
         </div>
       </div>
       <div slot="button-container">

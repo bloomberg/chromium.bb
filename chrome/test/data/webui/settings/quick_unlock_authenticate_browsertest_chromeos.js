@@ -424,14 +424,14 @@ cr.define('settings_people_page_quick_unlock', function() {
         // Create setup-pin element.
         testElement = document.createElement('settings-setup-pin-dialog');
         let testPinKeyboard = testElement.$.pinKeyboard;
-        testPinKeyboard.quickUnlockPrivate_ = quickUnlockPrivateApi;
+        testPinKeyboard.quickUnlockPrivate = quickUnlockPrivateApi;
         testPinKeyboard.setModes = (modes, credentials, onComplete) => {
           quickUnlockPrivateApi.setModes(
               quickUnlockPrivateApi.getFakeToken(), modes, credentials, () => {
                 onComplete(true);
               });
         };
-        testPinKeyboard.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
+        testPinKeyboard.writeUma = fakeUma.recordProgress.bind(fakeUma);
 
         document.body.appendChild(testElement);
         Polymer.dom.flush();
