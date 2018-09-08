@@ -25,7 +25,13 @@ PROPERTIES = {
   'patch_issue': Property(default=None),  # TODO(tandrii): add kind=int.
   'patch_set': Property(default=None),  # TODO(tandrii): add kind=int.
   'patch_gerrit_url': Property(default=None),
+  'patch_repository_url': Property(default=None),
   'patch_ref': Property(default=None),
+
+  # Rietveld-only (?) fields.
+  'repository': Property(default=None),
+
+  # Common fields for both systems.
   'deps_revision_overrides': Property(default={}),
   'fail_patch': Property(default=None, kind=str),
 

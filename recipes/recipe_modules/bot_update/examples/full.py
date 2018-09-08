@@ -158,7 +158,7 @@ def GenTests(api):
   )
   yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
       repository='https://chromium.googlesource.com/v8/v8',
-      patch_project='v8/v8',
+      patch_project='v8',
   )
   yield api.test('tryjob_gerrit_angle') + api.properties.tryserver(
       repository='https://chromium.googlesource.com/angle/angle',
