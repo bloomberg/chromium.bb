@@ -36,17 +36,19 @@ def generate_sharding_map(
       executed for the sharding algorithm to be effective.
 
   """
+  # Sort the list of benchmarks to be sharded by benchmark's name to make the
+  # execution of this algorithm deterministic.
+  benchmarks_to_shard.sort(key=lambda entry: entry['name'])
 
-  story_timing_ordered_dict = _gather_timing_data(
+  story_timing_list = _gather_timing_data(
       benchmarks_to_shard, timing_data, True)
 
   all_stories = {}
   for b in benchmarks_to_shard:
     all_stories[b['name']] = b['stories']
 
-
-  expected_time_per_shard = _get_expected_time_per_shard(
-      story_timing_ordered_dict, num_shards)
+  total_time = sum(p[1] for p in story_timing_list)
+  expected_time_per_shard = total_time/num_shards
 
   total_time = 0
   sharding_map = collections.OrderedDict()
@@ -55,7 +57,15 @@ def generate_sharding_map(
   min_shard_index = None
   max_shard_time = 0
   max_shard_index = None
-  num_stories = len(story_timing_ordered_dict)
+  num_stories = len(story_timing_list)
+  # The algorithm below removes all the stories from |story_timing_list| one by
+  # one and add them to the current shard until the shard's total time is
+  # approximately equals to |expected_time_per_shard|. After that point,
+  # it moves to the next shard.
+  # For efficient removal of |story_timing_list|'s elements & to keep the
+  # ordering of benchmark alphabetically sorted in the shards' assignment, we
+  # reverse the |story_timing_list|.
+  story_timing_list.reverse()
   for i in range(num_shards):
     sharding_map[str(i)] = {'benchmarks': collections.OrderedDict()}
     debug_map[str(i)] = collections.OrderedDict()
@@ -66,10 +76,10 @@ def generate_sharding_map(
     # Keep adding story to the current shard until the absolute difference
     # between the total time of shards so far and expected total time is
     # minimal.
-    while (story_timing_ordered_dict and
-           abs(total_time + story_timing_ordered_dict.items()[0][1] -
+    while (story_timing_list and
+           abs(total_time + story_timing_list[-1][1] -
                expected_total_time) <= last_diff):
-      (story, time) = story_timing_ordered_dict.popitem(last=False)
+      (story, time) = story_timing_list.pop()
       total_time += time
       time_per_shard += time
       stories_in_shard.append(story)
@@ -101,13 +111,6 @@ def generate_sharding_map(
   return sharding_map
 
 
-def _get_expected_time_per_shard(timing_data, num_shards):
-  total_run_time = 0
-  for story in timing_data:
-    total_run_time += timing_data[story]
-  return total_run_time / num_shards
-
-
 def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
     all_stories):
   benchmarks = collections.OrderedDict()
@@ -131,24 +134,30 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
 
 
 def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
-  story_timing_ordered_dict = collections.OrderedDict()
+  story_timing_dict = {}
   benchmarks_data_by_name = {}
   for b in benchmarks_to_shard:
     story_list = b['stories']
     benchmarks_data_by_name[b['name']] = b
     for story in story_list:
-      story_timing_ordered_dict[b['name'] + '/' + story] = 0
+      story_timing_dict[b['name'] + '/' + story] = 0
 
   for run in timing_data:
     benchmark = run['name'].split('/', 1)[0]
-    if run['name'] in story_timing_ordered_dict:
+    if run['name'] in story_timing_dict:
       if run['duration']:
         if repeat:
-          story_timing_ordered_dict[run['name']] = (float(run['duration'])
+          story_timing_dict[run['name']] = (float(run['duration'])
               * benchmarks_data_by_name[benchmark]['repeat'])
         else:
-          story_timing_ordered_dict[run['name']] += float(run['duration'])
-  return story_timing_ordered_dict
+          story_timing_dict[run['name']] += float(run['duration'])
+  story_timing_list = []
+  for entry in benchmarks_to_shard:
+    benchmark_name = entry['name']
+    for story_name in entry['stories']:
+      test_name = '%s/%s' % (benchmark_name, story_name)
+      story_timing_list.append((test_name, story_timing_dict[test_name]))
+  return story_timing_list
 
 
 def _generate_empty_sharding_map(num_shards):
@@ -160,8 +169,9 @@ def _generate_empty_sharding_map(num_shards):
 
 def test_sharding_map(
     sharding_map, benchmarks_to_shard, test_timing_data):
-  story_timing_ordered_dict = _gather_timing_data(
+  story_timing_list = _gather_timing_data(
       benchmarks_to_shard, test_timing_data, False)
+  story_timing_dict = dict(story_timing_list)
 
   results = collections.OrderedDict()
   all_stories = {}
@@ -182,7 +192,7 @@ def test_sharding_map(
         end = benchmark['end']
       benchmark_timing = 0
       for story in all_stories[benchmark_name][begin : end]:
-        story_timing = story_timing_ordered_dict.get(
+        story_timing = story_timing_dict.get(
             benchmark_name + '/' + story, 0)
         results[shard][benchmark_name + '/' + story] = str(story_timing)
         benchmark_timing += story_timing

@@ -101,7 +101,5 @@ def main():
   _UpdateShardsForBuilders(
       builder_names, options.regenerate_timing_data)
 
-
-
 if __name__ == '__main__':
   sys.exit(main())
