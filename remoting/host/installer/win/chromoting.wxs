@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!-- Note: Including Win64 components in a 32-bit installer usually triggers
+       a consistency error. We suppress that error in our build to allow the
+       installer to set 64-bit registry keys on 64-bit Windows. Care must be
+       taken when adding Win64 components to ensure they are not installed on
+       32-bit Windows. -->
 
   <?define EventSourceName = "chromoting" ?>
   <?define ServiceName = "chromoting" ?>
@@ -225,11 +230,28 @@
               Vital="yes"/>
       </Component>
 
+      <Component Id="native_messaging_host_firefox_manifest" Guid="*">
+        <File Id="com.google.chrome.remote_desktop_firefox.json"
+              DiskId="1"
+              KeyPath="yes"
+              Name="com.google.chrome.remote_desktop-firefox.json"
+              Vital="yes"/>
+      </Component>
+
       <Component Id="remote_assistance_host_manifest" Guid="*">
         <File Id="com.google.chrome.remote_assistance.json"
               DiskId="1"
               KeyPath="yes"
               Name="com.google.chrome.remote_assistance.json"
+              Vital="yes"/>
+      </Component>
+
+
+      <Component Id="remote_assistance_host_firefox_manifest" Guid="*">
+        <File Id="com.google.chrome.remote_assistance_firefox.json"
+              DiskId="1"
+              KeyPath="yes"
+              Name="com.google.chrome.remote_assistance-firefox.json"
               Vital="yes"/>
       </Component>
 
@@ -510,6 +532,39 @@
         <CreateFolder/>
       </Component>
 
+      <!-- Firefox requires the key to be installed in the native registry -->
+      <Component Id="native_messaging_host_firefox_registry_win32"
+                 Guid="*"
+                 Win64="no">
+        <Condition>NOT Msix64</Condition>
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Mozilla\NativeMessagingHosts"
+                     Action="create">
+          <RegistryKey Key="com.google.chrome.remote_desktop" Action="create">
+            <RegistryValue
+                Type="string"
+                Value="[binaries]com.google.chrome.remote_desktop-firefox.json"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
+      <Component Id="native_messaging_host_firefox_registry_win64"
+                 Guid="*"
+                 Win64="yes">
+        <Condition>Msix64</Condition>
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Mozilla\NativeMessagingHosts"
+                     Action="create">
+          <RegistryKey Key="com.google.chrome.remote_desktop" Action="create">
+            <RegistryValue
+                Type="string"
+                Value="[binaries]com.google.chrome.remote_desktop-firefox.json"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
       <Component Id="remote_assistance_host_registry" Guid="*">
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Google\chrome\NativeMessagingHosts"
@@ -519,6 +574,40 @@
             <RegistryValue
                 Type="string"
                 Value="[binaries]com.google.chrome.remote_assistance.json"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
+      <Component Id="remote_assistance_host_firefox_registry_win32"
+                 Guid="*"
+                 Win64="no">
+        <Condition>NOT Msix64</Condition>
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Mozilla\NativeMessagingHosts"
+                     Action="create">
+          <RegistryKey Key="com.google.chrome.remote_assistance"
+                       Action="create">
+            <RegistryValue
+                Type="string"
+                Value="[binaries]com.google.chrome.remote_assistance-firefox.json"/>
+          </RegistryKey>
+        </RegistryKey>
+        <CreateFolder/>
+      </Component>
+
+      <Component Id="remote_assistance_host_firefox_registry_win64"
+                 Guid="*"
+                 Win64="yes">
+        <Condition>Msix64</Condition>
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Mozilla\NativeMessagingHosts"
+                     Action="create">
+          <RegistryKey Key="com.google.chrome.remote_assistance"
+                       Action="create">
+            <RegistryValue
+                Type="string"
+                Value="[binaries]com.google.chrome.remote_assistance-firefox.json"/>
           </RegistryKey>
         </RegistryKey>
         <CreateFolder/>
@@ -623,9 +712,15 @@
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
       <ComponentRef Id="icudtl"/>
+      <ComponentRef Id="native_messaging_host_firefox_manifest"/>
+      <ComponentRef Id="native_messaging_host_firefox_registry_win32"/>
+      <ComponentRef Id="native_messaging_host_firefox_registry_win64"/>
       <ComponentRef Id="native_messaging_host_manifest"/>
       <ComponentRef Id="native_messaging_host_registry"/>
       <ComponentRef Id="remote_assistance_host"/>
+      <ComponentRef Id="remote_assistance_host_firefox_manifest"/>
+      <ComponentRef Id="remote_assistance_host_firefox_registry_win32"/>
+      <ComponentRef Id="remote_assistance_host_firefox_registry_win64"/>
       <ComponentRef Id="remote_assistance_host_manifest"/>
       <ComponentRef Id="remote_assistance_host_registry"/>
       <ComponentRef Id="remote_assistance_host_uiaccess"/>
