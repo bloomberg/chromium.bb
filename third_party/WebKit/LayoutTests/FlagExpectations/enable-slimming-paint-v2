@@ -1416,3 +1416,5 @@ Bug(none) fast/events/touch/compositor-touch-hit-rects-img-element.html [ Failur
 Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-svg-root.html [ Failure ]
 Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-img-element.html [ Failure ]
 Bug(none) fast/events/touch/compositor-touch-hit-rects-svg-root.html [ Failure ]
+Bug(none) fast/events/touch/compositor-touch-hit-rects-table.html [ Failure ]
+Bug(none) virtual/paint-touchaction-rects/fast/events/touch/compositor-touch-hit-rects-table.html [ Failure ]
