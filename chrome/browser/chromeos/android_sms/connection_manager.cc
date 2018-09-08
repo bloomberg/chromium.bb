@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/android_sms/connection_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -12,15 +13,20 @@ namespace android_sms {
 
 ConnectionManager::ConnectionManager(
     content::ServiceWorkerContext* service_worker_context,
-    std::unique_ptr<ConnectionEstablisher> connection_establisher)
+    std::unique_ptr<ConnectionEstablisher> connection_establisher,
+    MultiDeviceSetupClient* multidevice_setup_client)
     : service_worker_context_(service_worker_context),
-      connection_establisher_(std::move(connection_establisher)) {
+      connection_establisher_(std::move(connection_establisher)),
+      multidevice_setup_client_(multidevice_setup_client) {
   service_worker_context_->AddObserver(this);
-  connection_establisher_->EstablishConnection(service_worker_context_);
+  multidevice_setup_client_->AddObserver(this);
+  UpdateAndroidSmsFeatureState(multidevice_setup_client->GetFeatureState(
+      multidevice_setup::mojom::Feature::kMessages));
 }
 
 ConnectionManager::~ConnectionManager() {
   service_worker_context_->RemoveObserver(this);
+  multidevice_setup_client_->RemoveObserver(this);
 }
 
 void ConnectionManager::OnVersionActivated(int64_t version_id,
@@ -30,7 +36,8 @@ void ConnectionManager::OnVersionActivated(int64_t version_id,
 
   prev_active_version_id_ = active_version_id_;
   active_version_id_ = version_id;
-  connection_establisher_->EstablishConnection(service_worker_context_);
+  if (is_android_sms_enabled_)
+    connection_establisher_->EstablishConnection(service_worker_context_);
 }
 
 void ConnectionManager::OnVersionRedundant(int64_t version_id,
@@ -60,7 +67,36 @@ void ConnectionManager::OnNoControllees(int64_t version_id, const GURL& scope) {
   if (active_version_id_ != version_id)
     return;
 
-  connection_establisher_->EstablishConnection(service_worker_context_);
+  if (is_android_sms_enabled_)
+    connection_establisher_->EstablishConnection(service_worker_context_);
+}
+
+void ConnectionManager::OnFeatureStatesChanged(
+    const MultiDeviceSetupClient::FeatureStatesMap& feature_states_map) {
+  const auto it =
+      feature_states_map.find(multidevice_setup::mojom::Feature::kMessages);
+  if (it == feature_states_map.end())
+    return;
+
+  UpdateAndroidSmsFeatureState(it->second);
+}
+
+void ConnectionManager::UpdateAndroidSmsFeatureState(
+    multidevice_setup::mojom::FeatureState feature_state) {
+  bool is_enabled =
+      feature_state == multidevice_setup::mojom::FeatureState::kEnabledByUser;
+  if (is_android_sms_enabled_ == is_enabled)
+    return;
+
+  PA_LOG(INFO) << "ConnectionManager::UpdateAndroidSmsFeatureState enabled: "
+               << is_enabled;
+  if (is_enabled) {
+    connection_establisher_->EstablishConnection(service_worker_context_);
+  } else {
+    service_worker_context_->StopAllServiceWorkersForOrigin(
+        GetAndroidMessagesURL());
+  }
+  is_android_sms_enabled_ = is_enabled;
 }
 
 }  // namespace android_sms

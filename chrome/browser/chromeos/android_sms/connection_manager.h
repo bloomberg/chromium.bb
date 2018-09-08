@@ -7,9 +7,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/chromeos/android_sms/connection_establisher.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
+
+using chromeos::multidevice_setup::MultiDeviceSetupClient;
 
 namespace chromeos {
 
@@ -33,11 +36,13 @@ namespace android_sms {
 // connection as required. E.g., The service worker will not establish a
 // connection if it's is already connected to the Android Messages for Web page
 // or if a connection already exists.
-class ConnectionManager : public content::ServiceWorkerContextObserver {
+class ConnectionManager : public content::ServiceWorkerContextObserver,
+                          public MultiDeviceSetupClient::Observer {
  public:
   ConnectionManager(
       content::ServiceWorkerContext* service_worker_context,
-      std::unique_ptr<ConnectionEstablisher> connection_establisher);
+      std::unique_ptr<ConnectionEstablisher> connection_establisher,
+      MultiDeviceSetupClient* multidevice_setup_client);
   ~ConnectionManager() override;
 
  private:
@@ -46,8 +51,16 @@ class ConnectionManager : public content::ServiceWorkerContextObserver {
   void OnVersionRedundant(int64_t version_id, const GURL& scope) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
 
+  // MultideviceSetupClient::Observer:
+  void OnFeatureStatesChanged(const MultiDeviceSetupClient::FeatureStatesMap&
+                                  feature_state_map) override;
+
+  void UpdateAndroidSmsFeatureState(
+      multidevice_setup::mojom::FeatureState feature_state);
+
   content::ServiceWorkerContext* service_worker_context_;
   std::unique_ptr<ConnectionEstablisher> connection_establisher_;
+  MultiDeviceSetupClient* multidevice_setup_client_;
 
   // Version ID of the Android Messages for Web service worker that's currently
   // active i.e., capable of handling messages and controlling pages.
@@ -56,6 +69,8 @@ class ConnectionManager : public content::ServiceWorkerContextObserver {
   // Version ID of the previously active Android Messages for Web
   // service worker.
   base::Optional<int64_t> prev_active_version_id_;
+
+  bool is_android_sms_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

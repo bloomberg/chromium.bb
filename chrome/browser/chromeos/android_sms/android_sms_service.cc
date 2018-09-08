@@ -5,8 +5,14 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/android_sms/connection_establisher_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/storage_partition.h"
+
+using chromeos::multidevice_setup::MultiDeviceSetupClient;
+using chromeos::multidevice_setup::MultiDeviceSetupClientFactory;
 
 namespace chromeos {
 
@@ -37,8 +43,14 @@ void AndroidSmsService::OnSessionStateChanged() {
           browser_context_, GetAndroidMessagesURL());
   content::ServiceWorkerContext* service_worker_context =
       storage_partition->GetServiceWorkerContext();
+
+  MultiDeviceSetupClient* multidevice_setup_client =
+      MultiDeviceSetupClientFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_));
+
   connection_manager_ = std::make_unique<ConnectionManager>(
-      service_worker_context, std::make_unique<ConnectionEstablisherImpl>());
+      service_worker_context, std::make_unique<ConnectionEstablisherImpl>(),
+      multidevice_setup_client);
 }
 
 }  // namespace android_sms

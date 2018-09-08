@@ -89,8 +89,9 @@ void FakeServiceWorkerContext::StartServiceWorkerAndDispatchLongRunningMessage(
 
 void FakeServiceWorkerContext::StopAllServiceWorkersForOrigin(
     const GURL& origin) {
-  NOTREACHED();
+  stop_all_service_workers_for_origin_calls_.push_back(origin);
 }
+
 void FakeServiceWorkerContext::StopAllServiceWorkers(base::OnceClosure) {
   NOTREACHED();
 }
