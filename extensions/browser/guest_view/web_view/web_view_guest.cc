@@ -685,9 +685,10 @@ void WebViewGuest::RendererUnresponsive(
 
 void WebViewGuest::StartFind(
     const base::string16& search_text,
-    const blink::WebFindOptions& options,
+    blink::mojom::FindOptionsPtr options,
     scoped_refptr<WebViewInternalFindFunction> find_function) {
-  find_helper_.Find(web_contents(), search_text, options, find_function);
+  find_helper_.Find(web_contents(), search_text, std::move(options),
+                    find_function);
 }
 
 void WebViewGuest::StopFinding(content::StopFindAction action) {

@@ -7,10 +7,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 using content::WebContents;
-using blink::WebFindOptions;
 
 namespace android_webview {
 
@@ -43,12 +42,12 @@ void FindHelper::FindAllAsync(const base::string16& search_string) {
   if (MaybeHandleEmptySearch(search_string))
     return;
 
-  WebFindOptions options;
-  options.forward = true;
-  options.match_case = false;
-  options.find_next = false;
+  auto options = blink::mojom::FindOptions::New();
+  options->forward = true;
+  options->match_case = false;
+  options->find_next = false;
 
-  web_contents()->Find(current_request_id_, search_string, options);
+  web_contents()->Find(current_request_id_, search_string, std::move(options));
 }
 
 void FindHelper::HandleFindReply(int request_id,
@@ -70,12 +69,13 @@ void FindHelper::FindNext(bool forward) {
   if (MaybeHandleEmptySearch(last_search_string_))
     return;
 
-  WebFindOptions options;
-  options.forward = forward;
-  options.match_case = false;
-  options.find_next = true;
+  auto options = blink::mojom::FindOptions::New();
+  options->forward = forward;
+  options->match_case = false;
+  options->find_next = true;
 
-  web_contents()->Find(current_request_id_, last_search_string_, options);
+  web_contents()->Find(current_request_id_, last_search_string_,
+                       std::move(options));
 }
 
 void FindHelper::ClearMatches() {

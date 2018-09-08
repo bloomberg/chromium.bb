@@ -726,15 +726,15 @@ ExtensionFunction::ResponseAction WebViewInternalFindFunction::Run() {
       params->search_text.c_str(), params->search_text.length(), &search_text);
 
   // Set the find options to their default values.
-  blink::WebFindOptions options;
+  auto options = blink::mojom::FindOptions::New();
   if (params->options) {
-    options.forward =
+    options->forward =
         params->options->backward ? !*params->options->backward : true;
-    options.match_case =
+    options->match_case =
         params->options->match_case ? *params->options->match_case : false;
   }
 
-  guest_->StartFind(search_text, options, this);
+  guest_->StartFind(search_text, std::move(options), this);
   // It is possible that StartFind has already responded.
   return did_respond() ? AlreadyResponded() : RespondLater();
 }

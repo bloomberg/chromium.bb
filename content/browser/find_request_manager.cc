@@ -12,7 +12,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/guest_mode.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
 
@@ -215,6 +214,29 @@ class FindRequestManager::FrameObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(FrameObserver);
 };
 
+FindRequestManager::FindRequest::FindRequest() {}
+
+FindRequestManager::FindRequest::FindRequest(
+    int id,
+    const base::string16& search_text,
+    blink::mojom::FindOptionsPtr options)
+    : id(id), search_text(search_text), options(std::move(options)) {}
+
+FindRequestManager::FindRequest::FindRequest(const FindRequest& request)
+    : id(request.id),
+      search_text(request.search_text),
+      options(request.options.Clone()) {}
+
+FindRequestManager::FindRequest::~FindRequest() {}
+
+FindRequestManager::FindRequest& FindRequestManager::FindRequest::operator=(
+    const FindRequest& request) {
+  id = request.id;
+  search_text = request.search_text;
+  options = request.options.Clone();
+  return *this;
+}
+
 #if defined(OS_ANDROID)
 FindRequestManager::ActivateNearestFindResultState::
 ActivateNearestFindResultState() = default;
@@ -252,7 +274,7 @@ FindRequestManager::~FindRequestManager() {}
 
 void FindRequestManager::Find(int request_id,
                               const base::string16& search_text,
-                              const blink::WebFindOptions& options) {
+                              blink::mojom::FindOptionsPtr options) {
   // Every find request must have a unique ID, and these IDs must strictly
   // increase so that newer requests always have greater IDs than older
   // requests.
@@ -260,10 +282,10 @@ void FindRequestManager::Find(int request_id,
   DCHECK_GT(request_id, current_session_id_);
 
   // If this is a new find session, clear any queued requests from last session.
-  if (!options.find_next)
+  if (!options->find_next)
     find_request_queue_ = base::queue<FindRequest>();
 
-  find_request_queue_.emplace(request_id, search_text, options);
+  find_request_queue_.emplace(request_id, search_text, std::move(options));
   if (find_request_queue_.size() == 1)
     FindInternal(find_request_queue_.front());
 }
@@ -306,7 +328,7 @@ void FindRequestManager::HandleFinalUpdateForFrame(RenderFrameHostImpl* rfh,
 
   // This is the final update for all frames for the current find operation.
   if (request_id == current_request_.id && request_id != current_session_id_) {
-    DCHECK(current_request_.options.find_next);
+    DCHECK(current_request_.options->find_next);
     DCHECK_EQ(pending_find_next_reply_, rfh);
     pending_find_next_reply_ = nullptr;
   }
@@ -546,7 +568,7 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
   DCHECK_GT(request.id, current_request_.id);
   DCHECK_GT(request.id, current_session_id_);
 
-  if (request.options.find_next) {
+  if (request.options->find_next) {
     // This is a find next operation.
 
     // This implies that there is an ongoing find session with the same search
@@ -559,7 +581,7 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
     RenderFrameHost* target_rfh =
         contents_->GetFocusedWebContents()->GetFocusedFrame();
     if (!target_rfh || !CheckFrame(target_rfh))
-      target_rfh = GetInitialFrame(request.options.forward);
+      target_rfh = GetInitialFrame(request.options->forward);
 
     SendFindRequest(request, target_rfh);
     current_request_ = request;
@@ -593,20 +615,14 @@ void FindRequestManager::SendFindRequest(const FindRequest& request,
   DCHECK(CheckFrame(rfh));
   DCHECK(rfh->IsRenderFrameLive());
 
-  if (request.options.find_next)
+  if (request.options->find_next)
     pending_find_next_reply_ = rfh;
   else
     pending_initial_replies_.insert(rfh);
 
-  blink::mojom::FindOptionsPtr options(blink::mojom::FindOptions::New());
-  options->forward = request.options.forward;
-  options->match_case = request.options.match_case;
-  options->find_next = request.options.find_next;
-  options->force = request.options.force;
-  options->run_synchronously_for_testing =
-      request.options.run_synchronously_for_testing;
   static_cast<RenderFrameHostImpl*>(rfh)->GetFindInPage()->Find(
-      request.id, base::UTF16ToUTF8(request.search_text), std::move(options));
+      request.id, base::UTF16ToUTF8(request.search_text),
+      request.options.Clone());
 }
 
 void FindRequestManager::NotifyFindReply(int request_id, bool final_update) {
@@ -674,8 +690,8 @@ void FindRequestManager::AddFrame(RenderFrameHost* rfh, bool force) {
 
   FindRequest request = current_request_;
   request.id = current_session_id_;
-  request.options.find_next = false;
-  request.options.force = force;
+  request.options->find_next = false;
+  request.options->force = force;
   SendFindRequest(request, rfh);
 }
 
@@ -722,31 +738,26 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
   // request must be sent.
 
   RenderFrameHost* target_rfh;
-  if (request_id == current_request_.id && current_request_.options.find_next) {
+  if (request_id == current_request_.id &&
+      current_request_.options->find_next) {
     // If this was a find next operation, then the active match will be in the
     // next frame with matches after this one.
-    target_rfh = Traverse(rfh,
-                          current_request_.options.forward,
-                          true /* matches_only */,
-                          true /* wrap */);
+    target_rfh = Traverse(rfh, current_request_.options->forward,
+                          true /* matches_only */, true /* wrap */);
   } else if ((target_rfh =
                   contents_->GetFocusedWebContents()->GetFocusedFrame()) !=
              nullptr) {
     // Otherwise, if there is a focused frame, then the active match will be in
     // the next frame with matches after that one.
-    target_rfh = Traverse(target_rfh,
-                          current_request_.options.forward,
-                          true /* matches_only */,
-                          true /* wrap */);
+    target_rfh = Traverse(target_rfh, current_request_.options->forward,
+                          true /* matches_only */, true /* wrap */);
   } else {
     // Otherwise, the first frame with matches will have the active match.
-    target_rfh = GetInitialFrame(current_request_.options.forward);
+    target_rfh = GetInitialFrame(current_request_.options->forward);
     if (!CheckFrame(target_rfh) ||
         !find_in_page_clients_[target_rfh]->number_of_matches()) {
-      target_rfh = Traverse(target_rfh,
-                            current_request_.options.forward,
-                            true /* matches_only */,
-                            false /* wrap */);
+      target_rfh = Traverse(target_rfh, current_request_.options->forward,
+                            true /* matches_only */, false /* wrap */);
     }
   }
   DCHECK(target_rfh);
@@ -755,7 +766,7 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
   // has not yet been found.
   NotifyFindReply(request_id, false /* final_update */);
 
-  current_request_.options.find_next = true;
+  current_request_.options->find_next = true;
   SendFindRequest(current_request_, target_rfh);
 }
 

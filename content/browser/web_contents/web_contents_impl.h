@@ -441,7 +441,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                     ImageDownloadCallback callback) override;
   void Find(int request_id,
             const base::string16& search_text,
-            const blink::WebFindOptions& options) override;
+            blink::mojom::FindOptionsPtr options) override;
   void StopFinding(StopFindAction action) override;
   bool WasEverAudible() override;
   void GetManifest(GetManifestCallback callback) override;
