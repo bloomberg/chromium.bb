@@ -221,6 +221,10 @@ Polymer({
       return;
     }
 
+    // When the dialog is dismissed using the 'Esc' key, need to manually update
+    // the |open| property (since close() is not called).
+    this.open = false;
+
     // Catch and re-fire the native 'cancel' event such that it bubbles across
     // Shadow DOM v1.
     this.fire('cancel');
