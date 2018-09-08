@@ -4080,9 +4080,7 @@ crbug.com/874931 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
 crbug.com/875009 virtual/enable_wasm_streaming/http/tests/wasm_streaming/wasm_response_apis.html [ Crash Pass ]
 
-crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] virtual/outofblink-cors/external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] virtual/outofblink-cors-ns/external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/align-items-004.htm [ Failure Pass ]
