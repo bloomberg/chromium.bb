@@ -222,6 +222,8 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoAnyLink:
     case kPseudoWebkitAnyLink:
     case kPseudoAutofill:
+    case kPseudoAutofillPreviewed:
+    case kPseudoAutofillSelected:
     case kPseudoHover:
     case kPseudoDrag:
     case kPseudoFocus:
@@ -302,6 +304,8 @@ struct NameToPseudoStruct {
 
 // These tables should be kept sorted.
 const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
+    {"-internal-autofill-previewed", CSSSelector::kPseudoAutofillPreviewed},
+    {"-internal-autofill-selected", CSSSelector::kPseudoAutofillSelected},
     {"-internal-is-html", CSSSelector::kPseudoIsHtml},
     {"-internal-list-box", CSSSelector::kPseudoListBox},
     {"-internal-media-controls-overlay-cast-button",
@@ -584,6 +588,8 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoAny:
     case kPseudoAnyLink:
     case kPseudoAutofill:
+    case kPseudoAutofillPreviewed:
+    case kPseudoAutofillSelected:
     case kPseudoChecked:
     case kPseudoCornerPresent:
     case kPseudoDecrement:

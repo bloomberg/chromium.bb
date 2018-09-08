@@ -238,6 +238,8 @@ void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
 
   autofill_state_ = autofill_state;
   PseudoStateChanged(CSSSelector::kPseudoAutofill);
+  PseudoStateChanged(CSSSelector::kPseudoAutofillSelected);
+  PseudoStateChanged(CSSSelector::kPseudoAutofillPreviewed);
 }
 
 void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
