@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.RestrictionsManager;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,8 +21,8 @@ import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
@@ -182,21 +183,20 @@ public class MediaViewerUtils {
      * @param context The application Context.
      */
     public static void updateMediaLauncherActivityEnabled(Context context) {
-        PackageManager packageManager = context.getPackageManager();
-        ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
-        int newState = shouldEnableMediaLauncherActivity()
-                ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
-        // This indicates that we don't want to kill Chrome when changing component enabled state.
-        int flags = PackageManager.DONT_KILL_APP;
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+            PackageManager packageManager = context.getPackageManager();
+            ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
+            int newState = shouldEnableMediaLauncherActivity(context)
+                    ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+            // This indicates that we don't want to kill Chrome when changing component enabled
+            // state.
+            int flags = PackageManager.DONT_KILL_APP;
 
-        if (packageManager.getComponentEnabledSetting(componentName) != newState) {
-            // setComponentEnabledSetting ends up both reading and writing to disk, which ends up
-            // causing StrictMode violations. So, explicitly allow them briefly.
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads().allowDiskWrites()) {
+            if (packageManager.getComponentEnabledSetting(componentName) != newState) {
                 packageManager.setComponentEnabledSetting(componentName, newState, flags);
             }
-        }
+        });
     }
 
     /**
@@ -217,10 +217,19 @@ public class MediaViewerUtils {
         updateMediaLauncherActivityEnabled(context);
     }
 
-    private static boolean shouldEnableMediaLauncherActivity() {
+    private static boolean shouldEnableMediaLauncherActivity(Context context) {
         return sIsMediaLauncherActivityForceEnabledForTest
-                || (FeatureUtilities.isAndroidGo()
+                || ((FeatureUtilities.isAndroidGo() || isEnterpriseManaged(context))
                            && ChromeFeatureList.isEnabled(ChromeFeatureList.HANDLE_MEDIA_INTENTS));
+    }
+
+    private static boolean isEnterpriseManaged(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
+
+        RestrictionsManager restrictionsManager =
+                (RestrictionsManager) context.getSystemService(Context.RESTRICTIONS_SERVICE);
+        return restrictionsManager.hasRestrictionsProvider()
+                || !restrictionsManager.getApplicationRestrictions().isEmpty();
     }
 
     private static Intent createShareIntent(Uri fileUri, String mimeType) {
