@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/win/windows_types.h"
@@ -88,7 +89,8 @@ uint32_t DrainLog(uint8_t* buffer,
 
     tracker += entry_size;
   }
-  return tracker - buffer;
+
+  return base::checked_cast<uint32_t>(tracker - buffer);
 }
 
 bool RegisterLogNotification(HANDLE event_handle) {
