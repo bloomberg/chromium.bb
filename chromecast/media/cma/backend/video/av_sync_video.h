@@ -61,6 +61,10 @@ class AvSyncVideo : public AvSync {
   void GatherPlaybackStatistics();
   void FlushAudioPts();
   void FlushVideoPts();
+  // This returns an approximate value of the current video fps that is rounded
+  // to the nearest frame. This is a calculation of the duration of video in the
+  // linear regression / the number of samples (which are unique frames).
+  int GetContentFrameRate();
 
   void SoftCorrection(int64_t now,
                       int64_t current_vpts,
@@ -92,7 +96,6 @@ class AvSyncVideo : public AvSync {
   // that will reset the linear regression model.
   std::unique_ptr<WeightedMovingLinearRegression> audio_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> video_pts_;
-  std::unique_ptr<WeightedMovingLinearRegression> error_;
   double current_audio_playback_rate_ = 1.0;
   double current_video_playback_rate_ = 1.0;
 
