@@ -150,10 +150,6 @@ Polymer({
   },
 
   listeners: {
-    'input.focus': 'onInputFocus_',
-    'input.blur': 'onInputBlur_',
-    'input.change': 'onInputChange_',
-    'input.keydown': 'onInputKeydown_',
     'focus': 'focusInput_',
     'pointerdown': 'onPointerDown_',
   },
