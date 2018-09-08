@@ -351,6 +351,14 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
         // mean the activation on the sites with social engineering metadata.
         return true;
       }
+      if (conditions.activation_list == ActivationList::BETTER_ADS &&
+          matched_list == ActivationList::ABUSIVE &&
+          base::FeatureList::IsEnabled(kFilterAdsOnAbusiveSites)) {
+        // Trigger activation on abusive sites if the condition says to trigger
+        // on Better Ads sites. This removes the need for adding a separate
+        // Configuration for Abusive enforcement.
+        return true;
+      }
       return false;
     case ActivationScope::NO_SITES:
       return false;

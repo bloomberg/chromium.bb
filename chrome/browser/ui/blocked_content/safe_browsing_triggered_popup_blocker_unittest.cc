@@ -20,6 +20,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -390,15 +391,38 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogBlockMetricsOnClose) {
   histogram_tester.ExpectUniqueSample(kNumBlockedHistogram, 1, 1);
 }
 
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest, WarningMatch_OnlyLogs) {
-  const GURL url("https://example.test/");
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
+       WarningMatchWithoutAdBlockOnAbusiveSites_OnlyLogs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      subresource_filter::kFilterAdsOnAbusiveSites);
 
+  const GURL url("https://example.test/");
   MarkUrlAsAbusiveWarning(url);
   NavigateAndCommit(url);
 
   // Warning should come at navigation commit time, not at popup time.
   EXPECT_EQ(1u, GetMainFrameConsoleMessages().size());
   EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveWarnMessage);
+
+  EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+}
+
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
+       WarningMatchWithAdBlockOnAbusiveSites_OnlyLogs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      subresource_filter::kFilterAdsOnAbusiveSites);
+
+  const GURL url("https://example.test/");
+  MarkUrlAsAbusiveWarning(url);
+  NavigateAndCommit(url);
+
+  // Warning should come at navigation commit time, not at popup time.
+  EXPECT_EQ(2u, GetMainFrameConsoleMessages().size());
+  EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveWarnMessage);
+  EXPECT_EQ(GetMainFrameConsoleMessages().back(),
+            subresource_filter::kActivationWarningConsoleMessage);
 
   EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
 }

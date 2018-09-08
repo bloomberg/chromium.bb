@@ -433,6 +433,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Phishing Interstitial"/>
   <int value="3" label="Subresource Filter"/>
   <int value="4" label="Better Ads Standard"/>
+  <int value="5" label="Abusive"/>
 </enum>
 
 <enum name="ActiveDirectoryDomainJoinType">
