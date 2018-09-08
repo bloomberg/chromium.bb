@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/text/capitalize.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
@@ -918,7 +919,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
   // which requires flattening. See ComputedStyle::UsedTransformStyle3D() and
   // ComputedStyle::HasGroupingProperty().
   // This is legacy behavior that is left ambiguous in the official specs.
-  // See crbug.com/663650 for more details."
+  // See https://crbug.com/663650 for more details."
   if (TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
     SetIsStackingContext(true);
     return;
@@ -1417,6 +1418,34 @@ bool ComputedStyle::ShouldUseTextIndent(bool is_first_line,
                                                         : !should_use;
 }
 
+// Unicode 11 introduced Georgian capital letters (U+1C90 - U+1CBA,
+// U+1CB[D-F]), but virtually no font covers them. For now map them back
+// to their lowercase counterparts (U+10D0 - U+10FA, U+10F[D-F]).
+// https://www.unicode.org/charts/PDF/U10A0.pdf
+// https://www.unicode.org/charts/PDF/U1C90.pdf
+// See https://crbug.com/865427 .
+// TODO(jshin): Make this platform-dependent. For instance, turn this
+// off when CrOS gets new Georgian fonts covering capital letters.
+// ( https://crbug.com/880144 ).
+static String DisableNewGeorgianCapitalLetters(const String& text) {
+  if (text.IsNull() || text.Is8Bit())
+    return text;
+  unsigned length = text.length();
+  const StringImpl& input = *(text.Impl());
+  StringBuilder result;
+  result.ReserveCapacity(length);
+  // |input| must be well-formed UTF-16 so that there's no worry
+  // about surrogate handling.
+  for (unsigned i = 0; i < length; ++i) {
+    UChar character = input[i];
+    if (Character::IsModernGeorgianUppercase(character))
+      result.Append(Character::LowercaseModernGeorgianUppercase(character));
+    else
+      result.Append(character);
+  }
+  return result.ToString();
+}
+
 void ComputedStyle::ApplyTextTransform(String* text,
                                        UChar previous_character) const {
   switch (TextTransform()) {
@@ -1426,7 +1455,7 @@ void ComputedStyle::ApplyTextTransform(String* text,
       *text = Capitalize(*text, previous_character);
       return;
     case ETextTransform::kUppercase:
-      *text = text->UpperUnicode(Locale());
+      *text = DisableNewGeorgianCapitalLetters(text->UpperUnicode(Locale()));
       return;
     case ETextTransform::kLowercase:
       *text = text->LowerUnicode(Locale());

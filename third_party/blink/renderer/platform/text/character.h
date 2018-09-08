@@ -190,6 +190,18 @@ class PLATFORM_EXPORT Character {
   // and that script code is not USCRIPT_COMMON or USCRIPT_INHERITED.
   static bool HasDefiniteScript(UChar32);
 
+  static bool IsModernGeorgianUppercase(UChar32 c) {
+    return IsInRange(c, 0x1C90, 0x1CBF);
+  }
+
+  // Map modern secular Georgian uppercase letters added in Unicode
+  // 11.0 to their corresponding lowercase letters.
+  // https://www.unicode.org/charts/PDF/U10A0.pdf
+  // https://www.unicode.org/charts/PDF/U1C90.pdf
+  static UChar32 LowercaseModernGeorgianUppercase(UChar32 c) {
+    return (c - (0x1C90 - 0x10D0));
+  }
+
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);
   static bool IsHangulSlow(UChar32);
