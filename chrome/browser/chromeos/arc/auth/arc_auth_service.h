@@ -56,7 +56,6 @@ class ArcAuthService : public KeyedService,
   static const char kArcServiceName[];
 
   // ConnectionObserver<mojom::AuthInstance>:
-  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // mojom::AuthHost:
@@ -64,9 +63,7 @@ class ArcAuthService : public KeyedService,
                                bool initial_signin) override;
   void OnSignInCompleteDeprecated() override;
   void OnSignInFailedDeprecated(mojom::ArcSignInStatus reason) override;
-  void RequestAccountInfo(
-      bool initial_signin,
-      const base::Optional<std::string>& account_name) override;
+  void RequestAccountInfo(bool initial_signin) override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
   void ReportSupervisionChangeStatus(
