@@ -59,7 +59,8 @@ TranslateScript::TranslateScript()
 TranslateScript::~TranslateScript() {
 }
 
-void TranslateScript::Request(const RequestCallback& callback) {
+void TranslateScript::Request(const RequestCallback& callback,
+                              bool is_incognito) {
   script_fetch_start_time_ = base::Time::Now().ToJsTime();
 
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
@@ -73,11 +74,12 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
   GURL translate_script_url = GetTranslateScriptURL();
 
-  fetcher_.reset(new TranslateURLFetcher);
+  fetcher_ = std::make_unique<TranslateURLFetcher>();
   fetcher_->set_extra_request_header(kRequestHeader);
   fetcher_->Request(translate_script_url,
                     base::BindOnce(&TranslateScript::OnScriptFetchComplete,
-                                   base::Unretained(this)));
+                                   base::Unretained(this)),
+                    is_incognito);
 }
 
 // static

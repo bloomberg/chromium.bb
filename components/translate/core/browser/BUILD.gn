@@ -59,6 +59,7 @@ static_library("browser") {
     "//components/strings",
     "//components/translate/core/common",
     "//components/variations",
+    "//components/variations/net",
     "//google_apis",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",

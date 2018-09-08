@@ -46,8 +46,9 @@ class TranslateScriptTest : public testing::Test {
   }
 
   void Request() {
-    script_->Request(
-        base::Bind(&TranslateScriptTest::OnComplete, base::Unretained(this)));
+    script_->Request(base::BindRepeating(&TranslateScriptTest::OnComplete,
+                                         base::Unretained(this)),
+                     /*is_incognito=*/false);
   }
 
   const std::string& GetData() { return script_->data(); }
