@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -199,11 +200,15 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)loadQuery:(NSString*)query immediately:(BOOL)immediately {
   DCHECK(query);
+  // Since the query is not user typed, sanitize it to make sure it's safe.
+  base::string16 sanitizedQuery =
+      OmniboxView::SanitizeTextForPaste(base::SysNSStringToUTF16(query));
   if (immediately) {
-    [self loadURLForQuery:query];
+    [self loadURLForQuery:sanitizedQuery];
   } else {
     [self focusOmnibox];
-    [self.omniboxCoordinator insertTextToOmnibox:query];
+    [self.omniboxCoordinator
+        insertTextToOmnibox:base::SysUTF16ToNSString(sanitizedQuery)];
   }
 }
 
@@ -332,15 +337,15 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 // Navigate to |query| from omnibox.
-- (void)loadURLForQuery:(NSString*)query {
+- (void)loadURLForQuery:(const base::string16&)query {
   GURL searchURL;
   metrics::OmniboxInputType type = AutocompleteInput::Parse(
-      base::SysNSStringToUTF16(query), std::string(),
-      AutocompleteSchemeClassifierImpl(), nullptr, nullptr, &searchURL);
+      query, std::string(), AutocompleteSchemeClassifierImpl(), nullptr,
+      nullptr, &searchURL);
   if (type != metrics::OmniboxInputType::URL || !searchURL.is_valid()) {
     searchURL = GetDefaultSearchURLForSearchTerms(
         ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState),
-        base::SysNSStringToUTF16(query));
+        query);
   }
   if (searchURL.is_valid()) {
     // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
