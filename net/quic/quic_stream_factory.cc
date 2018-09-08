@@ -347,8 +347,7 @@ class QuicStreamFactory::Job {
 
   void AddRequest(QuicStreamRequest* request) {
     stream_requests_.insert(request);
-    if (io_state_ == STATE_RESOLVE_HOST ||
-        io_state_ == STATE_RESOLVE_HOST_COMPLETE) {
+    if (!host_resolution_finished_) {
       request->ExpectOnHostResolution();
     }
   }
@@ -389,6 +388,7 @@ class QuicStreamFactory::Job {
   const bool retry_on_alternate_network_before_handshake_;
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
+  bool host_resolution_finished_;
   QuicChromiumClientSession* session_;
   // If connection migraiton is supported, |network_| denotes the network on
   // which |session_| is created.
@@ -428,6 +428,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
           NetLogWithSource::Make(net_log.net_log(),
                                  NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
       num_sent_client_hellos_(0),
+      host_resolution_finished_(false),
       session_(nullptr),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       weak_factory_(this) {
@@ -532,6 +533,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
+  host_resolution_finished_ = true;
   dns_resolution_end_time_ = base::TimeTicks::Now();
   if (rv != OK)
     return rv;
