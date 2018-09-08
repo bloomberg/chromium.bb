@@ -28,38 +28,48 @@ namespace {
 
 // Threshold where the audio and video pts are far enough apart such that we
 // want to do a small correction.
-const int kSoftCorrectionThresholdUs = 16000;
+const int kSoftCorrectionThresholdUs = 32000;
+
+// Threshold where the audio and video pts are close enough to each other that
+// we want to execute an in sync correction.
+const int kInSyncCorrectionThresholdUs = 5000;
 
 // When doing a soft correction, we will do so by changing the rate of video
 // playback. These constants define the multiplier in either direction.
-const double kRateReduceMultiplier = 0.99;
-const double kRateIncreaseMultiplier = 1.01;
+const double kRateReduceMultiplier = 0.998;
+const double kRateIncreaseMultiplier = 1.002;
 
 // Length of time after which data is forgotten from our linear regression
 // models.
-const int kLinearRegressionDataLifetimeUs = 5000000;
+const int kLinearRegressionDataLifetimeUs =
+    base::TimeDelta::FromMinutes(1).InMicroseconds();
 
 // Time interval between AV sync upkeeps.
 constexpr base::TimeDelta kAvSyncUpkeepInterval =
-    base::TimeDelta::FromMilliseconds(10);
+    base::TimeDelta::FromMilliseconds(16);
 
 // Time interval between checking playbacks statistics.
 constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
     base::TimeDelta::FromSeconds(5);
 
 // The amount of time we wait after a correction before we start upkeeping the
-// AV sync.
-const int kMinimumWaitAfterCorrectionUs = 200000;
+// AV sync again.
+const int kMinimumWaitAfterCorrectionUs = 200 * 1000;  // 200ms.
 
 // This is the threshold for which we consider the rate of playback variation
 // to be valid. If we measure a rate of playback variation worse than this, we
 // consider the linear regression measurement invalid, we flush the linear
 // regression and let AvSync collect samples all over again.
-const double kExpectedSlopeVariance = 0.1;
+const double kExpectedSlopeVariance = 0.005;
 
 // The threshold after which LIMITED_CAST_MEDIA_LOG will no longer write the
 // logs.
 const int kCastMediaLogThreshold = 3;
+
+// We don't AV sync content with frame rate less than this. This low framerate
+// indicates that the content happens to be audio-centric, with a dummy video
+// stream.
+const int kAvSyncFpsThreshold = 10;
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -74,8 +84,6 @@ AvSyncVideo::AvSyncVideo(
     : audio_pts_(
           new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs)),
       video_pts_(
-          new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs)),
-      error_(
           new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs)),
       backend_(backend) {
   DCHECK(backend_);
@@ -140,11 +148,17 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t current_vpts = 0;
   double vpts_slope = 0.0;
   double apts_slope = 0.0;
+  double vpts_slope_error = 0.0;
   if (!video_pts_->EstimateY(now, &current_vpts, &error) ||
       !audio_pts_->EstimateY(now, &current_apts, &error) ||
-      !video_pts_->EstimateSlope(&vpts_slope, &error) ||
+      !video_pts_->EstimateSlope(&vpts_slope, &vpts_slope_error) ||
       !audio_pts_->EstimateSlope(&apts_slope, &error)) {
     VLOG(3) << "Failed to get linear regression estimate.";
+    return;
+  }
+
+  if (vpts_slope_error > 0.0002) {
+    VLOG(3) << "vpts slope estimate error too big.";
     return;
   }
 
@@ -178,56 +192,64 @@ void AvSyncVideo::UpkeepAvSync() {
     first_audio_pts_received_ = true;
   }
 
-  error_->AddSample(now, current_apts - current_vpts, 1.0);
-
-  if (error_->num_samples() < 5) {
-    VLOG(4)
-        << "Error linear regression samples too little. error_->num_samples()="
-        << error_->num_samples() << " vpts_slope=" << vpts_slope;
-    return;
-  }
-
-  int64_t difference;
-  if (!error_->EstimateY(now, &difference, &error)) {
-    VLOG(3) << "Failed to get linear regression estimate.";
-    return;
-  }
+  int64_t timestamp_for_0_vpts = new_vpts_timestamp - new_current_vpts;
+  int64_t timestamp_for_0_apts = new_apts_timestamp - new_current_apts;
+  int64_t difference = timestamp_for_0_vpts - timestamp_for_0_apts;
 
   VLOG(3) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
-          << " vpts_slope=" << vpts_slope
           << " current_audio_playback_rate_=" << current_audio_playback_rate_
           << " current_vpts=" << new_current_vpts
           << " current_apts=" << new_current_apts
           << " current_time=" << backend_->MonotonicClockNow()
-          << " video_start_error="
-          << (new_vpts_timestamp - new_current_vpts -
-              playback_start_timestamp_us_) /
-                 1000;
+          << " vpts_slope=" << vpts_slope
+          << " vpts_slope_error=" << vpts_slope_error
+          << " video_pts_->num_samples()=" << video_pts_->num_samples()
+          << " dropped_frames=" << backend_->video_decoder()->GetDroppedFrames()
+          << " repeated_frames="
+          << backend_->video_decoder()->GetRepeatedFrames();
 
   av_sync_difference_sum_ += difference;
   ++av_sync_difference_count_;
 
+  if (GetContentFrameRate() < kAvSyncFpsThreshold) {
+    VLOG(3) << "Content frame rate=" << GetContentFrameRate()
+            << ". Not AV syncing.";
+  }
+
   if (abs(difference) > kSoftCorrectionThresholdUs) {
     SoftCorrection(now, current_vpts, current_apts, apts_slope, vpts_slope,
                    difference);
-  } else {
+  } else if (abs(difference) < kInSyncCorrectionThresholdUs) {
     InSyncCorrection(now, current_vpts, current_apts, apts_slope, vpts_slope,
                      difference);
   }
 }
 
+int AvSyncVideo::GetContentFrameRate() {
+  const std::deque<WeightedMovingLinearRegression::Sample>& video_samples =
+      video_pts_->samples();
+
+  if (video_pts_->num_samples() < 2) {
+    return INT_MAX;
+  }
+  int duration = video_samples.back().x - video_samples.front().x;
+
+  if (duration <= 0) {
+    return INT_MAX;
+  }
+
+  return std::round(static_cast<float>(video_pts_->num_samples() * 1000000) /
+                    static_cast<float>(duration));
+}
+
 void AvSyncVideo::FlushAudioPts() {
   audio_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 }
 
 void AvSyncVideo::FlushVideoPts() {
   video_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 }
 
@@ -262,8 +284,6 @@ void AvSyncVideo::SoftCorrection(int64_t now,
   difference_at_start_of_correction_ = abs(difference);
 
   audio_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 
   LOG(INFO) << "Soft Correction."
@@ -305,8 +325,6 @@ void AvSyncVideo::InSyncCorrection(int64_t now,
 
   audio_pts_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 
   LOG(INFO) << "In sync Correction."
             << " difference=" << difference / 1000
@@ -338,12 +356,14 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   int64_t current_time = backend_->MonotonicClockNow();
 
   int64_t expected_dropped_frames =
-      std::round(expected_dropped_frames_per_second *
-                 ((current_time - last_gather_timestamp_us_) / 1000000));
+      std::round(static_cast<float>(expected_dropped_frames_per_second) *
+                 (static_cast<float>(current_time - last_gather_timestamp_us_) /
+                  1000000.0));
 
   int64_t expected_repeated_frames =
-      std::round(expected_repeated_frames_per_second *
-                 ((current_time - last_gather_timestamp_us_) / 1000000));
+      std::round(static_cast<float>(expected_repeated_frames_per_second) *
+                 (static_cast<float>(current_time - last_gather_timestamp_us_) /
+                  1000000.0));
 
   int64_t dropped_frames = backend_->video_decoder()->GetDroppedFrames();
   int64_t repeated_frames = backend_->video_decoder()->GetRepeatedFrames();
@@ -373,19 +393,11 @@ void AvSyncVideo::GatherPlaybackStatistics() {
                                            &accurate_apts);
 
   LOG(INFO) << "Playback diagnostics:"
-            << " CurrentContentRefreshRate="
-            << backend_->video_decoder()->GetCurrentContentRefreshRate()
-            << " OutputRefreshRate="
-            << backend_->video_decoder()->GetOutputRefreshRate()
-            << " unexpected_dropped_frames=" << unexpected_dropped_frames
-            << " unexpected_repeated_frames=" << unexpected_repeated_frames
             << " average_av_sync_difference="
-            << average_av_sync_difference / 1000 << " video_start_error="
-            << accurate_vpts_timestamp - accurate_vpts -
-                   playback_start_timestamp_us_
-            << " audio_start_error_estimate="
-            << accurate_apts_timestamp - accurate_apts -
-                   playback_start_timestamp_us_;
+            << average_av_sync_difference / 1000
+            << " content fps=" << GetContentFrameRate()
+            << " unexpected_dropped_frames=" << unexpected_dropped_frames
+            << " unexpected_repeated_frames=" << unexpected_repeated_frames;
 
   int64_t current_vpts = 0;
   int64_t current_apts = 0;
@@ -461,8 +473,6 @@ void AvSyncVideo::StartAvSync() {
   audio_pts_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
   video_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 
   number_of_soft_corrections_ = 0;
