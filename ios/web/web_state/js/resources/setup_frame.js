@@ -29,6 +29,9 @@ window.addEventListener('unload', function(event) {
  */
 window.addEventListener('message', function(message) {
   var payload = message.data;
+  if (typeof payload !== 'object') {
+    return;
+  }
   if (payload.hasOwnProperty('type') &&
     payload.type == 'org.chromium.registerForFrameMessaging') {
     __gCrWeb.frameMessaging['getExistingFrames']();
