@@ -26,11 +26,10 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   ~CastSystemGestureEventHandler() override;
 
   // ui::EventHandler implementation.
+  void OnTouchEvent(ui::TouchEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  void ProcessPressedEvent(ui::GestureEvent* event);
-
   CastSystemGestureDispatcher* dispatcher_;
   aura::Window* root_window_;
 
