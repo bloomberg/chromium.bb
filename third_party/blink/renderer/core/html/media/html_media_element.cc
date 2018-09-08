@@ -3350,13 +3350,10 @@ void HTMLMediaElement::RemotePlaybackCompatibilityChanged(const WebURL& url,
 }
 
 bool HTMLMediaElement::HasSelectedVideoTrack() {
-  DCHECK(RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled());
-
   return video_tracks_ && video_tracks_->selectedIndex() != -1;
 }
 
 WebMediaPlayer::TrackId HTMLMediaElement::GetSelectedVideoTrackId() {
-  DCHECK(RuntimeEnabledFeatures::BackgroundVideoTrackOptimizationEnabled());
   DCHECK(HasSelectedVideoTrack());
 
   int selected_track_index = video_tracks_->selectedIndex();

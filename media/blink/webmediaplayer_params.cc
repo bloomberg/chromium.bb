@@ -23,8 +23,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     blink::WebContentDecryptionModule* initial_cdm,
     RequestRoutingTokenCallback request_routing_token_cb,
     base::WeakPtr<MediaObserver> media_observer,
-    base::TimeDelta max_keyframe_distance_to_disable_background_video,
-    base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
     bool enable_instant_source_buffer_gc,
     bool embedded_media_experience_enabled,
     mojom::MediaMetricsProviderPtr metrics_provider,
@@ -42,10 +40,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       initial_cdm_(initial_cdm),
       request_routing_token_cb_(std::move(request_routing_token_cb)),
       media_observer_(media_observer),
-      max_keyframe_distance_to_disable_background_video_(
-          max_keyframe_distance_to_disable_background_video),
-      max_keyframe_distance_to_disable_background_video_mse_(
-          max_keyframe_distance_to_disable_background_video_mse),
       enable_instant_source_buffer_gc_(enable_instant_source_buffer_gc),
       embedded_media_experience_enabled_(embedded_media_experience_enabled),
       metrics_provider_(std::move(metrics_provider)),

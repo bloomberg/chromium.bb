@@ -230,7 +230,6 @@ WebPreferences::WebPreferences()
       default_maximum_page_scale_factor(4.f),
 #endif
       hide_download_ui(false),
-      background_video_track_optimization_enabled(false),
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
