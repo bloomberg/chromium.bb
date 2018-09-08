@@ -62,6 +62,18 @@ class TabCaptureCaptureOffscreenTabFunction : public UIThreadExtensionFunction {
   ResponseAction Run() final;
 };
 
+class TabCaptureGetMediaStreamIdFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("tabCapture.getMediaStreamId",
+                             TABCAPTURE_GETMEDIASTREAMID)
+
+ private:
+  ~TabCaptureGetMediaStreamIdFunction() final {}
+
+  // ExtensionFunction:
+  ResponseAction Run() final;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TAB_CAPTURE_TAB_CAPTURE_API_H_
