@@ -44,7 +44,8 @@ struct CallStackProfileParams {
     JANKY_TASK,
     THREAD_HUNG,
     PERIODIC_COLLECTION,
-    TRIGGER_LAST = PERIODIC_COLLECTION
+    PERIODIC_HEAP_COLLECTION,
+    TRIGGER_LAST = PERIODIC_HEAP_COLLECTION
   };
 
   // The default constructor is required for mojo and should not be used

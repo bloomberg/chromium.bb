@@ -116,12 +116,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/heap_profiler_controller.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/stack_sampling_configuration.h"
+#include "chrome/common/thread_profiler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
@@ -795,6 +797,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
       ui_thread_profiler_(CreateAndStartBrowserMainThreadProfiler()),
+      heap_profiler_controller_(std::make_unique<HeapProfilerController>()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
       profile_(NULL),
@@ -1044,6 +1047,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 
   ui_thread_profiler_->SetMainThreadTaskRunner(
       base::ThreadTaskRunnerHandle::Get());
+
+  heap_profiler_controller_->StartIfEnabled();
 
   // device_event_log must be initialized after the message loop. Calls to
   // {DEVICE}_LOG prior to here will only be logged with VLOG. Some

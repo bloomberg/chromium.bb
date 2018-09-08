@@ -134,6 +134,8 @@ static_library("common") {
     "descriptors_android.h",
     "google_url_loader_throttle.cc",
     "google_url_loader_throttle.h",
+    "heap_profiler_controller.cc",
+    "heap_profiler_controller.h",
     "instant_struct_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",

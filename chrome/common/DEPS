@@ -56,6 +56,7 @@ include_rules = [
   "+third_party/boringssl/src/include",
   "+third_party/blink/public/platform/web_client_hints_types.mojom.h",
   "+third_party/blink/public/platform/web_feature.mojom.h",
+  "+third_party/metrics_proto",  # For heap profiler test.
   "+third_party/widevine/cdm/widevine_cdm_common.h",
 
   # FIXME - refactor code and remove these dependencies

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
@@ -78,7 +78,8 @@ class PendingProfiles {
  public:
   static PendingProfiles* GetInstance();
 
-  void Swap(std::vector<ProfileState>* profiles);
+  // Retrieves all the pending profiles.
+  std::vector<ProfileState> Retrieve();
 
   // Enables the collection of profiles by CollectProfilesIfCollectionEnabled if
   // |enabled| is true. Otherwise, clears current profiles and ignores profiles
@@ -96,10 +97,10 @@ class PendingProfiles {
   void ResetToDefaultStateForTesting();
 
  private:
-  friend struct base::DefaultSingletonTraits<PendingProfiles>;
+  friend class base::NoDestructor<PendingProfiles>;
 
   PendingProfiles();
-  ~PendingProfiles() = default;
+  ~PendingProfiles() = delete;
 
   mutable base::Lock lock_;
 
@@ -123,14 +124,14 @@ class PendingProfiles {
 
 // static
 PendingProfiles* PendingProfiles::GetInstance() {
-  // Leaky for performance rather than correctness reasons.
-  return base::Singleton<PendingProfiles,
-                         base::LeakySingletonTraits<PendingProfiles>>::get();
+  // Singleton for performance rather than correctness reasons.
+  static base::NoDestructor<PendingProfiles> instance;
+  return instance.get();
 }
 
-void PendingProfiles::Swap(std::vector<ProfileState>* profiles) {
+std::vector<ProfileState> PendingProfiles::Retrieve() {
   base::AutoLock scoped_lock(lock_);
-  profiles_.swap(*profiles);
+  return std::move(profiles_);
 }
 
 void PendingProfiles::SetCollectionEnabled(bool enabled) {
@@ -235,8 +236,8 @@ void CallStackProfileMetricsProvider::OnRecordingDisabled() {
 
 void CallStackProfileMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
-  std::vector<ProfileState> pending_profiles;
-  PendingProfiles::GetInstance()->Swap(&pending_profiles);
+  std::vector<ProfileState> pending_profiles =
+      PendingProfiles::GetInstance()->Retrieve();
 
   DCHECK(base::FeatureList::IsEnabled(kEnableReporting) ||
          pending_profiles.empty());
