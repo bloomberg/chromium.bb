@@ -20,6 +20,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_create_device_cb.h"
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
+#include "media/gpu/windows/d3d11_video_decoder_client.h"
 
 namespace gpu {
 class CommandBufferStub;

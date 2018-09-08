@@ -264,6 +264,7 @@ component("gpu") {
       "windows/d3d11_picture_buffer.h",
       "windows/d3d11_video_decoder.cc",
       "windows/d3d11_video_decoder.h",
+      "windows/d3d11_video_decoder_client.h",
       "windows/d3d11_video_decoder_impl.cc",
       "windows/d3d11_video_decoder_impl.h",
       "windows/d3d11_vp9_picture.cc",
