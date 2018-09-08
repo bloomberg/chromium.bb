@@ -507,12 +507,12 @@ static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
       cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
 }
 
-static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
+static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
                              RD_STATS *rd_cost, PARTITION_TYPE partition,
                              BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                              int64_t best_rd) {
-  const AV1_COMMON *const cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -2239,7 +2239,7 @@ static INLINE int get_motion_inconsistency(MOTION_DIRECTION this_mv,
 // Try searching for an encoding for the given subblock. Returns zero if the
 // rdcost is already too high (to tell the caller not to bother searching for
 // encodings of further subblocks)
-static int rd_try_subblock(const AV1_COMP *const cpi, ThreadData *td,
+static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
                            TileDataEnc *tile_data, TOKENEXTRA **tp,
                            int is_first, int is_last, int mi_row, int mi_col,
                            BLOCK_SIZE subsize, RD_STATS *best_rdc,
@@ -2289,7 +2289,7 @@ static int rd_try_subblock(const AV1_COMP *const cpi, ThreadData *td,
 #undef RTS_MAX_RDCOST
 }
 
-static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
+static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
                                TileDataEnc *tile_data, TOKENEXTRA **tp,
                                PC_TREE *pc_tree, RD_STATS *best_rdc,
                                PICK_MODE_CONTEXT ctxs[3],
@@ -2351,7 +2351,7 @@ static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   }
 }
 
-static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
+static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
                                   TileDataEnc *tile_data, TOKENEXTRA **tp,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
                                   RD_STATS *rd_cost, int64_t best_rd,
@@ -3065,7 +3065,7 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
-static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
+static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                               TileDataEnc *tile_data, TOKENEXTRA **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
                               RD_STATS *rd_cost, int64_t best_rd,

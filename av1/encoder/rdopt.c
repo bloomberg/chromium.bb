@@ -9211,7 +9211,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                                  int *disable_skip, int mi_row, int mi_col,
-                                 HandleInterModeArgs *args, int64_t ref_best_rd
+                                 HandleInterModeArgs *args, int64_t ref_best_rd,
+                                 uint8_t *const tmp_buf
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
                                  ,
                                  TileDataEnc *tile_data, int64_t *best_est_rd,
@@ -9230,8 +9231,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int refs[2] = { mbmi->ref_frame[0],
                   (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
   int rate_mv = 0;
-  DECLARE_ALIGNED(32, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
-  uint8_t *tmp_buf = get_buf_by_bd(xd, tmp_buf_);
   int64_t rd = INT64_MAX;
 
   // do first prediction into the destination buffer. Do the next
@@ -11176,11 +11175,11 @@ static int compound_skip_by_single_states(
   return 0;
 }
 
-void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
+void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far) {
-  const AV1_COMMON *const cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -11246,6 +11245,15 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int intra_mode_num = 0;
   int intra_mode_idx_ls[MAX_MODES];
   int reach_first_comp_mode = 0;
+
+  // Temporary buffer used by handle_inter_mode().
+  // We allocate it once and reuse it in every call to that function.
+  // Note: Must be allocated on the heap due to large size of the array.
+  uint8_t *tmp_buf_orig;
+  CHECK_MEM_ERROR(
+      cm, tmp_buf_orig,
+      (uint8_t *)aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE));
+  uint8_t *const tmp_buf = get_buf_by_bd(xd, tmp_buf_orig);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index = mode_map[midx];
@@ -11372,14 +11380,14 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         args.ref_frame_cost = ref_frame_cost;
         args.simple_rd = search_state.simple_rd;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
-                                    &rd_stats_uv, &disable_skip, mi_row, mi_col,
-                                    &args, ref_best_rd, tile_data, &best_est_rd,
-                                    do_tx_search, inter_modes_info);
+        this_rd = handle_inter_mode(
+            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
+            mi_row, mi_col, &args, ref_best_rd, tmp_buf, tile_data,
+            &best_est_rd, do_tx_search, inter_modes_info);
 #else
         this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
                                     &rd_stats_uv, &disable_skip, mi_row, mi_col,
-                                    &args, ref_best_rd);
+                                    &args, ref_best_rd, tmp_buf);
 #endif
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -11513,6 +11521,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (x->skip && !comp_pred) break;
   }
+
+  aom_free(tmp_buf_orig);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
   if (!do_tx_search) {
