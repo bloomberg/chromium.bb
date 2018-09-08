@@ -1308,8 +1308,10 @@ bool CompositorImpl::HavePendingReadbacks() {
 std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
     ui::CompositorLockClient* client,
     base::TimeDelta timeout) {
+  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits =
+      host_ ? host_->DeferCommits() : nullptr;
   return lock_manager_.GetCompositorLock(client, timeout,
-                                         host_->DeferCommits());
+                                         std::move(scoped_defer_commits));
 }
 
 bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
