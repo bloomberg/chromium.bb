@@ -196,7 +196,7 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
   CallStackProfileBuilder::SetProcessMilestone(0);
 
   profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, 42);
 
   profile_builder->RecordAnnotations();
   profile_builder->OnSampleCompleted(frames);
@@ -214,6 +214,7 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   ASSERT_EQ(1, proto.call_stack_profile().deprecated_sample_size());
+  ASSERT_EQ(43, proto.call_stack_profile().deprecated_sample(0).count());
 }
 
 TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {

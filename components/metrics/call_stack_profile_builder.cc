@@ -177,6 +177,12 @@ void CallStackProfileBuilder::RecordAnnotations() {
 
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::StackSamplingProfiler::Frame> frames) {
+  OnSampleCompleted(std::move(frames), 1);
+}
+
+void CallStackProfileBuilder::OnSampleCompleted(
+    std::vector<base::StackSamplingProfiler::Frame> frames,
+    size_t count) {
   // Assemble sample_ from |frames| first.
   for (const auto& frame : frames) {
     const base::ModuleCache::Module& module(frame.module);
@@ -206,20 +212,21 @@ void CallStackProfileBuilder::OnSampleCompleted(
   if (existing_sample_index != -1) {
     CallStackProfile::Sample* sample_proto =
         proto_profile_.mutable_deprecated_sample(existing_sample_index);
-    sample_proto->set_count(sample_proto->count() + 1);
+    sample_proto->set_count(sample_proto->count() + count);
     return;
   }
 
   CallStackProfile::Sample* sample_proto =
       proto_profile_.add_deprecated_sample();
   CopySampleToProto(sample_, modules_, sample_proto);
-  sample_proto->set_count(1);
+  sample_proto->set_count(count);
   CopyAnnotationsToProto(sample_.process_milestones & ~milestones_,
                          sample_proto);
   milestones_ = sample_.process_milestones;
 
   sample_index_.insert(std::make_pair(
-      sample_, static_cast<int>(proto_profile_.deprecated_sample_size()) - 1));
+      std::move(sample_),
+      static_cast<int>(proto_profile_.deprecated_sample_size()) - 1));
 
   sample_ = Sample();
 }
