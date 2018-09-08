@@ -365,7 +365,9 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
                                   completion:nil];
                    }];
 
-  // Make sure we get the right index for the section.
+  // Make sure the section is still in the model and that the index is correct.
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier])
+    return;
   section = [model sectionForSectionIdentifier:sectionIdentifier];
 
   [self.collectionViewController.collectionView
