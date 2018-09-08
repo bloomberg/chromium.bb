@@ -59,7 +59,9 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    chrome.send('assistant.ThirdPartyScreen.userActed', ['next-pressed']);
+    chrome.send(
+        'login.AssistantOptInFlowScreen.ThirdPartyScreen.userActed',
+        ['next-pressed']);
   },
 
   /**
@@ -131,7 +133,8 @@ Polymer({
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
     if (!this.hidden && !this.screenShown_) {
-      chrome.send('assistant.ThirdPartyScreen.screenShown');
+      chrome.send(
+          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
       this.screenShown_ = true;
     }
   },
@@ -144,7 +147,8 @@ Polymer({
       this.reloadPage();
     } else {
       this.$['next-button'].focus();
-      chrome.send('assistant.ThirdPartyScreen.screenShown');
+      chrome.send(
+          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
       this.screenShown_ = true;
     }
   },

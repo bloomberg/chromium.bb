@@ -32,7 +32,7 @@ Polymer({
     this.$['loading'].onBeforeShow();
     this.$['loading'].addEventListener('reload', this.onReload.bind(this));
     this.showScreen(this.$['value-prop']);
-    chrome.send('assistantOptInFlow.initialized');
+    chrome.send('login.AssistantOptInFlowScreen.initialized');
   },
 
   /**

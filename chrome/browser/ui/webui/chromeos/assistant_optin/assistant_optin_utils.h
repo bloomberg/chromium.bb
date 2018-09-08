@@ -16,16 +16,6 @@
 
 namespace chromeos {
 
-enum class AssistantOptInScreenExitCode {
-  VALUE_PROP_SKIPPED = 0,
-  VALUE_PROP_ACCEPTED = 1,
-  THIRD_PARTY_CONTINUED = 2,
-  EMAIL_OPTED_IN = 3,
-  EMAIL_OPTED_OUT = 4,
-  READY_SCREEN_CONTINUED = 5,
-  EXIT_CODES_COUNT
-};
-
 // Type of Assistant opt-in flow status. This enum is used to back an UMA
 // histogram and should be treated as append-only.
 enum AssistantOptInFlowStatus {
@@ -44,9 +34,6 @@ enum AssistantOptInFlowStatus {
   // Magic constant used by the histogram macros.
   kMaxValue = READY_SCREEN_CONTINUED
 };
-
-using OnAssistantOptInScreenExitCallback =
-    base::OnceCallback<void(AssistantOptInScreenExitCode exit_code)>;
 
 void RecordAssistantOptInStatus(AssistantOptInFlowStatus);
 
