@@ -100,22 +100,6 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
 
-std::string GetSuffixForList(const ActivationList& type) {
-  switch (type) {
-    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
-      return "SocialEngineeringAdsInterstitial";
-    case ActivationList::PHISHING_INTERSTITIAL:
-      return "PhishingInterstitial";
-    case ActivationList::SUBRESOURCE_FILTER:
-      return "SubresourceFilterOnly";
-    case ActivationList::BETTER_ADS:
-      return "BetterAds";
-    case ActivationList::NONE:
-      return std::string();
-  }
-  return std::string();
-}
-
 struct ActivationListTestData {
   const char* const activation_list;
   ActivationList activation_list_type;
@@ -769,7 +753,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
   }
 };
 
-TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        ListNotMatched_NoActivation) {
   const GURL url(kURL);
   SimulateStartAndExpectProceed(url);
@@ -800,6 +784,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatchedAfterRedirect_NoActivation) {
   const GURL url(kURL);
+  ConfigureForMatchParam(url);
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
@@ -824,11 +809,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
                               1);
 }
 
-TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        ListNotMatchedAndTimeout_NoActivation) {
-  const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   fake_safe_browsing_database()->SimulateTimeout();
   SimulateStartAndExpectProceed(url);
 
@@ -891,7 +874,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
                               static_cast<int>(test_data.activation_list_type),
                               1);
 
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 2);
@@ -960,6 +942,34 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
                 *observer()->GetPageActivationForLastCommittedLoad());
       histograms.ExpectTotalCount(histogram_string, 0);
     }
+  }
+}
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
+       ActivationTriggeredOnAbusiveSites) {
+  for (bool enable_adblock_on_abusive_sites : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "enable_adblock_on_abusive_sites = "
+                                      << enable_adblock_on_abusive_sites);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        subresource_filter::kFilterAdsOnAbusiveSites,
+        enable_adblock_on_abusive_sites);
+    scoped_configuration()->ResetConfiguration(
+        Configuration::MakePresetForLiveRunForBetterAds());
+
+    const GURL url(kURL);
+    safe_browsing::ThreatMetadata metadata;
+    metadata.threat_pattern_type = safe_browsing::ThreatPatternType::NONE;
+    metadata.subresource_filter_match = safe_browsing::SubresourceFilterMatch(
+        {{{SBType::ABUSIVE, SBLevel::ENFORCE}}, base::KEEP_FIRST_OF_DUPES});
+    ConfigureForMatch(url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+                      metadata);
+
+    SimulateStartAndExpectProceed(url);
+    SimulateCommitAndExpectProceed();
+    EXPECT_EQ(enable_adblock_on_abusive_sites ? ActivationLevel::ENABLED
+                                              : ActivationLevel::DISABLED,
+              *observer()->GetPageActivationForLastCommittedLoad());
   }
 }
 

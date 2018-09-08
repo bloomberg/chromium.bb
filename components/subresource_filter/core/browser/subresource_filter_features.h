@@ -185,6 +185,9 @@ extern const base::Feature kSafeBrowsingSubresourceFilter;
 // Safe Browsing Activation Throttle considers all checks in a redirect chain.
 extern const base::Feature kSafeBrowsingSubresourceFilterConsiderRedirects;
 
+// Enables the blocking of ads on sites that are abusive.
+extern const base::Feature kFilterAdsOnAbusiveSites;
+
 // Name/values of the variation parameter controlling maximum activation level.
 extern const char kActivationLevelParameterName[];
 extern const char kActivationLevelDryRun[];

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
@@ -210,34 +211,60 @@ TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
                                      SubresourceFilterAction::kUIShown, 1);
 }
 
+enum class AdBlockOnAbusiveSitesTest { kEnabled, kDisabled };
+
 TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
   typedef safe_browsing::SubresourceFilterType Type;
   typedef safe_browsing::SubresourceFilterLevel Level;
   const struct {
+    AdBlockOnAbusiveSitesTest adblock_on_abusive_sites;
     safe_browsing::SubresourceFilterMatch match;
     subresource_filter::ActivationList expected_activation;
     bool expected_warning;
   } kTestCases[]{
-      {{}, subresource_filter::ActivationList::SUBRESOURCE_FILTER, false},
-      {{{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+      // AdBlockOnAbusiveSitesTest::kDisabled
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {},
+       subresource_filter::ActivationList::SUBRESOURCE_FILTER,
+       false},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::NONE,
        false},
-      {{{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::NONE,
        false},
-      {{{{Type::BETTER_ADS, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
        false},
-      {{{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
        true},
-      {{{{Type::BETTER_ADS, Level::ENFORCE}, {Type::ABUSIVE, Level::ENFORCE}},
+      {AdBlockOnAbusiveSitesTest::kDisabled,
+       {{{Type::BETTER_ADS, Level::ENFORCE}, {Type::ABUSIVE, Level::ENFORCE}},
         base::KEEP_FIRST_OF_DUPES},
        subresource_filter::ActivationList::BETTER_ADS,
-       false}};
+       false},
+      // AdBlockOnAbusiveSitesTest::kEnabled
+      {AdBlockOnAbusiveSitesTest::kEnabled,
+       {{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::ABUSIVE,
+       false},
+      {AdBlockOnAbusiveSitesTest::kEnabled,
+       {{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::ABUSIVE,
+       true}};
 
   const GURL url("https://example.test");
   for (const auto& test_case : kTestCases) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        subresource_filter::kFilterAdsOnAbusiveSites,
+        test_case.adblock_on_abusive_sites ==
+            AdBlockOnAbusiveSitesTest::kEnabled);
     subresource_filter::TestSubresourceFilterObserver observer(web_contents());
     auto threat_type =
         safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
@@ -250,6 +277,7 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
     EXPECT_EQ(test_case.expected_activation,
               subresource_filter::GetListForThreatTypeAndMetadata(
                   threat_type, metadata, &warning));
+    EXPECT_EQ(warning, test_case.expected_warning);
   }
 }
 
