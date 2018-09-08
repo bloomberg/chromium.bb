@@ -115,8 +115,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
           module_cache.GetModuleForAddress(address);
       frames.emplace_back(address, module);
     }
-    // TODO(alph): Report sample weight.
-    profile_builder.OnSampleCompleted(std::move(frames));
+    profile_builder.OnSampleCompleted(std::move(frames), sample.total);
   }
 
   profile_builder.OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
