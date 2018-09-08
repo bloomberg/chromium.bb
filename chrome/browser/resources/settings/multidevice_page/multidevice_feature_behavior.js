@@ -92,6 +92,8 @@ const MultiDeviceFeatureBehaviorImpl = {
    */
   getFeatureName: function(feature) {
     switch (feature) {
+      case settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE:
+        return this.i18n('multideviceSetupItemHeading');
       case settings.MultiDeviceFeature.INSTANT_TETHERING:
         return this.i18n('multideviceInstantTetheringItemTitle');
       case settings.MultiDeviceFeature.MESSAGES:
