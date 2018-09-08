@@ -29,15 +29,23 @@ public class ChildProcessRankingTest {
     private void assertRankingAndRemoveAll(
             ChildProcessRanking ranking, ChildProcessConnection[] connections) {
         int index = connections.length;
+        ChildProcessConnection reverseIterationArray[] =
+                new ChildProcessConnection[connections.length];
         for (ChildProcessConnection c : ranking) {
-            Assert.assertEquals(connections[--index], c);
+            reverseIterationArray[--index] = c;
         }
+        Assert.assertArrayEquals(connections, reverseIterationArray);
         Assert.assertEquals(0, index);
 
-        for (int i = connections.length - 1; i >= 0; i--) {
-            Assert.assertEquals(connections[i], ranking.getLowestRankedConnection());
-            ranking.removeConnection(connections[i]);
+        index = connections.length;
+        ChildProcessConnection reverseRemoveArray[] =
+                new ChildProcessConnection[connections.length];
+        for (int i = 0; i < connections.length; ++i) {
+            ChildProcessConnection c = ranking.getLowestRankedConnection();
+            reverseRemoveArray[--index] = c;
+            ranking.removeConnection(c);
         }
+        Assert.assertArrayEquals(connections, reverseRemoveArray);
         Assert.assertNull(ranking.getLowestRankedConnection());
     }
 
@@ -47,20 +55,51 @@ public class ChildProcessRankingTest {
         ChildProcessConnection c2 = createConnection();
         ChildProcessConnection c3 = createConnection();
         ChildProcessConnection c4 = createConnection();
+        ChildProcessConnection c5 = createConnection();
+        ChildProcessConnection c6 = createConnection();
+        ChildProcessConnection c7 = createConnection();
+        ChildProcessConnection c8 = createConnection();
+        ChildProcessConnection c9 = createConnection();
+        ChildProcessConnection c10 = createConnection();
 
-        ChildProcessRanking ranking = new ChildProcessRanking(4);
+        ChildProcessRanking ranking = new ChildProcessRanking(10);
 
         // Insert in lowest ranked to highest ranked order.
-        ranking.addConnection(c1, false /* foreground */, 1 /* frameDepth */,
+
+        // Invisible subframe outside of viewport.
+        ranking.addConnection(c1, false /* foreground */, 2 /* frameDepth */,
                 false /* intersectsViewport */, ChildProcessImportance.NORMAL);
-        ranking.addConnection(c2, false /* foreground */, 0 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
-        ranking.addConnection(c3, true /* foreground */, 1 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
-        ranking.addConnection(c4, true /* foreground */, 0 /* frameDepth */,
+        ranking.addConnection(c2, false /* foreground */, 1 /* frameDepth */,
                 false /* intersectsViewport */, ChildProcessImportance.NORMAL);
 
-        assertRankingAndRemoveAll(ranking, new ChildProcessConnection[] {c4, c3, c2, c1});
+        // Invisible subframe inside viewport.
+        ranking.addConnection(c3, false /* foreground */, 2 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c4, false /* foreground */, 1 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        // Visible subframe outside viewport.
+        ranking.addConnection(c5, true /* foreground */, 2 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c6, true /* foreground */, 1 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        // Invisible main frame.
+        ranking.addConnection(c7, false /* foreground */, 0 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        // Visible subframe inside viewport.
+        ranking.addConnection(c8, true /* foreground */, 2 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c9, true /* foreground */, 1 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        // Visible main frame.
+        ranking.addConnection(c10, true /* foreground */, 0 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        assertRankingAndRemoveAll(
+                ranking, new ChildProcessConnection[] {c10, c9, c8, c7, c6, c5, c4, c3, c2, c1});
     }
 
     @Test
@@ -96,24 +135,24 @@ public class ChildProcessRankingTest {
 
         // c1,2 are in one tab, and c3,4 are in second tab.
         ranking.addConnection(c1, true /* foreground */, 1 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.addConnection(c2, true /* foreground */, 0 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.addConnection(c3, false /* foreground */, 1 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.addConnection(c4, false /* foreground */, 0 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         Assert.assertEquals(c3, ranking.getLowestRankedConnection());
 
         // Switch from tab c1,2 to tab c3,c4.
         ranking.updateConnection(c1, false /* foreground */, 1 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.updateConnection(c2, false /* foreground */, 0 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.updateConnection(c3, true /* foreground */, 1 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
         ranking.updateConnection(c4, true /* foreground */, 0 /* frameDepth */,
-                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
 
         assertRankingAndRemoveAll(ranking, new ChildProcessConnection[] {c4, c3, c2, c1});
     }
