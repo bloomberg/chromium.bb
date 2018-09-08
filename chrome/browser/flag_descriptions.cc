@@ -1887,7 +1887,6 @@ const char kTLS13VariantDescription[] = "Sets the TLS 1.3 variant used.";
 const char kTLS13VariantDisabled[] = "Disabled";
 const char kTLS13VariantDeprecated[] = "Disabled (Deprecated Setting)";
 const char kTLS13VariantDraft23[] = "Enabled (Draft 23)";
-const char kTLS13VariantDraft28[] = "Enabled (Draft 28)";
 const char kTLS13VariantFinal[] = "Enabled (Final)";
 
 const char kTopDocumentIsolationName[] = "Top document isolation";

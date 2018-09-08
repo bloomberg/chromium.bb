@@ -922,9 +922,6 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantDraft23:
       SSL_set_tls13_variant(ssl_.get(), tls13_draft23);
       break;
-    case kTLS13VariantDraft28:
-      SSL_set_tls13_variant(ssl_.get(), tls13_draft28);
-      break;
     case kTLS13VariantFinal:
       SSL_set_tls13_variant(ssl_.get(), tls13_rfc);
       break;

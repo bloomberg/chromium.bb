@@ -780,8 +780,9 @@ const FeatureEntry::Choice kTLS13VariantChoices[] = {
      switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantDraft23, switches::kTLS13Variant,
      switches::kTLS13VariantDraft23},
-    {flag_descriptions::kTLS13VariantDraft28, switches::kTLS13Variant,
-     switches::kTLS13VariantDraft28},
+    // The Draft28 variant was deprecated.
+    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
+     switches::kTLS13VariantDisabled},
     {flag_descriptions::kTLS13VariantFinal, switches::kTLS13Variant,
      switches::kTLS13VariantFinal},
 };
