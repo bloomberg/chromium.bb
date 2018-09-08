@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/return_on_failure.h"
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -25,15 +26,8 @@
 namespace media {
 class CdmProxyContext;
 class D3D11H264Accelerator;
-class D3D11PictureBuffer;
 class MediaLog;
 
-class D3D11VideoDecoderClient {
- public:
-  virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(D3D11PictureBuffer* picture,
-                            const VideoColorSpace& buffer_colorspace) = 0;
-};
 
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
