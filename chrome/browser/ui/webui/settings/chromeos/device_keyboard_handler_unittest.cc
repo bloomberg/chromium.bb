@@ -210,6 +210,17 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   EXPECT_TRUE(HasExternalMetaKey());
   EXPECT_TRUE(HasAppleCommandKey());
 
+  // Some keyboard devices don't report the string "keyboard" as part of their
+  // device names. Those should also be detcted as external keyboards, and
+  // should show the capslock and external meta remapping.
+  // https://crbug.com/834594.
+  input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
+      {4, ui::INPUT_DEVICE_EXTERNAL, "Topre Corporation Realforce 87"}});
+  EXPECT_TRUE(HasCapsLock());
+  EXPECT_FALSE(HasDiamondKey());
+  EXPECT_TRUE(HasExternalMetaKey());
+  EXPECT_FALSE(HasAppleCommandKey());
+
   // Disconnect the external keyboard and check that the key goes away.
   input_device_client_test_api_.SetKeyboardDevices({});
   EXPECT_FALSE(HasCapsLock());

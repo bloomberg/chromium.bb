@@ -30,10 +30,13 @@ KeyboardsStateResult GetKeyboardsState() {
        ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
     const ui::EventRewriterChromeOS::DeviceType type =
         ui::EventRewriterChromeOS::GetDeviceType(keyboard);
-    if (type == ui::EventRewriterChromeOS::kDeviceAppleKeyboard)
+    if (type == ui::EventRewriterChromeOS::kDeviceAppleKeyboard) {
       result.has_apple_keyboard = true;
-    else if (type == ui::EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard)
+    } else if (type ==
+                   ui::EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard ||
+               type == ui::EventRewriterChromeOS::kDeviceExternalUnknown) {
       result.has_external_non_apple_keyboard = true;
+    }
   }
 
   return result;
