@@ -2,8 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Whether to build Devil host dependencies for Linux arm, e.g. for use on
-  # Raspberry Pis.
-  build_devil_arm_deps = false
-}
+# TODO(jbudorick): Remove this file once devil no longer references it.
