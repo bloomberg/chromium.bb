@@ -58,9 +58,10 @@ Polymer({
     var emailOptedIn = toggle2 != null && toggle2.hasAttribute('checked');
 
     // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
-    chrome.send('assistantOptInFlow.hotwordResult', [hotword]);
+    chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
     chrome.send(
-        'assistant.GetMoreScreen.userActed', [screenContext, emailOptedIn]);
+        'login.AssistantOptInFlowScreen.GetMoreScreen.userActed',
+        [screenContext, emailOptedIn]);
   },
 
   /**
@@ -139,7 +140,7 @@ Polymer({
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
     if (!this.hidden && !this.screenShown_) {
-      chrome.send('assistant.GetMoreScreen.screenShown');
+      chrome.send('login.AssistantOptInFlowScreen.GetMoreScreen.screenShown');
       this.screenShown_ = true;
     }
   },
@@ -152,7 +153,7 @@ Polymer({
       this.reloadPage();
     } else {
       this.$['next-button'].focus();
-      chrome.send('assistant.GetMoreScreen.screenShown');
+      chrome.send('login.AssistantOptInFlowScreen.GetMoreScreen.screenShown');
       this.screenShown_ = true;
     }
   },

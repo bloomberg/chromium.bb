@@ -118,7 +118,10 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
-    chrome.send('assistant.ValuePropScreen.userActed', ['skip-pressed']);
+    chrome.send(
+        'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
+        ['skip-pressed']);
+    this.buttonsDisabled = true;
   },
 
   /**
@@ -127,7 +130,10 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    chrome.send('assistant.ValuePropScreen.userActed', ['next-pressed']);
+    chrome.send(
+        'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
+        ['next-pressed']);
+    this.buttonsDisabled = true;
   },
 
   /**
@@ -288,7 +294,7 @@ Polymer({
     this.$['next-button'].focus();
 
     if (!this.hidden && !this.screenShown_) {
-      chrome.send('assistant.ValuePropScreen.screenShown');
+      chrome.send('login.AssistantOptInFlowScreen.ValuePropScreen.screenShown');
       this.screenShown_ = true;
     }
   },

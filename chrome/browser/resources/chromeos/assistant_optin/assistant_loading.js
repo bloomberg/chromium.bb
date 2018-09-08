@@ -60,7 +60,7 @@ Polymer({
    * @private
    */
   onSkipTap_: function() {
-    chrome.send('assistantOptInFlow.flowFinished');
+    chrome.send('login.AssistantOptInFlowScreen.flowFinished');
   },
 
   /**

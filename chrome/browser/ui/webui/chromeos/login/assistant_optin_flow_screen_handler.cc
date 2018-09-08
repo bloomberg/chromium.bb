@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -45,6 +45,7 @@ AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
 
 void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
+  builder->Add("locale", g_browser_process->GetApplicationLocale());
   builder->Add("assistantOptinLoading",
                IDS_VOICE_INTERACTION_VALUE_PROP_LOADING);
   builder->Add("assistantOptinLoadErrorTitle",
@@ -59,33 +60,40 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
   builder->Add("assistantReadyTitle", IDS_ASSISTANT_READY_SCREEN_TITLE);
   builder->Add("assistantReadyMessage", IDS_ASSISTANT_READY_SCREEN_MESSAGE);
   builder->Add("assistantReadyButton", IDS_ASSISTANT_DONE_BUTTON);
+  builder->Add("back", IDS_EULA_BACK_BUTTON);
+  builder->Add("next", IDS_EULA_NEXT_BUTTON);
 }
 
 void AssistantOptInFlowScreenHandler::RegisterMessages() {
-  AddCallback(
-      "assistant.ValuePropScreen.userActed",
+  AddPrefixedCallback(
+      "ValuePropScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleValuePropScreenUserAction);
-  AddCallback(
-      "assistant.ThirdPartyScreen.userActed",
+  AddPrefixedCallback(
+      "ThirdPartyScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction);
-  AddCallback("assistant.GetMoreScreen.userActed",
-              &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
-  AddCallback("assistant.ReadyScreen.userActed",
-              &AssistantOptInFlowScreenHandler::HandleReadyScreenUserAction);
-  AddCallback("assistant.ValuePropScreen.screenShown",
-              &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
-  AddCallback("assistant.ThirdPartyScreen.screenShown",
-              &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown);
-  AddCallback("assistant.GetMoreScreen.screenShown",
-              &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
-  AddCallback("assistant.ReadyScreen.screenShown",
-              &AssistantOptInFlowScreenHandler::HandleReadyScreenShown);
-  AddCallback("assistantOptInFlow.hotwordResult",
-              &AssistantOptInFlowScreenHandler::HandleHotwordResult);
-  AddCallback("assistantOptInFlow.flowFinished",
-              &AssistantOptInFlowScreenHandler::HandleFlowFinished);
-  AddCallback("assistantOptInFlow.initialized",
-              &AssistantOptInFlowScreenHandler::HandleFlowInitialized);
+  AddPrefixedCallback(
+      "GetMoreScreen.userActed",
+      &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
+  AddPrefixedCallback(
+      "ReadyScreen.userActed",
+      &AssistantOptInFlowScreenHandler::HandleReadyScreenUserAction);
+  AddPrefixedCallback(
+      "ValuePropScreen.screenShown",
+      &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
+  AddPrefixedCallback(
+      "ThirdPartyScreen.screenShown",
+      &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown);
+  AddPrefixedCallback(
+      "GetMoreScreen.screenShown",
+      &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
+  AddPrefixedCallback("ReadyScreen.screenShown",
+                      &AssistantOptInFlowScreenHandler::HandleReadyScreenShown);
+  AddPrefixedCallback("hotwordResult",
+                      &AssistantOptInFlowScreenHandler::HandleHotwordResult);
+  AddPrefixedCallback("flowFinished",
+                      &AssistantOptInFlowScreenHandler::HandleFlowFinished);
+  AddPrefixedCallback("initialized",
+                      &AssistantOptInFlowScreenHandler::HandleFlowInitialized);
 }
 
 void AssistantOptInFlowScreenHandler::Bind(AssistantOptInFlowScreen* screen) {
@@ -101,21 +109,12 @@ void AssistantOptInFlowScreenHandler::Unbind() {
 }
 
 void AssistantOptInFlowScreenHandler::Show() {
-  // Make sure enable Assistant service since we need it during the flow.
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
-
-  if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
-      ash::mojom::VoiceInteractionState::NOT_READY) {
-    arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
-  } else {
-    BindAssistantSettingsManager();
-  }
-
   if (!page_is_ready() || !screen_) {
     show_on_init_ = true;
     return;
   }
+
+  SetupAssistantConnection();
 
   ShowScreen(kScreenId);
 }
@@ -130,6 +129,19 @@ void AssistantOptInFlowScreenHandler::Initialize() {
   show_on_init_ = false;
 }
 
+void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
+  // Make sure enable Assistant service since we need it during the flow.
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
+
+  if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
+      ash::mojom::VoiceInteractionState::NOT_READY) {
+    arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
+  } else {
+    BindAssistantSettingsManager();
+  }
+}
+
 void AssistantOptInFlowScreenHandler::ShowNextScreen() {
   CallJS("showNextScreen");
 }
@@ -137,6 +149,7 @@ void AssistantOptInFlowScreenHandler::ShowNextScreen() {
 void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
     bool opted_in) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
+  RecordActivityControlConsent(profile, ui_audit_key_, opted_in);
   if (opted_in) {
     RecordAssistantOptInStatus(ACTIVITY_CONTROL_ACCEPTED);
     settings_manager_->UpdateSettings(
@@ -148,10 +161,8 @@ void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
     RecordAssistantOptInStatus(ACTIVITY_CONTROL_SKIPPED);
     profile->GetPrefs()->SetBoolean(
         arc::prefs::kVoiceInteractionActivityControlAccepted, false);
-    screen_->OnUserAction(kFlowFinished);
+    HandleFlowFinished();
   }
-
-  RecordActivityControlConsent(profile, ui_audit_key_, opted_in);
 }
 
 void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
@@ -284,25 +295,6 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
   ShowNextScreen();
 }
 
-void AssistantOptInFlowScreenHandler::HandleHotwordResult(bool enable_hotword) {
-  enable_hotword_ = enable_hotword;
-
-  if (!email_optin_needed_) {
-    // No need to send email optin result. Safe to update hotword pref and
-    // restart Assistant here.
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
-                      enable_hotword);
-  }
-}
-
-void AssistantOptInFlowScreenHandler::HandleLoadingScreenUserAction(
-    const std::string& action) {
-  if (action == kSkipPressed) {
-    screen_->OnUserAction(kFlowFinished);
-  }
-}
-
 void AssistantOptInFlowScreenHandler::HandleValuePropScreenUserAction(
     const std::string& action) {
   if (action == kSkipPressed) {
@@ -334,7 +326,7 @@ void AssistantOptInFlowScreenHandler::HandleReadyScreenUserAction(
     const std::string& action) {
   if (action == kNextPressed) {
     RecordAssistantOptInStatus(READY_SCREEN_CONTINUED);
-    screen_->OnUserAction(kFlowFinished);
+    HandleFlowFinished();
   }
 }
 
@@ -354,8 +346,23 @@ void AssistantOptInFlowScreenHandler::HandleReadyScreenShown() {
   RecordAssistantOptInStatus(READY_SCREEN_SHOWN);
 }
 
+void AssistantOptInFlowScreenHandler::HandleHotwordResult(bool enable_hotword) {
+  enable_hotword_ = enable_hotword;
+
+  if (!email_optin_needed_) {
+    // No need to send email optin result. Safe to update hotword pref and
+    // restart Assistant here.
+    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
+                      enable_hotword);
+  }
+}
+
 void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
-  screen_->OnUserAction(kFlowFinished);
+  if (screen_)
+    screen_->OnUserAction(kFlowFinished);
+  else
+    CallJS("closeDialog");
 }
 
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized() {}

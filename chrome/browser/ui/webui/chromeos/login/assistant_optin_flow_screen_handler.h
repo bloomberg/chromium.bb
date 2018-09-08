@@ -36,6 +36,9 @@ class AssistantOptInFlowScreenHandler
   void Show() override;
   void Hide() override;
 
+  // Setup Assistant settings manager connection.
+  void SetupAssistantConnection();
+
   // Send messages to the page.
   void ShowNextScreen();
 
@@ -65,7 +68,6 @@ class AssistantOptInFlowScreenHandler
   void OnUpdateSettingsResponse(const std::string& settings);
 
   // Handler for JS WebUI message.
-  void HandleLoadingScreenUserAction(const std::string& action);
   void HandleValuePropScreenUserAction(const std::string& action);
   void HandleThirdPartyScreenUserAction(const std::string& action);
   void HandleGetMoreScreenUserAction(const bool screen_context,

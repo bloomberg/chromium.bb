@@ -75,3 +75,7 @@
   justify-content: flex-end;
   margin: 16px;
 }
+
+oobe-text-button[disabled] {
+  pointer-events: none;
+}
