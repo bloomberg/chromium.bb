@@ -91,7 +91,6 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
             DateOrderedListObserver dateOrderedListObserver) {
-        // TODO(shaktisahu): Use a real provider/have this provider query the real data source.
         PrefetchStatusProvider prefetchProvider = new PrefetchStatusProvider();
 
         ListItemModel model = new ListItemModel();

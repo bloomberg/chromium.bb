@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.download.home;
 
+import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+
 /** Helper class to expose the status of the offline prefetch feature. */
 public class PrefetchStatusProvider {
     /** @return Whether or not the offline prefetch feature is enabled. */
     public boolean enabled() {
-        return true;
+        return PrefetchConfiguration.isPrefetchingFlagEnabled();
     }
 }
