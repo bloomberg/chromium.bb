@@ -17,7 +17,7 @@ function filter_locale_data {
        /^    AuxExemplarCharacters\{$/, /^    \}$/d
        /^    ExemplarCharacters\{.*\}$/d
        /^    ExemplarCharacters\{$/, /^    \}$/d
-       /^        (mon|tue|wed|thu|fri|sat|sun|quarter)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
   done
 }
 

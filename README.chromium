@@ -267,3 +267,10 @@ D. Local Modifications
   - patches/decimalformat_align.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20039
+
+12. Cherry-pick the upstream CL for quarter support in RelativeDate format
+
+  - patches/reldate_quarter.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20022
+  - fix: https://github.com/unicode-org/icu/pull/77
