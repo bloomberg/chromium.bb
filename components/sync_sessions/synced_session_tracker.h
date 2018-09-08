@@ -172,9 +172,9 @@ class SyncedSessionTracker {
   // Gets the session tag previously set with InitLocalSession().
   const std::string& GetLocalSessionTag() const;
 
-  // Similar to CleanupForeignSession, but also marks any unmapped tabs as free
-  // in the tab node pool and fills |deleted_node_ids| with the set of locally
-  // free tab nodes to be deleted.
+  // Similar to CleanupSession() but also triggers garbage collection of free
+  // tab nodes and consequently fills |deleted_node_ids| with the set of
+  // locally free tab nodes to be deleted.
   void CleanupLocalTabs(std::set<int>* deleted_node_ids);
 
   // Returns the tab node ID for |tab_id| if an existing tab node was found, or
@@ -264,7 +264,7 @@ class SyncedSessionTracker {
       SessionLookup lookup,
       bool exclude_local_session) const;
 
-  // Implementation of CleanupForeignSession/CleanupLocalTabs.
+  // Implementation of CleanupSession()/CleanupLocalTabs().
   void CleanupSessionImpl(const std::string& session_tag);
 
   // The client of the sync sessions datatype.

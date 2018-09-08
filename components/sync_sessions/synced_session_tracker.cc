@@ -330,8 +330,12 @@ void SyncedSessionTracker::CleanupSessionImpl(const std::string& session_tag) {
     session->synced_window_map.erase(window_pair.first);
   session->unmapped_windows.clear();
 
-  for (const auto& tab_pair : session->unmapped_tabs)
+  for (const auto& tab_pair : session->unmapped_tabs) {
     session->synced_tab_map.erase(tab_pair.first);
+
+    if (session_tag == local_session_tag_)
+      session->tab_node_pool.FreeTab(tab_pair.first);
+  }
   session->unmapped_tabs.clear();
 }
 
@@ -494,8 +498,6 @@ void SyncedSessionTracker::CleanupSession(const std::string& session_tag) {
 void SyncedSessionTracker::CleanupLocalTabs(std::set<int>* deleted_node_ids) {
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
-  for (const auto& tab_pair : session->unmapped_tabs)
-    session->tab_node_pool.FreeTab(tab_pair.first);
   CleanupSessionImpl(local_session_tag_);
   session->tab_node_pool.CleanupTabNodes(deleted_node_ids);
 }
