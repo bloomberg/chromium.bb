@@ -29,6 +29,10 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
 
   int GetForceEnrollmentNowCallbackQueueSize();
   int GetForceSyncNowCallbackQueueSize();
+  int GetSetSoftwareFeatureStateCallbackQueueSize();
+  int GetFindEligibleDevicesCallbackQueueSize();
+  int GetGetDebugInfoCallbackQueueSize();
+
   void InvokePendingForceEnrollmentNowCallback(bool success);
   void InvokePendingForceSyncNowCallback(bool success);
   void InvokePendingSetSoftwareFeatureStateCallback(
