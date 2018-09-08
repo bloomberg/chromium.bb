@@ -164,6 +164,8 @@ class CORE_EXPORT CSSSelector {
     kPseudoAnyLink,
     kPseudoWebkitAnyLink,
     kPseudoAutofill,
+    kPseudoAutofillPreviewed,
+    kPseudoAutofillSelected,
     kPseudoHover,
     kPseudoDrag,
     kPseudoFocus,

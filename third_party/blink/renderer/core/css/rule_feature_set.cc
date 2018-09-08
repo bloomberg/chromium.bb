@@ -95,6 +95,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoAutofill:
+    case CSSSelector::kPseudoAutofillPreviewed:
+    case CSSSelector::kPseudoAutofillSelected:
     case CSSSelector::kPseudoHover:
     case CSSSelector::kPseudoDrag:
     case CSSSelector::kPseudoFocus:
@@ -452,6 +454,8 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoWebkitAnyLink:
       case CSSSelector::kPseudoAnyLink:
       case CSSSelector::kPseudoAutofill:
+      case CSSSelector::kPseudoAutofillPreviewed:
+      case CSSSelector::kPseudoAutofillSelected:
       case CSSSelector::kPseudoHover:
       case CSSSelector::kPseudoDrag:
       case CSSSelector::kPseudoFocus:

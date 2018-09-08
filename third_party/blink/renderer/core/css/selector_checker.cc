@@ -878,6 +878,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoAutofill:
       return element.IsFormControlElement() &&
              ToHTMLFormControlElement(element).IsAutofilled();
+    case CSSSelector::kPseudoAutofillPreviewed:
+      return element.IsFormControlElement() &&
+             ToHTMLFormControlElement(element).GetAutofillState() ==
+                 WebAutofillState::kPreviewed;
+    case CSSSelector::kPseudoAutofillSelected:
+      return element.IsFormControlElement() &&
+             ToHTMLFormControlElement(element).GetAutofillState() ==
+                 WebAutofillState::kAutofilled;
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoLink:
