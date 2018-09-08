@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -73,6 +74,10 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
            browser, AppMenu::NO_FLAGS);
 
   menu()->RunMenu(this);
+
+  // Add UMA for how many times the hosted app menu button are clicked.
+  base::RecordAction(
+      base::UserMetricsAction("HostedAppMenuButtonButton_Clicked"));
 }
 
 void HostedAppMenuButton::FadeHighlightOff() {
