@@ -43,6 +43,7 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     kDeviceUnknown = 0,
     kDeviceAppleKeyboard,
     kDeviceExternalNonAppleKeyboard,
+    kDeviceExternalUnknown,
     kDeviceHotrodRemote,
     kDeviceVirtualCoreKeyboard,  // X-server generated events.
   };
