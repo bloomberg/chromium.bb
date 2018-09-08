@@ -593,7 +593,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyColorInterpolation:
     case CSSPropertyColorInterpolationFilters:
       return value_id == CSSValueAuto || value_id == CSSValueSRGB ||
-             value_id == CSSValueLinearRGB;
+             value_id == CSSValueLinearrgb;
     case CSSPropertyColorRendering:
       return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||
              value_id == CSSValueOptimizequality;

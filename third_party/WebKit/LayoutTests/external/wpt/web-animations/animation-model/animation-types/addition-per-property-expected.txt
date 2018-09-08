@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 562 tests; 525 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 562 tests; 528 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -147,11 +147,11 @@ PASS color supports animating as color of #RGBa
 PASS color supports animating as color of rgba()
 PASS color supports animating as color of hsla()
 PASS color-interpolation (type: discrete) has testAddition function
-PASS color-interpolation: "auto" onto "linearRGB"
-FAIL color-interpolation: "linearRGB" onto "auto" assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
+PASS color-interpolation: "auto" onto "linearrgb"
+PASS color-interpolation: "linearrgb" onto "auto"
 PASS color-interpolation-filters (type: discrete) has testAddition function
-FAIL color-interpolation-filters: "linearRGB" onto "sRGB" assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
-FAIL color-interpolation-filters: "sRGB" onto "linearRGB" assert_equals: The value should be srgb at 0ms expected "srgb" but got "sRGB"
+PASS color-interpolation-filters: "linearrgb" onto "srgb"
+PASS color-interpolation-filters: "srgb" onto "linearrgb"
 PASS column-count (type: positiveInteger) has testAddition function
 PASS column-count: positive integer
 PASS column-count (type: discrete) has testAddition function

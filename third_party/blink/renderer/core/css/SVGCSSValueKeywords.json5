@@ -180,13 +180,13 @@
     // CSS_PROP_STOP_OPACITY
     // CSS_PROP_COLOR_INTERPOLATION
     //auto
-    "sRGB",
-    "linearRGB",
+    "srgb",
+    "linearrgb",
 
     // CSS_PROP_COLOR_INTERPOLATION_FILTERS
     //auto
-    //sRGB
-    //linearRGB
+    //srgb
+    //linearrgb
 
     // CSS_PROP_COLOR_PROFILE
     //sRGB

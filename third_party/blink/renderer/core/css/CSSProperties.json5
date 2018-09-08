@@ -1438,7 +1438,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
-      keywords: ["auto", "sRGB", "linearRGB"],
+      keywords: ["auto", "srgb", "linearrgb"],
       typedom_types: ["Keyword"],
     },
     {

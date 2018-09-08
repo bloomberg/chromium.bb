@@ -1162,7 +1162,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EColorInterpolation e)
       value_id_ = CSSValueSRGB;
       break;
     case CI_LINEARRGB:
-      value_id_ = CSSValueLinearRGB;
+      value_id_ = CSSValueLinearrgb;
       break;
   }
 }
@@ -1172,7 +1172,7 @@ inline EColorInterpolation CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSRGB:
       return CI_SRGB;
-    case CSSValueLinearRGB:
+    case CSSValueLinearrgb:
       return CI_LINEARRGB;
     case CSSValueAuto:
       return CI_AUTO;
