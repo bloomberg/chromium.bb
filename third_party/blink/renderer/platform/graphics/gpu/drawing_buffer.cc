@@ -913,7 +913,8 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
 
 cc::Layer* DrawingBuffer::CcLayer() {
   if (!layer_) {
-    layer_ = cc::TextureLayer::CreateForMailbox(this);
+    layer_ = cc::TextureLayer::CreateForMailbox(
+        this, cc::TextureLayer::kMaxResourcesWaitingCanvasWebGL);
 
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(!want_alpha_channel_);

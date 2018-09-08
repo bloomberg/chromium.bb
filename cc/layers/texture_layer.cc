@@ -18,13 +18,21 @@
 
 namespace cc {
 
+const int TextureLayer::kMaxResourcesWaitingDefault;
+const int TextureLayer::kMaxResourcesWaitingCanvasWebGL;
+
 scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
-    TextureLayerClient* client) {
-  return scoped_refptr<TextureLayer>(new TextureLayer(client));
+    TextureLayerClient* client,
+    int max_resources_waiting) {
+  return scoped_refptr<TextureLayer>(
+      new TextureLayer(client, max_resources_waiting));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client)
-    : client_(client), weak_ptr_factory_(this) {}
+TextureLayer::TextureLayer(TextureLayerClient* client,
+                           int max_resources_waiting)
+    : client_(client),
+      max_resources_waiting_(max_resources_waiting),
+      weak_ptr_factory_(this) {}
 
 TextureLayer::~TextureLayer() = default;
 
@@ -108,6 +116,29 @@ void TextureLayer::SetTransferableResourceInternal(
          resource != holder_ref_->holder()->resource());
   DCHECK_EQ(resource.mailbox_holder.mailbox.IsZero(), !release_callback);
 
+  if (release_callback && max_resources_waiting_) {
+    if (!layer_tree_host()->IsSingleThreaded()) {
+      // In certain test scenarios we have a single threaded compositor where
+      // compositing is forced and we may ignore commit deferral. Don't DCHECK
+      // in these cases.
+      DCHECK_LT(resources_waiting_for_release_, max_resources_waiting_);
+    }
+    ++resources_waiting_for_release_;
+    if (resources_waiting_for_release_ == max_resources_waiting_) {
+      // Add backpressure by blocking RAF until the GPU process returns our
+      // resources. This prevents us from queuing up too WebGL frames at once.
+      // If too many frames are queued latency suffers and the GPU scheduler
+      // might decide to execute two WebGL frames in one browser frame, causing
+      // a framerate hiccup. http://crbug.com/835353
+      DCHECK(!defer_commits_);
+      defer_commits_ = layer_tree_host()->DeferCommits();
+    }
+    // Wrap the release callback to decrement the counter and restore RAF.
+    release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
+        &TextureLayer::ReleaseAndUpdateWaiting, weak_ptr_factory_.GetWeakPtr(),
+        std::move(release_callback)));
+  }
+
   // If we never commited the mailbox, we need to release it here.
   if (!resource.mailbox_holder.mailbox.IsZero()) {
     holder_ref_ = TransferableResourceHolder::Create(
@@ -146,6 +177,12 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     return;
   }
 
+  // If we previously took a DeferCommits, reset it here before we lose the
+  // reference to this LayerTreeHost, and set it on the new LayerTreeHost.
+  if (defer_commits_) {
+    defer_commits_.reset();
+  }
+
   // If we're removed from the tree, the TextureLayerImpl will be destroyed, and
   // we will need to set the mailbox again on a new TextureLayerImpl the next
   // time we push.
@@ -163,6 +200,12 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
         std::make_move_iterator(registered_bitmaps_.begin()),
         std::make_move_iterator(registered_bitmaps_.end()));
     registered_bitmaps_.clear();
+
+    // If we need to throttle RAF for backpressure, defer commits on the new
+    // LayerTreeHost.
+    if (max_resources_waiting_ &&
+        resources_waiting_for_release_ >= max_resources_waiting_)
+      defer_commits_ = host->DeferCommits();
   }
   Layer::SetLayerTreeHost(host);
 }
@@ -376,6 +419,25 @@ void TextureLayer::TransferableResourceHolder::ReturnAndReleaseOnImplThread(
   main_thread_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&TransferableResourceHolder::InternalRelease, this));
+}
+
+// We must take a weak_ptr here (rather than making this a non-static member
+// fn) as the |original_callback| must always be run, whether or not
+// TextureLayer is still alive.
+void TextureLayer::ReleaseAndUpdateWaiting(
+    base::WeakPtr<TextureLayer> weak_texture_layer,
+    std::unique_ptr<viz::SingleReleaseCallback> original_callback,
+    const gpu::SyncToken& sync_token,
+    bool is_lost) {
+  if (auto* texture_layer = weak_texture_layer.get()) {
+    DCHECK_GT(texture_layer->resources_waiting_for_release_, 0);
+    --texture_layer->resources_waiting_for_release_;
+    if (texture_layer->resources_waiting_for_release_ <
+        texture_layer->max_resources_waiting_) {
+      texture_layer->defer_commits_.reset();
+    }
+  }
+  original_callback->Run(sync_token, is_lost);
 }
 
 }  // namespace cc

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +28,7 @@ class SingleReleaseCallback;
 }
 
 namespace cc {
+class ScopedDeferCommits;
 class SingleReleaseCallback;
 class TextureLayer;
 class TextureLayerClient;
@@ -105,9 +107,29 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
     DISALLOW_COPY_AND_ASSIGN(TransferableResourceHolder);
   };
 
+  // By default, don't throttle RAF. 0 disables throttling.
+  static const int kMaxResourcesWaitingDefault = 0;
+#if !defined(OS_ANDROID)
+  // On some platforms (Mac), we don't control the texture return flow, as a
+  // component like CoreAnimation does not provide a clear contract as to how
+  // long it will hold our resources. For now, disable throttling on all
+  // platforms other than Android where we control the resource return flow.
+  static const int kMaxResourcesWaitingCanvasWebGL =
+      kMaxResourcesWaitingDefault;
+#else
+  // For Canvas or WebGL, we limit to two outstanding resources on Android.
+  static const int kMaxResourcesWaitingCanvasWebGL = 2;
+#endif
+
   // Used when mailbox names are specified instead of texture IDs.
+  // |max_resources_waiting| specifies the number of outstanding resources that
+  // can be outstanding for a texture layer before we block commits to stop the
+  // flow of new resources. By default, this is set to 0, which allows
+  // unlimited resources. For WebGL and Canvas we use 2, which provides some
+  // backpressure in these cases.
   static scoped_refptr<TextureLayer> CreateForMailbox(
-      TextureLayerClient* client);
+      TextureLayerClient* client,
+      int max_resources_waiting = kMaxResourcesWaitingDefault);
 
   // Resets the client, which also resets the texture.
   void ClearClient();
@@ -168,7 +190,7 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
       scoped_refptr<CrossThreadSharedBitmap> bitmap) override;
 
  protected:
-  explicit TextureLayer(TextureLayerClient* client);
+  TextureLayer(TextureLayerClient* client, int max_resources_waiting);
   ~TextureLayer() override;
   bool HasDrawableContent() const override;
 
@@ -184,6 +206,15 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   // compositor.
   void UnregisterSharedBitmapId(viz::SharedBitmapId id);
 
+  // Helper function which wraps an existing release callback and also
+  // decrements our |resources_waiting_for_release_|, un-deferring commits if
+  // we drop below |max_resources_waiting_|.
+  static void ReleaseAndUpdateWaiting(
+      base::WeakPtr<TextureLayer> weak_texture_layer,
+      std::unique_ptr<viz::SingleReleaseCallback> original_callback,
+      const gpu::SyncToken& sync_token,
+      bool is_lost);
+
   TextureLayerClient* client_;
 
   bool flipped_ = true;
@@ -197,6 +228,8 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
 
   std::unique_ptr<TransferableResourceHolder::MainThreadReference> holder_ref_;
   bool needs_set_resource_ = false;
+  int resources_waiting_for_release_ = 0;
+  const int max_resources_waiting_ = 0;
 
   // The set of SharedBitmapIds to register with the LayerTreeFrameSink on the
   // compositor thread. These requests are forwarded to the TextureLayerImpl to
@@ -213,6 +246,8 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   // The SharedBitmapIds to unregister on the compositor thread, passed to the
   // TextureLayerImpl.
   std::vector<viz::SharedBitmapId> to_unregister_bitmap_ids_;
+  // To add backpressure to RAF, TextureLayer may take a ScopedDeferCommits.
+  std::unique_ptr<ScopedDeferCommits> defer_commits_;
 
   base::WeakPtrFactory<TextureLayer> weak_ptr_factory_;
 
