@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/v8_target_cpu.gni")
-import("//build/secondary/third_party/catapult/devil/devil_arm.gni")
+import("//third_party/catapult/devil/devil_arm.gni")
 
 # These are primarily relevant in current_cpu == "arm" contexts, where
 # ARM code is being compiled.  But they can also be relevant in the
