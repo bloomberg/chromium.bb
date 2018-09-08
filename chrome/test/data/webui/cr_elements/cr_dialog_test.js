@@ -309,6 +309,25 @@ suite('cr-dialog', function() {
     bodyContainer.scrollTop = 100;
   });
 
+  test('dialog `open` attribute updated when Escape is pressed', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+
+    assertTrue(dialog.open);
+    assertTrue(dialog.hasAttribute('open'));
+
+    e = new CustomEvent('cancel', {cancelable: true});
+    dialog.getNative().dispatchEvent(e);
+
+    assertFalse(dialog.open);
+    assertFalse(dialog.hasAttribute('open'));
+  });
+
   test('dialog cannot be cancelled when `no-cancel` is set', function() {
     document.body.innerHTML = `
       <cr-dialog no-cancel>
