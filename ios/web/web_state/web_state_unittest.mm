@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -30,11 +32,33 @@ using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace web {
 
+// WebStateTest is parameterized on this enum to test both the legacy
+// implementation of navigation manager and the experimental implementation.
+enum NavigationManagerChoice {
+  TEST_LEGACY_NAVIGATION_MANAGER,
+  TEST_WK_BASED_NAVIGATION_MANAGER,
+};
+
 // Test fixture for web::WebTest class.
-typedef web::WebTestWithWebState WebStateTest;
+class WebStateTest
+    : public WebTestWithWebState,
+      public ::testing::WithParamInterface<NavigationManagerChoice> {
+ protected:
+  WebStateTest() {
+    if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+      feature_list_.InitAndDisableFeature(
+          web::features::kSlimNavigationManager);
+    } else {
+      feature_list_.InitAndEnableFeature(web::features::kSlimNavigationManager);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // Tests script execution with and without callback.
-TEST_F(WebStateTest, ScriptExecution) {
+TEST_P(WebStateTest, ScriptExecution) {
   ASSERT_TRUE(LoadHtml("<html></html>"));
 
   // Execute script without callback.
@@ -59,7 +83,7 @@ TEST_F(WebStateTest, ScriptExecution) {
 }
 
 // Tests that executing user JavaScript registers user interaction.
-TEST_F(WebStateTest, UserScriptExecution) {
+TEST_P(WebStateTest, UserScriptExecution) {
   web::TestWebStateDelegate delegate;
   web_state()->SetDelegate(&delegate);
   ASSERT_TRUE(delegate.child_windows().empty());
@@ -78,7 +102,7 @@ TEST_F(WebStateTest, UserScriptExecution) {
 }
 
 // Tests loading progress.
-TEST_F(WebStateTest, LoadingProgress) {
+TEST_P(WebStateTest, LoadingProgress) {
   EXPECT_FLOAT_EQ(0.0, web_state()->GetLoadingProgress());
   ASSERT_TRUE(LoadHtml("<html></html>"));
   WaitForCondition(^bool() {
@@ -88,7 +112,7 @@ TEST_F(WebStateTest, LoadingProgress) {
 
 // Tests that page which overrides window.webkit object does not break the
 // messaging system.
-TEST_F(WebStateTest, OverridingWebKitObject) {
+TEST_P(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
   const web::WebState::ScriptCommandCallback callback =
@@ -115,7 +139,7 @@ TEST_F(WebStateTest, OverridingWebKitObject) {
 
 // Tests that reload with web::ReloadType::NORMAL is no-op when navigation
 // manager is empty.
-TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
+TEST_P(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
   ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
@@ -131,7 +155,7 @@ TEST_F(WebStateTest, ReloadWithNormalTypeWithEmptyNavigationManager) {
 
 // Tests that reload with web::ReloadType::ORIGINAL_REQUEST_URL is no-op when
 // navigation manager is empty.
-TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
+TEST_P(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
   NavigationManager* navigation_manager = web_state()->GetNavigationManager();
   ASSERT_FALSE(navigation_manager->GetTransientItem());
   ASSERT_FALSE(navigation_manager->GetPendingItem());
@@ -146,7 +170,7 @@ TEST_F(WebStateTest, ReloadWithOriginalTypeWithEmptyNavigationManager) {
 }
 
 // Tests that the snapshot method returns an image of a rendered html page.
-TEST_F(WebStateTest, Snapshot) {
+TEST_P(WebStateTest, Snapshot) {
   ASSERT_TRUE(
       LoadHtml("<html><div style='background-color:#FF0000; width:50%; "
                "height:100%;'></div></html>"));
@@ -180,7 +204,7 @@ TEST_F(WebStateTest, Snapshot) {
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = true.
-TEST_F(WebStateTest, MessageFromMainFrame) {
+TEST_P(WebStateTest, MessageFromMainFrame) {
   // Add a script command handler.
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
@@ -216,7 +240,7 @@ TEST_F(WebStateTest, MessageFromMainFrame) {
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = false.
 // TODO(crbug.com/857129): Re-enable this test.
-TEST_F(WebStateTest, DISABLED_MessageFromIFrame) {
+TEST_P(WebStateTest, DISABLED_MessageFromIFrame) {
   // Add a script command handler.
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
@@ -252,7 +276,7 @@ TEST_F(WebStateTest, DISABLED_MessageFromIFrame) {
 }
 
 // Tests that the web state has an opener after calling SetHasOpener().
-TEST_F(WebStateTest, SetHasOpener) {
+TEST_P(WebStateTest, SetHasOpener) {
   ASSERT_FALSE(web_state()->HasOpener());
   web_state()->SetHasOpener(true);
   EXPECT_TRUE(web_state()->HasOpener());
@@ -260,7 +284,7 @@ TEST_F(WebStateTest, SetHasOpener) {
 
 // Verifies that large session can be restored. SlimNavigationManagder has max
 // session size limit of |wk_navigation_util::kMaxSessionSize|.
-TEST_F(WebStateTest, RestoreLargeSession) {
+TEST_P(WebStateTest, RestoreLargeSession) {
   // Create session storage with large number of items.
   const int kItemCount = 100;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
@@ -296,5 +320,12 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   }));
   EXPECT_EQ(kExpectedItemCount, navigation_manager->GetItemCount());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ProgrammaticWebStateTest,
+    WebStateTest,
+    ::testing::Values(
+        NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER,
+        NavigationManagerChoice::TEST_WK_BASED_NAVIGATION_MANAGER));
 
 }  // namespace web
