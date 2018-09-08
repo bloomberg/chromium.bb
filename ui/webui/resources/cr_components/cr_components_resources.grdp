@@ -218,5 +218,21 @@
                file="cr_components/chromeos/quick_unlock/pin_keyboard.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_SETUP_PIN_KEYBOARD_JS"
+               file="cr_components/chromeos/quick_unlock/setup_pin_keyboard.js"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_SETUP_PIN_KEYBOARD_HTML"
+               file="cr_components/chromeos/quick_unlock/setup_pin_keyboard.html"
+               type="chrome_html"
+                compress="gzip"/>
+    <structure name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_SCREEN_CONSTANTS_JS"
+               file="cr_components/chromeos/quick_unlock/lock_screen_constants.js"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_QUICK_UNLOCK_LOCK_SCREEN_CONSTANTS_HTML"
+               file="cr_components/chromeos/quick_unlock/lock_screen_constants.html"
+               type="chrome_html"
+               compress="gzip" />
   </if>
 </grit-part>

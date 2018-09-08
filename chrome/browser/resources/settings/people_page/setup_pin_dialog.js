@@ -40,6 +40,27 @@ Polymer({
      * @private
      */
     isConfirmStep_: {type: Boolean, value: false},
+
+    /**
+     * Interface for chrome.quickUnlockPrivate calls. May be overridden by
+     * tests.
+     * @private
+     */
+    quickUnlockPrivate: {type: Object, value: chrome.quickUnlockPrivate},
+
+    /**
+     * writeUma is a function that handles writing uma stats. It may be
+     * overridden for tests.
+     *
+     * @type {Function}
+     * @private
+     */
+    writeUma_: {
+      type: Object,
+      value: function() {
+        return () => {};
+      }
+    },
   },
 
   /** @override */

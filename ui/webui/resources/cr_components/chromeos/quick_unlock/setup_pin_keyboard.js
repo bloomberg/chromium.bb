@@ -4,10 +4,9 @@
 
 /**
  * @fileoverview
- * 'settings-setup-pin-keyboard' is the settings keyboard/input field
- * for page for choosing a PIN.
+ * 'setup-pin-keyboard' is the keyboard/input field for choosing a PIN.
  *
- * See usage documentation in settings_setup_pin_keyboard.html.
+ * See usage documentation in setup_pin_keyboard.html.
  *
  */
 
@@ -32,7 +31,7 @@ const ProblemType = {
 };
 
 Polymer({
-  is: 'settings-setup-pin-keyboard',
+  is: 'setup-pin-keyboard',
 
   behaviors: [I18nBehavior],
 
@@ -81,16 +80,14 @@ Polymer({
     },
 
     /**
-     * writeUma_ is a function that handles writing uma stats. It may be
-     * overridden for tests.
+     * writeUma is a function that handles writing uma stats.
      *
-     * @type {Function}
-     * @private
+     * @type {function(LockScreenProgress)}
      */
-    writeUma_: {
+    writeUma: {
       type: Object,
       value: function() {
-        return settings.recordLockScreenProgress;
+        return function() {};
       }
     },
 
@@ -105,11 +102,10 @@ Polymer({
     },
 
     /**
-     * Interface for chrome.quickUnlockPrivate calls. May be overridden by
-     * tests.
-     * @private
+     * Interface for chrome.quickUnlockPrivate calls.
+     * @type {QuickUnlockPrivate}
      */
-    quickUnlockPrivate_: {type: Object, value: chrome.quickUnlockPrivate},
+    quickUnlockPrivate: Object,
 
     /**
      * |pinHasPassedMinimumLength_| tracks whether a user has passed the minimum
@@ -131,7 +127,7 @@ Polymer({
 
     // Show the pin is too short error when first displaying the PIN dialog.
     this.problemClass_ = ProblemType.WARNING;
-    this.quickUnlockPrivate_.getCredentialRequirements(
+    this.quickUnlockPrivate.getCredentialRequirements(
         chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
         this.processPinRequirements_.bind(this, MessageType.TOO_SHORT));
   },
@@ -190,7 +186,7 @@ Polymer({
    * @param {string} problemClass
    */
   showProblem_: function(messageId, problemClass) {
-    this.quickUnlockPrivate_.getCredentialRequirements(
+    this.quickUnlockPrivate.getCredentialRequirements(
         chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
         this.processPinRequirements_.bind(this, messageId));
     this.problemClass_ = problemClass;
@@ -258,7 +254,7 @@ Polymer({
   onPinChange_: function() {
     if (!this.isConfirmStep) {
       if (this.pinKeyboardValue_) {
-        this.quickUnlockPrivate_.checkCredential(
+        this.quickUnlockPrivate.checkCredential(
             chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
             this.pinKeyboardValue_, this.processPinProblems_.bind(this));
       } else {
@@ -303,7 +299,7 @@ Polymer({
       this.isConfirmStep = true;
       this.onPinChange_();
       this.$.pinKeyboard.focus();
-      this.writeUma_(LockScreenProgress.ENTER_PIN);
+      this.writeUma(LockScreenProgress.ENTER_PIN);
       return;
     }
     // onPinSubmit gets called if the user hits enter on the PIN keyboard.
@@ -320,7 +316,7 @@ Polymer({
     this.setModes.call(
         null, [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
         [this.pinKeyboardValue_], this.onSetModesCompleted_.bind(this));
-    this.writeUma_(LockScreenProgress.CONFIRM_PIN);
+    this.writeUma(LockScreenProgress.CONFIRM_PIN);
   },
 
   /**
