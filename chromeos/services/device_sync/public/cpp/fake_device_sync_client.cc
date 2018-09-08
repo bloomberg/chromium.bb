@@ -17,12 +17,12 @@ FakeDeviceSyncClient::~FakeDeviceSyncClient() = default;
 
 void FakeDeviceSyncClient::ForceEnrollmentNow(
     mojom::DeviceSync::ForceEnrollmentNowCallback callback) {
-  std::move(callback).Run(force_enrollment_now_success_);
+  force_enrollment_now_callback_queue_.push(std::move(callback));
 }
 
 void FakeDeviceSyncClient::ForceSyncNow(
     mojom::DeviceSync::ForceSyncNowCallback callback) {
-  std::move(callback).Run(force_sync_now_success_);
+  force_sync_now_callback_queue_.push(std::move(callback));
 }
 
 cryptauth::RemoteDeviceRefList FakeDeviceSyncClient::GetSyncedDevices() {
@@ -52,6 +52,27 @@ void FakeDeviceSyncClient::FindEligibleDevices(
 void FakeDeviceSyncClient::GetDebugInfo(
     mojom::DeviceSync::GetDebugInfoCallback callback) {
   get_debug_info_callback_queue_.push(std::move(callback));
+}
+
+int FakeDeviceSyncClient::GetForceEnrollmentNowCallbackQueueSize() {
+  return force_enrollment_now_callback_queue_.size();
+}
+
+int FakeDeviceSyncClient::GetForceSyncNowCallbackQueueSize() {
+  return force_sync_now_callback_queue_.size();
+}
+
+void FakeDeviceSyncClient::InvokePendingForceEnrollmentNowCallback(
+    bool success) {
+  DCHECK(force_enrollment_now_callback_queue_.size() > 0);
+  std::move(force_enrollment_now_callback_queue_.front()).Run(success);
+  force_enrollment_now_callback_queue_.pop();
+}
+
+void FakeDeviceSyncClient::InvokePendingForceSyncNowCallback(bool success) {
+  DCHECK(force_sync_now_callback_queue_.size() > 0);
+  std::move(force_sync_now_callback_queue_.front()).Run(success);
+  force_sync_now_callback_queue_.pop();
 }
 
 void FakeDeviceSyncClient::InvokePendingSetSoftwareFeatureStateCallback(

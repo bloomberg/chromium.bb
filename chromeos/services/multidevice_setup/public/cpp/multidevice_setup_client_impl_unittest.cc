@@ -47,7 +47,9 @@ class FakeMultiDeviceSetupInitializerFactory
       secure_channel::SecureChannelClient* secure_channel_client,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate) override {
+          android_sms_app_helper_delegate,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+      override {
     EXPECT_TRUE(fake_multidevice_setup_);
     return std::move(fake_multidevice_setup_);
   }
@@ -122,7 +124,8 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     auto multidevice_setup_service = std::make_unique<MultiDeviceSetupService>(
         nullptr /* pref_service */, nullptr /* device_sync_client */,
         nullptr /* secure_channel_client */, nullptr /* auth_token_validator */,
-        nullptr /* android_sms_app_helper_delegate */);
+        nullptr /* android_sms_app_helper_delegate */,
+        nullptr /* gcm_device_info_provider */);
 
     connector_factory_ =
         service_manager::TestConnectorFactory::CreateForUniqueService(

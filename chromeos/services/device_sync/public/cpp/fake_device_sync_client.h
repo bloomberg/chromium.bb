@@ -27,6 +27,10 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   FakeDeviceSyncClient();
   ~FakeDeviceSyncClient() override;
 
+  int GetForceEnrollmentNowCallbackQueueSize();
+  int GetForceSyncNowCallbackQueueSize();
+  void InvokePendingForceEnrollmentNowCallback(bool success);
+  void InvokePendingForceSyncNowCallback(bool success);
   void InvokePendingSetSoftwareFeatureStateCallback(
       mojom::NetworkRequestResult result_code);
   void InvokePendingFindEligibleDevicesCallback(
@@ -34,14 +38,6 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       cryptauth::RemoteDeviceRefList eligible_devices,
       cryptauth::RemoteDeviceRefList ineligible_devices);
   void InvokePendingGetDebugInfoCallback(mojom::DebugInfoPtr debug_info_ptr);
-
-  void set_force_enrollment_now_success(bool force_enrollment_now_success) {
-    force_enrollment_now_success_ = force_enrollment_now_success;
-  }
-
-  void set_force_sync_now_success(bool force_sync_now_success) {
-    force_sync_now_success_ = force_sync_now_success;
-  }
 
   void set_synced_devices(cryptauth::RemoteDeviceRefList synced_devices) {
     synced_devices_ = synced_devices;
@@ -52,9 +48,9 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
     local_device_metadata_ = local_device_metadata;
   }
 
-  using DeviceSyncClient::NotifyReady;
   using DeviceSyncClient::NotifyEnrollmentFinished;
   using DeviceSyncClient::NotifyNewDevicesSynced;
+  using DeviceSyncClient::NotifyReady;
 
  private:
   // DeviceSyncClient:
@@ -73,11 +69,13 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
                            FindEligibleDevicesCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
 
-  bool force_enrollment_now_success_;
-  bool force_sync_now_success_;
   cryptauth::RemoteDeviceRefList synced_devices_;
   base::Optional<cryptauth::RemoteDeviceRef> local_device_metadata_;
 
+  std::queue<mojom::DeviceSync::ForceEnrollmentNowCallback>
+      force_enrollment_now_callback_queue_;
+  std::queue<mojom::DeviceSync::ForceSyncNowCallback>
+      force_sync_now_callback_queue_;
   std::queue<mojom::DeviceSync::SetSoftwareFeatureStateCallback>
       set_software_feature_state_callback_queue_;
   std::queue<FindEligibleDevicesCallback> find_eligible_devices_callback_queue_;
