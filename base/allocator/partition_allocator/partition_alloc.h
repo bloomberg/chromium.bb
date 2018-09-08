@@ -360,7 +360,7 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
   // TODO(crbug.com/864462): This is suboptimal. Change `AllocFromBucket` such
   // that it tells callers if the allocation was satisfied with a fresh mapping
   // from the OS, so that we can skip this step and save some time.
-  if (zero_fill) {
+  if (ret && zero_fill) {
     memset(ret, 0, requested_size);
   }
 
