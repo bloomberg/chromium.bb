@@ -31,6 +31,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
@@ -49,10 +50,6 @@ struct Manifest;
 
 namespace base {
 class TimeTicks;
-}
-
-namespace blink {
-struct WebFindOptions;
 }
 
 namespace device {
@@ -814,7 +811,7 @@ class WebContents : public PageNavigator,
   // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
                     const base::string16& search_text,
-                    const blink::WebFindOptions& options) = 0;
+                    blink::mojom::FindOptionsPtr options) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).

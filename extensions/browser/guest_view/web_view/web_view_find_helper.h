@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -41,7 +41,7 @@ class WebViewFindHelper {
   // Helper function for WebViewGuest::Find().
   void Find(content::WebContents* guest_web_contents,
             const base::string16& search_text,
-            const blink::WebFindOptions& options,
+            blink::mojom::FindOptionsPtr options,
             scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Helper function for WeViewGuest:FindReply().
@@ -105,7 +105,7 @@ class WebViewFindHelper {
    public:
     FindInfo(int request_id,
              const base::string16& search_text,
-             const blink::WebFindOptions& options,
+             blink::mojom::FindOptionsPtr options,
              scoped_refptr<WebViewInternalFindFunction> find_function);
 
     // Add another request to |find_next_requests_|.
@@ -121,9 +121,7 @@ class WebViewFindHelper {
 
     base::WeakPtr<FindInfo> AsWeakPtr();
 
-    blink::WebFindOptions* options() {
-      return &options_;
-    }
+    const blink::mojom::FindOptionsPtr& options() { return options_; }
 
     bool replied() {
       return replied_;
@@ -148,7 +146,7 @@ class WebViewFindHelper {
 
     const int request_id_;
     const base::string16 search_text_;
-    blink::WebFindOptions options_;
+    blink::mojom::FindOptionsPtr options_;
     scoped_refptr<WebViewInternalFindFunction> find_function_;
     FindResults find_results_;
 

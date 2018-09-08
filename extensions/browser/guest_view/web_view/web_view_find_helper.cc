@@ -90,7 +90,7 @@ void WebViewFindHelper::EndFindSession(int session_request_id, bool canceled) {
 void WebViewFindHelper::Find(
     content::WebContents* guest_web_contents,
     const base::string16& search_text,
-    const blink::WebFindOptions& options,
+    blink::mojom::FindOptionsPtr options,
     scoped_refptr<WebViewInternalFindFunction> find_function) {
   // Need a new request_id for each new find request.
   ++current_find_request_id_;
@@ -99,14 +99,15 @@ void WebViewFindHelper::Find(
   // function can be called when the find results are available.
   std::pair<FindInfoMap::iterator, bool> insert_result =
       find_info_map_.insert(std::make_pair(
-          current_find_request_id_,
-          base::WrapRefCounted(new FindInfo(
-              current_find_request_id_, search_text, options, find_function))));
+          current_find_request_id_, base::WrapRefCounted(new FindInfo(
+                                        current_find_request_id_, search_text,
+                                        options.Clone(), find_function))));
   // No duplicate insertions.
   DCHECK(insert_result.second);
 
   // Find options including the implicit |findNext| field.
-  blink::WebFindOptions* full_options = insert_result.first->second->options();
+  blink::mojom::FindOptionsPtr full_options =
+      insert_result.first->second->options().Clone();
 
   // Set |findNext| implicitly.
   if (current_find_session_) {
@@ -115,7 +116,7 @@ void WebViewFindHelper::Find(
     bool current_match_case = current_find_session_->options()->match_case;
     full_options->find_next = !current_search_text.empty() &&
                               current_search_text == search_text &&
-                              current_match_case == options.match_case;
+                              current_match_case == options->match_case;
   } else {
     full_options->find_next = false;
   }
@@ -138,8 +139,8 @@ void WebViewFindHelper::Find(
     return;
   }
 
-  guest_web_contents->Find(current_find_request_id_,
-                           search_text, *full_options);
+  guest_web_contents->Find(current_find_request_id_, search_text,
+                           std::move(full_options));
 }
 
 void WebViewFindHelper::FindReply(int request_id,
@@ -251,15 +252,14 @@ void WebViewFindHelper::FindUpdateEvent::PrepareResults(
 WebViewFindHelper::FindInfo::FindInfo(
     int request_id,
     const base::string16& search_text,
-    const blink::WebFindOptions& options,
+    blink::mojom::FindOptionsPtr options,
     scoped_refptr<WebViewInternalFindFunction> find_function)
     : request_id_(request_id),
       search_text_(search_text),
-      options_(options),
+      options_(std::move(options)),
       find_function_(find_function),
       replied_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void WebViewFindHelper::FindInfo::AggregateResults(
     int number_of_matches,

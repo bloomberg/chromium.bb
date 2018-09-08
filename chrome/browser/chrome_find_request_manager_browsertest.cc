@@ -16,7 +16,7 @@
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
 
@@ -52,11 +52,10 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
   }
 
   void Find(const std::string& search_text,
-            const blink::WebFindOptions& options) {
+            blink::mojom::FindOptionsPtr options) {
     delegate()->UpdateLastRequest(++last_request_id_);
-    contents()->Find(last_request_id_,
-                     base::UTF8ToUTF16(search_text),
-                     options);
+    contents()->Find(last_request_id_, base::UTF8ToUTF16(search_text),
+                     std::move(options));
   }
 
   WebContents* contents() const {
@@ -87,12 +86,12 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInPDF) {
   LoadAndWait("/find_in_pdf_page.pdf");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
-  blink::WebFindOptions options;
-  options.run_synchronously_for_testing = true;
-  Find("result", options);
-  options.find_next = true;
-  Find("result", options);
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options.Clone());
+  options->find_next = true;
+  Find("result", options.Clone());
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();
@@ -113,14 +112,13 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
   LoadAndWait("/find_in_embedded_pdf_page.html");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
-  blink::WebFindOptions options;
-  options.find_next = true;
-  Find("result", options);
-  options.find_next = true;
-  options.forward = false;
-  Find("result", options);
-  Find("result", options);
-  Find("result", options);
+  auto options = blink::mojom::FindOptions::New();
+  options->find_next = true;
+  Find("result", options.Clone());
+  options->forward = false;
+  Find("result", options.Clone());
+  Find("result", options.Clone());
+  Find("result", options.Clone());
   delegate()->WaitForFinalReply();
 
   FindResults results = delegate()->GetFindResults();

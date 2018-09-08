@@ -22,10 +22,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/script_executor.h"
-
-namespace blink {
-struct WebFindOptions;
-}  // namespace blink
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace extensions {
 
@@ -120,7 +117,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Begin or continue a find request.
   void StartFind(const base::string16& search_text,
-                 const blink::WebFindOptions& options,
+                 blink::mojom::FindOptionsPtr options,
                  scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.

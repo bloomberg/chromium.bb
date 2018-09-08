@@ -3968,14 +3968,15 @@ int WebContentsImpl::DownloadImage(
 
 void WebContentsImpl::Find(int request_id,
                            const base::string16& search_text,
-                           const blink::WebFindOptions& options) {
+                           blink::mojom::FindOptionsPtr options) {
   // Cowardly refuse to search for no text.
   if (search_text.empty()) {
     NOTREACHED();
     return;
   }
 
-  GetOrCreateFindRequestManager()->Find(request_id, search_text, options);
+  GetOrCreateFindRequestManager()->Find(request_id, search_text,
+                                        std::move(options));
 }
 
 void WebContentsImpl::StopFinding(StopFindAction action) {
