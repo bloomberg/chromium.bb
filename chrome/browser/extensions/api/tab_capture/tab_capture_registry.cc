@@ -242,7 +242,6 @@ bool TabCaptureRegistry::VerifyRequest(
   }
 
   if (request->is_verified() ||
-      request->extension_id() != extension_id ||
       (request->capture_state() != tab_capture::TAB_CAPTURE_STATE_NONE &&
        request->capture_state() != tab_capture::TAB_CAPTURE_STATE_PENDING))
     return false;

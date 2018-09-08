@@ -16597,6 +16597,7 @@ Called by update_net_error_codes.py.-->
       label="FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER"/>
   <int value="1273" label="AUTOTESTPRIVATE_SETCROSTINIENABLED"/>
   <int value="1274" label="AUTOTESTPRIVATE_GETHISTOGRAM"/>
+  <int value="1275" label="TABCAPTURE_GETMEDIASTREAMID"/>
 </enum>
 
 <enum name="ExtensionIconState">
