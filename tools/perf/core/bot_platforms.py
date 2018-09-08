@@ -8,8 +8,7 @@ from core import benchmark_finders
 
 
 UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
-  'experimental.startup.android.coldish',
-  'startup.mobile',
+    'experimental.startup.android.coldish'
 ])
 
 

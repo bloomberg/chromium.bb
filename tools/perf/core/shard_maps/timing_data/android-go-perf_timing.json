@@ -1,6 +1,6 @@
 [
     {
-        "duration": "24.0",
+        "duration": "25.0",
         "name": "memory.top_10_mobile/after_http_en_m_wikipedia_org_wiki_Science"
     },
     {
@@ -8,31 +8,31 @@
         "name": "memory.top_10_mobile/after_http_m_intl_taobao_com_group_purchase_html"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_http_m_youtube_com_results_q_science"
     },
     {
-        "duration": "23.0",
+        "duration": "32.0",
         "name": "memory.top_10_mobile/after_http_search_yahoo_com_search__ylt_p_google"
     },
     {
-        "duration": "23.0",
+        "duration": "35.0",
         "name": "memory.top_10_mobile/after_http_www_amazon_com_gp_aw_s_k_nexus"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_http_www_baidu_com_s_word_google"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_http_yandex_ru_touchsearch_text_science"
     },
     {
-        "duration": "23.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_https_m_facebook_com_rihanna"
     },
     {
-        "duration": "35.0",
+        "duration": "24.0",
         "name": "memory.top_10_mobile/after_https_mobile_twitter_com_justinbieber_skip_interstitial_true"
     },
     {
@@ -48,7 +48,7 @@
         "name": "memory.top_10_mobile/http_m_intl_taobao_com_group_purchase_html"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "memory.top_10_mobile/http_m_youtube_com_results_q_science"
     },
     {
@@ -64,7 +64,7 @@
         "name": "memory.top_10_mobile/http_www_baidu_com_s_word_google"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "memory.top_10_mobile/http_yandex_ru_touchsearch_text_science"
     },
     {
@@ -76,7 +76,7 @@
         "name": "memory.top_10_mobile/https_mobile_twitter_com_justinbieber_skip_interstitial_true"
     },
     {
-        "duration": "33.0",
+        "duration": "28.0",
         "name": "memory.top_10_mobile/https_www_google_co_uk_hl_en_q_science"
     },
     {
@@ -84,19 +84,19 @@
         "name": "power.typical_10_mobile/http://de.m.wikipedia.org/wiki/K%C3%B6lner_Dom"
     },
     {
-        "duration": "81.0",
+        "duration": "82.0",
         "name": "power.typical_10_mobile/http://m.chiebukuro.yahoo.co.jp/detail/q10136829180"
     },
     {
-        "duration": "70.0",
+        "duration": "73.0",
         "name": "power.typical_10_mobile/http://m.ebay.com/itm/351157205404"
     },
     {
-        "duration": "93.0",
+        "duration": "94.0",
         "name": "power.typical_10_mobile/http://m.facebook.com/barackobama"
     },
     {
-        "duration": "75.0",
+        "duration": "77.0",
         "name": "power.typical_10_mobile/http://m.huffpost.com/us/entry/6004486"
     },
     {
@@ -104,11 +104,11 @@
         "name": "power.typical_10_mobile/http://m.ynet.co.il"
     },
     {
-        "duration": "99.0",
+        "duration": "77.0",
         "name": "power.typical_10_mobile/http://siriuslymeg.tumblr.com/"
     },
     {
-        "duration": "72.0",
+        "duration": "76.0",
         "name": "power.typical_10_mobile/http://wapbaike.baidu.com/"
     },
     {
@@ -116,31 +116,23 @@
         "name": "power.typical_10_mobile/http://www.cnn.com/2014/03/31/showbiz/tv/himym-finale/index.html"
     },
     {
-        "duration": "84.0",
+        "duration": "103.0",
         "name": "power.typical_10_mobile/http://www.rg.ru/2014/10/21/cska-site.html"
     },
     {
-        "duration": "75.0",
+        "duration": "77.0",
         "name": "power.typical_10_mobile/https://en.wikipedia.org/wiki/File:Rotating_earth_(large).gif"
     },
     {
-        "duration": "39.0",
-        "name": "start_with_url.cold.startup_pages/about:blank"
+        "duration": "156.0",
+        "name": "speedometer/http://browserbench.org/Speedometer/"
     },
     {
-        "duration": "42.0",
-        "name": "start_with_url.cold.startup_pages/http://bbc.co.uk"
+        "duration": "288.0",
+        "name": "speedometer2/Speedometer2"
     },
     {
-        "duration": "35.0",
-        "name": "start_with_url.warm.startup_pages/about:blank"
-    },
-    {
-        "duration": "36.0",
-        "name": "start_with_url.warm.startup_pages/http://bbc.co.uk"
-    },
-    {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.common_mobile/background:media:imgur"
     },
     {
@@ -148,19 +140,19 @@
         "name": "system_health.common_mobile/background:news:nytimes"
     },
     {
-        "duration": "32.0",
+        "duration": "33.0",
         "name": "system_health.common_mobile/background:search:google"
     },
     {
-        "duration": "55.0",
+        "duration": "59.0",
         "name": "system_health.common_mobile/background:social:facebook"
     },
     {
-        "duration": "48.0",
+        "duration": "49.0",
         "name": "system_health.common_mobile/background:tools:gmail"
     },
     {
-        "duration": "209.0",
+        "duration": "186.0",
         "name": "system_health.common_mobile/browse:chrome:newtab"
     },
     {
@@ -168,23 +160,23 @@
         "name": "system_health.common_mobile/browse:chrome:omnibox"
     },
     {
-        "duration": "149.0",
+        "duration": "152.0",
         "name": "system_health.common_mobile/browse:media:facebook_photos"
     },
     {
-        "duration": "69.0",
+        "duration": "74.0",
         "name": "system_health.common_mobile/browse:media:flickr_infinite_scroll"
     },
     {
-        "duration": "105.0",
+        "duration": "104.0",
         "name": "system_health.common_mobile/browse:media:imgur"
     },
     {
-        "duration": "156.0",
+        "duration": "153.0",
         "name": "system_health.common_mobile/browse:media:youtube"
     },
     {
-        "duration": "247.0",
+        "duration": "275.0",
         "name": "system_health.common_mobile/browse:news:cnn"
     },
     {
@@ -192,47 +184,43 @@
         "name": "system_health.common_mobile/browse:news:cricbuzz"
     },
     {
-        "duration": "77.0",
+        "duration": "104.0",
         "name": "system_health.common_mobile/browse:news:qq"
     },
     {
-        "duration": "84.0",
+        "duration": "83.0",
         "name": "system_health.common_mobile/browse:news:reddit"
     },
     {
-        "duration": "307.0",
-        "name": "system_health.common_mobile/browse:news:toi"
-    },
-    {
-        "duration": "75.0",
+        "duration": "76.0",
         "name": "system_health.common_mobile/browse:news:washingtonpost"
     },
     {
-        "duration": "115.0",
+        "duration": "141.0",
         "name": "system_health.common_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "115.0",
+        "duration": "113.0",
         "name": "system_health.common_mobile/browse:shopping:avito"
     },
     {
-        "duration": "57.0",
+        "duration": "58.0",
         "name": "system_health.common_mobile/browse:shopping:lazada"
     },
     {
-        "duration": "97.0",
+        "duration": "98.0",
         "name": "system_health.common_mobile/browse:social:facebook"
     },
     {
-        "duration": "156.0",
+        "duration": "151.0",
         "name": "system_health.common_mobile/browse:social:facebook_infinite_scroll"
     },
     {
-        "duration": "120.0",
+        "duration": "121.0",
         "name": "system_health.common_mobile/browse:social:instagram"
     },
     {
-        "duration": "126.0",
+        "duration": "123.0",
         "name": "system_health.common_mobile/browse:social:pinterest_infinite_scroll"
     },
     {
@@ -240,19 +228,19 @@
         "name": "system_health.common_mobile/browse:social:tumblr_infinite_scroll"
     },
     {
-        "duration": "75.0",
+        "duration": "76.0",
         "name": "system_health.common_mobile/browse:social:twitter"
     },
     {
-        "duration": "99.0",
+        "duration": "96.0",
         "name": "system_health.common_mobile/browse:tech:discourse_infinite_scroll"
     },
     {
-        "duration": "68.0",
+        "duration": "67.0",
         "name": "system_health.common_mobile/browse:tools:maps"
     },
     {
-        "duration": "26.0",
+        "duration": "28.0",
         "name": "system_health.common_mobile/load:chrome:blank"
     },
     {
@@ -260,7 +248,7 @@
         "name": "system_health.common_mobile/load:games:bubbles"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "system_health.common_mobile/load:games:lazors"
     },
     {
@@ -276,27 +264,27 @@
         "name": "system_health.common_mobile/load:media:facebook_photos"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:media:google_images"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:media:imgur"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.common_mobile/load:media:soundcloud"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:media:youtube"
     },
     {
-        "duration": "69.0",
+        "duration": "81.0",
         "name": "system_health.common_mobile/load:news:cnn"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.common_mobile/load:news:irctc"
     },
     {
@@ -304,11 +292,11 @@
         "name": "system_health.common_mobile/load:news:nytimes"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:news:qq"
     },
     {
-        "duration": "33.0",
+        "duration": "34.0",
         "name": "system_health.common_mobile/load:news:reddit"
     },
     {
@@ -320,23 +308,23 @@
         "name": "system_health.common_mobile/load:news:wikipedia"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:search:baidu"
     },
     {
-        "duration": "55.0",
+        "duration": "33.0",
         "name": "system_health.common_mobile/load:search:ebay"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:search:google"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:search:taobao"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:search:yahoo"
     },
     {
@@ -344,19 +332,19 @@
         "name": "system_health.common_mobile/load:search:yandex"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.common_mobile/load:social:twitter"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:tools:docs"
     },
     {
-        "duration": "36.0",
+        "duration": "68.0",
         "name": "system_health.common_mobile/load:tools:drive"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "system_health.common_mobile/load:tools:dropbox"
     },
     {
@@ -368,127 +356,119 @@
         "name": "system_health.common_mobile/load:tools:stackoverflow"
     },
     {
-        "duration": "45.0",
+        "duration": "46.0",
         "name": "system_health.common_mobile/load:tools:weather"
     },
     {
-        "duration": "146.0",
-        "name": "system_health.common_mobile/long_running:tools:gmail-background"
-    },
-    {
-        "duration": "145.0",
-        "name": "system_health.common_mobile/long_running:tools:gmail-foreground"
-    },
-    {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.memory_mobile/background:media:imgur"
     },
     {
-        "duration": "31.0",
+        "duration": "33.0",
         "name": "system_health.memory_mobile/background:search:google"
     },
     {
-        "duration": "37.0",
+        "duration": "39.0",
         "name": "system_health.memory_mobile/background:social:facebook"
     },
     {
-        "duration": "42.0",
+        "duration": "43.0",
         "name": "system_health.memory_mobile/background:tools:gmail"
     },
     {
-        "duration": "180.0",
+        "duration": "178.0",
         "name": "system_health.memory_mobile/browse:chrome:newtab"
     },
     {
-        "duration": "52.0",
+        "duration": "53.0",
         "name": "system_health.memory_mobile/browse:chrome:omnibox"
     },
     {
-        "duration": "100.0",
+        "duration": "113.0",
         "name": "system_health.memory_mobile/browse:media:facebook_photos"
     },
     {
-        "duration": "55.0",
+        "duration": "62.0",
         "name": "system_health.memory_mobile/browse:media:flickr_infinite_scroll"
     },
     {
-        "duration": "81.0",
+        "duration": "82.0",
         "name": "system_health.memory_mobile/browse:media:imgur"
     },
     {
-        "duration": "106.0",
+        "duration": "102.0",
         "name": "system_health.memory_mobile/browse:media:youtube"
     },
     {
-        "duration": "178.0",
+        "duration": "207.0",
         "name": "system_health.memory_mobile/browse:news:cnn"
     },
     {
-        "duration": "68.0",
+        "duration": "69.0",
         "name": "system_health.memory_mobile/browse:news:cricbuzz"
     },
     {
-        "duration": "61.0",
+        "duration": "63.0",
         "name": "system_health.memory_mobile/browse:news:qq"
     },
     {
-        "duration": "79.0",
+        "duration": "71.0",
         "name": "system_health.memory_mobile/browse:news:reddit"
     },
     {
-        "duration": "184.0",
+        "duration": "183.0",
         "name": "system_health.memory_mobile/browse:news:toi"
     },
     {
-        "duration": "59.0",
+        "duration": "61.0",
         "name": "system_health.memory_mobile/browse:news:washingtonpost"
     },
     {
-        "duration": "78.0",
+        "duration": "88.0",
         "name": "system_health.memory_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "94.0",
+        "duration": "85.0",
         "name": "system_health.memory_mobile/browse:shopping:avito"
     },
     {
-        "duration": "47.0",
+        "duration": "59.0",
         "name": "system_health.memory_mobile/browse:shopping:lazada"
     },
     {
-        "duration": "75.0",
+        "duration": "77.0",
         "name": "system_health.memory_mobile/browse:social:facebook"
     },
     {
-        "duration": "98.0",
+        "duration": "91.0",
         "name": "system_health.memory_mobile/browse:social:facebook_infinite_scroll"
     },
     {
-        "duration": "89.0",
+        "duration": "90.0",
         "name": "system_health.memory_mobile/browse:social:instagram"
     },
     {
-        "duration": "94.0",
+        "duration": "95.0",
         "name": "system_health.memory_mobile/browse:social:pinterest_infinite_scroll"
     },
     {
-        "duration": "104.0",
+        "duration": "107.0",
         "name": "system_health.memory_mobile/browse:social:tumblr_infinite_scroll"
     },
     {
-        "duration": "61.0",
+        "duration": "63.0",
         "name": "system_health.memory_mobile/browse:social:twitter"
     },
     {
-        "duration": "82.0",
+        "duration": "74.0",
         "name": "system_health.memory_mobile/browse:tech:discourse_infinite_scroll"
     },
     {
-        "duration": "58.0",
+        "duration": "69.0",
         "name": "system_health.memory_mobile/browse:tools:maps"
     },
     {
-        "duration": "27.0",
+        "duration": "28.0",
         "name": "system_health.memory_mobile/load:chrome:blank"
     },
     {
@@ -496,19 +476,19 @@
         "name": "system_health.memory_mobile/load:games:bubbles"
     },
     {
-        "duration": "28.0",
+        "duration": "29.0",
         "name": "system_health.memory_mobile/load:games:lazors"
     },
     {
-        "duration": "47.0",
+        "duration": "48.0",
         "name": "system_health.memory_mobile/load:games:spychase"
     },
     {
-        "duration": "36.0",
+        "duration": "46.0",
         "name": "system_health.memory_mobile/load:media:dailymotion"
     },
     {
-        "duration": "40.0",
+        "duration": "43.0",
         "name": "system_health.memory_mobile/load:media:facebook_photos"
     },
     {
@@ -516,7 +496,7 @@
         "name": "system_health.memory_mobile/load:media:google_images"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.memory_mobile/load:media:imgur"
     },
     {
@@ -524,15 +504,15 @@
         "name": "system_health.memory_mobile/load:media:soundcloud"
     },
     {
-        "duration": "40.0",
+        "duration": "32.0",
         "name": "system_health.memory_mobile/load:media:youtube"
     },
     {
-        "duration": "59.0",
+        "duration": "71.0",
         "name": "system_health.memory_mobile/load:news:cnn"
     },
     {
-        "duration": "37.0",
+        "duration": "38.0",
         "name": "system_health.memory_mobile/load:news:irctc"
     },
     {
@@ -540,11 +520,11 @@
         "name": "system_health.memory_mobile/load:news:nytimes"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.memory_mobile/load:news:qq"
     },
     {
-        "duration": "34.0",
+        "duration": "35.0",
         "name": "system_health.memory_mobile/load:news:reddit"
     },
     {
@@ -552,15 +532,15 @@
         "name": "system_health.memory_mobile/load:news:washingtonpost"
     },
     {
-        "duration": "33.0",
+        "duration": "34.0",
         "name": "system_health.memory_mobile/load:news:wikipedia"
     },
     {
-        "duration": "40.0",
+        "duration": "32.0",
         "name": "system_health.memory_mobile/load:search:baidu"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.memory_mobile/load:search:ebay"
     },
     {
@@ -568,19 +548,19 @@
         "name": "system_health.memory_mobile/load:search:google"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "system_health.memory_mobile/load:search:taobao"
     },
     {
-        "duration": "29.0",
+        "duration": "30.0",
         "name": "system_health.memory_mobile/load:search:yahoo"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.memory_mobile/load:search:yandex"
     },
     {
-        "duration": "30.0",
+        "duration": "31.0",
         "name": "system_health.memory_mobile/load:social:twitter"
     },
     {
@@ -588,7 +568,7 @@
         "name": "system_health.memory_mobile/load:tools:docs"
     },
     {
-        "duration": "33.0",
+        "duration": "35.0",
         "name": "system_health.memory_mobile/load:tools:drive"
     },
     {
@@ -596,83 +576,95 @@
         "name": "system_health.memory_mobile/load:tools:dropbox"
     },
     {
-        "duration": "32.0",
+        "duration": "33.0",
         "name": "system_health.memory_mobile/load:tools:stackoverflow"
     },
     {
-        "duration": "41.0",
+        "duration": "42.0",
         "name": "system_health.memory_mobile/load:tools:weather"
     },
     {
-        "duration": "290.0",
-        "name": "system_health.memory_mobile/long_running:tools:gmail-foreground"
-    },
-    {
-        "duration": "141.0",
+        "duration": "195.0",
         "name": "v8.browsing_mobile/browse:chrome:newtab"
     },
     {
-        "duration": "50.0",
+        "duration": "56.0",
         "name": "v8.browsing_mobile/browse:chrome:omnibox"
     },
     {
-        "duration": "146.0",
+        "duration": "154.0",
         "name": "v8.browsing_mobile/browse:media:facebook_photos"
     },
     {
-        "duration": "81.0",
+        "duration": "94.0",
         "name": "v8.browsing_mobile/browse:media:flickr_infinite_scroll"
     },
     {
-        "duration": "125.0",
+        "duration": "128.0",
         "name": "v8.browsing_mobile/browse:media:imgur"
     },
     {
-        "duration": "103.0",
+        "duration": "188.0",
+        "name": "v8.browsing_mobile/browse:media:youtube"
+    },
+    {
+        "duration": "112.0",
         "name": "v8.browsing_mobile/browse:news:cricbuzz"
     },
     {
-        "duration": "84.0",
+        "duration": "92.0",
         "name": "v8.browsing_mobile/browse:news:qq"
     },
     {
-        "duration": "93.0",
+        "duration": "102.0",
         "name": "v8.browsing_mobile/browse:news:reddit"
     },
     {
-        "duration": "423.0",
-        "name": "v8.browsing_mobile/browse:news:toi"
-    },
-    {
-        "duration": "88.0",
+        "duration": "91.0",
         "name": "v8.browsing_mobile/browse:news:washingtonpost"
     },
     {
-        "duration": "167.0",
+        "duration": "179.0",
         "name": "v8.browsing_mobile/browse:shopping:amazon"
     },
     {
-        "duration": "121.0",
+        "duration": "166.0",
+        "name": "v8.browsing_mobile/browse:shopping:avito"
+    },
+    {
+        "duration": "76.0",
+        "name": "v8.browsing_mobile/browse:shopping:lazada"
+    },
+    {
+        "duration": "125.0",
         "name": "v8.browsing_mobile/browse:social:facebook"
     },
     {
-        "duration": "146.0",
+        "duration": "200.0",
+        "name": "v8.browsing_mobile/browse:social:facebook_infinite_scroll"
+    },
+    {
+        "duration": "154.0",
         "name": "v8.browsing_mobile/browse:social:instagram"
     },
     {
-        "duration": "82.0",
+        "duration": "159.0",
+        "name": "v8.browsing_mobile/browse:social:pinterest_infinite_scroll"
+    },
+    {
+        "duration": "197.0",
+        "name": "v8.browsing_mobile/browse:social:tumblr_infinite_scroll"
+    },
+    {
+        "duration": "86.0",
         "name": "v8.browsing_mobile/browse:social:twitter"
     },
     {
-        "duration": "83.0",
+        "duration": "126.0",
+        "name": "v8.browsing_mobile/browse:tech:discourse_infinite_scroll"
+    },
+    {
+        "duration": "85.0",
         "name": "v8.browsing_mobile/browse:tools:maps"
-    },
-    {
-        "duration": "133.0",
-        "name": "speedometer/http://browserbench.org/Speedometer/"
-    },
-    {
-        "duration": "250.0",
-        "name": "speedometer2/Speedometer2"
     }
 ]
