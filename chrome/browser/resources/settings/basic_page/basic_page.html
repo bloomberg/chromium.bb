@@ -110,6 +110,14 @@
             </settings-internet-page>
           </settings-section>
         </template>
+        <template is="dom-if" if="[[showPage_(pageVisibility.bluetooth)]]"
+            restamp>
+          <settings-section page-title="$i18n{bluetoothPageTitle}"
+              section="bluetooth">
+            <settings-bluetooth-page prefs="{{prefs}}">
+            </settings-bluetooth-page>
+          </settings-section>
+        </template>
         <template is="dom-if"
             if="[[canShowMultideviceSection_(showMultidevice, pageVisibility)]]"
             restamp>
@@ -120,14 +128,6 @@
                 does-chromebook-support-multi-device-features=
                     "{{doesChromebookSupportMultiDeviceSection_}}">
             </settings-multidevice-page-container>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.bluetooth)]]"
-            restamp>
-          <settings-section page-title="$i18n{bluetoothPageTitle}"
-              section="bluetooth">
-            <settings-bluetooth-page prefs="{{prefs}}">
-            </settings-bluetooth-page>
           </settings-section>
         </template>
 </if>
