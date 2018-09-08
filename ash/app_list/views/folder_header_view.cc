@@ -239,11 +239,6 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }
 
-void FolderHeaderView::ButtonPressed(views::Button* sender,
-                                     const ui::Event& event) {
-  delegate_->NavigateBack(folder_item_, event);
-}
-
 void FolderHeaderView::ItemNameChanged() {
   Update();
 }
