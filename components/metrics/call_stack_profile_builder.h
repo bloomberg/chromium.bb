@@ -85,7 +85,7 @@ class CallStackProfileBuilder
   // IMPORTANT NOTE: The callback is invoked on a thread the profiler
   // constructs, rather than on the thread used to construct the profiler, and
   // thus the callback must be callable on any thread.
-  CallStackProfileBuilder(
+  explicit CallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       base::OnceClosure completed_callback = base::OnceClosure());
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/common/thread_profiler.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "ui/base/resource/data_pack.h"
@@ -23,11 +22,13 @@ class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class ChromeFeatureListCreator;
 class FieldTrialSynchronizer;
+class HeapProfilerController;
 class PrefService;
 class Profile;
 class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
+class ThreadProfiler;
 class WebUsbDetector;
 
 namespace chrome_browser {
@@ -168,6 +169,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // A profiler that periodically samples stack traces on the UI thread.
   std::unique_ptr<ThreadProfiler> ui_thread_profiler_;
+
+  // The controller schedules UMA heap profiles collections and forwarding down
+  // the reporting pipeline.
+  std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
 
   // Whether PerformPreMainMessageLoopStartup() is called on VariationsService.
   // Initialized to true if |MainFunctionParams::ui_task| is null (meaning not

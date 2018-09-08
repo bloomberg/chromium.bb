@@ -59,6 +59,8 @@ SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
       return SampledProfile::THREAD_HUNG;
     case CallStackProfileParams::PERIODIC_COLLECTION:
       return SampledProfile::PERIODIC_COLLECTION;
+    case CallStackProfileParams::PERIODIC_HEAP_COLLECTION:
+      return SampledProfile::PERIODIC_HEAP_COLLECTION;
   }
   NOTREACHED();
   return SampledProfile::UNKNOWN_TRIGGER_EVENT;

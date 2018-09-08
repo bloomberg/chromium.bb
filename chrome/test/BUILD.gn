@@ -2733,6 +2733,7 @@ test("unit_tests") {
     "../common/component_flash_hint_file_linux_unittest.cc",
     "../common/conflicts/module_watcher_win_unittest.cc",
     "../common/crash_keys_unittest.cc",
+    "../common/heap_profiler_controller_unittest.cc",
     "../common/ini_parser_unittest.cc",
     "../common/mac/cfbundle_blocker_unittest.mm",
     "../common/mac/mock_launchd.cc",
