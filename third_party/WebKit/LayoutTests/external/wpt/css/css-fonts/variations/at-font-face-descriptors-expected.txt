@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 82 tests; 66 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 82 tests; 64 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS font-weight(valid): 'normal' keyword: normal
 PASS font-weight(valid): 'bold' keyword: bold
 FAIL font-weight(invalid): 'lighter' keyword iside @font-face: lighter assert_equals: No properties should be set. expected "" but got "lighter"
@@ -14,9 +14,9 @@ PASS font-weight(valid): Maximum allowed value should be parsed successfully: 10
 PASS font-weight(invalid): Values above maximum should be rejected: 1000.001
 PASS font-weight(invalid): Extra content after value: 100 a
 PASS font-weight(valid): Simple calc value: calc(100.5)
-PASS font-weight(invalid): Out-of-range simple calc value: calc(1001)
+FAIL font-weight(valid): Out-of-range simple calc value (should be clamped): calc(1001) assert_not_equals: Valid value should be accepted. got disallowed value ""
 PASS font-weight(valid): Valid calc expression: calc(100.5*3 + 50.5)
-PASS font-weight(invalid): Valid calc expression with out-of-range value: calc(100.5*3 + 800)
+FAIL font-weight(valid): Valid calc expression with out-of-range value (should be clamped): calc(100.5*3 + 800) assert_not_equals: Valid value should be accepted. got disallowed value ""
 PASS font-weight(invalid): Valid calc expression with units: calc(100.5px + 50.5px)
 PASS font-weight(valid): Simple range: 100 900
 FAIL font-weight(valid): Simple range with equal upper and lower bounds: 500 500 assert_equals: Unexpected resulting value. expected "500" but got "500 500"
