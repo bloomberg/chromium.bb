@@ -670,8 +670,7 @@ const char kTaskManagerShowExtraRenderers[] =
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Specifies the enabled TLS 1.3 variant ("disabled", "draft23", "draft28",
-// "final").
+// Specifies the enabled TLS 1.3 variant ("disabled", "draft23", "final").
 const char kTLS13Variant[] = "tls13-variant";
 
 // This mode disables the TLS 1.3 for the |kTLS13Variant| switch.
@@ -679,9 +678,6 @@ const char kTLS13VariantDisabled[] = "disabled";
 
 // This mode enables TLS 1.3 draft-23 for the |kTLS13Variant| switch.
 const char kTLS13VariantDraft23[] = "draft23";
-
-// This mode enables TLS 1.3 draft-28 for the |kTLS13Variant| switch.
-const char kTLS13VariantDraft28[] = "draft28";
 
 // This mode enables TLS 1.3 final for the |kTLS13Variant| switch.
 const char kTLS13VariantFinal[] = "final";
