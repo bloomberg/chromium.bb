@@ -34,6 +34,7 @@ list(APPEND AOM_TEST_DATA_FILE_NAMES
             "park_joy_90p_12_444.y4m"
             "park_joy_90p_8_420_a10-1.y4m"
             "park_joy_90p_8_420.y4m"
+            "park_joy_90p_8_420_monochrome.y4m"
             "park_joy_90p_8_422.y4m"
             "park_joy_90p_8_444.y4m"
             "desktop_credits.y4m"
