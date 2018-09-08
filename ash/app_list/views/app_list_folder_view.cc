@@ -813,7 +813,7 @@ void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
                                      const ui::Event& event_flags) {
-  CloseFolderPage();
+  contents_view_->Back();
 }
 
 void AppListFolderView::GiveBackFocusToSearchBox() {

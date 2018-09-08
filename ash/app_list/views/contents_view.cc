@@ -29,6 +29,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -430,6 +431,13 @@ gfx::Size ContentsView::GetMaximumContentsSize() const {
 }
 
 bool ContentsView::Back() {
+  // If the virtual keyboard is visible, dismiss the keyboard and return early
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled() &&
+      keyboard_controller->IsKeyboardVisible()) {
+    keyboard_controller->HideKeyboardByUser();
+    return true;
+  }
   ash::AppListState state = view_to_state_[GetActivePageIndex()];
   switch (state) {
     case ash::AppListState::kStateStart:
