@@ -178,6 +178,7 @@ void WideFrameView::OnImmersiveFullscreenExited() {
   header_view_->OnImmersiveFullscreenExited();
   if (target_)
     GetTargetHeaderView()->OnImmersiveFullscreenExited();
+  Layout();
 }
 
 void WideFrameView::SetVisibleFraction(double visible_fraction) {
