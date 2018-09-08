@@ -80,10 +80,8 @@ namespace media {
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 
 // Specify different values for testing.
-const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
+constexpr base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
     base::TimeDelta::FromSeconds(5);
-const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideoMSE =
-    base::TimeDelta::FromSeconds(10);
 
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
@@ -392,9 +390,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
                             base::Unretained(this)),
-        nullptr, RequestRoutingTokenCallback(), nullptr,
-        kMaxKeyframeDistanceToDisableBackgroundVideo,
-        kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
+        nullptr, RequestRoutingTokenCallback(), nullptr, false, false,
         std::move(provider),
         base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                        base::Unretained(this)),
@@ -1452,9 +1448,9 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     std::string enabled_features;
     std::string disabled_features;
     if (IsBackgroundOptimizationOn()) {
-      enabled_features += kBackgroundVideoTrackOptimization.name;
+      enabled_features += kBackgroundSrcVideoTrackOptimization.name;
     } else {
-      disabled_features += kBackgroundVideoTrackOptimization.name;
+      disabled_features += kBackgroundSrcVideoTrackOptimization.name;
     }
 
     if (IsBackgroundPauseOn()) {
@@ -1531,11 +1527,7 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   }
 
   int GetMaxKeyframeDistanceSec() const {
-    base::TimeDelta max_keyframe_distance =
-        std::get<kIsMediaSource>(GetParam())
-            ? kMaxKeyframeDistanceToDisableBackgroundVideoMSE
-            : kMaxKeyframeDistanceToDisableBackgroundVideo;
-    return max_keyframe_distance.InSeconds();
+    return kMaxKeyframeDistanceToDisableBackgroundVideo.InSeconds();
   }
 
   bool IsAndroid() {

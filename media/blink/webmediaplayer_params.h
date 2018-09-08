@@ -81,8 +81,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       blink::WebContentDecryptionModule* initial_cdm,
       RequestRoutingTokenCallback request_routing_token_cb,
       base::WeakPtr<MediaObserver> media_observer,
-      base::TimeDelta max_keyframe_distance_to_disable_background_video,
-      base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
       bool enable_instant_source_buffer_gc,
       bool embedded_media_experience_enabled,
       mojom::MediaMetricsProviderPtr metrics_provider,
@@ -135,15 +133,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return media_observer_;
   }
 
-  base::TimeDelta max_keyframe_distance_to_disable_background_video() const {
-    return max_keyframe_distance_to_disable_background_video_;
-  }
-
-  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse()
-      const {
-    return max_keyframe_distance_to_disable_background_video_mse_;
-  }
-
   bool enable_instant_source_buffer_gc() const {
     return enable_instant_source_buffer_gc_;
   }
@@ -182,8 +171,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   blink::WebContentDecryptionModule* initial_cdm_;
   RequestRoutingTokenCallback request_routing_token_cb_;
   base::WeakPtr<MediaObserver> media_observer_;
-  base::TimeDelta max_keyframe_distance_to_disable_background_video_;
-  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse_;
   bool enable_instant_source_buffer_gc_;
   const bool embedded_media_experience_enabled_;
   mojom::MediaMetricsProviderPtr metrics_provider_;

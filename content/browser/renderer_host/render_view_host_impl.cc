@@ -584,9 +584,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   if (delegate_ && delegate_->HasPersistentVideo())
     prefs.media_controls_enabled = false;
 
-  prefs.background_video_track_optimization_enabled =
-      base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
-
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }

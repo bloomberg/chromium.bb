@@ -114,8 +114,11 @@ bool IsResumeBackgroundVideosEnabled() {
   return base::FeatureList::IsEnabled(kResumeBackgroundVideo);
 }
 
-bool IsBackgroundVideoTrackOptimizationEnabled() {
-  return base::FeatureList::IsEnabled(kBackgroundVideoTrackOptimization);
+bool IsBackgroundVideoTrackOptimizationEnabled(
+    WebMediaPlayer::LoadType load_type) {
+  // Background video track optimization is always enabled for MSE videos.
+  return load_type == WebMediaPlayer::LoadType::kLoadTypeMediaSource ||
+         base::FeatureList::IsEnabled(kBackgroundSrcVideoTrackOptimization);
 }
 
 bool IsBackgroundVideoPauseOptimizationEnabled() {
@@ -151,6 +154,9 @@ constexpr base::TimeDelta kPrerollAttemptTimeout =
 
 // Maximum number, per-WMPI, of media logs of playback rate changes.
 constexpr int kMaxNumPlaybackRateLogs = 10;
+
+constexpr base::TimeDelta kMaxKeyframeDistance =
+    base::TimeDelta::FromSeconds(5);
 
 blink::WebLocalizedString::Name GetSwitchToLocalMessage(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
@@ -248,10 +254,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 #endif
       renderer_factory_selector_(std::move(renderer_factory_selector)),
       observer_(params->media_observer()),
-      max_keyframe_distance_to_disable_background_video_(
-          params->max_keyframe_distance_to_disable_background_video()),
-      max_keyframe_distance_to_disable_background_video_mse_(
-          params->max_keyframe_distance_to_disable_background_video_mse()),
       enable_instant_source_buffer_gc_(
           params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
@@ -2995,8 +2997,11 @@ bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
 }
 
 bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
-  // This optimization is behind the flag on all platforms.
-  if (!IsBackgroundVideoTrackOptimizationEnabled())
+  // This optimization is behind the flag on all platforms, only for non-mse
+  // video. MSE video track switching on hide has gone through a field test.
+  // TODO(tmathmeyer): Passing load_type_ won't be needed after src= field
+  // testing is finished. see: http://crbug.com/709302
+  if (!IsBackgroundVideoTrackOptimizationEnabled(load_type_))
     return false;
 
   // Disable video track only for players with audio that match the criteria for
@@ -3028,16 +3033,13 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 
   // Videos shorter than the maximum allowed keyframe distance can be optimized.
   base::TimeDelta duration = GetPipelineMediaDuration();
-  base::TimeDelta max_keyframe_distance =
-      (load_type_ == kLoadTypeMediaSource)
-          ? max_keyframe_distance_to_disable_background_video_mse_
-          : max_keyframe_distance_to_disable_background_video_;
-  if (duration < max_keyframe_distance)
+
+  if (duration < kMaxKeyframeDistance)
     return true;
 
   // Otherwise, only optimize videos with shorter average keyframe distance.
   PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_keyframe_distance_average < max_keyframe_distance;
+  return stats.video_keyframe_distance_average < kMaxKeyframeDistance;
 }
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {

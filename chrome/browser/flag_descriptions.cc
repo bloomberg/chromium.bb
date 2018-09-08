@@ -148,12 +148,6 @@ const char kAv1DecoderName[] = "Enable AV1 video decoding.";
 const char kAv1DecoderDescription[] =
     "Allow decoding of files with the AV1 video codec.";
 
-const char kBackgroundVideoTrackOptimizationName[] =
-    "Optimize background video playback.";
-const char kBackgroundVideoTrackOptimizationDescription[] =
-    "Disable video tracks when the video is played in the background to "
-    "optimize performance.";
-
 const char kBleAdvertisingInExtensionsName[] = "BLE Advertising in Chrome Apps";
 const char kBleAdvertisingInExtensionsDescription[] =
     "Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere "

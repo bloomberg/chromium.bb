@@ -281,9 +281,6 @@ struct CONTENT_EXPORT WebPreferences {
   // Whether download UI should be hidden on this page.
   bool hide_download_ui;
 
-  // If enabled, disabled video track when the video is in the background.
-  bool background_video_track_optimization_enabled;
-
   // Whether it is a presentation receiver.
   bool presentation_receiver;
 
