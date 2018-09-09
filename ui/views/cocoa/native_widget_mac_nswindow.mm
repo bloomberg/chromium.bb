@@ -9,11 +9,11 @@
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
-#import "ui/views/cocoa/bridged_native_widget_host.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/window_touch_bar_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
-#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
+#include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/widget/widget_delegate.h"
 
 @interface NSWindow (Private)
 + (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle;
@@ -27,15 +27,13 @@
 
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
+- (views::Widget*)viewsWidget;
 - (BOOL)hasViewsMenuActive;
 - (id)rootAccessibilityObject;
 
 // Private API on NSWindow, determines whether the title is drawn on the title
 // bar. The title is still visible in menus, Expose, etc.
 - (BOOL)_isTitleHidden;
-
-// Retrieve the corresponding views::BridgedNativeWidgetImpl in this process.
-- (views::BridgedNativeWidgetImpl*)bridgeImpl;
 @end
 
 // Use this category to implement mouseDown: on multiple frame view classes
@@ -85,9 +83,7 @@
   base::scoped_nsobject<CommandDispatcher> commandDispatcher_;
   base::scoped_nsprotocol<id<UserInterfaceItemCommandHandler>> commandHandler_;
   id<WindowTouchBarDelegate> touchBarDelegate_;  // Weak.
-  uint64_t bridgedNativeWidgetId_;
 }
-@synthesize bridgedNativeWidgetId = bridgedNativeWidgetId_;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -136,18 +132,19 @@
   return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
 }
 
-- (views::BridgedNativeWidgetImpl*)bridgeImpl {
-  return views::BridgedNativeWidgetImpl::GetFromId(bridgedNativeWidgetId_);
+- (views::Widget*)viewsWidget {
+  return [[self viewsNSWindowDelegate] nativeWidgetMac]->GetWidget();
 }
 
 - (BOOL)hasViewsMenuActive {
-  bool hasMenuController = false;
-  [self bridgeImpl]->host()->GetHasMenuController(&hasMenuController);
-  return hasMenuController;
+  views::MenuController* menuController =
+      views::MenuController::GetActiveInstance();
+  return menuController && menuController->owner() == [self viewsWidget];
 }
 
 - (id)rootAccessibilityObject {
-  return [self bridgeImpl]->host_helper()->GetNativeViewAccessible();
+  views::Widget* widget = [self viewsWidget];
+  return widget ? widget->GetRootView()->GetNativeViewAccessible() : nil;
 }
 
 // NSWindow overrides.
@@ -164,10 +161,10 @@
 }
 
 - (BOOL)_isTitleHidden {
-  bool shouldShowWindowTitle = YES;
-  if ([self bridgeImpl])
-    [self bridgeImpl]->host()->GetShouldShowWindowTitle(&shouldShowWindowTitle);
-  return !shouldShowWindowTitle;
+  if (![self delegate])
+    return NO;
+
+  return ![self viewsWidget]->widget_delegate()->ShouldShowWindowTitle();
 }
 
 // The base implementation returns YES if the window's frame view is a custom
@@ -182,36 +179,23 @@
 // Note these can be called via -[NSWindow close] while the widget is being torn
 // down, so check for a delegate.
 - (BOOL)canBecomeKeyWindow {
-  bool canBecomeKey = NO;
-  if ([self bridgeImpl])
-    [self bridgeImpl]->host()->GetCanWindowBecomeKey(&canBecomeKey);
-  return canBecomeKey;
+  return [self delegate] && [self viewsWidget]->CanActivate();
 }
 
 - (BOOL)canBecomeMainWindow {
-  views::BridgedNativeWidgetImpl* bridgeImpl = [self bridgeImpl];
-  if (!bridgeImpl)
+  if (![self delegate])
     return NO;
 
   // Dialogs and bubbles shouldn't take large shadows away from their parent.
-  if (bridgeImpl->parent())
-    return NO;
-
-  bool canBecomeKey = NO;
-  if (bridgeImpl)
-    bridgeImpl->host()->GetCanWindowBecomeKey(&canBecomeKey);
-  return canBecomeKey;
+  views::Widget* widget = [self viewsWidget];
+  return widget->CanActivate() &&
+         !views::NativeWidgetMac::GetBridgeImplForNativeWindow(self)->parent();
 }
 
 // Lets the traffic light buttons on the parent window keep their active state.
 - (BOOL)hasKeyAppearance {
-  views::BridgedNativeWidgetImpl* bridgeImpl = [self bridgeImpl];
-  if (bridgeImpl) {
-    bool isAlwaysRenderWindowAsKey = NO;
-    bridgeImpl->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
-    if (isAlwaysRenderWindowAsKey)
-      return YES;
-  }
+  if ([self delegate] && [self viewsWidget]->IsAlwaysRenderAsActive())
+    return YES;
   return [super hasKeyAppearance];
 }
 
@@ -328,12 +312,12 @@
   // Additionally, if we don't do this, VoiceOver reads out the partial a11y
   // properties on the NSWindow and repeats them when focusing an item in the
   // RootView's a11y group. See http://crbug.com/748221.
+  views::Widget* widget = [self viewsWidget];
   id superFocus = [super accessibilityFocusedUIElement];
-  views::BridgedNativeWidgetImpl* bridgeImpl = [self bridgeImpl];
-  if (!bridgeImpl || superFocus != self)
+  if (!widget || superFocus != self)
     return superFocus;
 
-  return bridgeImpl->host_helper()->GetNativeViewAccessible();
+  return widget->GetRootView()->GetNativeViewAccessible();
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
