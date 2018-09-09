@@ -10,6 +10,7 @@
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/cocoa/bridged_native_widget_host.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ViewsNSWindowDelegate
@@ -20,6 +21,10 @@
     parent_ = parent;
   }
   return self;
+}
+
+- (views::NativeWidgetMac*)nativeWidgetMac {
+  return parent_->native_widget_mac();
 }
 
 - (NSCursor*)cursor {
@@ -119,9 +124,9 @@
 }
 
 - (BOOL)windowShouldClose:(id)sender {
-  bool canWindowClose = true;
-  parent_->host()->GetCanWindowClose(&canWindowClose);
-  return canWindowClose;
+  views::NonClientView* nonClientView =
+      [self nativeWidgetMac]->GetWidget()->non_client_view();
+  return !nonClientView || nonClientView->CanClose();
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -195,15 +200,12 @@
 - (NSRect)window:(NSWindow*)window
     willPositionSheet:(NSWindow*)sheet
             usingRect:(NSRect)defaultSheetLocation {
-  // TODO(ccameron): This should go through the BridgedNativeWidgetHost
-  // interface.
-  CGFloat sheetPositionY = parent_->host_helper()->SheetPositionY();
-
   // As per NSWindowDelegate documentation, the origin indicates the top left
   // point of the host frame in window coordinates. The width changes the
   // animation from vertical to trapezoid if it is smaller than the width of the
   // dialog. The height is ignored but should be set to zero.
-  return NSMakeRect(0, sheetPositionY, NSWidth(defaultSheetLocation), 0);
+  return NSMakeRect(0, [self nativeWidgetMac]->SheetPositionY(),
+                    NSWidth(defaultSheetLocation), 0);
 }
 
 @end

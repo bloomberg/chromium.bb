@@ -11,6 +11,7 @@
 #include "ui/views/views_export.h"
 
 namespace views {
+class NativeWidgetMac;
 class BridgedNativeWidgetImpl;
 }
 
@@ -22,6 +23,10 @@ VIEWS_EXPORT
   views::BridgedNativeWidgetImpl* parent_;  // Weak. Owns this.
   base::scoped_nsobject<NSCursor> cursor_;
 }
+
+// The NativeWidgetMac that created the window this is attached to. Returns
+// NULL if not created by NativeWidgetMac.
+@property(nonatomic, readonly) views::NativeWidgetMac* nativeWidgetMac;
 
 // If set, the cursor set in -[NSResponder updateCursor:] when the window is
 // reached along the responder chain.
