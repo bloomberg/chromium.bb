@@ -362,6 +362,20 @@ body.capturing #camera-mode {
   visibility: hidden;
 }
 
+#timer-tick-msg {
+  color: white;
+  font-size: 72px;
+  font-family: 'Roboto', sans-serif;
+  visibility: hidden;
+}
+
+#timer-tick-msg.animate {
+  transform: scale(1.8, 1.8);
+  opacity: 0.2;
+  transition: transform 500ms ease-out, opacity 500ms ease-out;
+  visibility: visible;
+}
+
 #toggle-device {
   background-image: url(../images/camera_button_toggle_device.svg);
   width: 48px;
@@ -402,10 +416,6 @@ body.capturing #camera-mode {
 
 #toggle-timer:not(:checked) {
   background-image: url(../images/camera_button_timer_off.svg);
-}
-
-#toggle-timer.animate {
-  opacity: 0.25;
 }
 
 #toggle-grid {

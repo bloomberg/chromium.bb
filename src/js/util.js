@@ -209,61 +209,28 @@ camera.util.setupElementsAriaLabel = function() {
 };
 
 /**
- * Sets a class which invokes an animation and calls the callback when the
- * animation is done. The class is released once the animation is finished.
- * If the class name is already set, then calls onCompletion immediately.
- *
- * @param {HTMLElement} classElement Element to be applied the class on.
- * @param {HTMLElement} animationElement Element to be animated.
- * @param {string} className Class name to be added.
- * @param {number} timeout Animation timeout in milliseconds.
- * @param {function()=} opt_onCompletion Completion callback.
+ * Animates the element once by applying 'animate' class.
+ * @param {HTMLElement} element Element to be animated.
  */
-camera.util.setAnimationClass = function(
-    classElement, animationElement, className, timeout, opt_onCompletion) {
-  if (classElement.classList.contains(className)) {
-    if (opt_onCompletion)
-      opt_onCompletion();
-    return;
-  }
-
-  classElement.classList.add(className);
-  var onAnimationCompleted = function() {
-    classElement.classList.remove(className);
-    if (opt_onCompletion)
-      opt_onCompletion();
-  };
-
-  camera.util.waitForAnimationCompletion(
-      animationElement, timeout, onAnimationCompleted);
+camera.util.animateOnce = function(element) {
+  element.classList.remove('animate');
+  element.offsetWidth;  // Force calculation to re-apply animation.
+  element.classList.add('animate');
+  camera.util.waitForTransitionCompletion(element, 0, () => {
+    element.classList.remove('animate');
+  });
 };
 
 /**
- * Waits for animation completion and calls the callback.
- *
- * @param {HTMLElement} animationElement Element to be animated.
- * @param {number} timeout Timeout for completion. 0 for no timeout.
- * @param {function()} onCompletion Completion callback.
+ * Cancels animating the element by removing 'animate' class.
+ * @param {HTMLElement} element Element for canceling animation.
  */
-camera.util.waitForAnimationCompletion = function(
-    animationElement, timeout, onCompletion) {
-  var completed = false;
-  var onAnimationCompleted = function(opt_event) {
-    if (completed || (opt_event && opt_event.target != animationElement))
-      return;
-    completed = true;
-    animationElement.removeEventListener(
-        'webkitAnimationEnd', onAnimationCompleted);
-    onCompletion();
-  };
-  if (timeout)
-      setTimeout(onAnimationCompleted, timeout);
-  animationElement.addEventListener('webkitAnimationEnd', onAnimationCompleted);
+camera.util.animateCancel = function(element) {
+  element.classList.remove('animate');
 };
 
 /**
  * Waits for transition completion and calls the callback.
- *
  * @param {HTMLElement} transitionElement Element to be transitioned.
  * @param {number} timeout Timeout for completion. 0 for no timeout.
  * @param {function()} onCompletion Completion callback.
@@ -280,7 +247,7 @@ camera.util.waitForTransitionCompletion = function(
     onCompletion();
   };
   if (timeout)
-      setTimeout(onTransitionCompleted, timeout);
+    setTimeout(onTransitionCompleted, timeout);
   transitionElement.addEventListener(
       'webkitTransitionEnd', onTransitionCompleted);
 };
