@@ -268,9 +268,17 @@ D. Local Modifications
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20039
 
-12. Cherry-pick the upstream CL for quarter support in RelativeDate format
+12. Cherry-pick an upstream CL for quarter support in RelativeDate format
 
   - patches/reldate_quarter.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20022
   - fix: https://github.com/unicode-org/icu/pull/77
+
+13. Cherry-pick an upstream CL for BCP47 language tag validation
+
+  - patches/langtag_bcp47.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20098
+  - fix: https://github.com/unicode-org/icu/pull/102
+
