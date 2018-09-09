@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.download.home.empty;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
-import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,8 +54,7 @@ class EmptyView {
 
     /** Sets the icon resource to use for the empty view. */
     public void setEmptyIcon(@DrawableRes int iconId) {
-        Drawable drawable = VectorDrawableCompat.create(
-                mView.getResources(), iconId, mView.getContext().getTheme());
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, drawable, null, null);
+        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(
+                null, AppCompatResources.getDrawable(mView.getContext(), iconId), null, null);
     }
 }
