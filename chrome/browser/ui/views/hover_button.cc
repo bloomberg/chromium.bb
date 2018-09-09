@@ -290,7 +290,7 @@ void HoverButton::StateChanged(ButtonState old_state) {
 }
 
 bool HoverButton::ShouldUseFloodFillInkDrop() const {
-  return views::MenuButton::ShouldUseFloodFillInkDrop() || title_ != nullptr;
+  return true;
 }
 
 SkColor HoverButton::GetInkDropBaseColor() const {
