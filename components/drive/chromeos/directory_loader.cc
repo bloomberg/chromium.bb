@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
+#include "components/drive/chromeos/drive_file_util.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/chromeos/root_folder_id_loader.h"
@@ -39,6 +40,7 @@ constexpr int kMinimumChangestampGap = 50;
 
 FileError CheckLocalState(ResourceMetadata* resource_metadata,
                           const base::FilePath& root_entry_path,
+                          const std::string& team_drive_id,
                           const std::string& root_folder_id,
                           const std::string& local_id,
                           ResourceEntry* entry,
@@ -64,7 +66,7 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
     return error;
 
   // Get the local start page token..
-  return resource_metadata->GetStartPageToken(start_page_token);
+  return GetStartPageToken(resource_metadata, team_drive_id, start_page_token);
 }
 
 FileError UpdateStartPageToken(ResourceMetadata* resource_metadata,
@@ -94,7 +96,8 @@ FileError UpdateStartPageToken(ResourceMetadata* resource_metadata,
 }  // namespace
 
 struct DirectoryLoader::ReadDirectoryCallbackState {
-  ReadDirectoryCallbackState(ReadDirectoryEntriesCallback entries_callback)
+  explicit ReadDirectoryCallbackState(
+      ReadDirectoryEntriesCallback entries_callback)
       : entries_callback(std::move(entries_callback)) {}
 
   ReadDirectoryEntriesCallback entries_callback;
@@ -213,7 +216,8 @@ DirectoryLoader::DirectoryLoader(
     RootFolderIdLoader* root_folder_id_loader,
     StartPageTokenLoader* start_page_token_loader,
     LoaderController* loader_controller,
-    const base::FilePath& root_entry_path)
+    const base::FilePath& root_entry_path,
+    const std::string& team_drive_id)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
@@ -222,6 +226,7 @@ DirectoryLoader::DirectoryLoader(
       start_page_token_loader_(start_page_token_loader),
       loader_controller_(loader_controller),
       root_entry_path_(root_entry_path),
+      team_drive_id_(team_drive_id),
       weak_ptr_factory_(this) {}
 
 DirectoryLoader::~DirectoryLoader() = default;
@@ -369,7 +374,8 @@ void DirectoryLoader::ReadDirectoryAfterGetStartPageToken(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&CheckLocalState, resource_metadata_, root_entry_path_,
-                     root_folder_id, local_id, entry, local_start_page_token),
+                     team_drive_id_, root_folder_id, local_id, entry,
+                     local_start_page_token),
       base::BindOnce(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
                      weak_ptr_factory_.GetWeakPtr(),
                      start_page_token->start_page_token(), local_id,

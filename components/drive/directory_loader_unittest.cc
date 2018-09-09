@@ -19,6 +19,7 @@
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/root_folder_id_loader.h"
 #include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
@@ -69,6 +70,19 @@ void AccumulateReadDirectoryResult(
   out_entries->insert(out_entries->end(), entries->begin(), entries->end());
 }
 
+class FakeRootFolderIdLoader : public RootFolderIdLoader {
+ public:
+  explicit FakeRootFolderIdLoader(const std::string& root_folder_id)
+      : root_folder_id_(root_folder_id) {}
+
+  void GetRootFolderId(const RootFolderIdCallback& callback) override {
+    callback.Run(FILE_ERROR_OK, root_folder_id_);
+  }
+
+ private:
+  const std::string root_folder_id_;
+};
+
 }  // namespace
 
 class DirectoryLoaderTest : public testing::Test {
@@ -111,7 +125,8 @@ class DirectoryLoaderTest : public testing::Test {
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
         start_page_token_loader_.get(), loader_controller_.get(),
-        util::GetDriveMyDriveRootPath());
+        util::GetDriveMyDriveRootPath(),
+        drive::util::kTeamDriveIdDefaultCorpus);
   }
 
   // Adds a new file to the root directory of the service.
@@ -129,6 +144,35 @@ class DirectoryLoaderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(google_apis::HTTP_CREATED, error);
     return entry;
+  }
+
+  // Creates a ResourceEntry for a directory with explicitly set resource_id.
+  ResourceEntry CreateDirectoryEntryWithResourceId(
+      const std::string& title,
+      const std::string& resource_id,
+      const std::string& parent_local_id) {
+    ResourceEntry entry;
+    entry.set_title(title);
+    entry.set_resource_id(resource_id);
+    entry.set_parent_local_id(parent_local_id);
+    entry.mutable_file_info()->set_is_directory(true);
+    entry.mutable_directory_specific_info()->set_start_page_token("0");
+    return entry;
+  }
+
+  void AddTeamDriveRootEntry(const std::string& team_drive_id,
+                             const std::string& team_drive_name) {
+    std::string local_id;
+    ASSERT_EQ(
+        FILE_ERROR_OK,
+        metadata_->GetIdByPath(util::GetDriveTeamDrivesRootPath(), &local_id));
+
+    std::string root_local_id = local_id;
+    ASSERT_EQ(
+        FILE_ERROR_OK,
+        metadata_->AddEntry(CreateDirectoryEntryWithResourceId(
+                                team_drive_name, team_drive_id, root_local_id),
+                            &local_id));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -258,5 +302,46 @@ TEST_F(DirectoryLoaderTest, Lock) {
       util::GetDriveMyDriveRootPath()));
 }
 
+TEST_F(DirectoryLoaderTest, TeamDrive) {
+  constexpr char kTeamDriveId[] = "team_drive_id";
+  constexpr char kTeamDriveName[] = "Team Drive";
+  constexpr char kTeamDriveStartPageToken[] = "12345";
+  const base::FilePath team_drive_path =
+      util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName);
+
+  auto fake_root_folder_id_loader =
+      std::make_unique<FakeRootFolderIdLoader>(kTeamDriveId);
+  auto start_page_token_loader =
+      std::make_unique<StartPageTokenLoader>(kTeamDriveId, scheduler_.get());
+  auto local_directory_loader = std::make_unique<DirectoryLoader>(
+      logger_.get(), base::ThreadTaskRunnerHandle::Get().get(), metadata_.get(),
+      scheduler_.get(), fake_root_folder_id_loader.get(),
+      start_page_token_loader.get(), loader_controller_.get(), team_drive_path,
+      kTeamDriveId);
+
+  AddTeamDriveRootEntry(kTeamDriveId, kTeamDriveName);
+
+  drive_service_->AddTeamDrive(kTeamDriveId, kTeamDriveName,
+                               kTeamDriveStartPageToken);
+
+  FileError error = FILE_ERROR_FAILED;
+  ResourceEntryVector entries;
+
+  local_directory_loader->ReadDirectory(
+      team_drive_path, base::Bind(&AccumulateReadDirectoryResult, &entries),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(1, drive_service_->start_page_token_load_count());
+  EXPECT_EQ(1, drive_service_->directory_load_count());
+
+  // If we checked the folder, we should see that it's start page token has been
+  // updated.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(team_drive_path, &entry));
+  EXPECT_EQ(kTeamDriveStartPageToken,
+            entry.directory_specific_info().start_page_token());
+}
 }  // namespace internal
 }  // namespace drive

@@ -40,7 +40,8 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
   directory_loader_ = std::make_unique<DirectoryLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
       root_folder_id_loader_.get(), start_page_token_loader_.get(),
-      loader_controller_, util::GetDriveMyDriveRootPath());
+      loader_controller_, util::GetDriveMyDriveRootPath(),
+      util::kTeamDriveIdDefaultCorpus);
 
   team_drive_list_loader_ = std::make_unique<TeamDriveListLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata, scheduler_,
