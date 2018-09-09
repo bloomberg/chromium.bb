@@ -56,6 +56,10 @@ using QuicQueue = QuicQueueImpl<T>;
 template <typename T>
 using QuicDeque = QuicDequeImpl<T>;
 
+// A vector optimized for small sizes. Provides the same APIs as a std::vector.
+template <typename T, size_t N, typename A = std::allocator<T>>
+using QuicInlinedVector = QuicInlinedVectorImpl<T, N, A>;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_CONTAINERS_H_

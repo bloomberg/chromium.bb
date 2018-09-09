@@ -27,6 +27,7 @@
 #include "net/third_party/quic/core/frames/quic_stream_id_blocked_frame.h"
 #include "net/third_party/quic/core/frames/quic_window_update_frame.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -102,7 +103,9 @@ static_assert(offsetof(QuicStreamFrame, type) == offsetof(QuicFrame, type),
 static_assert(offsetof(QuicStreamFrame, type) == 0,
               "Illegal stream frame layout");
 
-typedef std::vector<QuicFrame> QuicFrames;
+// A inline size of 1 is chosen to optimize the typical use case of
+// 1-stream-frame in QuicTransmissionInfo.retransmittable_frames.
+typedef QuicInlinedVector<QuicFrame, 1> QuicFrames;
 
 // Deletes all the sub-frames contained in |frames|.
 QUIC_EXPORT_PRIVATE void DeleteFrames(QuicFrames* frames);
