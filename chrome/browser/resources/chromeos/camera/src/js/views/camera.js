@@ -192,7 +192,9 @@ camera.views.Camera.prototype.prepare = function() {
   // Monitor the states to avoid retrying camera connection when locked/minimized.
   chrome.idle.onStateChanged.addListener(newState => {
     this.locked_ = (newState == 'locked');
-    this.stop_();
+    if (this.locked_) {
+      this.stop_();
+    }
   });
   chrome.app.window.current().onMinimized.addListener(() => {
     this.stop_();
@@ -341,6 +343,7 @@ camera.views.Camera.prototype.beginTake_ = function() {
 
 /**
  * Ends the current take (or clears scheduled further takes if any.)
+ * @return {!Promise<>} Promise for the operation.
  * @private
  */
 camera.views.Camera.prototype.endTake_ = function() {
@@ -356,7 +359,7 @@ camera.views.Camera.prototype.endTake_ = function() {
     this.mediaRecorder_.stop();
   }
 
-  Promise.resolve(this.take_ || null).then(blob => {
+  return Promise.resolve(this.take_ || null).then(blob => {
     if (blob && !blob.handled) {
       // Play a sound and save the result after a successful take.
       blob.handled = true;
@@ -513,17 +516,16 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
  * @private
  */
 camera.views.Camera.prototype.onstop_ = function() {
-  if (this.taking) {
-    this.endTake_();
-  }
-  this.mediaRecorder_ = null;
-  this.imageCapture_ = null;
-  this.photoCapabilities_ = null;
-  this.stream_ = null;
-  document.body.classList.remove('capturing');
-  this.updateControls_();
-  // Try reconnecting the camera to capture new streams.
-  this.start_();
+  // End the current take if any and then try reconnecting the camera.
+  Promise.resolve((this.taking && this.endTake_()) || null).finally(() => {
+    this.mediaRecorder_ = null;
+    this.imageCapture_ = null;
+    this.photoCapabilities_ = null;
+    this.stream_ = null;
+    document.body.classList.remove('capturing');
+    this.updateControls_();
+    this.start_();
+  });
 };
 
 /**
