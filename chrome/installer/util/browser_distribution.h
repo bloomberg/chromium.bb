@@ -23,7 +23,6 @@ class BrowserDistribution {
   // Getter and adaptors for the underlying |app_reg_data_|.
   const AppRegistrationData& GetAppRegistrationData() const;
   base::string16 GetStateKey() const;
-  base::string16 GetStateMediumKey() const;
 
  protected:
   explicit BrowserDistribution(

@@ -409,15 +409,16 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
   if (!AreBinariesInstalled(installer_state))
     return;
 
-  BrowserDistribution* chrome_dist = installer_state.product().distribution();
-
   // Delete any stale value in Chrome's ClientStateMedium key. A new value, if
   // found, will be written to the ClientState key below.
   if (installer_state.system_install()) {
     install_list->AddDeleteRegValueWorkItem(
-        installer_state.root_key(), chrome_dist->GetStateMediumKey(),
-        KEY_WOW64_64KEY, google_update::kRegUsageStatsField);
+        installer_state.root_key(),
+        install_static::GetClientStateMediumKeyPath(), KEY_WOW64_64KEY,
+        google_update::kRegUsageStatsField);
   }
+
+  BrowserDistribution* chrome_dist = installer_state.product().distribution();
 
   google_update::Tristate consent =
       GoogleUpdateSettings::GetCollectStatsConsentForApp(
@@ -768,8 +769,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   // installs.
   if (install_static::kUseGoogleUpdateIntegration &&
       installer_state.system_install()) {
-    const base::string16 path =
-        install_static::InstallDetails::Get().GetClientStateMediumKeyPath();
+    const base::string16 path = install_static::GetClientStateMediumKeyPath();
     post_install_task_list
         ->AddCreateRegKeyWorkItem(HKEY_LOCAL_MACHINE, path, KEY_WOW64_32KEY)
         ->set_best_effort(true);

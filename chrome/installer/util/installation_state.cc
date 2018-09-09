@@ -125,8 +125,8 @@ bool ProductState::Initialize(bool system_install) {
   // Read from the ClientStateMedium key.  Values here override those in
   // ClientState.
   if (system_install &&
-      key.Open(root_key, distribution->GetStateMediumKey().c_str(), kAccess) ==
-          ERROR_SUCCESS) {
+      key.Open(root_key, install_static::GetClientStateMediumKeyPath().c_str(),
+               kAccess) == ERROR_SUCCESS) {
     DWORD dword_value = 0;
 
     if (key.ReadValueDW(google_update::kRegUsageStatsField,
