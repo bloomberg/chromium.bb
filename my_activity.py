@@ -436,7 +436,10 @@ class MyActivity(object):
     auth_config = auth.extract_auth_config_from_options(self.options)
     authenticator = auth.get_authenticator_for_host(
         'bugs.chromium.org', auth_config)
-    return authenticator.authorize(httplib2.Http())
+    # Manually use a long timeout (10m); for some users who have a
+    # long history on the issue tracker, whatever the default timeout
+    # is is reached.
+    return authenticator.authorize(httplib2.Http(timeout=600))
 
   def filter_modified_monorail_issue(self, issue):
     """Precisely checks if an issue has been modified in the time range.
