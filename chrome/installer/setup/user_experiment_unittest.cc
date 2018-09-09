@@ -31,10 +31,7 @@ class UserExperimentTest : public ::testing::TestWithParam<bool> {
 
     // Create the ClientState key.
     base::win::RegKey key;
-    ASSERT_EQ(key.Create(root_,
-                         install_static::InstallDetails::Get()
-                             .GetClientStateKeyPath()
-                             .c_str(),
+    ASSERT_EQ(key.Create(root_, install_static::GetClientStateKeyPath().c_str(),
                          KEY_WOW64_64KEY | KEY_SET_VALUE),
               ERROR_SUCCESS);
   }

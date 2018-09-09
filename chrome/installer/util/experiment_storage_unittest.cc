@@ -6,7 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/test/test_reg_util_win.h"
-#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/experiment.h"
@@ -35,11 +35,10 @@ class ExperimentStorageTest : public ::testing::TestWithParam<bool> {
     // Create an empty participation key since participation registry is assumed
     // to be present for chrome build.
     base::win::RegKey key;
-    ASSERT_EQ(ERROR_SUCCESS, key.Create(root(),
-                                        install_static::InstallDetails::Get()
-                                            .GetClientStateKeyPath()
-                                            .c_str(),
-                                        KEY_WOW64_32KEY | KEY_QUERY_VALUE));
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        key.Create(root(), install_static::GetClientStateKeyPath().c_str(),
+                   KEY_WOW64_32KEY | KEY_QUERY_VALUE));
   }
 
   bool system_level_install_;
@@ -146,7 +145,7 @@ TEST_P(ExperimentStorageTest, TestLoadStoreExperiment) {
   base::win::RegKey key;
   base::string16 client_state_path(
       system_level_install_
-          ? BrowserDistribution::GetDistribution()->GetStateMediumKey()
+          ? install_static::GetClientStateMediumKeyPath()
           : BrowserDistribution::GetDistribution()->GetStateKey());
   client_state_path.append(L"\\Retention");
   EXPECT_EQ(ERROR_SUCCESS, key.Open(root(), client_state_path.c_str(),

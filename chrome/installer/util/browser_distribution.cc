@@ -69,7 +69,3 @@ const AppRegistrationData& BrowserDistribution::GetAppRegistrationData() const {
 base::string16 BrowserDistribution::GetStateKey() const {
   return app_reg_data_->GetStateKey();
 }
-
-base::string16 BrowserDistribution::GetStateMediumKey() const {
-  return app_reg_data_->GetStateMediumKey();
-}

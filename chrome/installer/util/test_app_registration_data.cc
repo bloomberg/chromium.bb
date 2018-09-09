@@ -13,7 +13,3 @@ TestAppRegistrationData::~TestAppRegistrationData() {
 base::string16 TestAppRegistrationData::GetStateKey() const {
   return L"Software\\Chromium\\ClientState\\test_app_guid";
 }
-
-base::string16 TestAppRegistrationData::GetStateMediumKey() const {
-  return L"Software\\Chromium\\ClientStateMedium\\test_app_guid";
-}

@@ -82,8 +82,10 @@ class GoogleUpdateSettingsTest : public testing::Test {
     HKEY root = install == SYSTEM_INSTALL ?
         HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
-    base::string16 state_key = install == SYSTEM_INSTALL ?
-        chrome->GetStateMediumKey() : chrome->GetStateKey();
+    base::string16 state_key =
+        install == SYSTEM_INSTALL
+            ? install_static::GetClientStateMediumKeyPath()
+            : chrome->GetStateKey();
 
     EXPECT_EQ(ERROR_SUCCESS,
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
@@ -424,8 +426,9 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
   EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, chrome,
                                                    true));
   EXPECT_EQ(ERROR_SUCCESS,
-      key.Open(HKEY_LOCAL_MACHINE, chrome->GetStateMediumKey().c_str(),
-               KEY_QUERY_VALUE));
+            key.Open(HKEY_LOCAL_MACHINE,
+                     install_static::GetClientStateMediumKeyPath().c_str(),
+                     KEY_QUERY_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
       key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
   EXPECT_EQ(1U, value);
@@ -466,8 +469,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
   install_static::ScopedInstallDetails details(true /* system_level */);
 
   // No profile count keys present yet.
-  const base::string16& state_key = BrowserDistribution::GetDistribution()->
-      GetAppRegistrationData().GetStateMediumKey();
+  base::string16 state_key = install_static::GetClientStateMediumKeyPath();
   base::string16 num_profiles_path(state_key);
   num_profiles_path.append(L"\\");
   num_profiles_path.append(google_update::kRegProfilesActive);
@@ -1070,8 +1072,9 @@ void CollectStatsConsent::SetUp() {
   const HKEY root_key = stats_state.root_key();
   ASSERT_NO_FATAL_FAILURE(
       ApplySetting(stats_state.state_value(), root_key, dist_->GetStateKey()));
-  ASSERT_NO_FATAL_FAILURE(ApplySetting(stats_state.state_medium_value(),
-                                       root_key, dist_->GetStateMediumKey()));
+  ASSERT_NO_FATAL_FAILURE(
+      ApplySetting(stats_state.state_medium_value(), root_key,
+                   install_static::GetClientStateMediumKeyPath()));
 }
 
 // Write the correct value to represent |setting| in the registry.
@@ -1116,9 +1119,9 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
                   GetParam().system_level(),
                   !GetParam().is_consent_granted()));
 
-  const base::string16 reg_key = GetParam().system_level()
-                                     ? dist_->GetStateMediumKey()
-                                     : dist_->GetStateKey();
+  const base::string16 reg_key =
+      GetParam().system_level() ? install_static::GetClientStateMediumKeyPath()
+                                : dist_->GetStateKey();
   DWORD value = 0;
   EXPECT_EQ(
       ERROR_SUCCESS,

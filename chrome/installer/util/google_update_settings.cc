@@ -23,7 +23,6 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
@@ -33,7 +32,6 @@
 #include "chrome/installer/util/installation_state.h"
 
 using base::win::RegKey;
-using install_static::InstallDetails;
 using installer::InstallationState;
 
 const wchar_t GoogleUpdateSettings::kPoliciesKey[] =
@@ -70,7 +68,7 @@ bool ReadGoogleUpdateStrKeyFromRoot(HKEY root,
                                     const wchar_t* const name,
                                     base::string16* value) {
   RegKey key;
-  return key.Open(root, InstallDetails::Get().GetClientStateKeyPath().c_str(),
+  return key.Open(root, install_static::GetClientStateKeyPath().c_str(),
                   KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.ReadValue(name, value) == ERROR_SUCCESS;
 }
@@ -112,7 +110,7 @@ bool WriteGoogleUpdateAggregateNumKeyInternal(const wchar_t* const name,
     return false;
   }
 
-  base::string16 reg_path(InstallDetails::Get().GetClientStateMediumKeyPath());
+  base::string16 reg_path(install_static::GetClientStateMediumKeyPath());
   reg_path.append(L"\\").append(name);
   RegKey key;
   if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
@@ -130,7 +128,7 @@ bool WriteUserGoogleUpdateStrKey(const wchar_t* const name,
                                  const base::string16& value) {
   RegKey key;
   return key.Create(HKEY_CURRENT_USER,
-                    InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                    install_static::GetClientStateKeyPath().c_str(),
                     KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.WriteValue(name, value.c_str()) == ERROR_SUCCESS;
 }
@@ -155,7 +153,7 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
   RegKey key;
   auto result = key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
                                                            : HKEY_CURRENT_USER,
-                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         install_static::GetClientStateKeyPath().c_str(),
                          KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
     return true;  // The key doesn't exist; consider the value cleared.
@@ -176,7 +174,7 @@ bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
 bool RemoveUserGoogleUpdateStrKey(const wchar_t* const name) {
   RegKey key;
   auto result = key.Open(HKEY_CURRENT_USER,
-                         InstallDetails::Get().GetClientStateKeyPath().c_str(),
+                         install_static::GetClientStateKeyPath().c_str(),
                          KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result == ERROR_PATH_NOT_FOUND || result == ERROR_FILE_NOT_FOUND)
     return true;  // The key doesn't exist; consider the value cleared.
@@ -258,12 +256,12 @@ google_update::Tristate GoogleUpdateSettings::GetCollectStatsConsentForApp(
   const REGSAM kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
 
   // For system-level installs, try ClientStateMedium first.
-  have_value =
-      system_install &&
-      key.Open(HKEY_LOCAL_MACHINE, reg_data.GetStateMediumKey().c_str(),
-               kAccess) == ERROR_SUCCESS &&
-      key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
-          ERROR_SUCCESS;
+  have_value = system_install &&
+               key.Open(HKEY_LOCAL_MACHINE,
+                        install_static::GetClientStateMediumKeyPath().c_str(),
+                        kAccess) == ERROR_SUCCESS &&
+               key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
+                   ERROR_SUCCESS;
 
   // Otherwise, try ClientState.
   if (!have_value) {
@@ -290,8 +288,9 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
 
   // Write to ClientStateMedium for system-level; ClientState otherwise.
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  base::string16 reg_path =
-      system_install ? dist->GetStateMediumKey() : dist->GetStateKey();
+  base::string16 reg_path = system_install
+                                ? install_static::GetClientStateMediumKeyPath()
+                                : dist->GetStateKey();
   RegKey key;
   LONG result = key.Create(
       root_key, reg_path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
@@ -379,7 +378,8 @@ bool GoogleUpdateSettings::SetEULAConsent(
   RegKey key;
 
   // Write the consent value into the product's ClientStateMedium key.
-  return key.Create(HKEY_LOCAL_MACHINE, dist->GetStateMediumKey().c_str(),
+  return key.Create(HKEY_LOCAL_MACHINE,
+                    install_static::GetClientStateMediumKeyPath().c_str(),
                     kAccess) == ERROR_SUCCESS &&
          key.WriteValue(google_update::kRegEULAAceptedField, eula_accepted) ==
              ERROR_SUCCESS;
@@ -862,8 +862,9 @@ bool GoogleUpdateSettings::SetExperimentLabels(
   // client state/app guid key.
   bool success = false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 client_state_path(system_install ? dist->GetStateMediumKey()
-                                                  : dist->GetStateKey());
+  base::string16 client_state_path(
+      system_install ? install_static::GetClientStateMediumKeyPath()
+                     : dist->GetStateKey());
   RegKey client_state(reg_root, client_state_path.c_str(),
                       KEY_SET_VALUE | KEY_WOW64_32KEY);
   // It is possible that the registry keys do not yet exist or have not yet
@@ -888,7 +889,8 @@ bool GoogleUpdateSettings::ReadExperimentLabels(
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 client_state_path(
-      system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
+      system_install ? install_static::GetClientStateMediumKeyPath()
+                     : dist->GetStateKey());
 
   RegKey client_state;
   LONG result = client_state.Open(

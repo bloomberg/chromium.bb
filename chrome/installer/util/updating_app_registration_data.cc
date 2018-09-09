@@ -16,9 +16,3 @@ base::string16 UpdatingAppRegistrationData::GetStateKey() const {
       .append(1, L'\\')
       .append(app_guid_);
 }
-
-base::string16 UpdatingAppRegistrationData::GetStateMediumKey() const {
-  return base::string16(google_update::kRegPathClientStateMedium)
-      .append(1, L'\\')
-      .append(app_guid_);
-}
