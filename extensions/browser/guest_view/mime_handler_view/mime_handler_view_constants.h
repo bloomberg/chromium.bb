@@ -10,6 +10,7 @@
 namespace mime_handler_view {
 
 extern const char kViewId[];
+extern const char kPluginFrameTreeNodeId[];
 
 }  // namespace mime_handler_view
 

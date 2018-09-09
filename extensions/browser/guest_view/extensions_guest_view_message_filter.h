@@ -74,29 +74,34 @@ class ExtensionsGuestViewMessageFilter
       const GURL& original_url,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader)
-      override;
+      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader,
+      int32_t plugin_frame_routing_id) override;
   void CreateMimeHandlerViewGuest(
       int32_t render_frame_id,
       const std::string& view_id,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      mime_handler::BeforeUnloadControlPtr before_unload_control) override;
+      mime_handler::BeforeUnloadControlPtr before_unload_control,
+      int32_t plugin_frame_routing_id) override;
 
   void CreateMimeHandlerViewGuestOnUIThread(
       int32_t render_frame_id,
       const std::string& view_id,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      mime_handler::BeforeUnloadControlPtrInfo before_unload_control);
+      mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
+      int32_t plugin_frame_routing_id,
+      bool is_full_page_plugin);
 
   // Runs on UI thread.
   void MimeHandlerViewGuestCreatedCallback(
       int element_instance_id,
       int embedder_render_process_id,
       int embedder_render_frame_id,
+      int32_t plugin_frame_routing_id,
       const gfx::Size& element_size,
       mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
+      bool is_full_page_plugin,
       content::WebContents* web_contents);
 
   static const uint32_t kFilteredMessageClasses[];

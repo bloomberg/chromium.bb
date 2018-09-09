@@ -24,7 +24,7 @@ SkBitmap* ContentRendererClient::GetSadWebViewBitmap() {
   return nullptr;
 }
 
-bool ContentRendererClient::IsPluginHandledByMimeHandlerView(
+bool ContentRendererClient::MaybeCreateMimeHandlerView(
     RenderFrame* embedder_frame,
     const blink::WebElement& owner_element,
     const GURL& original_url,

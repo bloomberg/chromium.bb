@@ -36,6 +36,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_frame_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -327,16 +328,16 @@ ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
 }
 
 // static
-bool ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
+bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
     const std::string& mime_type,
     const content::WebPluginInfo& plugin_info,
     int32_t element_instance_id) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
-  // TODO(ekaramad): Implement the renderer side logic here
-  // (https://crbug.com/659750).
-  return false;
+  return extensions::MimeHandlerViewFrameContainer::Create(
+      plugin_element, resource_url, mime_type, plugin_info,
+      element_instance_id);
 }
 
 // static
