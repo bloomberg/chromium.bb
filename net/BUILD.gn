@@ -5104,6 +5104,7 @@ test("net_unittests") {
     "third_party/quic/core/quic_version_manager_test.cc",
     "third_party/quic/core/quic_versions_test.cc",
     "third_party/quic/core/quic_write_blocked_list_test.cc",
+    "third_party/quic/platform/api/quic_containers_test.cc",
     "third_party/quic/platform/api/quic_endian_test.cc",
     "third_party/quic/platform/api/quic_hostname_utils_test.cc",
     "third_party/quic/platform/api/quic_mem_slice_span_test.cc",
