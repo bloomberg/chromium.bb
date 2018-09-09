@@ -315,12 +315,15 @@ camera.Camera.prototype.onWindowResize_ = function() {
  * @private
  */
 camera.Camera.prototype.onKeyPressed_ = function(event) {
-  if (this.context_.hasError)
+  if (camera.util.getShortcutIdentifier(event) == 'BrowserBack') {
+    chrome.app.window.current().minimize();
     return;
+  }
 
   var currentView = this.viewsStack_.current;
-  if (currentView)
+  if (currentView && !this.context_.hasError) {
     currentView.onKeyPressed(event);
+  }
 };
 
 /**
