@@ -13,7 +13,6 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.util import wpr_modes
 from telemetry.web_perf import timeline_based_measurement
 from telemetry import benchmark
-from telemetry import decorators
 from telemetry import story as story_module
 
 # The import error below is mysterious: it produces no detailed error message,
@@ -161,9 +160,9 @@ class _MobileStartupStorySet(story_module.StorySet):
 # sending Android intents. The benchmark is disabled on non-Android to avoid
 # failure at benchmark_smoke_unittest.BenchmarkSmokeTest.
 @benchmark.Info(emails=['pasko@chromium.org',
-                         'chrome-android-perf-status@chromium.org'])
-@decorators.Disabled('linux', 'mac', 'win')
+                        'chrome-android-perf-status@chromium.org'])
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   # Set |pageset_repeat| to 1 to control the amount of iterations from the
   # stories. This would avoid setting per-story pageset_repeat at bisect time.
