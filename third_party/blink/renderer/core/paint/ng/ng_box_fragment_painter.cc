@@ -433,9 +433,36 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
 void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
+  // TODO(mstensho): Break dependency on LayoutObject functionality.
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
+
   LayoutRect paint_rect;
-  if (!IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+  base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+  if (IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           box_fragment_, paint_info)) {
+    // For the case where we are painting the background into the scrolling
+    // contents layer of a composited scroller we need to include the entire
+    // overflow rect.
+    const LayoutBox& layout_box = ToLayoutBox(layout_object);
+    paint_rect = layout_box.PhysicalLayoutOverflowRect();
+
+    const auto* fragment = paint_info.FragmentToPaint(layout_box);
+    if (!fragment)
+      return;
+
+    scoped_scroll_property.emplace(
+        paint_info.context.GetPaintController(), fragment->ContentsProperties(),
+        layout_box, DisplayItem::PaintPhaseToScrollType(paint_info.phase));
+    // See comments for ScrollTranslation in object_paint_properties.h for the
+    // reason of moving by ScrollOrigin(). TODO(wangxianzhu): Encapsulate such
+    // logic at various places into one class.
+    paint_rect.MoveBy(layout_box.ScrollOrigin());
+
+    // The background painting code assumes that the borders are part of the
+    // paintRect so we expand the paintRect by the border size when painting the
+    // background into the scrolling contents layer.
+    paint_rect.Expand(layout_box.BorderBoxOutsets());
+  } else {
     // TODO(eae): We need better converters for ng geometry types. Long term we
     // probably want to change the paint code to take NGPhysical* but that is a
     // much bigger change.
@@ -479,8 +506,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   // TODO(layout-dev): Support theme painting.
   bool theme_painted = false;
 
-  // TODO(mstensho): Break dependency on LayoutObject functionality.
-  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
   bool should_paint_background =
       !theme_painted &&
       (!paint_info.SkipRootBackground() ||
