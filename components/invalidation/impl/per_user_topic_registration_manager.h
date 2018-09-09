@@ -51,12 +51,12 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateRegisteredIds(const InvalidationObjectIdSet& ids,
-                                   const std::string& token);
+  virtual void UpdateRegisteredTopics(const TopicSet& ids,
+                                      const std::string& token);
 
   virtual void Init();
 
-  InvalidationObjectIdSet GetRegisteredIds() const;
+  TopicSet GetRegisteredIds() const;
 
  private:
   struct RegistrationEntry;
@@ -64,10 +64,10 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void DoRegistrationUpdate();
 
   // Tries to register |id|. No retry in case of failure.
-  void StartRegistrationRequest(const invalidation::InvalidationObjectId& id);
+  void StartRegistrationRequest(const Topic& id);
 
   void RegistrationFinishedForId(
-      invalidation::InvalidationObjectId id,
+      Topic id,
       const Status& code,
       const std::string& private_topic_name,
       PerUserTopicRegistrationRequest::RequestType type);
@@ -79,16 +79,10 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void OnAccessTokenRequestSucceeded(std::string access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
-  std::map<invalidation::InvalidationObjectId,
-           std::unique_ptr<RegistrationEntry>,
-           InvalidationObjectIdLessThan>
-      registration_statuses_;
+  std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
 
   // For registered ids it maps the id value to the topic value.
-  std::map<invalidation::InvalidationObjectId,
-           std::string,
-           InvalidationObjectIdLessThan>
-      registered_ids_;
+  std::map<Topic, std::string> topic_to_private_topic_;
 
   // Token derrived from GCM IID.
   std::string token_;

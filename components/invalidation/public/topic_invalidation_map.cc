@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/json/json_string_value_serializer.h"
+#include "components/invalidation/public/object_id_invalidation_map.h"
 
 namespace syncer {
 
@@ -113,5 +114,16 @@ std::string TopicInvalidationMap::ToString() const {
 
 TopicInvalidationMap::TopicInvalidationMap(const TopicToListMap& map)
     : map_(map) {}
+
+TopicInvalidationMap ConvertObjectIdInvalidationMapToTopicInvalidationMap(
+    ObjectIdInvalidationMap object_ids_map) {
+  TopicInvalidationMap topics_map;
+  std::vector<Invalidation> invalidations;
+  object_ids_map.GetAllInvalidations(&invalidations);
+  for (const auto& invalidation : invalidations) {
+    topics_map.Insert(invalidation);
+  }
+  return topics_map;
+}
 
 }  // namespace syncer

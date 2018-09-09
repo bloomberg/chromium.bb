@@ -53,6 +53,12 @@ bool InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
   return true;
 }
 
+bool InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
+                                               const TopicSet& ids) {
+  NOTREACHED();
+  return false;
+}
+
 void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   registrar_.UnregisterHandler(handler);

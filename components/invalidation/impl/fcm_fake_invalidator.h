@@ -1,24 +1,24 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATOR_H_
-#define COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATOR_H_
+#ifndef COMPONENTS_INVALIDATION_IMPL_FCM_FAKE_INVALIDATOR_H_
+#define COMPONENTS_INVALIDATION_IMPL_FCM_FAKE_INVALIDATOR_H_
 
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
 #include "components/invalidation/impl/invalidator.h"
+#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/invalidation_util.h"
 
 namespace syncer {
 
-class FakeInvalidator : public Invalidator {
+class FCMFakeInvalidator : public Invalidator {
  public:
-  FakeInvalidator();
-  ~FakeInvalidator() override;
+  FCMFakeInvalidator();
+  ~FCMFakeInvalidator() override;
 
   bool IsHandlerRegistered(InvalidationHandler* handler) const;
   ObjectIdSet GetRegisteredIds(InvalidationHandler* handler) const;
@@ -43,7 +43,7 @@ class FakeInvalidator : public Invalidator {
                                  callback) const override;
 
  private:
-  DeprecatedInvalidatorRegistrar registrar_;
+  InvalidatorRegistrar registrar_;
   std::string state_;
   std::string email_;
   std::string token_;
@@ -51,4 +51,4 @@ class FakeInvalidator : public Invalidator {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATOR_H_
+#endif  // COMPONENTS_INVALIDATION_IMPL_FCM_FAKE_INVALIDATOR_H_

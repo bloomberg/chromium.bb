@@ -36,10 +36,16 @@ void FCMInvalidator::RegisterHandler(InvalidationHandler* handler) {
 
 bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                          const ObjectIdSet& ids) {
-  if (!registrar_.UpdateRegisteredIds(handler, ids))
+  return UpdateRegisteredIds(handler, ConvertIdsToTopics(ids));
+}
+
+bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+                                         const TopicSet& topics) {
+  if (!registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
 
-  invalidation_listener_.UpdateRegisteredIds(registrar_.GetAllRegisteredIds());
+  invalidation_listener_.UpdateRegisteredTopics(
+      registrar_.GetAllRegisteredIds());
   return true;
 }
 
@@ -57,7 +63,7 @@ InvalidatorState FCMInvalidator::GetInvalidatorState() const {
 }
 
 void FCMInvalidator::OnInvalidate(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const TopicInvalidationMap& invalidation_map) {
   registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 

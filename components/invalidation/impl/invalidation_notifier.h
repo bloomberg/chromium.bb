@@ -52,6 +52,8 @@ class INVALIDATION_EXPORT InvalidationNotifier
   void RegisterHandler(InvalidationHandler* handler) override;
   bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override;
+  bool UpdateRegisteredIds(InvalidationHandler* handler,
+                           const TopicSet& ids) override;
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;
   void UpdateCredentials(const std::string& email,

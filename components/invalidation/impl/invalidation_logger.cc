@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "components/invalidation/impl/invalidation_logger_observer.h"
 #include "components/invalidation/public/invalidation_handler.h"
+#include "components/invalidation/public/invalidation_util.h"
 
 namespace invalidation {
 class InvalidationLoggerObserver;
@@ -51,6 +52,15 @@ void InvalidationLogger::EmitState() {
     observer.OnStateChange(last_invalidator_state_,
                            last_invalidator_state_timestamp_);
   }
+}
+
+void InvalidationLogger::OnUpdateTopics(
+    std::map<std::string, syncer::TopicSet> updated_topics) {
+  for (const auto& updated_topic : updated_topics) {
+    latest_ids_[updated_topic.first] =
+        syncer::ConvertTopicsToIds(updated_topic.second);
+  }
+  EmitUpdatedIds();
 }
 
 void InvalidationLogger::OnUpdateIds(
