@@ -90,7 +90,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the embedder renders the contents of the |plugin_element|
   // in a cross-process frame using MimeHandlerView.
-  virtual bool IsPluginHandledByMimeHandlerView(
+  virtual bool MaybeCreateMimeHandlerView(
       RenderFrame* embedder_frame,
       const blink::WebElement& plugin_element,
       const GURL& original_url,

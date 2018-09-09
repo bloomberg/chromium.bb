@@ -16,6 +16,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -104,7 +105,7 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
 bool MimeHandlerViewGuest::CanUseCrossProcessFrames() {
-  return false;
+  return content::MimeHandlerViewMode::UsesCrossProcessFrame();
 }
 
 content::RenderWidgetHost* MimeHandlerViewGuest::GetOwnerRenderWidgetHost() {
@@ -115,8 +116,7 @@ content::RenderWidgetHost* MimeHandlerViewGuest::GetOwnerRenderWidgetHost() {
 
 content::SiteInstance* MimeHandlerViewGuest::GetOwnerSiteInstance() {
   DCHECK_NE(embedder_frame_routing_id_, MSG_ROUTING_NONE);
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      embedder_frame_process_id_, embedder_frame_routing_id_);
+  content::RenderFrameHost* rfh = GetEmbedderFrame();
   return rfh ? rfh->GetSiteInstance() : nullptr;
 }
 
@@ -131,8 +131,7 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
   embedder_frame_process_id_ = process_id;
   embedder_frame_routing_id_ = routing_id;
 
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(process_id, routing_id);
+  content::RenderFrameHost* rfh = GetEmbedderFrame();
 
   if (rfh && rfh->GetView()) {
     embedder_widget_routing_id_ =
@@ -145,6 +144,15 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
 void MimeHandlerViewGuest::SetBeforeUnloadController(
     mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control) {
   pending_before_unload_control_ = std::move(pending_before_unload_control);
+}
+
+void MimeHandlerViewGuest::AttachToEmbedder(bool is_full_page_plugin) {
+  DCHECK(CanUseCrossProcessFrames());
+  int instance_id = -1;
+  attach_params()->GetInteger(guest_view::kParameterInstanceId, &instance_id);
+  host()->BeginAttach(
+      content::WebContents::FromRenderFrameHost(GetEmbedderFrame()),
+      instance_id, is_full_page_plugin);
 }
 
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
@@ -242,6 +250,28 @@ bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
 
 bool MimeHandlerViewGuest::ShouldDestroyOnDetach() const {
   return true;
+}
+
+void MimeHandlerViewGuest::WillAttachToEmbedder() {
+  int plugin_frame_tree_node_id = content::RenderFrameHost::kNoFrameTreeNodeId;
+  attach_params()->GetInteger(mime_handler_view::kPluginFrameTreeNodeId,
+                              &plugin_frame_tree_node_id);
+  // This method is called soon after GuestViewBase::WillAttach which means
+  // |attach_in_progress_| is true and therefore, |embedder_web_contents()|
+  // returns nullptr. Therefore, to complete attaching the WebContentses the
+  // embedder WebContents is retrieved from the embedder frame.
+  auto* embedder_contents =
+      content::WebContents::FromRenderFrameHost(GetEmbedderFrame());
+  auto* plugin_frame_host = embedder_contents->FindFrameByFrameTreeNodeId(
+      plugin_frame_tree_node_id, embedder_frame_process_id_);
+
+  if (!plugin_frame_host) {
+    // TODO(ekaramad): This happens when the plugin element contains a remote
+    // frame. Introduce this edge case to contents/ layer.
+    return;
+  }
+  web_contents()->AttachToOuterWebContentsFrame(embedder_web_contents(),
+                                                plugin_frame_host);
 }
 
 WebContents* MimeHandlerViewGuest::OpenURLFromTab(
@@ -416,6 +446,11 @@ void MimeHandlerViewGuest::FuseBeforeUnloadControl(
 
   mojo::FuseInterface(std::move(request),
                       std::move(pending_before_unload_control_));
+}
+
+content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() const {
+  return content::RenderFrameHost::FromID(embedder_frame_process_id_,
+                                          embedder_frame_routing_id_);
 }
 
 }  // namespace extensions
