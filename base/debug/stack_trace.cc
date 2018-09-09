@@ -47,11 +47,15 @@ constexpr size_t kStackFrameAdjustment = 0;
 #endif
 
 uintptr_t GetNextStackFrame(uintptr_t fp) {
-  return reinterpret_cast<const uintptr_t*>(fp)[0] - kStackFrameAdjustment;
+  const uintptr_t* fp_addr = reinterpret_cast<const uintptr_t*>(fp);
+  MSAN_UNPOISON(fp_addr, sizeof(uintptr_t));
+  return fp_addr[0] - kStackFrameAdjustment;
 }
 
 uintptr_t GetStackFramePC(uintptr_t fp) {
-  return reinterpret_cast<const uintptr_t*>(fp)[1];
+  const uintptr_t* fp_addr = reinterpret_cast<const uintptr_t*>(fp);
+  MSAN_UNPOISON(&fp_addr[1], sizeof(uintptr_t));
+  return fp_addr[1];
 }
 
 bool IsStackFrameValid(uintptr_t fp, uintptr_t prev_fp, uintptr_t stack_end) {
