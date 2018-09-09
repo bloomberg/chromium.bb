@@ -133,13 +133,6 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
    */
   this.mirroringToggles_ = {};
 
-  /**
-   * Timeout to countdown a tick of the timer.
-   * @type {?number}
-   * @private
-   */
-  this.tickTimeout_ = null;
-
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -265,6 +258,7 @@ camera.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(
  * @private
  */
 camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
+  // TODO(yuli): Use camera.util.animateOnce to apply animation.
   this.toggleDevice_.classList.remove('animate');
   this.videoDeviceIds_.then(deviceIds => {
     var onTransitionEnd = (event) => {
@@ -383,6 +377,8 @@ camera.views.camera.Options.prototype.timerTicks = function() {
     return null;
   }
   var cancel;
+  var tickTimeout = null;
+  var tickMsg = document.querySelector('#timer-tick-msg');
   var ticks = new Promise((resolve, reject) => {
     // TODO(yuli): Set tick-counter by timer settings.
     var tickCounter = 3;
@@ -390,27 +386,24 @@ camera.views.camera.Options.prototype.timerTicks = function() {
       if (tickCounter == 0) {
         resolve();
       } else {
-        tickCounter--;
-        this.tickTimeout_ = setTimeout(onTimerTick, 1000);
         this.playSound(camera.views.camera.Options.Sound.TICK);
-        // Blink the toggle timer button.
-        this.toggleTimer_.classList.add('animate');
-        setTimeout(() => {
-          this.toggleTimer_.classList.remove('animate');
-        }, 500);
+        tickMsg.textContent = tickCounter + '';
+        camera.util.animateOnce(tickMsg);
+        tickTimeout = setTimeout(onTimerTick, 1000);
+        tickCounter--;
       }
     };
     // First tick immediately in the next message loop cycle.
-    this.tickTimeout_ = setTimeout(onTimerTick, 0);
+    tickTimeout = setTimeout(onTimerTick, 0);
     cancel = reject;
   });
 
   ticks.cancel = () => {
-    this.toggleTimer_.classList.remove('animate');
-    if (this.tickTimeout_) {
-      clearTimeout(this.tickTimeout_);
-      this.tickTimeout_ = null;
+    if (tickTimeout) {
+      clearTimeout(tickTimeout);
+      tickTimeout = null;
     }
+    camera.util.animateCancel(tickMsg);
     cancel();
   };
   return ticks;
