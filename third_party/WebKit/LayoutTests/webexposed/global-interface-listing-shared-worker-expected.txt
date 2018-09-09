@@ -1156,6 +1156,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter searchParams
 [Worker]     getter username
 [Worker]     method constructor
+[Worker]     method toJSON
 [Worker]     method toString
 [Worker]     setter hash
 [Worker]     setter host

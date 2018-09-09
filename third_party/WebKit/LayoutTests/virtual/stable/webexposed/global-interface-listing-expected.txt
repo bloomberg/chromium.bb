@@ -6637,6 +6637,7 @@ interface URL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
@@ -8493,6 +8494,7 @@ interface webkitURL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
