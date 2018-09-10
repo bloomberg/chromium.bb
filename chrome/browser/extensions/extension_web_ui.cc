@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
+#include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
@@ -250,7 +251,7 @@ void UpdateOverridesLists(Profile* profile,
   }
 }
 
-// Run favicon callbck with image result. If no favicon was available then
+// Run favicon callback with image result. If no favicon was available then
 // |image| will be empty.
 void RunFaviconCallbackAsync(
     const favicon_base::FaviconResultsCallback& callback,
@@ -539,15 +540,32 @@ void ExtensionWebUI::GetFaviconForURL(
                                                ExtensionIconSet::MATCH_BIGGER);
 
     ui::ScaleFactor resource_scale_factor = ui::GetSupportedScaleFactor(scale);
-    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-        icon_resource,
-        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-        gfx::Size(pixel_size, pixel_size),
-        resource_scale_factor));
+    if (!icon_resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          icon_resource,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(pixel_size, pixel_size), resource_scale_factor));
+    }
   }
 
-  // LoadImagesAsync actually can run callback synchronously. We want to force
-  // async.
-  extensions::ImageLoader::Get(profile)->LoadImagesAsync(
-      extension, info_list, base::Bind(&RunFaviconCallbackAsync, callback));
+  if (info_list.empty()) {
+    // Use the placeholder image when no default icon is available.
+    gfx::Image placeholder_image =
+        extensions::ExtensionIconPlaceholder::CreateImage(
+            extension_misc::EXTENSION_ICON_SMALL, extension->name());
+    gfx::ImageSkia placeholder_skia(placeholder_image.AsImageSkia());
+    // Ensure the ImageSkia has representation at all scales we would use for
+    // favicons.
+    std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
+    for (const auto& scale_factor : scale_factors) {
+      placeholder_skia.GetRepresentation(
+          ui::GetScaleForScaleFactor(scale_factor));
+    }
+    RunFaviconCallbackAsync(callback, gfx::Image(placeholder_skia));
+  } else {
+    // LoadImagesAsync actually can run callback synchronously. We want to force
+    // async.
+    extensions::ImageLoader::Get(profile)->LoadImagesAsync(
+        extension, info_list, base::Bind(&RunFaviconCallbackAsync, callback));
+  }
 }
