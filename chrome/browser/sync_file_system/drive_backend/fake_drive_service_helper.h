@@ -78,6 +78,9 @@ class FakeDriveServiceHelper {
   google_apis::DriveApiErrorCode GetAboutResource(
       std::unique_ptr<google_apis::AboutResource>* about_resource);
 
+  void AddTeamDrive(const std::string& team_drive_id,
+                    const std::string& team_drive_name);
+
   base::FilePath base_dir_path() { return base_dir_.GetPath(); }
 
  private:

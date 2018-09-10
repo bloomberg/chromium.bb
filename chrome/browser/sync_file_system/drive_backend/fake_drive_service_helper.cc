@@ -350,5 +350,10 @@ base::FilePath FakeDriveServiceHelper::WriteToTempFile(
   return temp_file;
 }
 
+void FakeDriveServiceHelper::AddTeamDrive(const std::string& team_drive_id,
+                                          const std::string& team_drive_name) {
+  fake_drive_service_->AddTeamDrive(team_drive_id, team_drive_name);
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

@@ -242,5 +242,20 @@ TEST_F(ListChangesTaskTest, UnderTrackedFolder) {
   EXPECT_EQ(num_dirty_trackers + 4, CountDirtyTracker());
 }
 
+TEST_F(ListChangesTaskTest, TeamDriveChangeInChangeList) {
+  size_t num_dirty_trackers = CountDirtyTracker();
+
+  SetUpChangesInFolder(app_root_folder_id());
+
+  // Adding a team drive will return a TeamDriveResource entry when the
+  // change list is retrieved.
+  fake_drive_service_helper()->AddTeamDrive("team_drive_id", "team_drive_name");
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunTask(std::unique_ptr<SyncTask>(
+                                new ListChangesTask(GetSyncEngineContext()))));
+
+  EXPECT_EQ(num_dirty_trackers + 4, CountDirtyTracker());
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
