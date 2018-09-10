@@ -296,9 +296,12 @@ bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
 
 bool MediaControlOverlayPlayButtonElement::IsMouseEventOnInternalButton(
     const MouseEvent& mouse_event) const {
-  // If no position data available, default to yes.
-  if (!mouse_event.HasPosition())
+  // If we don't have the necessary pieces to calculate whether the event is
+  // within the bounds of the button, default to yes.
+  if (!mouse_event.HasPosition() || !isConnected() ||
+      !GetDocument().GetLayoutView()) {
     return true;
+  }
 
   // Find the zoom-adjusted internal button bounding box.
   DOMRect* box = internal_button_->getBoundingClientRect();
