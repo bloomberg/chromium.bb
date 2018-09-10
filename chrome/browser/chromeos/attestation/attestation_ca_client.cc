@@ -11,8 +11,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -75,38 +76,36 @@ void AttestationCAClient::SendCertificateRequest(
            request, on_response);
 }
 
-void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
-  FetcherCallbackMap::iterator iter = pending_requests_.find(source);
-  if (iter == pending_requests_.end()) {
-    LOG(WARNING) << "Callback from unknown source.";
-    return;
+void AttestationCAClient::OnURLLoadComplete(
+    std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
+    const DataCallback& callback,
+    std::unique_ptr<std::string> response_body) {
+  // Move the loader out of the active loaders list.
+  std::unique_ptr<network::SimpleURLLoader> url_loader = std::move(*it);
+  url_loaders_.erase(it);
+
+  DCHECK(url_loader);
+
+  int response_code = -1;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
+    response_code = url_loader->ResponseInfo()->headers->response_code();
   }
 
-  DataCallback callback = iter->second;
-  pending_requests_.erase(iter);
-  std::unique_ptr<const net::URLFetcher> scoped_source(source);
-
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
-    LOG(ERROR) << "Attestation CA request failed, status: "
-               << source->GetStatus().status() << ", error: "
-               << source->GetStatus().error();
+  if (response_code < 200 || response_code > 299) {
+    LOG(ERROR) << "Attestation CA sent an error response: " << response_code;
     callback.Run(false, "");
     return;
   }
 
-  if (source->GetResponseCode() != net::HTTP_OK) {
-    LOG(ERROR) << "Attestation CA sent an error response: "
-               << source->GetResponseCode();
+  if (!response_body) {
+    LOG(ERROR) << "Attestation CA request failed, error: "
+               << url_loader->NetError();
     callback.Run(false, "");
     return;
   }
-
-  std::string response;
-  bool result = source->GetResponseAsString(&response);
-  DCHECK(result) << "Invalid fetcher setting.";
 
   // Run the callback last because it may delete |this|.
-  callback.Run(true, response);
+  callback.Run(true, *response_body);
 }
 
 void AttestationCAClient::FetchURL(const std::string& url,
@@ -140,18 +139,25 @@ void AttestationCAClient::FetchURL(const std::string& url,
             "cannot be controlled by a policy or through settings."
           policy_exception_justification: "Not implemented."
         })");
-  // The first argument allows the use of TestURLFetcherFactory in tests.
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(0, GURL(url), net::URLFetcher::POST, this,
-                              traffic_annotation)
-          .release();
-  fetcher->SetRequestContext(g_browser_process->system_request_context());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DISABLE_CACHE);
-  fetcher->SetUploadData(kMimeContentType, request);
-  pending_requests_[fetcher] = on_response;
-  fetcher->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(url);
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
+
+  auto url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  url_loader->AttachStringForUpload(request, kMimeContentType);
+
+  auto* raw_url_loader = url_loader.get();
+  url_loaders_.push_back(std::move(url_loader));
+
+  raw_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      g_browser_process->shared_url_loader_factory().get(),
+      base::BindOnce(&AttestationCAClient::OnURLLoadComplete,
+                     base::Unretained(this), std::move(--url_loaders_.end()),
+                     on_response));
 }
 
 PrivacyCAType AttestationCAClient::GetType() {
