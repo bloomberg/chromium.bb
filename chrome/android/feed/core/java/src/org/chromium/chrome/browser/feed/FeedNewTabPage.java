@@ -59,6 +59,7 @@ public class FeedNewTabPage extends NewTabPage {
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
+    private ContextMenuManager mContextMenuManager;
 
     // Used when Feed is enabled.
     private @Nullable Stream mStream;
@@ -69,12 +70,18 @@ public class FeedNewTabPage extends NewTabPage {
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
 
-    private class BasicSnackbarApi implements SnackbarApi {
+    private static class BasicSnackbarApi implements SnackbarApi {
+        private final SnackbarManager mManager;
+
+        public BasicSnackbarApi(SnackbarManager manager) {
+            mManager = manager;
+        }
+
         @Override
         public void show(String message) {
-            mNewTabPageManager.getSnackbarManager().showSnackbar(
-                    Snackbar.make(message, new SnackbarManager.SnackbarController() {},
-                            Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM));
+            mManager.showSnackbar(Snackbar.make(message,
+                    new SnackbarManager.SnackbarController() {}, Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_FEED_NTP_STREAM));
         }
     }
 
@@ -193,15 +200,15 @@ public class FeedNewTabPage extends NewTabPage {
         // is reparented.
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
-        ContextMenuManager contextMenuManager =
+        mContextMenuManager =
                 new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(), mMediator,
                         closeContextMenuCallback, false);
-        mTab.getWindowAndroid().addContextMenuCloseListener(contextMenuManager);
+        mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(), mMediator,
-                contextMenuManager, mUiConfig);
+                mContextMenuManager, mUiConfig);
     }
 
     @Override
@@ -220,6 +227,7 @@ public class FeedNewTabPage extends NewTabPage {
         mMediator.destroy();
         if (mImageLoader != null) mImageLoader.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
+        mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
     }
 
     @Override
@@ -276,7 +284,8 @@ public class FeedNewTabPage extends NewTabPage {
                         .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(activity.getResources(), mUiConfig),
-                                new BasicSnackbarApi(), new FeedBasicLogging(), offlineIndicator)
+                                new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
+                                new FeedBasicLogging(), offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
