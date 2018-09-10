@@ -68,51 +68,6 @@ if (enable_java_templates) {
       ]
     }
   }
-  android_deps_alias("android_arch_lifecycle_common_java") {
-    android_deps_target_name = "android_arch_lifecycle_common_java"
-  }
-  android_deps_alias("android_arch_lifecycle_runtime_java") {
-    android_deps_target_name = "android_arch_lifecycle_runtime_java"
-  }
-  android_deps_alias("android_support_multidex_java") {
-    android_deps_target_name = "com_android_support_multidex_java"
-  }
-  android_deps_alias("android_support_annotations_java") {
-    android_deps_target_name = "com_android_support_support_annotations_java"
-  }
-  android_deps_alias("android_support_cardview_java") {
-    android_deps_target_name = "com_android_support_cardview_v7_java"
-  }
-  android_deps_alias("android_support_compat_java") {
-    android_deps_target_name = "com_android_support_support_compat_java"
-  }
-  android_deps_alias("android_support_core_ui_java") {
-    android_deps_target_name = "com_android_support_support_core_ui_java"
-  }
-  android_deps_alias("android_support_core_utils_java") {
-    android_deps_target_name = "com_android_support_support_core_utils_java"
-  }
-  android_deps_alias("android_support_design_java") {
-    android_deps_target_name = "com_android_support_design_java"
-  }
-  android_deps_alias("android_support_v4_java") {
-    android_deps_target_name = "android_support_v4_java"
-  }
-  android_deps_alias("android_support_v7_appcompat_java") {
-    android_deps_target_name = "android_support_v7_appcompat_java"
-  }
-  android_deps_alias("android_support_v7_gridlayout_java") {
-    android_deps_target_name = "com_android_support_gridlayout_v7_java"
-  }
-  android_deps_alias("android_support_v7_mediarouter_java") {
-    android_deps_target_name = "com_android_support_mediarouter_v7_java"
-  }
-  android_deps_alias("android_support_v7_recyclerview_java") {
-    android_deps_target_name = "com_android_support_recyclerview_v7_java"
-  }
-  android_deps_alias("android_support_v13_java") {
-    android_deps_target_name = "com_android_support_support_v13_java"
-  }
   android_deps_alias("google_play_services_basement_java") {
     android_deps_target_name =
         "com_google_android_gms_play_services_basement_java"

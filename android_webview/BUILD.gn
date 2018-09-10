@@ -917,7 +917,7 @@ android_library("android_webview_java") {
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//net/android:net_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
@@ -1006,7 +1006,7 @@ android_library("android_webview_platform_services_java") {
 
   deps = [
     "//base:base_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
   ]
 
   # The appropriate .class file will be loaded via a dependency to a library

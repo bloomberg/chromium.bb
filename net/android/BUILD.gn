@@ -27,7 +27,7 @@ android_library("net_java") {
   deps = [
     ":net_thread_stats_uid_java",
     "//base:base_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   srcjar_deps = [
@@ -51,7 +51,7 @@ android_aidl("embedded_test_server_aidl") {
 android_library("embedded_test_server_aidl_java") {
   testonly = true
   deps = [
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
   ]
   srcjar_deps = [ ":embedded_test_server_aidl" ]
 }
@@ -71,9 +71,9 @@ android_library("net_java_test_support") {
     ":net_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/junit",
   ]
   srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]

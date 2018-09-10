@@ -720,7 +720,7 @@ java_library("shadows_multidex_java") {
     ":robolectric_utils_java",
     ":shadows_core_java",
     "//build/android:sun_tools_java",
-    "//third_party/android_tools:android_support_multidex_java",
+    "//third_party/android_deps:android_support_multidex_java",
     "//third_party/gson:gson_java",
     "//third_party/guava:guava_java",
   ]
@@ -755,7 +755,7 @@ java_library("shadows_play_services_java") {
     "$google_play_services_package:google_play_services_auth_base_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
-    "//third_party/android_tools:android_support_v4_java",
+    "//third_party/android_deps:android_support_v4_java",
     "//third_party/gson:gson_java",
     "//third_party/guava:guava_java",
   ]
