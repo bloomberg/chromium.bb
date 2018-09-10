@@ -1511,7 +1511,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
 #endif
-      engagement_binding_(this),
       autoplay_configuration_binding_(this),
       frame_binding_(this),
       host_zoom_binding_(this),
@@ -2002,12 +2001,6 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
       }
     }
   }
-}
-
-void RenderFrameImpl::BindEngagement(
-    blink::mojom::EngagementClientAssociatedRequest request) {
-  engagement_binding_.Bind(std::move(request),
-                           GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFullscreen(
@@ -3018,20 +3011,6 @@ PreviewsState RenderFrameImpl::GetPreviewsState() const {
 
 bool RenderFrameImpl::IsPasting() const {
   return is_pasting_;
-}
-
-// blink::mojom::EngagementClient implementation -------------------------------
-
-void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
-                                         blink::mojom::EngagementLevel level) {
-  // Set the engagement level on |frame_| if its origin matches the one we have
-  // been provided with.
-  if (frame_ && url::Origin(frame_->GetSecurityOrigin()) == origin) {
-    frame_->SetEngagementLevel(level);
-    return;
-  }
-
-  engagement_level_ = std::make_pair(origin, level);
 }
 
 // blink::mojom::FullscreenVideoElementHandler implementation ------------------
@@ -5777,13 +5756,6 @@ void RenderFrameImpl::UpdateStateForCommit(
   // new navigation.
   navigation_state->set_request_committed(true);
 
-  // Set the correct engagement level on the frame, and wipe the cached origin
-  // so this will not be reused accidentally.
-  if (url::Origin(frame_->GetSecurityOrigin()) == engagement_level_.first) {
-    frame_->SetEngagementLevel(engagement_level_.second);
-    engagement_level_.first = url::Origin();
-  }
-
   // If we are a top frame navigation to another document we should clear any
   // existing autoplay flags on the Page. This is because flags are stored at
   // the page level so subframes would only add to them.
@@ -7011,9 +6983,6 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
 #endif  // ENABLE_PLUGINS
 
 void RenderFrameImpl::RegisterMojoInterfaces() {
-  GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
-
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindAutoplayConfiguration, weak_factory_.GetWeakPtr()));
 

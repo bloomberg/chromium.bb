@@ -77,7 +77,6 @@
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/autoplay.mojom.h"
-#include "third_party/blink/public/platform/site_engagement.mojom.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -188,7 +187,6 @@ struct ScreenInfo;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
-      blink::mojom::EngagementClient,
       blink::mojom::AutoplayConfigurationClient,
       mojom::Frame,
       mojom::FrameNavigationControl,
@@ -499,10 +497,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
-  // blink::mojom::EngagementClient implementation:
-  void SetEngagementLevel(const url::Origin& origin,
-                          blink::mojom::EngagementLevel level) override;
-
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
                         const int32_t flags) override;
@@ -769,9 +763,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrameSerializerClient::FrameSerializationStatus status)
       override;
 
-  // Binds to the site engagement service in the browser.
-  void BindEngagement(blink::mojom::EngagementClientAssociatedRequest request);
-
   // Binds to the fullscreen service in the browser.
   void BindFullscreen(
       mojom::FullscreenVideoElementHandlerAssociatedRequest request);
@@ -962,8 +953,6 @@ class CONTENT_EXPORT RenderFrameImpl
   class FrameURLLoaderFactory;
 
   typedef std::map<GURL, double> HostZoomLevels;
-  typedef std::pair<url::Origin, blink::mojom::EngagementLevel>
-      EngagementOriginAndLevel;
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to, and |interface_provider| is the RenderFrameHost's
@@ -1533,12 +1522,10 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   HostZoomLevels host_zoom_levels_;
-  EngagementOriginAndLevel engagement_level_;
 
   using AutoplayOriginAndFlags = std::pair<url::Origin, int32_t>;
   AutoplayOriginAndFlags autoplay_flags_;
 
-  mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
   mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
       autoplay_configuration_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;

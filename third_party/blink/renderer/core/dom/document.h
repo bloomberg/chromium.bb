@@ -78,7 +78,6 @@ class UkmRecorder;
 namespace blink {
 
 namespace mojom {
-enum class EngagementLevel : int32_t;
 enum class PageVisibilityState : int32_t;
 }  // namespace mojom
 
@@ -1264,13 +1263,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Document& EnsureTemplateDocument();
   Document* TemplateDocumentHost() { return template_document_host_; }
 
-  mojom::EngagementLevel GetEngagementLevel() const {
-    return engagement_level_;
-  }
-  void SetEngagementLevel(mojom::EngagementLevel level) {
-    engagement_level_ = level;
-  }
-
   // TODO(thestig): Rename these and related functions, since we can call them
   // for controls outside of forms as well.
   void DidAssociateFormControl(Element*);
@@ -1870,8 +1862,6 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle sensitive_input_visibility_task_;
 
   TaskHandle sensitive_input_edited_task_;
-
-  mojom::EngagementLevel engagement_level_;
 
   SecureContextState secure_context_state_;
 
