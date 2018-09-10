@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class ErrorEvent;
-
 class V8ErrorHandler final : public V8EventListenerOrEventHandler {
  public:
   static V8ErrorHandler* Create(v8::Local<v8::Object> listener,
@@ -50,15 +48,6 @@ class V8ErrorHandler final : public V8EventListenerOrEventHandler {
     event_listener->SetListenerObject(script_state, listener, property);
     return event_listener;
   }
-  static void StoreExceptionOnErrorEventWrapper(
-      ScriptState*,
-      ErrorEvent*,
-      v8::Local<v8::Value>,
-      v8::Local<v8::Object> creation_context);
-  static v8::Local<v8::Value> LoadExceptionFromErrorEventWrapper(
-      ScriptState*,
-      ErrorEvent*,
-      v8::Local<v8::Object> creation_context);
 
  private:
   V8ErrorHandler(bool is_inline, ScriptState*);
