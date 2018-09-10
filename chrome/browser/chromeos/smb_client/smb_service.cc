@@ -167,7 +167,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       mount_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                     base::Passed(&callback), options, mount_path,
+                     base::Passed(&callback), options, share_path,
                      is_kerberos_chromad));
 }
 
@@ -223,6 +223,14 @@ void SmbService::RestoreMounts() {
   const std::vector<ProvidedFileSystemInfo> file_systems =
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
 
+  if (!file_systems.empty()) {
+    share_finder_->DiscoverHostsInNetwork(base::BindOnce(
+        &SmbService::OnHostsDiscovered, AsWeakPtr(), file_systems));
+  }
+}
+
+void SmbService::OnHostsDiscovered(
+    const std::vector<ProvidedFileSystemInfo>& file_systems) {
   for (const auto& file_system : file_systems) {
     Remount(file_system);
   }
@@ -248,11 +256,20 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
     ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
   }
 
+  SmbUrl parsed_url(share_path.value());
+  if (!parsed_url.IsValid()) {
+    OnRemountResponse(file_system_info.file_system_id(),
+                      smbprovider::ERROR_INVALID_URL);
+    return;
+  }
+
+  const base::FilePath mount_path(share_finder_->GetResolvedUrl(parsed_url));
+
   // An empty password is passed to Remount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
   // descriptor.
   GetSmbProviderClient()->Remount(
-      share_path, mount_id, workgroup, username,
+      mount_path, mount_id, workgroup, username,
       temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
