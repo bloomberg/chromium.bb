@@ -14,7 +14,9 @@ enable_widevine_cdm_host_verification =
     (is_chrome_branded || enable_widevine) && enable_cdm_host_verification
 
 # Only bundle Widevine CDM in Google Chrome builds.
-should_bundle_widevine_cdm = is_chrome_branded && enable_library_cdms
+# TODO: Provide prebuilt libraries for ARM64.
+should_bundle_widevine_cdm =
+    is_chrome_branded && enable_library_cdms && target_cpu != "arm64"
 
 template("widevine_sign_file") {
   # For official builds, generate a signature file for |file| which will
