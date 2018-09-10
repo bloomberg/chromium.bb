@@ -115,8 +115,8 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   bool CheckBrowseUrl(const GURL& gurl,
                       const SBThreatTypeSet& threat_types,
                       Client* client) override {
-    if (badurls.find(gurl.spec()) == badurls.end() ||
-        badurls.at(gurl.spec()) == SB_THREAT_TYPE_SAFE)
+    if (badurls_.find(gurl.spec()) == badurls_.end() ||
+        badurls_[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
     BrowserThread::PostTask(
@@ -127,15 +127,18 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    client->OnCheckBrowseUrlResult(gurl, badurls.at(gurl.spec()),
-                                   ThreatMetadata());
+    if (badurls_.find(gurl.spec()) != badurls_.end())
+      client->OnCheckBrowseUrlResult(gurl, badurls_[gurl.spec()],
+                                     ThreatMetadata());
+    else
+      NOTREACHED();
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
-    badurls[url.spec()] = threat_type;
+    badurls_[url.spec()] = threat_type;
   }
 
-  void ClearBadURL(const GURL& url) { badurls.erase(url.spec()); }
+  void ClearBadURL(const GURL& url) { badurls_.erase(url.spec()); }
 
   // These are called when checking URLs, so we implement them.
   bool IsSupported() const override { return true; }
@@ -158,7 +161,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  private:
   ~FakeSafeBrowsingDatabaseManager() override {}
 
-  std::map<std::string, SBThreatType> badurls;
+  std::map<std::string, SBThreatType> badurls_;
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
 };
 
