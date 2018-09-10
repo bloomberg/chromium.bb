@@ -1805,6 +1805,43 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonConsecutiveIdenticalUnderlays) {
   EXPECT_EQ(kOverlayRect, damage_rect_);
 }
 
+// An identical overlay that is occluded should not have damage subtracted until
+// it has been unoccluded for more than one frame.
+TEST_F(UnderlayTest, DamageSubtractedForOneFrameAfterBecomingUnoccluded) {
+  for (int i = 0; i < 3; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    if (i == 0) {
+      // Add an overlapping quad above the candidate for the first frame.
+      CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                                 pass->shared_quad_state_list.back(),
+                                 pass.get());
+    }
+    CreateFullscreenCandidateQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+
+    damage_rect_ = kOverlayRect;
+
+    OverlayCandidateList candidate_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_background_filters, &candidate_list,
+        nullptr, nullptr, &damage_rect_, &content_bounds_);
+
+    // The damage rect should not be subtracted if the underlay is occluded
+    // (i==0) or it is unoccluded for the first time (i==1).
+    if (i < 2)
+      EXPECT_FALSE(damage_rect_.IsEmpty());
+  }
+  // The second time the same overlay rect is scheduled it should be subtracted
+  // from the damage rect.
+  EXPECT_TRUE(damage_rect_.IsEmpty());
+}
+
 TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
   for (int i = 0; i < 2; ++i) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
