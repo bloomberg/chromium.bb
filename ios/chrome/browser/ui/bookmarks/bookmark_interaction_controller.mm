@@ -332,7 +332,7 @@ enum class PresentedState {
 
   self.bookmarkEditor.delegate = nil;
   self.bookmarkEditor = nil;
-  [_parentController
+  [self.bookmarkNavigationController
       dismissViewControllerAnimated:animated
                          completion:^{
                            self.bookmarkNavigationController = nil;
@@ -346,7 +346,7 @@ enum class PresentedState {
     return;
   DCHECK(self.bookmarkNavigationController);
 
-  [_parentController
+  [self.bookmarkNavigationController
       dismissViewControllerAnimated:animated
                          completion:^{
                            self.folderEditor.delegate = nil;
