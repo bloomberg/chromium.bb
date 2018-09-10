@@ -113,10 +113,12 @@ class WTF_EXPORT Partitions {
   static void* FastMalloc(size_t n, const char* type_name) {
     return Partitions::FastMallocPartition()->Alloc(n, type_name);
   }
+  static void* FastMallocFlags(int flags, size_t n, const char* type_name) {
+    return Partitions::FastMallocPartition()->AllocFlags(flags, n, type_name);
+  }
   static void* FastZeroedMalloc(size_t n, const char* type_name) {
-    void* result = FastMalloc(n, type_name);
-    memset(result, 0, n);
-    return result;
+    return Partitions::FastMallocPartition()->AllocFlags(
+        base::PartitionAllocZeroFill, n, type_name);
   }
   static void* FastRealloc(void* p, size_t n, const char* type_name) {
     return Partitions::FastMallocPartition()->Realloc(p, n, type_name);
