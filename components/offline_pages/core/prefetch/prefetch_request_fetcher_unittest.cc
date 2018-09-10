@@ -27,7 +27,7 @@ const char kTestMessage[] = "Testing";
 class PrefetchRequestFetcherTest : public PrefetchRequestTestBase {
  public:
   PrefetchRequestStatus RunFetcherWithNetError(net::Error net_error);
-  PrefetchRequestStatus RunFetcherWithHttpError(int http_error);
+  PrefetchRequestStatus RunFetcherWithHttpError(net::HttpStatusCode http_error);
   PrefetchRequestStatus RunFetcherWithData(const std::string& response_data,
                                            std::string* data_received);
 
@@ -49,7 +49,7 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithNetError(
 }
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithHttpError(
-    int http_error) {
+    net::HttpStatusCode http_error) {
   std::string data_received;
   PrefetchRequestStatus status =
       RunFetcher(base::BindOnce(&PrefetchRequestTestBase::RespondWithHttpError,
@@ -72,14 +72,15 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
     std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
   std::unique_ptr<PrefetchRequestFetcher> fetcher =
-      PrefetchRequestFetcher::CreateForPost(kTestURL, kTestMessage,
-                                            request_context(), callback.Get());
+      PrefetchRequestFetcher::CreateForPost(
+          kTestURL, kTestMessage, shared_url_loader_factory(), callback.Get());
 
   PrefetchRequestStatus status;
   std::string data;
   EXPECT_CALL(callback, Run(_, _))
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&data)));
   std::move(respond_callback).Run();
+  RunUntilIdle();
 
   *data_received = data;
   return status;

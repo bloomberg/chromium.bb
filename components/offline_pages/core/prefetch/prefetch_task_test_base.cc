@@ -16,7 +16,11 @@ constexpr std::array<PrefetchItemState, 11>
     PrefetchTaskTestBase::kOrderedPrefetchItemStates;
 
 PrefetchTaskTestBase::PrefetchTaskTestBase()
-    : store_test_util_(task_runner()) {}
+    : test_shared_url_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)),
+      prefetch_request_factory_(test_shared_url_loader_factory_),
+      store_test_util_(task_runner()) {}
 
 PrefetchTaskTestBase::~PrefetchTaskTestBase() = default;
 
@@ -66,6 +70,15 @@ std::set<PrefetchItem> PrefetchTaskTestBase::FilterByState(
       result.insert(item);
   }
   return result;
+}
+
+network::TestURLLoaderFactory::PendingRequest*
+PrefetchTaskTestBase::GetPendingRequest(size_t index) {
+  if (index >= test_url_loader_factory_.pending_requests()->size())
+    return nullptr;
+  auto* request = &(*test_url_loader_factory_.pending_requests())[index];
+  DCHECK(request);
+  return request;
 }
 
 }  // namespace offline_pages

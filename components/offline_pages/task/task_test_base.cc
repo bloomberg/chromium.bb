@@ -5,7 +5,6 @@
 #include "components/offline_pages/task/task_test_base.h"
 
 #include "base/test/mock_callback.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -14,8 +13,9 @@ namespace offline_pages {
 
 TaskTestBase::TaskTestBase()
     : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_),
-      test_task_runner_(task_runner_) {}
+      test_task_runner_(task_runner_) {
+  message_loop_.SetTaskRunner(task_runner_);
+}
 
 TaskTestBase::~TaskTestBase() = default;
 

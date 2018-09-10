@@ -115,6 +115,10 @@ class TestPrefetchConfiguration : public PrefetchConfiguration {
 class FakePrefetchNetworkRequestFactory
     : public TestPrefetchNetworkRequestFactory {
  public:
+  FakePrefetchNetworkRequestFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : TestPrefetchNetworkRequestFactory(url_loader_factory) {}
+
   void MakeGeneratePageBundleRequest(
       const std::vector<std::string>& prefetch_urls,
       const std::string& gcm_registration_id,
@@ -254,7 +258,8 @@ void PrefetchDispatcherTest::SetUp() {
   ASSERT_TRUE(archive_directory_.CreateUniqueTempDir());
 
   dispatcher_ = new PrefetchDispatcherImpl();
-  network_request_factory_ = new FakePrefetchNetworkRequestFactory();
+  network_request_factory_ =
+      new FakePrefetchNetworkRequestFactory(shared_url_loader_factory());
   taco_.reset(new PrefetchServiceTestTaco);
   store_util_.BuildStore();
   taco_->SetPrefetchStore(store_util_.ReleaseStore());
@@ -544,7 +549,7 @@ TEST_F(PrefetchDispatcherTest, NoNetworkRequestsAfterNewURLs) {
   RunUntilIdle();
 
   // We should not have started GPB
-  EXPECT_EQ(nullptr, GetRunningFetcher());
+  EXPECT_EQ(nullptr, GetPendingRequest());
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure_ItemDownloaded) {

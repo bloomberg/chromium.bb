@@ -44,18 +44,19 @@ class RequestBuilder {
   virtual ~RequestBuilder() {}
 
   virtual void CreateRequest(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefetchRequestFinishedCallback callback) = 0;
 };
 
 class GeneratePageBundleRequestBuilder : public RequestBuilder {
  public:
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) override {
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) override {
     std::vector<std::string> pages = {kTestURL, kTestURL2};
     fetcher_.reset(new GeneratePageBundleRequest(
         kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages, kTestChannel,
-        request_context_getter, std::move(callback)));
+        url_loader_factory, std::move(callback)));
   }
 
  private:
@@ -64,10 +65,11 @@ class GeneratePageBundleRequestBuilder : public RequestBuilder {
 
 class GetOperationRequestBuilder : public RequestBuilder {
  public:
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) override {
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) override {
     fetcher_.reset(new GetOperationRequest(kTestOperationName, kTestChannel,
-                                           request_context_getter,
+                                           url_loader_factory,
                                            std::move(callback)));
   }
 
@@ -159,10 +161,10 @@ class PrefetchRequestOperationResponseTestBuilder {
   PrefetchRequestOperationResponseTestBuilder() {}
   virtual ~PrefetchRequestOperationResponseTestBuilder() {}
 
-  void CreateRequest(net::URLRequestContextGetter* request_context_getter,
-                     PrefetchRequestFinishedCallback callback) {
-    request_builder_->CreateRequest(request_context_getter,
-                                    std::move(callback));
+  void CreateRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefetchRequestFinishedCallback callback) {
+    request_builder_->CreateRequest(url_loader_factory, std::move(callback));
   }
 
   std::string BuildFromAny(const std::string& any_type_url,
@@ -254,7 +256,7 @@ class PrefetchRequestOperationResponseTest : public PrefetchRequestTestBase {
  private:
   PrefetchRequestStatus SendWithResponse(const std::string& response_data) {
     base::MockCallback<PrefetchRequestFinishedCallback> callback;
-    builder_.CreateRequest(request_context(), callback.Get());
+    builder_.CreateRequest(shared_url_loader_factory(), callback.Get());
 
     PrefetchRequestStatus status;
     operation_name_.clear();
@@ -263,6 +265,7 @@ class PrefetchRequestOperationResponseTest : public PrefetchRequestTestBase {
         .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name_),
                         SaveArg<2>(&pages_)));
     RespondWithData(response_data);
+    RunUntilIdle();
     return status;
   }
 

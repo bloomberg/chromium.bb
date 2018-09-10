@@ -7,8 +7,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/task/task.h"
 #include "components/offline_pages/task/test_task_runner.h"
 
@@ -36,8 +36,8 @@ class TaskTestBase : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   TestTaskRunner test_task_runner_;
 };
 

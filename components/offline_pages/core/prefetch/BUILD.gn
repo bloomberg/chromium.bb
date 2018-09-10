@@ -111,6 +111,7 @@ static_library("prefetch") {
     "//components/version_info",
     "//google_apis",
     "//net:net",
+    "//services/network/public/cpp:cpp",
     "//sql:sql",
     "//url",
   ]
@@ -168,6 +169,7 @@ static_library("test_support") {
     "//components/prefs:test_support",
     "//components/version_info:channel",
     "//net:test_support",
+    "//services/network:test_support",
     "//sql:sql",
     "//testing/gmock",
     "//url",
@@ -248,6 +250,7 @@ source_set("unit_tests") {
     "//components/variations:test_support",
     "//components/version_info:channel",
     "//net:test_support",
+    "//services/network:test_support",
     "//sql:sql",
     "//testing/gmock",
     "//testing/gtest",

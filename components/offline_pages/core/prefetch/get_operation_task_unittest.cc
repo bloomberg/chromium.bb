@@ -53,8 +53,7 @@ TEST_F(GetOperationTaskTest, NormalOperationTask) {
 
   EXPECT_NE(nullptr, prefetch_request_factory()->FindGetOperationRequestByName(
                          kOperationName));
-  std::string path =
-      url_fetcher_factory()->GetFetcherByID(0)->GetOriginalURL().path();
+  std::string path = GetPendingRequest(0 /*index*/)->request.url.path();
   EXPECT_THAT(path, HasSubstr(kOperationName));
   EXPECT_EQ(1, store_util()->LastCommandChangeCount());
   ASSERT_NE(nullptr, store_util()->GetPrefetchItem(id));
