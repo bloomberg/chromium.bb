@@ -57,8 +57,12 @@ static wtf_size_t MatchLengths(
     ListInterpolationFunctions::LengthMatchingStrategy
         length_matching_strategy) {
   if (length_matching_strategy ==
-      ListInterpolationFunctions::LengthMatchingStrategy::
-          kLowestCommonMultiple) {
+      ListInterpolationFunctions::LengthMatchingStrategy::kEqual) {
+    DCHECK_EQ(start_length, end_length);
+    return start_length;
+  } else if (length_matching_strategy ==
+             ListInterpolationFunctions::LengthMatchingStrategy::
+                 kLowestCommonMultiple) {
     // Combining the length expansion of lowestCommonMultiple with CSS
     // transitions has the potential to create pathological cases where this
     // algorithm compounds upon itself as the user starts transitions on already
@@ -83,6 +87,12 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
       ToInterpolableList(*start.interpolable_value).length();
   const wtf_size_t end_length =
       ToInterpolableList(*end.interpolable_value).length();
+
+  if (length_matching_strategy ==
+          ListInterpolationFunctions::LengthMatchingStrategy::kEqual &&
+      (start_length != end_length)) {
+    return nullptr;
+  }
 
   if (start_length == 0 && end_length == 0) {
     return PairwiseInterpolationValue(std::move(start.interpolable_value),
@@ -266,15 +276,24 @@ void ListInterpolationFunctions::Composite(
   const wtf_size_t underlying_length =
       ToInterpolableList(*underlying_value_owner.Value().interpolable_value)
           .length();
+
+  const InterpolableList& interpolable_list =
+      ToInterpolableList(*value.interpolable_value);
+  const wtf_size_t value_length = interpolable_list.length();
+
+  if (length_matching_strategy ==
+          ListInterpolationFunctions::LengthMatchingStrategy::kEqual &&
+      (underlying_length != value_length)) {
+    underlying_value_owner.Set(type, value);
+    return;
+  }
+
   if (underlying_length == 0) {
     DCHECK(!underlying_value_owner.Value().non_interpolable_value);
     underlying_value_owner.Set(type, value);
     return;
   }
 
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
-  const wtf_size_t value_length = interpolable_list.length();
   if (value_length == 0) {
     DCHECK(!value.non_interpolable_value);
     underlying_value_owner.MutableValue().interpolable_value->Scale(
@@ -314,8 +333,11 @@ void ListInterpolationFunctions::Composite(
                          non_interpolable_list.Get(i % value_length));
     }
   } else {
-    DCHECK_EQ(length_matching_strategy, LengthMatchingStrategy::kPadToLargest);
+    DCHECK(length_matching_strategy == LengthMatchingStrategy::kPadToLargest ||
+           length_matching_strategy == LengthMatchingStrategy::kEqual);
     if (underlying_length < final_length) {
+      DCHECK_EQ(length_matching_strategy,
+                LengthMatchingStrategy::kPadToLargest);
       DCHECK_EQ(value_length, final_length);
       PadToSameLength(underlying_value, value);
     }

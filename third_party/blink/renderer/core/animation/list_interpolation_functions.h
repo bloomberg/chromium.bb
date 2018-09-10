@@ -15,7 +15,7 @@ namespace blink {
 class UnderlyingValueOwner;
 class InterpolationType;
 
-class ListInterpolationFunctions {
+class CORE_EXPORT ListInterpolationFunctions {
  public:
   template <typename CreateItemCallback>
   static InterpolationValue CreateList(wtf_size_t length, CreateItemCallback);
@@ -23,7 +23,11 @@ class ListInterpolationFunctions {
     return InterpolationValue(InterpolableList::Create(0));
   }
 
-  enum class LengthMatchingStrategy { kLowestCommonMultiple, kPadToLargest };
+  enum class LengthMatchingStrategy {
+    kEqual,
+    kLowestCommonMultiple,
+    kPadToLargest
+  };
 
   using MergeSingleItemConversionsCallback =
       base::RepeatingCallback<PairwiseInterpolationValue(InterpolationValue&&,
@@ -59,7 +63,7 @@ class ListInterpolationFunctions {
                         CompositeItemCallback);
 };
 
-class NonInterpolableList : public NonInterpolableValue {
+class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
  public:
   ~NonInterpolableList() final = default;
 
