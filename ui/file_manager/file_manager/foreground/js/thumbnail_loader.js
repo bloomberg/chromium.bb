@@ -119,15 +119,6 @@ ThumbnailLoader.FillMode = {
 };
 
 /**
- * Optimization mode for downloading thumbnails.
- * @enum {number}
- */
-ThumbnailLoader.OptimizationMode = {
-  NEVER_DISCARD: 0,    // Never discards downloading. No optimization.
-  DISCARD_DETACHED: 1  // Canceled if the container is not attached anymore.
-};
-
-/**
  * Type of element to store the image.
  * @enum {number}
  */
@@ -174,29 +165,18 @@ ThumbnailLoader.prototype.getLoadTarget = function() {
 /**
  * Loads and attaches an image.
  *
- * @param {Element} box Container element.
+ * @param {!Element} box Container element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
- *     for downloading thumbnails. By default optimizations are disabled.
- * @param {function(Image)=} opt_onSuccess Success callback, accepts the image.
- * @param {function()=} opt_onError Error callback.
- * @param {function()=} opt_onGeneric Callback for generic image used.
- * @param {number=} opt_autoFillThreshold Auto fill threshold.
- * @param {number=} opt_boxWidth Container box's width. If not specified, the
- *     given |box|'s clientWidth will be used.
- * @param {number=} opt_boxHeight Container box's height. If not specified, the
- *     given |box|'s clientHeight will be used.
+ * @param {function(Image)} onSuccess Success callback, accepts the image.
+ * @param {number} autoFillThreshold Auto fill threshold.
+ * @param {number} boxWidth Container box's width.
+ * @param {number} boxHeight Container box's height.
  */
-ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
-    opt_onSuccess, opt_onError, opt_onGeneric, opt_autoFillThreshold,
-    opt_boxWidth, opt_boxHeight) {
-  opt_optimizationMode = opt_optimizationMode ||
-      ThumbnailLoader.OptimizationMode.NEVER_DISCARD;
-
+ThumbnailLoader.prototype.load = function(
+    box, fillMode, onSuccess, autoFillThreshold, boxWidth, boxHeight) {
   if (!this.thumbnailUrl_) {
     // Relevant CSS rules are in file_types.css.
     box.setAttribute('generic-thumbnail', this.mediaType_);
-    if (opt_onGeneric) opt_onGeneric();
     return;
   }
 
@@ -205,18 +185,17 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
   this.image_ = new Image();
   this.image_.setAttribute('alt', this.entry_.name);
   this.image_.onload = function() {
-    this.attachImage(assert(box), fillMode, opt_autoFillThreshold,
-                     opt_boxWidth, opt_boxHeight);
-    if (opt_onSuccess)
-      opt_onSuccess(this.image_);
+    this.attachImage_(box, fillMode, autoFillThreshold, boxWidth, boxHeight);
+    onSuccess(this.image_);
   }.bind(this);
   this.image_.onerror = function() {
-    if (opt_onError)
-      opt_onError();
     if (this.fallbackUrl_) {
       this.thumbnailUrl_ = this.fallbackUrl_;
       this.fallbackUrl_ = null;
-      this.load(box, fillMode, opt_optimizationMode, opt_onSuccess);
+      this.load(
+          box, fillMode, onSuccess,
+          ThumbnailLoader.AUTO_FILL_THRESHOLD_DEFAULT_VALUE, box.clientWidth,
+          box.clientHeight);
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
     }
@@ -234,8 +213,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
   this.taskId_ = ImageLoaderClient.loadToImage(
-      this.thumbnailUrl_,
-      this.image_,
+      this.thumbnailUrl_, this.image_,
       {
         maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
@@ -247,16 +225,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
       function() {},
       function() {
         this.image_.onerror(new Event('load-error'));
-      }.bind(this),
-      function() {
-        if (opt_optimizationMode ==
-            ThumbnailLoader.OptimizationMode.DISCARD_DETACHED &&
-            !box.ownerDocument.contains(box)) {
-          // If the container is not attached, then invalidate the download.
-          return false;
-        }
-        return true;
-      });
+      }.bind(this));
 };
 
 /**
@@ -417,15 +386,14 @@ ThumbnailLoader.prototype.renderMedia_ = function() {
  * Attach the image to a given element.
  * @param {!Element} box Container element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
- * @param {number=} opt_autoFillThreshold Threshold value which is used for fill
+ * @param {number} autoFillThreshold Threshold value which is used for fill
  *     mode auto.
- * @param {number=} opt_boxWidth Container box's width. If not specified, the
- *     given |box|'s clientWidth will be used.
- * @param {number=} opt_boxHeight Container box's height. If not specified, the
- *     given |box|'s clientHeight will be used.
+ * @param {number} boxWidth Container box's width.
+ * @param {number} boxHeight Container box's height.
+ * @private
  */
-ThumbnailLoader.prototype.attachImage = function(
-    box, fillMode, opt_autoFillThreshold, opt_boxWidth, opt_boxHeight) {
+ThumbnailLoader.prototype.attachImage_ = function(
+    box, fillMode, autoFillThreshold, boxWidth, boxHeight) {
   if (!this.hasValidImage()) {
     box.setAttribute('generic-thumbnail', this.mediaType_);
     return;
@@ -435,10 +403,8 @@ ThumbnailLoader.prototype.attachImage = function(
   var attachableMedia = this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ?
       this.canvas_ : this.image_;
 
-  var autoFillThreshold = opt_autoFillThreshold ||
-      ThumbnailLoader.AUTO_FILL_THRESHOLD_DEFAULT_VALUE;
-  ThumbnailLoader.centerImage_(box, attachableMedia, fillMode,
-      autoFillThreshold, opt_boxWidth, opt_boxHeight);
+  ThumbnailLoader.centerImage_(
+      box, attachableMedia, fillMode, autoFillThreshold, boxWidth, boxHeight);
 
   if (attachableMedia.parentNode !== box) {
     box.textContent = '';
@@ -472,23 +438,17 @@ ThumbnailLoader.prototype.getImage = function() {
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {number} autoFillThreshold Threshold value which is used for fill mode
  *     auto.
- * @param {number=} opt_boxWidth Container box's width. If not specified, the
- *     given |box|'s clientWidth will be used.
- * @param {number=} opt_boxHeight Container box's height. If not specified, the
- *     given |box|'s clientHeight will be used.
+ * @param {number} boxWidth Container box's width.
+ * @param {number} boxHeight Container box's height.
  * @private
  */
 ThumbnailLoader.centerImage_ = function(
-    box, img, fillMode, autoFillThreshold, opt_boxWidth,
-    opt_boxHeight) {
+    box, img, fillMode, autoFillThreshold, boxWidth, boxHeight) {
   var imageWidth = img.width;
   var imageHeight = img.height;
 
   var fractionX;
   var fractionY;
-
-  var boxWidth = opt_boxWidth || box.clientWidth;
-  var boxHeight = opt_boxHeight || box.clientHeight;
 
   var fill;
   switch (fillMode) {
