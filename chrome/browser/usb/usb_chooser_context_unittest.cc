@@ -13,6 +13,8 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 
 using device::MockUsbDevice;
 using device::UsbDevice;
@@ -36,6 +38,8 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   GURL origin("https://www.google.com");
   scoped_refptr<UsbDevice> device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
 
@@ -45,9 +49,9 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   object_dict.SetInteger("product-id", 0);
   object_dict.SetString("serial-number", "123ABC");
 
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
-  store->GrantDevicePermission(origin, origin, device->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+  store->GrantDevicePermission(origin, origin, *device_info);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, objects.size());
@@ -61,7 +65,7 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   EXPECT_FALSE(all_origin_objects[0]->incognito);
 
   store->RevokeObjectPermission(origin, origin, *objects[0]);
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -74,6 +78,11 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
   scoped_refptr<UsbDevice> other_device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  auto other_device_info = device::mojom::UsbDeviceInfo::From(*other_device);
+  DCHECK(other_device_info);
+
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
 
@@ -81,10 +90,10 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   object_dict.SetString("name", "Gizmo");
   object_dict.SetString("ephemeral-guid", device->guid());
 
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
-  store->GrantDevicePermission(origin, origin, device->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, other_device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+  store->GrantDevicePermission(origin, origin, *device_info);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *other_device_info));
   std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
@@ -98,7 +107,7 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   EXPECT_FALSE(all_origin_objects[0]->incognito);
 
   store->RevokeObjectPermission(origin, origin, *objects[0]);
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -109,12 +118,15 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   GURL origin("https://www.google.com");
   scoped_refptr<UsbDevice> device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
-  store->GrantDevicePermission(origin, origin, device->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+  store->GrantDevicePermission(origin, origin, *device_info);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
@@ -123,7 +135,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   EXPECT_EQ(1u, all_origin_objects.size());
 
   device_client_.usb_service()->RemoveDevice(device);
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -131,8 +143,13 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
 
   scoped_refptr<UsbDevice> reconnected_device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
+  auto reconnected_device_info =
+      device::mojom::UsbDeviceInfo::From(*reconnected_device);
+  DCHECK(reconnected_device_info);
+
   device_client_.usb_service()->AddDevice(reconnected_device);
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, reconnected_device));
+  EXPECT_TRUE(
+      store->HasDevicePermission(origin, origin, *reconnected_device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -143,12 +160,15 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   GURL origin("https://www.google.com");
   scoped_refptr<UsbDevice> device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
-  store->GrantDevicePermission(origin, origin, device->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+  store->GrantDevicePermission(origin, origin, *device_info);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
@@ -157,7 +177,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   EXPECT_EQ(1u, all_origin_objects.size());
 
   device_client_.usb_service()->RemoveDevice(device);
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -165,8 +185,13 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
   scoped_refptr<UsbDevice> reconnected_device =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  auto reconnected_device_info =
+      device::mojom::UsbDeviceInfo::From(*reconnected_device);
+  DCHECK(reconnected_device_info);
+
   device_client_.usb_service()->AddDevice(reconnected_device);
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, reconnected_device));
+  EXPECT_FALSE(
+      store->HasDevicePermission(origin, origin, *reconnected_device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
   all_origin_objects = store->GetAllGrantedObjects();
@@ -183,18 +208,25 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
   scoped_refptr<UsbDevice> device2 =
       new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  auto device_info_1 = device::mojom::UsbDeviceInfo::From(*device1);
+  DCHECK(device_info_1);
+  auto device_info_2 = device::mojom::UsbDeviceInfo::From(*device2);
+  DCHECK(device_info_2);
   device_client_.usb_service()->AddDevice(device1);
   device_client_.usb_service()->AddDevice(device2);
 
-  store->GrantDevicePermission(origin, origin, device1->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device1));
-  EXPECT_FALSE(incognito_store->HasDevicePermission(origin, origin, device1));
+  store->GrantDevicePermission(origin, origin, *device_info_1);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
+  EXPECT_FALSE(
+      incognito_store->HasDevicePermission(origin, origin, *device_info_1));
 
-  incognito_store->GrantDevicePermission(origin, origin, device2->guid());
-  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device1));
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device2));
-  EXPECT_FALSE(incognito_store->HasDevicePermission(origin, origin, device1));
-  EXPECT_TRUE(incognito_store->HasDevicePermission(origin, origin, device2));
+  incognito_store->GrantDevicePermission(origin, origin, *device_info_2);
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info_2));
+  EXPECT_FALSE(
+      incognito_store->HasDevicePermission(origin, origin, *device_info_1));
+  EXPECT_TRUE(
+      incognito_store->HasDevicePermission(origin, origin, *device_info_2));
 
   {
     std::vector<std::unique_ptr<base::DictionaryValue>> objects =
@@ -219,12 +251,17 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
 TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   const GURL kFooOrigin("https://foo.com");
   const GURL kBarOrigin("https://bar.com");
-  auto device =
+  scoped_refptr<UsbDevice> device =
       base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "ABC123");
-  auto ephemeral_device =
+  scoped_refptr<UsbDevice> ephemeral_device =
       base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "");
   device_client_.usb_service()->AddDevice(device);
   device_client_.usb_service()->AddDevice(ephemeral_device);
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  auto ephemeral_device_info =
+      device::mojom::UsbDeviceInfo::From(*ephemeral_device);
+  DCHECK(ephemeral_device_info);
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(kFooOrigin, kFooOrigin,
@@ -232,12 +269,10 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
                                      std::string(), CONTENT_SETTING_BLOCK);
 
   auto* store = UsbChooserContextFactory::GetForProfile(profile());
-  store->GrantDevicePermission(kFooOrigin, kFooOrigin, device->guid());
-  store->GrantDevicePermission(kFooOrigin, kFooOrigin,
-                               ephemeral_device->guid());
-  store->GrantDevicePermission(kBarOrigin, kBarOrigin, device->guid());
-  store->GrantDevicePermission(kBarOrigin, kBarOrigin,
-                               ephemeral_device->guid());
+  store->GrantDevicePermission(kFooOrigin, kFooOrigin, *device_info);
+  store->GrantDevicePermission(kFooOrigin, kFooOrigin, *ephemeral_device_info);
+  store->GrantDevicePermission(kBarOrigin, kBarOrigin, *device_info);
+  store->GrantDevicePermission(kBarOrigin, kBarOrigin, *ephemeral_device_info);
 
   std::vector<std::unique_ptr<base::DictionaryValue>> objects =
       store->GetGrantedObjects(kFooOrigin, kFooOrigin);
@@ -254,10 +289,11 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   }
   EXPECT_EQ(2u, all_origin_objects.size());
 
-  EXPECT_FALSE(store->HasDevicePermission(kFooOrigin, kFooOrigin, device));
   EXPECT_FALSE(
-      store->HasDevicePermission(kFooOrigin, kFooOrigin, ephemeral_device));
-  EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin, device));
-  EXPECT_TRUE(
-      store->HasDevicePermission(kBarOrigin, kBarOrigin, ephemeral_device));
+      store->HasDevicePermission(kFooOrigin, kFooOrigin, *device_info));
+  EXPECT_FALSE(store->HasDevicePermission(kFooOrigin, kFooOrigin,
+                                          *ephemeral_device_info));
+  EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin, *device_info));
+  EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin,
+                                         *ephemeral_device_info));
 }

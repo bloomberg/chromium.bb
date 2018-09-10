@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_service.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/gurl.h"
@@ -58,7 +59,7 @@ class UsbChooserController : public ChooserController,
  private:
   void GotUsbDeviceList(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
-  bool DisplayDevice(scoped_refptr<device::UsbDevice> device) const;
+  bool DisplayDevice(const device::mojom::UsbDeviceInfo& device) const;
 
   std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
   blink::mojom::WebUsbService::GetPermissionCallback callback_;
@@ -71,7 +72,7 @@ class UsbChooserController : public ChooserController,
       usb_service_observer_;
 
   // Each pair is a (device, device name).
-  std::vector<std::pair<scoped_refptr<device::UsbDevice>, base::string16>>
+  std::vector<std::pair<device::mojom::UsbDeviceInfoPtr, base::string16>>
       devices_;
   // Maps from device name to number of devices.
   std::unordered_map<base::string16, int> device_name_map_;

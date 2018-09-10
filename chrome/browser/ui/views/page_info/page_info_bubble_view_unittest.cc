@@ -24,6 +24,8 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -303,10 +305,12 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   const GURL origin = GURL(kUrl).GetOrigin();
   scoped_refptr<device::UsbDevice> device =
       new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
-  store->GrantDevicePermission(origin, origin, device->guid());
+  store->GrantDevicePermission(origin, origin, *device_info);
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);

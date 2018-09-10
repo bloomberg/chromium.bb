@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/values.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "device/usb/usb_service.h"
 
@@ -42,11 +43,10 @@ class UsbChooserContext : public ChooserContextBase,
                               const GURL& embedding_origin,
                               const base::DictionaryValue& object) override;
 
-  // Grants |requesting_origin| access to the USB device known to
-  // device::UsbService as |guid|.
+  // Grants |requesting_origin| access to the USB device.
   void GrantDevicePermission(const GURL& requesting_origin,
                              const GURL& embedding_origin,
-                             const std::string& guid);
+                             const device::mojom::UsbDeviceInfo& device_info);
 
   // Checks if |requesting_origin| (when embedded within |embedding_origin| has
   // access to a device with |device_info|.
@@ -71,6 +71,7 @@ class UsbChooserContext : public ChooserContextBase,
   bool is_incognito_;
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;
   device::UsbService* usb_service_;
+  std::map<std::string, base::DictionaryValue> ephemeral_dicts_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
   base::WeakPtrFactory<UsbChooserContext> weak_factory_;
 
