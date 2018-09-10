@@ -4,7 +4,6 @@
 
 package com.android.webview.chromium;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
-import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.ViewGroup;
@@ -197,7 +195,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
         long startTime = SystemClock.elapsedRealtime();
         try (ScopedSysTraceEvent e1 =
@@ -214,18 +211,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             mAwInit = createAwInit();
             mWebViewDelegate = webViewDelegate;
-            Context ctx = mWebViewDelegate.getApplication().getApplicationContext();
+            Context ctx = webViewDelegate.getApplication().getApplicationContext();
 
             // If the application context is DE, but we have credentials, use a CE context instead
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.checkStorage")) {
-                checkStorageIsNotDeviceProtected(mWebViewDelegate.getApplication());
+                checkStorageIsNotDeviceProtected(webViewDelegate.getApplication());
             } catch (IllegalArgumentException e) {
                 assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
-                if (!ctx.getSystemService(UserManager.class).isUserUnlocked()) {
+                if (!GlueApiHelperForN.isUserUnlocked(ctx)) {
                     throw e;
                 }
-                ctx = ctx.createCredentialProtectedStorageContext();
+                ctx = GlueApiHelperForN.createCredentialProtectedStorageContext(ctx);
             }
 
             // WebView needs to make sure to always use the wrapped application context.
@@ -243,7 +240,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             boolean multiProcess = false;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // Ask the system if multiprocess should be enabled on O+.
-                multiProcess = mWebViewDelegate.isMultiProcessEnabled();
+                multiProcess = webViewDelegate.isMultiProcessEnabled();
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // Check the multiprocess developer setting directly on N.
                 multiProcess = Settings.Global.getInt(
@@ -264,7 +261,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                              "WebViewChromiumFactoryProvider.loadChromiumLibrary")) {
                     String dataDirectorySuffix = null;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        dataDirectorySuffix = mWebViewDelegate.getDataDirectorySuffix();
+                        dataDirectorySuffix = webViewDelegate.getDataDirectorySuffix();
                     }
                     AwBrowserProcess.loadLibrary(dataDirectorySuffix);
                 }
@@ -293,7 +290,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     /* package */ static void checkStorageIsNotDeviceProtected(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && context.isDeviceProtectedStorage()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && GlueApiHelperForN.isDeviceProtectedStorage(context)) {
             throw new IllegalArgumentException(
                     "WebView cannot be used with device protected storage");
         }

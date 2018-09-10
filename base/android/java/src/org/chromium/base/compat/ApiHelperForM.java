@@ -6,6 +6,7 @@ package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.os.Process;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -27,5 +28,12 @@ public final class ApiHelperForM {
     public static void onPageCommitVisible(
             WebViewClient webViewClient, WebView webView, String url) {
         webViewClient.onPageCommitVisible(webView, url);
+    }
+
+    /**
+     * See {@link Process#is64Bit()}.
+     */
+    public static boolean isProcess64Bit() {
+        return Process.is64Bit();
     }
 }
