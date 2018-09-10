@@ -5,9 +5,21 @@
 #include "chrome/common/media_router/media_route.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
 
 namespace media_router {
+
+// static
+MediaRoute::Id MediaRoute::GetMediaRouteId(const std::string& presentation_id,
+                                           const MediaSink::Id& sink_id,
+                                           const MediaSource& source) {
+  // TODO(https://crbug.com/816628): Can the route ID just be the presentation
+  // id?
+  return base::StringPrintf("urn:x-org.chromium:media:route:%s/%s/%s",
+                            presentation_id.c_str(), sink_id.c_str(),
+                            source.id().c_str());
+}
 
 MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
                        const MediaSource& media_source,

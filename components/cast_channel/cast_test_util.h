@@ -147,21 +147,26 @@ class MockCastMessageHandler : public CastMessageHandler {
   explicit MockCastMessageHandler(MockCastSocketService* socket_service);
   ~MockCastMessageHandler() override;
 
-  void RequestAppAvailability(CastSocket* socket,
-                              const std::string& app_id,
-                              GetAppAvailabilityCallback callback) override {
-    DoRequestAppAvailability(socket, app_id, callback);
-  }
-
-  MOCK_METHOD3(DoRequestAppAvailability,
-               void(CastSocket*,
-                    const std::string&,
-                    GetAppAvailabilityCallback&));
-
+  MOCK_METHOD3(EnsureConnection,
+               void(int, const std::string&, const std::string&));
+  MOCK_METHOD3(RequestAppAvailability,
+               void(CastSocket* socket,
+                    const std::string& app_id,
+                    GetAppAvailabilityCallback callback));
   MOCK_METHOD3(SendBroadcastMessage,
                void(int,
                     const std::vector<std::string>&,
                     const BroadcastRequest&));
+  MOCK_METHOD4(LaunchSession,
+               void(int,
+                    const std::string&,
+                    base::TimeDelta,
+                    LaunchSessionCallback callback));
+  MOCK_METHOD3(StopSession,
+               void(int channel_id,
+                    const std::string& session_id,
+                    StopSessionCallback callback));
+  MOCK_METHOD2(SendAppMessage, void(int, const CastMessage&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastMessageHandler);

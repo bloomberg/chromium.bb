@@ -267,7 +267,9 @@ ControllerPresentationConnection::ControllerPresentationConnection(
     const KURL& url)
     : PresentationConnection(frame, id, url), controller_(controller) {}
 
-ControllerPresentationConnection::~ControllerPresentationConnection() = default;
+ControllerPresentationConnection::~ControllerPresentationConnection() {
+  VLOG(0) << "XXX: ~ControllerPresentationConnection";
+}
 
 void ControllerPresentationConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
@@ -406,6 +408,7 @@ void PresentationConnection::AddedEventListener(
 void PresentationConnection::ContextDestroyed(ExecutionContext*) {
   target_connection_.reset();
   connection_binding_.Close();
+  VLOG(0) << "XXX: ContextDestroyed";
 }
 
 void PresentationConnection::Trace(blink::Visitor* visitor) {
@@ -644,6 +647,7 @@ void PresentationConnection::TearDown() {
     blob_loader_.Clear();
   }
   messages_.clear();
+  VLOG(0) << "XXX: TearDown";
 }
 
 }  // namespace blink

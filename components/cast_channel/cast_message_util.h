@@ -143,6 +143,10 @@ CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,
                               const std::string& session_id);
 
+CastMessage CreateStopRequest(const std::string& source_id,
+                              int request_id,
+                              const std::string& session_id);
+
 // Creates a generic CastMessage with |message| as the string payload. Used for
 // app messages.
 CastMessage CreateCastMessage(const std::string& message_namespace,

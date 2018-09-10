@@ -29,6 +29,10 @@ class MediaRoute {
  public:
   using Id = std::string;
 
+  static MediaRoute::Id GetMediaRouteId(const std::string& presentation_id,
+                                        const MediaSink::Id& sink_id,
+                                        const MediaSource& source);
+
   // |media_route_id|: ID of the route.
   // |media_source|: Description of source of the route.
   // |media_sink|: The sink that is receiving the media.

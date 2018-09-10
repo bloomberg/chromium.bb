@@ -54,8 +54,8 @@ void FillCommonCastMessageFields(CastMessage* message,
 }
 
 CastMessage CreateKeepAliveMessage(const char* keep_alive_type) {
-  base::DictionaryValue type_dict;
-  type_dict.SetString(kTypeNodeId, keep_alive_type);
+  base::Value type_dict(base::Value::Type::DICTIONARY);
+  type_dict.SetKey(kTypeNodeId, base::Value(keep_alive_type));
   return CreateCastMessage(kHeartbeatNamespace, type_dict, kPlatformSenderId,
                            kPlatformReceiverId);
 }
