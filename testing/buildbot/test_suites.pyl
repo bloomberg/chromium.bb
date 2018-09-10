@@ -1899,7 +1899,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter',
       ],
       'swarming': {
-        'hard_timeout': 1800,
+        'hard_timeout': 3600,
         'shards': 10,
       },
     },

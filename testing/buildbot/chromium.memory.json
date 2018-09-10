@@ -4292,7 +4292,7 @@
         "name": "single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1800,
+          "hard_timeout": 3600,
           "shards": 10
         },
         "test": "browser_tests"
@@ -4982,7 +4982,7 @@
         "name": "single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1800,
+          "hard_timeout": 3600,
           "shards": 10
         },
         "test": "browser_tests"
