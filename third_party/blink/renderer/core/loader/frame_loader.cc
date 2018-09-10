@@ -345,12 +345,6 @@ void FrameLoader::DidExplicitOpen() {
       progress_tracker_->ProgressStarted();
     }
   }
-
-  // Prevent window.open(url) -- eg window.open("about:blank") -- from blowing
-  // away results from a subsequent window.document.open / window.document.write
-  // call. Canceling redirection here works for all cases because document.open
-  // implicitly precedes document.write.
-  frame_->GetNavigationScheduler().Cancel();
 }
 
 // This is only called by ScriptController::executeScriptIfJavaScriptURL and

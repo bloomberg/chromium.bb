@@ -126,9 +126,15 @@ class CORE_EXPORT FrameLoader final {
       bool has_event,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
-  // Warning: stopAllLoaders can and will detach the LocalFrame out from under
-  // you. All callers need to either protect the LocalFrame or guarantee they
-  // won't in any way access the LocalFrame after stopAllLoaders returns.
+  // This runs the "stop document loading" algorithm in HTML:
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
+  // Note, this function only cancels ongoing navigation handled through
+  // FrameLoader. You might also want to call
+  // LocalFrameClient::AbortClientNavigation() if appropriate.
+  //
+  // Warning: StopAllLoaders() may detach the LocalFrame to which this
+  // FrameLoader belongs. Callers need to be careful about checking the
+  // existence of the frame after StopAllLoaders() returns.
   void StopAllLoaders();
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const String& source,
