@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.ACTIVE_TAB_INDEX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.HEIGHT;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
+
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.support.v4.view.PagerAdapter;
@@ -13,6 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.ui.ViewProvider;
 
 /**
@@ -30,12 +37,16 @@ public class AccessorySheetCoordinator {
      * @param viewProvider A provider for the accessory layout.
      */
     public AccessorySheetCoordinator(ViewProvider<ViewPager> viewProvider) {
-        AccessorySheetModel model = new AccessorySheetModel();
+        PropertyModel model = new PropertyModel.Builder(TABS, ACTIVE_TAB_INDEX, VISIBLE, HEIGHT)
+                                      .with(TABS, new ListModel<>())
+                                      .with(ACTIVE_TAB_INDEX, NO_ACTIVE_TAB)
+                                      .with(VISIBLE, false)
+                                      .build();
 
-        new LazyConstructionPropertyMcp<>(model, AccessorySheetModel.PropertyKey.VISIBLE,
-                AccessorySheetModel::isVisible, viewProvider, AccessorySheetViewBinder::bind);
+        LazyConstructionPropertyMcp.create(
+                model, VISIBLE, viewProvider, AccessorySheetViewBinder::bind);
 
-        KeyboardAccessoryMetricsRecorder.registerMetricsObserver(model);
+        KeyboardAccessoryMetricsRecorder.registerAccessorySheetModelMetricsObserver(model);
         mMediator = new AccessorySheetMediator(model);
     }
 

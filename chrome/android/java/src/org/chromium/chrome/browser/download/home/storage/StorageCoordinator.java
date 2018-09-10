@@ -12,7 +12,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ObjectPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.download.R;
 
@@ -48,7 +48,8 @@ public class StorageCoordinator {
     /** The properties needed to render the download home storage summary view. */
     private static class StorageProperties {
         /** The storage summary text to show in the content area. */
-        public static final ObjectPropertyKey<String> STORAGE_INFO_TEXT = new ObjectPropertyKey<>();
+        public static final WritableObjectPropertyKey<String> STORAGE_INFO_TEXT =
+                new WritableObjectPropertyKey<>();
 
         public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {STORAGE_INFO_TEXT};
     }
