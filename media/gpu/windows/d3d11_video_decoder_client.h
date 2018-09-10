@@ -9,6 +9,7 @@
 
 namespace media {
 
+class CodecPicture;
 class D3D11PictureBuffer;
 
 // Acts as a parent class for the D3D11VideoDecoder to expose
@@ -16,8 +17,8 @@ class D3D11PictureBuffer;
 class D3D11VideoDecoderClient {
  public:
   virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(D3D11PictureBuffer* picture,
-                            const VideoColorSpace& buffer_colorspace) = 0;
+  virtual void OutputResult(const CodecPicture* picture,
+                            D3D11PictureBuffer* picture_buffer) = 0;
 
  protected:
   virtual ~D3D11VideoDecoderClient() = default;
