@@ -40,19 +40,19 @@ const int64_t kNonExistentResourceId = 12;
 const int64_t kResourceSize = 100;
 
 void DidStoreRegistration(blink::ServiceWorkerStatusCode* status_out,
-                          const base::Closure& quit_closure,
+                          base::OnceClosure quit_closure,
                           blink::ServiceWorkerStatusCode status) {
   *status_out = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void DidFindRegistration(
     blink::ServiceWorkerStatusCode* status_out,
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   *status_out = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace

@@ -33,29 +33,30 @@ class ServiceWorkerVersion;
 
 template <typename Arg>
 void ReceiveResult(BrowserThread::ID run_quit_thread,
-                   const base::Closure& quit,
+                   base::OnceClosure quit,
                    base::Optional<Arg>* out,
                    Arg actual) {
   *out = actual;
   if (!quit.is_null())
-    BrowserThread::PostTask(run_quit_thread, FROM_HERE, quit);
+    BrowserThread::PostTask(run_quit_thread, FROM_HERE, std::move(quit));
 }
 
 template <typename Arg>
 base::OnceCallback<void(Arg)> CreateReceiver(BrowserThread::ID run_quit_thread,
-                                             const base::RepeatingClosure& quit,
+                                             base::OnceClosure quit,
                                              base::Optional<Arg>* out) {
-  return base::BindOnce(&ReceiveResult<Arg>, run_quit_thread, quit, out);
+  return base::BindOnce(&ReceiveResult<Arg>, run_quit_thread, std::move(quit),
+                        out);
 }
 
 template <typename Arg>
 base::OnceCallback<void(Arg)> CreateReceiverOnCurrentThread(
     base::Optional<Arg>* out,
-    const base::Closure& quit = base::Closure()) {
+    base::OnceClosure quit = base::OnceClosure()) {
   BrowserThread::ID id;
   bool ret = BrowserThread::GetCurrentThreadIdentifier(&id);
   DCHECK(ret);
-  return CreateReceiver(id, quit, out);
+  return CreateReceiver(id, std::move(quit), out);
 }
 
 // Container for keeping the Mojo connection to the service worker provider on

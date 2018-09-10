@@ -465,10 +465,10 @@ void ServiceWorkerRegistration::DeleteVersion(
 }
 
 void ServiceWorkerRegistration::NotifyRegistrationFinished() {
-  std::vector<base::Closure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks.swap(registration_finished_callbacks_);
-  for (const auto& callback : callbacks)
-    callback.Run();
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 void ServiceWorkerRegistration::SetTaskRunnerForTest(
@@ -490,11 +490,11 @@ void ServiceWorkerRegistration::SetNavigationPreloadHeader(
 }
 
 void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   // This should only be called if the registration is in progress.
   DCHECK(!active_version() && !waiting_version() && !is_uninstalled() &&
          !is_uninstalling());
-  registration_finished_callbacks_.push_back(callback);
+  registration_finished_callbacks_.push_back(std::move(callback));
 }
 
 void ServiceWorkerRegistration::DispatchActivateEvent(

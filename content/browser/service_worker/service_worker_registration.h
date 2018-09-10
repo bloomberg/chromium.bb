@@ -175,7 +175,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // registration from storage if there is no longer a stored version.
   void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
 
-  void RegisterRegistrationFinishedCallback(const base::Closure& callback);
+  void RegisterRegistrationFinishedCallback(base::OnceClosure callback);
   void NotifyRegistrationFinished();
 
   void SetTaskRunnerForTest(
@@ -245,7 +245,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   scoped_refptr<ServiceWorkerVersion> installing_version_;
 
   base::ObserverList<Listener>::Unchecked listeners_;
-  std::vector<base::Closure> registration_finished_callbacks_;
+  std::vector<base::OnceClosure> registration_finished_callbacks_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
