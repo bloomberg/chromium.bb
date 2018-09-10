@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -37,8 +36,6 @@ using AuraAXTreeSerializer =
     ui::AXTreeSerializer<views::AXAuraObjWrapper*,
                          ui::AXNodeData,
                          ui::AXTreeData>;
-
-struct ExtensionMsg_AccessibilityEventBundleParams;
 
 // Manages a tree of automation nodes.
 class AutomationManagerAura : public ui::AXHostDelegate,
@@ -68,12 +65,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   void OnEvent(views::AXAuraObjWrapper* aura_obj,
                ax::mojom::Event event_type) override;
 
-  void set_event_bundle_callback_for_testing(
-      base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-          callback) {
-    event_bundle_callback_for_testing_ = callback;
-  }
-
  protected:
   AutomationManagerAura();
   ~AutomationManagerAura() override;
@@ -82,8 +73,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
 
   FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
-
-  void SendEventOnObjectById(int32_t id, ax::mojom::Event event_type);
 
   // Reset state in this manager. If |reset_serializer| is true, reset the
   // serializer to save memory.
@@ -111,11 +100,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   std::vector<std::pair<views::AXAuraObjWrapper*, ax::mojom::Event>>
       pending_events_;
-
-  base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-      event_bundle_callback_for_testing_;
-
-  base::WeakPtrFactory<AutomationManagerAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };
