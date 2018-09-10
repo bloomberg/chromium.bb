@@ -12,6 +12,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -25,8 +26,13 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
 
   SetInkDropMode(InkDropMode::ON);
 
-  off_image_ = gfx::CreateVectorIcon(kDictationOffIcon, kShelfIconColor);
-  on_image_ = gfx::CreateVectorIcon(kDictationOnIcon, kShelfIconColor);
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon, kShelfIconColor);
+    on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon, kShelfIconColor);
+  } else {
+    off_image_ = gfx::CreateVectorIcon(kDictationOffIcon, kShelfIconColor);
+    on_image_ = gfx::CreateVectorIcon(kDictationOnIcon, kShelfIconColor);
+  }
   icon_->SetImage(off_image_);
   const int vertical_padding = (kTrayItemSize - off_image_.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - off_image_.width()) / 2;
