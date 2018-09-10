@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace {
 
@@ -120,6 +121,22 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kImmersiveWindowType) {
     root_window->SetProperty(kImmersiveWindowType,
                              window->GetProperty(kImmersiveWindowType));
+  } else if (key == wm::kWindowVisibilityAnimationDurationKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationDurationKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationDurationKey));
+  } else if (key == wm::kWindowVisibilityAnimationTransitionKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationTransitionKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationTransitionKey));
+  } else if (key == wm::kWindowVisibilityAnimationTypeKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationTypeKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationTypeKey));
+  } else if (key == wm::kWindowVisibilityAnimationVerticalPositionKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationVerticalPositionKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationVerticalPositionKey));
   }
 }
 

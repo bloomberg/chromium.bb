@@ -20,6 +20,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/wm/core/window_properties.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
@@ -31,6 +32,14 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::FrameBackButtonState)
 
 namespace ash {
+namespace {
+
+bool IsValidWindowVisibilityAnimationTransition(int64_t value) {
+  return value == wm::ANIMATE_SHOW || value == wm::ANIMATE_HIDE ||
+         value == wm::ANIMATE_BOTH || value == wm::ANIMATE_NONE;
+}
+
+}  // namespace
 
 void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterStringProperty(
@@ -139,6 +148,22 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterWindowPtrProperty(
       kTabDraggingSourceWindowKey, mojom::kTabDraggingSourceWindow_Property);
+  property_converter->RegisterTimeDeltaProperty(
+      wm::kWindowVisibilityAnimationDurationKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationDuration_Property);
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationTransitionKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationTransition_Property,
+      base::BindRepeating(&IsValidWindowVisibilityAnimationTransition));
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationTypeKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationType_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationVerticalPositionKey,
+      ws::mojom::WindowManager::
+          kWindowVisibilityAnimationVerticalPosition_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kArcPackageNameKey, nullptr);

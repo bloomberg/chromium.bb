@@ -35,17 +35,13 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_core_switches.h"
 #include "ui/wm/public/animation_host.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationType)
-DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationTransition)
-DEFINE_UI_CLASS_PROPERTY_TYPE(float)
-
 namespace wm {
 namespace {
-const float kWindowAnimation_Vertical_TranslateY = 15.f;
 
 // A base class for hiding animation observer which has two roles:
 // 1) Notifies AnimationHost at the end of hiding animation.
@@ -160,19 +156,6 @@ base::LazyInstance<HidingWindowMetricsReporter>::Leaky g_reporter_hide =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-DEFINE_UI_CLASS_PROPERTY_KEY(int,
-                          kWindowVisibilityAnimationTypeKey,
-                          WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
-                             kWindowVisibilityAnimationDurationKey,
-                             base::TimeDelta());
-DEFINE_UI_CLASS_PROPERTY_KEY(WindowVisibilityAnimationTransition,
-                          kWindowVisibilityAnimationTransitionKey,
-                          ANIMATE_BOTH);
-DEFINE_UI_CLASS_PROPERTY_KEY(float,
-                          kWindowVisibilityAnimationVerticalPositionKey,
-                          kWindowAnimation_Vertical_TranslateY);
 
 // A HidingWindowAnimationObserver that deletes observer and detached
 // layers upon the completion of the implicit animation.

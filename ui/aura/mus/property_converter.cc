@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/property_converter.h"
 
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ws/public/cpp/property_type_converters.h"
@@ -403,6 +404,15 @@ void PropertyConverter::RegisterString16Property(
       << "Property already registered: " << transport_name;
   string16_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
+}
+
+void PropertyConverter::RegisterTimeDeltaProperty(
+    const WindowProperty<base::TimeDelta>* property,
+    const char* transport_name) {
+  // TimeDelta is internally handled (by class_property) as a primitive
+  // value (int64_t) . See ClassPropertyCaster<base::TimeDelta> for details.
+  RegisterPrimitiveProperty(property, transport_name,
+                            CreateAcceptAnyValueCallback());
 }
 
 void PropertyConverter::RegisterUnguessableTokenProperty(
