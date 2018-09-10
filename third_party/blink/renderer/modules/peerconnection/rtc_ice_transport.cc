@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
@@ -48,25 +50,71 @@ RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
       WebString::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 
+class DefaultIceTransportAdapterCrossThreadFactory
+    : public IceTransportAdapterCrossThreadFactory {
+ public:
+  void InitializeOnMainThread() override {
+    DCHECK(!port_allocator_);
+    DCHECK(!worker_thread_rtc_thread_);
+    port_allocator_ = Platform::Current()->CreateWebRtcPortAllocator(
+        WebLocalFrame::FrameForCurrentContext());
+    worker_thread_rtc_thread_ =
+        Platform::Current()->GetWebRtcWorkerThreadRtcThread();
+  }
+
+  std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
+      IceTransportAdapter::Delegate* delegate) override {
+    DCHECK(port_allocator_);
+    DCHECK(worker_thread_rtc_thread_);
+    return std::make_unique<IceTransportAdapterImpl>(
+        delegate, std::move(port_allocator_), worker_thread_rtc_thread_);
+  }
+
+ private:
+  std::unique_ptr<cricket::PortAllocator> port_allocator_;
+  rtc::Thread* worker_thread_rtc_thread_ = nullptr;
+};
+
 }  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  return new RTCIceTransport(context);
+  LocalFrame* frame = ToDocument(context)->GetFrame();
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
+      frame->GetTaskRunner(TaskType::kNetworking);
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread =
+      Platform::Current()->GetWebRtcWorkerThread();
+  return new RTCIceTransport(
+      context, std::move(proxy_thread), std::move(host_thread),
+      std::make_unique<DefaultIceTransportAdapterCrossThreadFactory>());
 }
 
-RTCIceTransport::RTCIceTransport(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
-  Document* document = ToDocument(context);
-  LocalFrame* frame = document->GetFrame();
-  DCHECK(frame);
+RTCIceTransport* RTCIceTransport::Create(
+    ExecutionContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory) {
+  return new RTCIceTransport(context, std::move(proxy_thread),
+                             std::move(host_thread),
+                             std::move(adapter_factory));
+}
 
-  std::unique_ptr<cricket::PortAllocator> port_allocator =
-      Platform::Current()->CreateWebRtcPortAllocator(
-          WebLocalFrame::FrameForCurrentContext());
+RTCIceTransport::RTCIceTransport(
+    ExecutionContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
+    : ContextLifecycleObserver(context) {
+  DCHECK(context);
+  DCHECK(proxy_thread);
+  DCHECK(host_thread);
+  DCHECK(adapter_factory);
+  DCHECK(proxy_thread->BelongsToCurrentThread());
+
+  LocalFrame* frame = ToDocument(context)->GetFrame();
+  DCHECK(frame);
   proxy_.reset(new IceTransportProxy(
-      frame->GetFrameScheduler(), Platform::Current()->GetWebRtcWorkerThread(),
-      Platform::Current()->GetWebRtcWorkerThreadRtcThread(), this,
-      std::move(port_allocator)));
+      frame->GetFrameScheduler(), std::move(proxy_thread),
+      std::move(host_thread), this, std::move(adapter_factory)));
 
   GenerateLocalParameters();
 }

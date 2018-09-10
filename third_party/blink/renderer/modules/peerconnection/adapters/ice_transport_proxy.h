@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
 
@@ -54,11 +55,12 @@ class IceTransportProxy final {
   // given host thread and callbacks serviced by the given delegate.
   // The P2PTransportChannel will be created with the given PortAllocator.
   // The delegate must outlive the IceTransportProxy.
-  IceTransportProxy(FrameScheduler* frame_scheduler,
-                    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-                    rtc::Thread* host_thread_rtc_thread,
-                    Delegate* delegate,
-                    std::unique_ptr<cricket::PortAllocator> port_allocator);
+  IceTransportProxy(
+      FrameScheduler* frame_scheduler,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      Delegate* delegate,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
   ~IceTransportProxy();
 
   // These methods are proxied to an IceTransportAdapter instance.

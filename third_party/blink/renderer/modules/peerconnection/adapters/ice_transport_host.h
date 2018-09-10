@@ -10,10 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
-
-namespace rtc {
-class Thread;
-}
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 
 namespace blink {
 
@@ -47,8 +44,8 @@ class IceTransportHost final : public IceTransportAdapter::Delegate {
                    base::WeakPtr<IceTransportProxy> proxy);
   ~IceTransportHost() override;
 
-  void Initialize(std::unique_ptr<cricket::PortAllocator> port_allocator,
-                  rtc::Thread* host_thread_rtc_thread);
+  void Initialize(
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
   void StartGathering(
       const cricket::IceParameters& local_parameters,
