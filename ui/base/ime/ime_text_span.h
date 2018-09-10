@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ime/ui_base_ime_types_export.h"
 
 namespace ui {
 
 // Intentionally keep sync with blink::WebImeTextSpan defined in:
 // third_party/WebKit/public/web/WebImeTextSpan.h
 
-struct UI_BASE_IME_EXPORT ImeTextSpan {
+struct UI_BASE_IME_TYPES_EXPORT ImeTextSpan {
   enum class Type {
     // Creates a composition marker.
     kComposition,

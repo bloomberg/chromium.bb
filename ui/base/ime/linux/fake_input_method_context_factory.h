@@ -12,7 +12,8 @@ namespace ui {
 
 // An implementation of LinuxInputMethodContextFactory, which creates and
 // returns FakeInputMethodContext's.
-class FakeInputMethodContextFactory : public LinuxInputMethodContextFactory {
+class UI_BASE_IME_LINUX_EXPORT FakeInputMethodContextFactory
+    : public LinuxInputMethodContextFactory {
  public:
   FakeInputMethodContextFactory();
 
