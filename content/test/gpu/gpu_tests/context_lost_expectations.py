@@ -55,8 +55,14 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android'], bug=609629)
 
     # Flaking on Nexus 5X
+    self.Flaky('ContextLost_WebGLBlockedAfterJSNavigation',
+               ['android'], bug=882103)
     self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
               ['android'], bug=879423)
+    self.Fail('ContextLost_WorkerRAFAfterGPUCrash',
+              ['android'], bug=880078)
+    self.Fail('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
+              ['android'], bug=880078)
 
     # Nexus 6
     # The Nexus 6 times out on these tests while waiting for the JS to complete
@@ -64,9 +70,3 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
     self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
-
-    # Android
-    self.Fail('ContextLost_WorkerRAFAfterGPUCrash',
-              ['android'], bug=880078)
-    self.Fail('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
-              ['android'], bug=880078)
