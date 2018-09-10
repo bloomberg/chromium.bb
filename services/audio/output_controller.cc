@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/numerics/safe_conversions.h"
@@ -56,6 +57,31 @@ void LogStreamCreationResult(bool for_device_change,
     UMA_HISTOGRAM_ENUMERATION(
         "Media.AudioOutputController.ProxyStreamCreationResult", result,
         STREAM_CREATION_RESULT_MAX + 1);
+  }
+}
+
+void SanitizeAudioBus(media::AudioBus* bus) {
+  size_t channel_size = bus->frames();
+  for (int i = 0; i < bus->channels(); ++i) {
+    float* channel = bus->channel(i);
+    for (size_t j = 0; j < channel_size; ++j) {
+      // First check for all the invalid cases with a single conditional to
+      // optimize for the typical (data ok) case. Different cases are handled
+      // inside of the conditional. The condition is written like this to catch
+      // NaN. It cannot be simplified to "channel[j] < -1.f || channel[j] >
+      // 1.f", which isn't equivalent.
+      if (UNLIKELY(!(channel[j] >= -1.f && channel[j] <= 1.f))) {
+        // Don't just set all bad values to 0. If a value like 1.0001 is
+        // produced due to floating-point shenanigans, 1 will sound better than
+        // 0.
+        if (channel[j] < -1.f) {
+          channel[j] = -1.f;
+        } else {
+          // channel[j] > 1 or NaN.
+          channel[j] = 1.f;
+        }
+      }
+    }
   }
 }
 
@@ -345,10 +371,13 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   const base::TimeTicks reference_time = delay_timestamp + delay;
 
-  {
+  if (!dest->is_bitstream_format()) {
     base::AutoLock lock(realtime_snooper_lock_);
-    for (Snooper* snooper : realtime_snoopers_) {
-      snooper->OnData(*dest, reference_time, volume_);
+    if (!realtime_snoopers_.empty()) {
+      SanitizeAudioBus(dest);
+      for (Snooper* snooper : realtime_snoopers_) {
+        snooper->OnData(*dest, reference_time, volume_);
+      }
     }
   }
 
@@ -359,7 +388,7 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
-  if (!should_duplicate_.IsZero()) {
+  if (!should_duplicate_.IsZero() && !dest->is_bitstream_format()) {
     std::unique_ptr<media::AudioBus> copy(media::AudioBus::Create(params_));
     dest->CopyTo(copy.get());
     task_runner_->PostTask(
