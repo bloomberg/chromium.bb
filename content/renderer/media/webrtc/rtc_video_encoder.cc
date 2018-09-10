@@ -323,7 +323,11 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   }
   input_visible_size_ = input_visible_size;
   const media::VideoEncodeAccelerator::Config config(
-      media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000);
+      media::PIXEL_FORMAT_I420, input_visible_size_, profile, bitrate * 1000,
+      base::nullopt, base::nullopt,
+      video_content_type_ == webrtc::VideoContentType::SCREENSHARE
+          ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
+          : media::VideoEncodeAccelerator::Config::ContentType::kCamera);
   if (!video_encoder_->Initialize(config, this)) {
     LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
