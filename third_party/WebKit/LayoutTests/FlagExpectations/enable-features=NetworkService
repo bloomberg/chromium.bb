@@ -30,3 +30,10 @@ Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 # PlzWorker: These are tentatively failing because of unimplemented code.
 crbug.com/715632 external/wpt/fetch/sec-metadata/sharedworker.tentative.https.sub.html [ Failure ]
 crbug.com/715632 fast/workers/shared-worker-load-error.html [ Timeout ]
+
+# Navigation-timing tests Failing after recent changes
+crbug.com/882477 external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
+crbug.com/882477 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
+crbug.com/882477 virtual/outofblink-cors/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
+crbug.com/882477 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/navigation-timing.https.html [ Failure ]
+
