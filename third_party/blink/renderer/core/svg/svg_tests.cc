@@ -20,6 +20,8 @@
 
 #include "third_party/blink/renderer/core/svg/svg_tests.h"
 
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_static_string_list.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -60,11 +62,27 @@ static bool IsLangTagPrefix(const String& lang_tag, const String& language) {
          lang_tag[language.length()] == '-';
 }
 
+static bool MatchLanguageList(const String& lang_tag,
+                                 const Vector<String>& languages) {
+  for (const auto& value : languages) {
+    if (IsLangTagPrefix(lang_tag, value))
+      return true;
+  }
+  return false;
+}
+
 bool SVGTests::IsValid() const {
   if (system_language_->IsSpecified()) {
     bool match_found = false;
+    Vector<String> languages;
+    system_language_->ContextElement()
+        ->GetDocument()
+        .GetPage()
+        ->GetChromeClient()
+        .AcceptLanguages()
+        .Split(',', languages);
     for (const auto& lang_tag : system_language_->Value()->Values()) {
-      if (IsLangTagPrefix(lang_tag, DefaultLanguage())) {
+      if (MatchLanguageList(lang_tag, languages)) {
         match_found = true;
         break;
       }
