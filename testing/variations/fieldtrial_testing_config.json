@@ -3799,6 +3799,24 @@
             ]
         }
     ],
+    "SafeBrowsingUseLocalBlacklistsV2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled_300",
+                    "params": {
+                        "local_blacklists_update_interval_in_secs": "300"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingUseLocalBlacklistsV2"
+                    ]
+                }
+            ]
+        }
+    ],
     "SavePreviousDocumentResources": [
         {
             "platforms": [
