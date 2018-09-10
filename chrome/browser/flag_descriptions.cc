@@ -3327,11 +3327,6 @@ const char kExperimentalAccessibilityFeaturesName[] =
 const char kExperimentalAccessibilityFeaturesDescription[] =
     "Enable additional accessibility features in the Settings page.";
 
-const char kExperimentalInputViewFeaturesName[] =
-    "Experimental input view features";
-const char kExperimentalInputViewFeaturesDescription[] =
-    "Enable experimental features for IME input views.";
-
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";

@@ -275,8 +275,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "gestureediting", keyboard::IsGestureEditingEnabled()));
   features->AppendString(GenerateFeatureFlag(
-      "experimental", keyboard::IsExperimentalInputViewEnabled()));
-  features->AppendString(GenerateFeatureFlag(
       "fullscreenhandwriting",
       keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled()));
   features->AppendString(GenerateFeatureFlag(
