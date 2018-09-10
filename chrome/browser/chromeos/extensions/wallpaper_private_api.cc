@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
+#include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/command_line.h"
@@ -70,11 +66,13 @@ namespace get_surprise_me_image = wallpaper_private::GetSurpriseMeImage;
 
 namespace {
 
-// The time in seconds and retry limit to re-check the profile sync service
-// status. Only after the profile sync service has been configured, we can get
-// the correct value of the user sync preference of "syncThemes".
-constexpr int kRetryDelay = 10;
+// The time and retry limit to re-check the profile sync service status. The
+// sync extension function can get the correct value of the "syncThemes" user
+// preference only after the profile sync service has been configured.
+constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(10);
 constexpr int kRetryLimit = 3;
+
+constexpr char kSyncThemes[] = "syncThemes";
 
 constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
 constexpr char kJpgFilePattern[] = "*.[jJ][pP][gG]";
@@ -152,7 +150,7 @@ const user_manager::User* GetUserFromBrowserContext(
   return user;
 }
 
-ash::WallpaperType getWallpaperType(wallpaper_private::WallpaperSource source) {
+ash::WallpaperType GetWallpaperType(wallpaper_private::WallpaperSource source) {
   switch (source) {
     case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
       return ash::ONLINE;
@@ -295,11 +293,11 @@ WallpaperPrivateGetSyncSettingFunction::Run() {
 void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  if (retry_number > kRetryLimit) {
+  if (retry_number_ > kRetryLimit) {
     // It's most likely that the wallpaper synchronization is enabled (It's
     // enabled by default so unless the user disables it explicitly it remains
     // enabled).
-    dict->SetBoolean("syncThemes", true);
+    dict->SetBoolean(kSyncThemes, true);
     Respond(OneArgument(std::move(dict)));
     return;
   }
@@ -308,14 +306,14 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   if (!sync_service) {
-    dict->SetBoolean("syncThemes", false);
+    dict->SetBoolean(kSyncThemes, false);
     Respond(OneArgument(std::move(dict)));
     return;
   }
 
   if (sync_service->GetTransportState() ==
       syncer::SyncService::TransportState::ACTIVE) {
-    dict->SetBoolean("syncThemes",
+    dict->SetBoolean(kSyncThemes,
                      sync_service->GetActiveDataTypes().Has(syncer::THEMES));
     Respond(OneArgument(std::move(dict)));
     return;
@@ -325,13 +323,13 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   // when we're trying to query the user preference (this seems only happen for
   // the first time configuration). In this case GetActiveDataTypes() returns an
   // empty set. So re-check the status later.
-  retry_number++;
+  retry_number_++;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
                          CheckProfileSyncServiceStatus,
                      this),
-      base::TimeDelta::FromSeconds(retry_number * kRetryDelay));
+      retry_number_ * kRetryDelay);
 }
 
 WallpaperPrivateSetWallpaperIfExistsFunction::
@@ -673,7 +671,7 @@ WallpaperPrivateRecordWallpaperUMAFunction::Run() {
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ash::WallpaperType source = getWallpaperType(params->source);
+  ash::WallpaperType source = GetWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
                             ash::WALLPAPER_TYPE_COUNT);
   return RespondNow(NoArguments());
