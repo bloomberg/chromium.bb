@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -197,9 +196,8 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
     ScriptState::Scope scope(script_state);
-    v8::Local<v8::Value> exception =
-        V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
-            script_state, event, script_state->GetContext()->Global());
+    v8::Local<v8::Value> exception = LoadExceptionForInspector(
+        script_state, event, script_state->GetContext()->Global());
     SourceLocation* location = event->Location();
     String message = event->MessageForConsole();
     String url = location->Url();

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_embedder_graph_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_event.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
@@ -277,8 +276,8 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   if (!message_for_console.IsEmpty())
     event->SetUnsanitizedMessage("Uncaught " + message_for_console);
 
-  V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-      script_state, event, data, script_state->GetContext()->Global());
+  StoreExceptionForInspector(script_state, event, data,
+                             script_state->GetContext()->Global());
   context->DispatchErrorEvent(event, access_control_status);
 }
 
@@ -323,8 +322,8 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
   // If execution termination has been triggered as part of constructing
   // the error event from the v8::Message, quietly leave.
   if (!isolate->IsExecutionTerminating()) {
-    V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-        script_state, event, data, script_state->GetContext()->Global());
+    StoreExceptionForInspector(script_state, event, data,
+                               script_state->GetContext()->Global());
     ExecutionContext::From(script_state)
         ->DispatchErrorEvent(event, cors_status);
   }

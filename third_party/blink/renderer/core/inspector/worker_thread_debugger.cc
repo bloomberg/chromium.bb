@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -131,9 +131,8 @@ void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
       worker_thread->GlobalScope()->ScriptController()->GetScriptState();
   if (script_state && script_state->ContextIsValid()) {
     ScriptState::Scope scope(script_state);
-    v8::Local<v8::Value> exception =
-        V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
-            script_state, event, script_state->GetContext()->Global());
+    v8::Local<v8::Value> exception = LoadExceptionForInspector(
+        script_state, event, script_state->GetContext()->Global());
     SourceLocation* location = event->Location();
     String message = event->MessageForConsole();
     String url = location->Url();

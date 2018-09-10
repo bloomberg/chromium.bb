@@ -39,8 +39,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -345,9 +345,9 @@ bool WorkerOrWorkletScriptController::Evaluate(
             ErrorEvent::Create(state.error_message, state.location_->Clone(),
                                state.exception, world_.get());
       }
-      V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-          script_state_, *error_event, state.exception.V8Value(),
-          script_state_->GetContext()->Global());
+      StoreExceptionForInspector(script_state_, *error_event,
+                                 state.exception.V8Value(),
+                                 script_state_->GetContext()->Global());
     } else {
       DCHECK(!global_scope_->ShouldSanitizeScriptError(
           state.location_->Url(), kNotSharableCrossOrigin));

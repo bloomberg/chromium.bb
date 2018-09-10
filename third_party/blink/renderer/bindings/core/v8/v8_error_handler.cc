@@ -90,45 +90,6 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
   return return_value;
 }
 
-// static
-void V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-    ScriptState* script_state,
-    ErrorEvent* event,
-    v8::Local<v8::Value> data,
-    v8::Local<v8::Object> creation_context) {
-  v8::Local<v8::Value> wrapped_event =
-      ToV8(event, creation_context, script_state->GetIsolate());
-  if (wrapped_event.IsEmpty())
-    return;
-
-  DCHECK(wrapped_event->IsObject());
-  auto private_error =
-      V8PrivateProperty::GetErrorEventError(script_state->GetIsolate());
-  private_error.Set(wrapped_event.As<v8::Object>(), data);
-}
-
-// static
-v8::Local<v8::Value> V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
-    ScriptState* script_state,
-    ErrorEvent* event,
-    v8::Local<v8::Object> creation_context) {
-  v8::Local<v8::Value> wrapped_event =
-      ToV8(event, creation_context, script_state->GetIsolate());
-  if (wrapped_event.IsEmpty() || !wrapped_event->IsObject())
-    return v8::Local<v8::Value>();
-
-  DCHECK(wrapped_event->IsObject());
-  auto private_error =
-      V8PrivateProperty::GetErrorEventError(script_state->GetIsolate());
-  v8::Local<v8::Value> error;
-  if (!private_error.GetOrUndefined(wrapped_event.As<v8::Object>())
-           .ToLocal(&error) ||
-      error->IsUndefined()) {
-    return v8::Local<v8::Value>();
-  }
-  return error;
-}
-
 bool V8ErrorHandler::ShouldPreventDefault(v8::Local<v8::Value> return_value,
                                           Event* event) {
   // Special event handling should be done here according to HTML Standard:
