@@ -38,9 +38,21 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 
   virtual void Trace(blink::Visitor*);
 
+  // Check the identity of |callback_object_|. There can be multiple
+  // CallbackInterfaceBase objects that have the same |callback_object_| but
+  // have different |incumbent_script_state_|s.
+  bool HasTheSameCallbackObject(const CallbackInterfaceBase& other) const {
+    return callback_object_ == other.callback_object_;
+  }
+
+  v8::Local<v8::Object> CallbackObject() {
+    return callback_object_.NewLocal(GetIsolate());
+  }
+
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();
   }
+
   ScriptState* CallbackRelevantScriptState() {
     return callback_relevant_script_state_;
   }
@@ -55,9 +67,6 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
                         SingleOperationOrNot);
 
-  v8::Local<v8::Object> CallbackObject() {
-    return callback_object_.NewLocal(GetIsolate());
-  }
   // Returns true iff the callback interface is a single operation callback
   // interface and the callback interface type value is callable.
   bool IsCallbackObjectCallable() const { return is_callback_object_callable_; }

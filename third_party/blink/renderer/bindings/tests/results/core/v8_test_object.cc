@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_attr.h"
@@ -1607,7 +1607,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
   EventListener* cppValue(WTF::GetPtr(impl->eventHandlerAttribute()));
 
-  V8SetReturnValue(info, V8AbstractEventListener::GetListenerOrNull(info.GetIsolate(), impl, cppValue));
+  V8SetReturnValue(info, V8AbstractEventHandler::GetListenerOrNull(info.GetIsolate(), impl, cppValue));
 }
 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {

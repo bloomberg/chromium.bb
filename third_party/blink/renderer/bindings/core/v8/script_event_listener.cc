@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_lazy_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -97,11 +98,13 @@ EventListener* CreateAttributeEventListener(
 
 v8::Local<v8::Object> EventListenerHandler(ExecutionContext* execution_context,
                                            EventListener* listener) {
-  if (listener->GetType() != EventListener::kJSEventListenerType)
-    return v8::Local<v8::Object>();
-  V8AbstractEventListener* v8_listener =
-      static_cast<V8AbstractEventListener*>(listener);
-  return v8_listener->GetListenerObject(execution_context);
+  if (auto* v8_listener = V8AbstractEventHandler::Cast(listener)) {
+    return v8_listener->GetListenerObject(execution_context);
+  }
+  if (auto* v8_listener = V8EventListenerImpl::Cast(listener)) {
+    return v8_listener->GetListenerObject();
+  }
+  return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Function> EventListenerEffectiveFunction(
@@ -142,6 +145,8 @@ void GetFunctionLocation(v8::Local<v8::Function> function,
   column_number = function->GetScriptColumnNumber();
 }
 
+// TODO(yukiy): move this method into V8EventListenerImpl or interface class
+// of EventListener and EventHandler
 std::unique_ptr<SourceLocation> GetFunctionLocation(
     ExecutionContext* execution_context,
     EventListener* listener) {

@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_LAZY_EVENT_LISTENER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_handler.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "v8/include/v8.h"
 
@@ -44,7 +44,7 @@ class Node;
 // V8LazyEventListener is a wrapper for a JavaScript code string that is
 // compiled and evaluated when an event is fired.  A V8LazyEventListener is
 // either a HTML or SVG event handler.
-class V8LazyEventListener final : public V8AbstractEventListener {
+class V8LazyEventListener final : public V8AbstractEventHandler {
  public:
   static V8LazyEventListener* Create(const AtomicString& function_name,
                                      const AtomicString& event_parameter_name,
@@ -59,7 +59,7 @@ class V8LazyEventListener final : public V8AbstractEventListener {
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(node_);
-    V8AbstractEventListener::Trace(visitor);
+    V8AbstractEventHandler::Trace(visitor);
   }
 
   const String& Code() const override { return code_; }

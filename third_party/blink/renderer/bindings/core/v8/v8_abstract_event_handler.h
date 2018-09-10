@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_HANDLER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
@@ -51,18 +51,18 @@ class EventTarget;
 // Why does this matter?
 // WebKit does not allow duplicated HTML event handlers of the same type,
 // but ALLOWs duplicated non-HTML event handlers.
-class CORE_EXPORT V8AbstractEventListener : public EventListener {
+class CORE_EXPORT V8AbstractEventHandler : public EventListener {
  public:
-  ~V8AbstractEventListener() override;
+  ~V8AbstractEventHandler() override;
 
-  static const V8AbstractEventListener* Cast(const EventListener* listener) {
-    return listener->GetType() == kJSEventListenerType
-               ? static_cast<const V8AbstractEventListener*>(listener)
+  static const V8AbstractEventHandler* Cast(const EventListener* listener) {
+    return listener->GetType() == kJSEventHandlerType
+               ? static_cast<const V8AbstractEventHandler*>(listener)
                : nullptr;
   }
 
-  static V8AbstractEventListener* Cast(EventListener* listener) {
-    return const_cast<V8AbstractEventListener*>(
+  static V8AbstractEventHandler* Cast(EventListener* listener) {
+    return const_cast<V8AbstractEventHandler*>(
         Cast(const_cast<const EventListener*>(listener)));
   }
 
@@ -115,7 +115,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
   void Trace(blink::Visitor*) override;
 
  protected:
-  V8AbstractEventListener(v8::Isolate*, bool is_attribute, DOMWrapperWorld&);
+  V8AbstractEventHandler(v8::Isolate*, bool is_attribute, DOMWrapperWorld&);
 
   virtual v8::Local<v8::Object> GetListenerObjectInternal(
       ExecutionContext* execution_context) {
@@ -141,7 +141,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
   virtual bool ShouldPreventDefault(v8::Local<v8::Value> return_value, Event*);
 
   static void WrapperCleared(
-      const v8::WeakCallbackInfo<V8AbstractEventListener>&);
+      const v8::WeakCallbackInfo<V8AbstractEventHandler>&);
 
   TraceWrapperV8Reference<v8::Object> listener_;
 
@@ -154,4 +154,4 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_HANDLER_H_

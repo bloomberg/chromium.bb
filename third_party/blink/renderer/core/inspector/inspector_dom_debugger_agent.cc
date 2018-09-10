@@ -108,7 +108,7 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
       continue;
     for (size_t k = 0; k < listeners->size(); ++k) {
       EventListener* event_listener = listeners->at(k).Callback();
-      if (event_listener->GetType() != EventListener::kJSEventListenerType)
+      if (event_listener->IsNativeBased())
         continue;
       // TODO(yukiy): Use a child class of blink::EventListener that is for v8
       // event listeners here if it is implemented in redesigning
@@ -118,8 +118,8 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
       // Optionally hide listeners from other contexts.
       if (!report_for_all_contexts && context != isolate->GetCurrentContext())
         continue;
-      // getListenerObject() may cause JS in the event attribute to get
-      // compiled, potentially unsuccessfully.  In that case, the function
+      // GetListenerObjectForInspector() may cause JS in the event attribute to
+      // get compiled, potentially unsuccessfully.  In that case, the function
       // returns the empty handle without an exception.
       v8::Local<v8::Object> handler =
           event_listener->GetListenerObjectForInspector(execution_context);
