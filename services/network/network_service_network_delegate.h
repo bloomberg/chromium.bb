@@ -55,10 +55,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
 
   void FinishedClearSiteData(base::WeakPtr<net::URLRequest> request,
                              net::CompletionOnceCallback callback);
+  void FinishedCanSendReportingReports(
+      base::OnceCallback<void(std::set<url::Origin>)> result_callback,
+      const std::vector<url::Origin>& origins);
 
   NetworkContext* network_context_;
 
-  base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_;
+  mutable base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegate);
 };

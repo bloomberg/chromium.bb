@@ -35,6 +35,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   TestNetworkContext() = default;
   ~TestNetworkContext() override = default;
 
+  void SetClient(mojom::NetworkContextClientPtr client) override {}
   void CreateURLLoaderFactory(
       mojom::URLLoaderFactoryRequest request,
       mojom::URLLoaderFactoryParamsPtr params) override {}
