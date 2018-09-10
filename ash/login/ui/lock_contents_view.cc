@@ -99,7 +99,8 @@ void SetPreferredWidthForView(views::View* view, int width) {
 class AuthErrorLearnMoreButton : public views::Button,
                                  public views::ButtonListener {
  public:
-  AuthErrorLearnMoreButton() : views::Button(this) {
+  AuthErrorLearnMoreButton(LoginBubble* parent_bubble)
+      : views::Button(this), parent_bubble_(parent_bubble) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
@@ -115,7 +116,13 @@ class AuthErrorLearnMoreButton : public views::Button,
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp();
+    parent_bubble_->Close();
   }
+
+ private:
+  LoginBubble* parent_bubble_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
 };
 
 // Returns the first or last focusable child of |root|. If |reverse| is false,
@@ -1477,7 +1484,8 @@ void LockContentsView::ShowAuthErrorMessage() {
   MakeSectionBold(label, error_text, bold_start, bold_length);
   label->set_auto_color_readability_enabled(false);
 
-  auto* learn_more_button = new AuthErrorLearnMoreButton();
+  auto* learn_more_button =
+      new AuthErrorLearnMoreButton(auth_error_bubble_.get());
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
