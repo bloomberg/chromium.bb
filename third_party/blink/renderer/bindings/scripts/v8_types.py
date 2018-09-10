@@ -412,7 +412,7 @@ INCLUDES_FOR_TYPE = {
                             'core/typed_arrays/array_buffer_view_helpers.h',
                             'core/typed_arrays/flexible_array_buffer_view.h']),
     'Dictionary': set(['bindings/core/v8/dictionary.h']),
-    'EventHandler': set(['bindings/core/v8/v8_abstract_event_listener.h',
+    'EventHandler': set(['bindings/core/v8/v8_abstract_event_handler.h',
                          'bindings/core/v8/v8_event_listener_helper.h']),
     'EventListener': set(['bindings/core/v8/binding_security.h',
                           'bindings/core/v8/v8_event_listener_helper.h',
@@ -1040,7 +1040,7 @@ CPP_VALUE_TO_V8_VALUE = {
     # Special cases
     'Dictionary': '{cpp_value}.V8Value()',
     'EventHandler':
-        'V8AbstractEventListener::GetListenerOrNull({isolate}, impl, {cpp_value})',
+        'V8AbstractEventHandler::GetListenerOrNull({isolate}, impl, {cpp_value})',
     'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',
