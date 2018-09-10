@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
+#include "components/os_crypt/os_crypt.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -160,6 +161,11 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
+  // Initialize the OSCrypt.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  OSCrypt::Init(local_state);
+
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::PRE_PROFILE_INIT);
   ChromeBrowserMainPartsPosix::PreProfileInit();
