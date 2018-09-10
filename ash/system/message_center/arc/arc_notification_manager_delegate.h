@@ -28,6 +28,9 @@ class ArcNotificationManagerDelegate {
 
   // Shows the message center.
   virtual void ShowMessageCenter() = 0;
+
+  // Hides the message center.
+  virtual void HideMessageCenter() = 0;
 };
 
 }  // namespace ash

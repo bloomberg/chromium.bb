@@ -85,6 +85,7 @@ class FakeArcNotificationManagerDelegate
     std::move(callback).Run(std::string());
   }
   void ShowMessageCenter() override {}
+  void HideMessageCenter() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeArcNotificationManagerDelegate);

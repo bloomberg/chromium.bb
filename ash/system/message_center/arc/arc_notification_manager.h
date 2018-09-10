@@ -51,6 +51,7 @@ class ArcNotificationManager
   void OnNotificationUpdated(arc::mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const std::string& key) override;
   void OpenMessageCenter() override;
+  void CloseMessageCenter() override;
   void OnDoNotDisturbStatusUpdated(
       arc::mojom::ArcDoNotDisturbStatusPtr status) override;
 
