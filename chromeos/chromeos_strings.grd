@@ -128,13 +128,13 @@ Try tapping the mic to ask me anything.
         Nothing found on screen
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
-        Timer done
+        Time's up
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_CONTENT" desc="Content for assistant timer notification.">
         00:00s
       </message>
       <message name="IDS_ASSISTANT_STOP_TIMER_QUERY" desc="Query for stopping assistant timer.">
-        stop timer
+        Stop timer
       </message>
     </messages>
   </release>
