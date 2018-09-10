@@ -40,10 +40,9 @@ public class ActivityTabStartupMetricsTracker {
                 .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
                     @Override
                     public void onSuccess() {
-                        // Activity could have called finish and returned early during startup but
-                        // not have onDestroy called yet. The activity's TabModelSelector may not
-                        // have been initialized causing a crash. See https://crbug.com/847580
-                        if (mActivity.isActivityFinishing()) return;
+                        // The activity's TabModelSelector may not have been initialized yet
+                        // causing a crash. See https://crbug.com/847580
+                        if (!mActivity.areTabModelsInitialized()) return;
                         registerObservers();
                     }
 
