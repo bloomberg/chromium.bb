@@ -294,7 +294,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
         ProfileSyncServiceFactory::GetForBrowserState(browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
         syncer::REASON_DECRYPTION,
-        syncer::KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+        syncer::KeyDerivationParams::CreateForPbkdf2(),
         sync_pb::EncryptedData());
     return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);
   };

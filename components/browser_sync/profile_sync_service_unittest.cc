@@ -262,7 +262,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void TriggerPassphraseRequired() {
     service_->GetEncryptionObserverForTest()->OnPassphraseRequired(
         syncer::REASON_DECRYPTION,
-        syncer::KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+        syncer::KeyDerivationParams::CreateForPbkdf2(),
         sync_pb::EncryptedData());
   }
 

@@ -76,7 +76,7 @@ std::string GetNigoriName(const Nigori& nigori) {
 // Returns a set of KeyParams for the cryptographer. Each input 'n' value
 // results in a different set of parameters.
 KeyParams GetNthKeyParams(int n) {
-  return {KeyDerivationParams::CreateForPbkdf2("localhost", "userX"),
+  return {KeyDerivationParams::CreateForPbkdf2(),
           base::StringPrintf("pw%02d", n)};
 }
 

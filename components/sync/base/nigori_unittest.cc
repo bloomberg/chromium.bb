@@ -16,32 +16,29 @@ namespace {
 
 TEST(SyncNigoriTest, Permute) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string permuted;
   EXPECT_TRUE(nigori.Permute(Nigori::Password, "test name", &permuted));
 
   std::string expected =
-      "prewwdJj2PrGDczvmsHJEE5ndcCyVze8sY9kD5hjY/Tm"
-      "c5kOjXFK7zB3Ss4LlHjEDirMu+vh85JwHOnGrMVe+g==";
+      "evpwwPT726JS/mhxv1UwPVLDz5ha/GrMA8HfA3sQGJr5"
+      "5zFtrFep7DXu9FIyGbBEdlHNWtwVlPVE5FEgyoV++w==";
   EXPECT_EQ(expected, permuted);
 }
 
 TEST(SyncNigoriTest, PermuteIsConstant) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori1.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                       "password"));
 
   std::string permuted1;
   EXPECT_TRUE(nigori1.Permute(Nigori::Password, "name", &permuted1));
 
   Nigori nigori2;
-  EXPECT_TRUE(nigori2.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori2.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                       "password"));
 
   std::string permuted2;
   EXPECT_TRUE(nigori2.Permute(Nigori::Password, "name", &permuted2));
@@ -52,9 +49,8 @@ TEST(SyncNigoriTest, PermuteIsConstant) {
 
 TEST(SyncNigoriTest, EncryptDifferentIv) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string plaintext("value");
 
@@ -69,13 +65,12 @@ TEST(SyncNigoriTest, EncryptDifferentIv) {
 
 TEST(SyncNigoriTest, Decrypt) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string encrypted =
-      "e7+JyS6ibj6F5qqvpseukNRTZ+oBpu5iuv2VYjOfrH1dNiFLNf7Ov0"
-      "kx/zicKFn0lJcbG1UmkNWqIuR4x+quDNVuLaZGbrJPhrJuj7cokCM=";
+      "NNYlnzaaLPXWXyzz8J+u4OKgLiKRBPu2GJdjHWk0m3ADZrJhnmer30"
+      "Zgiy4Ulxlfh6fmS71k8rop+UvSJdL1k/fcNLJ1C6sY5Z86ijyl1Jo=";
 
   std::string plaintext;
   EXPECT_TRUE(nigori.Decrypt(encrypted, &plaintext));
@@ -86,9 +81,8 @@ TEST(SyncNigoriTest, Decrypt) {
 
 TEST(SyncNigoriTest, EncryptDecrypt) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string plaintext("value");
 
@@ -103,9 +97,8 @@ TEST(SyncNigoriTest, EncryptDecrypt) {
 
 TEST(SyncNigoriTest, CorruptedIv) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string plaintext("test");
 
@@ -123,9 +116,8 @@ TEST(SyncNigoriTest, CorruptedIv) {
 
 TEST(SyncNigoriTest, CorruptedCiphertext) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string plaintext("test");
 
@@ -144,9 +136,8 @@ TEST(SyncNigoriTest, CorruptedCiphertext) {
 
 TEST(SyncNigoriTest, ExportImport) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori1.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                       "password"));
 
   std::string user_key;
   std::string encryption_key;
@@ -176,9 +167,8 @@ TEST(SyncNigoriTest, ExportImport) {
 
 TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
   Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "password"));
 
   std::string user_key;
   std::string encryption_key;
@@ -190,9 +180,8 @@ TEST(SyncNigoriTest, InitByDerivationSetsUserKey) {
 
 TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   Nigori nigori1;
-  EXPECT_TRUE(nigori1.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("example.com", "username"),
-      "password"));
+  EXPECT_TRUE(nigori1.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                       "password"));
 
   std::string user_key;
   std::string encryption_key;
@@ -212,6 +201,30 @@ TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   EXPECT_FALSE(mac_key.empty());
 }
 
+TEST(SyncNigoriTest, InitByDerivationShouldDeriveCorrectKeyUsingPbkdf2) {
+  const std::string kPassphrase = "hunter2";
+
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      kPassphrase));
+
+  std::string user_key;
+  std::string encryption_key;
+  std::string mac_key;
+  nigori.ExportKeys(&user_key, &encryption_key, &mac_key);
+  // These are reference values obtained by running PBKDF2 with Nigori's
+  // parameters and the input values given above.
+  EXPECT_EQ(
+      "025599e143c4923d77f65b99d97019a3",
+      base::ToLowerASCII(base::HexEncode(user_key.data(), user_key.size())));
+  EXPECT_EQ("4596bf346572497d92b2a0e2146d93c1",
+            base::ToLowerASCII(
+                base::HexEncode(encryption_key.data(), encryption_key.size())));
+  EXPECT_EQ(
+      "2292ad9db96fe590b22a58db50f6f545",
+      base::ToLowerASCII(base::HexEncode(mac_key.data(), mac_key.size())));
+}
+
 TEST(SyncNigoriTest, InitByDerivationShouldDeriveCorrectKeyUsingScrypt) {
   const std::string kSalt = "alpensalz";
   const std::string kPassphrase = "hunter2";
@@ -227,15 +240,17 @@ TEST(SyncNigoriTest, InitByDerivationShouldDeriveCorrectKeyUsingScrypt) {
   // user_key is not used anymore, but is being set for backwards compatibility
   // (because legacy clients cannot import a Nigori node without one).
   // Therefore, we just initialize it to all zeroes.
-  EXPECT_EQ("00000000000000000000000000000000",
-            base::ToLowerASCII(base::HexEncode(&user_key[0], user_key.size())));
+  EXPECT_EQ(
+      "00000000000000000000000000000000",
+      base::ToLowerASCII(base::HexEncode(user_key.data(), user_key.size())));
   // These are reference values obtained by running scrypt with Nigori's
   // parameters and the input values given above.
   EXPECT_EQ("8aa735e0091339a5e51da3b3dd1b328a",
             base::ToLowerASCII(
-                base::HexEncode(&encryption_key[0], encryption_key.size())));
-  EXPECT_EQ("a7e73611968dfd2bca5b3382aed451ba",
-            base::ToLowerASCII(base::HexEncode(&mac_key[0], mac_key.size())));
+                base::HexEncode(encryption_key.data(), encryption_key.size())));
+  EXPECT_EQ(
+      "a7e73611968dfd2bca5b3382aed451ba",
+      base::ToLowerASCII(base::HexEncode(mac_key.data(), mac_key.size())));
 }
 
 TEST(SyncNigoriTest,
@@ -250,9 +265,8 @@ TEST(SyncNigoriTest,
 TEST(SyncNigoriTest, InitByDerivationShouldReportPbkdf2DurationInHistogram) {
   Nigori nigori;
   base::HistogramTester histogram_tester;
-  ASSERT_TRUE(nigori.InitByDerivation(
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
-      "Passphrase!"));
+  ASSERT_TRUE(nigori.InitByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                      "Passphrase!"));
 
   histogram_tester.ExpectTotalCount(
       "Sync.Crypto.NigoriKeyDerivationDuration.Pbkdf2", /*count=*/1);
