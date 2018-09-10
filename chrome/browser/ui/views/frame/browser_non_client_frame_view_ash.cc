@@ -553,7 +553,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
     }
 
     BrowserNonClientFrameView::Layout();
-
+    UpdateTopViewInset();
     UpdateClientArea();
 
     frame()->GetNativeWindow()->SetProperty(ash::kFrameImageYInsetKey,
@@ -580,13 +580,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   }
 
   BrowserNonClientFrameView::Layout();
-  const bool immersive =
-      browser_view()->immersive_mode_controller()->IsEnabled();
-  const bool tab_strip_visible = browser_view()->IsTabStripVisible();
-  // In immersive fullscreen mode, the top view inset property should be 0.
-  const int inset =
-      (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
-  frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
+  UpdateTopViewInset();
 
   // The top right corner must be occupied by a caption button for easy mouse
   // access. This check is agnostic to RTL layout.
@@ -1037,4 +1031,14 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     window->ClearProperty(ash::kFrameActiveColorKey);
     window->ClearProperty(ash::kFrameInactiveColorKey);
   }
+}
+
+void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {
+  // In immersive fullscreen mode, the top view inset property should be 0.
+  const bool immersive =
+      browser_view()->immersive_mode_controller()->IsEnabled();
+  const bool tab_strip_visible = browser_view()->IsTabStripVisible();
+  const int inset =
+      (tab_strip_visible || immersive) ? 0 : GetTopInset(/*restored=*/false);
+  frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, inset);
 }

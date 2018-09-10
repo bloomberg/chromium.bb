@@ -196,6 +196,9 @@ class BrowserNonClientFrameViewAsh
   // To be called after the frame's colors may have changed.
   void UpdateFrameColors();
 
+  // Updates the kTopViewInset window property after a layout.
+  void UpdateTopViewInset();
+
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 

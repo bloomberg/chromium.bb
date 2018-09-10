@@ -36,8 +36,6 @@
 # The browser frame is a work in progress.
 -BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
--BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
--BrowserNonClientFrameViewAshTest.TopViewInset/*
 
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.TestScrollingPage
