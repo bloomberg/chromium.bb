@@ -331,7 +331,7 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // |new_blacklisted_.get()| in that case. The PasswordForm will usually get
   // accessed via |blacklisted_matches_|, this unique_ptr is only used to store
   // it (unlike the rest of forms being pointed to in |blacklisted_matches_|,
-  // which are owned by |form_fetcher_|.
+  // which are owned by |form_fetcher_|).
   std::unique_ptr<autofill::PasswordForm> new_blacklisted_;
 
   // The PasswordForm from the page or dialog managed by |this|.

@@ -811,4 +811,21 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordToAlreadyExisting) {
   EXPECT_FALSE(form_manager_->IsPasswordOverridden());
 }
 
+TEST_F(NewPasswordFormManagerTest, PermanentlyBlacklist) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  PasswordForm* new_blacklisted_form = nullptr;
+  EXPECT_CALL(form_saver, PermanentlyBlacklist(_))
+      .WillOnce(SaveArg<0>(&new_blacklisted_form));
+
+  form_manager_->PermanentlyBlacklist();
+  ASSERT_TRUE(new_blacklisted_form);
+  EXPECT_EQ(observed_form_.origin, new_blacklisted_form->origin);
+  EXPECT_EQ(GetSignonRealm(observed_form_.origin),
+            new_blacklisted_form->signon_realm);
+}
+
 }  // namespace  password_manager

@@ -211,6 +211,15 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // form. They are owned by |form_fetcher_|.
   std::vector<const autofill::PasswordForm*> blacklisted_matches_;
 
+  // If the observed form gets blacklisted through |this|, the blacklist entry
+  // gets stored in |new_blacklisted_| until data is potentially refreshed by
+  // reading from PasswordStore again. |blacklisted_matches_| will contain
+  // |new_blacklisted_.get()| in that case. The PasswordForm will usually get
+  // accessed via |blacklisted_matches_|, this unique_ptr is only used to store
+  // it (unlike the rest of forms being pointed to in |blacklisted_matches_|,
+  // which are owned by |form_fetcher_|).
+  std::unique_ptr<autofill::PasswordForm> new_blacklisted_;
+
   // Convenience pointer to entry in best_matches_ that is marked
   // as preferred. This is only allowed to be null if there are no best matches
   // at all, since there will always be one preferred login when there are
