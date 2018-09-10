@@ -392,6 +392,7 @@ void Connector::WaitToReadMore() {
   CHECK(!paused_);
   DCHECK(!handle_watcher_);
 
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   handle_watcher_.reset(new SimpleWatcher(
       FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL, task_runner_));
   handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
