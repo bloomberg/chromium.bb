@@ -20,7 +20,7 @@ class UiDelegate {
   // detached from the associated activity.
   virtual void OnDestroy() = 0;
 
-  // Called when a script has been selected.
+  // Called when a script was selected for execution.
   virtual void OnScriptSelected(const std::string& script_path) = 0;
 
  protected:
