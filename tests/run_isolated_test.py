@@ -680,6 +680,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # Interestingly, because we would need to put something in the named cache
     # for it to be kept, we need the tool to write to it. This is tested in the
     # smoke test.
+    trimmed = []
+    def trim_caches(caches, root, min_free_space, max_age_secs):
+      trimmed.append(True)
+      self.assertEqual(2, len(caches))
+      self.assertTrue(root)
+      # The name cache root is increased by the sum of the two hints.
+      self.assertEqual(2*1024*1024*1024 + 1100, min_free_space)
+      self.assertEqual(1814400, max_age_secs)
+    self.mock(local_caching, 'trim_caches', trim_caches)
     nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
       '--no-log',
@@ -687,7 +696,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
       '--cache', os.path.join(self.tempdir, 'isolated_cache'), '100',
       '--named-cache-root', nc,
       '--named-cache', 'cache_foo', 'foo', '100',
-      '--named-cache', 'cache_bar', 'bar', '100',
+      '--named-cache', 'cache_bar', 'bar', '1000',
       '--raw-cmd',
       '--',
       'bin/echo${EXECUTABLE_SUFFIX}',
@@ -700,6 +709,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     for cache_name in ('cache_foo', 'cache_bar'):
       named_path = os.path.join(nc, 'named', cache_name)
       self.assertFalse(os.path.exists(named_path))
+    self.assertTrue(trimmed)
 
   def test_modified_cwd(self):
     isolated = json_dumps({

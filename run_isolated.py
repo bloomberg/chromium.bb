@@ -1227,6 +1227,7 @@ def main(args):
     logging.error('Symlink support is not enabled')
 
   named_cache = process_named_cache_options(parser, options)
+  # hint is 0 if there's no named cache.
   hint = _calc_named_cache_hint(named_cache, options.named_caches)
   if hint:
     # Increase the --min-free-space value by the hint, and recreate the
@@ -1270,12 +1271,11 @@ def main(args):
   # --clean after each task.
   if hint:
     logging.info('Additional trimming of %d bytes', hint)
-    # TODO(maruel): https://crbug.com/873736
-    #local_caching.trim_caches(
-    #    caches,
-    #    root,
-    #    min_free_space=options.min_free_space,
-    #    max_age_secs=MAX_AGE_SECS)
+    local_caching.trim_caches(
+        caches,
+        root,
+        min_free_space=options.min_free_space,
+        max_age_secs=MAX_AGE_SECS)
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')
