@@ -22,6 +22,9 @@ NavigatorServiceWorker* NavigatorServiceWorker::From(Document& document) {
   if (!frame)
     return nullptr;
 
+  // TODO(kouhei): Remove below after M72, since the check is now done in
+  // RenderFrameImpl::CreateServiceWorkerProvider instead.
+  //
   // Bail-out if we are about to be navigated away.
   // We check that DocumentLoader is attached since:
   // - This serves as the signal since the DocumentLoader is detached in
