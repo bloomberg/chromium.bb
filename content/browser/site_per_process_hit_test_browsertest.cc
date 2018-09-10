@@ -3709,16 +3709,8 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
 
 }  // anonymous namespace
 
-// Flaky, see https://crbug.com/823578
-#if defined(OS_WIN)
-#define MAYBE_InputEventRouterGestureTargetMapTest \
-  DISABLED_InputEventRouterGestureTargetMapTest
-#else
-#define MAYBE_InputEventRouterGestureTargetMapTest \
-  InputEventRouterGestureTargetMapTest
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       MAYBE_InputEventRouterGestureTargetMapTest) {
+                       InputEventRouterGestureTargetMapTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
