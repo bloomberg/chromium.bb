@@ -25,13 +25,15 @@ namespace quic_trace {
 namespace render {
 
 TraceProgram::TraceProgram()
-    : window_(SDL_CreateWindow("QUIC trace viewer",
-                               0,
-                               0,
-                               state_.window.x,
-                               state_.window.y,
-                               SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)),
+    : window_(SDL_CreateWindow(
+          "QUIC trace viewer",
+          0,
+          0,
+          state_.window.x,
+          state_.window.y,
+          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)),
       context_(*window_) {
+  UpdateWindowSize();
   state_buffer_ = absl::make_unique<ProgramState>(&state_);
   renderer_ = absl::make_unique<TraceRenderer>(state_buffer_.get());
   text_renderer_ = absl::make_unique<TextRenderer>(state_buffer_.get());
@@ -104,6 +106,26 @@ void TraceProgram::Zoom(float zoom) {
   state_.viewport.y *= std::pow(zoom_factor, sign);
 }
 
+void TraceProgram::UpdateWindowSize() {
+  int width, height;
+  SDL_GL_GetDrawableSize(*window_, &width, &height);
+  state_.window = vec2(width, height);
+  glViewport(0, 0, width, height);
+
+  int input_width, input_height;
+  SDL_GetWindowSize(*window_, &input_width, &input_height);
+  input_scale_ = vec2((float)width / input_width, (float)height / input_height);
+
+  const float kReferenceDpi = 100.f;
+  float dpi;
+  int result = SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(*window_), &dpi,
+                                 nullptr, nullptr);
+  if (result < 0) {
+    LOG(WARNING) << "Failed to retrieve window DPI";
+  }
+  state_.dpi_scale = input_scale_.x * dpi / kReferenceDpi;
+}
+
 void TraceProgram::PollEvents() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -114,9 +136,7 @@ void TraceProgram::PollEvents() {
 
       case SDL_WINDOWEVENT:
         if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-          state_.window.x = event.window.data1;
-          state_.window.y = event.window.data2;
-          glViewport(0, 0, state_.window.x, state_.window.y);
+          UpdateWindowSize();
         }
         break;
 
@@ -184,6 +204,8 @@ void TraceProgram::PollMouse() {
   uint32_t buttons = SDL_GetMouseState(&x, &y);
   const uint8_t* state = SDL_GetKeyboardState(nullptr);
   bool shift = state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT];
+  x *= input_scale_.x;
+  y *= input_scale_.y;
 
   HandlePanning((buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) && !shift, x,
                 state_.window.y - y);
@@ -204,9 +226,7 @@ void TraceProgram::HandlePanning(bool pressed, int x, int y) {
     return;
   }
 
-  const vec2 pixel_viewport = state_.window - 2 * TraceMargin();
-  state_.offset +=
-      (panning_last_pos_ - vec2(x, y)) * state_.viewport / pixel_viewport;
+  state_.offset += WindowToTraceRelative(panning_last_pos_ - vec2(x, y));
 
   panning_last_pos_ = vec2(x, y);
 }
@@ -269,7 +289,8 @@ void TraceProgram::HandleSummary(bool pressed, int x) {
 
   const Box selected = WindowToTraceCoordinates(window_box);
 
-  summary_table_.emplace(text_renderer_.get(), rectangle_renderer_.get());
+  summary_table_.emplace(state_buffer_.get(), text_renderer_.get(),
+                         rectangle_renderer_.get());
   if (!trace_->SummaryTable(&*summary_table_, selected.origin.x,
                             selected.origin.x + selected.size.x)) {
     summary_table_ = absl::nullopt;
@@ -301,7 +322,8 @@ void TraceProgram::HandleMouseover(int x, int y) {
   }
 
   constexpr vec2 kMouseoverOffset = vec2(32, 32);
-  Table table(text_renderer_.get(), rectangle_renderer_.get());
+  Table table(state_buffer_.get(), text_renderer_.get(),
+              rectangle_renderer_.get());
   trace_->FillTableForPacket(&table, hovered_packet.as_rendered,
                              hovered_packet.event);
   vec2 table_size = table.Layout();
@@ -309,7 +331,8 @@ void TraceProgram::HandleMouseover(int x, int y) {
 }
 
 Table TraceProgram::GenerateOnlineHelp() {
-  Table table(text_renderer_.get(), rectangle_renderer_.get());
+  Table table(state_buffer_.get(), text_renderer_.get(),
+              rectangle_renderer_.get());
   table.AddHeader("Help");
   table.AddRow("h", "Toggle help");
   table.AddRow("z", "Zoom in");
@@ -342,12 +365,13 @@ void TraceProgram::EnsureBounds() {
 }
 
 vec2 TraceProgram::WindowToTraceRelative(vec2 vector) {
-  const vec2 pixel_viewport = state_.window - 2 * TraceMargin();
+  const vec2 pixel_viewport = state_.window - 2 * TraceMargin(state_.dpi_scale);
   return vector * state_.viewport / pixel_viewport;
 }
 
 vec2 TraceProgram::WindowToTraceCoordinates(vec2 point) {
-  return state_.offset + WindowToTraceRelative(point - TraceMargin());
+  return state_.offset +
+         WindowToTraceRelative(point - TraceMargin(state_.dpi_scale));
 }
 
 Box TraceProgram::WindowToTraceCoordinates(Box box) {
@@ -356,7 +380,8 @@ Box TraceProgram::WindowToTraceCoordinates(Box box) {
 }
 
 Box TraceProgram::TraceBounds() {
-  return BoundingBox(TraceMargin(), state_.window - TraceMargin());
+  return BoundingBox(TraceMargin(state_.dpi_scale),
+                     state_.window - TraceMargin(state_.dpi_scale));
 }
 
 void TraceProgram::MaybeShowFramerate() {
@@ -372,19 +397,20 @@ void TraceProgram::MaybeShowFramerate() {
 }
 
 void TraceProgram::DrawRightSideTables() {
-  vec2 offset = state_.window - vec2(20, 20);
+  float distance = 20.f * state_.dpi_scale;
+  vec2 offset = state_.window - vec2(distance, distance);
 
   if (summary_table_.has_value()) {
     vec2 table_size = summary_table_->Layout();
     summary_table_->Draw(offset - table_size);
-    offset.y -= table_size.y + 20;
+    offset.y -= table_size.y + distance;
   }
 
   if (show_online_help_) {
     Table online_help = GenerateOnlineHelp();
     vec2 table_size = online_help.Layout();
     online_help.Draw(offset - table_size);
-    offset.y -= table_size.y + 20;
+    offset.y -= table_size.y + distance;
   }
 
   summary_table_ = absl::nullopt;

@@ -41,11 +41,6 @@ void main(void) {
 }
 )";
 
-constexpr int kDistanceBetweenAxisAndTrace = 10;
-constexpr float kAxisOffsetX = kTraceMarginX - kDistanceBetweenAxisAndTrace;
-constexpr float kAxisOffsetY = kTraceMarginY - kDistanceBetweenAxisAndTrace;
-constexpr int kTickSize = 10;
-
 // A line as loaded into the vertex buffer.
 struct Line {
   float x0, y0, x1, y1;
@@ -135,34 +130,38 @@ AxisRenderer::AxisRenderer(TextRenderer* text_factory,
 }
 
 void AxisRenderer::Render() {
-  const float axis_size_x = state_->window().x - 2 * kAxisOffsetX;
-  const float axis_size_y = state_->window().y - 2 * kAxisOffsetY;
+  const float distance_between_axis_and_trace = state_->ScaleForDpi(10);
+  const vec2 axis_offset =
+      TraceMargin(state_->dpi_scale()) -
+      vec2(distance_between_axis_and_trace, distance_between_axis_and_trace);
+  const float tick_size = state_->ScaleForDpi(10);
+  const vec2 axis_size = state_->window() - 2 * axis_offset;
 
   // Note that the coordinates of the objects in this array are w.r.t the origin
   // of the axis lines that we are drawing.
   std::vector<Line> lines = {
-      {0, 0, axis_size_x, 0},
-      {0, 0, 0, axis_size_y},
+      {0, 0, axis_size.x, 0},
+      {0, 0, 0, axis_size.y},
   };
   for (const Tick& tick :
        Ticks<TimeToString>(state_->offset().x, state_->viewport().x,
-                           axis_size_x, reference_label_width_)) {
-    lines.push_back({tick.offset, 0, tick.offset, -kTickSize});
+                           axis_size.x, reference_label_width_)) {
+    lines.push_back({tick.offset, 0, tick.offset, -tick_size});
     std::shared_ptr<const Text> text = text_renderer_->RenderText(tick.text);
     text_renderer_->AddText(
         text,
-        kAxisOffsetX + tick.offset - text->width() / 2,  // Center on X
-        kAxisOffsetY - text->height() - kTickSize);      // Shift on Y
+        axis_offset.x + tick.offset - text->width() / 2,  // Center on X
+        axis_offset.y - text->height() - tick_size);      // Shift on Y
   }
   for (const Tick& tick :
        Ticks<DataOffsetToString>(state_->offset().y, state_->viewport().y,
-                                 axis_size_y, reference_label_height_)) {
-    lines.push_back({0, tick.offset, -10, tick.offset});
+                                 axis_size.y, reference_label_height_)) {
+    lines.push_back({0, tick.offset, -tick_size, tick.offset});
     std::shared_ptr<const Text> text = text_renderer_->RenderText(tick.text);
     text_renderer_->AddText(
         text,
-        kAxisOffsetX - text->width() - kTickSize - 6,      // Shift on X
-        kAxisOffsetY + tick.offset - text->height() / 2);  // Center on Y
+        axis_offset.x - text->width() - tick_size * 1.6,    // Shift on X
+        axis_offset.y + tick.offset - text->height() / 2);  // Center on Y
   }
 
   GlVertexBuffer buffer;
@@ -175,7 +174,7 @@ void AxisRenderer::Render() {
 
   glUseProgram(*shader_);
   state_->Bind(shader_);
-  shader_.SetUniform("axis_offset", kAxisOffsetX, kAxisOffsetY);
+  shader_.SetUniform("axis_offset", axis_offset.x, axis_offset.y);
 
   GlVertexArrayAttrib coord(shader_, "coord");
   glVertexAttribPointer(*coord, 2, GL_FLOAT, GL_FALSE, 0, 0);

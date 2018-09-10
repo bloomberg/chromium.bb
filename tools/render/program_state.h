@@ -38,10 +38,9 @@ struct ProgramStateData {
   vec2 offset = vec2{0.f, 0.f};
   // Size of the portion of the trace that is currently shown, in pixels.
   vec2 viewport = vec2{0.f, 0.f};
+  // The factor by which UI elements need to be scaled due to the DPI.
+  alignas(sizeof(float)) float dpi_scale = 1.f;
 };
-
-static_assert(sizeof(ProgramStateData) == sizeof(float) * 2 * 3,
-              "ProgramState has to be densely packed");
 
 // A wrapper around ProgramStateData for the consumers of the data.  Allows
 // access to the members of ProgramStateData as well as the copy of them in GPU
@@ -55,6 +54,11 @@ class ProgramState {
   const vec2& window() const { return data_->window; }
   const vec2& offset() const { return data_->offset; }
   const vec2& viewport() const { return data_->viewport; }
+  float dpi_scale() const { return data_->dpi_scale; }
+
+  int ScaleForDpi(int value) const {
+    return std::round(data_->dpi_scale * value);
+  }
 
   // Binds the Uniform Buffer Object with |data_| onto the specified shader
   // program.

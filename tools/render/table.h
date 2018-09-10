@@ -25,7 +25,9 @@ namespace render {
 // Represents a simple key-value tables with optional section headers.
 class Table {
  public:
-  Table(TextRenderer* text_factory, RectangleRenderer* rectangles);
+  Table(const ProgramState* state,
+        TextRenderer* text_factory,
+        RectangleRenderer* rectangles);
 
   void AddHeader(const std::string& text);
   void AddRow(const std::string& label, const std::string& value);
@@ -46,12 +48,14 @@ class Table {
     int height;
   };
 
+  const ProgramState* state_;
   TextRenderer* text_renderer_;
   RectangleRenderer* rectangles_;
 
   std::vector<Row> rows_;
   int width_;
   int height_;
+  int spacing_;
 };
 
 }  // namespace render

@@ -17,10 +17,10 @@
 namespace quic_trace {
 namespace render {
 
-constexpr int kSpacing = 8;
-
-Table::Table(TextRenderer* text_factory, RectangleRenderer* rectangles)
-    : text_renderer_(text_factory), rectangles_(rectangles) {}
+Table::Table(const ProgramState* state,
+             TextRenderer* text_factory,
+             RectangleRenderer* rectangles)
+    : state_(state), text_renderer_(text_factory), rectangles_(rectangles) {}
 
 void Table::AddHeader(const std::string& text) {
   rows_.push_back(Row{/*.header=*/text_renderer_->RenderTextBold(text),
@@ -37,22 +37,24 @@ void Table::AddRow(const std::string& label, const std::string& value) {
 }
 
 vec2 Table::Layout() {
+  spacing_ = state_->ScaleForDpi(8);
+
   int y_offset = 0;
   width_ = height_ = 0;
   for (Row& row : rows_) {
-    int row_width = 2 * kSpacing;
-    int row_height = kSpacing;
+    int row_width = 2 * spacing_;
+    int row_height = spacing_;
     if (row.header != nullptr) {
       row_width += row.header->width();
       row_height += row.header->height();
 
       // Add extra margin for all headers except the first one.
       if (y_offset > 0) {
-        y_offset += kSpacing / 2;
+        y_offset += spacing_ / 2;
       }
     } else {
       // A label-value combination
-      row_width += row.label->width() + kSpacing + row.value->width();
+      row_width += row.label->width() + spacing_ + row.value->width();
       row_height += std::max(row.label->height(), row.value->height());
     }
     width_ = std::max(row_width, width_);
@@ -61,24 +63,24 @@ vec2 Table::Layout() {
     row.height = row_height;
     y_offset += row_height;
   }
-  height_ = y_offset + kSpacing;
+  height_ = y_offset + spacing_;
   return vec2(width_, height_);
 }
 
 void Table::Draw(vec2 position) {
-  vec2 base_offset = position + vec2(kSpacing, kSpacing);
+  vec2 base_offset = position + vec2(spacing_, spacing_);
   rectangles_->AddRectangleWithBorder(Box{position, vec2(width_, height_)},
                                       0xffffffff);
   for (const Row& row : rows_) {
     vec2 row_offset =
-        base_offset + vec2(0, height_ - row.y_offset - row.height - kSpacing);
+        base_offset + vec2(0, height_ - row.y_offset - row.height - spacing_);
     if (row.header != nullptr) {
-      row_offset += vec2((width_ - kSpacing * 2 - row.header->width()) / 2, 0);
+      row_offset += vec2((width_ - spacing_ * 2 - row.header->width()) / 2, 0);
       text_renderer_->AddText(row.header, row_offset.x, row_offset.y);
     } else {
       text_renderer_->AddText(row.label, row_offset.x, row_offset.y);
       text_renderer_->AddText(row.value,
-                              row_offset.x + row.label->width() + kSpacing,
+                              row_offset.x + row.label->width() + spacing_,
                               row_offset.y);
     }
   }

@@ -171,19 +171,19 @@ void TraceRenderer::Render() {
     distance_scale = 1.1f / packet_size_in_pixels;
   }
 
+  const vec2 margin = TraceMargin(state_->dpi_scale());
+  const vec2 margin_scale = vec2(1.f, 1.f) - 2 * margin / state_->window();
   state_->Bind(shader_);
   shader_.SetUniform("distance_scale", distance_scale);
-  shader_.SetUniform("margin", 1.f - 2 * kTraceMarginX / state_->window().x,
-                     1.f - 2 * kTraceMarginY / state_->window().y);
+  shader_.SetUniform("margin", margin_scale.x, margin_scale.y);
   shader_.SetUniform("highlighted_packet", highlighted_packet_);
 
   GlVertexArrayAttrib coord(shader_, "coord");
   glVertexAttribPointer(*coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+  const vec2 render_size = state_->window() - 2 * margin;
   glEnable(GL_SCISSOR_TEST);
-  glScissor(kTraceMarginX, kTraceMarginY,
-            state_->window().x - 2 * kTraceMarginX,
-            state_->window().y - 2 * kTraceMarginY);
+  glScissor(margin.x, margin.y, render_size.x, render_size.y);
   glDrawArrays(GL_POINTS, 0, packet_count_);
   glDisable(GL_SCISSOR_TEST);
 }

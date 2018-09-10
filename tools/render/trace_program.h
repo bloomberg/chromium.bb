@@ -73,6 +73,11 @@ class TraceProgram {
   absl::optional<Table> summary_table_;
   bool show_online_help_ = false;
 
+  // On OS X, the window has different size for rendering and for mouse input
+  // purposes.  This vector contains the factor we use to translate mouse
+  // coordinates into the rendering coordinates.
+  vec2 input_scale_;
+
   // An EWMA-filtered frame duration, used for scaling animations.
   absl::Duration frame_duration_ = kReferenceFrameDuration;
 
@@ -86,6 +91,8 @@ class TraceProgram {
   // the size of the viewport would be 98% of what it was before, and -0.98
   // would perform an inverse transform.
   void Zoom(float zoom);
+
+  void UpdateWindowSize();
 
   // Handle input and window events.
   void PollEvents();

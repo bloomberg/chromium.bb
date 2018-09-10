@@ -57,7 +57,7 @@ TextRenderer::TextRenderer(const ProgramState* state)
 
   SDL_RWops* font_data =
       SDL_RWFromConstMem(::kDroidSansBlob.data(), ::kDroidSansBlob.size());
-  font_ = TTF_OpenFontRW(font_data, /*freesrc=*/1, 14);
+  font_ = TTF_OpenFontRW(font_data, /*freesrc=*/1, state->ScaleForDpi(14));
   CHECK(font_ != nullptr) << "Failed to load regular font";
 }
 

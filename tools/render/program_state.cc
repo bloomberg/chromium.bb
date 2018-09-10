@@ -25,6 +25,7 @@ layout(std140) uniform ProgramStateBlock {
   vec2 window;
   vec2 offset;
   vec2 viewport;
+  float dpi_scale;
 } program_state;
 )";
 

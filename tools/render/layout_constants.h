@@ -22,13 +22,8 @@ namespace render {
 
 // Constants that describe part of the QUIC rendering program layout which are
 // used in multiple parts of the program.
-enum : int {
-  kTraceMarginX = 80,
-  kTraceMarginY = 50,
-};
-
-constexpr vec2 TraceMargin() {
-  return vec2(kTraceMarginX, kTraceMarginY);
+constexpr vec2 TraceMargin(float dpi_scale) {
+  return dpi_scale * vec2(80.f, 50.f);
 }
 
 static constexpr float kSentPacketDurationMs = 1000;
