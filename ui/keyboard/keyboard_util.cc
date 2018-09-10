@@ -199,11 +199,6 @@ bool IsInputViewEnabled() {
       switches::kDisableInputView);
 }
 
-bool IsExperimentalInputViewEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalInputViewFeatures);
-}
-
 bool IsFloatingVirtualKeyboardEnabled() {
   return base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard);
 }

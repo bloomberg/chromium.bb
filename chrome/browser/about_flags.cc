@@ -1948,11 +1948,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-voice-input", flag_descriptions::kVoiceInputName,
      flag_descriptions::kVoiceInputDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableVoiceInput)},
-    {"experimental-input-view-features",
-     flag_descriptions::kExperimentalInputViewFeaturesName,
-     flag_descriptions::kExperimentalInputViewFeaturesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         keyboard::switches::kEnableExperimentalInputViewFeatures)},
     {"gesture-typing", flag_descriptions::kGestureTypingName,
      flag_descriptions::kGestureTypingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},

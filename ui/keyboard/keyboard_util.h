@@ -136,9 +136,6 @@ KEYBOARD_EXPORT void SetKeyboardRestricted(bool restricted);
 // Returns whether the keyboard is in restricted state.
 KEYBOARD_EXPORT bool GetKeyboardRestricted();
 
-// Returns true if experimental features are enabled for IME input-views.
-KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
-
 // Returns true if floating virtual keyboard feature is enabled.
 KEYBOARD_EXPORT bool IsFloatingVirtualKeyboardEnabled();
 

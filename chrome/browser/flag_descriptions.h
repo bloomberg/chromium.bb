@@ -2031,9 +2031,6 @@ extern const char kEolNotificationDescription[];
 extern const char kExperimentalAccessibilityFeaturesName[];
 extern const char kExperimentalAccessibilityFeaturesDescription[];
 
-extern const char kExperimentalInputViewFeaturesName[];
-extern const char kExperimentalInputViewFeaturesDescription[];
-
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];
 
