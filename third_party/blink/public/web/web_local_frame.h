@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/platform/site_engagement.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -729,11 +728,6 @@ class WebLocalFrame : public WebFrame {
       const WebSecurityOrigin& intended_target_origin,
       const WebDOMEvent&,
       bool has_user_gesture) = 0;
-
-  // Site engagement --------------------------------------------------------
-
-  // Sets the site engagement level for this frame's document.
-  virtual void SetEngagementLevel(mojom::EngagementLevel) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.

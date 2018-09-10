@@ -248,16 +248,6 @@ void SiteEngagementService::SetLastShortcutLaunchTime(
   OnEngagementEvent(web_contents, url, ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH);
 }
 
-void SiteEngagementService::HelperCreated(
-    SiteEngagementService::Helper* helper) {
-  helpers_.insert(helper);
-}
-
-void SiteEngagementService::HelperDeleted(
-    SiteEngagementService::Helper* helper) {
-  helpers_.erase(helper);
-}
-
 double SiteEngagementService::GetScore(const GURL& url) const {
   return GetDetails(url).total_score;
 }
@@ -319,16 +309,10 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
     CleanupEngagementScores(true);
 
   SiteEngagementScore score = CreateEngagementScore(url);
-  blink::mojom::EngagementLevel old_level = score.GetEngagementLevel();
-
   score.AddPoints(points);
   score.Commit();
 
   SetLastEngagementTime(score.last_engagement_time());
-
-  blink::mojom::EngagementLevel new_level = score.GetEngagementLevel();
-  if (old_level != new_level)
-    SendLevelChangeToHelpers(url, new_level);
 }
 
 void SiteEngagementService::AfterStartupTask() {
@@ -551,13 +535,6 @@ void SiteEngagementService::OnEngagementEvent(
   double score = GetScore(url);
   for (SiteEngagementObserver& observer : observer_list_)
     observer.OnEngagementEvent(web_contents, url, score, type);
-}
-
-void SiteEngagementService::SendLevelChangeToHelpers(
-    const GURL& url,
-    blink::mojom::EngagementLevel level) {
-  for (SiteEngagementService::Helper* helper : helpers_)
-    helper->OnEngagementLevelChanged(url, level);
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {

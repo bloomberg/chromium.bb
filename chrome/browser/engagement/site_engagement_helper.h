@@ -5,21 +5,16 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_HELPER_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/blink/public/platform/site_engagement.mojom.h"
-
-class GURL;
 
 namespace content {
 class NavigationHandle;
-}
-
-namespace url {
-class Origin;
 }
 
 // Per-WebContents class to handle updating the site engagement scores for
@@ -33,9 +28,6 @@ class SiteEngagementService::Helper
   static void SetSecondsTrackingDelayAfterShow(int seconds);
 
   ~Helper() override;
-
-  void OnEngagementLevelChanged(const GURL& url,
-                                blink::mojom::EngagementLevel level);
 
  private:
   // Class to encapsulate the periodic detection of site engagement.
@@ -168,17 +160,8 @@ class SiteEngagementService::Helper
   // current WebContents URL.
   void RecordMediaPlaying(bool is_hidden);
 
-  void SendEngagementLevelToFramesMatchingOrigin(
-      const url::Origin& origin,
-      blink::mojom::EngagementLevel level,
-      content::RenderFrameHost* render_frame_host);
-  void SendEngagementLevelToFrame(const url::Origin& origin,
-                                  blink::mojom::EngagementLevel level,
-                                  content::RenderFrameHost* render_frame_host);
-
   // content::WebContentsObserver overrides.
   void DidFinishNavigation(content::NavigationHandle* handle) override;
-  void ReadyToCommitNavigation(content::NavigationHandle* handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
   InputTracker input_tracker_;

@@ -4,8 +4,6 @@
 
 module blink.mojom;
 
-import "url/mojom/origin.mojom";
-
 enum EngagementLevel {
   NONE,
   MINIMAL,
@@ -13,9 +11,4 @@ enum EngagementLevel {
   MEDIUM,
   HIGH,
   MAX,
-};
-
-interface EngagementClient {
-  // The browser tells the renderer the engagement level of the provided origin.
-  SetEngagementLevel(url.mojom.Origin origin, EngagementLevel level);
 };
