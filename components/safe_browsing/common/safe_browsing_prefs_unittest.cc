@@ -9,6 +9,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -105,7 +106,15 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
 
 // This test ensures that we correctly select Scout as the
 // active preference in a number of common scenarios.
-TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Common) {
+// TODO(crbug.com/881476) disabled for flaky crashes.
+#if defined(OS_WIN)
+#define MAYBE_GetExtendedReportingPrefName_Common \
+  DISABLED_GetExtendedReportingPrefName_Common
+#else
+#define MAYBE_GetExtendedReportingPrefName_Common \
+  GetExtendedReportingPrefName_Common
+#endif
+TEST_F(SafeBrowsingPrefsTest, MAYBE_GetExtendedReportingPrefName_Common) {
   const std::string& scout = prefs::kSafeBrowsingScoutReportingEnabled;
 
   // By default (all prefs and experiment features disabled), Scout pref is
@@ -128,7 +137,15 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Common) {
 
 // Here we exhaustively check all combinations of pref and experiment states.
 // This should help catch regressions.
-TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Exhaustive) {
+// TODO(crbug.com/881476) disabled for flaky crashes.
+#if defined(OS_WIN)
+#define MAYBE_GetExtendedReportingPrefName_Exhaustive \
+  DISABLED_GetExtendedReportingPrefName_Exhaustive
+#else
+#define MAYBE_GetExtendedReportingPrefName_Exhaustive \
+  GetExtendedReportingPrefName_Exhaustive
+#endif
+TEST_F(SafeBrowsingPrefsTest, MAYBE_GetExtendedReportingPrefName_Exhaustive) {
   const std::string& scout = prefs::kSafeBrowsingScoutReportingEnabled;
   TestGetPrefName(false, false, false, scout);
   TestGetPrefName(false, false, true, scout);
@@ -140,7 +157,13 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Exhaustive) {
   TestGetPrefName(true, true, true, scout);
 }
 
-TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
+// TODO(crbug.com/881476) disabled for flaky crashes.
+#if defined(OS_WIN)
+#define MAYBE_ChooseOptInText DISABLED_ChooseOptInText
+#else
+#define MAYBE_ChooseOptInText ChooseOptInText
+#endif
+TEST_F(SafeBrowsingPrefsTest, MAYBE_ChooseOptInText) {
   // Ensure that Scout resources are always chosen.
   const int kSberResource = 100;
   const int kScoutResource = 500;
@@ -156,7 +179,15 @@ TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
             ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
 }
 
-TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
+// TODO(crbug.com/881476) disabled for flaky crashes.
+#if defined(OS_WIN)
+#define MAYBE_GetSafeBrowsingExtendedReportingLevel \
+  DISABLED_GetSafeBrowsingExtendedReportingLevel
+#else
+#define MAYBE_GetSafeBrowsingExtendedReportingLevel \
+  GetSafeBrowsingExtendedReportingLevel
+#endif
+TEST_F(SafeBrowsingPrefsTest, MAYBE_GetSafeBrowsingExtendedReportingLevel) {
   // By Default, extneded reporting is off.
   EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
 
@@ -181,7 +212,15 @@ TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
   EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
 }
 
-TEST_F(SafeBrowsingPrefsTest, VerifyMatchesPasswordProtectionLoginURL) {
+// TODO(crbug.com/881476) disabled for flaky crashes.
+#if defined(OS_WIN)
+#define MAYBE_VerifyMatchesPasswordProtectionLoginURL \
+  DISABLED_VerifyMatchesPasswordProtectionLoginURL
+#else
+#define MAYBE_VerifyMatchesPasswordProtectionLoginURL \
+  VerifyMatchesPasswordProtectionLoginURL
+#endif
+TEST_F(SafeBrowsingPrefsTest, MAYBE_VerifyMatchesPasswordProtectionLoginURL) {
   GURL url("https://mydomain.com/login.html#ref?username=alice");
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kPasswordProtectionLoginURLs));
   EXPECT_FALSE(MatchesPasswordProtectionLoginURL(url, prefs_));
