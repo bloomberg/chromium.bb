@@ -187,7 +187,6 @@ void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
       else
         view->SetInsets(gfx::Insets());
-      return;
     }
   }
 }
