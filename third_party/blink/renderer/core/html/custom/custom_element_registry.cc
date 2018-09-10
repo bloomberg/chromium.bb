@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 
+#include <limits>
+
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -28,8 +31,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
-#include <limits>
-
 namespace blink {
 
 namespace {
@@ -49,11 +50,9 @@ void CollectUpgradeCandidateInNode(Node& root,
     CollectUpgradeCandidateInNode(element, candidates);
 }
 
-}  // anonymous namespace
-
 // Returns true if |name| is invalid.
-static bool ThrowIfInvalidName(const AtomicString& name,
-                               ExceptionState& exception_state) {
+bool ThrowIfInvalidName(const AtomicString& name,
+                        ExceptionState& exception_state) {
   if (CustomElement::IsValidName(name))
     return false;
   exception_state.ThrowDOMException(
@@ -63,8 +62,8 @@ static bool ThrowIfInvalidName(const AtomicString& name,
 }
 
 // Returns true if |name| is valid.
-static bool ThrowIfValidName(const AtomicString& name,
-                             ExceptionState& exception_state) {
+bool ThrowIfValidName(const AtomicString& name,
+                      ExceptionState& exception_state) {
   if (!CustomElement::IsValidName(name))
     return false;
   exception_state.ThrowDOMException(
@@ -73,24 +72,7 @@ static bool ThrowIfValidName(const AtomicString& name,
   return true;
 }
 
-class CustomElementRegistry::ElementDefinitionIsRunning final {
-  STACK_ALLOCATED();
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ElementDefinitionIsRunning);
-
- public:
-  ElementDefinitionIsRunning(bool& flag) : flag_(flag) {
-    DCHECK(!flag_);
-    flag_ = true;
-  }
-
-  ~ElementDefinitionIsRunning() {
-    DCHECK(flag_);
-    flag_ = false;
-  }
-
- private:
-  bool& flag_;
-};
+}  // namespace
 
 CustomElementRegistry* CustomElementRegistry::Create(
     const LocalDOMWindow* owner) {
@@ -200,7 +182,7 @@ CustomElementDefinition* CustomElementRegistry::define(
   {
     // 9. Set this CustomElementRegistry's element definition is
     // running flag.
-    ElementDefinitionIsRunning defining(element_definition_is_running_);
+    base::AutoReset<bool> defining(&element_definition_is_running_, true);
 
     // 10.1-2
     if (!builder.CheckPrototype())
@@ -214,7 +196,7 @@ CustomElementDefinition* CustomElementRegistry::define(
     // the above steps threw an exception or not: Unset this
     // CustomElementRegistry's element definition is running
     // flag."
-    // (ElementDefinitionIsRunning destructor does this.)
+    // (|defining|'s destructor does this.)
   }
 
   CustomElementDescriptor descriptor(name, local_name);
