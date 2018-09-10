@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
@@ -117,7 +118,10 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       initial_frame_status_(proxy ? proxy->initial_frame_status()
                                   : FrameStatus::kNone),
       ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId),
-      ukm_recorder_(proxy ? proxy->TakeUkmRecorder() : nullptr) {
+      connector_(proxy ? proxy->TakeConnector() : nullptr) {
+  if (connector_) {
+    ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector_.get());
+  }
   thread_start_time_ = helper()->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper()->AddTaskTimeObserver(this);
