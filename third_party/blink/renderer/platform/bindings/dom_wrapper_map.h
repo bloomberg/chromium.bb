@@ -172,6 +172,8 @@ class DOMWrapperMap {
 
   v8::Isolate* isolate_;
   typename PersistentValueMapTraits::MapType map_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMWrapperMap);
 };
 
 }  // namespace blink
