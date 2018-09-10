@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ActiveTab) {
   {
     // Setup state.
     chromeos::ScopedTestPublicSessionLoginState login_state;
-    auto delegate = std::make_unique<ExtensionTabUtilDelegateChromeOS>();
-    ExtensionTabUtil::SetPlatformDelegate(delegate.get());
+    ExtensionTabUtil::SetPlatformDelegate(
+        std::make_unique<ExtensionTabUtilDelegateChromeOS>());
 
     ExtensionTestMessageListener listener(false);
     ResultCatcher catcher;

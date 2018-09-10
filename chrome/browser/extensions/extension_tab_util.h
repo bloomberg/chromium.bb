@@ -135,8 +135,7 @@ class ExtensionTabUtil {
 
   // Platform specific logic moved to delegate. This should be set during
   // startup.
-  // |delegate| is never deleted by this class.
-  static Delegate* SetPlatformDelegate(Delegate* delegate);
+  static void SetPlatformDelegate(std::unique_ptr<Delegate> delegate);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension and the tab in question.  The

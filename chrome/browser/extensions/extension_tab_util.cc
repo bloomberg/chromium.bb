@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -104,7 +106,15 @@ int GetTabIdForExtensions(const WebContents* web_contents) {
   return SessionTabHelper::IdForTab(web_contents).id();
 }
 
-ExtensionTabUtil::Delegate* g_extension_tab_util_delegate = nullptr;
+std::unique_ptr<ExtensionTabUtil::Delegate>& GetDelegateWrapper() {
+  static base::NoDestructor<std::unique_ptr<ExtensionTabUtil::Delegate>>
+      delegate_wrapper;
+  return *delegate_wrapper;
+}
+
+ExtensionTabUtil::Delegate* GetDelegate() {
+  return GetDelegateWrapper().get();
+}
 
 }  // namespace
 
@@ -489,14 +499,8 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
 }
 
 // static
-ExtensionTabUtil::Delegate* ExtensionTabUtil::SetPlatformDelegate(
-    Delegate* delegate) {
-  // Allow setting it only once (also allow reset to nullptr, but then take
-  // special care to free it).
-  CHECK(!g_extension_tab_util_delegate || !delegate);
-  Delegate* previous_delegate = g_extension_tab_util_delegate;
-  g_extension_tab_util_delegate = delegate;
-  return previous_delegate;
+void ExtensionTabUtil::SetPlatformDelegate(std::unique_ptr<Delegate> delegate) {
+  GetDelegateWrapper() = std::move(delegate);
 }
 
 // static
@@ -526,9 +530,8 @@ void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
     tab->title.reset();
     tab->fav_icon_url.reset();
   }
-  if (g_extension_tab_util_delegate)
-    g_extension_tab_util_delegate->ScrubTabForExtension(extension, contents,
-                                                        tab);
+  if (GetDelegate())
+    GetDelegate()->ScrubTabForExtension(extension, contents, tab);
 }
 
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,

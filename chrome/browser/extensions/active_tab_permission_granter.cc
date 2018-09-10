@@ -5,9 +5,11 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,16 +73,23 @@ void SendMessageToProcesses(
     tab_process->Send(create_message.Run(false));
 }
 
-ActiveTabPermissionGranter::Delegate* g_active_tab_permission_granter_delegate =
-    nullptr;
+std::unique_ptr<ActiveTabPermissionGranter::Delegate>& GetDelegateWrapper() {
+  static base::NoDestructor<
+      std::unique_ptr<ActiveTabPermissionGranter::Delegate>>
+      delegate_wrapper;
+  return *delegate_wrapper;
+}
+
+ActiveTabPermissionGranter::Delegate* GetDelegate() {
+  return GetDelegateWrapper().get();
+}
 
 // Returns true if activeTab is allowed to be granted to the extension. This can
 // return false for platform-specific implementations.
 bool ShouldGrantActiveTabOrPrompt(const Extension* extension,
                                   content::WebContents* web_contents) {
-  return !g_active_tab_permission_granter_delegate ||
-         g_active_tab_permission_granter_delegate->ShouldGrantActiveTabOrPrompt(
-             extension, web_contents);
+  return !GetDelegate() ||
+         GetDelegate()->ShouldGrantActiveTabOrPrompt(extension, web_contents);
 }
 
 }  // namespace
@@ -98,14 +107,9 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
 ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 
 // static
-ActiveTabPermissionGranter::Delegate*
-ActiveTabPermissionGranter::SetPlatformDelegate(Delegate* delegate) {
-  // Disallow setting it twice (but allow resetting - don't forget to free in
-  // that case).
-  CHECK(!g_active_tab_permission_granter_delegate || !delegate);
-  Delegate* previous_delegate = g_active_tab_permission_granter_delegate;
-  g_active_tab_permission_granter_delegate = delegate;
-  return previous_delegate;
+void ActiveTabPermissionGranter::SetPlatformDelegate(
+    std::unique_ptr<Delegate> delegate) {
+  GetDelegateWrapper() = std::move(delegate);
 }
 
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {

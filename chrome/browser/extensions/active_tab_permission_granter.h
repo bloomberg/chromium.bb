@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_GRANTER_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVE_TAB_PERMISSION_GRANTER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -47,9 +48,8 @@ class ActiveTabPermissionGranter
                              Profile* profile);
   ~ActiveTabPermissionGranter() override;
 
-  // Platform specific delegate should be set during startup. |delegate| is a
-  // singleton instance and is leaked.
-  static Delegate* SetPlatformDelegate(Delegate* delegate);
+  // Platform specific delegate should be set during startup.
+  static void SetPlatformDelegate(std::unique_ptr<Delegate> delegate);
 
   // If |extension| has the activeTab or tabCapture permission, grants
   // tab-specific permissions to it until the next page navigation or refresh.
