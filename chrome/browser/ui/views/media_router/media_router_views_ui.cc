@@ -105,7 +105,7 @@ void MediaRouterViewsUI::OnRoutesUpdated(
 
 void MediaRouterViewsUI::UpdateSinks() {
   model_.set_dialog_header(
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_AUTO_CAST_MODE));
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE));
   std::vector<UIMediaSink> media_sinks;
   for (const MediaSinkWithCastModes& sink : GetEnabledSinks()) {
     auto route_it = std::find_if(
