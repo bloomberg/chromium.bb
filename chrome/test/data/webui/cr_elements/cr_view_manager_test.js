@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for extensions-detail-view. */
-cr.define('extension_view_manager_tests', function() {
+/** @fileoverview Suite of tests for cr-view-manager. */
+cr.define('cr_view_manager_test', function() {
   /** @enum {string} */
   const TestNames = {
     Visibility: 'visibility',
@@ -13,20 +13,20 @@ cr.define('extension_view_manager_tests', function() {
   let viewManager;
   let parent;
   let views;
-  const suiteName = 'ExtensionViewManagerTest';
+  const suiteName = 'CrElementsViewManagerTest';
 
   suite(suiteName, function() {
-    // Initialize an extensions-view-manager inside a parent div before
+    // Initialize an cr-view-manager inside a parent div before
     // each test.
     setup(function() {
       PolymerTest.clearBody();
       document.body.innerHTML = `
         <div id="parent">
-          <extensions-view-manager id="viewManager">
+          <cr-view-manager id="viewManager">
             <div slot="view" id="viewOne">view 1</div>
             <div slot="view" id="viewTwo">view 2</div>
             <div slot="view" id="viewThree">view 3</div>
-          </extensions-view-manager>
+          </cr-view-manager>
         </div>
       `;
       parent = document.body.querySelector('#parent');
