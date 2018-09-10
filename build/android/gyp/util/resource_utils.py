@@ -329,7 +329,11 @@ public final class R {
         public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endfor %}
         {% for e in non_final_resources[resource_type] %}
+            {% if e.value != '0' %}
         public static {{ e.java_type }} {{ e.name }} = {{ e.value }};
+            {% else %}
+        public static {{ e.java_type }} {{ e.name }};
+            {% endif %}
         {% endfor %}
     }
     {% endfor %}

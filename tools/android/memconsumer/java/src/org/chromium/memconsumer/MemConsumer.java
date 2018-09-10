@@ -24,7 +24,7 @@ public class MemConsumer extends Activity {
             MemConsumer.class.toString() + ".NOTIFICATION";
 
     private ResidentService mResidentService;
-    private int mMemory = 0;
+    private int mMemory;
     private NumberPicker mMemoryPicker;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {

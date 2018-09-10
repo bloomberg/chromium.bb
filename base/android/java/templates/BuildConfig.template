@@ -9,8 +9,12 @@ package org.chromium.base;
 
 #if defined(USE_FINAL)
 #define MAYBE_FINAL final
+#define MAYBE_ZERO = 0
+#define MAYBE_FALSE = false
 #else
 #define MAYBE_FINAL
+#define MAYBE_ZERO
+#define MAYBE_FALSE
 #endif
 
 /**
@@ -21,7 +25,7 @@ public class BuildConfig {
 #if defined(ENABLE_MULTIDEX)
     public static MAYBE_FINAL boolean IS_MULTIDEX_ENABLED = true;
 #else
-    public static MAYBE_FINAL boolean IS_MULTIDEX_ENABLED = false;
+    public static MAYBE_FINAL boolean IS_MULTIDEX_ENABLED MAYBE_FALSE;
 #endif
 
 #if defined(_FIREBASE_APP_ID)
@@ -33,13 +37,13 @@ public class BuildConfig {
 #if defined(_DCHECK_IS_ON)
     public static MAYBE_FINAL boolean DCHECK_IS_ON = true;
 #else
-    public static MAYBE_FINAL boolean DCHECK_IS_ON = false;
+    public static MAYBE_FINAL boolean DCHECK_IS_ON MAYBE_FALSE;
 #endif
 
 #if defined(_IS_UBSAN)
     public static MAYBE_FINAL boolean IS_UBSAN = true;
 #else
-    public static MAYBE_FINAL boolean IS_UBSAN = false;
+    public static MAYBE_FINAL boolean IS_UBSAN MAYBE_FALSE;
 #endif
 
     // Sorted list of locales that have a compressed .pak within assets.
@@ -65,6 +69,6 @@ public class BuildConfig {
     public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION = _RESOURCES_VERSION_VARIABLE;
 #else
     // Default value, do not use.
-    public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION = 0;
+    public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION MAYBE_ZERO;
 #endif
 }

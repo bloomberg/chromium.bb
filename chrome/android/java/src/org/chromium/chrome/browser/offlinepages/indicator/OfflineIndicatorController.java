@@ -61,7 +61,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
     // Set to true if the offline indicator has been shown once.
     private boolean mHasOfflineIndicatorShown;
     private ConnectivityDetector mConnectivityDetector;
-    private ChromeActivity mObservedActivity = null;
+    private ChromeActivity mObservedActivity;
 
     private boolean mIsOnline;
     // Last time when the online state is detected. It is recorded as milliseconds since boot.

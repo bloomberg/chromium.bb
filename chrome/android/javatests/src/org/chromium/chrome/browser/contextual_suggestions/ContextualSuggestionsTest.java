@@ -136,7 +136,7 @@ public class ContextualSuggestionsTest {
     private ContextualSuggestionsModel mModel2;
     private BottomSheet mBottomSheet2;
 
-    private int mNumberOfSourcesCreated = 0;
+    private int mNumberOfSourcesCreated;
 
     @ParameterAnnotations.UseMethodParameterBefore(SlimPeekUIParams.class)
     public void setupSlimPeekUI(boolean slimPeekUIEnabled) {

@@ -96,7 +96,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     private static final int CONNECTIVITY_CHECK_INITIAL_DELAY_MS = 5000;
     private static final int CONNECTIVITY_CHECK_MAX_DELAY_MS = 2 * 60 * 1000;
 
-    private static boolean sSkipSystemCheckForTesting = false;
+    private static boolean sSkipSystemCheckForTesting;
     private static String sDefaultProbeUrl = DEFAULT_PROBE_URL;
     private static String sFallbackProbeUrl = FALLBACK_PROBE_URL;
     private static String sProbeMethod = PROBE_METHOD;
@@ -106,10 +106,10 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     private @ConnectionType int mConnectionType = ConnectionType.CONNECTION_UNKNOWN;
     private @ConnectionState int mConnectionState = ConnectionState.NONE;
 
-    private String mUserAgentString = null;
-    private int mConnectivityCheckDelayMs = 0;
-    private Handler mHandler = null;
-    private Runnable mRunnable = null;
+    private String mUserAgentString;
+    private int mConnectivityCheckDelayMs;
+    private Handler mHandler;
+    private Runnable mRunnable;
 
     public ConnectivityDetector(Observer observer) {
         mObserver = observer;
