@@ -17,6 +17,10 @@ namespace cast_channel {
 
 namespace {
 
+// The max launch timeout amount for session launch requests.
+constexpr base::TimeDelta kLaunchMaxTimeout = base::TimeDelta::FromMinutes(2);
+
+// Default timeout amount for requests waiting for a response.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(5);
 
 void ReportParseError(const std::string& error) {
@@ -163,14 +167,36 @@ void CastMessageHandler::LaunchSession(int channel_id,
 
   auto* requests = GetOrCreatePendingRequests(channel_id);
   int request_id = NextRequestId();
+  // Cap the max launch timeout to avoid long-living pending requests.
+  launch_timeout = std::min(launch_timeout, kLaunchMaxTimeout);
   DVLOG(2) << __func__ << ", channel_id: " << channel_id
            << ", request_id: " << request_id;
-
   if (requests->AddLaunchRequest(std::make_unique<LaunchSessionRequest>(
                                      request_id, std::move(callback), clock_),
                                  launch_timeout)) {
     SendCastMessage(
         socket, CreateLaunchRequest(sender_id_, request_id, app_id, locale_));
+  }
+}
+
+void CastMessageHandler::StopSession(int channel_id,
+                                     const std::string& session_id,
+                                     StopSessionCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CastSocket* socket = socket_service_->GetSocket(channel_id);
+  if (!socket) {
+    DVLOG(2) << __func__ << ": socket not found: " << channel_id;
+    return;
+  }
+
+  auto* requests = GetOrCreatePendingRequests(channel_id);
+  int request_id = NextRequestId();
+  DVLOG(2) << __func__ << ", channel_id: " << channel_id
+           << ", request_id: " << request_id;
+  if (requests->AddStopRequest(std::make_unique<StopSessionRequest>(
+          request_id, std::move(callback), clock_))) {
+    SendCastMessage(socket,
+                    CreateStopRequest(sender_id_, request_id, session_id));
   }
 }
 
@@ -320,23 +346,27 @@ void CastMessageHandler::OnMessageSent(int result) {
 
 CastMessageHandler::PendingRequests::PendingRequests() {}
 CastMessageHandler::PendingRequests::~PendingRequests() {
-  for (auto& request : pending_app_availability_requests) {
+  for (auto& request : pending_app_availability_requests_) {
     std::move(request.second->callback)
         .Run(request.second->app_id, GetAppAvailabilityResult::kUnknown);
   }
 
-  if (pending_launch_session_request) {
+  if (pending_launch_session_request_) {
     LaunchSessionResponse response;
     response.result = LaunchSessionResponse::kError;
-    std::move(pending_launch_session_request->callback)
+    std::move(pending_launch_session_request_->callback)
         .Run(std::move(response));
+  }
+
+  if (pending_stop_session_request_) {
+    std::move(pending_stop_session_request_->callback).Run(false);
   }
 }
 
 bool CastMessageHandler::PendingRequests::AddAppAvailabilityRequest(
     std::unique_ptr<GetAppAvailabilityRequest> request) {
   std::string app_id = request->app_id;
-  if (base::ContainsKey(pending_app_availability_requests, request->app_id))
+  if (base::ContainsKey(pending_app_availability_requests_, request->app_id))
     return false;
 
   int request_id = request->request_id;
@@ -345,14 +375,14 @@ bool CastMessageHandler::PendingRequests::AddAppAvailabilityRequest(
       base::BindOnce(
           &CastMessageHandler::PendingRequests::AppAvailabilityTimedOut,
           base::Unretained(this), request_id));
-  pending_app_availability_requests.emplace(app_id, std::move(request));
+  pending_app_availability_requests_.emplace(app_id, std::move(request));
   return true;
 }
 
 bool CastMessageHandler::PendingRequests::AddLaunchRequest(
     std::unique_ptr<LaunchSessionRequest> request,
     base::TimeDelta timeout) {
-  if (pending_launch_session_request)
+  if (pending_launch_session_request_)
     return false;
 
   int request_id = request->request_id;
@@ -361,7 +391,21 @@ bool CastMessageHandler::PendingRequests::AddLaunchRequest(
       base::BindOnce(
           &CastMessageHandler::PendingRequests::LaunchSessionTimedOut,
           base::Unretained(this), request_id));
-  pending_launch_session_request = std::move(request);
+  pending_launch_session_request_ = std::move(request);
+  return true;
+}
+
+bool CastMessageHandler::PendingRequests::AddStopRequest(
+    std::unique_ptr<StopSessionRequest> request) {
+  if (pending_stop_session_request_)
+    return false;
+
+  int request_id = request->request_id;
+  request->timeout_timer.Start(
+      FROM_HERE, kRequestTimeout,
+      base::Bind(&CastMessageHandler::PendingRequests::StopSessionTimedOut,
+                 base::Unretained(this), request_id));
+  pending_stop_session_request_ = std::move(request);
   return true;
 }
 
@@ -369,25 +413,32 @@ void CastMessageHandler::PendingRequests::HandlePendingRequest(
     int request_id,
     const base::Value& response) {
   auto app_availability_it =
-      std::find_if(pending_app_availability_requests.begin(),
-                   pending_app_availability_requests.end(),
+      std::find_if(pending_app_availability_requests_.begin(),
+                   pending_app_availability_requests_.end(),
                    [&request_id](const auto& entry) {
                      return entry.second->request_id == request_id;
                    });
-  if (app_availability_it != pending_app_availability_requests.end()) {
+  if (app_availability_it != pending_app_availability_requests_.end()) {
     GetAppAvailabilityResult result = GetAppAvailabilityResultFromResponse(
         response, app_availability_it->second->app_id);
     std::move(app_availability_it->second->callback)
         .Run(app_availability_it->second->app_id, result);
-    pending_app_availability_requests.erase(app_availability_it);
+    pending_app_availability_requests_.erase(app_availability_it);
     return;
   }
 
-  if (pending_launch_session_request &&
-      pending_launch_session_request->request_id == request_id) {
-    std::move(pending_launch_session_request->callback)
+  if (pending_launch_session_request_ &&
+      pending_launch_session_request_->request_id == request_id) {
+    std::move(pending_launch_session_request_->callback)
         .Run(GetLaunchSessionResponse(response));
-    pending_launch_session_request.reset();
+    pending_launch_session_request_.reset();
+    return;
+  }
+
+  if (pending_stop_session_request_ &&
+      pending_stop_session_request_->request_id == request_id) {
+    std::move(pending_stop_session_request_->callback).Run(true);
+    pending_stop_session_request_.reset();
     return;
   }
 }
@@ -396,28 +447,37 @@ void CastMessageHandler::PendingRequests::AppAvailabilityTimedOut(
     int request_id) {
   DVLOG(1) << __func__ << ", request_id: " << request_id;
 
-  auto it = std::find_if(pending_app_availability_requests.begin(),
-                         pending_app_availability_requests.end(),
+  auto it = std::find_if(pending_app_availability_requests_.begin(),
+                         pending_app_availability_requests_.end(),
                          [&request_id](const auto& entry) {
                            return entry.second->request_id == request_id;
                          });
 
-  CHECK(it != pending_app_availability_requests.end());
+  CHECK(it != pending_app_availability_requests_.end());
   std::move(it->second->callback)
       .Run(it->second->app_id, GetAppAvailabilityResult::kUnknown);
-  pending_app_availability_requests.erase(it);
+  pending_app_availability_requests_.erase(it);
 }
 
 void CastMessageHandler::PendingRequests::LaunchSessionTimedOut(
     int request_id) {
   DVLOG(1) << __func__ << ", request_id: " << request_id;
-  CHECK(pending_launch_session_request);
-  CHECK(pending_launch_session_request->request_id == request_id);
+  CHECK(pending_launch_session_request_);
+  CHECK(pending_launch_session_request_->request_id == request_id);
 
   LaunchSessionResponse response;
   response.result = LaunchSessionResponse::kTimedOut;
-  std::move(pending_launch_session_request->callback).Run(std::move(response));
-  pending_launch_session_request.reset();
+  std::move(pending_launch_session_request_->callback).Run(std::move(response));
+  pending_launch_session_request_.reset();
+}
+
+void CastMessageHandler::PendingRequests::StopSessionTimedOut(int request_id) {
+  DVLOG(1) << __func__ << ", request_id: " << request_id;
+  CHECK(pending_stop_session_request_);
+  CHECK(pending_stop_session_request_->request_id == request_id);
+
+  std::move(pending_stop_session_request_->callback).Run(false);
+  pending_stop_session_request_.reset();
 }
 
 }  // namespace cast_channel

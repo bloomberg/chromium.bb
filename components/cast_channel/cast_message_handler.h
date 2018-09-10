@@ -67,6 +67,11 @@ using LaunchSessionCallback =
     base::OnceCallback<void(LaunchSessionResponse response)>;
 using LaunchSessionRequest = PendingRequest<LaunchSessionCallback>;
 
+// Represents an app stop request to a Cast sink.
+// |success|: Whether the app was successfully stopped.
+using StopSessionCallback = base::OnceCallback<void(bool success)>;
+using StopSessionRequest = PendingRequest<StopSessionCallback>;
+
 // Represents a virtual connection on a cast channel. A virtual connection is
 // given by a source and destination ID pair, and must be created before
 // messages can be sent. Virtual connections are managed by CastMessageHandler.
@@ -107,9 +112,9 @@ class CastMessageHandler : public CastSocket::Observer {
   class Observer {
    public:
     virtual ~Observer() = default;
-    virtual void OnAppMessage(int channel_id, const CastMessage& message) = 0;
+    virtual void OnAppMessage(int channel_id, const CastMessage& message) {}
     virtual void OnInternalMessage(int channel_id,
-                                   const InternalMessage& message) = 0;
+                                   const InternalMessage& message) {}
   };
 
   // |connector|: Connector to be used for data_decoder service. The connector
@@ -128,9 +133,9 @@ class CastMessageHandler : public CastSocket::Observer {
   // the device if necessary. Although a virtual connection is automatically
   // created when sending a message, a caller may decide to create it beforehand
   // in order to receive messages sooner.
-  void EnsureConnection(int channel_id,
-                        const std::string& source_id,
-                        const std::string& destination_id);
+  virtual void EnsureConnection(int channel_id,
+                                const std::string& source_id,
+                                const std::string& destination_id);
 
   // Sends an app availability for |app_id| to the device given by |socket|.
   // |callback| is always invoked asynchronously, and will be invoked when a
@@ -149,19 +154,30 @@ class CastMessageHandler : public CastSocket::Observer {
   // Requests a session launch for |app_id| on the device given by |channel_id|.
   // |callback| will be invoked with the response or with a timed out result if
   // no response comes back before |launch_timeout|.
-  void LaunchSession(int channel_id,
-                     const std::string& app_id,
-                     base::TimeDelta launch_timeout,
-                     LaunchSessionCallback callback);
+  virtual void LaunchSession(int channel_id,
+                             const std::string& app_id,
+                             base::TimeDelta launch_timeout,
+                             LaunchSessionCallback callback);
+
+  // Stops the session given by |session_id| on the device given by
+  // |channel_id|. |callback| will be invoked with the result of the stop
+  // request.
+  virtual void StopSession(int channel_id,
+                           const std::string& session_id,
+                           StopSessionCallback callback);
 
   // Sends |message| to the device given by |channel_id|. The caller may use
   // this method to forward app messages from the SDK client to the device. It
   // is invalid to call this method with a message in one of the Cast internal
   // message namespaces.
-  void SendAppMessage(int channel_id, const CastMessage& message);
+  virtual void SendAppMessage(int channel_id, const CastMessage& message);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // CastSocket::Observer implementation.
+  void OnError(const CastSocket& socket, ChannelError error_state) override;
+  void OnMessage(const CastSocket& socket, const CastMessage& message) override;
 
   const std::string& sender_id() const { return sender_id_; }
 
@@ -178,7 +194,7 @@ class CastMessageHandler : public CastSocket::Observer {
         std::unique_ptr<GetAppAvailabilityRequest> request);
     bool AddLaunchRequest(std::unique_ptr<LaunchSessionRequest> request,
                           base::TimeDelta timeout);
-
+    bool AddStopRequest(std::unique_ptr<StopSessionRequest> request);
     void HandlePendingRequest(int request_id, const base::Value& response);
 
    private:
@@ -186,22 +202,19 @@ class CastMessageHandler : public CastSocket::Observer {
     // out result.
     void AppAvailabilityTimedOut(int request_id);
     void LaunchSessionTimedOut(int request_id);
+    void StopSessionTimedOut(int request_id);
 
     // App availability requests pending responses, keyed by app ID.
     base::flat_map<std::string, std::unique_ptr<GetAppAvailabilityRequest>>
-        pending_app_availability_requests;
-
-    std::unique_ptr<LaunchSessionRequest> pending_launch_session_request;
+        pending_app_availability_requests_;
+    std::unique_ptr<LaunchSessionRequest> pending_launch_session_request_;
+    std::unique_ptr<StopSessionRequest> pending_stop_session_request_;
   };
 
   // Used internally to generate the next ID to use in a request type message.
   int NextRequestId() { return ++next_request_id_; }
 
   PendingRequests* GetOrCreatePendingRequests(int channel_id);
-
-  // CastSocket::Observer implementation.
-  void OnError(const CastSocket& socket, ChannelError error_state) override;
-  void OnMessage(const CastSocket& socket, const CastMessage& message) override;
 
   // Sends |message| over |socket|. This also ensures the necessary virtual
   // connection exists before sending the message.

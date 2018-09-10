@@ -91,6 +91,8 @@ static_library("router") {
       "presentation/independent_otr_profile_manager.h",
       "presentation/presentation_navigation_policy.cc",
       "presentation/presentation_navigation_policy.h",
+      "providers/cast/cast_activity_manager.cc",
+      "providers/cast/cast_activity_manager.h",
       "providers/cast/cast_app_availability_tracker.cc",
       "providers/cast/cast_app_availability_tracker.h",
       "providers/cast/cast_app_discovery_service.cc",
