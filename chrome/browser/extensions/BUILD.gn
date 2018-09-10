@@ -1001,7 +1001,6 @@ jumbo_static_library("extensions") {
       "//ash/public/cpp",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
-      "//chromeos/services/ime/public/cpp:features",
       "//chromeos/services/ime/public/mojom",
       "//components/arc",
       "//components/chrome_apps",

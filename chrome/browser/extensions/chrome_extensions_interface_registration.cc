@@ -17,7 +17,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/services/ime/public/cpp/features.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "content/public/common/service_manager_connection.h"
@@ -57,7 +57,8 @@ void RegisterChromeInterfacesForExtension(
   }
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::ime::kImeServiceConnectable) &&
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kImeServiceConnectable) &&
       extension->permissions_data()->HasAPIPermission(
           APIPermission::kInputMethodPrivate)) {
     registry->AddInterface(base::BindRepeating(
