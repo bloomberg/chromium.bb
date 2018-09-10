@@ -1061,6 +1061,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     if (it == surfaces_at_device_.end()) {
       VLOGF(1) << "Got invalid surface from device.";
       NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
     }
 
     it->second->SetDecoded();
