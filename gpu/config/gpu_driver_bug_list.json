@@ -2948,6 +2948,22 @@
       "features": [
         "reset_base_mipmap_level_before_texstorage"
       ]
+    },
+    {
+      "id":275,
+      "cr_bugs": [838725],
+      "description": "Disable AImageReader on ARM GPUs for Android O+ because of gpu hang",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": ">=",
+          "value": "8.0"
+        }
+      },
+      "gl_vendor": "ARM.*",
+      "features": [
+        "disable_aimagereader"
+      ]
     }
   ]
 }

@@ -37,8 +37,8 @@ scoped_refptr<TextureOwner> TextureOwner::Create() {
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // If AImageReader is supported and is enabled by media flag, use it.
-  if (base::FeatureList::IsEnabled(media::kAImageReaderVideoOutput) &&
-      base::android::AndroidImageReader::GetInstance().IsSupported()) {
+  if (base::android::AndroidImageReader::GetInstance().IsSupported() &&
+      base::FeatureList::IsEnabled(media::kAImageReaderVideoOutput)) {
     return new ImageReaderGLOwner(texture_id);
   }
 

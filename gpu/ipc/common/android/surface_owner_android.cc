@@ -270,8 +270,8 @@ SurfaceOwner::~SurfaceOwner() = default;
 // Static.
 std::unique_ptr<SurfaceOwner> SurfaceOwner::Create(uint32_t texture_id) {
   // Use AImageReader if its supported and is enabled by the feature flag.
-  if (base::FeatureList::IsEnabled(features::kAImageReaderMediaPlayer) &&
-      base::android::AndroidImageReader::GetInstance().IsSupported()) {
+  if (base::android::AndroidImageReader::GetInstance().IsSupported() &&
+      base::FeatureList::IsEnabled(features::kAImageReaderMediaPlayer)) {
     return std::make_unique<ImageReader>(texture_id);
   }
 
