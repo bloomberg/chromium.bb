@@ -1636,17 +1636,6 @@ TEST_F('BackgroundTest', 'NavigationIgnoresDescriptions', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'DocumentTitleChanged', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(function(root) {/*
-    <script>
-      setTimeout(function() {document.title = 'New title';}, 100);
-    </script>
-  */}, function(root) {
-    mockFeedback.expectSpeech('New title').replay();
-  });
-});
-
 TEST_F('BackgroundTest', 'MathContentViaInnerHtml', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*
