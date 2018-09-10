@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "cc/cc_export.h"

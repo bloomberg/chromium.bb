@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/display/util/display_util_export.h"

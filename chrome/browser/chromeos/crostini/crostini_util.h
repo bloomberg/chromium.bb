@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "ui/base/resource/scale_factor.h"
 
