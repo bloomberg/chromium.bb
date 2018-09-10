@@ -15,11 +15,7 @@ for cmd in gen-signedexchange gen-certurl dump-signedexchange; do
 done
 
 dumpSignature() {
-  # Switch to dump-signedexchange again once it support b2 format.
-  # dump-signedexchange -i $1 | \
-  #     sed -n 's/^signature: //p' | \
-  strings $1 | grep label | \
-  tr -d '\n'
+  echo "constexpr char $1[] = R\"($(dump-signedexchange -signature -i $2))\";"
 }
 
 tmpdir=$(mktemp -d)
@@ -128,9 +124,7 @@ gen-signedexchange \
   -date 2018-02-06T04:45:41Z \
   -o $tmpdir/out.htxg
 
-echo -n 'constexpr char kSignatureHeaderRSA[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderRSA $tmpdir/out.htxg
 
 gen-signedexchange \
   -version 1b2 \
@@ -142,9 +136,8 @@ gen-signedexchange \
   -o $tmpdir/out.htxg \
   -dumpHeadersCbor $tmpdir/out.cborheader
 
-echo -n 'constexpr char kSignatureHeaderECDSAP256[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderECDSAP256 $tmpdir/out.htxg
+
 echo 'constexpr uint8_t kCborHeaderECDSAP256[] = {'
 xxd --include $tmpdir/out.cborheader | sed '1d;$d'
 
@@ -157,9 +150,7 @@ gen-signedexchange \
   -date 2018-02-06T04:45:41Z \
   -o $tmpdir/out.htxg
 
-echo -n 'constexpr char kSignatureHeaderECDSAP384[] = R"('
-dumpSignature $tmpdir/out.htxg
-echo ')";'
+dumpSignature kSignatureHeaderECDSAP384 $tmpdir/out.htxg
 
 echo "===="
 
