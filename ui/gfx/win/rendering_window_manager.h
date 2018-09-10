@@ -8,28 +8,35 @@
 #include <windows.h>
 
 #include "base/containers/flat_map.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace base {
 template <typename T>
 class NoDestructor;
+class SingleThreadTaskRunner;
 }
 
 namespace gfx {
 
 // This keeps track of whether a given HWND has a child window which the GPU
-// process renders into.
+// process renders into. This should only be used from the UI thread unless
+// otherwise noted.
 class GFX_EXPORT RenderingWindowManager {
  public:
+  // The first call to GetInstance() should happen on the UI thread.
   static RenderingWindowManager* GetInstance();
 
   void RegisterParent(HWND parent);
-  // Regiters |child| as child window for |parent| with ::SetParent() so the GPU
-  // process can draw into |child|. RegisterParent() must have already been
-  // called for |parent| otherwise this will fail. RegisterChild() also cannot
-  // already have been called for |parent| otherwise this will fail.
-  bool RegisterChild(HWND parent, HWND child);
+  // Registers |child| as child window for |parent|. Allows the GPU process to
+  // draw into the |child| HWND instead of |parent|. This will fail and do
+  // nothing if:
+  //   1. |parent| isn't registered.
+  //   2. |child| doesn't belong to |expected_child_process_id|.
+  //
+  // Can be called from any thread, as long GetInstance() has already been
+  // called on the UI thread at least once.
+  void RegisterChild(HWND parent, HWND child, DWORD expected_child_process_id);
   void UnregisterParent(HWND parent);
   bool HasValidChildWindow(HWND parent);
 
@@ -39,7 +46,8 @@ class GFX_EXPORT RenderingWindowManager {
   RenderingWindowManager();
   ~RenderingWindowManager();
 
-  base::Lock lock_;
+  // UI thread task runner.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // Map from registered parent HWND to child HWND.
   base::flat_map<HWND, HWND> registered_hwnds_;
 
