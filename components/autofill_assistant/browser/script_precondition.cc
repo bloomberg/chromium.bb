@@ -4,19 +4,64 @@
 
 #include "components/autofill_assistant/browser/script_precondition.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/autofill_assistant/browser/service.pb.h"
+#include "third_party/re2/src/re2/re2.h"
+#include "url/gurl.h"
 
 namespace autofill_assistant {
 
-ScriptPrecondition::ScriptPrecondition(
-    const std::vector<std::vector<std::string>>& elements_exist)
-    : elements_exist_(elements_exist), weak_ptr_factory_(this) {}
+// Static
+std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
+    const ScriptPreconditionProto& proto) {
+  std::vector<std::vector<std::string>> elements_exist;
+  for (const auto& element : proto.elements_exist()) {
+    std::vector<std::string> selectors;
+    for (const auto& selector : element.selectors()) {
+      selectors.emplace_back(selector);
+    }
+    elements_exist.emplace_back(selectors);
+  }
+
+  std::set<std::string> domain_match;
+  for (const auto& domain : proto.domain()) {
+    domain_match.emplace(domain);
+  }
+
+  std::vector<std::unique_ptr<re2::RE2>> path_pattern;
+  for (const auto& pattern : proto.path_pattern()) {
+    auto re = std::make_unique<re2::RE2>(pattern);
+    if (re->error_code() != re2::RE2::NoError) {
+      LOG(ERROR) << "Invalid regexp in script precondition '" << pattern
+                 << "'. Will never match.";
+      return nullptr;
+    }
+    path_pattern.emplace_back(std::move(re));
+  }
+
+  // TODO(crbug.com/806868): Detect unknown or unsupported conditions and reject
+  // them.
+  return std::make_unique<ScriptPrecondition>(elements_exist, domain_match,
+                                              std::move(path_pattern));
+}
 
 ScriptPrecondition::~ScriptPrecondition() {}
 
 void ScriptPrecondition::Check(WebController* web_controller,
                                base::OnceCallback<void(bool)> callback) {
-  DCHECK(!elements_exist_.empty());
+  const GURL& url = web_controller->GetUrl();
+  if (!MatchDomain(url) || !MatchPath(url)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (elements_exist_.empty()) {
+    std::move(callback).Run(true);
+    return;
+  }
 
   check_preconditions_callback_ = std::move(callback);
   pending_elements_exist_check_ = 0;
@@ -27,6 +72,15 @@ void ScriptPrecondition::Check(WebController* web_controller,
                                 weak_ptr_factory_.GetWeakPtr()));
   }
 }
+
+ScriptPrecondition::ScriptPrecondition(
+    const std::vector<std::vector<std::string>>& elements_exist,
+    const std::set<std::string>& domain_match,
+    std::vector<std::unique_ptr<re2::RE2>> path_pattern)
+    : elements_exist_(elements_exist),
+      domain_match_(domain_match),
+      path_pattern_(std::move(path_pattern)),
+      weak_ptr_factory_(this) {}
 
 void ScriptPrecondition::OnCheckElementExists(bool result) {
   pending_elements_exist_check_--;
@@ -40,6 +94,27 @@ void ScriptPrecondition::OnCheckElementExists(bool result) {
   if (!pending_elements_exist_check_ && check_preconditions_callback_) {
     std::move(check_preconditions_callback_).Run(true);
   }
+}
+
+bool ScriptPrecondition::MatchDomain(const GURL& url) const {
+  if (domain_match_.empty())
+    return true;
+
+  return domain_match_.find(url.host()) != domain_match_.end();
+}
+
+bool ScriptPrecondition::MatchPath(const GURL& url) const {
+  if (path_pattern_.empty()) {
+    return true;
+  }
+
+  const std::string path = url.path();
+  for (auto& regexp : path_pattern_) {
+    if (regexp->Match(path, 0, path.size(), re2::RE2::UNANCHORED, NULL, 0)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace autofill_assistant.

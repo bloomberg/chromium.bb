@@ -27,14 +27,23 @@ const char* const kScrollIntoViewScript =
 // static
 std::unique_ptr<WebController> WebController::CreateForWebContents(
     content::WebContents* web_contents) {
-  return std::make_unique<WebController>(std::make_unique<DevtoolsClient>(
-      content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
+  return std::make_unique<WebController>(
+      web_contents,
+      std::make_unique<DevtoolsClient>(
+          content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
 }
 
-WebController::WebController(std::unique_ptr<DevtoolsClient> devtools_client)
-    : devtools_client_(std::move(devtools_client)), weak_ptr_factory_(this) {}
+WebController::WebController(content::WebContents* web_contents,
+                             std::unique_ptr<DevtoolsClient> devtools_client)
+    : web_contents_(web_contents),
+      devtools_client_(std::move(devtools_client)),
+      weak_ptr_factory_(this) {}
 
 WebController::~WebController() {}
+
+const GURL& WebController::GetUrl() {
+  return web_contents_->GetLastCommittedURL();
+}
 
 void WebController::ClickElement(const std::vector<std::string>& selectors,
                                  base::OnceCallback<void(bool)> callback) {

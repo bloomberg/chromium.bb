@@ -29,8 +29,13 @@ class WebController {
   static std::unique_ptr<WebController> CreateForWebContents(
       content::WebContents* web_contents);
 
-  explicit WebController(std::unique_ptr<DevtoolsClient> devtools_client);
+  // |web_contents| must outlive this web controller.
+  WebController(content::WebContents* web_contents,
+                std::unique_ptr<DevtoolsClient> devtools_client);
   virtual ~WebController();
+
+  // Returns the last committed URL of the associated |web_contents_|.
+  virtual const GURL& GetUrl();
 
   // Perform a mouse left button click on the element given by |selectors| and
   // return the result through callback.
@@ -100,6 +105,9 @@ class WebController {
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
 
+  // Weak pointer is fine here since it must outlive this web controller, which
+  // is guaranteed by the owner of this object.
+  content::WebContents* web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
 
   base::WeakPtrFactory<WebController> weak_ptr_factory_;

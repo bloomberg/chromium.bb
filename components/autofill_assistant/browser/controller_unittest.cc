@@ -25,6 +25,7 @@ using ::testing::Eq;
 using ::testing::NiceMock;
 using ::testing::SizeIs;
 using ::testing::StrEq;
+using ::testing::ReturnRef;
 
 namespace {
 
@@ -74,6 +75,9 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(*mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
         .WillByDefault(RunOnceCallback<1>(true));
 
+    // Make WebController::GetUrl accessible.
+    ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
+
     tester_ = content::WebContentsTester::For(web_contents());
   }
 
@@ -113,6 +117,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   UiDelegate* GetUiDelegate() { return controller_; }
 
+  GURL url_;
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
   MockUiController* mock_ui_controller_;
