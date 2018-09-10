@@ -369,6 +369,7 @@ struct drm_fb {
 	uint32_t handles[4];
 	uint32_t strides[4];
 	uint32_t offsets[4];
+	int num_planes;
 	const struct pixel_format_info *format;
 	uint64_t modifier;
 	int width, height;
@@ -1033,6 +1034,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	fb->modifier = DRM_FORMAT_MOD_INVALID;
 	fb->handles[0] = create_arg.handle;
 	fb->strides[0] = create_arg.pitch;
+	fb->num_planes = 1;
 	fb->size = create_arg.size;
 	fb->width = width;
 	fb->height = height;
@@ -1204,6 +1206,7 @@ drm_fb_get_from_dmabuf(struct linux_dmabuf_buffer *dmabuf,
 		goto err_free;
 	}
 
+	fb->num_planes = dmabuf->attributes.n_planes;
 	for (i = 0; i < dmabuf->attributes.n_planes; i++) {
 		fb->handles[i] = gbm_bo_get_handle_for_plane(fb->bo, i).u32;
 		if (!fb->handles[i])
@@ -1251,12 +1254,14 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 
 #ifdef HAVE_GBM_MODIFIERS
 	fb->modifier = gbm_bo_get_modifier(bo);
-	for (i = 0; i < gbm_bo_get_plane_count(bo); i++) {
+	fb->num_planes = gbm_bo_get_plane_count(bo);
+	for (i = 0; i < fb->num_planes; i++) {
 		fb->strides[i] = gbm_bo_get_stride_for_plane(bo, i);
 		fb->handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
 		fb->offsets[i] = gbm_bo_get_offset(bo, i);
 	}
 #else
+	fb->num_planes = 1;
 	fb->strides[0] = gbm_bo_get_stride(bo);
 	fb->handles[0] = gbm_bo_get_handle(bo).u32;
 	fb->modifier = DRM_FORMAT_MOD_INVALID;
