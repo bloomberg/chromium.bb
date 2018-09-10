@@ -935,13 +935,11 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
     for (const auto& change : entry.second.list()) {
       DCHECK(!change.team_drive_id().empty());
       if (change.IsDelete()) {
-        const auto it =
-            team_drive_change_list_loaders_.find(change.team_drive_id());
-        DCHECK(it != team_drive_change_list_loaders_.end());
-        team_drive_change_list_loaders_.erase(it);
-        // If we were tracking the update status we can remove that as well.
-        last_update_metadata_.erase(change.team_drive_id());
-        removed_team_drives.insert(change.team_drive_id());
+        if (team_drive_change_list_loaders_.erase(change.team_drive_id()) > 0) {
+          // If we were tracking the update status we can remove that as well.
+          last_update_metadata_.erase(change.team_drive_id());
+          removed_team_drives.insert(change.team_drive_id());
+        }
       } else if (change.IsAddOrUpdate()) {
         // If this is an update (e.g. a renamed team drive), then just erase the
         // existing entry so we can re-add it with the new path.

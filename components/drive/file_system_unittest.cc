@@ -1500,4 +1500,34 @@ TEST_F(FileSystemTest, CheckUpdatesWithIds) {
   EXPECT_LE(now, team_drive_metadata["td_id_2_2"].last_update_check_time);
 }
 
+TEST_F(FileSystemTest, RemoveNonExistingTeamDrive) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load will trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  // Create a file change with a delete team drive, ensure file_system_ does not
+  // crash.
+  const base::FilePath path =
+      util::GetDriveTeamDrivesRootPath().Append("team_drive_2");
+  std::unique_ptr<ResourceEntry> entry = GetResourceEntrySync(path);
+  ASSERT_TRUE(entry);
+
+  drive::FileChange change;
+  change.Update(path, *entry, FileChange::CHANGE_TYPE_DELETE);
+
+  // First time should be removed.
+  file_system_->OnTeamDrivesChanged(change);
+  std::set<std::string> expected_changes = {"td_id_2"};
+  EXPECT_EQ(expected_changes,
+            mock_directory_observer_->removed_team_drive_ids());
+
+  // Second time should be no changes, and no crash.
+  file_system_->OnTeamDrivesChanged(change);
+  expected_changes = {};
+  EXPECT_EQ(expected_changes,
+            mock_directory_observer_->removed_team_drive_ids());
+}
+
 }   // namespace drive
