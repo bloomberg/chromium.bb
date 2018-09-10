@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,14 +59,12 @@ const char kHtmlSubresourcesPath[] = "/predictors/html_subresources.html";
 const std::string kHtmlSubresourcesHosts[] = {"test.com", "baz.com", "foo.com",
                                               "bar.com"};
 
-GURL GetURLWithReplacements(net::test_server::EmbeddedTestServer* server,
-                            const std::string& host,
-                            const std::string& path) {
-  std::string port = base::StringPrintf("%d", server->port());
+std::string GetPathWithPortReplacement(const std::string& path, uint16_t port) {
+  std::string string_port = base::StringPrintf("%d", port);
   std::string path_with_replacements;
   net::test_server::GetFilePathWithReplacements(
-      path, {{"REPLACE_WITH_PORT", port}}, &path_with_replacements);
-  return server->GetURL(host, path_with_replacements);
+      path, {{"REPLACE_WITH_PORT", string_port}}, &path_with_replacements);
+  return path_with_replacements;
 }
 
 GURL GetDataURLWithContent(const std::string& content) {
@@ -275,14 +276,27 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
     CheckForWaitingLoop();
   }
 
-  void WaitUntilHostLookedUp(const std::string& host) {
-    base::RunLoop run_loop;
-    DCHECK(waiting_on_dns_.empty());
-    DCHECK(!dns_run_loop_);
-    dns_run_loop_ = &run_loop;
-    waiting_on_dns_ = host;
+  void OnProxyLookupFinished(const GURL& url, bool success) override {
+    GURL origin = url.GetOrigin();
+    if (success)
+      successful_proxy_lookups_.insert(origin);
+    else
+      unsuccessful_proxy_lookups_.insert(origin);
     CheckForWaitingLoop();
-    run_loop.Run();
+  }
+
+  void WaitUntilHostLookedUp(const std::string& host) {
+    wait_event_ = WaitEvent::kDns;
+    DCHECK(waiting_on_dns_.empty());
+    waiting_on_dns_ = host;
+    Wait();
+  }
+
+  void WaitUntilProxyLookedUp(const GURL& url) {
+    wait_event_ = WaitEvent::kProxy;
+    DCHECK(waiting_on_proxy_.is_empty());
+    waiting_on_proxy_ = url;
+    Wait();
   }
 
   bool HasOriginAttemptedToPreconnect(const GURL& origin) {
@@ -295,26 +309,62 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
            base::ContainsKey(unsuccessful_dns_lookups_, host);
   }
 
-  bool HostFound(const GURL& url) {
-    return base::ContainsKey(successful_dns_lookups_, url.host());
+  bool HostFound(const std::string& host) {
+    return base::ContainsKey(successful_dns_lookups_, host);
+  }
+
+  bool HasProxyBeenLookedUp(const GURL& url) {
+    return base::ContainsKey(successful_proxy_lookups_, url.GetOrigin()) ||
+           base::ContainsKey(unsuccessful_proxy_lookups_, url.GetOrigin());
+  }
+
+  bool ProxyFound(const GURL& url) {
+    return base::ContainsKey(successful_proxy_lookups_, url.GetOrigin());
   }
 
  private:
-  void CheckForWaitingLoop() {
-    if (waiting_on_dns_.empty())
-      return;
-    if (!HasHostBeenLookedUp(waiting_on_dns_))
-      return;
-    DCHECK(dns_run_loop_);
-    waiting_on_dns_ = std::string();
-    dns_run_loop_->Quit();
-    dns_run_loop_ = nullptr;
+  enum class WaitEvent { kNone, kDns, kProxy };
+
+  void Wait() {
+    base::RunLoop run_loop;
+    DCHECK(!run_loop_);
+    run_loop_ = &run_loop;
+    CheckForWaitingLoop();
+    run_loop.Run();
   }
 
+  void CheckForWaitingLoop() {
+    switch (wait_event_) {
+      case WaitEvent::kNone:
+        return;
+      case WaitEvent::kDns:
+        if (!HasHostBeenLookedUp(waiting_on_dns_))
+          return;
+        waiting_on_dns_ = std::string();
+        break;
+      case WaitEvent::kProxy:
+        if (!HasProxyBeenLookedUp(waiting_on_proxy_))
+          return;
+        waiting_on_proxy_ = GURL();
+        break;
+    }
+    DCHECK(run_loop_);
+    run_loop_->Quit();
+    run_loop_ = nullptr;
+    wait_event_ = WaitEvent::kNone;
+  }
+
+  WaitEvent wait_event_ = WaitEvent::kNone;
+  base::RunLoop* run_loop_ = nullptr;
+
   std::string waiting_on_dns_;
-  base::RunLoop* dns_run_loop_ = nullptr;
   std::set<std::string> successful_dns_lookups_;
   std::set<std::string> unsuccessful_dns_lookups_;
+
+  GURL waiting_on_proxy_;
+  std::set<GURL> successful_proxy_lookups_;
+  std::set<GURL> unsuccessful_proxy_lookups_;
+
   std::set<GURL> preconnect_url_attempts_;
 };
 
@@ -323,6 +373,11 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   LoadingPredictorBrowserTest() {}
   ~LoadingPredictorBrowserTest() override {}
 
+  void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
@@ -330,7 +385,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     connection_listener_ =
         std::make_unique<ConnectionListener>(connection_tracker_.get());
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
-    ASSERT_TRUE(embedded_test_server()->Start());
+    embedded_test_server()->StartAcceptingConnections();
 
     loading_predictor_ =
         LoadingPredictorFactory::GetForProfile(browser()->profile());
@@ -483,8 +538,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
                        PrepareForPageLoadWithoutPrediction) {
   // Navigate the first time to fill the HTTP cache.
-  GURL url = GetURLWithReplacements(embedded_test_server(), "test.com",
-                                    kHtmlSubresourcesPath);
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
   ResetPredictorState();
@@ -495,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
-  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url));
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
   // We should preconnect only 2 sockets for the main frame host.
   const size_t expected_connections = 2;
   connection_tracker()->WaitForAcceptedConnections(expected_connections);
@@ -508,8 +564,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 // Tests that the LoadingPredictor has a prediction for a host after navigating
 // to it.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
-  GURL url = GetURLWithReplacements(embedded_test_server(), "test.com",
-                                    kHtmlSubresourcesPath);
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
   std::vector<PreconnectRequest> requests;
   for (const auto& host : kHtmlSubresourcesHosts)
     requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1);
@@ -527,8 +584,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
 // redirect.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
                        LearnFromNavigationWithRedirect) {
-  GURL redirect_url = GetURLWithReplacements(embedded_test_server(), "test.com",
-                                             kHtmlSubresourcesPath);
+  GURL redirect_url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
   GURL original_url = embedded_test_server()->GetURL(
       "redirect.com",
       base::StringPrintf("/server-redirect?%s", redirect_url.spec().c_str()));
@@ -565,8 +623,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
                        PrepareForPageLoadWithPrediction) {
   // Navigate the first time to fill the predictor's database and the HTTP
   // cache.
-  GURL url = GetURLWithReplacements(embedded_test_server(), "test.com",
-                                    kHtmlSubresourcesPath);
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
@@ -578,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   for (const auto& host : kHtmlSubresourcesHosts) {
     GURL url(base::StringPrintf("http://%s", host.c_str()));
     preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
-    EXPECT_TRUE(preconnect_manager_observer()->HostFound(url));
+    EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
   }
   // 2 connections to the main frame host + 1 connection per host for others.
   const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
@@ -597,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, DnsPrefetch) {
       GURL(kChromiumUrl).host());
   EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
       GURL(kInvalidLongUrl).host()));
-  EXPECT_TRUE(preconnect_manager_observer()->HostFound(GURL(kChromiumUrl)));
+  EXPECT_TRUE(
+      preconnect_manager_observer()->HostFound(GURL(kChromiumUrl).host()));
 }
 
 // Tests that preconnect warms up a socket connection to a test server.
@@ -712,6 +772,90 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   connection_tracker()->WaitUntilFirstConnectionRead();
   EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
   EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+}
+
+class LoadingPredictorBrowserTestWithProxy
+    : public LoadingPredictorBrowserTest {
+ public:
+  void SetUp() override {
+    pac_script_server_ = std::make_unique<net::EmbeddedTestServer>();
+    pac_script_server_->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    ASSERT_TRUE(pac_script_server_->InitializeAndListen());
+    LoadingPredictorBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    LoadingPredictorBrowserTest::SetUpOnMainThread();
+    // This will make all dns requests fail.
+    host_resolver()->ClearRules();
+
+    pac_script_server_->StartAcceptingConnections();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    GURL pac_url = pac_script_server_->GetURL(GetPathWithPortReplacement(
+        "/predictors/proxy.pac", embedded_test_server()->port()));
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl, pac_url.spec());
+  }
+
+ private:
+  std::unique_ptr<net::EmbeddedTestServer> pac_script_server_;
+};
+
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
+                       PrepareForPageLoadWithoutPrediction) {
+  // Navigate the first time to fill the HTTP cache.
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ResetNetworkState();
+  ResetPredictorState();
+
+  // Open in a new foreground tab to avoid being classified as a reload since
+  // reload requests are always revalidated.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
+  EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));
+  // We should preconnect only 2 sockets for the main frame host.
+  const size_t expected_connections = 2;
+  connection_tracker()->WaitForAcceptedConnections(expected_connections);
+  EXPECT_EQ(expected_connections,
+            connection_tracker()->GetAcceptedSocketCount());
+  // No reads since all resources should be cached.
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+}
+
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
+                       PrepareForPageLoadWithPrediction) {
+  // Navigate the first time to fill the predictor's database and the HTTP
+  // cache.
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ResetNetworkState();
+
+  // Open in a new foreground tab to avoid being classified as a reload since
+  // reload requests are always revalidated.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  for (const auto& host : kHtmlSubresourcesHosts) {
+    GURL url = embedded_test_server()->GetURL(host, "/");
+    preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
+    EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));
+  }
+  // 2 connections to the main frame host + 1 connection per host for others.
+  const size_t expected_connections = base::size(kHtmlSubresourcesHosts) + 1;
+  connection_tracker()->WaitForAcceptedConnections(expected_connections);
+  EXPECT_EQ(expected_connections,
+            connection_tracker()->GetAcceptedSocketCount());
+  // No reads since all resources should be cached.
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 }
 
 }  // namespace predictors
