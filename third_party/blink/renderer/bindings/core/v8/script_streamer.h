@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_STREAMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_STREAMER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
@@ -145,6 +146,11 @@ class CORE_EXPORT ScriptStreamer final
   bool parsing_finished_;  // Whether the V8 side processing is done.
   // Whether we have received enough data to start the streaming.
   bool have_enough_data_for_streaming_;
+
+  // Flag used to allow atomic cancelling and reposting of the streaming task
+  // when the load completes without the task yet starting.
+  // TODO(874080): Remove once we can mutate task traits.
+  std::atomic_flag blocking_task_started_or_cancelled_ = ATOMIC_FLAG_INIT;
 
   // Whether the script source code should be retrieved from the Resource
   // instead of the ScriptStreamer.
