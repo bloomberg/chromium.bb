@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
@@ -60,6 +61,9 @@ class ContextualSuggestionsService : public KeyedService {
   // |visit_time| is the time of the visit for the URL for which suggestions
   // should be fetched.
   //
+  // |input| is the current user input of the autocomplete query, whose
+  // |current_page_classification| will be used to build the suggestion url.
+  //
   // |template_url_service| may be null, but some services may be disabled.
   //
   // |start_callback| is called to transfer ownership of the created loader to
@@ -75,6 +79,7 @@ class ContextualSuggestionsService : public KeyedService {
   void CreateContextualSuggestionsRequest(
       const std::string& current_url,
       const base::Time& visit_time,
+      const AutocompleteInput& input,
       const TemplateURLService* template_url_service,
       StartCallback start_callback,
       CompletionCallback completion_callback);
@@ -90,10 +95,14 @@ class ContextualSuggestionsService : public KeyedService {
   //
   // |current_url| is the page the user is currently browsing and may be empty.
   //
+  // |input| is the current user input of the autocomplete query, whose
+  // |current_page_classification| will be used to build the suggestion url.
+  //
   // Note that this method is public and is also used by ZeroSuggestProvider for
   // suggestions that do not take |current_url| into consideration.
   static GURL ContextualSuggestionsUrl(
       const std::string& current_url,
+      const AutocompleteInput& input,
       const TemplateURLService* template_url_service);
 
  private:
@@ -121,6 +130,7 @@ class ContextualSuggestionsService : public KeyedService {
   // This function is called by CreateContextualSuggestionsRequest. See its
   // function definition for details on the parameters.
   void CreateDefaultRequest(const std::string& current_url,
+                            const AutocompleteInput& input,
                             const TemplateURLService* template_url_service,
                             StartCallback start_callback,
                             CompletionCallback completion_callback);

@@ -37,6 +37,7 @@ class OmniboxProvider : public SearchProvider,
   void OnResultChanged(bool default_match_changed) override;
 
   Profile* profile_;
+  bool is_zero_state_enabled_;
   AppListControllerDelegate* list_controller_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
