@@ -467,28 +467,28 @@ D3D11PictureBuffer* D3D11VideoDecoder::GetPicture() {
   return nullptr;
 }
 
-void D3D11VideoDecoder::OutputResult(D3D11PictureBuffer* buffer,
-                                     const VideoColorSpace& buffer_colorspace) {
+void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
+                                     D3D11PictureBuffer* picture_buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  buffer->set_in_client_use(true);
+  picture_buffer->set_in_client_use(true);
 
   // Note: The pixel format doesn't matter.
-  gfx::Rect visible_rect(buffer->size());
+  gfx::Rect visible_rect(picture->visible_rect());
   // TODO(liberato): Pixel aspect ratio should come from the VideoDecoderConfig
   // (except when it should come from the SPS).
   // https://crbug.com/837337
   double pixel_aspect_ratio = 1.0;
-  base::TimeDelta timestamp = buffer->timestamp_;
+  base::TimeDelta timestamp = picture_buffer->timestamp_;
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_NV12, buffer->mailbox_holders(),
+      PIXEL_FORMAT_NV12, picture_buffer->mailbox_holders(),
       VideoFrame::ReleaseMailboxCB(), visible_rect.size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
   // TODO(liberato): bind this to the gpu main thread.
   frame->SetReleaseMailboxCB(media::BindToCurrentLoop(
       base::BindOnce(&D3D11VideoDecoderImpl::OnMailboxReleased, impl_weak_,
-                     scoped_refptr<D3D11PictureBuffer>(buffer))));
+                     scoped_refptr<D3D11PictureBuffer>(picture_buffer))));
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note
@@ -500,7 +500,7 @@ void D3D11VideoDecoder::OutputResult(D3D11PictureBuffer* buffer,
     frame->metadata()->SetBoolean(VideoFrameMetadata::REQUIRE_OVERLAY, true);
   }
 
-  frame->set_color_space(buffer_colorspace.ToGfxColorSpace());
+  frame->set_color_space(picture->get_colorspace().ToGfxColorSpace());
   output_cb_.Run(frame);
 }
 

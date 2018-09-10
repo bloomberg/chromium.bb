@@ -65,8 +65,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // D3D11VideoDecoderClient implementation.
   D3D11PictureBuffer* GetPicture() override;
-  void OutputResult(D3D11PictureBuffer* buffer,
-                    const VideoColorSpace& buffer_colorspace) override;
+  void OutputResult(const CodecPicture* picture,
+                    D3D11PictureBuffer* picture_buffer) override;
 
   // Return false |config| definitely isn't going to work, so that we can fail
   // init without bothering with a thread hop.
