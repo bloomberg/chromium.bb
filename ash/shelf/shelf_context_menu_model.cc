@@ -201,7 +201,6 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
                                   ->IsTabletModeWindowManagerEnabled();
   switch (command_id) {
     case MENU_AUTO_HIDE:
-      DCHECK(!is_tablet_mode);
       SetShelfAutoHideBehaviorPref(
           prefs, display_id_,
           GetShelfAutoHideBehaviorPref(prefs, display_id_) ==
