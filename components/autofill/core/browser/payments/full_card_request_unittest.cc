@@ -59,11 +59,8 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
 // The personal data manager.
 class MockPersonalDataManager : public PersonalDataManager {
  public:
-  MockPersonalDataManager() : PersonalDataManager("en-US") {
-    testing::DefaultValue<bool>::Set(true);
-  }
+  MockPersonalDataManager() : PersonalDataManager("en-US") {}
   ~MockPersonalDataManager() override {}
-  MOCK_CONST_METHOD0(IsSyncFeatureEnabled, bool());
   MOCK_METHOD1(UpdateCreditCard, void(const CreditCard& credit_card));
   MOCK_METHOD1(UpdateServerCreditCard, void(const CreditCard& credit_card));
 };
