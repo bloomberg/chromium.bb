@@ -202,7 +202,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
         continue;
 
       // Ignore folders that correspond to registered whitelists.
-      if (registered_whitelists.count(crx_id) > 0)
+      if (base::ContainsKey(registered_whitelists, crx_id))
         continue;
 
       RecordUncleanUninstall();
@@ -233,7 +233,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
         continue;
 
       // Ignore files that correspond to registered whitelists.
-      if (registered_whitelists.count(crx_id) > 0)
+      if (base::ContainsKey(registered_whitelists, crx_id))
         continue;
 
       RecordUncleanUninstall();
@@ -518,7 +518,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
     // previously registered on the command line but isn't anymore.
     const base::ListValue* clients = nullptr;
     if ((!dict->GetList(kClients, &clients) || clients->empty()) &&
-        command_line_whitelists.count(id) == 0) {
+        !base::ContainsKey(command_line_whitelists, id)) {
       stale_whitelists.insert(id);
       continue;
     }
