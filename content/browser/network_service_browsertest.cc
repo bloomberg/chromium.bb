@@ -79,12 +79,10 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
-class WebUIDataSource : public URLDataSource {
+class TestWebUIDataSource : public URLDataSource {
  public:
-  WebUIDataSource() {}
-
- private:
-  ~WebUIDataSource() override {}
+  TestWebUIDataSource() {}
+  ~TestWebUIDataSource() override {}
 
   std::string GetSource() const override { return "webui"; }
 
@@ -102,7 +100,8 @@ class WebUIDataSource : public URLDataSource {
     return "text/html";
   }
 
-  DISALLOW_COPY_AND_ASSIGN(WebUIDataSource);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWebUIDataSource);
 };
 
 class NetworkServiceBrowserTest : public ContentBrowserTest {
@@ -148,7 +147,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     URLDataSource::Add(shell()->web_contents()->GetBrowserContext(),
-                       new WebUIDataSource);
+                       std::make_unique<TestWebUIDataSource>());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

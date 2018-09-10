@@ -44,7 +44,8 @@ ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
       callback_weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
-  content::URLDataSource::Add(profile, new chromeos::UserImageSource());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<chromeos::UserImageSource>());
 #endif
 }
 

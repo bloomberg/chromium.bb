@@ -273,11 +273,12 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   ExtensionSyncService::Get(profile_);
 
   // Make the chrome://extension-icon/ resource available.
-  content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<ExtensionIconSource>(profile_));
 
   // Register the source for the chrome://extensions-internals page.
-  content::URLDataSource::Add(profile_,
-                              new ExtensionsInternalsSource(profile_));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<ExtensionsInternalsSource>(profile_));
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {

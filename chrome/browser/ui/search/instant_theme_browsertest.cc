@@ -89,7 +89,8 @@ class InstantThemeTest : public extensions::ExtensionBrowserTest,
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
-    content::URLDataSource::Add(profile(), new ThemeSource(profile()));
+    content::URLDataSource::Add(profile(),
+                                std::make_unique<ThemeSource>(profile()));
   }
 
   void InstallThemeAndVerify(const std::string& theme_dir,

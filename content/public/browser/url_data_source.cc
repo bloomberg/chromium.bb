@@ -16,12 +16,6 @@ namespace content {
 
 // static
 void URLDataSource::Add(BrowserContext* browser_context,
-                        URLDataSource* source) {
-  Add(browser_context, base::WrapUnique(source));
-}
-
-// static
-void URLDataSource::Add(BrowserContext* browser_context,
                         std::unique_ptr<URLDataSource> source) {
   URLDataManager::AddDataSource(browser_context, std::move(source));
 }

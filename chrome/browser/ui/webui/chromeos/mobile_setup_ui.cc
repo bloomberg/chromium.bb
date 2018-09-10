@@ -626,11 +626,10 @@ void MobileSetupHandler::UpdatePortalReachability(
 MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<MobileSetupHandler>());
-  MobileSetupUIHTMLSource* html_source = new MobileSetupUIHTMLSource();
 
   // Set up the chrome://mobilesetup/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, html_source);
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                              std::make_unique<MobileSetupUIHTMLSource>());
 
   content::WebContentsObserver::Observe(web_ui->GetWebContents());
 }

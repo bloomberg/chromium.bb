@@ -2103,8 +2103,9 @@ class MockWebUIProvider
 
   std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
                                                      const GURL& url) override {
-    content::URLDataSource::Add(Profile::FromWebUI(web_ui),
-                                new StaticURLDataSource(source_, content_));
+    content::URLDataSource::Add(
+        Profile::FromWebUI(web_ui),
+        std::make_unique<StaticURLDataSource>(source_, content_));
     return std::make_unique<content::WebUIController>(web_ui);
   }
 

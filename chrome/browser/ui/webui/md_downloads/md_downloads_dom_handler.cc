@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -80,9 +81,9 @@ MdDownloadsDOMHandler::MdDownloadsDOMHandler(
     content::DownloadManager* download_manager, content::WebUI* web_ui)
     : list_tracker_(download_manager, web_ui) {
   // Create our fileicon data source.
-  Profile* profile =
-      Profile::FromBrowserContext(download_manager->GetBrowserContext());
-  content::URLDataSource::Add(profile, new FileIconSource());
+  content::URLDataSource::Add(
+      Profile::FromBrowserContext(download_manager->GetBrowserContext()),
+      std::make_unique<FileIconSource>());
   CheckForRemovedFiles();
 }
 
