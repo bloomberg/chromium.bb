@@ -16,9 +16,8 @@
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/scoped_box_clipper.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -28,19 +27,12 @@ namespace blink {
 
 DISABLE_CFI_PERF
 void BlockPainter::Paint(const PaintInfo& paint_info) {
-  PaintInfoWithOffset paint_info_with_offset(layout_block_, paint_info);
-  // We can't early return if there is no fragment to paint for this block,
-  // because there may be overflowing children that exist in the painting
-  // fragment. We also can't check ShouldPaint() in the case because we
-  // don't have a meaningful paint offset. TODO(wangxianzhu): only paint
-  // children if !adjustment.FragmentToPaint().
-  if (paint_info_with_offset.FragmentToPaint() &&
-      !ShouldPaint(paint_info_with_offset))
+  ScopedPaintState paint_state(layout_block_, paint_info);
+  if (!ShouldPaint(paint_state))
     return;
 
-  auto paint_offset = paint_info_with_offset.PaintOffset();
-  auto& local_paint_info = paint_info_with_offset.MutablePaintInfo();
-
+  auto paint_offset = paint_state.PaintOffset();
+  auto& local_paint_info = paint_state.MutablePaintInfo();
   PaintPhase original_phase = local_paint_info.phase;
 
   if (original_phase == PaintPhase::kOutline) {
@@ -52,12 +44,14 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
       local_paint_info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
 
-  if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
-      original_phase != PaintPhase::kSelfOutlineOnly) {
-    base::Optional<ScopedBoxClipper> box_clipper;
-    if (local_paint_info.phase != PaintPhase::kMask)
-      box_clipper.emplace(layout_block_, local_paint_info);
+  if (original_phase == PaintPhase::kMask) {
     layout_block_.PaintObject(local_paint_info, paint_offset);
+  } else if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
+             original_phase != PaintPhase::kSelfOutlineOnly) {
+    ScopedBoxContentsPaintState contents_paint_state(paint_state,
+                                                     layout_block_);
+    layout_block_.PaintObject(contents_paint_state.GetPaintInfo(),
+                              contents_paint_state.PaintOffset());
   }
 
   // Carets are painted in the foreground phase, outside of the contents
@@ -238,42 +232,13 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
       paint_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       paint_phase != PaintPhase::kMask) {
-    // Handle scrolling translation.
-    base::Optional<PaintInfo> scrolled_paint_info;
-    auto contents_paint_offset = paint_offset;
-    if (const auto* fragment = paint_info.FragmentToPaint(layout_block_)) {
-      const auto* object_properties = fragment->PaintProperties();
-      auto* scroll_translation =
-          object_properties ? object_properties->ScrollTranslation() : nullptr;
-      if (scroll_translation) {
-        scrolled_paint_info.emplace(paint_info);
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-          scrolled_paint_info->UpdateCullRectForScrollingContents(
-              EnclosingIntRect(layout_block_.OverflowClipRect(paint_offset)),
-              scroll_translation->Matrix().ToAffineTransform());
-        } else {
-          scrolled_paint_info->UpdateCullRect(
-              scroll_translation->Matrix().ToAffineTransform());
-        }
-        // See comments for ScrollTranslation in object_paint_properties.h
-        // for the reason of adding ScrollOrigin(). contents_paint_offset will
-        // be used only for the scrolling contents that are not painted through
-        // descendant objects' Paint() method, e.g. inline boxes.
-        // TODO(wangxianzhu): Encapsulate such logic at various places into
-        // one class.
-        contents_paint_offset += layout_block_.ScrollOrigin();
-      }
-    }
-    const PaintInfo& contents_paint_info =
-        scrolled_paint_info ? *scrolled_paint_info : paint_info;
-
     // Actually paint the contents.
     if (layout_block_.IsLayoutBlockFlow()) {
       // All floating descendants will be LayoutBlockFlow objects, and will get
       // painted here. That is step #5 of the CSS spec (see above).
-      PaintBlockFlowContents(contents_paint_info, contents_paint_offset);
+      PaintBlockFlowContents(paint_info, paint_offset);
     } else {
-      PaintContents(contents_paint_info, contents_paint_offset);
+      PaintContents(paint_info, paint_offset);
     }
   }
 
@@ -350,10 +315,17 @@ void BlockPainter::PaintCarets(const PaintInfo& paint_info,
 }
 
 DISABLE_CFI_PERF
-bool BlockPainter::ShouldPaint(
-    const PaintInfoWithOffset& paint_info_with_offset) const {
+bool BlockPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
+  // If there is no fragment to paint for this block, we still need to continue
+  // the paint tree walk in case there are overflowing children that exist in
+  // the current painting fragment of the painting layer. In the case we can't
+  // check the overflow rect against the cull rect in the case because we don't
+  // know the paint offset.
+  if (!paint_state.FragmentToPaint())
+    return true;
+
   LayoutRect overflow_rect;
-  if (paint_info_with_offset.GetPaintInfo().IsPrinting() &&
+  if (paint_state.GetPaintInfo().IsPrinting() &&
       layout_block_.IsAnonymousBlock() && layout_block_.ChildrenInline()) {
     // For case <a href="..."><div>...</div></a>, when layout_block_ is the
     // anonymous container of <a>, the anonymous container's visual overflow is
@@ -381,7 +353,7 @@ bool BlockPainter::ShouldPaint(
     overflow_rect.Move(-layout_block_.ScrolledContentOffset());
   }
 
-  return paint_info_with_offset.LocalRectIntersectsCullRect(overflow_rect);
+  return paint_state.LocalRectIntersectsCullRect(overflow_rect);
 }
 
 void BlockPainter::PaintContents(const PaintInfo& paint_info,

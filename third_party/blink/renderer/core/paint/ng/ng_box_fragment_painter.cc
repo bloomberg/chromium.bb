@@ -30,10 +30,9 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/core/paint/scoped_box_clipper.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -142,15 +141,15 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
-  PaintInfoWithOffset paint_info_with_offset(box_fragment_, paint_info);
-  if (!ShouldPaint(paint_info_with_offset))
+  ScopedPaintState paint_state(box_fragment_, paint_info);
+  if (!ShouldPaint(paint_state))
     return;
 
-  PaintInfo& info = paint_info_with_offset.MutablePaintInfo();
+  PaintInfo& info = paint_state.MutablePaintInfo();
   if (PhysicalFragment().IsAtomicInline())
     return PaintAtomicInline(info);
 
-  LayoutPoint paint_offset = paint_info_with_offset.PaintOffset();
+  LayoutPoint paint_offset = paint_state.PaintOffset();
   PaintPhase original_phase = info.phase;
 
   if (original_phase == PaintPhase::kOutline) {
@@ -164,13 +163,17 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    base::Optional<ScopedBoxClipper> box_clipper;
-    if (original_phase == PaintPhase::kForeground ||
-        original_phase == PaintPhase::kFloat ||
-        original_phase == PaintPhase::kDescendantOutlinesOnly) {
-      box_clipper.emplace(box_fragment_, info);
+    if ((original_phase == PaintPhase::kForeground ||
+         original_phase == PaintPhase::kFloat ||
+         original_phase == PaintPhase::kDescendantOutlinesOnly) &&
+        box_fragment_.GetLayoutObject()->IsBox()) {
+      ScopedBoxContentsPaintState contents_paint_state(
+          paint_state, ToLayoutBox(*box_fragment_.GetLayoutObject()));
+      PaintObject(contents_paint_state.GetPaintInfo(),
+                  contents_paint_state.PaintOffset());
+    } else {
+      PaintObject(info, paint_offset);
     }
-    PaintObject(info, paint_offset);
   }
 
   if (ShouldPaintSelfOutline(original_phase)) {
@@ -222,51 +225,18 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
-    // TODO(layout-dev): Figure out where paint properties should live.
-    const auto& layout_object = *box_fragment_.GetLayoutObject();
-    base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-    base::Optional<PaintInfo> scrolled_paint_info;
-    auto contents_paint_offset = paint_offset;
-    if (const auto* fragment = paint_info.FragmentToPaint(layout_object)) {
-      const auto* object_properties = fragment->PaintProperties();
-      auto* scroll_translation =
-          object_properties ? object_properties->ScrollTranslation() : nullptr;
-      if (scroll_translation) {
-        scoped_scroll_property.emplace(
-            paint_info.context.GetPaintController(), scroll_translation,
-            box_fragment_, DisplayItem::PaintPhaseToScrollType(paint_phase));
-        scrolled_paint_info.emplace(paint_info);
-        if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-          scrolled_paint_info->UpdateCullRectForScrollingContents(
-              EnclosingIntRect(PhysicalFragment().OverflowClipRect(
-                  paint_offset, kIgnorePlatformOverlayScrollbarSize)),
-              scroll_translation->Matrix().ToAffineTransform());
-        } else {
-          scrolled_paint_info->UpdateCullRect(
-              scroll_translation->Matrix().ToAffineTransform());
-        }
-        // See comments for ScrollTranslation in object_paint_properties.h for
-        // the reason of adding ScrollOrigin().
-        contents_paint_offset += ToLayoutBox(layout_object).ScrollOrigin();
-      }
-    }
-
-    const PaintInfo& contents_paint_info =
-        scrolled_paint_info ? *scrolled_paint_info : paint_info;
-
     if (PhysicalFragment().ChildrenInline()) {
       if (PhysicalFragment().IsBlockFlow()) {
-        PaintBlockFlowContents(contents_paint_info, contents_paint_offset);
+        PaintBlockFlowContents(paint_info, paint_offset);
         if (paint_phase == PaintPhase::kFloat ||
             paint_phase == PaintPhase::kSelection ||
             paint_phase == PaintPhase::kTextClip)
-          PaintFloats(contents_paint_info);
+          PaintFloats(paint_info);
       } else {
-        PaintInlineChildren(box_fragment_.Children(), contents_paint_info,
-                            contents_paint_offset);
+        PaintInlineChildren(box_fragment_.Children(), paint_info, paint_offset);
       }
     } else {
-      PaintBlockChildren(contents_paint_info);
+      PaintBlockChildren(paint_info);
     }
     if (ShouldPaintDescendantOutlines(paint_phase)) {
       NGFragmentPainter(box_fragment_)
@@ -562,9 +532,9 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     const PaintInfo& paint_info,
     bool is_self_painting) {
-  PaintInfoWithOffset paint_info_with_offset(box_fragment_, paint_info);
-  auto paint_offset = paint_info_with_offset.PaintOffset();
-  PaintInfo& local_paint_info = paint_info_with_offset.MutablePaintInfo();
+  ScopedPaintState paint_state(box_fragment_, paint_info);
+  auto paint_offset = paint_state.PaintOffset();
+  PaintInfo& local_paint_info = paint_state.MutablePaintInfo();
 
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
   // foreground paint implementation. We don't need complete painting for these
@@ -586,11 +556,17 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   }
   local_paint_info.phase = PaintPhase::kFloat;
   PaintObject(local_paint_info, paint_offset);
-  {
-    ScopedBoxClipper box_clipper(box_fragment_, local_paint_info);
-    local_paint_info.phase = PaintPhase::kForeground;
+
+  local_paint_info.phase = PaintPhase::kForeground;
+  if (box_fragment_.GetLayoutObject()->IsBox()) {
+    ScopedBoxContentsPaintState contents_paint_state(
+        paint_state, ToLayoutBox(*box_fragment_.GetLayoutObject()));
+    PaintObject(contents_paint_state.GetPaintInfo(),
+                contents_paint_state.PaintOffset());
+  } else {
     PaintObject(local_paint_info, paint_offset);
   }
+
   local_paint_info.phase = PaintPhase::kOutline;
   PaintObject(local_paint_info, paint_offset);
 
@@ -775,9 +751,9 @@ void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
 }
 
 bool NGBoxFragmentPainter::ShouldPaint(
-    const PaintInfoWithOffset& paint_info_with_offset) const {
+    const ScopedPaintState& paint_state) const {
   // TODO(layout-dev): Add support for scrolling, see BlockPainter::ShouldPaint.
-  return paint_info_with_offset.LocalRectIntersectsCullRect(
+  return paint_state.LocalRectIntersectsCullRect(
       box_fragment_.SelfInkOverflow());
 }
 

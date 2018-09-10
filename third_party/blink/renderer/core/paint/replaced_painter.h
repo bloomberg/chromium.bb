@@ -11,7 +11,7 @@
 namespace blink {
 
 struct PaintInfo;
-class PaintInfoWithOffset;
+class ScopedPaintState;
 class LayoutReplaced;
 
 class ReplacedPainter {
@@ -23,7 +23,7 @@ class ReplacedPainter {
 
   void Paint(const PaintInfo&);
 
-  bool ShouldPaint(const PaintInfoWithOffset&) const;
+  bool ShouldPaint(const ScopedPaintState&) const;
 
  private:
   // Paint a hit test display item and record hit test data. This should be

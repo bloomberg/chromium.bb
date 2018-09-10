@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -32,11 +32,10 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
       !layout_table_cell_.FirstChild())
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_table_cell_, paint_info);
+  ScopedPaintState paint_state(layout_table_cell_, paint_info);
   auto paint_rect =
-      PaintRectNotIncludingVisualOverflow(paint_info_with_offset.PaintOffset());
-  PaintBackground(paint_info_with_offset.GetPaintInfo(), paint_rect,
-                  background_object);
+      PaintRectNotIncludingVisualOverflow(paint_state.PaintOffset());
+  PaintBackground(paint_state.GetPaintInfo(), paint_rect, background_object);
 }
 
 void TableCellPainter::PaintBackground(const PaintInfo& paint_info,

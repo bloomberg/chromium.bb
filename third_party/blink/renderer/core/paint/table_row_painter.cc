@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -50,10 +50,9 @@ void TableRowPainter::Paint(const PaintInfo& paint_info) {
 
 void TableRowPainter::PaintOutline(const PaintInfo& paint_info) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
-  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
   ObjectPainter(layout_table_row_)
-      .PaintOutline(paint_info_with_offset.GetPaintInfo(),
-                    paint_info_with_offset.PaintOffset());
+      .PaintOutline(paint_state.GetPaintInfo(), paint_state.PaintOffset());
 }
 
 void TableRowPainter::HandleChangedPartialPaint(
@@ -78,14 +77,14 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
   HandleChangedPartialPaint(paint_info, dirtied_columns);
 
-  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_row_,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
-  auto paint_offset = paint_info_with_offset.PaintOffset();
+  const auto& local_paint_info = paint_state.GetPaintInfo();
+  auto paint_offset = paint_state.PaintOffset();
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
                            DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(paint_offset, layout_table_row_.Size());
