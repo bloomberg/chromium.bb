@@ -10,28 +10,51 @@ import sys
 
 from core import benchmark_utils
 from core import bot_platforms
-from core import sharding_map_generator
 from core import retrieve_story_timing
+from core import sharding_map_generator
 
 
-def get_parser():
+def GetParser():
   parser = argparse.ArgumentParser(
       description='Generate perf test sharding map.')
-  parser.add_argument(
+  subparsers = parser.add_subparsers()
+
+  parser_update = subparsers.add_parser('update')
+  parser_update.add_argument(
       '--regenerate-timing-data', '-r', action='store_true',
       help=('Whether to regenerate timing data for all builders in '
             'chromium.perf'), default=False)
-
-  parser.add_argument(
-      '--builder', '-b', action='store', nargs='*',
-      help=('The builder name to reshard. If not specified, use all '
+  parser_update.add_argument(
+      '--builders', '-b', action='store', nargs='*',
+      help=('The builder names to reshard. If not specified, use all '
             'perf builders'),
-      choices=bot_platforms.ALL_PLATFORM_NAMES)
+      choices=bot_platforms.ALL_PLATFORM_NAMES,
+      default=bot_platforms.ALL_PLATFORM_NAMES)
+  parser_update.set_defaults(func=_UpdateShardsForBuilders)
+
+  parser_create = subparsers.add_parser('create')
+  parser_create.add_argument(
+      '--benchmark', help='The benchmark that you want to create shard for',
+      required=True)
+  parser_create.add_argument(
+      '--timing-data-source', '-t', choices=bot_platforms.ALL_PLATFORM_NAMES,
+      help='The timing data that you want to use. If not set, it will assume '
+           'all stories use the same amount of time to run')
+  parser_create.add_argument(
+      # pinpoint typically has 16 machines for each hardware types, so we set
+      # the default to use half of them to avoid starving the pool.
+      '--shards-num', type=int, default=8,
+      help="The number of shards you'd like to use, default is %(default)s")
+  parser_create.add_argument(
+      '--output-path', default='new_shard_map.json',
+      help='Output file path for the shard map, default is `%(default)s`')
+  parser_create.set_defaults(func=_CreateShardMapForBenchmark)
   return parser
 
 
 def _GenerateBenchmarksToShardsList(benchmarks):
-  """ Return |benchmarks_to_shard| from given list of |benchmarks|.
+  """Return |benchmarks_to_shard| from given list of |benchmarks|.
+
     benchmarks_to_shard is a list all benchmarks to be sharded. Its
     structure is as follows:
     [{
@@ -55,7 +78,7 @@ def _GenerateBenchmarksToShardsList(benchmarks):
   for b in benchmarks:
     benchmarks_to_shard.append({
         'name': b.Name(),
-        'repeat':  b().options.get('pageset_repeat', 1),
+        'repeat': b().options.get('pageset_repeat', 1),
         'stories': benchmark_utils.GetBenchmarkStoryNames(b())
     })
   return benchmarks_to_shard
@@ -64,17 +87,30 @@ def _GenerateBenchmarksToShardsList(benchmarks):
 def _LoadTimingData(args):
   builder_name, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStortyTimingData(
-           configurations=[builder_name], num_last_days=5)
+      configurations=[builder_name], num_last_days=5)
   with open(timing_file_path, 'w') as output_file:
     json.dump(data, output_file, indent=4, separators=(',', ': '))
   print 'Finish retrieve story timing data for %s' % repr(builder_name)
 
 
-def _UpdateShardsForBuilders(builder_names, regenerate_timing_data):
+def _GenerateShardMap(builder, num_of_shards, output_path, benchmark=None):
+  timing_data = []
+  if builder:
+    with open(builder.timing_file_path) as f:
+      timing_data = json.load(f)
+  benchmarks_to_shard = _GenerateBenchmarksToShardsList(
+      [b for b in builder.benchmarks_to_run if not benchmark or (
+          b.Name() == benchmark)])
+  sharding_map = sharding_map_generator.generate_sharding_map(
+      benchmarks_to_shard, timing_data, num_shards=num_of_shards,
+      debug=False)
+  with open(output_path, 'w') as output_file:
+    json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
 
-  builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in builder_names}
 
-  if regenerate_timing_data:
+def _UpdateShardsForBuilders(args):
+  builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in args.builders}
+  if args.regenerate_timing_data:
     print 'Update shards timing data. May take a while...'
     args = []
     for b in builders:
@@ -83,23 +119,33 @@ def _UpdateShardsForBuilders(builder_names, regenerate_timing_data):
     p.map(_LoadTimingData, args)
 
   for b in builders:
-    with open(b.timing_file_path) as f:
-      timing_data = json.load(f)
-    benchmarks_to_shard = _GenerateBenchmarksToShardsList(b.benchmarks_to_run)
-    sharding_map = sharding_map_generator.generate_sharding_map(
-        benchmarks_to_shard, timing_data, num_shards=b.num_shards,
-        debug=False)
-    with open(b.shards_map_file_path, 'w') as output_file:
-      json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
+    _GenerateShardMap(b, b.num_shards, b.shards_map_file_path)
     print 'Updated sharding map for %s' % repr(b.name)
 
 
+def _CreateShardMapForBenchmark(args):
+  """Create the shard map for the given benchmark.
+
+  Args:
+    args(Namespace object): the namespace object for the subparser `create`. It
+      will contain the attributes:
+        `benchmark`: the name of the benchmark that we want the shard for
+        `num_shards`: the total number of shards that we want to use
+        `output_path`: the output file path for the shard map
+        `builder`: the builder name, unlike the above, this is a string instead
+          of a list of string like above
+  """
+  builder = None
+  if args.timing_data_source:
+    [builder] = [b for b in bot_platforms.ALL_PLATFORMS
+                 if b.name == args.timing_data_source]
+  _GenerateShardMap(builder, args.shards_num, args.output_path, args.benchmark)
+
+
 def main():
-  parser = get_parser()
+  parser = GetParser()
   options = parser.parse_args()
-  builder_names = options.builder or bot_platforms.ALL_PLATFORM_NAMES
-  _UpdateShardsForBuilders(
-      builder_names, options.regenerate_timing_data)
+  options.func(options)
 
 if __name__ == '__main__':
   sys.exit(main())
