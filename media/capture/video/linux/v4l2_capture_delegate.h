@@ -45,7 +45,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   // Composes a list of usable and supported pixel formats, in order of
   // preference, with MJPEG prioritised depending on |prefer_mjpeg|.
-  static std::list<uint32_t> GetListOfUsableFourCcs(bool prefer_mjpeg);
+  static std::vector<uint32_t> GetListOfUsableFourCcs(bool prefer_mjpeg);
 
   V4L2CaptureDelegate(
       V4L2CaptureDevice* v4l2,

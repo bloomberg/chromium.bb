@@ -221,15 +221,17 @@ VideoPixelFormat V4L2CaptureDelegate::V4l2FourCcToChromiumPixelFormat(
 }
 
 // static
-std::list<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
+std::vector<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
     bool prefer_mjpeg) {
-  std::list<uint32_t> supported_formats;
-  for (const auto& format : kSupportedFormatsAndPlanarity)
-    supported_formats.push_back(format.fourcc);
+  std::vector<uint32_t> supported_formats;
+  supported_formats.reserve(base::size(kSupportedFormatsAndPlanarity));
 
   // Duplicate MJPEG on top of the list depending on |prefer_mjpeg|.
   if (prefer_mjpeg)
-    supported_formats.push_front(V4L2_PIX_FMT_MJPEG);
+    supported_formats.push_back(V4L2_PIX_FMT_MJPEG);
+
+  for (const auto& format : kSupportedFormatsAndPlanarity)
+    supported_formats.push_back(format.fourcc);
 
   return supported_formats;
 }
@@ -282,9 +284,9 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   // Get supported video formats in preferred order. For large resolutions,
   // favour mjpeg over raw formats.
-  const std::list<uint32_t>& desired_v4l2_formats =
+  const std::vector<uint32_t>& desired_v4l2_formats =
       GetListOfUsableFourCcs(width > kMjpegWidth || height > kMjpegHeight);
-  std::list<uint32_t>::const_iterator best = desired_v4l2_formats.end();
+  std::vector<uint32_t>::const_iterator best = desired_v4l2_formats.end();
 
   v4l2_fmtdesc fmtdesc = {};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
