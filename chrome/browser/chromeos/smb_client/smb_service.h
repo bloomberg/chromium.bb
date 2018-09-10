@@ -77,10 +77,7 @@ class SmbService : public KeyedService,
   void GatherSharesInNetwork(GatherSharesResponse callback);
 
  private:
-  // Initializes |temp_file_manager_|. Must be called on a non-ui thread.
-  void InitTempFileManager();
-
-  // Calls SmbProviderClient::Mount(). temp_file_manager_ must be initialized
+  // Calls SmbProviderClient::Mount(). |temp_file_manager_| must be initialized
   // before this is called.
   void CallMount(const file_system_provider::MountOptions& options,
                  const base::FilePath& share_path,
@@ -118,7 +115,7 @@ class SmbService : public KeyedService,
 
   // Completes SmbService setup including ShareFinder initialization and
   // remounting shares. Called by SetupTempFileManagerAndCompleteSetup().
-  void CompleteSetup();
+  void CompleteSetup(std::unique_ptr<TempFileManager> temp_file_manager);
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);

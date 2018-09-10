@@ -174,11 +174,14 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
  private:
   void Abort(OperationId operation_id);
 
-  // Initializes temp_file_manager_.
-  void InitTempFileManager();
+  // Calls CreateTempFileManager() and executes |task|.
+  void CreateTempFileManagerAndExecuteTask(SmbTask task);
 
-  // Calls InitTempFileManager() and executes |task|.
-  void InitTempFileManagerAndExecuteTask(SmbTask task);
+  // Initializes |temp_file_manager_| with |temp_file_manager| and executes
+  // |task|.
+  void InitTempFileManagerAndExecuteTask(
+      SmbTask task,
+      std::unique_ptr<TempFileManager> temp_file_manager);
 
   // Calls WriteFile in SmbProviderClient.
   file_system_provider::AbortCallback CallWriteFile(
