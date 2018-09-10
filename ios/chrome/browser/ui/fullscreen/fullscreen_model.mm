@@ -224,17 +224,14 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
   // Ignore if:
   // - explicitly requested via IgnoreRemainderOfCurrentScroll(),
   // - the scroll is a bounce-up animation at the top,
-  // - the scroll is a bounce-down animation at the bottom,
+  // - the scroll is attempting to scroll past the bottom of the page,
   // - the scroll is attempting to scroll content up when it already fits.
   bool scrolling_content_down = y_content_offset_ - from_offset < 0.0;
   bool scrolling_past_top = y_content_offset_ <= -top_inset_;
-  bool scrolling_past_bottom =
-      y_content_offset_ + scroll_view_height_ >= content_height_;
   bool content_fits = content_height_ <= scroll_view_height_ - top_inset_;
   if (ignoring_current_scroll_ ||
       (scrolling_past_top && !scrolling_content_down) ||
-      (scrolling_past_bottom && scrolling_content_down) ||
-      (content_fits && !scrolling_content_down)) {
+      is_scrolled_to_bottom() || (content_fits && !scrolling_content_down)) {
     return ScrollAction::kIgnore;
   }
 
