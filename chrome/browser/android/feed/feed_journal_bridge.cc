@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_journal_database.h"
+#include "components/feed/core/feed_journal_mutation.h"
 #include "jni/FeedJournalBridge_jni.h"
 
 namespace feed {
@@ -67,14 +68,21 @@ void FeedJournalBridge::LoadJournal(
   ScopedJavaGlobalRef<jobject> callback(j_callback);
 
   feed_journal_database_->LoadJournal(
-      journal_name, base::BindOnce(&FeedJournalBridge::OnLoadJournalDone,
-                                   weak_ptr_factory_.GetWeakPtr(), callback));
+      journal_name,
+      base::BindOnce(&FeedJournalBridge::OnLoadJournalDone, callback));
 }
 
 void FeedJournalBridge::CommitJournalMutation(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jobject>& j_callback) {}
+    const base::android::JavaRef<jobject>& j_callback) {
+  DCHECK(journal_mutation_);
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  feed_journal_database_->CommitJournalMutation(
+      std::move(journal_mutation_),
+      base::BindOnce(&FeedJournalBridge::OnStorageCommitDone, callback));
+}
 
 void FeedJournalBridge::DoesJournalExist(
     JNIEnv* j_env,
@@ -92,29 +100,50 @@ void FeedJournalBridge::DeleteAllJournals(
     const base::android::JavaRef<jobject>& j_this,
     const base::android::JavaRef<jobject>& j_callback) {}
 
-void FeedJournalBridge::CreateJournalMutation(
+void FeedJournalBridge::StartJournalMutation(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jstring>& j_journal_name) {}
+    const base::android::JavaRef<jstring>& j_journal_name) {
+  DCHECK(!journal_mutation_);
+  std::string journal_name = ConvertJavaStringToUTF8(j_env, j_journal_name);
+  journal_mutation_ =
+      std::make_unique<JournalMutation>(std::move(journal_name));
+}
 
 void FeedJournalBridge::DeleteJournalMutation(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {}
+    const base::android::JavaRef<jobject>& j_this) {
+  DCHECK(journal_mutation_);
+  journal_mutation_.reset();
+}
 
 void FeedJournalBridge::AddAppendOperation(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jstring>& j_value) {}
+    const base::android::JavaRef<jstring>& j_value) {
+  DCHECK(journal_mutation_);
+  std::string value = ConvertJavaStringToUTF8(j_env, j_value);
+  journal_mutation_->AddAppendOperation(std::move(value));
+}
 
 void FeedJournalBridge::AddCopyOperation(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jstring>& j_to_journal_name) {}
+    const base::android::JavaRef<jstring>& j_to_journal_name) {
+  DCHECK(journal_mutation_);
+  std::string to_journal_name =
+      ConvertJavaStringToUTF8(j_env, j_to_journal_name);
+  journal_mutation_->AddCopyOperation(std::move(to_journal_name));
+}
 
 void FeedJournalBridge::AddDeleteOperation(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {}
+    const base::android::JavaRef<jobject>& j_this) {
+  DCHECK(journal_mutation_);
+  journal_mutation_->AddDeleteOperation();
+}
 
+// static
 void FeedJournalBridge::OnLoadJournalDone(
     base::android::ScopedJavaGlobalRef<jobject> callback,
     std::vector<std::string> entries) {
@@ -123,6 +152,13 @@ void FeedJournalBridge::OnLoadJournalDone(
       ToJavaArrayOfStrings(env, entries);
 
   RunObjectCallbackAndroid(callback, j_entries);
+}
+
+// static
+void FeedJournalBridge::OnStorageCommitDone(
+    ScopedJavaGlobalRef<jobject> callback,
+    bool success) {
+  RunBooleanCallbackAndroid(callback, success);
 }
 
 }  // namespace feed

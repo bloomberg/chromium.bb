@@ -12,12 +12,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/feed/core/feed_content_mutation.h"
-#include "components/feed/core/feed_content_operation.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace feed {
 
+class ContentMutation;
+class ContentOperation;
 class ContentStorageProto;
 
 // FeedContentDatabase is leveldb backend store for Feed's content storage data.

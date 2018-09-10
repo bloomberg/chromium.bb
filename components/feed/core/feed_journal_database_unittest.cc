@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
+#include "components/feed/core/feed_journal_mutation.h"
 #include "components/feed/core/proto/journal_storage.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,10 +25,12 @@ namespace {
 
 const char kJournalKey1[] = "JournalKey1";
 const char kJournalKey2[] = "JournalKey2";
+const char kJournalKey3[] = "JournalKey3";
 const char kJournalData1[] = "Journal Data1";
 const char kJournalData2[] = "Journal Data2";
 const char kJournalData3[] = "Journal Data3";
 const char kJournalData4[] = "Journal Data4";
+const char kJournalData5[] = "Journal Data5";
 
 }  // namespace
 
@@ -71,6 +74,7 @@ class FeedJournalDatabaseTest : public testing::Test {
   FeedJournalDatabase* db() { return feed_db_.get(); }
 
   MOCK_METHOD1(OnJournalEntryReceived, void(std::vector<std::string>));
+  MOCK_METHOD1(OnStorageCommitted, void(bool));
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -127,6 +131,181 @@ TEST_F(FeedJournalDatabaseTest, LoadNonExistingJournalEntry) {
   EXPECT_CALL(*this, OnJournalEntryReceived(_))
       .WillOnce([](std::vector<std::string> results) {
         ASSERT_EQ(results.size(), 0U);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, AppendJournal) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Save |kJournalKey1|.
+  auto journal_mutation = std::make_unique<JournalMutation>(kJournalKey1);
+  journal_mutation->AddAppendOperation(kJournalData1);
+  journal_mutation->AddAppendOperation(kJournalData2);
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->CommitJournalMutation(
+      std::move(journal_mutation),
+      base::BindOnce(&FeedJournalDatabaseTest::OnStorageCommitted,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+  storage_db()->UpdateCallback(true);
+
+  // Make sure they're there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 2U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Append more for |kJournalKey1|.
+  journal_mutation = std::make_unique<JournalMutation>(kJournalKey1);
+  journal_mutation->AddAppendOperation(kJournalData3);
+  journal_mutation->AddAppendOperation(kJournalData4);
+  journal_mutation->AddAppendOperation(kJournalData5);
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->CommitJournalMutation(
+      std::move(journal_mutation),
+      base::BindOnce(&FeedJournalDatabaseTest::OnStorageCommitted,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+  storage_db()->UpdateCallback(true);
+
+  // Check new instances are there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 5U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+        EXPECT_EQ(results[2], kJournalData3);
+        EXPECT_EQ(results[3], kJournalData4);
+        EXPECT_EQ(results[4], kJournalData5);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, CopyJournal) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Save |kJournalKey1|.
+  InjectJournalStorageProto(kJournalKey1, {kJournalData1, kJournalData2});
+
+  // Copy |kJournalKey1| to |kJournalKey2|.
+  auto journal_mutation = std::make_unique<JournalMutation>(kJournalKey1);
+  journal_mutation->AddCopyOperation(kJournalKey2);
+  journal_mutation->AddAppendOperation(kJournalData3);
+  journal_mutation->AddAppendOperation(kJournalData4);
+  journal_mutation->AddCopyOperation(kJournalKey3);
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->CommitJournalMutation(
+      std::move(journal_mutation),
+      base::BindOnce(&FeedJournalDatabaseTest::OnStorageCommitted,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+  storage_db()->UpdateCallback(true);
+
+  // Check new journal is there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 2U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+      });
+  db()->LoadJournal(
+      kJournalKey2,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Check new journal is there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 4U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+        EXPECT_EQ(results[2], kJournalData3);
+        EXPECT_EQ(results[3], kJournalData4);
+      });
+  db()->LoadJournal(
+      kJournalKey3,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Check first journal is still there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 4U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+        EXPECT_EQ(results[2], kJournalData3);
+        EXPECT_EQ(results[3], kJournalData4);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, DeleteJournal) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kJournalKey1|, |kJournalKey2|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+
+  // Delete |kJournalKey2|.
+  auto journal_mutation = std::make_unique<JournalMutation>(kJournalKey2);
+  journal_mutation->AddDeleteOperation();
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->CommitJournalMutation(
+      std::move(journal_mutation),
+      base::BindOnce(&FeedJournalDatabaseTest::OnStorageCommitted,
+                     base::Unretained(this)));
+  RunUntilIdle();
+  storage_db()->UpdateCallback(true);
+
+  // Make sure |kJournalKey2| got deleted.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 0U);
+      });
+  db()->LoadJournal(
+      kJournalKey2,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Make sure |kJournalKey1| is still there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 3U);
+        EXPECT_EQ(results[0], kJournalData1);
+        EXPECT_EQ(results[1], kJournalData2);
+        EXPECT_EQ(results[2], kJournalData3);
       });
   db()->LoadJournal(
       kJournalKey1,

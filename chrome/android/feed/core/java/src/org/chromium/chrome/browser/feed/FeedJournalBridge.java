@@ -60,7 +60,7 @@ public class FeedJournalBridge {
     public void commitJournalMutation(JournalMutation mutation, Callback<Boolean> callback) {
         assert mNativeFeedJournalBridge != 0;
 
-        nativeCreateJournalMutation(mNativeFeedJournalBridge, mutation.getJournalName());
+        nativeStartJournalMutation(mNativeFeedJournalBridge, mutation.getJournalName());
         for (JournalOperation operation : mutation.getOperations()) {
             switch (operation.getType()) {
                 case Type.APPEND:
@@ -110,7 +110,7 @@ public class FeedJournalBridge {
             long nativeFeedJournalBridge, String journalName, Callback<String[]> callback);
     private native void nativeCommitJournalMutation(
             long nativeFeedJournalBridge, Callback<Boolean> callback);
-    private native void nativeCreateJournalMutation(
+    private native void nativeStartJournalMutation(
             long nativeFeedJournalBridge, String journalName);
     private native void nativeDeleteJournalMutation(long nativeFeedJournalBridge);
     private native void nativeAddAppendOperation(long nativeFeedJournalBridge, String value);

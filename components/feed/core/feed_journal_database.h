@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +18,8 @@
 
 namespace feed {
 
+class JournalMutation;
+class JournalOperation;
 class JournalStorageProto;
 
 // FeedJournalDatabase is leveldb backend store for Feed's journal storage data.
@@ -33,6 +36,13 @@ class FeedJournalDatabase {
   // or keys.
   using JournalLoadCallback =
       base::OnceCallback<void(std::vector<std::string>)>;
+
+  // Returns whether the commit operation succeeded when calling for database
+  // operations, or return whether the entry exists when calling for checking
+  // the entry's existence.
+  using ConfirmationCallback = base::OnceCallback<void(bool)>;
+
+  using JournalMap = base::flat_map<std::string, JournalStorageProto>;
 
   // Initializes the database with |database_folder|.
   explicit FeedJournalDatabase(const base::FilePath& database_folder);
@@ -54,13 +64,38 @@ class FeedJournalDatabase {
   // Loads the journal data for the |key| and passes it to |callback|.
   void LoadJournal(const std::string& key, JournalLoadCallback callback);
 
+  // Commits the operations in the |journal_mutation|. |callback| will be called
+  // when all the operations are committed. Or if any operation failed, database
+  // will stop process any operations and passed error to |callback|.
+  void CommitJournalMutation(std::unique_ptr<JournalMutation> journal_mutation,
+                             ConfirmationCallback callback);
+
  private:
-  void OnGetEntryForLoadJournal(JournalLoadCallback callback,
-                                bool success,
-                                std::unique_ptr<JournalStorageProto> journal);
+  // This method performs JournalOperation in the |journal_mutation|.
+  // If the first operation in |journal_mutation| is JOURNAL_DELETE, journal can
+  // be empty, otherwise we need to load |journal| from database and then pass
+  // to this method.
+  void PerformOperations(std::unique_ptr<JournalStorageProto> journal,
+                         std::unique_ptr<JournalMutation> journal_mutation,
+                         ConfirmationCallback callback);
+  void CommitOperations(std::unique_ptr<JournalStorageProto> journal,
+                        JournalMap copy_to_journal,
+                        ConfirmationCallback callback);
 
   // Callback methods given to |storage_database_| for async responses.
   void OnDatabaseInitialized(bool success);
+  void OnGetEntryForLoadJournal(JournalLoadCallback callback,
+                                bool success,
+                                std::unique_ptr<JournalStorageProto> journal);
+  void OnGetEntryForCommitJournalMutation(
+      std::unique_ptr<JournalMutation> journal_mutation,
+      ConfirmationCallback callback,
+      bool success,
+      std::unique_ptr<JournalStorageProto> journal);
+  void OnOperationCommitted(ConfirmationCallback callback, bool success);
+
+  JournalStorageProto CopyJouarnal(const std::string& new_journal_name,
+                                   const JournalStorageProto& source_journal);
 
   // Status of the database initialization.
   State database_status_;
