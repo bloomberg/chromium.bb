@@ -566,7 +566,6 @@ jumbo_component("platform") {
     "exported/web_rtc_void_request.cc",
     "exported/web_runtime_features.cc",
     "exported/web_security_origin.cc",
-    "exported/web_service_worker_installed_scripts_manager.cc",
     "exported/web_service_worker_request.cc",
     "exported/web_service_worker_response.cc",
     "exported/web_service_worker_stream_handle.cc",

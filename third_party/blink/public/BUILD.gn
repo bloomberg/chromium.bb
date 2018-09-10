@@ -171,7 +171,6 @@ source_set("blink_headers") {
     "platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h",
     "platform/modules/service_worker/web_service_worker_clients_info.h",
     "platform/modules/service_worker/web_service_worker_error.h",
-    "platform/modules/service_worker/web_service_worker_installed_scripts_manager.h",
     "platform/modules/service_worker/web_service_worker_network_provider.h",
     "platform/modules/service_worker/web_service_worker_provider.h",
     "platform/modules/service_worker/web_service_worker_provider_client.h",
