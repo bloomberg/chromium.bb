@@ -746,7 +746,6 @@ modules_dependency_idl_files =
           "mediastream/navigator_display_media.idl",
           "mediastream/navigator_media_stream.idl",
           "mediastream/navigator_user_media.idl",
-          "mediastream/url_media_stream.idl",
           "mediastream/window_media_stream.idl",
           "navigatorcontentutils/navigator_content_utils.idl",
           "nfc/navigator_nfc.idl",
