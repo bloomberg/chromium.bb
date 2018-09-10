@@ -52,7 +52,7 @@ class CompoundBuffer {
                int size);
   void Prepend(const CompoundBuffer& buffer);
 
-  // Same as above, but creates new IOBuffer and copies the data.
+  // Same as above, but creates an IOBuffer and copies the data.
   void AppendCopyOf(const char* data, int data_size);
   void PrependCopyOf(const char* data, int data_size);
 
@@ -71,7 +71,7 @@ class CompoundBuffer {
   // Returns true if content is locked.
   bool locked() const { return locked_; }
 
-  // Creates new IOBufferWithSize object and copies all data into it.
+  // Creates an IOBufferWithSize object and copies all data into it.
   // Ownership of the result is given to the caller.
   scoped_refptr<net::IOBufferWithSize> ToIOBufferWithSize() const;
 

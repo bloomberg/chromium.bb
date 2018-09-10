@@ -284,7 +284,7 @@ void XmppSignalStrategy::Core::SendMessage(const std::string& message) {
          tls_state_ == TlsState::CONNECTED);
 
   scoped_refptr<net::IOBufferWithSize> buffer =
-      new net::IOBufferWithSize(message.size());
+      base::MakeRefCounted<net::IOBufferWithSize>(message.size());
   memcpy(buffer->data(), message.data(), message.size());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -481,7 +481,7 @@ void XmppSignalStrategy::Core::ReadSocket() {
 
   while (socket_ && !read_pending_ && (tls_state_ == TlsState::NOT_REQUESTED ||
                                        tls_state_ == TlsState::CONNECTED)) {
-    read_buffer_ = new net::IOBuffer(kReadBufferSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufferSize);
     int result = socket_->Read(
         read_buffer_.get(), kReadBufferSize,
         base::Bind(&Core::OnReadResult, base::Unretained(this)));

@@ -159,11 +159,10 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   DISALLOW_COPY_AND_ASSIGN(UdpPacketSocket);
 };
 
-UdpPacketSocket::PendingPacket::PendingPacket(
-    const void* buffer,
-    int buffer_size,
-    const pp::NetAddress& address)
-    : data(new net::IOBufferWithSize(buffer_size)),
+UdpPacketSocket::PendingPacket::PendingPacket(const void* buffer,
+                                              int buffer_size,
+                                              const pp::NetAddress& address)
+    : data(base::MakeRefCounted<net::IOBufferWithSize>(buffer_size)),
       address(address),
       retried(true) {
   memcpy(data->data(), buffer, buffer_size);

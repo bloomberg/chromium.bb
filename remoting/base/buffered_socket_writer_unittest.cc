@@ -107,8 +107,9 @@ class BufferedSocketWriterTest : public testing::Test {
     EXPECT_EQ(net::OK, socket_->Connect(net::CompletionCallback()));
 
     writer_.reset(new BufferedSocketWriter());
-    test_buffer_ = new net::IOBufferWithSize(kTestBufferSize);
-    test_buffer_2_ = new net::IOBufferWithSize(kTestBufferSize);
+    test_buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(kTestBufferSize);
+    test_buffer_2_ =
+        base::MakeRefCounted<net::IOBufferWithSize>(kTestBufferSize);
     for (int i = 0; i < kTestBufferSize; ++i) {
       test_buffer_->data()[i] = rand() % 256;
       test_buffer_2_->data()[i] = rand() % 256;
