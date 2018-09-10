@@ -107,7 +107,7 @@ class WaylandBufferManager {
     zwp_linux_buffer_params_v1* params = nullptr;
 
     // A wl_buffer backed by a dmabuf created on the GPU side.
-    wl::Object<wl_buffer> wl_buffer;
+    wl::Object<struct wl_buffer> wl_buffer;
 
     // A callback, which is called once the |wl_frame_callback| from the server
     // is received.
@@ -120,7 +120,7 @@ class WaylandBufferManager {
 
     // A presentation feedback provided by the Wayland server once frame is
     // shown.
-    wl::Object<wp_presentation_feedback> wp_presentation_feedback;
+    wl::Object<struct wp_presentation_feedback> wp_presentation_feedback;
 
     DISALLOW_COPY_AND_ASSIGN(Buffer);
   };
