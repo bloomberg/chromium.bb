@@ -28,7 +28,6 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/view_message_enums.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"

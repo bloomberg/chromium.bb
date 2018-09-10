@@ -29,7 +29,6 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/text_input_state.h"
-#include "content/common/view_message_enums.h"
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/menu_item.h"
@@ -249,10 +248,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
 // Tells the renderer to update visual properties.  A
 // ViewHostMsg_ResizeOrRepaint_ACK  message is generated in response provided
-// new_size is not empty and not equal to the view's current size.  The
-// generated ViewHostMsg_ResizeOrRepaint_ACK
-// message will have the IS_RESIZE_ACK flag set. It also receives the resizer
-// rect so that we don't have to fetch it every time WebKit asks for it.
+// new_size is not empty and not equal to the view's current size. The resulting
+// CompositorFrame will produce a RenderFrameMetadata containing a new
+// LocalSurfaceId. This acts as a form of ACK for this message.
 IPC_MESSAGE_ROUTED1(ViewMsg_SynchronizeVisualProperties,
                     content::VisualProperties /* params */)
 

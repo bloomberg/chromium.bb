@@ -49,7 +49,6 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_widget_surface_properties.h"
-#include "content/common/view_message_enums.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/input_event_ack_state.h"
