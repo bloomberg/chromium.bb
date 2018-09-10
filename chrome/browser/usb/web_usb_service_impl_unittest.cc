@@ -21,7 +21,8 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
-#include "device/usb/mojo/device_impl.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -35,6 +36,7 @@ using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
 using device::mojom::UsbDeviceManagerClientPtr;
 using device::MockUsbDevice;
+using device::UsbDevice;
 
 namespace {
 
@@ -68,9 +70,9 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
 
   void GrantDevicePermission(const GURL& requesting_origin,
                              const GURL& embedding_origin,
-                             const std::string& guid) {
+                             const device::mojom::UsbDeviceInfo& device_info) {
     UsbChooserContextFactory::GetForProfile(profile())->GrantDevicePermission(
-        requesting_origin, embedding_origin, guid);
+        requesting_origin, embedding_origin, device_info);
   }
 
   device::MockDeviceClient device_client_;
@@ -121,17 +123,20 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
 TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   GURL origin(kDefaultTestUrl);
 
-  scoped_refptr<MockUsbDevice> device0 =
+  scoped_refptr<UsbDevice> device0 =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
-  scoped_refptr<MockUsbDevice> device1 =
+  scoped_refptr<UsbDevice> device1 =
       new MockUsbDevice(0x1234, 0x5679, "ACME", "Frobinator+", "GHIJKL");
-  scoped_refptr<MockUsbDevice> no_permission_device1 =
+  scoped_refptr<UsbDevice> no_permission_device1 =
       new MockUsbDevice(0xffff, 0x567b, "ACME", "Frobinator II", "MNOPQR");
-  scoped_refptr<MockUsbDevice> no_permission_device2 =
+  scoped_refptr<UsbDevice> no_permission_device2 =
       new MockUsbDevice(0xffff, 0x567c, "ACME", "Frobinator Xtreme", "STUVWX");
 
+  auto device_info_0 = device::mojom::UsbDeviceInfo::From(*device0);
+  auto device_info_1 = device::mojom::UsbDeviceInfo::From(*device1);
+
   device_client_.usb_service()->AddDevice(device0);
-  GrantDevicePermission(origin, origin, device0->guid());
+  GrantDevicePermission(origin, origin, *device_info_0);
   device_client_.usb_service()->AddDevice(no_permission_device1);
 
   WebUsbServicePtr web_usb_service = ConnectToService();
@@ -152,7 +157,7 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   }
 
   device_client_.usb_service()->AddDevice(device1);
-  GrantDevicePermission(origin, origin, device1->guid());
+  GrantDevicePermission(origin, origin, *device_info_1);
   device_client_.usb_service()->AddDevice(no_permission_device2);
   device_client_.usb_service()->RemoveDevice(device0);
   device_client_.usb_service()->RemoveDevice(device1);

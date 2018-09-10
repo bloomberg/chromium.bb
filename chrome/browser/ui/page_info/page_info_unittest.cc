@@ -34,6 +34,8 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -393,9 +395,11 @@ TEST_F(PageInfoTest, OnSiteDataAccessed) {
 TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   scoped_refptr<device::UsbDevice> device =
       new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
   usb_service().AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
-  store->GrantDevicePermission(url(), url(), device->guid());
+  store->GrantDevicePermission(url(), url(), *device_info);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));

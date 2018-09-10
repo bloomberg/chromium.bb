@@ -40,6 +40,42 @@ bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
   return true;
 }
 
+bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
+                            const mojom::UsbDeviceInfo& device_info) {
+  if (filter.has_vendor_id) {
+    if (device_info.vendor_id != filter.vendor_id)
+      return false;
+
+    if (filter.has_product_id && device_info.product_id != filter.product_id)
+      return false;
+  }
+
+  if (filter.serial_number &&
+      device_info.serial_number != *filter.serial_number) {
+    return false;
+  }
+
+  if (filter.has_class_code) {
+    for (auto& config : device_info.configurations) {
+      for (auto& iface : config->interfaces) {
+        for (auto& alternate_info : iface->alternates) {
+          if (alternate_info->class_code == filter.class_code &&
+              (!filter.has_subclass_code ||
+               (alternate_info->subclass_code == filter.subclass_code &&
+                (!filter.has_protocol_code ||
+                 alternate_info->protocol_code == filter.protocol_code)))) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 bool UsbDeviceFilterMatchesAny(
     const std::vector<mojom::UsbDeviceFilterPtr>& filters,
     const UsbDevice& device) {
@@ -48,6 +84,19 @@ bool UsbDeviceFilterMatchesAny(
 
   for (const auto& filter : filters) {
     if (UsbDeviceFilterMatches(*filter, device))
+      return true;
+  }
+  return false;
+}
+
+bool UsbDeviceFilterMatchesAny(
+    const std::vector<mojom::UsbDeviceFilterPtr>& filters,
+    const mojom::UsbDeviceInfo& device_info) {
+  if (filters.empty())
+    return true;
+
+  for (const auto& filter : filters) {
+    if (UsbDeviceFilterMatches(*filter, device_info))
       return true;
   }
   return false;

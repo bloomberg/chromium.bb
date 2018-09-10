@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 
 namespace device {
@@ -16,9 +17,16 @@ class UsbDevice;
 bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
                             const UsbDevice& device);
 
+bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
+                            const mojom::UsbDeviceInfo& device_info);
+
 bool UsbDeviceFilterMatchesAny(
     const std::vector<mojom::UsbDeviceFilterPtr>& filters,
     const UsbDevice& device);
+
+bool UsbDeviceFilterMatchesAny(
+    const std::vector<mojom::UsbDeviceFilterPtr>& filters,
+    const mojom::UsbDeviceInfo& device_info);
 
 }  // namespace device
 
