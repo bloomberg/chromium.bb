@@ -102,7 +102,7 @@ const CGFloat kEstimatedRowHeight = 65.0;
 // dynamic type) height. If the dynamic font is too large or too small it will
 // result in a small offset on the cache, in order to prevent this we need to
 // calculate this value dynamically.
-const int kRowsHiddenByNavigationBar = 3;
+const int kRowsHiddenByNavigationBar = 2;
 
 // NetworkTrafficAnnotationTag for fetching favicon from a Google server.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -140,16 +140,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 const CGFloat kShadowOpacity = 0.12f;
 // Shadow radius for the NavigationController Toolbar.
 const CGFloat kShadowRadius = 12.0f;
-// Vertical offset from the top, to center search bar and cancel button in the
-// header.
-const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
-// The Alpha value used by the SearchBar when disabled.
-const CGFloat kAlphaForDisabledSearchBar = 0.5f;
-// The Alpha (on white) used for the scrim covering current data until data
-// is filtered out.
-const CGFloat kWhiteAlphaForSearchScrim = 0.2f;
-// The duration for scrim to fade in or out.
-const NSTimeInterval kScrimFadeDuration = 0.2;
+
 }  // namespace
 
 // An AlertCoordinator with the "Action Sheet" style that does not provide an
@@ -178,8 +169,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
                                          BookmarkModelBridgeObserver,
                                          BookmarkTableCellTitleEditDelegate,
                                          UIGestureRecognizerDelegate,
-                                         UISearchControllerDelegate,
-                                         UISearchResultsUpdating,
                                          UITableViewDataSource,
                                          UITableViewDelegate> {
   // Bridge to register for bookmark changes.
@@ -235,20 +224,11 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 // Dispatcher for sending commands.
 @property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
 
-// The current search term.  Set to the empty string when no search is active.
-@property(nonatomic, assign) NSString* searchTerm;
-
-// This ViewController's searchController;
-@property(nonatomic, strong) UISearchController* searchController;
-
 // Navigation UIToolbar Delete button.
 @property(nonatomic, strong) UIBarButtonItem* deleteButton;
 
 // Navigation UIToolbar More button.
 @property(nonatomic, strong) UIBarButtonItem* moreButton;
-
-// Scrim when search box in focused.
-@property(nonatomic, strong) UIControl* scrimView;
 
 // Background shown when there is no bookmarks or folders at the current root
 // node.
@@ -279,11 +259,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 @synthesize isReconstructingFromCache = _isReconstructingFromCache;
 @synthesize sharedState = _sharedState;
 @synthesize mediator = _mediator;
-@synthesize searchController = _searchController;
-@synthesize searchTerm = _searchTerm;
 @synthesize deleteButton = _deleteButton;
 @synthesize moreButton = _moreButton;
-@synthesize scrimView = _scrimView;
 @synthesize spinnerView = _spinnerView;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
@@ -419,53 +396,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   self.navigationController.toolbar.accessibilityIdentifier =
       kBookmarkHomeUIToolbarIdentifier;
 
-  // SearchController Configuration.
-  // Init the searchController with nil so the results are displayed on the same
-  // TableView.
-  self.searchController =
-      [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
-  self.searchController.searchBar.userInteractionEnabled = NO;
-  self.searchController.delegate = self;
-  self.searchController.searchResultsUpdater = self;
-  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
-  self.searchController.searchBar.accessibilityIdentifier =
-      kBookmarkHomeSearchBarIdentifier;
-
-  // UIKit needs to know which controller will be presenting the
-  // searchController. If we don't add this trying to dismiss while
-  // SearchController is active will fail.
-  self.definesPresentationContext = YES;
-
-  self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kWhiteAlphaForSearchScrim];
-  self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.scrimView.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
-  [self.scrimView addTarget:self
-                     action:@selector(dismissSearchController:)
-           forControlEvents:UIControlEventAllTouchEvents];
-
-  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
-  // place the search bar in the table view's header.
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
-
-    // Center search bar vertically so it looks centered in the header when
-    // searching.  The cancel button is centered / decentered on viewWillAppear
-    // and viewDidDisappear.
-    UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
-    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-        offset;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
-
-  self.searchTerm = @"";
-
   if (self.bookmarks->loaded()) {
     [self loadBookmarkViews];
   } else {
@@ -485,29 +415,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
     self.navigationController.toolbarHidden = NO;
   } else {
     self.navigationController.toolbarHidden = YES;
-  }
-
-  if (@available(iOS 11, *)) {
-    // Center search bar's cancel button vertically so it looks centered.
-    // We change the cancel button proxy styles, so we will return it to
-    // default in viewDidDisappear.
-    UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
-  }
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-
-  if (@available(iOS 11, *)) {
-    // Restore to default origin offset for cancel button proxy style.
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                               forBarMetrics:UIBarMetricsDefault];
   }
 }
 
@@ -562,7 +469,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   self.sharedState.tableViewModel = self.tableViewModel;
   self.sharedState.tableView = self.tableView;
   self.sharedState.observer = self;
-  self.sharedState.currentlyShowingSearchResults = NO;
 
   // Configure the table view.
   self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
@@ -601,9 +507,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   if (self.isReconstructingFromCache) {
     [self setupUIStackCacheIfApplicable];
   }
-
-  self.searchController.searchBar.userInteractionEnabled = YES;
-
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
 }
@@ -620,13 +523,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 #pragma mark - BookmarkHomeConsumer
 
 - (void)refreshContents {
-  if (self.sharedState.currentlyShowingSearchResults) {
-    NSString* noResults = l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS);
-    [self.mediator computeBookmarkTableViewDataMatching:self.searchTerm
-                             orShowMessageWhenNoResults:noResults];
-  } else {
-    [self.mediator computeBookmarkTableViewData];
-  }
+  [self.mediator computeBookmarkTableViewData];
   [self cancelAllFaviconLoads];
   [self handleRefreshContextBar];
   [self.sharedState.editingFolderCell stopEdit];
@@ -679,10 +576,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
               BookmarkHomeViewController* strongSelf = weakSelf;
               // GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache
               // is not cancellable.  So need to check if node has been changed
-              // before proceeding to favicon update.  Also when searching,
-              // indexPath can point beyond the end of the current list if the
-              // icon was for a previous, longer, filtered view of items.
-              if (!strongSelf || ![strongSelf hasItemAtIndexPath:indexPath] ||
+              // before proceeding to favicon update.
+              if (!strongSelf ||
                   [strongSelf nodeAtIndexPath:indexPath] != node) {
                 return;
               }
@@ -700,12 +595,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
                   desiredFaviconSizeInPixel),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
               base::BindRepeating(faviconLoadedFromServerBlock));
-    }
-    // Due to search filtering, we also need to validate the indexPath
-    // requested versus what is in the table now.
-    if (![strongSelf hasItemAtIndexPath:indexPath] ||
-        [strongSelf nodeAtIndexPath:indexPath] != node) {
-      return;
     }
     [strongSelf updateCellAtIndexPath:indexPath
                   withLargeIconResult:result
@@ -999,7 +888,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
     // Early return if the controller has been deallocated.
     if (!strongSelf)
       return;
-    [UIView animateWithDuration:kScrimFadeDuration
+    [UIView animateWithDuration:0.2
         animations:^{
           strongSelf.spinnerView.alpha = 0.0;
         }
@@ -1201,15 +1090,11 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   return controller;
 }
 
-// Sets the editing mode for tableView, update context bar and search state
-// accordingly.
+// Sets the editing mode for tableView, update context bar state accordingly.
 - (void)setTableViewEditing:(BOOL)editing {
   self.sharedState.currentlyInEditMode = editing;
   [self setContextBarState:editing ? BookmarksContextBarBeginSelection
                                    : BookmarksContextBarDefault];
-  self.searchController.searchBar.userInteractionEnabled = !editing;
-  self.searchController.searchBar.alpha =
-      editing ? kAlphaForDisabledSearchBar : 1.0;
 }
 
 // Row selection of the tableView will be cleared after reloadData.  This
@@ -1301,10 +1186,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   return nullptr;
 }
 
-- (BOOL)hasItemAtIndexPath:(NSIndexPath*)indexPath {
-  return [self.sharedState.tableViewModel hasItemAtIndexPath:indexPath];
-}
-
 - (BOOL)hasBookmarksOrFolders {
   return self.sharedState.tableViewDisplayedRootNode &&
          !self.sharedState.tableViewDisplayedRootNode->empty();
@@ -1323,40 +1204,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
     }
   }
   return nodes;
-}
-
-// Dismiss the search controller when there's a touch event on the scrim.
-- (void)dismissSearchController:(UIControl*)sender {
-  if (self.searchController.active) {
-    self.searchController.active = NO;
-  }
-}
-
-- (void)showScrim {
-  self.navigationController.toolbarHidden = YES;
-  self.scrimView.alpha = 0.0f;
-  CGSize contentSize = self.tableView.contentSize;
-  self.scrimView.frame =
-      CGRectMake(0.0f, 0.0f, contentSize.width,
-                 std::max(contentSize.height, self.view.bounds.size.height));
-  [self.tableView addSubview:self.scrimView];
-  [UIView animateWithDuration:kScrimFadeDuration
-                   animations:^{
-                     self.scrimView.alpha = 1.0f;
-                   }];
-}
-
-- (void)hideScrimAndMaybeRestoreContexBar:(BOOL)restoreContextBar {
-  [UIView animateWithDuration:kScrimFadeDuration
-      animations:^{
-        self.scrimView.alpha = 0.0f;
-      }
-      completion:^(BOOL finished) {
-        [self.scrimView removeFromSuperview];
-        if (restoreContextBar) {
-          [self setupContextBar];
-        }
-      }];
 }
 
 #pragma mark - Loading and Empty States
@@ -1901,55 +1748,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   [self.actionSheetCoordinator start];
 }
 
-#pragma mark UISearchResultsUpdating
-
-- (void)updateSearchResultsForSearchController:
-    (UISearchController*)searchController {
-  DCHECK_EQ(self.searchController, searchController);
-  NSString* text = searchController.searchBar.text;
-  self.searchTerm = text;
-
-  if (text.length == 0) {
-    if (self.sharedState.currentlyShowingSearchResults) {
-      self.sharedState.currentlyShowingSearchResults = NO;
-      // Restore current list.
-      [self.mediator computeBookmarkTableViewData];
-      [self.sharedState.tableView reloadData];
-      [self showScrim];
-    }
-  } else {
-    if (!self.sharedState.currentlyShowingSearchResults) {
-      self.sharedState.currentlyShowingSearchResults = YES;
-      [self hideScrimAndMaybeRestoreContexBar:NO];
-    }
-    // Replace current list with search result, but doesn't change
-    // the 'regular' model for this page, which we can restore when search
-    // is terminated.
-    NSString* noResults = l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS);
-    [self.mediator computeBookmarkTableViewDataMatching:text
-                             orShowMessageWhenNoResults:noResults];
-    [self.sharedState.tableView reloadData];
-  }
-}
-
-#pragma mark UISearchControllerDelegate
-
-- (void)willPresentSearchController:(UISearchController*)searchController {
-  [self showScrim];
-}
-
-- (void)willDismissSearchController:(UISearchController*)searchController {
-  // Avoid scrim being put back on in updateSearchResultsForSearchController.
-  self.sharedState.currentlyShowingSearchResults = NO;
-  // Restore current list.
-  [self.mediator computeBookmarkTableViewData];
-  [self.sharedState.tableView reloadData];
-}
-
-- (void)didDismissSearchController:(UISearchController*)searchController {
-  [self hideScrimAndMaybeRestoreContexBar:YES];
-}
-
 #pragma mark - BookmarkHomeSharedStateObserver
 
 - (void)sharedStateDidClearEditNodes:(BookmarkHomeSharedState*)sharedState {
@@ -2008,10 +1806,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Filtered results are always a Url and never in edit mode.
-  if (self.sharedState.currentlyShowingSearchResults) {
-    return YES;
-  }
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
   if (item.type != BookmarkHomeItemTypeBookmark) {
@@ -2058,10 +1852,6 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 - (BOOL)tableView:(UITableView*)tableView
     canMoveRowAtIndexPath:(NSIndexPath*)indexPath {
-  // No reorering with filtered results.
-  if (self.sharedState.currentlyShowingSearchResults) {
-    return NO;
-  }
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
   if (item.type != BookmarkHomeItemTypeBookmark) {
@@ -2075,8 +1865,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 - (void)tableView:(UITableView*)tableView
     moveRowAtIndexPath:(NSIndexPath*)sourceIndexPath
            toIndexPath:(NSIndexPath*)destinationIndexPath {
-  if (sourceIndexPath.row == destinationIndexPath.row ||
-      self.sharedState.currentlyShowingSearchResults) {
+  if (sourceIndexPath.row == destinationIndexPath.row) {
     return;
   }
   const BookmarkNode* node = [self nodeAtIndexPath:sourceIndexPath];

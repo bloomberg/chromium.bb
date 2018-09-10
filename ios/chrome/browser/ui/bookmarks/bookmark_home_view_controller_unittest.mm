@@ -26,8 +26,7 @@ TEST_F(BookmarkHomeViewControllerTest,
             dispatcher:nil];
 
     [controller setRootNode:_bookmarkModel->mobile_node()];
-    // Two sections: Messages and Bookmarks.
-    EXPECT_EQ(2, [controller numberOfSectionsInTableView:controller.tableView]);
+    EXPECT_EQ(1, [controller numberOfSectionsInTableView:controller.tableView]);
   }
 }
 
