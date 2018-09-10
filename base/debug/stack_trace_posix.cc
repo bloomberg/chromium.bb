@@ -156,14 +156,18 @@ void OutputFrameId(intptr_t frame_id, BacktraceOutputHandler* handler) {
 }
 #endif  // defined(USE_SYMBOLIZE)
 
-void ProcessBacktrace(void *const *trace,
+void ProcessBacktrace(void* const* trace,
                       size_t size,
+                      const char* prefix_string,
                       BacktraceOutputHandler* handler) {
-  // NOTE: This code MUST be async-signal safe (it's used by in-process
-  // stack dumping signal handler). NO malloc or stdio is allowed here.
+// NOTE: This code MUST be async-signal safe (it's used by in-process
+// stack dumping signal handler). NO malloc or stdio is allowed here.
 
 #if defined(USE_SYMBOLIZE)
   for (size_t i = 0; i < size; ++i) {
+    if (prefix_string)
+      handler->HandleOutput(prefix_string);
+
     OutputFrameId(i, handler);
     handler->HandleOutput(" ");
     OutputPointer(trace[i], handler);
@@ -193,6 +197,8 @@ void ProcessBacktrace(void *const *trace,
       for (size_t i = 0; i < size; ++i) {
         std::string trace_symbol = trace_symbols.get()[i];
         DemangleSymbols(&trace_symbol);
+        if (prefix_string)
+          handler->HandleOutput(prefix_string);
         handler->HandleOutput(trace_symbol.c_str());
         handler->HandleOutput("\n");
       }
@@ -817,20 +823,21 @@ StackTrace::StackTrace(size_t count) {
 #endif
 }
 
-void StackTrace::Print() const {
-  // NOTE: This code MUST be async-signal safe (it's used by in-process
-  // stack dumping signal handler). NO malloc or stdio is allowed here.
+void StackTrace::PrintWithPrefix(const char* prefix_string) const {
+// NOTE: This code MUST be async-signal safe (it's used by in-process
+// stack dumping signal handler). NO malloc or stdio is allowed here.
 
 #if !defined(__UCLIBC__) && !defined(_AIX)
   PrintBacktraceOutputHandler handler;
-  ProcessBacktrace(trace_, count_, &handler);
+  ProcessBacktrace(trace_, count_, prefix_string, &handler);
 #endif
 }
 
 #if !defined(__UCLIBC__) && !defined(_AIX)
-void StackTrace::OutputToStream(std::ostream* os) const {
+void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
+                                          const char* prefix_string) const {
   StreamBacktraceOutputHandler handler(os);
-  ProcessBacktrace(trace_, count_, &handler);
+  ProcessBacktrace(trace_, count_, prefix_string, &handler);
 }
 #endif
 

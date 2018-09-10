@@ -77,15 +77,16 @@ StackTrace::StackTrace(size_t count) {
   count_ = state.frame_count;
 }
 
-void StackTrace::Print() const {
-  std::string backtrace = ToString();
+void StackTrace::PrintWithPrefix(const char* prefix_string) const {
+  std::string backtrace = ToStringWithPrefix(prefix_string);
   __android_log_write(ANDROID_LOG_ERROR, "chromium", backtrace.c_str());
 }
 
 // NOTE: Native libraries in APKs are stripped before installing. Print out the
 // relocatable address and library names so host computers can use tools to
 // symbolize and demangle (e.g., addr2line, c++filt).
-void StackTrace::OutputToStream(std::ostream* os) const {
+void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
+                                          const char* prefix_string) const {
   std::string proc_maps;
   std::vector<MappedMemoryRegion> regions;
   // Allow IO to read /proc/self/maps. Reading this file doesn't hit the disk
@@ -115,6 +116,9 @@ void StackTrace::OutputToStream(std::ostream* os) const {
       }
       ++iter;
     }
+
+    if (prefix_string)
+      *os << prefix_string;
 
     *os << base::StringPrintf("#%02zd " FMT_ADDR " ", i, address);
 
