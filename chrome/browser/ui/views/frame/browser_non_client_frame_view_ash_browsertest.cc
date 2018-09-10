@@ -1277,13 +1277,17 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
 
-  // The kTopViewInset is the same as in overview mode.
-  const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
-  EXPECT_TRUE(
-      ash::Shell::Get()->window_selector_controller()->ToggleOverview());
-  const int inset_in_overview_mode =
-      window->GetProperty(aura::client::kTopViewInset);
-  EXPECT_EQ(inset_normal, inset_in_overview_mode);
+  // In Mash, Chrome isn't aware of overview mode, so it's not very useful
+  // to test behavior for overview mode.
+  if (!features::IsUsingWindowService()) {
+    // The kTopViewInset is the same as in overview mode.
+    const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
+    EXPECT_TRUE(
+        ash::Shell::Get()->window_selector_controller()->ToggleOverview());
+    const int inset_in_overview_mode =
+        window->GetProperty(aura::client::kTopViewInset);
+    EXPECT_EQ(inset_normal, inset_in_overview_mode);
+  }
 }
 
 namespace {
