@@ -57,6 +57,15 @@ class BaseSearchProvider : public AutocompleteProvider {
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data);
 
+  // Appends specific suggest client based on page |page_classification| to
+  // the additional query params of |search_terms_args| only for Google template
+  // URLs.
+  static void AppendSuggestClientToAdditionalQueryParams(
+      const TemplateURL* template_url,
+      const SearchTermsData& search_terms_data,
+      metrics::OmniboxEventProto::PageClassification page_classification,
+      TemplateURLRef::SearchTermsArgs* search_terms_args);
+
   // AutocompleteProvider:
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;

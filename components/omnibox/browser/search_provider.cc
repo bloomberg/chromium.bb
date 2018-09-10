@@ -892,14 +892,24 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
         base::UTF16ToUTF8(prefetch_data_.query_type);
   }
 
+  // Append a specific suggest client if it is in ChromeOS app_list launcher
+  // contexts.
+  const SearchTermsData& search_terms_data =
+      client()->GetTemplateURLService()->search_terms_data();
+  BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
+      template_url, search_terms_data, input.current_page_classification(),
+      &search_term_args);
+
   // If the request is from omnibox focus, send empty search term args. The
   // purpose of such a request is to signal the server to warm up; no info
   // is required.
+  TemplateURLRef::SearchTermsArgs empty_search_term_args((base::string16()));
+  BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
+      template_url, search_terms_data, input.current_page_classification(),
+      &empty_search_term_args);
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
-      input.from_omnibox_focus()
-          ? TemplateURLRef::SearchTermsArgs(base::string16())
-          : search_term_args,
-      client()->GetTemplateURLService()->search_terms_data()));
+      input.from_omnibox_focus() ? empty_search_term_args : search_term_args,
+      search_terms_data));
   if (!suggest_url.is_valid())
     return nullptr;
 
