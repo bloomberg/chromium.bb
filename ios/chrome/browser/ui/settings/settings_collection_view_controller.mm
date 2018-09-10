@@ -564,10 +564,15 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (CollectionViewItem*)savePasswordsDetailItem {
+  BOOL savePasswordsEnabled = _browserState->GetPrefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableService);
+  NSString* passwordsDetail = savePasswordsEnabled
+                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _savePasswordsDetailItem =
       [self detailItemWithType:ItemTypeSavedPasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
-                    detailText:nil
+                    detailText:passwordsDetail
                  iconImageName:kSettingsPasswordsImageName];
 
   return _savePasswordsDetailItem;
@@ -777,12 +782,13 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
         detailCell.detailTextLabel.textColor =
             [[MDCPalette greyPalette] tint400];
+        return cell;
       }
-    } else {
-      [detailCell setUserInteractionEnabled:YES];
-      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
     }
+
+    [detailCell setUserInteractionEnabled:YES];
+    detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
   }
 
   switch (itemType) {
@@ -1286,7 +1292,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     NSString* passwordsDetail =
         savePasswordsEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-
     _savePasswordsDetailItem.detailText = passwordsDetail;
     [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
   }
