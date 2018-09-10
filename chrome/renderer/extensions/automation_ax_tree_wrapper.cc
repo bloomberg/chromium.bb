@@ -320,6 +320,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ACTIVEDESCENDANTCHANGED:
     case api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED:
     case api::automation::EVENT_TYPE_CHECKEDSTATECHANGED:
+    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
@@ -327,6 +328,9 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:
     case api::automation::EVENT_TYPE_LIVEREGIONCREATED:
     case api::automation::EVENT_TYPE_LOADCOMPLETE:
+    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
+    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
+    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED:
     case api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED:
       return true;
@@ -366,16 +370,12 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     // These events might need to be migrated to AXEventGenerator.
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
-    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:
     case api::automation::EVENT_TYPE_MENUEND:
     case api::automation::EVENT_TYPE_MENULISTITEMSELECTED:
     case api::automation::EVENT_TYPE_MENUSTART:
-    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
-    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
-    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SELECTION:
     case api::automation::EVENT_TYPE_TEXTCHANGED:
     case api::automation::EVENT_TYPE_TEXTSELECTIONCHANGED:
