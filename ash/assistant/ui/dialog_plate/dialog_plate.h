@@ -105,7 +105,6 @@ class DialogPlate : public views::View,
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
   void SetFocus(InputModality modality);
-  void SetFocusMode(InputModality modality);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
