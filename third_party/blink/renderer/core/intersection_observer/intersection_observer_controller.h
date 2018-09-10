@@ -34,8 +34,8 @@ class IntersectionObserverController
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);
   void DeliverIntersectionObservations();
   void ComputeTrackedIntersectionObservations();
-  void AddTrackedTarget(Element&);
-  void RemoveTrackedTarget(Element&);
+  void AddTrackedObserver(IntersectionObserver&);
+  void RemoveTrackedObserversForRoot(const Node&);
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override {
@@ -47,9 +47,8 @@ class IntersectionObserverController
   void PostTaskToDeliverObservations();
 
  private:
-  // Elements in this document which are the target of an
-  // IntersectionObservation.
-  HeapHashSet<WeakMember<Element>> tracked_observation_targets_;
+  // IntersectionObservers for which this is the tracking document.
+  HeapHashSet<WeakMember<IntersectionObserver>> tracked_intersection_observers_;
   // IntersectionObservers for which this is the execution context of the
   // callback.
   HeapHashSet<TraceWrapperMember<IntersectionObserver>>

@@ -21,6 +21,16 @@ IntersectionObservation* ElementIntersectionObserverData::GetObservationFor(
   return i->value;
 }
 
+void ElementIntersectionObserverData::AddObserver(
+    IntersectionObserver& observer) {
+  intersection_observers_.insert(&observer);
+}
+
+void ElementIntersectionObserverData::RemoveObserver(
+    IntersectionObserver& observer) {
+  intersection_observers_.erase(&observer);
+}
+
 void ElementIntersectionObserverData::AddObservation(
     IntersectionObservation& observation) {
   DCHECK(observation.Observer());
@@ -32,13 +42,28 @@ void ElementIntersectionObserverData::RemoveObservation(
   intersection_observations_.erase(&observer);
 }
 
-void ElementIntersectionObserverData::ComputeObservations(
-    bool should_report_implicit_root_bounds) {
+void ElementIntersectionObserverData::ActivateValidIntersectionObservers(
+    Node& node) {
+  for (auto& observer : intersection_observers_) {
+    Document* document = observer->TrackingDocument();
+    if (!document)
+      continue;
+    document->EnsureIntersectionObserverController().AddTrackedObserver(
+        *observer);
+  }
   for (auto& observation : intersection_observations_)
-    observation.value->Compute(should_report_implicit_root_bounds);
+    observation.value->UpdateShouldReportRootBoundsAfterDomChange();
+}
+
+void ElementIntersectionObserverData::DeactivateAllIntersectionObservers(
+    Node& node) {
+  node.GetDocument()
+      .EnsureIntersectionObserverController()
+      .RemoveTrackedObserversForRoot(node);
 }
 
 void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {
+  visitor->Trace(intersection_observers_);
   visitor->Trace(intersection_observations_);
 }
 

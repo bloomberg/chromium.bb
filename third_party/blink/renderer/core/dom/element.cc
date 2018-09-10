@@ -121,7 +121,6 @@
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/invisible_dom/activate_invisible_event.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -2046,11 +2045,9 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
   if (HasRareData()) {
     ElementRareData* rare_data = GetElementRareData();
-    if (rare_data->IntersectionObserverData() &&
-        rare_data->IntersectionObserverData()->HasObservations()) {
-      GetDocument().EnsureIntersectionObserverController().AddTrackedTarget(
+    if (rare_data->IntersectionObserverData())
+      rare_data->IntersectionObserverData()->ActivateValidIntersectionObservers(
           *this);
-    }
   }
 
   if (isConnected()) {
@@ -2151,10 +2148,9 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     if (ElementAnimations* element_animations = data->GetElementAnimations())
       element_animations->CssAnimations().Cancel();
 
-    if (data->IntersectionObserverData()) {
-      GetDocument().EnsureIntersectionObserverController().RemoveTrackedTarget(
+    if (data->IntersectionObserverData())
+      data->IntersectionObserverData()->DeactivateAllIntersectionObservers(
           *this);
-    }
   }
 
   if (GetDocument().GetFrame())
@@ -3649,12 +3645,6 @@ ElementIntersectionObserverData* Element::IntersectionObserverData() const {
 
 ElementIntersectionObserverData& Element::EnsureIntersectionObserverData() {
   return EnsureElementRareData().EnsureIntersectionObserverData();
-}
-
-void Element::ComputeIntersectionObservations(
-    bool should_report_implicit_root_bounds) {
-  if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    data->ComputeObservations(should_report_implicit_root_bounds);
 }
 
 HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*

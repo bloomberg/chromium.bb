@@ -17,10 +17,6 @@ function waitForNotification(f) {
   }, 100)
 }
 
-if (window.internals && internals.runtimeFlags) {
-  internals.runtimeFlags.intersectionObserverV2Enabled = true;
-}
-
 onload = () => {
   var target = document.getElementById("target");
   var observer = new IntersectionObserver(entries => {
