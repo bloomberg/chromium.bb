@@ -752,9 +752,10 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                render_delay_ms);
 
   int total_delay_ms =  capture_delay_ms + render_delay_ms;
-  if (total_delay_ms > 300) {
+  if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";
+    ++large_delay_log_count_;
   }
 
   webrtc::AudioProcessing* ap = audio_processing_.get();
