@@ -145,6 +145,7 @@ const ModifierRemapping* GetSearchRemappedKey(
       break;
 
     case EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard:
+    case EventRewriterChromeOS::kDeviceExternalUnknown:
       pref_name = prefs::kLanguageRemapExternalMetaKeyTo;
       break;
 
@@ -301,9 +302,12 @@ EventRewriterChromeOS::DeviceType EventRewriterChromeOS::GetDeviceType(
       return EventRewriterChromeOS::kDeviceAppleKeyboard;
   }
 
-  if (!found_apple && found_keyboard &&
-      keyboard_device.type == INPUT_DEVICE_EXTERNAL) {
-    return EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard;
+  if (!found_apple && keyboard_device.type == INPUT_DEVICE_EXTERNAL) {
+    // ui::InputDevice is a generic input device, and we're not sure if it's
+    // actually a keyboard.
+    return found_keyboard
+               ? EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard
+               : EventRewriterChromeOS::kDeviceExternalUnknown;
   }
 
   return EventRewriterChromeOS::kDeviceUnknown;
