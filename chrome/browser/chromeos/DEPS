@@ -25,6 +25,7 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
+   "+ash/public",
   ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.
