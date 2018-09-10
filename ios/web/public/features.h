@@ -19,12 +19,6 @@ extern const base::Feature kSlimNavigationManager;
 // Used to enable displaying error pages in WebState by loading HTML string.
 extern const base::Feature kWebErrorPages;
 
-// If enabled the CRWCertVerificationController will use WebThread::PostTask
-// instead of GCD. GCD API was used to make sure that completion callbacks are
-// called during the app shutdown, which may be unnecessary
-// (https://crbug.com/853774).
-extern const base::Feature kUseWebThreadInCertVerificationController;
-
 // Used to enable using WKHTTPSystemCookieStore in main context URL requests.
 extern const base::Feature kWKHTTPSystemCookieStore;
 

@@ -14,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
@@ -198,18 +197,10 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
           trustResult = kSecTrustResultInvalid;
         }
         // Use GCD API, which is guaranteed to be called during shutdown.
-
-        if (base::FeatureList::IsEnabled(
-                web::features::kUseWebThreadInCertVerificationController)) {
-          web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                                   base::BindOnce(^{
-                                     completionHandler(trustResult);
-                                   }));
-        } else {
-          dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(trustResult);
-          });
-        }
+        // See https://crbug.com/853774 for details.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          completionHandler(trustResult);
+        });
       }));
 }
 
