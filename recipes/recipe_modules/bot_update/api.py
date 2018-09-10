@@ -80,7 +80,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
                       disable_syntax_validation=False, manifest_name=None,
-                      patch_refs=None,
+                      patch_refs=None, ignore_input_commit=False,
                       **kwargs):
     """
     Args:
@@ -153,17 +153,20 @@ class BotUpdateApi(recipe_api.RecipeApi):
       if solution.revision:
         revisions[solution.name] = solution.revision
 
-    # Apply input gitiles_commit, if any.
-    input_commit = self.m.buildbucket.build.input.gitiles_commit
-    if input_commit.id or input_commit.ref:
-      repo_path = self._get_commit_repo_path(input_commit, cfg)
-      # Note: this is not entirely correct. build.input.gitiles_commit
-      # definition says "The Gitiles commit to run against.".
-      # However, here we ignore it if the config specified a revision.
-      # This is necessary because existing builders rely on this behavior, e.g.
-      # they want to force refs/heads/master at the config level.
-      revisions[repo_path] = (
-          revisions.get(repo_path) or input_commit.id or input_commit.ref)
+    # HACK: ensure_checkout API must be redesigned so that we don't pass such
+    # parameters. Existing semantics is too opiniated.
+    if not ignore_input_commit:
+      # Apply input gitiles_commit, if any.
+      input_commit = self.m.buildbucket.build.input.gitiles_commit
+      if input_commit.id or input_commit.ref:
+        repo_path = self._get_commit_repo_path(input_commit, cfg)
+        # Note: this is not entirely correct. build.input.gitiles_commit
+        # definition says "The Gitiles commit to run against.".
+        # However, here we ignore it if the config specified a revision.
+        # This is necessary because existing builders rely on this behavior,
+        # e.g. they want to force refs/heads/master at the config level.
+        revisions[repo_path] = (
+            revisions.get(repo_path) or input_commit.id or input_commit.ref)
 
     # Guarantee that first solution has a revision.
     # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
