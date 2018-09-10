@@ -194,10 +194,11 @@ void MostVisitedSitesBridge::JavaObserver::OnIconMadeAvailable(
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
     : most_visited_(ChromeMostVisitedSitesFactory::NewForProfile(profile)),
       profile_(profile) {
+  DCHECK(!profile->IsOffTheRecord());
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.
-  content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
-  DCHECK(!profile->IsOffTheRecord());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<ThumbnailListSource>(profile));
 }
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}

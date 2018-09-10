@@ -5,6 +5,7 @@
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +67,7 @@ SuggestionsUI::SuggestionsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
-      profile, new SuggestionsSourceWrapper(
+      profile, std::make_unique<SuggestionsSourceWrapper>(
                    SuggestionsServiceFactory::GetForProfile(profile)));
 }
 

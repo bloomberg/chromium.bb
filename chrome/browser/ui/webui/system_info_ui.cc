@@ -191,9 +191,8 @@ void SystemInfoHandler::RegisterMessages() {
 
 SystemInfoUI::SystemInfoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<SystemInfoHandler>());
-  SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
 
   // Set up the chrome://system/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, html_source);
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                              std::make_unique<SystemInfoUIHTMLSource>());
 }

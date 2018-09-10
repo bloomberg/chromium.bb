@@ -182,9 +182,8 @@ void OffTheRecordProfileImpl::Init() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Make the chrome//extension-icon/ resource available.
-  extensions::ExtensionIconSource* icon_source =
-      new extensions::ExtensionIconSource(profile_);
-  content::URLDataSource::Add(this, icon_source);
+  content::URLDataSource::Add(
+      this, std::make_unique<extensions::ExtensionIconSource>(profile_));
 
   extensions::ExtensionSystem::Get(this)->InitForIncognitoProfile();
 

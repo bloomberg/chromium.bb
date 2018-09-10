@@ -404,8 +404,9 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui)
   auto factory = content::BrowserContext::GetDefaultStoragePartition(
                      web_ui->GetWebContents()->GetBrowserContext())
                      ->GetURLLoaderFactoryForBrowserProcess();
-  content::URLDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                              new DevToolsDataSource(std::move(factory)));
+  content::URLDataSource::Add(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      std::make_unique<DevToolsDataSource>(std::move(factory)));
 }
 
 DevToolsUI::~DevToolsUI() = default;

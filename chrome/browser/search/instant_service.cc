@@ -137,14 +137,22 @@ InstantService::InstantService(Profile* profile)
                      ThemeServiceFactory::GetForProfile(profile_)));
 
   // Set up the data sources that Instant uses on the NTP.
-  content::URLDataSource::Add(profile_, new ThemeSource(profile_));
-  content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
-  content::URLDataSource::Add(profile_, new NtpIconSource(profile_));
-  content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
-  content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
-  content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
-  content::URLDataSource::Add(profile_, new FaviconSource(profile_));
-  content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<ThemeSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<LocalNtpSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<NtpIconSource>(profile_));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<ThumbnailSource>(profile_, false));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<ThumbnailSource>(profile_, true));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<ThumbnailListSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<FaviconSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<MostVisitedIframeSource>());
 }
 
 InstantService::~InstantService() = default;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -521,9 +522,9 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
 
 #if !defined(OS_ANDROID)
   // Set up the chrome://theme/ source.
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 #endif
 
-  content::URLDataSource::Add(profile, new AboutUIHTMLSource(name, profile));
+  content::URLDataSource::Add(
+      profile, std::make_unique<AboutUIHTMLSource>(name, profile));
 }

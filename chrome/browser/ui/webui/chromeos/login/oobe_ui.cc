@@ -435,24 +435,23 @@ void OobeUI::ConfigureOobeDisplay() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
   // Set up the chrome://terms/ data source, for EULA content.
-  AboutUIHTMLSource* about_source =
-      new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
-  content::URLDataSource::Add(profile, about_source);
+  content::URLDataSource::Add(
+      profile,
+      std::make_unique<AboutUIHTMLSource>(chrome::kChromeUITermsHost, profile));
 
   // Set up the chrome://userimage/ source.
-  UserImageSource* user_image_source = new UserImageSource();
-  content::URLDataSource::Add(profile, user_image_source);
+  content::URLDataSource::Add(profile, std::make_unique<UserImageSource>());
 
   // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
 
   // // Handler for the oobe video assets which will be shown if available.
-  content::URLDataSource::Add(profile, new chromeos::VideoSource());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<chromeos::VideoSource>());
 
   if (IsRemoraRequisitioned())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();

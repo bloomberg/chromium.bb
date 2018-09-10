@@ -407,8 +407,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile,
+  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
                               std::make_unique<InterstitialHTMLSource>());
 }
 

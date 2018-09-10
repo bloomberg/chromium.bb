@@ -402,7 +402,7 @@ void AboutHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
   // Handler for the product label image, which will be shown if available.
   content::URLDataSource::Add(Profile::FromWebUI(web_ui()),
-                              new chromeos::ImageSource());
+                              std::make_unique<chromeos::ImageSource>());
 #endif
 }
 

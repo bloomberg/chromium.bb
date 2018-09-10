@@ -363,8 +363,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
   // Set up the chrome://theme/ source.
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 }
 
 InspectUI::~InspectUI() {
