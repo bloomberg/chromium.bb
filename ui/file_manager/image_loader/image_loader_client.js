@@ -14,13 +14,6 @@
  */
 function ImageLoaderClient() {
   /**
-   * Hash array with active tasks.
-   * @type {!Object}
-   * @private
-   */
-  this.tasks_ = {};
-
-  /**
    * @type {number}
    * @private
    */
@@ -91,31 +84,7 @@ ImageLoaderClient.sendMessage_ = function(request, opt_callback) {
 };
 
 /**
- * Handles a message from the remote image loader and calls the registered
- * callback to pass the response back to the requester.
- *
- * @param {Object} message Response message as a hash array.
- * @private
- */
-ImageLoaderClient.prototype.handleMessage_ = function(message) {
-  if (!(message.taskId in this.tasks_)) {
-    // This task has been canceled, but was already fetched, so it's result
-    // should be discarded anyway.
-    return;
-  }
-
-  var task = this.tasks_[message.taskId];
-
-  // Check if the task is still valid.
-  if (task.isValid())
-    task.accept(message);
-
-  delete this.tasks_[message.taskId];
-};
-
-/**
- * Loads and resizes and image. Use opt_isValid to easily cancel requests
- * which are not valid anymore, which will reduce cpu consumption.
+ * Loads and resizes and image.
  *
  * @param {string} url Url of the requested image.
  * @param {function({status: string, data:string, width:number, height:number})}
@@ -124,30 +93,14 @@ ImageLoaderClient.prototype.handleMessage_ = function(message) {
  *     these values are resized width and height.
  * @param {Object=} opt_options Loader options, such as: scale, maxHeight,
  *     width, height and/or cache.
- * @param {function(): boolean=} opt_isValid Function returning false in case
- *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */
-ImageLoaderClient.prototype.load = function(
-    url, callback, opt_options, opt_isValid) {
+ImageLoaderClient.prototype.load = function(url, callback, opt_options) {
   opt_options = /** @type {{cache: (boolean|undefined)}} */(opt_options || {});
-  opt_isValid = opt_isValid || function() { return true; };
 
   // Record cache usage.
   ImageLoaderClient.recordPercentage('Cache.Usage',
       this.cache_.size() / ImageLoaderClient.CACHE_MEMORY_LIMIT * 100.0);
-
-  // Cancel old, invalid tasks.
-  var taskKeys = Object.keys(this.tasks_);
-  for (var index = 0; index < taskKeys.length; index++) {
-    var taskKey = taskKeys[index];
-    var task = this.tasks_[taskKey];
-    if (!task.isValid()) {
-      // Cancel this task since it is not valid anymore.
-      this.cancel(parseInt(taskKey, 10));
-      delete this.tasks_[taskKey];
-    }
-  }
 
   // Replace the extension id.
   var sourceId = chrome.i18n.getMessage('@@extension_id');
@@ -189,8 +142,6 @@ ImageLoaderClient.prototype.load = function(
   // Not available in cache, performing a request to a remote extension.
   var request = opt_options;
   this.lastTaskId_++;
-  var task = {isValid: opt_isValid};
-  this.tasks_[this.lastTaskId_] = task;
 
   request.url = url;
   request.taskId = this.lastTaskId_;
@@ -253,8 +204,7 @@ ImageLoaderClient.createKey = function(url, opt_options) {
 // Helper functions.
 
 /**
- * Loads and resizes and image. Use opt_isValid to easily cancel requests
- * which are not valid anymore, which will reduce cpu consumption.
+ * Loads and resizes and image.
  *
  * @param {string} url Url of the requested image.
  * @param {HTMLImageElement} image Image node to load the requested picture
@@ -263,12 +213,10 @@ ImageLoaderClient.createKey = function(url, opt_options) {
  *     maxHeight, width, height and/or cache.
  * @param {function()} onSuccess Callback for success.
  * @param {function()} onError Callback for failure.
- * @param {function(): boolean=} opt_isValid Function returning false in case
- *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */
 ImageLoaderClient.loadToImage = function(
-    url, image, options, onSuccess, onError, opt_isValid) {
+    url, image, options, onSuccess, onError) {
   var callback = function(result) {
     if (result.status == 'error') {
       onError();
@@ -278,6 +226,5 @@ ImageLoaderClient.loadToImage = function(
     onSuccess();
   };
 
-  return ImageLoaderClient.getInstance().load(
-      url, callback, options, opt_isValid);
+  return ImageLoaderClient.getInstance().load(url, callback, options);
 };
