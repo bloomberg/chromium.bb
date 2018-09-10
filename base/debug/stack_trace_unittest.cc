@@ -151,6 +151,40 @@ TEST_F(StackTraceTest, DebugOutputToStream) {
 TEST_F(StackTraceTest, DebugPrintBacktrace) {
   StackTrace().Print();
 }
+
+// The test is used for manual testing, e.g., to see the raw output.
+TEST_F(StackTraceTest, DebugPrintWithPrefixBacktrace) {
+  StackTrace().PrintWithPrefix("[test]");
+}
+
+// Make sure nullptr prefix doesn't crash. Output not examined, much
+// like the DebugPrintBacktrace test above.
+TEST_F(StackTraceTest, DebugPrintWithNullPrefixBacktrace) {
+  StackTrace().PrintWithPrefix(nullptr);
+}
+
+// Test OutputToStreamWithPrefix, mainly to make sure it doesn't
+// crash. Any "real" stack trace testing happens above.
+TEST_F(StackTraceTest, DebugOutputToStreamWithPrefix) {
+  StackTrace trace;
+  const char* prefix_string = "[test]";
+  std::ostringstream os;
+  trace.OutputToStreamWithPrefix(&os, prefix_string);
+  std::string backtrace_message = os.str();
+
+  // ToStringWithPrefix() should produce the same output.
+  EXPECT_EQ(backtrace_message, trace.ToStringWithPrefix(prefix_string));
+}
+
+// Make sure nullptr prefix doesn't crash. Output not examined, much
+// like the DebugPrintBacktrace test above.
+TEST_F(StackTraceTest, DebugOutputToStreamWithNullPrefix) {
+  StackTrace trace;
+  std::ostringstream os;
+  trace.OutputToStreamWithPrefix(&os, nullptr);
+  trace.ToStringWithPrefix(nullptr);
+}
+
 #endif  // !defined(__UCLIBC__)
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)

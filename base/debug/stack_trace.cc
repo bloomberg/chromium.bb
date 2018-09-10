@@ -216,10 +216,21 @@ const void *const *StackTrace::Addresses(size_t* count) const {
   return nullptr;
 }
 
+void StackTrace::Print() const {
+  PrintWithPrefix(nullptr);
+}
+
+void StackTrace::OutputToStream(std::ostream* os) const {
+  OutputToStreamWithPrefix(os, nullptr);
+}
+
 std::string StackTrace::ToString() const {
+  return ToStringWithPrefix(nullptr);
+}
+std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
   std::stringstream stream;
 #if !defined(__UCLIBC__) && !defined(_AIX)
-  OutputToStream(&stream);
+  OutputToStreamWithPrefix(&stream, prefix_string);
 #endif
   return stream.str();
 }
