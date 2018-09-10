@@ -10,11 +10,8 @@
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/consent_auditor/pref_names.h"
-#include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/onc/onc_pref_names.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
@@ -116,6 +113,11 @@ const char* const kPersistentPrefNames[] = {
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
 
+#if defined(OS_ANDROID)
+    // Clipboard modification state is updated over all profiles.
+    prefs::kClipboardLastModifiedTime,
+#endif
+
     // Devtools preferences are stored cross profiles as they are not storing
     // user data and just keep debugging environment settings.
     prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
@@ -185,15 +187,11 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // !defined(OS_ANDROID)
 
     // chrome/common/pref_names.h
-    prefs::kImportantSitesDialogHistory, prefs::kObservedSessionTime,
-    prefs::kSiteEngagementLastUpdateTime,
+    prefs::kImportantSitesDialogHistory, prefs::kSiteEngagementLastUpdateTime,
 
 #if defined(OS_CHROMEOS)
     prefs::kApplicationLocaleBackup, prefs::kApplicationLocaleAccepted,
     prefs::kOwnerLocale, prefs::kAllowedUILocales,
-#endif
-
-#if defined(OS_CHROMEOS)
     prefs::kEnableTouchpadThreeFingerClick, prefs::kNaturalScroll,
     prefs::kPrimaryMouseButtonRight, prefs::kMouseReverseScroll,
     prefs::kMouseSensitivity, prefs::kTouchpadSensitivity,
@@ -312,8 +310,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kTaskManagerWindowPlacement, prefs::kTaskManagerColumnVisibility,
     prefs::kTaskManagerEndProcessEnabled, prefs::kAppWindowPlacement,
 
-    prefs::kDownloadDefaultDirectory, prefs::kDownloadExtensionsToOpen,
-    prefs::kDownloadDirUpgraded,
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
     prefs::kOpenPdfDownloadInSystemReader,
 #endif
@@ -491,43 +487,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kComponentUpdatesEnabled,
 
-    prefs::kDSEGeolocationSettingDeprecated,
-
-    prefs::kDSEPermissionsSettings, prefs::kDSEWasDisabledByPolicy,
-
-    prefs::kWebShareVisitedTargets,
-
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
-    prefs::kIncompatibleApplications, prefs::kModuleBlacklistCacheMD5Digest,
-    prefs::kProblematicPrograms, prefs::kThirdPartyBlockingEnabled,
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
-
-#if defined(OS_ANDROID)
-    prefs::kClipboardLastModifiedTime,
-#endif
-
     prefs::kMediaEngagementSchemaVersion,
-
-    prefs::kUnsafelyTreatInsecureOriginAsSecure,
-
-    prefs::kIsolateOrigins, prefs::kSitePerProcess,
-    prefs::kWebDriverOverridesIncompatiblePolicies,
-
-#if !defined(OS_ANDROID)
-    prefs::kAutoplayAllowed, prefs::kAutoplayWhitelist,
-#endif
-
-    // components/consent_auditor/pref_names.h
-    consent_auditor::prefs::kLocalConsentsDictionary,
-
-    // components/flags_ui/flags_ui_pref_names.h
-    flags_ui::prefs::kEnabledLabsExperiments,
-
-    // components/onc/onc_pref_names.h
-    onc::prefs::kDeviceOpenNetworkConfiguration,
-    onc::prefs::kOpenNetworkConfiguration,
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
