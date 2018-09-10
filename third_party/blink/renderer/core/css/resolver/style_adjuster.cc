@@ -120,9 +120,7 @@ bool ShouldForceLegacyLayout(const ComputedStyle& style,
   if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     // Disable NG for the entire subtree if we're establishing a block
     // fragmentation context.
-    if (style.SpecifiesColumns() ||
-        (style.IsOverflowPaged() &&
-         &element != document.ViewportDefiningElement()))
+    if (style.SpecifiesColumns() || style.IsOverflowPaged())
       return true;
     if (document.Printing()) {
       // This needs to be discovered on the root element.

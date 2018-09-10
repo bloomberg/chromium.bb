@@ -1065,6 +1065,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/widows-and-orphans
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/widows.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/auto-height.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/auto-height-with-break.html [ Failure ]
+crbug.com/879467 virtual/layout_ng_experimental/fast/pagination/body-make-paginated-table-abspos-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/break-in-paged-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/caret-range-outside-paged-x.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/caret-range-outside-paged-x-rtl.html [ Failure ]
