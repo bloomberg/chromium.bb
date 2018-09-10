@@ -960,6 +960,16 @@ void NavigationRequest::OnResponseStarted(
           ? navigation_handle_->appcache_handle()->appcache_host_id()
           : kAppCacheNoHostId;
 
+  // Update fetch start timing. While NavigationRequest updates fetch start
+  // timing for redirects, it's not aware of service worker interception so
+  // fetch start timing could happen earlier than worker start timing. Use
+  // worker ready time if it is greater than the current value to make sure
+  // fetch start timing always comes after worker start timing (if a service
+  // worker intercepted the navigation).
+  request_params_.navigation_timing.fetch_start =
+      std::max(request_params_.navigation_timing.fetch_start,
+               response->head.service_worker_ready_time);
+
   // A navigation is user activated if it contains a user gesture or the frame
   // received a gesture and the navigation is renderer initiated. If the
   // navigation is browser initiated, it has to come from the context menu.
