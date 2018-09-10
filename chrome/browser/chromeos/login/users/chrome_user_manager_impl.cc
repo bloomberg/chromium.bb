@@ -170,13 +170,14 @@ bool GetUserLockAttributes(const user_manager::User* user,
 // not freed and they leak but that is fine.
 void SetPublicAccountDelegates() {
   extensions::PermissionsUpdater::SetPlatformDelegate(
-      new extensions::PermissionsUpdaterDelegateChromeOS);
+      std::make_unique<extensions::PermissionsUpdaterDelegateChromeOS>());
 
   extensions::ExtensionTabUtil::SetPlatformDelegate(
-      new extensions::ExtensionTabUtilDelegateChromeOS);
+      std::make_unique<extensions::ExtensionTabUtilDelegateChromeOS>());
 
   extensions::ActiveTabPermissionGranter::SetPlatformDelegate(
-      new extensions::ActiveTabPermissionGranterDelegateChromeOS);
+      std::make_unique<
+          extensions::ActiveTabPermissionGranterDelegateChromeOS>());
 }
 
 policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
@@ -232,9 +233,9 @@ ChromeUserManagerImpl::CreateChromeUserManager() {
 
 // static
 void ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting() {
-  delete extensions::PermissionsUpdater::SetPlatformDelegate(nullptr);
-  delete extensions::ExtensionTabUtil::SetPlatformDelegate(nullptr);
-  delete extensions::ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
+  extensions::PermissionsUpdater::SetPlatformDelegate(nullptr);
+  extensions::ExtensionTabUtil::SetPlatformDelegate(nullptr);
+  extensions::ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
 }
 
 ChromeUserManagerImpl::ChromeUserManagerImpl()

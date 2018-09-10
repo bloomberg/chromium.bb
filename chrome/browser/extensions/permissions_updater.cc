@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/permissions_updater.h"
 
+#include <set>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -72,7 +74,15 @@ std::unique_ptr<const PermissionSet> GetBoundedActivePermissions(
   return adjusted_active;
 }
 
-PermissionsUpdater::Delegate* g_delegate = nullptr;
+std::unique_ptr<PermissionsUpdater::Delegate>& GetDelegateWrapper() {
+  static base::NoDestructor<std::unique_ptr<PermissionsUpdater::Delegate>>
+      delegate_wrapper;
+  return *delegate_wrapper;
+}
+
+PermissionsUpdater::Delegate* GetDelegate() {
+  return GetDelegateWrapper().get();
+}
 
 }  // namespace
 
@@ -88,14 +98,9 @@ PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
 PermissionsUpdater::~PermissionsUpdater() {}
 
 // static
-PermissionsUpdater::Delegate* PermissionsUpdater::SetPlatformDelegate(
-    Delegate* delegate) {
-  // Make sure we're setting it only once (allow setting to nullptr, but then
-  // take special care of actually freeing it).
-  CHECK(!g_delegate || !delegate);
-  Delegate* previous_delegate = g_delegate;
-  g_delegate = delegate;
-  return previous_delegate;
+void PermissionsUpdater::SetPlatformDelegate(
+    std::unique_ptr<Delegate> delegate) {
+  GetDelegateWrapper() = std::move(delegate);
 }
 
 void PermissionsUpdater::GrantOptionalPermissions(
@@ -341,8 +346,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
       *extension, *prefs, *bounded_active, &granted_permissions);
 
-  if (g_delegate)
-    g_delegate->InitializePermissions(extension, &granted_permissions);
+  if (GetDelegate())
+    GetDelegate()->InitializePermissions(extension, &granted_permissions);
 
   bool update_active_permissions = false;
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {

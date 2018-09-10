@@ -443,8 +443,8 @@ TEST_F(PermissionsUpdaterTest, Delegate) {
           std::make_unique<base::ListValue>(), required_permissions.Build(),
           "My Extension");
 
-  auto test_delegate = std::make_unique<PermissionsUpdaterTestDelegate>();
-  PermissionsUpdater::SetPlatformDelegate(test_delegate.get());
+  PermissionsUpdater::SetPlatformDelegate(
+      std::make_unique<PermissionsUpdaterTestDelegate>());
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
 

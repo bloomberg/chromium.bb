@@ -464,17 +464,17 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
 
 class ActiveTabDelegateTest : public ActiveTabTest {
  protected:
-  ActiveTabDelegateTest()
-      : test_delegate_(
-            std::make_unique<ActiveTabPermissionGranterTestDelegate>()) {
-    ActiveTabPermissionGranter::SetPlatformDelegate(test_delegate_.get());
+  ActiveTabDelegateTest() {
+    auto delegate = std::make_unique<ActiveTabPermissionGranterTestDelegate>();
+    test_delegate_ = delegate.get();
+    ActiveTabPermissionGranter::SetPlatformDelegate(std::move(delegate));
   }
 
   ~ActiveTabDelegateTest() override {
     ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
   }
 
-  std::unique_ptr<ActiveTabPermissionGranterTestDelegate> test_delegate_;
+  ActiveTabPermissionGranterTestDelegate* test_delegate_;
 };
 
 // Test that the custom platform delegate works as expected.
