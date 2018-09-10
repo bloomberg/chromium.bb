@@ -101,7 +101,8 @@ TEST(BloomFilterTest, EverythingMatches) {
   EXPECT_TRUE(filter.Contains("Echo"));
 }
 
-#if !defined(OS_IOS)
+// Disable this test in configurations that don't print CHECK failures.
+#if !defined(OS_IOS) && !(defined(OFFICIAL_BUILD) && defined(NDEBUG))
 TEST(BloomFilterTest, ByteVectorTooSmall) {
   ByteVector data(1023, 0xff);
   EXPECT_DEATH({ BloomFilter filter(8191 /* num_bits */, data, 7); },
