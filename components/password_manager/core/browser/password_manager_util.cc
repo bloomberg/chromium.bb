@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -304,14 +305,21 @@ bool ManualPasswordGenerationEnabled(
   return true;
 }
 
-bool ShowAllSavedPasswordsContextMenuEnabled() {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kShowAllSavedPasswordsContextMenu)) {
+bool ShowAllSavedPasswordsContextMenuEnabled(
+    password_manager::PasswordManagerDriver* driver) {
+  password_manager::PasswordManager* password_manager =
+      driver ? driver->GetPasswordManager() : nullptr;
+  if (!password_manager)
     return false;
-  }
+
+  password_manager::PasswordManagerClient* client = password_manager->client();
+  if (!client || !client->IsFillingFallbackEnabledForCurrentPage())
+    return false;
+
   LogContextOfShowAllSavedPasswordsShown(
       password_manager::metrics_util::
           SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
+
   return true;
 }
 

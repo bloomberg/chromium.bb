@@ -1574,18 +1574,17 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 void RenderViewContextMenu::AppendPasswordItems() {
   bool add_separator = false;
 
-  // Don't offer saving or generating passwords in incognito profiles.
-  if (!browser_context_->IsOffTheRecord()) {
-    password_manager::ContentPasswordManagerDriver* driver =
-        password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
-            GetRenderFrameHost());
-    if (password_manager_util::ManualPasswordGenerationEnabled(driver)) {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
-                                      IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
-      add_separator = true;
-    }
+  password_manager::ContentPasswordManagerDriver* driver =
+      password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+          GetRenderFrameHost());
+  // Don't show the item for guest or incognito profiles and also when the
+  // automatic generation feature is disabled.
+  if (password_manager_util::ManualPasswordGenerationEnabled(driver)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
+                                    IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
+    add_separator = true;
   }
-  if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled()) {
+  if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled(driver)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS,
                                     IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
     add_separator = true;

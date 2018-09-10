@@ -242,19 +242,7 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
     is_enabled = true;
   } else {
-    // Do not fill nor save password when a user is signing in for sync. This
-    // is because users need to remember their password if they are syncing as
-    // this is effectively their master password.
-    is_enabled =
-        entry->GetURL().host_piece() != chrome::kChromeUIChromeSigninHost;
-
-    // Per https://crbug.com/756587, exclude existing saved passwords for
-    // about: documents.  Note that this only checks main frames, but this is
-    // sufficient for credentials manager API which is only enabled for main
-    // frames.  Autofill for about: subframes is already disabled by
-    // restricting OnPasswordFormsParsed/OnPasswordFormsRendered.
-    if (entry->GetURL().SchemeIs(url::kAboutScheme))
-      is_enabled = false;
+    is_enabled = CanShowBubbleOnURL(entry->GetURL());
   }
 
   // The password manager is disabled while VR (virtual reality) is being used,
@@ -303,7 +291,8 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
 
 bool ChromePasswordManagerClient::IsFillingFallbackEnabledForCurrentPage()
     const {
-  return !Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+  return IsFillingEnabledForCurrentPage() &&
+         !Profile::FromBrowserContext(web_contents()->GetBrowserContext())
               ->IsGuestSession();
 }
 
