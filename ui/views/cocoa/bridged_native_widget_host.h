@@ -48,6 +48,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostHelper {
                          bool* found_word,
                          gfx::DecoratedText* decorated_word,
                          gfx::Point* baseline_point) = 0;
+
+  // Returns the vertical position that sheets should be anchored, in pixels
+  // from the bottom of the window.
+  // TODO(ccameron): This should be either moved to the mojo interface or
+  // separated out in such a way as to avoid needing to go through mojo.
+  virtual double SheetPositionY() = 0;
 };
 
 }  // namespace views
