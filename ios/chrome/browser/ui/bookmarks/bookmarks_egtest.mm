@@ -206,7 +206,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCase Tests
@@ -852,6 +852,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 }
 
 - (void)testCachePositionIsRecreated {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Legacy UI doesn't scroll completely to the bottom, this causes the "
+        @"cell to be partially hidden by the custom toolbar, making the test "
+        @"fail.");
+  }
   [BookmarksTestCase setupBookmarksWhichExceedsScreenHeight];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -1785,7 +1791,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCaseEntries Tests
@@ -2795,7 +2801,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCasePromo Tests
@@ -3009,7 +3015,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestCaseAccessibility Tests
@@ -3185,7 +3191,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
-      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+      clearBookmarkTopMostRowCacheWithPrefService:browser_state->GetPrefs()];
 }
 
 #pragma mark - BookmarksTestFolders Tests
