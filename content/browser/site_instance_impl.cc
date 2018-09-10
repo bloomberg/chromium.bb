@@ -401,7 +401,11 @@ bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
   }
 
   // If the sites are the same, check isolated origins.  If either URL matches
-  // an isolated origin, compare origins rather than sites.
+  // an isolated origin, compare origins rather than sites.  As an optimization
+  // to avoid unneeded isolated origin lookups, shortcut this check if the two
+  // origins are the same.
+  if (src_origin == dest_origin)
+    return true;
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin src_isolated_origin;
   url::Origin dest_isolated_origin;
@@ -449,27 +453,21 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
                  : real_url;
   url::Origin origin = url::Origin::Create(url);
 
-  // Isolated origins should use the full origin as their site URL. A subdomain
-  // of an isolated origin should also use that isolated origin's site URL. It
-  // is important to check |url| rather than |real_url| here, since some
-  // effective URLs (such as for NTP) need to be resolved prior to the isolated
-  // origin lookup.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  url::Origin isolated_origin;
-  if (policy->GetMatchingIsolatedOrigin(origin, &isolated_origin))
-    return isolated_origin.GetURL();
-
   // If the url has a host, then determine the site.  Skip file URLs to avoid a
   // situation where site URL of file://localhost/ would mismatch Blink's origin
   // (which ignores the hostname in this case - see https://crbug.com/776160).
   if (!origin.host().empty() && origin.scheme() != url::kFileScheme) {
-    // Only keep the scheme and registered domain of |origin|.
-    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        origin.host(),
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    std::string site = origin.scheme();
-    site += url::kStandardSchemeSeparator;
-    site += domain.empty() ? origin.host() : domain;
+    GURL site_url(GetSiteForOrigin(origin));
+
+    // Isolated origins should use the full origin as their site URL. A
+    // subdomain of an isolated origin should also use that isolated origin's
+    // site URL. It is important to check |origin| (based on |url|) rather than
+    // |real_url| here, since some effective URLs (such as for NTP) need to be
+    // resolved prior to the isolated origin lookup.
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    url::Origin isolated_origin;
+    if (policy->GetMatchingIsolatedOrigin(origin, site_url, &isolated_origin))
+      return isolated_origin.GetURL();
 
     // If an effective URL was used, augment the effective site URL with the
     // underlying web site in the hash.  This is needed to keep
@@ -479,12 +477,16 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
     // TODO(https://crbug.com/734722): Consider replacing this hack with
     // a proper security principal.
     if (should_use_effective_urls && url != real_url) {
-      site += "#" + GetSiteForURL(browser_context, real_url,
-                                  false /* should_use_effective_urls */)
-                        .spec();
+      std::string non_translated_site_url(
+          GetSiteForURL(browser_context, real_url,
+                        false /* should_use_effective_urls */)
+              .spec());
+      GURL::Replacements replacements;
+      replacements.SetRefStr(non_translated_site_url.c_str());
+      site_url = site_url.ReplaceComponents(replacements);
     }
 
-    return GURL(site);
+    return site_url;
   }
 
   // If there is no host but there is a scheme, return the scheme.
@@ -533,6 +535,18 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
   // Otherwise the URL should be invalid; return an empty site.
   DCHECK(!url.is_valid()) << url;
   return GURL();
+}
+
+// static
+GURL SiteInstanceImpl::GetSiteForOrigin(const url::Origin& origin) {
+  // Only keep the scheme and registered domain of |origin|.
+  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      origin.host(),
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  std::string site = origin.scheme();
+  site += url::kStandardSchemeSeparator;
+  site += domain.empty() ? origin.host() : domain;
+  return GURL(site);
 }
 
 // static

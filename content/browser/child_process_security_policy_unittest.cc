@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/test/mock_log.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_content_browser_client.h"
@@ -1086,12 +1087,32 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
 
   p->Remove(kRendererID);
 }
+
+namespace {
+
+// Helpers to construct (key, value) entries used to validate the
+// isolated_origins_ map.
+auto IsolatedOriginEntry(const url::Origin& origin) {
+  return std::pair<GURL, base::flat_set<url::Origin>>(
+      SiteInstanceImpl::GetSiteForOrigin(origin), {origin});
+}
+
+auto IsolatedOriginEntry(const url::Origin& origin1,
+                         const url::Origin& origin2) {
+  EXPECT_EQ(SiteInstanceImpl::GetSiteForOrigin(origin1),
+            SiteInstanceImpl::GetSiteForOrigin(origin2));
+  return std::pair<GURL, base::flat_set<url::Origin>>(
+      SiteInstanceImpl::GetSiteForOrigin(origin1), {origin1, origin2});
+}
+
+}  // namespace
+
 // Verifies ChildProcessSecurityPolicyImpl::AddIsolatedOrigins method.
 TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   url::Origin foo = url::Origin::Create(GURL("https://foo.com/"));
   url::Origin bar = url::Origin::Create(GURL("https://bar.com/"));
   url::Origin baz = url::Origin::Create(GURL("https://baz.com/"));
-  url::Origin foobar = url::Origin::Create(GURL("https://foobar.com/"));
+  url::Origin quxfoo = url::Origin::Create(GURL("https://qux.foo.com/"));
   url::Origin baz_http_8000 = url::Origin::Create(GURL("http://baz.com:8000/"));
   url::Origin baz_https_8000 =
       url::Origin::Create(GURL("https://baz.com:8000/"));
@@ -1104,28 +1125,39 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
 
   // Verify deduplication of the argument.
   p->AddIsolatedOrigins({foo, bar, bar});
-  EXPECT_THAT(p->isolated_origins_, testing::UnorderedElementsAre(foo, bar));
+  EXPECT_THAT(p->isolated_origins_,
+              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                            IsolatedOriginEntry(bar)));
 
   // Verify that the old set is extended (not replaced).
   p->AddIsolatedOrigins({baz});
   EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(foo, bar, baz));
+              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                            IsolatedOriginEntry(bar),
+                                            IsolatedOriginEntry(baz)));
 
   // Verify deduplication against the old set.
   p->AddIsolatedOrigins({foo});
   EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(foo, bar, baz));
+              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                            IsolatedOriginEntry(bar),
+                                            IsolatedOriginEntry(baz)));
 
-  // Verify deduplication considers scheme and port differences.
+  // Verify deduplication considers scheme and port differences.  Note that
+  // origins that differ only in ports map to the same key.
   p->AddIsolatedOrigins({baz, baz_http_8000, baz_https_8000});
   EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(foo, bar, baz, baz_http_8000,
-                                            baz_https_8000));
+              testing::UnorderedElementsAre(
+                  IsolatedOriginEntry(foo), IsolatedOriginEntry(bar),
+                  IsolatedOriginEntry(baz, baz_https_8000),
+                  IsolatedOriginEntry(baz_http_8000)));
 
   // Verify that adding an origin that is invalid for isolation will 1) log a
   // warning and 2) won't CHECK or crash the browser process, 3) will not add
   // the invalid origin, but will add the remaining origins passed to
-  // AddIsolatedOrigins.
+  // AddIsolatedOrigins.  Note that the new |quxfoo| origin should map to the
+  // same key (i.e., the https://foo.com/ site URL) as the existing |foo|
+  // origin.
   {
     base::test::MockLog mock_log;
     EXPECT_CALL(mock_log,
@@ -1134,10 +1166,12 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
         .Times(1);
 
     mock_log.StartCapturingLogs();
-    p->AddIsolatedOrigins({foobar, invalid_etld});
+    p->AddIsolatedOrigins({quxfoo, invalid_etld});
     EXPECT_THAT(p->isolated_origins_,
-                testing::UnorderedElementsAre(foo, bar, baz, baz_http_8000,
-                                              baz_https_8000, foobar));
+                testing::UnorderedElementsAre(
+                    IsolatedOriginEntry(foo, quxfoo), IsolatedOriginEntry(bar),
+                    IsolatedOriginEntry(baz, baz_https_8000),
+                    IsolatedOriginEntry(baz_http_8000)));
   }
 }
 
