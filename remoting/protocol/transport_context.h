@@ -101,6 +101,11 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   TransportRole role() const { return role_; }
   rtc::NetworkManager* network_manager() const { return network_manager_; }
 
+  // Returns the suggested bandwidth cap for TURN relay connections, or 0 if
+  // no rate-limit is set in the IceConfig. Currently this is not used for
+  // legacy GTURN connections.
+  int GetTurnMaxRateKbps() const;
+
  private:
   friend class base::RefCountedThreadSafe<TransportContext>;
 

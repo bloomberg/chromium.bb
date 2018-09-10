@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/ice_config.h"
 
+#include <algorithm>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -86,6 +88,21 @@ bool AddServerToConfig(std::string url,
   return true;
 }
 
+// Returns the smallest specified value, or 0 if neither is specified.
+// A value is "specified" if it is greater than 0.
+int MinimumSpecified(int value1, int value2) {
+  if (value1 <= 0) {
+    // value1 is not specified, so return value2 (or 0).
+    return std::max(0, value2);
+  }
+  if (value2 <= 0) {
+    // value1 is specified, so return it directly.
+    return value1;
+  }
+  // Both values are specified, so return the minimum.
+  return std::min(value1, value2);
+}
+
 }  // namespace
 
 IceConfig::IceConfig() = default;
@@ -117,6 +134,7 @@ IceConfig IceConfig::Parse(const base::DictionaryValue& dictionary) {
 
   // Parse iceServers list and store them in |ice_config|.
   bool errors_found = false;
+  ice_config.max_bitrate_kbps = 0;
   for (const auto& server : *ice_servers_list) {
     const base::DictionaryValue* server_dict;
     if (!server.GetAsDictionary(&server_dict)) {
@@ -135,6 +153,16 @@ IceConfig IceConfig::Parse(const base::DictionaryValue& dictionary) {
 
     std::string password;
     server_dict->GetString("credential", &password);
+
+    // Compute the lowest specified bitrate of all the ICE servers.
+    // Ideally the bitrate would be stored per ICE server, but it is not
+    // possible (at the application level) to look up which particular
+    // ICE server was used for the P2P connection.
+    double new_bitrate_double;
+    if (server_dict->GetDouble("maxRateKbps", &new_bitrate_double)) {
+      ice_config.max_bitrate_kbps = MinimumSpecified(
+          ice_config.max_bitrate_kbps, static_cast<int>(new_bitrate_double));
+    }
 
     for (const auto& url : *urls_list) {
       std::string url_str;

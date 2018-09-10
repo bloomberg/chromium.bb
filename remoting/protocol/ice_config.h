@@ -42,6 +42,10 @@ struct IceConfig {
 
   // Standard TURN servers
   std::vector<cricket::RelayServerConfig> turn_servers;
+
+  // If greater than 0, the max bandwidth used for relayed connections should
+  // be set to this value.
+  int max_bitrate_kbps = 0;
 };
 
 }  // namespace protocol

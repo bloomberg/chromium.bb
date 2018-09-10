@@ -122,5 +122,10 @@ void TransportContext::OnIceConfig(RelayMode relay_mode,
   }
 }
 
+int TransportContext::GetTurnMaxRateKbps() const {
+  DCHECK_EQ(relay_mode_, RelayMode::TURN);
+  return ice_config_[RelayMode::TURN].max_bitrate_kbps;
+}
+
 }  // namespace protocol
 }  // namespace remoting
