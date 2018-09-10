@@ -1887,10 +1887,12 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger sectionIdentifier = [self.sharedState.tableViewModel
-      sectionIdentifierForSection:indexPath.section];
-  if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
-    return kEstimatedRowHeight;
+  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
+    NSInteger sectionIdentifier = [self.sharedState.tableViewModel
+        sectionIdentifierForSection:indexPath.section];
+    if (sectionIdentifier == BookmarkHomeSectionIdentifierBookmarks) {
+      return kEstimatedRowHeight;
+    }
   }
   return UITableViewAutomaticDimension;
 }
