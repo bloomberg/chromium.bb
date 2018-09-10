@@ -293,9 +293,26 @@ void NewPasswordFormManager::UpdatePasswordValue(
 // TODO(https://crbug.com/831123): Implement all methods from
 // PasswordFormManagerForUI.
 void NewPasswordFormManager::OnNopeUpdateClicked() {}
-void NewPasswordFormManager::OnNeverClicked() {}
+
+void NewPasswordFormManager::OnNeverClicked() {
+  PermanentlyBlacklist();
+}
+
 void NewPasswordFormManager::OnNoInteraction(bool is_update) {}
-void NewPasswordFormManager::PermanentlyBlacklist() {}
+
+void NewPasswordFormManager::PermanentlyBlacklist() {
+  DCHECK(!client_->IsIncognito());
+
+  if (!new_blacklisted_) {
+    new_blacklisted_ = std::make_unique<PasswordForm>();
+    new_blacklisted_->origin = observed_form_.origin;
+    // The following method of finding |signon_realm| is correct for HTML forms.
+    new_blacklisted_->signon_realm = observed_form_.origin.GetOrigin().spec();
+    blacklisted_matches_.push_back(new_blacklisted_.get());
+  }
+  form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
+}
+
 void NewPasswordFormManager::OnPasswordsRevealed() {}
 
 bool NewPasswordFormManager::IsNewLogin() const {
@@ -335,6 +352,7 @@ void NewPasswordFormManager::ProcessMatches(
 
   // Copy out blacklisted matches.
   blacklisted_matches_.clear();
+  new_blacklisted_.reset();
   std::copy_if(
       non_federated.begin(), non_federated.end(),
       std::back_inserter(blacklisted_matches_), [](const PasswordForm* form) {
