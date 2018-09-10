@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class EmulatedVrController {
     public enum ScrollDirection { UP, DOWN, LEFT, RIGHT }
-    private static final int FIRST_INPUT_DELAY_MS = 500;
+    private static final int FIRST_INPUT_DELAY_MS = 1000;
     private final ControllerTestApi mApi;
     private boolean mHaveSentInputSinceEnteringVr;
 
