@@ -482,7 +482,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   base::TimeDelta timestamp = picture_buffer->timestamp_;
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
       PIXEL_FORMAT_NV12, picture_buffer->mailbox_holders(),
-      VideoFrame::ReleaseMailboxCB(), visible_rect.size(), visible_rect,
+      VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
   // TODO(liberato): bind this to the gpu main thread.
