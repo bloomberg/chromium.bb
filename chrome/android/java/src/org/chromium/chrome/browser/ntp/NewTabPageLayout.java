@@ -190,12 +190,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             mExploreSectionView = exploreStub.inflate();
         }
 
-        // Strip the padding from the top of the view (which would otherwise be the height of the
-        // top toolbar) when Duet is enabled to remove some of the empty space.
+        // Apply negative margin to the top of the N logo (which would otherwise be the height of
+        // the top toolbar) when Duet is enabled to remove some of the empty space.
         if (FeatureUtilities.isBottomToolbarEnabled()) {
-            setPadding(getPaddingLeft(),
-                    getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_padding),
-                    getPaddingRight(), getPaddingBottom());
+            ((MarginLayoutParams) mSearchProviderLogoView.getLayoutParams()).topMargin =
+                    -getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_margin);
         }
     }
 
