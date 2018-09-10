@@ -2058,7 +2058,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 }
 
 // Regression test for crbug.com/660498.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
+// TODO(crbug.com/882213) Disabled due to timeouts on Linux builders.
+#if defined(OS_LINUX)
+#define MAYBE_TemporaryAddressSpoof DISABLE_TemporaryAddressSpoof
+#else
+#define MAYBE_TemporaryAddressSpoof TemporaryAddressSpoof
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* first_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
