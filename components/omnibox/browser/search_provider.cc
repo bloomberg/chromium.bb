@@ -1508,8 +1508,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       !navigation.received_after_last_keystroke() &&
       (match.inline_autocompletion.empty() ||
        (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
-  match.EnsureUWYTIsAllowedToBeDefault(input_,
-                                       client()->GetTemplateURLService());
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();

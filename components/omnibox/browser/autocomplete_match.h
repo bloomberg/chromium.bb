@@ -265,13 +265,6 @@ struct AutocompleteMatch {
   void ComputeStrippedDestinationURL(const AutocompleteInput& input,
                                      TemplateURLService* template_url_service);
 
-  // Sets |allowed_to_be_default_match| to true if this match is effectively
-  // the URL-what-you-typed match (i.e., would be dupped against the UWYT
-  // match when AutocompleteResult merges matches).
-  void EnsureUWYTIsAllowedToBeDefault(
-      const AutocompleteInput& input,
-      TemplateURLService* template_url_service);
-
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.
   // the UI should be "in keyword mode", |keyword| will be set to the keyword

@@ -2381,12 +2381,6 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
       { { "a.com/a", AutocompleteMatchType::NAVSUGGEST,            true },
         { "a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
         kEmptyMatch, kEmptyMatch } },
-    { "a.com", "[\"a.com\",[\"https://a.com\"],[],[],"
-                "{\"google:suggesttype\":[\"NAVIGATION\"],"
-                 "\"google:suggestrelevance\":[9999]}]",
-      { { "a.com",   AutocompleteMatchType::NAVSUGGEST,            true },
-        { "a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true },
-        kEmptyMatch, kEmptyMatch } },
 
     // Ensure topmost inlineable SUGGEST matches are NOT allowed for URL
     // input.  SearchProvider disregards search and verbatim suggested
@@ -2633,27 +2627,14 @@ TEST_F(SearchProviderTest, NavigationInline) {
     // will be allowed to be default.
     { "abc.com",             "http://www.abc.com",
                                     "www.abc.com", std::string(), true, true },
-    { "abc.com/",            "http://www.abc.com",
-                                    "www.abc.com", std::string(), true, true },
     { "http://www.abc.com",  "http://www.abc.com",
-                             "http://www.abc.com", std::string(), true, true },
-    { "http://www.abc.com/", "http://www.abc.com",
                              "http://www.abc.com", std::string(), true, true },
 
     // Inputs with trailing whitespace should inline when possible.
     { "abc.com ",      "http://www.abc.com",
                               "www.abc.com",      std::string(), true,  true },
-    { "abc.com/ ",     "http://www.abc.com",
-                              "www.abc.com",      std::string(), true,  true },
     { "abc.com ",      "http://www.abc.com/bar",
                               "www.abc.com/bar",  "/bar",        false, false },
-
-    // A suggestion that's equivalent to what the input gets fixed up to
-    // should be inlined.
-    { "abc.com:",      "http://abc.com/",
-                              "abc.com",          std::string(), true,  true },
-    { "abc.com:",      "http://www.abc.com",
-                              "www.abc.com",      std::string(), true,  true },
 
     // Inline matches when the input is a leading substring of the scheme.
     { "h",             "http://www.abc.com",
