@@ -12,7 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
-#include "base/guid.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -152,10 +152,6 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/reporting/reporting_report.h"
-#include "net/reporting/reporting_service.h"
-#include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/url_request_context.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -196,11 +192,6 @@
 #endif
 
 using base::TimeDelta;
-
-namespace features {
-extern const base::Feature kCrashReporting{"CrashReporting",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-}
 
 namespace content {
 
@@ -432,36 +423,6 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   static auto* site_url_key = base::debug::AllocateCrashKeyString(
       "current_site_url", base::debug::CrashKeySize::Size64);
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
-}
-
-// Sends a crash report to the Reporting API. Must only be called on the IO
-// thread.
-void SendCrashReport(RenderProcessHost* rph,
-                     const std::string& crash_id,
-                     const GURL& url,
-                     std::unique_ptr<base::DictionaryValue> body) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Get the ReportingService.
-  StoragePartition* storage_partition = rph->GetStoragePartition();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter(
-      storage_partition->GetURLRequestContext());
-  net::URLRequestContext* request_context =
-      request_context_getter->GetURLRequestContext();
-  net::ReportingService* reporting_service =
-      request_context->reporting_service();
-  if (!reporting_service) {
-    net::ReportingReport::RecordReportDiscardedForNoReportingService();
-    return;
-  }
-
-  // Send the crash report to the Reporting API.
-  std::string user_agent;
-  if (request_context->http_user_agent_settings() != nullptr)
-    user_agent = request_context->http_user_agent_settings()->GetUserAgent();
-  reporting_service->QueueReport(url, user_agent, "default" /* group */,
-                                 "crash" /* type */, std::move(body),
-                                 0 /* depth */);
 }
 
 }  // namespace
@@ -2150,9 +2111,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
     render_view_host_->render_view_termination_status_ =
         static_cast<base::TerminationStatus>(status);
   }
-
-  if (base::FeatureList::IsEnabled(features::kCrashReporting))
-    MaybeGenerateCrashReport(status);
 
   // Reset frame tree state associated with this process.  This must happen
   // before RenderViewTerminated because observers expect the subframes of any
@@ -5689,54 +5647,6 @@ RenderFrameHostImpl::CommitAsTracedValue(
   }
 
   return value;
-}
-
-void RenderFrameHostImpl::MaybeGenerateCrashReport(int status) {
-  if (!last_committed_url_.SchemeIsHTTPOrHTTPS())
-    return;
-
-  // Only generate reports for local root frames.
-  if (!frame_tree_node_->IsMainFrame() && !IsCrossProcessSubframe())
-    return;
-
-  // Check the termination status to see if a crash occurred (and potentially
-  // determine the |reason| for the crash).
-  std::string reason;
-  switch (status) {
-    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-    case base::TERMINATION_STATUS_PROCESS_CRASHED:
-      break;
-    case base::TERMINATION_STATUS_OOM:
-#if defined(OS_CHROMEOS)
-    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
-#endif
-#if defined(OS_ANDROID)
-    case base::TERMINATION_STATUS_OOM_PROTECTED:
-#endif
-      reason = "oom";
-      break;
-    default:
-      // Other termination statuses do not indicate a crash.
-      return;
-  }
-
-  // Construct the crash report.
-  std::string crash_id = base::GenerateGUID();
-  const GURL& url = last_committed_url_;
-  auto body = std::make_unique<base::DictionaryValue>();
-  body->SetString("crashId", crash_id);
-  if (!reason.empty())
-    body->SetString("reason", "oom");
-
-  // Send the crash report to the Reporting API.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&SendCrashReport, GetProcess(),
-                                         crash_id, url, std::move(body)));
-
-  // Set a crash key with the reporting crash ID.
-  static auto* reporting_crash_id_key = base::debug::AllocateCrashKeyString(
-      "reporting_crash_id", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(reporting_crash_id_key, crash_id);
 }
 
 }  // namespace content

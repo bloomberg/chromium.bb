@@ -23,10 +23,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
@@ -1293,10 +1293,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // navigation, so it can be logged with the tracing system.
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
-
-  // Based on the termination |status|, may generate a crash report to be routed
-  // to the Reporting API.
-  void MaybeGenerateCrashReport(int status);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
