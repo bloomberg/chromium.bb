@@ -1733,7 +1733,7 @@ bool AutomationInternalCustomBindings::SendTreeChangeEvent(
 void AutomationInternalCustomBindings::SendAutomationEvent(
     int tree_id,
     const gfx::Point& mouse_location,
-    ui::AXEvent& event,
+    const ui::AXEvent& event,
     api::automation::EventType event_type) {
   auto event_params = std::make_unique<base::DictionaryValue>();
   event_params->SetInteger("treeID", tree_id);
