@@ -24,7 +24,7 @@ public class Controller<T> extends Observable<T> {
     private final Sequencer mSequencer = new Sequencer();
     private final List<Observer<? super T>> mObservers = new ArrayList<>();
     private final Map<Observer<? super T>, Scope> mScopeMap = new HashMap<>();
-    private T mData = null;
+    private T mData;
 
     @Override
     public Subscription subscribe(Observer<? super T> observer) {
@@ -101,7 +101,7 @@ public class Controller<T> extends Observable<T> {
 
     // TODO(sanfin): make this its own public class and add tests.
     private static class Sequencer {
-        private boolean mIsRunning = false;
+        private boolean mIsRunning;
         private final ArrayDeque<Runnable> mMessageQueue = new ArrayDeque<>();
 
         /**
