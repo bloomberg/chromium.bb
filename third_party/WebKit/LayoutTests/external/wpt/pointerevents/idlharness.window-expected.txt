@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 89 tests; 83 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 85 tests; 79 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface GlobalEventHandlers: original interface defined
@@ -36,7 +36,6 @@ PASS Document interface: attribute ongotpointercapture
 PASS Document interface: attribute onlostpointercapture
 PASS Document interface: attribute onpointerdown
 PASS Document interface: attribute onpointermove
-PASS Document interface: attribute onpointerrawmove
 PASS Document interface: attribute onpointerup
 PASS Document interface: attribute onpointercancel
 PASS Document interface: attribute onpointerover
@@ -56,7 +55,6 @@ PASS HTMLElement interface: attribute ongotpointercapture
 PASS HTMLElement interface: attribute onlostpointercapture
 PASS HTMLElement interface: attribute onpointerdown
 PASS HTMLElement interface: attribute onpointermove
-PASS HTMLElement interface: attribute onpointerrawmove
 PASS HTMLElement interface: attribute onpointerup
 PASS HTMLElement interface: attribute onpointercancel
 PASS HTMLElement interface: attribute onpointerover
@@ -67,7 +65,6 @@ PASS Window interface: attribute ongotpointercapture
 PASS Window interface: attribute onlostpointercapture
 PASS Window interface: attribute onpointerdown
 PASS Window interface: attribute onpointermove
-PASS Window interface: attribute onpointerrawmove
 PASS Window interface: attribute onpointerup
 PASS Window interface: attribute onpointercancel
 PASS Window interface: attribute onpointerover
@@ -78,7 +75,6 @@ PASS Window interface: window must inherit property "ongotpointercapture" with t
 PASS Window interface: window must inherit property "onlostpointercapture" with the proper type
 PASS Window interface: window must inherit property "onpointerdown" with the proper type
 PASS Window interface: window must inherit property "onpointermove" with the proper type
-PASS Window interface: window must inherit property "onpointerrawmove" with the proper type
 PASS Window interface: window must inherit property "onpointerup" with the proper type
 PASS Window interface: window must inherit property "onpointercancel" with the proper type
 PASS Window interface: window must inherit property "onpointerover" with the proper type
