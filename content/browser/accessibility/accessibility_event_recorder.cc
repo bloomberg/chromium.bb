@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 
 #include "build/build_config.h"
+#include "content/browser/accessibility/accessibility_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
@@ -16,7 +17,7 @@ AccessibilityEventRecorder::AccessibilityEventRecorder(
 
 AccessibilityEventRecorder::~AccessibilityEventRecorder() = default;
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !BUILDFLAG(USE_ATK)
 // static
 AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,

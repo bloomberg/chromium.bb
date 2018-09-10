@@ -420,6 +420,12 @@ jumbo_static_library("test_support") {
     ]
   }
 
+  if (use_atk) {
+    sources +=
+        [ "../browser/accessibility/accessibility_event_recorder_auralinux.cc" ]
+    configs += [ "//build/config/linux/atk" ]
+  }
+
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
   }
