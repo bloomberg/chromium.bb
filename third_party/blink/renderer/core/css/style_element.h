@@ -49,7 +49,7 @@ class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
   bool SheetLoaded(Document&);
   void StartLoadingDynamicSheet(Document&);
 
-  void RemovedFrom(Element&, ContainerNode* insertion_point);
+  void RemovedFrom(Element&, ContainerNode& insertion_point);
   ProcessingResult ProcessStyleSheet(Document&, Element&);
   ProcessingResult ChildrenChanged(Element&);
   ProcessingResult FinishParsingChildren(Element&);
