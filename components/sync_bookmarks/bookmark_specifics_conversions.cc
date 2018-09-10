@@ -23,9 +23,6 @@ namespace {
 void UpdateBookmarkSpecificsMetaInfo(
     const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
     sync_pb::BookmarkSpecifics* bm_specifics) {
-  // TODO(crbug.com/516866): update the implementation to be similar to the
-  // directory implementation
-  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
   for (const std::pair<std::string, std::string>& pair : *metainfo_map) {
     sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
     meta_info->set_key(pair.first);
