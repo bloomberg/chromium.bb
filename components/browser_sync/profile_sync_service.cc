@@ -1249,10 +1249,6 @@ void ProfileSyncService::OnConfigureDone(
     sync_configure_start_time_ = base::Time();
   }
 
-  // Notify listeners that configuration is done.
-  for (auto& observer : observers_)
-    observer.OnSyncConfigurationCompleted(this);
-
   DVLOG(1) << "PSS OnConfigureDone called with status: " << result.status;
   // The possible status values:
   //    ABORT - Configuration was aborted. This is not an error, if
@@ -1299,6 +1295,10 @@ void ProfileSyncService::OnConfigureDone(
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
   DCHECK(!IsPassphraseRequiredForDecryption() || IsEncryptedDatatypeEnabled());
+
+  // Notify listeners that configuration is done.
+  for (auto& observer : observers_)
+    observer.OnSyncConfigurationCompleted(this);
 
   // This must be done before we start syncing with the server to avoid
   // sending unencrypted data up on a first time sync.
