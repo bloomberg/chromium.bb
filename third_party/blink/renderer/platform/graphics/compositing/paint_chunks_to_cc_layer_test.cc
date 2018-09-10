@@ -1186,5 +1186,56 @@ TEST_F(PaintChunksToCcLayerTest, StartWithAliasClip) {
   EXPECT_THAT(*output, PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord}));
 }
 
+// These tests are testing error recovery path that are only used in
+// release builds. A DCHECK'd build will trap instead.
+#if !DCHECK_IS_ON()
+TEST_F(PaintChunksToCcLayerTest, ChunkEscapeLayerClipFailSafe) {
+  // This test verifies the fail-safe path correctly recovers from a malformed
+  // chunk that escaped its layer's clip.
+  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
+  auto c1 = CreateClip(c0(), &t0(), clip_rect);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(&t0(), c1.get(), &e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(*output, PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord}));
+}
+
+TEST_F(PaintChunksToCcLayerTest, ChunkEscapeEffectClipFailSafe) {
+  // This test verifies the fail-safe path correctly recovers from a malformed
+  // chunk that escaped its effect's clip.
+  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
+  auto c1 = CreateClip(c0(), &t0(), clip_rect);
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto e1 = CreateFilterEffect(e0(), &t0(), c1.get(), std::move(filter));
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), *c1.get(), *e1.get());
+  chunks.AddChunk(t0(), c0(), *e1.get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(&t0(), &c0(), &e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::Save,
+                                        cc::PaintOpType::ClipRect,    // <c1>
+                                        cc::PaintOpType::SaveLayer,   // <e1>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::DrawRecord,  // <p1/>
+                                        cc::PaintOpType::Restore,     // </e1>
+                                        cc::PaintOpType::Restore}));  // </c1>
+}
+#endif
+
 }  // namespace
 }  // namespace blink

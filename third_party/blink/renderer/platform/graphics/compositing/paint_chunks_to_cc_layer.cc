@@ -21,17 +21,6 @@ namespace blink {
 
 namespace {
 
-// TODO(crbug.com/853357): This is a temporary work-around for a bug. Unalias on
-// a node should always succeed if the node is not null. The code below assumes
-// that the node is not null, so we should be calling Unalias directly. However,
-// because of the referenced bug, which triggers a DCHECK, the node can in fact
-// sometimes be null. This turns the bug symptom from a DCHECK to a
-// null-dereference, which crashes release.
-template <typename NodeType>
-const NodeType* Unalias(const NodeType* node) {
-  return node ? node->Unalias() : nullptr;
-}
-
 class ConversionContext {
  public:
   ConversionContext(const PropertyTreeState& layer_state,
@@ -40,8 +29,8 @@ class ConversionContext {
                     cc::DisplayItemList& cc_list)
       : layer_state_(layer_state),
         layer_offset_(layer_offset),
-        current_transform_(Unalias(layer_state.Transform())),
-        current_clip_(Unalias(layer_state.Clip())),
+        current_transform_(layer_state.Transform()->Unalias()),
+        current_clip_(layer_state.Clip()->Unalias()),
         current_effect_(layer_state.Effect()),
         chunk_to_layer_mapper_(layer_state_,
                                layer_offset_,
@@ -322,7 +311,7 @@ static bool CombineClip(const ClipPaintPropertyNode* clip,
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
-  target_clip = Unalias(target_clip);
+  target_clip = target_clip->Unalias();
   if (target_clip == current_clip_)
     return;
 
@@ -330,16 +319,23 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   const ClipPaintPropertyNode* lca_clip =
       LowestCommonAncestor(*target_clip, *current_clip_).Unalias();
   while (current_clip_ != lca_clip) {
+    if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip) {
+// There is a known bug in SPv1 compositing that a chunk may be assigned
+// to a layer with a deeper clip than the chunk wants. We should recover
+// in a sane way in that case.
 #if DCHECK_IS_ON()
-    DCHECK(state_stack_.size() && state_stack_.back().type == StateEntry::kClip)
-        << "Error: Chunk has a clip that escaped its layer's or effect's clip."
-        << "\ntarget_clip:\n"
-        << target_clip->ToTreeString().Utf8().data() << "current_clip_:\n"
-        << current_clip_->ToTreeString().Utf8().data();
+      DLOG(ERROR)
+          << "Error: Chunk has a clip that escaped its layer's or effect's"
+          << " clip.\n"
+          << "target_clip:\n"
+          << target_clip->ToTreeString().Utf8().data() << "current_clip_:\n"
+          << current_clip_->ToTreeString().Utf8().data();
 #endif
-    if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip)
+      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+        NOTREACHED();
       break;
-    current_clip_ = Unalias(current_clip_->Parent());
+    }
+    current_clip_ = current_clip_->Parent()->Unalias();
     StateEntry& previous_state = state_stack_.back();
     if (current_clip_ == lca_clip) {
       // |lca_clip| is an intermediate clip in a series of combined clips.
@@ -350,22 +346,18 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
       EndClip();
   }
 
-  if (target_clip == current_clip_)
-    return;
-
-  // Step 2: Collect all clips between the target clip and the current clip.
-  // At this point the current clip must be an ancestor of the target.
+  // Step 2: Collect all clips between the target clip and the LCA clip.
+  // If everything goes normally, the current clip should at the LCA clip,
+  // unless an error was detected in step 1.
   Vector<const ClipPaintPropertyNode*, 1u> pending_clips;
-  for (const ClipPaintPropertyNode* clip = target_clip; clip != current_clip_;
-       clip = Unalias(clip->Parent())) {
-    // This should never happen unless the DCHECK in step 1 failed.
-    if (!clip)
-      break;
+  for (const ClipPaintPropertyNode* clip = target_clip; clip != lca_clip;
+       clip = clip->Parent()->Unalias()) {
     pending_clips.push_back(clip);
   }
+  if (!pending_clips.size())
+    return;
 
   // Step 3: Now apply the list of clips in top-down order.
-  DCHECK(pending_clips.size());
   auto pending_combined_clip_rect = pending_clips.back()->ClipRect();
   const auto* lowest_combined_clip_node = pending_clips.back();
   for (size_t i = pending_clips.size() - 1; i--;) {
@@ -389,9 +381,9 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
 void ConversionContext::StartClip(
     const FloatRoundedRect& combined_clip_rect,
     const ClipPaintPropertyNode* lowest_combined_clip_node) {
-  DCHECK_EQ(lowest_combined_clip_node, Unalias(lowest_combined_clip_node));
+  DCHECK_EQ(lowest_combined_clip_node, lowest_combined_clip_node->Unalias());
   auto* local_transform =
-      Unalias(lowest_combined_clip_node->LocalTransformSpace());
+      lowest_combined_clip_node->LocalTransformSpace()->Unalias();
   if (local_transform != current_transform_)
     EndTransform();
   cc_list_.StartPaint();
@@ -623,7 +615,7 @@ void ConversionContext::PopState() {
 
 void ConversionContext::SwitchToTransform(
     const TransformPaintPropertyNode* target_transform) {
-  target_transform = Unalias(target_transform);
+  target_transform = target_transform->Unalias();
   if (target_transform == current_transform_)
     return;
 
