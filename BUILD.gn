@@ -14,6 +14,7 @@ group("gn_all") {
     "//third_party/chromium_quic",
     "//third_party/chromium_quic:demo_client",
     "//third_party/chromium_quic:demo_server",
+    "//third_party/tinycbor",
   ]
 }
 
@@ -22,6 +23,7 @@ executable("unittests") {
   deps = [
     "//api:api_unittests",
     "//base:base_unittests",
+    "//msgs/presentation:unittests",
     "//discovery/mdns:mdns_unittests",
     "//sample:hello_unittests",
     "//third_party/googletest:gtest_main",
