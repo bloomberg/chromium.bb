@@ -13,10 +13,10 @@ namespace blink {
 
 IceTransportProxy::IceTransportProxy(
     FrameScheduler* frame_scheduler,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-    rtc::Thread* host_thread_rtc_thread,
     Delegate* delegate,
-    std::unique_ptr<cricket::PortAllocator> port_allocator)
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
     : host_thread_(std::move(host_thread)),
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
@@ -25,21 +25,19 @@ IceTransportProxy::IceTransportProxy(
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
-  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
-      frame_scheduler->GetTaskRunner(TaskType::kNetworking);
+  DCHECK(adapter_factory);
   DCHECK(proxy_thread->BelongsToCurrentThread());
+  adapter_factory->InitializeOnMainThread();
   // Wait to initialize the host until the weak_ptr_factory_ is initialized.
   // The IceTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(
-      new IceTransportHost(proxy_thread, weak_ptr_factory_.GetWeakPtr()));
-  PostCrossThreadTask(
-      *host_thread_, FROM_HERE,
-      CrossThreadBind(&IceTransportHost::Initialize,
-                      CrossThreadUnretained(host_.get()),
-                      WTF::Passed(std::move(port_allocator)),
-                      CrossThreadUnretained(host_thread_rtc_thread)));
+  host_.reset(new IceTransportHost(std::move(proxy_thread),
+                                   weak_ptr_factory_.GetWeakPtr()));
+  PostCrossThreadTask(*host_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportHost::Initialize,
+                                      CrossThreadUnretained(host_.get()),
+                                      WTF::Passed(std::move(adapter_factory))));
 }
 
 IceTransportProxy::~IceTransportProxy() {

@@ -19,6 +19,7 @@ namespace blink {
 class ExceptionState;
 class RTCIceCandidate;
 class RTCIceGatherOptions;
+class IceTransportAdapterCrossThreadFactory;
 
 enum class RTCIceTransportState {
   kNew,
@@ -49,6 +50,11 @@ class MODULES_EXPORT RTCIceTransport final
 
  public:
   static RTCIceTransport* Create(ExecutionContext* context);
+  static RTCIceTransport* Create(
+      ExecutionContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
   ~RTCIceTransport() override;
 
@@ -90,7 +96,11 @@ class MODULES_EXPORT RTCIceTransport final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit RTCIceTransport(ExecutionContext* context);
+  explicit RTCIceTransport(
+      ExecutionContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
   // IceTransportProxy::Delegate overrides.
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;

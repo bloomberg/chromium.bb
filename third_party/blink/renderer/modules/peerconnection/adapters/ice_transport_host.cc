@@ -26,13 +26,10 @@ IceTransportHost::~IceTransportHost() {
 }
 
 void IceTransportHost::Initialize(
-    std::unique_ptr<cricket::PortAllocator> port_allocator,
-    rtc::Thread* host_thread_rtc_thread) {
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(port_allocator);
-  DCHECK(host_thread_rtc_thread);
-  transport_ = std::make_unique<IceTransportAdapterImpl>(
-      this, std::move(port_allocator), host_thread_rtc_thread);
+  DCHECK(adapter_factory);
+  transport_ = adapter_factory->ConstructOnWorkerThread(this);
 }
 
 void IceTransportHost::StartGathering(
