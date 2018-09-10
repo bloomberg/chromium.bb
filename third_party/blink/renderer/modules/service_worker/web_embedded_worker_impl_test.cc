@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/web_embedded_worker.h"
+#include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 
 #include <memory>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -19,6 +20,8 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
+#include "third_party/blink/renderer/modules/service_worker/thread_safe_script_container.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -109,11 +112,28 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
 };
 
 class MockServiceWorkerInstalledScriptsManager
-    : public WebServiceWorkerInstalledScriptsManager {
+    : public ServiceWorkerInstalledScriptsManager {
  public:
-  MOCK_CONST_METHOD1(IsScriptInstalled, bool(const WebURL& script_url));
+  MockServiceWorkerInstalledScriptsManager()
+      : ServiceWorkerInstalledScriptsManager(
+            Vector<KURL>() /* installed_urls */,
+            mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
+                mojo::MessagePipe().handle1),
+            mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
+                mojo::MessagePipe().handle0,
+                mojom::blink::ServiceWorkerInstalledScriptsManagerHost::
+                    Version_),
+            // Pass a temporary task runner to ensure
+            // ServiceWorkerInstalledScriptsManager construction succeeds.
+            Platform::Current()
+                ->CreateThread(
+                    WebThreadCreationParams(WebThreadType::kTestThread)
+                        .SetThreadNameForTest("io thread"))
+                ->GetTaskRunner()){};
+  MOCK_CONST_METHOD1(IsScriptInstalled, bool(const KURL& script_url));
   MOCK_METHOD1(GetRawScriptData,
-               std::unique_ptr<RawScriptData>(const WebURL& script_url));
+               std::unique_ptr<ThreadSafeScriptContainer::RawScriptData>(
+                   const KURL& script_url));
 };
 
 class WebEmbeddedWorkerImplTest : public testing::Test {
@@ -124,10 +144,8 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         std::make_unique<MockServiceWorkerInstalledScriptsManager>();
     mock_client_ = client.get();
     mock_installed_scripts_manager_ = installed_scripts_manager.get();
-    worker_ = WebEmbeddedWorker::Create(
-        std::move(client), std::move(installed_scripts_manager),
-        mojo::ScopedMessagePipeHandle(), mojo::ScopedMessagePipeHandle(),
-        mojo::ScopedMessagePipeHandle());
+    worker_ = WebEmbeddedWorkerImpl::CreateForTesting(
+        std::move(client), std::move(installed_scripts_manager));
 
     WebURL script_url = URLTestHelpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response(script_url);
@@ -154,7 +172,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
   WebEmbeddedWorkerStartData start_data_;
   MockServiceWorkerContextClient* mock_client_;
   MockServiceWorkerInstalledScriptsManager* mock_installed_scripts_manager_;
-  std::unique_ptr<WebEmbeddedWorker> worker_;
+  std::unique_ptr<WebEmbeddedWorkerImpl> worker_;
 };
 
 }  // namespace
@@ -190,7 +208,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProviderProxy())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -214,7 +232,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
   EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProviderProxy())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
 
@@ -254,7 +272,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProviderProxy())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
 
@@ -286,7 +304,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
   EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProviderProxy())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -299,7 +317,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
       .WillOnce(testing::Return(nullptr));
   // This is called on the worker thread.
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -331,7 +349,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
   EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProviderProxy())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -349,7 +367,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
       .WillOnce(testing::Return(nullptr));
   // This is called on the worker thread.
   EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(start_data_.script_url))
+              IsScriptInstalled(KURL(start_data_.script_url)))
       .Times(testing::AtLeast(1))
       .WillRepeatedly(testing::Return(false));
   worker_->ResumeAfterDownload();

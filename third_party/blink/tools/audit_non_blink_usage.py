@@ -40,6 +40,7 @@ _CONFIG = [
             'base::Optional',
             'base::OptionalOrNullptr',
             'base::RefCountedData',
+            'base::RunLoop',
             'base::CreateSequencedTaskRunnerWithTraits',
             'base::ReadOnlySharedMemoryMapping',
             'base::ReadOnlySharedMemoryRegion',
@@ -70,6 +71,7 @@ _CONFIG = [
 
             # //base/callback.h is allowed, but you need to use WTF::Bind or
             # WTF::BindRepeating to create callbacks in Blink.
+            'base::BarrierClosure',
             'base::OnceCallback',
             'base::OnceClosure',
             'base::RepeatingCallback',

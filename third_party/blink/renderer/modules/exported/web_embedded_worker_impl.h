@@ -59,7 +59,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
  public:
   WebEmbeddedWorkerImpl(
       std::unique_ptr<WebServiceWorkerContextClient>,
-      std::unique_ptr<WebServiceWorkerInstalledScriptsManager>,
+      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       mojom::blink::CacheStoragePtrInfo,
       service_manager::mojom::blink::InterfaceProviderPtrInfo);
@@ -79,6 +79,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
   void OnShadowPageInitialized() override;
+
+  static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
+      std::unique_ptr<WebServiceWorkerContextClient>,
+      std::unique_ptr<ServiceWorkerInstalledScriptsManager>);
 
  private:
   // WebDevToolsAgentImpl::Client overrides.

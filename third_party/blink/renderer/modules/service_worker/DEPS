@@ -1,4 +1,7 @@
 include_rules = [
+    "+base/barrier_closure.h",
+    "+base/threading/thread_checker.h",
+    "+mojo/public/cpp/bindings/strong_binding.h",
     "+mojo/public/cpp/system/data_pipe.h",
     "+services/network/public/mojom",
     "-third_party/blink/renderer/modules",
@@ -17,5 +20,12 @@ specific_include_rules = {
         "+third_party/blink/renderer/modules/notifications",
         "+third_party/blink/renderer/modules/payments",
         "+third_party/blink/renderer/modules/push_messaging",
+    ],
+    "service_worker_installed_scripts_manager_test\.cc": [
+        "+base/run_loop.h",
+        "+mojo/public/cpp/bindings/binding.h",
+    ],
+    "web_embedded_worker_impl_test\.cc": [
+        "+third_party/blink/renderer/modules/exported",
     ],
 }

@@ -32,8 +32,10 @@
 
 #include <memory>
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -66,22 +68,25 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+// static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     std::unique_ptr<WebServiceWorkerContextClient> client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
     mojo::ScopedMessagePipeHandle interface_provider) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
-      std::move(client), std::move(installed_scripts_manager),
+      std::move(client), std::move(installed_scripts_manager_params),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           // TODO(falken): Is that comment about versioning correct?
@@ -94,10 +99,25 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
           service_manager::mojom::blink::InterfaceProvider::Version_));
 }
 
+// static
+std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
+    std::unique_ptr<WebServiceWorkerContextClient> client,
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager) {
+  auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
+      std::move(client), nullptr /* installed_scripts_manager_params */,
+      std::make_unique<ServiceWorkerContentSettingsProxy>(
+          nullptr /* host_info */),
+      nullptr /* cache_storage_info */, nullptr /* interface_provider_info */);
+  worker_impl->installed_scripts_manager_ =
+      std::move(installed_scripts_manager);
+  return worker_impl;
+}
+
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojom::blink::CacheStoragePtrInfo cache_storage_info,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -109,10 +129,22 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       waiting_for_debugger_state_(kNotWaitingForDebugger),
       cache_storage_info_(std::move(cache_storage_info)),
       interface_provider_info_(std::move(interface_provider_info)) {
-  if (installed_scripts_manager) {
-    installed_scripts_manager_ =
-        std::make_unique<ServiceWorkerInstalledScriptsManager>(
-            std::move(installed_scripts_manager));
+  if (installed_scripts_manager_params) {
+    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
+    Vector<KURL> installed_scripts_urls;
+    installed_scripts_urls.AppendRange(
+        installed_scripts_manager_params->installed_scripts_urls.begin(),
+        installed_scripts_manager_params->installed_scripts_urls.end());
+    installed_scripts_manager_ = std::make_unique<
+        ServiceWorkerInstalledScriptsManager>(
+        installed_scripts_urls,
+        mojom::blink::ServiceWorkerInstalledScriptsManagerRequest(
+            std::move(installed_scripts_manager_params->manager_request)),
+        mojom::blink::ServiceWorkerInstalledScriptsManagerHostPtrInfo(
+            std::move(installed_scripts_manager_params->manager_host_ptr),
+            mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_),
+        Platform::Current()->GetIOTaskRunner());
   }
 }
 

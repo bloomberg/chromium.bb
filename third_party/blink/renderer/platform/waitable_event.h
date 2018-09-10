@@ -73,6 +73,10 @@ class PLATFORM_EXPORT WaitableEvent {
   // a waiting thread has been released.
   void Signal();
 
+  // Returns true if the event is in the signaled state, else false.  If this
+  // is not a manual reset event, then this test will cause a reset.
+  bool IsSignaled();
+
   // Waits on multiple events and returns the index of the object that
   // has been signaled. Any event objects given to this method must
   // not deleted while this wait is happening.
