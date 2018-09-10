@@ -811,7 +811,11 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             public void deliverResult(Uri uri, boolean playable) {
                 callback.onResult(playable, uri.toString(), frameUrl);
             }
-        }, userAgent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            // Some webpages have >100 media files, which causes the THREAD_POOL_EXECUTOR to get
+            // flooded with requests and causes a crash. We use SERIAL_EXECUTOR instead, to allow
+            // for an unlimited number of tasks. See https://crbug.com/873941.
+        }, userAgent).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @Override
