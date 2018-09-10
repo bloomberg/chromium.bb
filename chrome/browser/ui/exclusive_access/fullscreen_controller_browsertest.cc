@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, TopViewStatusChange) {
   EXPECT_FALSE(context->ShouldHideUIForFullscreen());
 
   // Test Normal state <--> Browser fullscreen mode <--> Tab fullscreen mode.
-  chrome::ToggleFullscreenMode(browser());
+  ToggleBrowserFullscreen();
   EXPECT_TRUE(context->IsFullscreen());
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool should_hide_top_ui = false;
@@ -592,7 +592,24 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, TopViewStatusChange) {
   EXPECT_TRUE(context->IsFullscreen());
   EXPECT_EQ(should_hide_top_ui, context->ShouldHideUIForFullscreen());
 
-  chrome::ToggleFullscreenMode(browser());
+  ToggleBrowserFullscreen();
   EXPECT_FALSE(context->IsFullscreen());
   EXPECT_FALSE(context->ShouldHideUIForFullscreen());
+
+  // Test exiting tab fullscreen mode by toggling browser fullscreen mode.
+  // This is to simulate pressing fullscreen shortcut key during tab fullscreen
+  // mode across all platforms.
+  // On Mac, this happens by clicking green traffic light button to exit
+  // tab fullscreen.
+  EnterActiveTabFullscreen();
+  EXPECT_TRUE(context->IsFullscreen());
+  EXPECT_TRUE(context->ShouldHideUIForFullscreen());
+
+  ToggleBrowserFullscreen();
+  EXPECT_FALSE(context->IsFullscreen());
+  EXPECT_FALSE(context->ShouldHideUIForFullscreen());
+
+  ToggleBrowserFullscreen();
+  EXPECT_TRUE(context->IsFullscreen());
+  EXPECT_EQ(should_hide_top_ui, context->ShouldHideUIForFullscreen());
 }

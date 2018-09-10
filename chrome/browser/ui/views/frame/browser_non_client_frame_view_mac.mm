@@ -62,6 +62,10 @@ void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
   if (browser_view()->IsFullscreen()) {
     [fullscreen_toolbar_controller_ enterFullscreenMode];
   } else {
+    // Exiting tab fullscreen requires updating Top UI.
+    // Called from here so we can capture exiting tab fullscreen both by
+    // pressing 'ESC' key and by clicking green traffic light button.
+    UpdateFullscreenTopUI(true);
     [fullscreen_toolbar_controller_ exitFullscreenMode];
   }
   browser_view()->Layout();
@@ -155,8 +159,7 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
   }
   [fullscreen_toolbar_controller_ setToolbarStyle:new_style];
 
-  if (![fullscreen_toolbar_controller_ isInFullscreen] ||
-      old_style == new_style)
+  if (is_exiting_fullscreen || old_style == new_style)
     return;
 
   // Notify browser that top ui state has been changed so that we can update

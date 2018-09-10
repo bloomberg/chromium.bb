@@ -75,6 +75,7 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void Reload();
   void SetPrivilegedFullscreen(bool is_privileged);
   void EnterActiveTabFullscreen();
+  void ToggleBrowserFullscreen();
   void EnterExtensionInitiatedFullscreen();
 
   static const char kFullscreenKeyboardLockHTML[];
