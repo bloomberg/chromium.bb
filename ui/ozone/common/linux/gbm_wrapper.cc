@@ -308,7 +308,7 @@ class Device final : public ui::GbmDevice {
 
     // Try to use scanout if supported.
     int gbm_flags = GBM_BO_USE_SCANOUT;
-#if defined(GBM_BO_USE_TEXTURING)
+#if defined(USING_MINIGBM)
     gbm_flags |= GBM_BO_USE_TEXTURING;
 #endif
     if (!gbm_device_is_format_supported(device_, format, gbm_flags))
