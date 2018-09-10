@@ -89,17 +89,17 @@ class OffsetMapper {
   // - From a list of |equivalences|, already sorted (by |src_offset|) and
   //   pruned, useful for tests.
   OffsetMapper(std::vector<Equivalence>&& equivalences,
-               size_t old_image_size,
-               size_t new_image_size);
+               offset_t old_image_size,
+               offset_t new_image_size);
   // - From a generator, useful for Zucchini-apply.
   OffsetMapper(EquivalenceSource&& equivalence_source,
-               size_t old_image_size,
-               size_t new_image_size);
+               offset_t old_image_size,
+               offset_t new_image_size);
   // - From an EquivalenceMap that needs to be processed, useful for
   //   Zucchini-gen.
   OffsetMapper(const EquivalenceMap& equivalence_map,
-               size_t old_image_size,
-               size_t new_image_size);
+               offset_t old_image_size,
+               offset_t new_image_size);
   ~OffsetMapper();
 
   size_t size() const { return equivalences_.size(); }
@@ -145,9 +145,9 @@ class OffsetMapper {
  private:
   // |equivalences_| is pruned, i.e., no "old" blocks overlap (and no "new"
   // block overlaps). Also, it is sorted by "old" offsets.
-  std::vector<Equivalence> equivalences_;  // P
-  const size_t old_image_size_;
-  const size_t new_image_size_;
+  std::vector<Equivalence> equivalences_;
+  const offset_t old_image_size_;
+  const offset_t new_image_size_;
 };
 
 // Container of equivalences between |old_image_index| and |new_image_index|,
