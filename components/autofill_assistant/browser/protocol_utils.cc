@@ -49,27 +49,19 @@ bool ProtocolUtils::ParseScripts(
     auto script = std::make_unique<Script>();
     script->handle.path = script_proto.path();
 
-    if (script_proto.has_presentation()) {
-      const auto& presentation = script_proto.presentation();
-      if (presentation.has_name())
-        script->handle.name = presentation.name();
+    const auto& presentation = script_proto.presentation();
+    script->handle.name = presentation.name();
 
-      if (presentation.has_precondition()) {
-        std::vector<std::vector<std::string>> elements_exist;
-        for (const auto& element :
-             presentation.precondition().elements_exist()) {
-          std::vector<std::string> selectors;
-          for (const auto& selector : element.selectors()) {
-            selectors.emplace_back(selector);
-          }
-          elements_exist.emplace_back(selectors);
-        }
+    if (presentation.has_precondition()) {
+      script->precondition =
+          ScriptPrecondition::FromProto(presentation.precondition());
+    }
 
-        if (!elements_exist.empty()) {
-          script->precondition =
-              std::make_unique<ScriptPrecondition>(elements_exist);
-        }
-      }
+    if (script->handle.name.empty() || script->handle.path.empty() ||
+        !script->precondition) {
+      LOG(ERROR) << "Ignored invalid or incomplete script '"
+                 << script->handle.path << "'";
+      continue;
     }
     scripts->emplace_back(std::move(script));
   }

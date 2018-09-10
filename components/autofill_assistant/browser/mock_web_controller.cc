@@ -6,7 +6,7 @@
 
 namespace autofill_assistant {
 
-MockWebController::MockWebController() : WebController(nullptr) {}
+MockWebController::MockWebController() : WebController(nullptr, nullptr) {}
 MockWebController::~MockWebController() {}
 
 }  // namespace autofill_assistant

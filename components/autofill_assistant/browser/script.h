@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SCRIPT_H_
 
+#include <memory>
 #include <string>
 
 #include "components/autofill_assistant/browser/script_precondition.h"

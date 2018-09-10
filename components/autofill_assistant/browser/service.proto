@@ -42,7 +42,11 @@ message SupportedScriptProto {
 
 message ScriptPreconditionProto {
   // Combined with AND: the elements referenced here must be present.
-  repeated ElementReferenceProto elements_exist = 1;
+  repeated ElementReferenceProto elements_exist = 3;
+  // Pattern of the path parts of the URL.
+  repeated string path_pattern = 5;
+  // Domain (exact match) excluding the last '/' character.
+  repeated string domain = 6;
 }
 
 enum PolicyType {

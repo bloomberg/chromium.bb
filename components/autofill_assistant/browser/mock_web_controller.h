@@ -19,6 +19,8 @@ class MockWebController : public WebController {
   MockWebController();
   ~MockWebController() override;
 
+  MOCK_METHOD0(GetUrl, const GURL&());
+
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on

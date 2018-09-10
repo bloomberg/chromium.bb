@@ -20,9 +20,10 @@
 namespace autofill_assistant {
 using ::testing::_;
 using ::testing::ElementsAre;
-using ::testing::SizeIs;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
+using ::testing::ReturnRef;
+using ::testing::SizeIs;
 
 class ScriptTrackerTest : public testing::Test,
                           public ScriptTracker::Listener,
@@ -34,6 +35,7 @@ class ScriptTrackerTest : public testing::Test,
     ON_CALL(mock_web_controller_,
             OnElementExists(ElementsAre("does_not_exist"), _))
         .WillByDefault(RunOnceCallback<1>(false));
+    ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
     // Scripts run, but have no actions.
     ON_CALL(mock_service_, OnGetActions(_, _))
@@ -84,6 +86,7 @@ class ScriptTrackerTest : public testing::Test,
     return runnable_scripts_;
   }
 
+  GURL url_;
   NiceMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
   NiceMock<MockUiController> mock_ui_controller_;
