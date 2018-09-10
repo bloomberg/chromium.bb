@@ -42,8 +42,11 @@ Polymer({
   /** @private {NuxEmailProxy} */
   browserProxy_: null,
 
+  /** @override */
   ready: function() {
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
+    this.browserProxy_.recordPageInitialized();
+
     this.emailList = this.browserProxy_.getEmailList();
 
     window.addEventListener('beforeunload', () => {
@@ -52,6 +55,7 @@ Polymer({
         return;
 
       this.revertBookmark_();
+      this.browserProxy_.recordFinalize();
       this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     });
   },
@@ -66,6 +70,8 @@ Polymer({
       this.selectedEmailProvider_ = null;
     else
       this.selectedEmailProvider_ = e.model.item;
+
+    this.browserProxy_.recordClickedOption();
   },
 
   /**
@@ -129,12 +135,20 @@ Polymer({
 
   /** @private */
   onNoThanksClicked_: function() {
+    this.browserProxy_.recordNoThanks();
     window.location.replace('chrome://newtab');
   },
 
   /** @private */
   onGetStartedClicked_: function() {
     this.gotStarted_ = true;
+    this.browserProxy_.recordGetStarted(this.selectedEmailProvider_.id);
     window.location.replace(this.selectedEmailProvider_.url);
+  },
+
+  /** @private */
+  onActionButtonClicked_: function() {
+    if (this.$$('.action-button').disabled)
+      this.browserProxy_.recordClickedDisabledButton();
   },
 });
