@@ -25,6 +25,7 @@
   "chromium.webkit": "ChromiumWebkit",
   "chromium.webrtc": "ChromiumWebRTC",
   "chromium.webrtc.fyi": "ChromiumWebRTCFYI",
+  "chromium.webrtc.fyi.experimental": "ChromiumWebRTCFYIExperimental",
   "chromium.win": "ChromiumWin",
   "chromiumos": "ChromiumOS",
   "chromiumos.chromium": "ChromiumOSChromium",
