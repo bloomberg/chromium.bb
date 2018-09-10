@@ -75,7 +75,8 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract boolean stopCaptureAndBlockUntilStopped();
 
-    // Replies by calling nativeOnGetPhotoCapabilitiesReply().
+    // Replies by calling nativeOnGetPhotoCapabilitiesReply(). Will pass |null|
+    // for parameter |result| to indicate failure.
     @CalledByNative
     public abstract void getPhotoCapabilitiesAsync(long callbackId);
 
