@@ -70,8 +70,13 @@ if (enable_nocompile_tests) {
     nocompile_target = target_name + "_run_nocompile"
 
     action_foreach(nocompile_target) {
+      testonly = true
       script = "//tools/nocompile_driver.py"
       sources = invoker.sources
+      deps = invoker.deps
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
 
       result_path = "$target_gen_dir/{{source_name_part}}_nc.cc"
       depfile = "${result_path}.d"
