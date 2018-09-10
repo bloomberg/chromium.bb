@@ -66,6 +66,7 @@ class VulkanDemo : public ui::PlatformWindowDelegate {
   std::unique_ptr<ui::PlatformWindow> window_;
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
   sk_sp<SkSurface> sk_surface_;
+  std::vector<sk_sp<SkSurface>> sk_surfaces_;
   float rotation_angle_ = 0;
   base::RunLoop* run_loop_ = nullptr;
   bool is_running_ = false;
