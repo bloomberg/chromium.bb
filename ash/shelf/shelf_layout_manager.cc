@@ -404,6 +404,13 @@ bool ShelfLayoutManager::ProcessGestureEvent(
 
   if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS &&
       gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS) {
+    if ((shelf_->GetVisibilityState() == SHELF_AUTO_HIDE &&
+         shelf_->GetAutoHideState() == SHELF_AUTO_HIDE_HIDDEN) ||
+        shelf_->GetVisibilityState() == SHELF_HIDDEN) {
+      // Do not allow children to handle events while the shelf is hidden.
+      return true;
+    }
+
     return false;
   }
 
