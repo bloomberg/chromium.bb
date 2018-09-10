@@ -37,7 +37,8 @@ class UserCardView : public views::View, public MediaCaptureObserver {
 
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
-      const std::vector<mojom::MediaCaptureState>& capture_states) override;
+      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
+      override;
 
  private:
   // Creates the content for the public mode.

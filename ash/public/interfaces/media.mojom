@@ -4,6 +4,8 @@
 
 module ash.mojom;
 
+import "components/account_id/interfaces/account_id.mojom";
+
 // Describes whether media is currently being captured.
 enum MediaCaptureState {
   NONE = 0,
@@ -19,11 +21,10 @@ interface MediaController {
   SetClient(associated MediaClient client);
 
   // Called when the media capture state changes on the client, or in response
-  // to a RequestCaptureState() request. Returns an array of MediaCaptureState
-  // by index of the shell content. (These indexes are unstable, but are
-  // unlikely to change in practice, see comments in chrome's MediaClient::
-  // RequestCaptureState()).
-  NotifyCaptureState(array<MediaCaptureState> state);
+  // to a RequestCaptureState() request. Returns a map from AccountId to
+  // MediaCaptureState representing every user's state.
+  NotifyCaptureState(map<signin.mojom.AccountId,
+      MediaCaptureState> capture_states);
 };
 
 // This delegate allows the UI code in ash to forward UI commands.
