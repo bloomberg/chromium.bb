@@ -1064,7 +1064,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable int cached_aria_row_index_;
   mutable FloatRect cached_local_bounding_box_rect_for_accessibility_;
 
-  Member<AXObjectCacheImpl> ax_object_cache_;
+  WeakMember<AXObjectCacheImpl> ax_object_cache_;
 
   // Updates the cached attribute values. This may be recursive, so to prevent
   // deadlocks,

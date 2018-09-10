@@ -486,7 +486,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
 }
 
 AXObject::~AXObject() {
-  DCHECK(IsDetached());
   --number_of_live_ax_objects_;
 }
 

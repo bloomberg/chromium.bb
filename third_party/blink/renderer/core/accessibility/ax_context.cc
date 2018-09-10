@@ -9,20 +9,21 @@ namespace blink {
 
 class AXObjectCache;
 
-AXContext::AXContext(Document& document) : document_(&document) {
-  DCHECK(document_);
-  document_->AddAXContext(this);
+AXContext::AXContext(Document& document) {
+  AXObjectCache* existing_cache = document.ExistingAXObjectCache();
+  if (existing_cache) {
+    ax_object_cache_ = existing_cache;
+    return;
+  }
+
+  ax_object_cache_ = AXObjectCache::Create(document);
+  document.SetAXObjectCache(ax_object_cache_);
 }
 
-AXContext::~AXContext() {
-  if (document_)
-    document_->RemoveAXContext(this);
-}
+AXContext::~AXContext() {}
 
 AXObjectCache& AXContext::GetAXObjectCache() {
-  DCHECK(document_);
-  DCHECK(document_->IsActive());
-  return *document_->ExistingAXObjectCache();
+  return *ax_object_cache_.Get();
 }
 
 }  // namespace blink

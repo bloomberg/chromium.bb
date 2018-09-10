@@ -346,9 +346,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
 #if DCHECK_IS_ON()
-  void SetHasAXObject(bool flag) { has_ax_object_ = flag; }
-  bool HasAXObject() const { return has_ax_object_; }
-
   // Helper class forbidding calls to setNeedsLayout() during its lifetime.
   class SetLayoutNeededForbiddenScope {
    public:
@@ -2382,7 +2379,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject* next_;
 
 #if DCHECK_IS_ON()
-  unsigned has_ax_object_ : 1;
   unsigned set_needs_layout_forbidden_ : 1;
 #endif
 

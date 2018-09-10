@@ -593,9 +593,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   LayoutView* GetLayoutView() const { return layout_view_; }
 
-  // This will return an AXObjectCache only if there's one or more
-  // AXContext associated with this document. When all associated
-  // AXContexts are deleted, the AXObjectCache will be removed.
+  // An AXObjectCache is kept alive by an AXContext associated with this
+  // document. If there are no AXContexts, this will be garbage-collected.
   AXObjectCache* ExistingAXObjectCache() const;
 
   Document& AXObjectCacheOwner() const;
@@ -1487,8 +1486,7 @@ class CORE_EXPORT Document : public ContainerNode,
   class NetworkStateObserver;
 
   friend class AXContext;
-  void AddAXContext(AXContext*);
-  void RemoveAXContext(AXContext*);
+  void SetAXObjectCache(AXObjectCache* ax_object_cache);
 
   bool IsDocumentFragment() const =
       delete;  // This will catch anyone doing an unnecessary check.
@@ -1721,8 +1719,9 @@ class CORE_EXPORT Document : public ContainerNode,
   String raw_title_;
   Member<Element> title_element_;
 
-  Vector<AXContext*> ax_contexts_;
-  Member<AXObjectCache> ax_object_cache_;
+  // AXObjectCaches are only retained by an AXContext.
+  WeakMember<AXObjectCache> ax_object_cache_;
+
   Member<DocumentMarkerController> markers_;
 
   TaskRunnerTimer<Document> update_focus_appearance_timer_;
