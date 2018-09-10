@@ -10,6 +10,7 @@
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -38,30 +39,32 @@ using media::mojom::MeteringMode;
 
 namespace media {
 
+namespace {
+
 // Desired number of video buffers to allocate. The actual number of allocated
 // buffers by v4l2 driver can be higher or lower than this number.
 // kNumVideoBuffers should not be too small, or Chrome may not return enough
 // buffers back to driver in time.
-const uint32_t kNumVideoBuffers = 4;
+constexpr uint32_t kNumVideoBuffers = 4;
 // Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
 // This value has been fine tuned. Before changing or modifying it see
 // https://crbug.com/470717
-const int kCaptureTimeoutMs = 1000;
+constexpr int kCaptureTimeoutMs = 1000;
 // The number of continuous timeouts tolerated before treated as error.
-const int kContinuousTimeoutLimit = 10;
+constexpr int kContinuousTimeoutLimit = 10;
 // MJPEG is preferred if the requested width or height is larger than this.
-const int kMjpegWidth = 640;
-const int kMjpegHeight = 480;
+constexpr int kMjpegWidth = 640;
+constexpr int kMjpegHeight = 480;
 // Typical framerate, in fps
-const int kTypicalFramerate = 30;
+constexpr int kTypicalFramerate = 30;
 
 // V4L2 color formats supported by V4L2CaptureDelegate derived classes.
 // This list is ordered by precedence of use -- but see caveats for MJPEG.
-static struct {
+struct {
   uint32_t fourcc;
   VideoPixelFormat pixel_format;
   size_t num_planes;
-} const kSupportedFormatsAndPlanarity[] = {
+} constexpr kSupportedFormatsAndPlanarity[] = {
     {V4L2_PIX_FMT_YUV420, PIXEL_FORMAT_I420, 1},
     {V4L2_PIX_FMT_Y16, PIXEL_FORMAT_Y16, 1},
     {V4L2_PIX_FMT_Z16, PIXEL_FORMAT_Y16, 1},
@@ -81,20 +84,20 @@ static struct {
 };
 
 // Maximum number of ioctl retries before giving up trying to reset controls.
-const int kMaxIOCtrlRetries = 5;
+constexpr int kMaxIOCtrlRetries = 5;
 
 // Base id and class identifier for Controls to be reset.
-static struct {
+struct {
   uint32_t control_base;
   uint32_t class_id;
-} const kControls[] = {{V4L2_CID_USER_BASE, V4L2_CID_USER_CLASS},
-                       {V4L2_CID_CAMERA_CLASS_BASE, V4L2_CID_CAMERA_CLASS}};
+} constexpr kControls[] = {{V4L2_CID_USER_BASE, V4L2_CID_USER_CLASS},
+                           {V4L2_CID_CAMERA_CLASS_BASE, V4L2_CID_CAMERA_CLASS}};
 
 // Fill in |format| with the given parameters.
-static void FillV4L2Format(v4l2_format* format,
-                           uint32_t width,
-                           uint32_t height,
-                           uint32_t pixelformat_fourcc) {
+void FillV4L2Format(v4l2_format* format,
+                    uint32_t width,
+                    uint32_t height,
+                    uint32_t pixelformat_fourcc) {
   memset(format, 0, sizeof(*format));
   format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   format->fmt.pix.width = width;
@@ -103,15 +106,14 @@ static void FillV4L2Format(v4l2_format* format,
 }
 
 // Fills all parts of |buffer|.
-static void FillV4L2Buffer(v4l2_buffer* buffer, int index) {
+void FillV4L2Buffer(v4l2_buffer* buffer, int index) {
   memset(buffer, 0, sizeof(*buffer));
   buffer->memory = V4L2_MEMORY_MMAP;
   buffer->index = index;
   buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 }
 
-static void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer,
-                                  int count) {
+void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer, int count) {
   memset(request_buffer, 0, sizeof(*request_buffer));
   request_buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   request_buffer->memory = V4L2_MEMORY_MMAP;
@@ -119,13 +121,13 @@ static void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer,
 }
 
 // Returns the input |fourcc| as a std::string four char representation.
-static std::string FourccToString(uint32_t fourcc) {
+std::string FourccToString(uint32_t fourcc) {
   return base::StringPrintf("%c%c%c%c", fourcc & 0xFF, (fourcc >> 8) & 0xFF,
                             (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
 }
 
 // Determines if |control_id| is special, i.e. controls another one's state.
-static bool IsSpecialControl(int control_id) {
+bool IsSpecialControl(int control_id) {
   switch (control_id) {
     case V4L2_CID_AUTO_WHITE_BALANCE:
     case V4L2_CID_EXPOSURE_AUTO:
@@ -146,7 +148,7 @@ static bool IsSpecialControl(int control_id) {
 #if !defined(V4L2_CID_PANTILT_CMD)
 #define V4L2_CID_PANTILT_CMD (V4L2_CID_CAMERA_CLASS_BASE + 34)
 #endif
-static bool IsBlacklistedControl(int control_id) {
+bool IsBlacklistedControl(int control_id) {
   switch (control_id) {
     case V4L2_CID_PAN_RELATIVE:
     case V4L2_CID_TILT_RELATIVE:
@@ -165,12 +167,15 @@ static bool IsBlacklistedControl(int control_id) {
   return false;
 }
 
+}  // namespace
+
 // Class keeping track of a SPLANE V4L2 buffer, mmap()ed on construction and
 // munmap()ed on destruction.
 class V4L2CaptureDelegate::BufferTracker
     : public base::RefCounted<BufferTracker> {
  public:
-  BufferTracker(V4L2CaptureDevice* v4l2);
+  explicit BufferTracker(V4L2CaptureDevice* v4l2);
+
   // Abstract method to mmap() given |fd| according to |buffer|.
   bool Init(int fd, const v4l2_buffer& buffer);
 
@@ -647,7 +652,9 @@ void V4L2CaptureDelegate::SetPhotoOptions(
 
 void V4L2CaptureDelegate::SetRotation(int rotation) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
-  DCHECK(rotation >= 0 && rotation < 360 && rotation % 90 == 0);
+  DCHECK_GE(rotation, 0);
+  DCHECK_LT(rotation, 360);
+  DCHECK_EQ(rotation % 90, 0);
   rotation_ = rotation;
 }
 
@@ -812,7 +819,7 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
     return false;
   }
 
-  const scoped_refptr<BufferTracker> buffer_tracker(new BufferTracker(v4l2_));
+  const auto buffer_tracker = base::MakeRefCounted<BufferTracker>(v4l2_);
   if (!buffer_tracker->Init(device_fd_.get(), buffer)) {
     DLOG(ERROR) << "Error creating BufferTracker";
     return false;
@@ -885,24 +892,29 @@ void V4L2CaptureDelegate::DoCapture() {
     const base::TimeDelta timestamp = now - first_ref_time_;
 
 #ifdef V4L2_BUF_FLAG_ERROR
-    if (buffer.flags & V4L2_BUF_FLAG_ERROR) {
+    bool buf_error_flag_set = buffer.flags & V4L2_BUF_FLAG_ERROR;
+#else
+    bool buf_error_flag_set = false;
+#endif
+    if (buf_error_flag_set) {
+#ifdef V4L2_BUF_FLAG_ERROR
       LOG(ERROR) << "Dequeued v4l2 buffer contains corrupted data ("
                  << buffer.bytesused << " bytes).";
       buffer.bytesused = 0;
       client_->OnFrameDropped(
           VideoCaptureFrameDropReason::kV4L2BufferErrorFlagWasSet);
-    } else
 #endif
-        if (buffer.bytesused < capture_format_.ImageAllocationSize()) {
+    } else if (buffer.bytesused < capture_format_.ImageAllocationSize()) {
       LOG(ERROR) << "Dequeued v4l2 buffer contains invalid length ("
                  << buffer.bytesused << " bytes).";
       buffer.bytesused = 0;
       client_->OnFrameDropped(
           VideoCaptureFrameDropReason::kV4L2InvalidNumberOfBytesInBuffer);
-    } else
+    } else {
       client_->OnIncomingCapturedData(
           buffer_tracker->start(), buffer_tracker->payload_size(),
           capture_format_, rotation_, now, timestamp);
+    }
 
     while (!take_photo_callbacks_.empty()) {
       VideoCaptureDevice::TakePhotoCallback cb =
@@ -939,7 +951,7 @@ V4L2CaptureDelegate::BufferTracker::BufferTracker(V4L2CaptureDevice* v4l2)
     : v4l2_(v4l2) {}
 
 V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
-  if (start_ == nullptr)
+  if (!start_)
     return;
   const int result = v4l2_->munmap(start_, length_);
   PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
@@ -949,8 +961,9 @@ bool V4L2CaptureDelegate::BufferTracker::Init(int fd,
                                               const v4l2_buffer& buffer) {
   // Some devices require mmap() to be called with both READ and WRITE.
   // See http://crbug.com/178582.
-  void* const start = v4l2_->mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
-                                  MAP_SHARED, fd, buffer.m.offset);
+  constexpr int kFlags = PROT_READ | PROT_WRITE;
+  void* const start = v4l2_->mmap(nullptr, buffer.length, kFlags, MAP_SHARED,
+                                  fd, buffer.m.offset);
   if (start == MAP_FAILED) {
     DLOG(ERROR) << "Error mmap()ing a V4L2 buffer into userspace";
     return false;

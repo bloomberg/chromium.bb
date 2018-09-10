@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
