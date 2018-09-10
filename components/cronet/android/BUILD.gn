@@ -278,7 +278,7 @@ android_library("cronet_api_java") {
   ]
 
   deps = [
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
   ]
 
   srcjar_deps = cronet_api_srcjar_deps
@@ -319,7 +319,7 @@ android_library("cronet_impl_common_base_java") {
   # Please add to cronet_impl_common_java_deps_to_package instead.
   deps = [
     ":cronet_api_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
 
@@ -339,7 +339,7 @@ android_library("cronet_impl_platform_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
@@ -395,7 +395,7 @@ android_library("cronet_impl_native_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
-    "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   deps += cronet_impl_native_java_deps_to_package
@@ -419,7 +419,7 @@ android_apk("cronet_jni_apk") {
   android_manifest = "sample/AndroidManifest.xml"
   deps = [
     ":cronet_impl_all_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -427,7 +427,7 @@ android_resources("cronet_sample_apk_resources") {
   resource_dirs = [ "sample/res" ]
   android_manifest = "sample/AndroidManifest.xml"
   deps = [
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -441,7 +441,7 @@ android_library("cronet_sample_apk_java") {
     ":cronet_sample_apk_resources",
     ":package_api_java",
     ":package_impl_native_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
