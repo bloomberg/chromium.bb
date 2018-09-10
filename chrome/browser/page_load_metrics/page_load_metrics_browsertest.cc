@@ -1767,8 +1767,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   ExpectFirstPaintMetricsTotalCount(1);
 }
 
+// TODO(crbug.com/882077) Disabled due to flaky timeouts on all platforms.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       ReceivedAggregateResourceDataLength) {
+                       DISABLED_ReceivedAggregateResourceDataLength) {
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
