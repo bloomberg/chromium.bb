@@ -6,13 +6,16 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/test/bind_test_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -20,9 +23,24 @@ namespace attestation {
 
 class AttestationCAClientTest : public ::testing::Test {
  public:
-  AttestationCAClientTest() : num_invocations_(0), result_(false) {}
+  AttestationCAClientTest()
+      : test_shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        num_invocations_(0),
+        result_(false) {}
 
   ~AttestationCAClientTest() override {}
+
+  void SetUp() override {
+    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
+        test_shared_url_loader_factory_);
+
+    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          last_resource_request_ = request;
+        }));
+  }
 
   void DataCallback(bool result, const std::string& data) {
     ++num_invocations_;
@@ -41,29 +59,36 @@ class AttestationCAClientTest : public ::testing::Test {
   void CheckURLAndSendResponse(GURL expected_url,
                                net::Error error,
                                int response_code) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    CHECK(fetcher);
-    EXPECT_EQ(expected_url, fetcher->GetOriginalURL());
-    SendFetcherResponse(fetcher, error, response_code);
+    CHECK(test_url_loader_factory_.NumPending() == 1);
+    EXPECT_EQ(expected_url, last_resource_request_.url);
+    std::string response =
+        network::GetUploadData(last_resource_request_) + "_response";
+    test_url_loader_factory_.AddResponse(last_resource_request_.url.spec(),
+                                         response);
+    base::RunLoop().RunUntilIdle();
   }
 
-  void SendResponse(net::Error error, int response_code) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    CHECK(fetcher);
-    SendFetcherResponse(fetcher, error, response_code);
-  }
+  void SendResponse(net::Error error, net::HttpStatusCode response_code) {
+    CHECK(test_url_loader_factory_.NumPending() == 1);
+    auto resource_response_head =
+        network::CreateResourceResponseHead(response_code);
+    network::URLLoaderCompletionStatus completion_status(error);
+    std::string response =
+        network::GetUploadData(last_resource_request_) + "_response";
 
-  void SendFetcherResponse(net::TestURLFetcher* fetcher,
-                           net::Error error,
-                           int response_code) {
-    fetcher->set_status(net::URLRequestStatus::FromError(error));
-    fetcher->set_response_code(response_code);
-    fetcher->SetResponseString(fetcher->upload_data() + "_response");
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    test_url_loader_factory_.AddResponse(last_resource_request_.url,
+                                         resource_response_head, response,
+                                         completion_status);
+    base::RunLoop().RunUntilIdle();
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
+
+  network::ResourceRequest last_resource_request_;
 
   // For use with DataCallback.
   int num_invocations_;
