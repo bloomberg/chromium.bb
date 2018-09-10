@@ -336,6 +336,10 @@ class ASH_EXPORT ShelfLayoutManager
   // on a visible shelf; other gestures should not change shelf visibility.
   bool IsSwipingCorrectDirection();
 
+  // Returns true if should change the visibility of the shelf after drag.
+  bool ShouldChangeVisibilityAfterDrag(
+      const ui::GestureEvent& gesture_in_screen);
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;

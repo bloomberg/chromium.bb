@@ -1034,8 +1034,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (!HasVisibleWindow())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
+  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS ||
+      gesture_drag_status_ == GESTURE_DRAG_CANCEL_IN_PROGRESS) {
     return gesture_drag_auto_hide_state_;
+  }
 
   // Don't show if the user is dragging the mouse.
   if (in_mouse_drag_)
@@ -1255,26 +1257,7 @@ void ShelfLayoutManager::UpdateGestureDrag(
 
 void ShelfLayoutManager::CompleteGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  bool should_change = false;
-  if (gesture_in_screen.type() == ui::ET_GESTURE_SCROLL_END) {
-    // The visibility of the shelf changes only if the shelf was dragged X%
-    // along the correct axis. If the shelf was already visible, then the
-    // direction of the drag does not matter.
-    const float kDragHideThreshold = 0.4f;
-    const gfx::Rect bounds = GetIdealBounds();
-    const float drag_ratio =
-        fabs(gesture_drag_amount_) /
-        (shelf_->IsHorizontalAlignment() ? bounds.height() : bounds.width());
-
-    should_change =
-        IsSwipingCorrectDirection() && drag_ratio > kDragHideThreshold;
-  } else if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START) {
-    should_change = IsSwipingCorrectDirection();
-  } else {
-    NOTREACHED();
-  }
-
-  if (!should_change) {
+  if (!ShouldChangeVisibilityAfterDrag(gesture_in_screen)) {
     CancelGestureDrag();
     return;
   }
@@ -1286,23 +1269,14 @@ void ShelfLayoutManager::CompleteGestureDrag(
       gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
           ? SHELF_AUTO_HIDE_HIDDEN
           : SHELF_AUTO_HIDE_SHOWN;
-  ShelfAutoHideBehavior new_auto_hide_behavior =
-      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
-          ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
-          : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
 
-  // When in fullscreen and the shelf is forced to be auto hidden, the auto hide
-  // behavior affects neither the visibility state nor the auto hide state. Set
-  // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
-  // hide state to |gesture_drag_auto_hide_state_|. Only change the auto-hide
-  // behavior if there is at least one window visible.
+  // Gesture drag will only change the auto hide state of the shelf but not the
+  // auto hide behavior. Auto hide behavior can only be changed through the
+  // context menu of the shelf. Set |gesture_drag_status_| to
+  // GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto hide state to
+  // |gesture_drag_auto_hide_state_|.
   gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  if (shelf_->auto_hide_behavior() != new_auto_hide_behavior &&
-      HasVisibleWindow() && !IsTabletModeEnabled()) {
-    shelf_->SetAutoHideBehavior(new_auto_hide_behavior);
-  } else {
-    UpdateVisibilityState();
-  }
+  UpdateVisibilityState();
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
@@ -1361,6 +1335,9 @@ void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     Shell::Get()->app_list_controller()->DismissAppList();
   } else {
+    // Set |gesture_drag_status_| to GESTURE_DRAG_CANCEL_IN_PROGRESS to set the
+    // auto hide state to |gesture_drag_auto_hide_state_|, which is the
+    // visibility state before starting drag.
     gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
     UpdateVisibilityState();
   }
@@ -1429,6 +1406,33 @@ bool ShelfLayoutManager::IsSwipingCorrectDirection() {
         return gesture_drag_amount_ < 0;
       return gesture_drag_amount_ > 0;
   }
+  return false;
+}
+
+bool ShelfLayoutManager::ShouldChangeVisibilityAfterDrag(
+    const ui::GestureEvent& gesture_in_screen) {
+  // Shelf can be visible in 1) SHELF_VISIBLE or 2) SHELF_AUTO_HIDE but in
+  // SHELF_AUTO_HIDE_SHOWN. See details in IsVisible. Dragging on SHELF_VISIBLE
+  // shelf should not change its visibility since it should be kept visible.
+  if (visibility_state() == SHELF_VISIBLE)
+    return false;
+
+  if (gesture_in_screen.type() == ui::ET_GESTURE_SCROLL_END) {
+    // The visibility of the shelf changes only if the shelf was dragged X%
+    // along the correct axis. If the shelf was already visible, then the
+    // direction of the drag does not matter.
+    const float kDragHideThreshold = 0.4f;
+    const gfx::Rect bounds = GetIdealBounds();
+    const float drag_ratio =
+        fabs(gesture_drag_amount_) /
+        (shelf_->IsHorizontalAlignment() ? bounds.height() : bounds.width());
+
+    return IsSwipingCorrectDirection() && drag_ratio > kDragHideThreshold;
+  }
+
+  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START)
+    return IsSwipingCorrectDirection();
+
   return false;
 }
 
