@@ -12,10 +12,6 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
-    'WindowTest.testCanMaximizeTheWindowFromFrame',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
-    'WindowTest.testCanMaximizeTheWindow',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
