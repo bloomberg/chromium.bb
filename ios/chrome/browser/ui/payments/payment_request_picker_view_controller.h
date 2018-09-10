@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 
 extern NSString* const kPaymentRequestPickerRowAccessibilityID;
 extern NSString* const kPaymentRequestPickerViewControllerAccessibilityID;
@@ -33,7 +33,7 @@ extern NSString* const kPaymentRequestPickerSearchBarAccessibilityID;
 // TableViewController that displays a searchable list of rows featuring a
 // selected row as well as an index list.
 @interface PaymentRequestPickerViewController
-    : UITableViewController<AppBarPresenting>
+    : UITableViewController<AppBarViewControllerPresenting>
 
 // The delegate to be notified when the user selects a row.
 @property(nonatomic, weak) id<PaymentRequestPickerViewControllerDelegate>
