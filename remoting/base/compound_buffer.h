@@ -43,11 +43,13 @@ class CompoundBuffer {
   // Adds new chunk to the buffer. |start| defines position of the chunk
   // within the |buffer|. |size| is the size of the chunk that is being
   // added, not size of the |buffer|.
-  void Append(net::IOBuffer* buffer, int size);
-  void Append(net::IOBuffer* buffer, const char* start, int size);
+  void Append(scoped_refptr<net::IOBuffer> buffer, int size);
+  void Append(scoped_refptr<net::IOBuffer> buffer, const char* start, int size);
   void Append(const CompoundBuffer& buffer);
-  void Prepend(net::IOBuffer* buffer, int size);
-  void Prepend(net::IOBuffer* buffer, const char* start, int size);
+  void Prepend(scoped_refptr<net::IOBuffer> buffer, int size);
+  void Prepend(scoped_refptr<net::IOBuffer> buffer,
+               const char* start,
+               int size);
   void Prepend(const CompoundBuffer& buffer);
 
   // Same as above, but creates new IOBuffer and copies the data.
@@ -71,7 +73,7 @@ class CompoundBuffer {
 
   // Creates new IOBufferWithSize object and copies all data into it.
   // Ownership of the result is given to the caller.
-  net::IOBufferWithSize* ToIOBufferWithSize() const;
+  scoped_refptr<net::IOBufferWithSize> ToIOBufferWithSize() const;
 
   // Copies all data into given location.
   void CopyTo(char* data, int data_size) const;
@@ -84,7 +86,7 @@ class CompoundBuffer {
   friend class CompoundBufferInputStream;
 
   struct DataChunk {
-    DataChunk(net::IOBuffer* buffer, const char* start, int size);
+    DataChunk(scoped_refptr<net::IOBuffer> buffer, const char* start, int size);
     DataChunk(const DataChunk& other);
     ~DataChunk();
 
