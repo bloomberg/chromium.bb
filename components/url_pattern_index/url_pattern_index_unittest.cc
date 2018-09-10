@@ -131,6 +131,20 @@ TEST_F(UrlPatternIndexTest, NoRuleApplies) {
   EXPECT_FALSE(FindMatch("http://example.com?k=v&filter_not"));
 }
 
+TEST_F(UrlPatternIndexTest, CaseSensitivity) {
+  ASSERT_TRUE(
+      AddUrlRule(MakeUrlRule(UrlPattern("case-INSENsitive", kSubstring))));
+  proto::UrlRule rule = MakeUrlRule(UrlPattern("case-sensitive"));
+  rule.set_match_case(true);
+  ASSERT_TRUE(AddUrlRule(rule));
+  Finish();
+
+  EXPECT_TRUE(FindMatch("http://abc.com/type=CASE-insEnsitIVe"));
+  EXPECT_TRUE(FindMatch("http://abc.com/type=case-INSENSITIVE"));
+  EXPECT_FALSE(FindMatch("http://abc.com?type=CASE-sensitive"));
+  EXPECT_TRUE(FindMatch("http://abc.com?type=case-sensitive"));
+}
+
 TEST_F(UrlPatternIndexTest, OneRuleWithoutMetaInfo) {
   const struct {
     UrlPattern url_pattern;

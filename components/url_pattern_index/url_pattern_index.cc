@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/url_pattern_index/ngram_extractor.h"
@@ -98,8 +99,7 @@ base::StringPiece ToStringPiece(const flatbuffers::String* string) {
 }
 
 bool HasNoUpperAscii(base::StringPiece string) {
-  return std::none_of(string.begin(), string.end(),
-                      [](char c) { return base::IsAsciiUpper(c); });
+  return std::none_of(string.begin(), string.end(), base::IsAsciiUpper<char>);
 }
 
 // Comparator to sort UrlRule. Sorts rules by descending order of rule priority.
@@ -450,8 +450,11 @@ NGram UrlPatternIndexBuilder::GetMostDistinctiveNGram(
   size_t min_list_size = std::numeric_limits<size_t>::max();
   NGram best_ngram = 0;
 
+  // To support case-insensitive matching, lower case the n-grams for |pattern|.
+  DCHECK(base::IsStringASCII(pattern));
+  const std::string lower_case_pattern = base::ToLowerASCII(pattern);
   auto ngrams = CreateNGramExtractor<kNGramSize, NGram>(
-      pattern, [](char c) { return c == '*' || c == '^'; });
+      lower_case_pattern, [](char c) { return c == '*' || c == '^'; });
 
   for (uint64_t ngram : ngrams) {
     const MutableUrlRuleList* rules = ngram_index_.Get(ngram);
@@ -654,8 +657,14 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
 
   NGramHashTableProber prober;
 
+  // |hash_table| contains lower-cased n-grams. Lower case the url if necessary
+  // to find possible matches.
+  base::Optional<std::string> lower_case_url;
+  if (!HasNoUpperAscii(url.spec()))
+    lower_case_url = base::ToLowerASCII(url.spec());
   auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
-      url.spec(), [](char) { return false; });
+      lower_case_url ? *lower_case_url : url.spec(),
+      [](char) { return false; });
 
   auto get_max_priority_rule = [](const flat::UrlRule* lhs,
                                   const flat::UrlRule* rhs) {

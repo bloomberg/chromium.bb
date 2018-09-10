@@ -604,10 +604,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 }
 
 // Tests case sensitive url filters.
-// TODO(crbug.com/767605): Enable once case-insensitive matching is implemented
-// in url_pattern_index.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       DISABLED_BlockRequests_IsUrlFilterCaseSensitive) {
+                       BlockRequests_IsUrlFilterCaseSensitive) {
   struct {
     std::string url_filter;
     size_t id;
@@ -622,6 +620,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     rule.id = rule_data.id;
     rule.condition->is_url_filter_case_sensitive =
         rule_data.is_url_filter_case_sensitive;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rules.push_back(rule);
   }
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));

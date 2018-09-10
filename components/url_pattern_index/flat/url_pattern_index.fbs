@@ -109,8 +109,9 @@ table UrlRule {
 // Contains an N-gram (acting as a key in a hash table) and a list of URL rules
 // associated with that N-gram.
 table NGramToRules {
-  // A string consisting of N (up to 8) non-special characters, which are stored
-  // in the lowest N non-zero bytes, lower bytes corresponding to later symbols.
+  // A string consisting of N (up to 8) ascii-only non-special characters, which
+  // are stored in the lowest N non-zero bytes, lower bytes corresponding to
+  // later symbols. These are lower-cased to support case-insensitive matching.
   ngram : ulong;
 
   // The list of rules containing |ngram| as a substring of their URL pattern.
