@@ -18,15 +18,15 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNeverTestFeatureFoo{"test_foo",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNeverTestFeatureBar{"test_bar",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A EventModel that is always postive to show in-product help.
-class TestEventModel : public EventModel {
+class NeverTestEventModel : public EventModel {
  public:
-  TestEventModel() = default;
+  NeverTestEventModel() = default;
 
   void Initialize(const OnModelInitializationFinished& callback,
                   uint32_t current_day) override {}
@@ -40,7 +40,7 @@ class TestEventModel : public EventModel {
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestEventModel);
+  DISALLOW_COPY_AND_ASSIGN(NeverTestEventModel);
 };
 
 class NeverConditionValidatorTest : public ::testing::Test {
@@ -48,7 +48,7 @@ class NeverConditionValidatorTest : public ::testing::Test {
   NeverConditionValidatorTest() = default;
 
  protected:
-  TestEventModel event_model_;
+  NeverTestEventModel event_model_;
   NeverAvailabilityModel availability_model_;
   NoopDisplayLockController display_lock_controller_;
   NeverConditionValidator validator_;
@@ -61,12 +61,12 @@ class NeverConditionValidatorTest : public ::testing::Test {
 
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
   EXPECT_FALSE(validator_
-                   .MeetsConditions(kTestFeatureFoo, FeatureConfig(),
+                   .MeetsConditions(kNeverTestFeatureFoo, FeatureConfig(),
                                     event_model_, availability_model_,
                                     display_lock_controller_, 0u)
                    .NoErrors());
   EXPECT_FALSE(validator_
-                   .MeetsConditions(kTestFeatureBar, FeatureConfig(),
+                   .MeetsConditions(kNeverTestFeatureBar, FeatureConfig(),
                                     event_model_, availability_model_,
                                     display_lock_controller_, 0u)
                    .NoErrors());

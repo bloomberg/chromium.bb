@@ -12,10 +12,10 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSingleTestFeatureFoo{"test_foo",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSingleTestFeatureBar{"test_bar",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 class SingleInvalidConfigurationTest : public ::testing::Test {
  public:
@@ -31,10 +31,12 @@ class SingleInvalidConfigurationTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(SingleInvalidConfigurationTest, AllConfigurationsAreInvalid) {
-  FeatureConfig foo_config = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo_config =
+      configuration_.GetFeatureConfig(kSingleTestFeatureFoo);
   EXPECT_FALSE(foo_config.valid);
 
-  FeatureConfig bar_config = configuration_.GetFeatureConfig(kTestFeatureBar);
+  FeatureConfig bar_config =
+      configuration_.GetFeatureConfig(kSingleTestFeatureBar);
   EXPECT_FALSE(bar_config.valid);
 }
 
