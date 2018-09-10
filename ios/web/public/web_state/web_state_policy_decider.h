@@ -60,8 +60,8 @@ class WebStatePolicyDecider {
   // Never called in the following cases:
   //  - same-document navigations (unless ititiated via LoadURLWithParams)
   //  - CRWNativeContent navigations
-  //  - going back after form submission navigation (except iOS 9)
-  //  - user-initiated POST navigation on iOS 9 and 10
+  //  - going back after form submission navigation
+  //  - user-initiated POST navigation on iOS 10
   virtual bool ShouldAllowResponse(NSURLResponse* response,
                                    bool for_main_frame);
 
