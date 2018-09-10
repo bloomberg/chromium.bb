@@ -235,6 +235,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   std::unique_ptr<net::URLRequest> https_request(context.CreateRequest(
       GURL("https://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
+  https_request->set_site_for_cookies(GURL("https://www.example.com"));
   WebRequestInfo https_request_info(https_request.get());
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its

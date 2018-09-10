@@ -384,18 +384,15 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginB) {
 
   ASSERT_EQ(ToOriginA(g_nested_origin_a_in_origin_b),
             TopDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedNestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginB) {
   Load(g_nested_origin_b);
 
   ASSERT_EQ(ToOriginA(g_nested_origin_b), TopDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA) {
@@ -405,8 +402,7 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginA) {
             TopDocument()->SiteForCookies());
   ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_a),
             NestedDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedNestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB) {
@@ -414,10 +410,8 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginBInOriginB) {
 
   ASSERT_EQ(ToOriginA(g_nested_origin_b_in_origin_b),
             TopDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedNestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedNestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedSrcdoc) {
@@ -431,8 +425,7 @@ TEST_F(WebDocumentFirstPartyTest, NestedData) {
   Load(g_nested_data);
 
   ASSERT_EQ(ToOriginA(g_nested_data), TopDocument()->SiteForCookies());
-  ASSERT_EQ(SecurityOrigin::UrlWithUniqueOpaqueOrigin(),
-            NestedDocument()->SiteForCookies());
+  ASSERT_EQ(NullURL(), NestedDocument()->SiteForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest,

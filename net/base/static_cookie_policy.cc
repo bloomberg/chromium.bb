@@ -17,8 +17,6 @@ int StaticCookiePolicy::CanAccessCookies(const GURL& url,
     case StaticCookiePolicy::ALLOW_ALL_COOKIES:
       return OK;
     case StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES:
-      if (site_for_cookies.is_empty())
-        return OK;  // Empty first-party URL indicates a first-party request.
       return registry_controlled_domains::SameDomainOrHost(
                  url, site_for_cookies,
                  registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)
