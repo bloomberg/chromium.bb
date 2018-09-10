@@ -73,6 +73,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class SharedWorkerServiceImplTest;
   friend class SharedWorkerHostTest;
 
+  static void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
+                                          BrowserContext* browser_context);
+
   void CreateWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
       mojom::SharedWorkerClientPtr client,
