@@ -14,35 +14,10 @@ _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
-    # 'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1151
-    # 'DragAndDropTest.testDragAndDrop',
-    # 'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
-    # 'DragAndDropTest.testElementInDiv',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
-    # 'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
-    # 'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
-    # 'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
 
-    'ProxySettingTest.canConfigureProxyThroughPACFile',
-    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
-    'ProxySettingTest.canConfigureManualHttpProxy',
-    'ProxySettingTest.canConfigureNoProxy',
-
-    # 'BasicMouseInterfaceTest.testHoverPersists',
-
-    'ElementAttributeTest.testShouldReturnInnerHtml',
-    'ExecutingAsyncJavascriptTest.shouldBeAbleToMakeXMLHttpRequestsAndWaitForTheResponse',
-    'MiscTest.testShouldReturnTheSourceOfAPage',
-    'TextHandlingTest.testReadALargeAmountOfData',
-    'TypingTest.testNumericShiftKeys',
-    'TypingTest.testAllPrintableKeys',
-    'TypingTest.testChordControlCutAndPaste',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2572
