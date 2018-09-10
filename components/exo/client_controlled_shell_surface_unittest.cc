@@ -1518,6 +1518,23 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   EXPECT_FALSE(shell_surface->wide_frame_for_test());
 }
 
+TEST_F(ClientControlledShellSurfaceTest, NoFrameOnModalContainer) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get(),
+                                                            /*is_modal=*/true);
+
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+  surface->Attach(desktop_buffer.get());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->frame_enabled());
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->frame_enabled());
+}
+
 TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
   display::test::DisplayManagerTestApi test_api(
       ash::Shell::Get()->display_manager());
