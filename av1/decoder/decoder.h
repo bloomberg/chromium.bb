@@ -40,7 +40,6 @@ typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,
                                           const TX_SIZE tx_size);
 
 typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
-                                                 const struct ThreadData *td,
                                                  MACROBLOCKD *const xd,
                                                  int mi_row, int mi_col,
                                                  BLOCK_SIZE bsize);
@@ -58,6 +57,7 @@ typedef struct ThreadData {
   int32_t mc_buf_size;
   int mc_buf_use_highbd;  // Boolean: whether the byte pointers stored in
                           // mc_buf were converted from highbd pointers.
+
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
 

@@ -215,6 +215,12 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         thread_data->td->mb.tmp_obmc_bufs[j] =
             thread_data->td->tmp_obmc_bufs[j];
       }
+
+      thread_data->td->mb.e_mbd.tmp_conv_dst = thread_data->td->mb.tmp_conv_dst;
+      for (int j = 0; j < 2; ++j) {
+        thread_data->td->mb.e_mbd.tmp_obmc_bufs[j] =
+            thread_data->td->mb.tmp_obmc_bufs[j];
+      }
     }
   }
 }

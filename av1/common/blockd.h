@@ -496,6 +496,8 @@ typedef struct jnt_comp_params {
   int bck_offset;
 } JNT_COMP_PARAMS;
 
+// Most/all of the pointers are mere pointers to actual arrays are allocated
+// elsewhere. This is mostly for coding convenience.
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
 
@@ -595,6 +597,9 @@ typedef struct macroblockd {
   uint16_t cb_offset[MAX_MB_PLANE];
   uint16_t txb_offset[MAX_MB_PLANE];
   uint16_t color_index_map_offset[2];
+
+  CONV_BUF_TYPE *tmp_conv_dst;
+  uint8_t *tmp_obmc_bufs[2];
 } MACROBLOCKD;
 
 static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {

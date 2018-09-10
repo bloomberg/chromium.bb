@@ -18,30 +18,24 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/convolve.h"
 #include "av1/common/warped_motion.h"
-#include "av1/encoder/encoder.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void av1_build_inter_predictors_sby(const AV1_COMMON *cm,
-                                    CONV_BUF_TYPE *tmp_conv_dst,
-                                    MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BUFFER_SET *ctx, BLOCK_SIZE bsize);
+void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    int mi_row, int mi_col, BUFFER_SET *ctx,
+                                    BLOCK_SIZE bsize);
 
-void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm,
-                                     CONV_BUF_TYPE *tmp_conv_dst,
-                                     MACROBLOCKD *xd, int mi_row, int mi_col,
-                                     BUFFER_SET *ctx, BLOCK_SIZE bsize);
+void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                     int mi_row, int mi_col, BUFFER_SET *ctx,
+                                     BLOCK_SIZE bsize);
 
-void av1_build_inter_predictors_sbp(const AV1_COMMON *cm,
-                                    CONV_BUF_TYPE *tmp_conv_dst,
-                                    MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BUFFER_SET *ctx, BLOCK_SIZE bsize,
-                                    int plane_idx);
+void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    int mi_row, int mi_col, BUFFER_SET *ctx,
+                                    BLOCK_SIZE bsize, int plane_idx);
 
-void av1_build_inter_predictors_sb(const AV1_COMMON *cm,
-                                   CONV_BUF_TYPE *tmp_conv_dst, MACROBLOCKD *xd,
+void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize);
 
@@ -97,21 +91,21 @@ static INLINE int av1_is_interp_search_needed(const MACROBLOCKD *const xd) {
   return 0;
 }
 
-void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCK *x,
+void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
                                          int tmp_width[MAX_MB_PLANE],
                                          int tmp_height[MAX_MB_PLANE],
                                          int tmp_stride[MAX_MB_PLANE]);
 
-void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCK *x,
+void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col,
                                         uint8_t *tmp_buf[MAX_MB_PLANE],
                                         int tmp_width[MAX_MB_PLANE],
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]);
 
-void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCK *x,
+void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col);
 
 void av1_build_inter_predictors_for_planes_single_buf(

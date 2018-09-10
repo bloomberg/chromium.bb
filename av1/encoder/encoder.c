@@ -2399,12 +2399,14 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     CHECK_MEM_ERROR(
         cm, x->tmp_conv_dst,
         aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE * sizeof(*x->tmp_conv_dst)));
+    x->e_mbd.tmp_conv_dst = x->tmp_conv_dst;
   }
   for (int i = 0; i < 2; ++i) {
     if (x->tmp_obmc_bufs[i] == NULL) {
       CHECK_MEM_ERROR(cm, x->tmp_obmc_bufs[i],
                       aom_memalign(16, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
                                            sizeof(*x->tmp_obmc_bufs[i])));
+      x->e_mbd.tmp_obmc_bufs[i] = x->tmp_obmc_bufs[i];
     }
   }
 
