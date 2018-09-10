@@ -3098,11 +3098,22 @@ void Document::open() {
   if (ScriptableDocumentParser* parser = GetScriptableDocumentParser())
     DCHECK(!parser->IsParsing() || !parser->IsExecutingScript());
 
-  // Abort |document|.
+  // If |document| has a browsing context and there is an existing attempt to
+  // navigate |document|'s browsing context, then stop document loading given
+  // |document|.
   //
-  // TODO(timothygu): We are only aborting the document if there is a
-  // provisional navigation, unlike the spec.
-  if (frame_ && frame_->Loader().HasProvisionalNavigation()) {
+  // As noted in the spec and https://github.com/whatwg/html/issues/3975, we
+  // want to treat ongoing navigation and queued navigation the same way.
+  // However, we don't want to consider navigations scheduled too much into the
+  // future through Refresh headers or a <meta> refresh pragma to be a current
+  // navigation. Thus, we cut it off with IsNavigationScheduledWithin(0).
+  //
+  // This also prevents window.open(url) -- eg window.open("about:blank") --
+  // from blowing away results from a subsequent window.document.open /
+  // window.document.write call.
+  if (frame_ &&
+      (frame_->Loader().HasProvisionalNavigation() ||
+       frame_->GetNavigationScheduler().IsNavigationScheduledWithin(0))) {
     frame_->Loader().StopAllLoaders();
     // Navigations handled by the client should also be cancelled.
     if (frame_ && frame_->Client())

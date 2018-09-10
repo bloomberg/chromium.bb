@@ -2807,8 +2807,6 @@ crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legen
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legend/no-fieldset-parent-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/commands/legend/focusable-legend-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
-crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/abort-refresh-immediate.window.html [ Timeout ]
-crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/abort-while-navigating.window.html [ Timeout ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-002.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-001.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-mask.html [ Failure ]
