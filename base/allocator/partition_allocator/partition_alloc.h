@@ -114,6 +114,7 @@ struct BASE_EXPORT PartitionRoot : public internal::PartitionRootBase {
   void Init(size_t num_buckets, size_t max_allocation);
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
+  ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
 
   void PurgeMemory(int flags);
 
@@ -145,6 +146,7 @@ struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
   void Init();
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
+  ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
   ALWAYS_INLINE void Free(void* ptr);
 
   NOINLINE void* Realloc(void* ptr, size_t new_size, const char* type_name);
@@ -262,6 +264,12 @@ class BASE_EXPORT PartitionAllocHooks {
 };
 
 ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
+  return AllocFlags(0, size, type_name);
+}
+
+ALWAYS_INLINE void* PartitionRoot::AllocFlags(int flags,
+                                              size_t size,
+                                              const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   void* result = malloc(size);
   CHECK(result);
@@ -274,7 +282,7 @@ ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
   DCHECK(index < this->num_buckets);
   DCHECK(size == index << kBucketShift);
   internal::PartitionBucket* bucket = &this->buckets()[index];
-  void* result = AllocFromBucket(bucket, 0, size);
+  void* result = AllocFromBucket(bucket, flags, size);
   PartitionAllocHooks::AllocationHookIfEnabled(result, requested_size,
                                                type_name);
   return result;
@@ -371,6 +379,12 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
 ALWAYS_INLINE void* PartitionRootGeneric::Alloc(size_t size,
                                                 const char* type_name) {
   return PartitionAllocGenericFlags(this, 0, size, type_name);
+}
+
+ALWAYS_INLINE void* PartitionRootGeneric::AllocFlags(int flags,
+                                                     size_t size,
+                                                     const char* type_name) {
+  return PartitionAllocGenericFlags(this, flags, size, type_name);
 }
 
 ALWAYS_INLINE void PartitionRootGeneric::Free(void* ptr) {

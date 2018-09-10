@@ -82,7 +82,7 @@ class AudioArray {
       // Again, check for integer overflow.
       CHECK_GE(initial_size + extra_allocation_bytes, initial_size);
 
-      T* allocation = static_cast<T*>(WTF::Partitions::FastMalloc(
+      T* allocation = static_cast<T*>(WTF::Partitions::FastZeroedMalloc(
           initial_size + extra_allocation_bytes,
           WTF_HEAP_PROFILER_TYPE_NAME(AudioArray<T>)));
       CHECK(allocation);
@@ -94,7 +94,6 @@ class AudioArray {
         aligned_data_ = aligned_data;
         size_ = n;
         is_allocation_good = true;
-        Zero();
       } else {
         // always allocate extra after the first alignment failure.
         extra_allocation_bytes = kAlignment;
