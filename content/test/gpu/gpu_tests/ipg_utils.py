@@ -19,6 +19,7 @@ An easy way to use the APIs are:
    5 seconds, call AnalyzeIPGLogFile(skip_in_sec=5).
 """
 
+import json
 import logging
 import os
 import subprocess
@@ -36,17 +37,17 @@ def LocateIPG():
     return gadget_path
   return None
 
-def GenerateIPGLogFilename(prefix='PowerLog', dir=None, current_run=1,
+def GenerateIPGLogFilename(log_prefix='PowerLog', log_dir=None, current_run=1,
                            total_runs=1, timestamp=False):
   # If all args take default value, it is the IPG's default log path.
-  dir = dir or os.getcwd()
-  dir = os.path.abspath(dir)
+  log_dir = log_dir or os.getcwd()
+  log_dir = os.path.abspath(log_dir)
   if total_runs > 1:
-    prefix = "%s_%d_%d" % (prefix, current_run, total_runs)
+    log_prefix = "%s_%d_%d" % (log_prefix, current_run, total_runs)
   if timestamp:
     now = datetime.datetime.now()
-    prefix = "%s_%s" % (prefix, now.strftime('%Y%m%d%H%M%S'))
-  return os.path.join(dir, prefix + '.csv')
+    log_prefix = "%s_%s" % (log_prefix, now.strftime('%Y%m%d%H%M%S'))
+  return os.path.join(log_dir, log_prefix + '.csv')
 
 def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
   intel_power_gadget_path = LocateIPG()
@@ -57,7 +58,7 @@ def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
              (intel_power_gadget_path, duration_in_s, resolution_in_ms))
   if not logfile:
     # It is not necessary but allows to print out the log path for debugging.
-    logfile = GenerateIPGLogFilename();
+    logfile = GenerateIPGLogFilename()
   command = command + (' -file %s' %logfile)
   logging.debug("Running: " + command)
   try:
@@ -87,7 +88,7 @@ def AnalyzeIPGLogFile(logfile=None, skip_in_sec=0):
       cols = len(tokens)
       for ii in range(0, cols):
         if tokens[ii].startswith('Elapsed Time'):
-          col_time = ii;
+          col_time = ii
         elif tokens[ii].endswith('(Watt)'):
           indices.append(ii)
           labels.append(tokens[ii][:-len('(Watt)')])
@@ -109,3 +110,52 @@ def AnalyzeIPGLogFile(logfile=None, skip_in_sec=0):
     for ii in range(0, len(indices)):
       results[labels[ii]] = sums[ii] / samples
   return results
+
+def ProcessResultsFromMultipleIPGRuns(logfiles, skip_in_seconds=0,
+                                      outliers=0, output_json=None):
+  assert len(logfiles) > 1
+  output = {}
+  summary = {}
+  for logfile in logfiles:
+    results = AnalyzeIPGLogFile(logfile, skip_in_seconds)
+    results['log'] = logfile
+    (_, filename) = os.path.split(logfile)
+    (core, _) = os.path.splitext(filename)
+    prefix = 'PowerLog_'
+    if core.startswith(prefix):
+      core = core[len(prefix):]
+    output[core] = results
+
+    for key in results:
+      if key == 'samples' or key == 'log':
+        continue
+      if not key in summary:
+        summary[key] = [results[key]]
+      else:
+        summary[key].append(results[key])
+
+  for key in summary:
+    data = summary[key]
+    assert data and len(data) > 1
+    n = len(data)
+    if outliers > 0:
+      assert outliers * 2 < n
+      data.sort()
+      data = data[outliers:(n - outliers)]
+      n = len(data)
+    logging.debug('%s: valid samples = %d', key, n)
+    mean = sum(data) / float(n)
+    ss = sum((x - mean) ** 2 for x in data)
+    stdev = (ss / float(n)) ** 0.5
+    summary[key] = {
+      'mean': mean,
+      'stdev': stdev,
+    }
+  output['summary'] = summary
+
+  if output_json:
+    json_file = open(output_json, 'w')
+    json_file.write(json.dumps(output, indent=4))
+    json_file.close()
+
+  return summary
