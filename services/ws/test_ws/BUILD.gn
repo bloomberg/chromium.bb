@@ -13,6 +13,8 @@ service("test_ws") {
     "test_drag_drop_client.h",
     "test_gpu_interface_provider.cc",
     "test_gpu_interface_provider.h",
+    "test_window_service.cc",
+    "test_window_service.h",
     "test_ws.cc",
   ]
 
