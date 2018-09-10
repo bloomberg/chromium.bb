@@ -24,6 +24,8 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -160,6 +162,22 @@ void SVGImageElement::ParseAttribute(
   if (params.name == SVGNames::decodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
+  } else if (params.name == SVGNames::intrinsicsizeAttr &&
+             RuntimeEnabledFeatures::
+                 ExperimentalProductivityFeaturesEnabled()) {
+    String message;
+    bool intrinsic_size_changed =
+        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+            params.new_value, &overridden_intrinsic_size_, &message);
+    if (!message.IsEmpty()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, message));
+    }
+
+    if (intrinsic_size_changed) {
+      if (LayoutSVGImage* layout_obj = ToLayoutSVGImage(GetLayoutObject()))
+        MarkForLayoutAndParentResourceInvalidation(*layout_obj);
+    }
   } else {
     SVGElement::ParseAttribute(params);
   }
