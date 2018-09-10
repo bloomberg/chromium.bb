@@ -75,18 +75,14 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
                 std::unique_ptr<WebRTCDTMFSenderHandler>);
   void Dispose();
 
-  void ScheduleDispatchEvent(Event*);
-  void ScheduledEventTimerFired(TimerBase*);
-
   // WebRTCDTMFSenderHandlerClient
-  void DidPlayTone(const WebString&) override;
+  void DidPlayTone(const WebString& tone,
+                   const WebString& tone_buffer) override;
 
   std::unique_ptr<WebRTCDTMFSenderHandler> handler_;
 
   bool stopped_;
-
-  TaskRunnerTimer<RTCDTMFSender> scheduled_event_timer_;
-  HeapVector<Member<Event>> scheduled_events_;
+  String tone_buffer_;
 };
 
 }  // namespace blink

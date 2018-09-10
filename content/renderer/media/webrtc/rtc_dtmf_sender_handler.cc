@@ -30,18 +30,20 @@ class RtcDtmfSenderHandler::Observer :
 
   ~Observer() override {}
 
-  void OnToneChange(const std::string& tone) override {
+  void OnToneChange(const std::string& tone,
+                    const std::string& tone_buffer) override {
     main_thread_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &RtcDtmfSenderHandler::Observer::OnToneChangeOnMainThread, this,
-            tone));
+            tone, tone_buffer));
   }
 
-  void OnToneChangeOnMainThread(const std::string& tone) {
+  void OnToneChangeOnMainThread(const std::string& tone,
+                                const std::string& tone_buffer) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (handler_)
-      handler_->OnToneChange(tone);
+      handler_->OnToneChange(tone, tone_buffer);
   }
 
   base::ThreadChecker thread_checker_;
@@ -85,12 +87,14 @@ bool RtcDtmfSenderHandler::InsertDTMF(const blink::WebString& tones,
                                   static_cast<int>(interToneGap));
 }
 
-void RtcDtmfSenderHandler::OnToneChange(const std::string& tone) {
+void RtcDtmfSenderHandler::OnToneChange(const std::string& tone,
+                                        const std::string& tone_buffer) {
   if (!webkit_client_) {
     LOG(ERROR) << "WebRTCDTMFSenderHandlerClient not set.";
     return;
   }
-  webkit_client_->DidPlayTone(blink::WebString::FromUTF8(tone));
+  webkit_client_->DidPlayTone(blink::WebString::FromUTF8(tone),
+                              blink::WebString::FromUTF8(tone_buffer));
 }
 
 }  // namespace content

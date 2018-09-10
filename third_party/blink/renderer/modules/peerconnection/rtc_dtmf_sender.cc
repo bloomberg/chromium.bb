@@ -58,10 +58,7 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
                              std::unique_ptr<WebRTCDTMFSenderHandler> handler)
     : ContextLifecycleObserver(context),
       handler_(std::move(handler)),
-      stopped_(false),
-      scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
-                             this,
-                             &RTCDTMFSender::ScheduledEventTimerFired) {
+      stopped_(false) {
   handler_->SetClient(this);
 }
 
@@ -79,7 +76,7 @@ bool RTCDTMFSender::canInsertDTMF() const {
 }
 
 String RTCDTMFSender::toneBuffer() const {
-  return handler_->CurrentToneBuffer();
+  return tone_buffer_;
 }
 
 void RTCDTMFSender::insertDTMF(const String& tones,
@@ -129,10 +126,14 @@ void RTCDTMFSender::insertDTMF(const String& tones,
         "Could not send provided tones, '" + tones + "'.");
     return;
   }
+  tone_buffer_ = handler_->CurrentToneBuffer();
 }
 
-void RTCDTMFSender::DidPlayTone(const WebString& tone) {
-  ScheduleDispatchEvent(RTCDTMFToneChangeEvent::Create(tone));
+void RTCDTMFSender::DidPlayTone(const WebString& tone,
+                                const WebString& tone_buffer) {
+  tone_buffer_ = tone_buffer;
+  Member<Event> event = RTCDTMFToneChangeEvent::Create(tone);
+  DispatchEvent(*event.Release());
 }
 
 const AtomicString& RTCDTMFSender::InterfaceName() const {
@@ -148,27 +149,7 @@ void RTCDTMFSender::ContextDestroyed(ExecutionContext*) {
   handler_->SetClient(nullptr);
 }
 
-void RTCDTMFSender::ScheduleDispatchEvent(Event* event) {
-  scheduled_events_.push_back(event);
-
-  if (!scheduled_event_timer_.IsActive())
-    scheduled_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-}
-
-void RTCDTMFSender::ScheduledEventTimerFired(TimerBase*) {
-  if (stopped_)
-    return;
-
-  HeapVector<Member<Event>> events;
-  events.swap(scheduled_events_);
-
-  HeapVector<Member<Event>>::iterator it = events.begin();
-  for (; it != events.end(); ++it)
-    DispatchEvent(*it->Release());
-}
-
 void RTCDTMFSender::Trace(blink::Visitor* visitor) {
-  visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
