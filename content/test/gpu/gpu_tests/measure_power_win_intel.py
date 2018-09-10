@@ -16,7 +16,7 @@ python measure_power_win_intel.py --browser=canary --duration=10 --delay=5
   --extra-browser-args="--no-sandbox --disable-features=UseSurfaceLayerForVideo"
 """
 
-import ipg_utils
+from  gpu_tests import ipg_utils
 import logging
 import os
 import shutil
@@ -27,14 +27,14 @@ import time
 import optparse
 
 CHROME_STABLE_PATH = (
-  "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
+  r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
 CHROME_BETA_PATH = (
-  "C:\Program Files (x86)\Google\Chrome Beta\Application\chrome.exe")
+  r"C:\Program Files (x86)\Google\Chrome Beta\Application\chrome.exe")
 CHROME_DEV_PATH = (
-  "C:\Program Files (x86)\Google\Chrome Dev\Application\chrome.exe")
+  r"C:\Program Files (x86)\Google\Chrome Dev\Application\chrome.exe")
 # The following two paths are relative to the LOCALAPPDATA
-CHROME_CANARY_PATH = "Google\Chrome SxS\Application\chrome.exe"
-CHROMIUM_PATH = "Chromium\Application\chrome.exe"
+CHROME_CANARY_PATH = r"Google\Chrome SxS\Application\chrome.exe"
+CHROMIUM_PATH = r"Chromium\Application\chrome.exe"
 
 SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium']
 
@@ -55,7 +55,7 @@ def LocateBrowser(options_browser):
   else:
     logging.warning("Invalid value for --browser")
     logging.warning(
-      "Supported values: %s, or a full path to a browser executable." %
+      "Supported values: %s, or a full path to a browser executable.",
       ", ".join(SUPPORTED_BROWSERS))
     return None
   if not os.path.exists(browser):
@@ -94,7 +94,7 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
     time.sleep(0.05)
   try:
     shutil.rmtree(user_data_dir)
-  except Exception as err:
+  except Exception:
     logging.warning("Failed to remove temporary folder: " + user_data_dir)
     logging.warning("Please kill browser and remove it manually to avoid leak")
   results = ipg_utils.AnalyzeIPGLogFile(logfile, delay)
@@ -151,7 +151,7 @@ def main(argv):
   for run in range(0, options.repeat):
     logfile = ipg_utils.GenerateIPGLogFilename(log_prefix, options.logdir,
                                                run, options.repeat, True)
-    logging.info("Iteration #%d out of %d" % (run, options.repeat))
+    logging.info("Iteration #%d out of %d", run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
                                options.extra_browser_args)
