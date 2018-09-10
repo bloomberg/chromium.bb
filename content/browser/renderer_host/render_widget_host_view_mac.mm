@@ -148,6 +148,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       mouse_wheel_phase_handler_(this),
       is_loading_(false),
       is_guest_view_hack_(is_guest_view_hack),
+      popup_parent_host_view_(nullptr),
+      popup_child_host_view_(nullptr),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
@@ -213,6 +215,16 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   if (features::IsViewsBrowserCocoa())
     ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
+  if (popup_parent_host_view_) {
+    DCHECK(!popup_parent_host_view_->popup_child_host_view_ ||
+           popup_parent_host_view_->popup_child_host_view_ == this);
+    popup_parent_host_view_->popup_child_host_view_ = nullptr;
+  }
+  if (popup_child_host_view_) {
+    DCHECK(!popup_child_host_view_->popup_parent_host_view_ ||
+           popup_child_host_view_->popup_parent_host_view_ == this);
+    popup_child_host_view_->popup_parent_host_view_ = nullptr;
+  }
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -279,6 +291,17 @@ void RenderWidgetHostViewMac::InitAsChild(
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
+  popup_parent_host_view_ =
+      static_cast<RenderWidgetHostViewMac*>(parent_host_view);
+
+  RenderWidgetHostViewMac* old_child =
+      popup_parent_host_view_->popup_child_host_view_;
+  if (old_child) {
+    DCHECK(old_child->popup_parent_host_view_ == popup_parent_host_view_);
+    old_child->popup_parent_host_view_ = nullptr;
+  }
+  popup_parent_host_view_->popup_child_host_view_ = this;
+
   // This path is used by the time/date picker.
   ns_view_bridge_->InitAsPopup(pos, popup_type_);
 }
@@ -776,8 +799,19 @@ void RenderWidgetHostViewMac::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  browser_compositor_->GetDelegatedFrameHost()->CopyFromCompositingSurface(
-      src_subrect, dst_size, std::move(callback));
+  base::WeakPtr<RenderWidgetHostImpl> popup_host;
+  base::WeakPtr<DelegatedFrameHost> popup_frame_host;
+  if (popup_child_host_view_) {
+    popup_host = popup_child_host_view_->host()->GetWeakPtr();
+    popup_frame_host = popup_child_host_view_->BrowserCompositor()
+                           ->GetDelegatedFrameHost()
+                           ->GetWeakPtr();
+  }
+  RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
+      host()->GetWeakPtr(),
+      browser_compositor_->GetDelegatedFrameHost()->GetWeakPtr(), popup_host,
+      popup_frame_host, src_subrect, dst_size, display_.device_scale_factor(),
+      std::move(callback));
 }
 
 void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {

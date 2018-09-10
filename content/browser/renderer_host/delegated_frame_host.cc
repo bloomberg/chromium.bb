@@ -45,7 +45,8 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
-      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
+      weak_factory_(this) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   DCHECK(host_frame_sink_manager_);

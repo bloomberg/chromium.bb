@@ -535,6 +535,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
+  // Our parent host view, if this is a popup.  NULL otherwise.
+  RenderWidgetHostViewMac* popup_parent_host_view_;
+
+  // Our child popup host. NULL if we do not have a child popup.
+  RenderWidgetHostViewMac* popup_child_host_view_;
+
   // Display link for getting vsync info.
   scoped_refptr<ui::DisplayLinkMac> display_link_;
 

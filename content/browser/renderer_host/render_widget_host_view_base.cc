@@ -16,6 +16,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
@@ -201,6 +202,87 @@ viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
 
 bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
   return false;
+}
+
+void RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
+    base::WeakPtr<RenderWidgetHostImpl> main_host,
+    base::WeakPtr<DelegatedFrameHost> main_frame_host,
+    base::WeakPtr<RenderWidgetHostImpl> popup_host,
+    base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    float scale_factor,
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  if (!main_host || !main_frame_host)
+    return;
+
+#if defined(OS_ANDROID)
+  NOTREACHED()
+      << "RenderWidgetHostViewAndroid::CopyFromSurface calls "
+         "DelegatedFrameHostAndroid::CopyFromCompositingSurface directly, "
+         "and popups are not supported.";
+  return;
+#else
+  if (!popup_host || !popup_frame_host) {
+    // No popup - just call CopyFromCompositingSurface once.
+    main_frame_host->CopyFromCompositingSurface(src_subrect, dst_size,
+                                                std::move(callback));
+    return;
+  }
+
+  // First locate the popup relative to the main page, in DIPs
+  const gfx::Point parent_location =
+      main_host->GetView()->GetBoundsInRootWindow().origin();
+  const gfx::Point popup_location =
+      popup_host->GetView()->GetBoundsInRootWindow().origin();
+  const gfx::Point offset_dips =
+      PointAtOffsetFromOrigin(popup_location - parent_location);
+  const gfx::Vector2d offset_physical =
+      ScaleToFlooredPoint(offset_dips, scale_factor).OffsetFromOrigin();
+
+  // Queue up the request for the MAIN frame image first, but with a
+  // callback that launches a second request for the popup image.
+  //  1. Call CopyFromCompositingSurface for the main frame, with callback
+  //     |main_image_done_callback|. Inside |main_image_done_callback|:
+  //    a. Call CopyFromCompositingSurface again, this time on the popup
+  //       frame. For this call, build a new callback, |popup_done_callback|,
+  //       which:
+  //      i. Takes the main image as a parameter, combines the main image with
+  //         the just-acquired popup image, and then calls the original
+  //         (outer) callback with the combined image.
+  auto main_image_done_callback = base::BindOnce(
+      [](base::OnceCallback<void(const SkBitmap&)> final_callback,
+         const gfx::Vector2d offset,
+         base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+         const gfx::Rect src_subrect, const gfx::Size dst_size,
+         const SkBitmap& main_image) {
+        if (!popup_frame_host)
+          return;
+
+        // Build a new callback that actually combines images.
+        auto popup_done_callback = base::BindOnce(
+            [](base::OnceCallback<void(const SkBitmap&)> final_callback,
+               const gfx::Vector2d offset, const SkBitmap& main_image,
+               const SkBitmap& popup_image) {
+              // Draw popup_image into main_image.
+              SkCanvas canvas(main_image);
+              canvas.drawBitmap(popup_image, offset.x(), offset.y());
+              std::move(final_callback).Run(main_image);
+            },
+            std::move(final_callback), offset, std::move(main_image));
+
+        // Second, request the popup image.
+        gfx::Rect popup_subrect(src_subrect - offset);
+        popup_frame_host->CopyFromCompositingSurface(
+            popup_subrect, dst_size, std::move(popup_done_callback));
+      },
+      std::move(callback), offset_physical, popup_frame_host, src_subrect,
+      dst_size);
+
+  // Request the main image (happens first).
+  main_frame_host->CopyFromCompositingSurface(
+      src_subrect, dst_size, std::move(main_image_done_callback));
+#endif
 }
 
 void RenderWidgetHostViewBase::CopyFromSurface(
