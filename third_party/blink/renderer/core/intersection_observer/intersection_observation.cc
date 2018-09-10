@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intersection_geometry.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -35,42 +34,30 @@ bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
 
 }  // namespace
 
-// Minimum time, in milliseconds, between observations. See:
-//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
-const DOMHighResTimeStamp IntersectionObservation::s_v2_throttle_delay_ = 100;
-
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
                                                  Element& target)
     : observer_(observer),
       target_(&target),
-      last_run_time_(-s_v2_throttle_delay_),
-      last_is_visible_(false),
-      // Note that the spec says the initial value of last_threshold_index_
-      // should be -1, but since last_threshold_index_ is unsigned, we use a
+      // Note that the spec says the initial value of m_lastThresholdIndex
+      // should be -1, but since m_lastThresholdIndex is unsigned, we use a
       // different sentinel value.
-      last_threshold_index_(kMaxThresholdIndex - 1) {}
+      last_is_visible_(false),
+      last_threshold_index_(kMaxThresholdIndex - 1) {
+  UpdateShouldReportRootBoundsAfterDomChange();
+}
 
-void IntersectionObservation::Compute(bool should_report_implicit_root_bounds) {
+void IntersectionObservation::ComputeIntersectionObservations(
+    DOMHighResTimeStamp timestamp) {
   DCHECK(Observer());
-  if (!target_ || !observer_->RootIsValid() | !observer_->GetExecutionContext())
+  if (!target_)
     return;
-  DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
-  if (timestamp == -1)
-    return;
-  if (observer_->trackVisibility() &&
-      IntersectionObserver::V2ThrottleDelayEnabled() &&
-      timestamp - last_run_time_ < s_v2_throttle_delay_) {
-    return;
-  }
   Vector<Length> root_margin(4);
   root_margin[0] = observer_->TopMargin();
   root_margin[1] = observer_->RightMargin();
   root_margin[2] = observer_->BottomMargin();
   root_margin[3] = observer_->LeftMargin();
-  bool should_report_root_bounds =
-      should_report_implicit_root_bounds || !observer_->RootIsImplicit();
   IntersectionGeometry geometry(observer_->root(), *Target(), root_margin,
-                                should_report_root_bounds);
+                                should_report_root_bounds_);
   geometry.ComputeGeometry();
 
   // Some corner cases for threshold index:
@@ -114,43 +101,51 @@ void IntersectionObservation::Compute(bool should_report_implicit_root_bounds) {
   }
 
   // TODO(tkent): We can't use CHECK_LT due to a compile error.
-  CHECK(new_threshold_index < kMaxThresholdIndex - 1);
+  CHECK(new_threshold_index < kMaxThresholdIndex);
 
   if (last_threshold_index_ != new_threshold_index ||
       last_is_visible_ != is_visible) {
     FloatRect snapped_root_bounds(geometry.RootRect());
     FloatRect* root_bounds_pointer =
-        should_report_root_bounds ? &snapped_root_bounds : nullptr;
+        should_report_root_bounds_ ? &snapped_root_bounds : nullptr;
     IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
         timestamp, new_visible_ratio, FloatRect(geometry.TargetRect()),
         root_bounds_pointer, FloatRect(geometry.IntersectionRect()),
         new_threshold_index > 0, is_visible, Target());
-    entries_.push_back(new_entry);
-    ToDocument(Observer()->GetExecutionContext())
-        ->EnsureIntersectionObserverController()
-        .ScheduleIntersectionObserverForDelivery(*Observer());
+    Observer()->EnqueueIntersectionObserverEntry(*new_entry);
     SetLastThresholdIndex(new_threshold_index);
     SetWasVisible(is_visible);
   }
-}
-
-void IntersectionObservation::TakeRecords(
-    HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  entries.AppendVector(entries_);
-  entries_.clear();
 }
 
 void IntersectionObservation::Disconnect() {
   DCHECK(Observer());
   if (target_)
     Target()->EnsureIntersectionObserverData().RemoveObservation(*Observer());
-  entries_.clear();
   observer_.Clear();
+}
+
+void IntersectionObservation::UpdateShouldReportRootBoundsAfterDomChange() {
+  if (!Observer()->RootIsImplicit()) {
+    should_report_root_bounds_ = true;
+    return;
+  }
+  should_report_root_bounds_ = false;
+  LocalFrame* target_frame = Target()->GetDocument().GetFrame();
+  if (!target_frame)
+    return;
+  Frame& root_frame = target_frame->Tree().Top();
+  if (&root_frame == target_frame) {
+    should_report_root_bounds_ = true;
+  } else {
+    should_report_root_bounds_ =
+        target_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+            root_frame.GetSecurityContext()->GetSecurityOrigin());
+  }
 }
 
 void IntersectionObservation::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
-  visitor->Trace(entries_);
   visitor->Trace(target_);
 }
 

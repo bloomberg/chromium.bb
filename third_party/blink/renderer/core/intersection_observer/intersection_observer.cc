@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -135,6 +136,15 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
 
 }  // anonymous namespace
 
+// Minimum time, in milliseconds, between observations. See:
+//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
+const DOMHighResTimeStamp IntersectionObserver::s_v2_throttle_delay_ = 100;
+static bool v2_throttle_delay_enabled = true;
+
+void IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(bool enabled) {
+  v2_throttle_delay_enabled = enabled;
+}
+
 IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit& observer_init,
     IntersectionObserverDelegate& delegate,
@@ -196,6 +206,7 @@ IntersectionObserver::IntersectionObserver(
       right_margin_(kFixed),
       bottom_margin_(kFixed),
       left_margin_(kFixed),
+      last_run_time_(-s_v2_throttle_delay_),
       root_is_implicit_(root ? 0 : 1),
       track_visibility_(track_visibility ? 1 : 0) {
   switch (root_margin.size()) {
@@ -224,6 +235,10 @@ IntersectionObserver::IntersectionObserver(
       NOTREACHED();
       break;
   }
+  if (root)
+    root->EnsureIntersectionObserverData().AddObserver(*this);
+  if (Document* document = TrackingDocument())
+    document->EnsureIntersectionObserverController().AddTrackedObserver(*this);
 }
 
 void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
@@ -236,6 +251,16 @@ void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
 
 bool IntersectionObserver::RootIsValid() const {
   return RootIsImplicit() || root();
+}
+
+Document* IntersectionObserver::TrackingDocument() const {
+  if (RootIsImplicit()) {
+    if (!delegate_->GetExecutionContext())
+      return nullptr;
+    return ToDocument(delegate_->GetExecutionContext());
+  }
+  DCHECK(root());
+  return &root()->GetDocument();
 }
 
 void IntersectionObserver::observe(Element* target,
@@ -257,20 +282,11 @@ void IntersectionObserver::observe(Element* target,
       new IntersectionObservation(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
-  if (target->isConnected()) {
-    target->GetDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedTarget(*target);
-    if (LocalFrameView* frame_view = target_frame->View()) {
-      // The IntersectionObsever spec requires that at least one observation
-      // be recorded after observe() is called, even if the frame is throttled.
-      frame_view->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
-      frame_view->ScheduleAnimation();
-    }
-  } else {
+  if (LocalFrameView* frame_view = target_frame->View()) {
     // The IntersectionObsever spec requires that at least one observation
-    // be recorded after observe() is called, even if the target is detached.
-    observation->Compute(false);
+    // be recorded afer observe() is called, even if the frame is throttled.
+    frame_view->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
+    frame_view->ScheduleAnimation();
   }
 }
 
@@ -286,19 +302,46 @@ void IntersectionObserver::unobserve(Element* target,
 
   observation->Disconnect();
   observations_.erase(observation);
+
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    if (entries_[i]->target() == target) {
+      entries_.EraseAt(i);
+      --i;
+    }
+  }
+}
+
+void IntersectionObserver::ComputeIntersectionObservations() {
+  if (!RootIsValid() || !delegate_->GetExecutionContext())
+    return;
+  Document* delegate_document = ToDocument(delegate_->GetExecutionContext());
+  if (!delegate_document || delegate_document->IsStopped())
+    return;
+  LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
+  if (!delegate_dom_window)
+    return;
+  DOMHighResTimeStamp timestamp =
+      DOMWindowPerformance::performance(*delegate_dom_window)->now();
+  if (track_visibility_ && v2_throttle_delay_enabled &&
+      timestamp - last_run_time_ < s_v2_throttle_delay_) {
+    return;
+  }
+  last_run_time_ = timestamp;
+  for (auto& observation : observations_)
+    observation->ComputeIntersectionObservations(last_run_time_);
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
   observations_.clear();
+  entries_.clear();
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exception_state) {
   HeapVector<Member<IntersectionObserverEntry>> entries;
-  for (auto& observation : observations_)
-    observation->TakeRecords(entries);
+  entries.swap(entries_);
   return entries;
 }
 
@@ -322,12 +365,13 @@ String IntersectionObserver::rootMargin() const {
   return string_builder.ToString();
 }
 
-DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
-  if (Document* document = ToDocument(delegate_->GetExecutionContext())) {
-    if (LocalDOMWindow* dom_window = document->domWindow())
-      return DOMWindowPerformance::performance(*dom_window)->now();
-  }
-  return -1;
+void IntersectionObserver::EnqueueIntersectionObserverEntry(
+    IntersectionObserverEntry& entry) {
+  DCHECK(delegate_->GetExecutionContext());
+  entries_.push_back(&entry);
+  ToDocument(delegate_->GetExecutionContext())
+      ->EnsureIntersectionObserverController()
+      .ScheduleIntersectionObserverForDelivery(*this);
 }
 
 unsigned IntersectionObserver::FirstThresholdGreaterThan(float ratio) const {
@@ -338,11 +382,12 @@ unsigned IntersectionObserver::FirstThresholdGreaterThan(float ratio) const {
 }
 
 void IntersectionObserver::Deliver() {
+  if (entries_.IsEmpty())
+    return;
+
   HeapVector<Member<IntersectionObserverEntry>> entries;
-  for (auto& observation : observations_)
-    observation->TakeRecords(entries);
-  if (entries.size())
-    delegate_->Deliver(entries, *this);
+  entries.swap(entries_);
+  delegate_->Deliver(entries, *this);
 }
 
 bool IntersectionObserver::HasPendingActivity() const {
@@ -354,18 +399,9 @@ void IntersectionObserver::Trace(blink::Visitor* visitor) {
       IntersectionObserver, &IntersectionObserver::ClearWeakMembers>(this);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
+  visitor->Trace(entries_);
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
-}
-
-static bool v2_throttle_delay_enabled = true;
-
-bool IntersectionObserver::V2ThrottleDelayEnabled() {
-  return v2_throttle_delay_enabled;
-}
-
-void IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(bool enabled) {
-  v2_throttle_delay_enabled = enabled;
 }
 
 }  // namespace blink

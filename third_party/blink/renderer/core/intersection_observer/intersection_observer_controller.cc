@@ -7,8 +7,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -76,39 +74,32 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
 }
 
 void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
-  if (Document* document = ToDocument(GetExecutionContext())) {
-    TRACE_EVENT0("blink",
-                 "IntersectionObserverController::"
-                 "computeTrackedIntersectionObservations");
-    bool should_report_implicit_root_bounds = false;
-    if (LocalFrame* target_frame = document->GetFrame()) {
-      Frame& root_frame = target_frame->Tree().Top();
-      if (&root_frame == target_frame) {
-        should_report_implicit_root_bounds = true;
-      } else {
-        should_report_implicit_root_bounds =
-            target_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-                root_frame.GetSecurityContext()->GetSecurityOrigin());
-      }
-    }
-    for (auto& element : tracked_observation_targets_) {
-      element->ComputeIntersectionObservations(
-          should_report_implicit_root_bounds);
-    }
+  if (!GetExecutionContext())
+    return;
+  TRACE_EVENT0(
+      "blink",
+      "IntersectionObserverController::computeTrackedIntersectionObservations");
+  for (auto& observer : tracked_intersection_observers_)
+    observer->ComputeIntersectionObservations();
+}
+
+void IntersectionObserverController::AddTrackedObserver(
+    IntersectionObserver& observer) {
+  tracked_intersection_observers_.insert(&observer);
+}
+
+void IntersectionObserverController::RemoveTrackedObserversForRoot(
+    const Node& root) {
+  HeapVector<Member<IntersectionObserver>> to_remove;
+  for (auto& observer : tracked_intersection_observers_) {
+    if (observer->root() == &root)
+      to_remove.push_back(observer);
   }
-}
-
-void IntersectionObserverController::AddTrackedTarget(Element& target) {
-  tracked_observation_targets_.insert(&target);
-}
-
-void IntersectionObserverController::RemoveTrackedTarget(Element& target) {
-  target.ComputeIntersectionObservations(false);
-  tracked_observation_targets_.erase(&target);
+  tracked_intersection_observers_.RemoveAll(to_remove);
 }
 
 void IntersectionObserverController::Trace(blink::Visitor* visitor) {
-  visitor->Trace(tracked_observation_targets_);
+  visitor->Trace(tracked_intersection_observers_);
   visitor->Trace(pending_intersection_observers_);
   visitor->Trace(intersection_observers_being_invoked_);
   PausableObject::Trace(visitor);
