@@ -42,7 +42,7 @@ uint8_t data[] = {
 const mdns::DomainName openscreen_service{
     {11, '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e', 'e', 'n',
      4,  '_', 'u', 'd', 'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
-const IPv4Endpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
+const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
 
 }  // namespace
 
@@ -79,7 +79,7 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
 
   auto a = mdns_adapter->TakeAResponses();
   ASSERT_EQ(1u, a.size());
-  EXPECT_EQ((IPv4Address{172, 17, 32, 150}), a[0].address);
+  EXPECT_EQ((IPAddress{172, 17, 32, 150}), a[0].address);
 
   mdns_adapter->Close();
 }

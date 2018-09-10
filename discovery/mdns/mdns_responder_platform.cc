@@ -4,17 +4,6 @@
 
 #include "discovery/mdns/mdns_responder_platform.h"
 
-#include <fcntl.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -26,13 +15,6 @@
 #include "platform/api/socket.h"
 #include "platform/api/time.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
-
-// man 3 netlink
-// man 3 rtnetlink
-// man 7 netlink
-// man 7 rtnetlink
-// man 7 ip
-// man 7 netdevice
 
 extern "C" {
 
@@ -54,29 +36,22 @@ mStatus mDNSPlatformSendUDP(const mDNS* m,
                             UDPSocket* src,
                             const mDNSAddr* dst,
                             mDNSIPPort dstport) {
-  const auto* ifv4 =
-      reinterpret_cast<openscreen::platform::UdpSocketIPv4Ptr>(InterfaceID);
-  const auto fdv4_it =
-      std::find(m->p->v4_sockets.begin(), m->p->v4_sockets.end(), ifv4);
-  if (fdv4_it == m->p->v4_sockets.end()) {
-    const auto* ifv6 =
-        reinterpret_cast<openscreen::platform::UdpSocketIPv6Ptr>(InterfaceID);
-    const auto fdv6_it =
-        std::find(m->p->v6_sockets.begin(), m->p->v6_sockets.end(), ifv6);
-    if (fdv6_it == m->p->v6_sockets.end()) {
-      return mStatus_BadInterfaceErr;
-    }
-    openscreen::IPv6Endpoint dest{openscreen::IPv6Address{dst->ip.v6.b},
-                                  ntohs(dstport.NotAnInteger)};
-    size_t length = last - static_cast<const uint8_t*>(msg);
-    openscreen::platform::SendUdpIPv6(*fdv6_it, msg, length, dest);
-    return mStatus_NoError;
+  const auto* socket =
+      reinterpret_cast<openscreen::platform::UdpSocketPtr>(InterfaceID);
+  const auto socket_it =
+      std::find(m->p->sockets.begin(), m->p->sockets.end(), socket);
+  if (socket_it == m->p->sockets.end()) {
+    return mStatus_BadInterfaceErr;
   }
 
-  openscreen::IPv4Endpoint dest{openscreen::IPv4Address{dst->ip.v4.b},
-                                ntohs(dstport.NotAnInteger)};
+  openscreen::IPEndpoint dest{
+      openscreen::IPAddress{dst->type == mDNSAddrType_IPv4
+                                ? openscreen::IPAddress::Version::kV4
+                                : openscreen::IPAddress::Version::kV6,
+                            dst->ip.v4.b},
+      static_cast<uint16_t>((dstport.b[0] << 8) | dstport.b[1])};
   int64_t length = last - static_cast<const uint8_t*>(msg);
-  openscreen::platform::SendUdpIPv4(*fdv4_it, msg, length, dest);
+  openscreen::platform::SendUdp(*socket_it, msg, length, dest);
   return mStatus_NoError;
 }
 

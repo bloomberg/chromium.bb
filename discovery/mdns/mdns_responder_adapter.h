@@ -26,53 +26,42 @@ struct QueryEventHeader {
     kRemoved,
   };
 
-  enum class SocketType {
-    kIPv4 = 0,
-    kIPv6,
-  };
-
   QueryEventHeader();
-  QueryEventHeader(Type response_type, platform::UdpSocketIPv4Ptr v4_socket);
-  QueryEventHeader(Type response_type, platform::UdpSocketIPv6Ptr v6_socket);
+  QueryEventHeader(Type response_type, platform::UdpSocketPtr socket);
   QueryEventHeader(const QueryEventHeader&);
   ~QueryEventHeader();
   QueryEventHeader& operator=(const QueryEventHeader&);
 
   Type response_type;
-  // Receiving socket.  Exactly one is set.
-  SocketType receiving_socket_type;
-  union {
-    platform::UdpSocketIPv4Ptr v4_socket;
-    platform::UdpSocketIPv6Ptr v6_socket;
-  };
+  platform::UdpSocketPtr socket;
 };
 
 struct AEvent {
   AEvent();
   AEvent(const QueryEventHeader& header,
          DomainName domain_name,
-         const IPv4Address& address);
+         const IPAddress& address);
   AEvent(AEvent&&);
   ~AEvent();
   AEvent& operator=(AEvent&&);
 
   QueryEventHeader header;
   DomainName domain_name;
-  IPv4Address address;
+  IPAddress address;
 };
 
 struct AaaaEvent {
   AaaaEvent();
   AaaaEvent(const QueryEventHeader& header,
             DomainName domain_name,
-            const IPv6Address& address);
+            const IPAddress& address);
   AaaaEvent(AaaaEvent&&);
   ~AaaaEvent();
   AaaaEvent& operator=(AaaaEvent&&);
 
   QueryEventHeader header;
   DomainName domain_name;
-  IPv6Address address;
+  IPAddress address;
 };
 
 struct PtrEvent {
@@ -198,24 +187,15 @@ class MdnsResponderAdapter {
   // the data in OnDataReceived and will be used to send data via the platform
   // layer.
   virtual bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                                 const platform::IPv4Subnet& interface_address,
-                                 platform::UdpSocketIPv4Ptr socket) = 0;
-  virtual bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                                 const platform::IPv6Subnet& interface_address,
-                                 platform::UdpSocketIPv6Ptr socket) = 0;
-  virtual bool DeregisterInterface(platform::UdpSocketIPv4Ptr socket) = 0;
-  virtual bool DeregisterInterface(platform::UdpSocketIPv6Ptr socket) = 0;
+                                 const platform::IPSubnet& interface_address,
+                                 platform::UdpSocketPtr socket) = 0;
+  virtual bool DeregisterInterface(platform::UdpSocketPtr socket) = 0;
 
-  virtual void OnDataReceived(const IPv4Endpoint& source,
-                              const IPv4Endpoint& original_destination,
+  virtual void OnDataReceived(const IPEndpoint& source,
+                              const IPEndpoint& original_destination,
                               const uint8_t* data,
                               size_t length,
-                              platform::UdpSocketIPv4Ptr receiving_socket) = 0;
-  virtual void OnDataReceived(const IPv6Endpoint& source,
-                              const IPv6Endpoint& original_destination,
-                              const uint8_t* data,
-                              size_t length,
-                              platform::UdpSocketIPv6Ptr receiving_socket) = 0;
+                              platform::UdpSocketPtr receiving_socket) = 0;
 
   // Returns the number of seconds after which this method must be called again.
   virtual int RunTasks() = 0;

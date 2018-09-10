@@ -43,8 +43,7 @@ struct Service {
 
   mdns::DomainName service_instance;
   mdns::DomainName domain_name;
-  IPv4Address v4_address;
-  IPv6Address v6_address;
+  IPAddress address;
   uint16_t port;
   std::vector<std::string> txt;
 };
@@ -94,30 +93,19 @@ void SignalThings() {
   LOG_INFO << "pid: " << getpid();
 }
 
-struct Sockets {
-  Sockets() = default;
-  ~Sockets() = default;
-  Sockets(Sockets&&) = default;
-  Sockets& operator=(Sockets&&) = default;
-
-  std::vector<platform::UdpSocketIPv4Ptr> v4_sockets;
-  std::vector<platform::UdpSocketIPv6Ptr> v6_sockets;
-};
-
-std::vector<platform::UdpSocketIPv4Ptr> SetupMulticastSocketsV4(
+std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
     const std::vector<int>& index_list) {
-  std::vector<platform::UdpSocketIPv4Ptr> fds;
+  std::vector<platform::UdpSocketPtr> fds;
   for (const auto ifindex : index_list) {
     auto* socket = platform::CreateUdpSocketIPv4();
-    if (!JoinUdpMulticastGroupIPv4(socket, IPv4Address{{224, 0, 0, 251}},
-                                   ifindex)) {
+    if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)) {
       LOG_ERROR << "join multicast group failed: "
                 << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
-    if (!BindUdpSocketIPv4(
-            socket, IPv4Endpoint{IPv4Address{{0, 0, 0, 0}}, 5353}, ifindex)) {
+    if (!BindUdpSocket(socket, IPEndpoint{IPAddress{0, 0, 0, 0}, 5353},
+                       ifindex)) {
       LOG_ERROR << "bind failed: " << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
@@ -129,38 +117,27 @@ std::vector<platform::UdpSocketIPv4Ptr> SetupMulticastSocketsV4(
   return fds;
 }
 
-// TODO
-std::vector<platform::UdpSocketIPv6Ptr> SetupMulticastSocketsV6(
-    const std::vector<int>& index_list) {
-  return {};
-}
-
-Sockets RegisterInterfaces(
+std::vector<platform::UdpSocketPtr> RegisterInterfaces(
     const std::vector<platform::InterfaceAddresses>& addrinfo,
     mdns::MdnsResponderAdapter* mdns_adapter) {
-  std::vector<int> v4_index_list;
-  std::vector<int> v6_index_list;
+  std::vector<int> index_list;
   for (const auto& interface : addrinfo) {
-    if (!interface.ipv4_addresses.empty()) {
-      v4_index_list.push_back(interface.info.index);
-    } else if (!interface.ipv6_addresses.empty()) {
-      v6_index_list.push_back(interface.info.index);
+    if (!interface.addresses.empty()) {
+      index_list.push_back(interface.info.index);
     }
   }
 
-  auto sockets = Sockets{SetupMulticastSocketsV4(v4_index_list),
-                         SetupMulticastSocketsV6(v6_index_list)};
+  auto sockets = SetupMulticastSockets(index_list);
   // Listen on all interfaces
-  // TODO: v6
-  auto fd_it = sockets.v4_sockets.begin();
-  for (int index : v4_index_list) {
+  auto fd_it = sockets.begin();
+  for (int index : index_list) {
     const auto& addr = *std::find_if(
         addrinfo.begin(), addrinfo.end(),
         [index](const openscreen::platform::InterfaceAddresses& addr) {
           return addr.info.index == index;
         });
     // Pick any address for the given interface.
-    mdns_adapter->RegisterInterface(addr.info, addr.ipv4_addresses.front(),
+    mdns_adapter->RegisterInterface(addr.info, addr.addresses.front(),
                                     *fd_it++);
   }
 
@@ -175,10 +152,10 @@ void LogService(const Service& s) {
     LOG_INFO << " | " << l;
   }
   // TODO(btolsch): Add IP address printing/ToString to base/.
-  LOG_INFO << "A: " << static_cast<int>(s.v4_address.bytes[0]) << "."
-           << static_cast<int>(s.v4_address.bytes[1]) << "."
-           << static_cast<int>(s.v4_address.bytes[2]) << "."
-           << static_cast<int>(s.v4_address.bytes[3]);
+  uint8_t x[4] = {};
+  s.address.CopyToV4(x);
+  LOG_INFO << "A: " << static_cast<int>(x[0]) << "." << static_cast<int>(x[1])
+           << "." << static_cast<int>(x[2]) << "." << static_cast<int>(x[3]);
 }
 
 void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
@@ -255,11 +232,11 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     switch (a_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
-        it->second.v4_address = a_event.address;
+        it->second.address = a_event.address;
         break;
       case mdns::QueryEventHeader::Type::kRemoved:
         LOG_WARN << "a-remove: " << a_event.domain_name;
-        it->second.v4_address = IPv4Address(0, 0, 0, 0);
+        it->second.address = IPAddress(0, 0, 0, 0);
         break;
     }
   }
@@ -291,11 +268,8 @@ void BrowseDemo(const std::string& service_name,
                                   {"yurtle", "turtle"});
   }
 
-  for (auto* socket : sockets.v4_sockets) {
-    platform::WatchUdpSocketIPv4Readable(waiter, socket);
-  }
-  for (auto* socket : sockets.v6_sockets) {
-    platform::WatchUdpSocketIPv6Readable(waiter, socket);
+  for (auto* socket : sockets) {
+    platform::WatchUdpSocketReadable(waiter, socket);
   }
 
   mdns_adapter->StartPtrQuery(service_type);
@@ -310,12 +284,7 @@ void BrowseDemo(const std::string& service_name,
     }
     mdns_adapter->RunTasks();
     auto data = platform::OnePlatformLoopIteration(waiter);
-    for (auto& packet : data.v4_data) {
-      mdns_adapter->OnDataReceived(packet.source, packet.original_destination,
-                                   packet.bytes.data(), packet.length,
-                                   packet.socket);
-    }
-    for (auto& packet : data.v6_data) {
+    for (auto& packet : data) {
       mdns_adapter->OnDataReceived(packet.source, packet.original_destination,
                                    packet.bytes.data(), packet.length,
                                    packet.socket);
@@ -326,12 +295,8 @@ void BrowseDemo(const std::string& service_name,
     LogService(s.second);
   }
   platform::StopWatchingNetworkChange(waiter);
-  for (auto* socket : sockets.v4_sockets) {
-    platform::StopWatchingUdpSocketIPv4Readable(waiter, socket);
-    mdns_adapter->DeregisterInterface(socket);
-  }
-  for (auto* socket : sockets.v6_sockets) {
-    platform::StopWatchingUdpSocketIPv6Readable(waiter, socket);
+  for (auto* socket : sockets) {
+    platform::StopWatchingUdpSocketReadable(waiter, socket);
     mdns_adapter->DeregisterInterface(socket);
   }
   platform::DestroyEventWaiter(waiter);

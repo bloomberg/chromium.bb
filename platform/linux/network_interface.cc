@@ -130,19 +130,21 @@ InterfaceAddresses* GetAddressesForIndex(
 void GetIPv4Address(struct rtattr* rta,
                     unsigned int attrlen,
                     const std::string& ifname,
-                    IPv4Address* address) {
+                    IPAddress* address) {
   bool have_local = false;
-  IPv4Address local;
+  IPAddress local;
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFA_LABEL) {
       DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_ADDRESS) {
-      DCHECK_EQ(address->bytes.size(), RTA_PAYLOAD(rta));
-      *address = IPv4Address(static_cast<uint8_t*>(RTA_DATA(rta)));
+      DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
+      *address = IPAddress(IPAddress::Version::kV4,
+                           static_cast<uint8_t*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_LOCAL) {
-      DCHECK_EQ(local.bytes.size(), RTA_PAYLOAD(rta));
+      DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
       have_local = true;
-      local = IPv4Address(static_cast<uint8_t*>(RTA_DATA(rta)));
+      local = IPAddress(IPAddress::Version::kV4,
+                        static_cast<uint8_t*>(RTA_DATA(rta)));
     }
   }
   if (have_local)
@@ -158,19 +160,21 @@ void GetIPv4Address(struct rtattr* rta,
 void GetIPv6Address(struct rtattr* rta,
                     unsigned int attrlen,
                     const std::string& ifname,
-                    IPv6Address* address) {
+                    IPAddress* address) {
   bool have_local = false;
-  IPv6Address local;
+  IPAddress local;
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFA_LABEL) {
       DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_ADDRESS) {
-      DCHECK_EQ(address->bytes.size(), RTA_PAYLOAD(rta));
-      *address = IPv6Address(static_cast<uint8_t*>(RTA_DATA(rta)));
+      DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
+      *address = IPAddress(IPAddress::Version::kV6,
+                           static_cast<uint8_t*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_LOCAL) {
-      DCHECK_EQ(local.bytes.size(), RTA_PAYLOAD(rta));
+      DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
       have_local = true;
-      local = IPv6Address(static_cast<uint8_t*>(RTA_DATA(rta)));
+      local = IPAddress(IPAddress::Version::kV6,
+                        static_cast<uint8_t*>(RTA_DATA(rta)));
     }
   }
   if (have_local)
@@ -364,16 +368,16 @@ std::vector<InterfaceAddresses> GetAddressInfo(
         }
 
         if (interface_address->ifa_family == AF_INET) {
-          addresses->ipv4_addresses.emplace_back();
-          IPv4Subnet& address = addresses->ipv4_addresses.back();
+          addresses->addresses.emplace_back();
+          IPSubnet& address = addresses->addresses.back();
           address.prefix_length = interface_address->ifa_prefixlen;
 
           GetIPv4Address(IFA_RTA(interface_address),
                          IFA_PAYLOAD(netlink_header), addresses->info.name,
                          &address.address);
         } else if (interface_address->ifa_family == AF_INET6) {
-          addresses->ipv6_addresses.emplace_back();
-          IPv6Subnet& address = addresses->ipv6_addresses.back();
+          addresses->addresses.emplace_back();
+          IPSubnet& address = addresses->addresses.back();
           address.prefix_length = interface_address->ifa_prefixlen;
 
           GetIPv6Address(IFA_RTA(interface_address),

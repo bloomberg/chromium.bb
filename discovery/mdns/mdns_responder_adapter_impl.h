@@ -29,24 +29,15 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   bool SetHostLabel(const std::string& host_label) override;
 
   bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                         const platform::IPv4Subnet& interface_address,
-                         platform::UdpSocketIPv4Ptr socket) override;
-  bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                         const platform::IPv6Subnet& interface_address,
-                         platform::UdpSocketIPv6Ptr socket) override;
-  bool DeregisterInterface(platform::UdpSocketIPv4Ptr socket) override;
-  bool DeregisterInterface(platform::UdpSocketIPv6Ptr socket) override;
+                         const platform::IPSubnet& interface_address,
+                         platform::UdpSocketPtr socket) override;
+  bool DeregisterInterface(platform::UdpSocketPtr socket) override;
 
-  void OnDataReceived(const IPv4Endpoint& source,
-                      const IPv4Endpoint& original_destination,
+  void OnDataReceived(const IPEndpoint& source,
+                      const IPEndpoint& original_destination,
                       const uint8_t* data,
                       size_t length,
-                      platform::UdpSocketIPv4Ptr receiving_socket) override;
-  void OnDataReceived(const IPv6Endpoint& source,
-                      const IPv6Endpoint& original_destination,
-                      const uint8_t* data,
-                      size_t length,
-                      platform::UdpSocketIPv6Ptr receiving_socket) override;
+                      platform::UdpSocketPtr receiving_socket) override;
   int RunTasks() override;
 
   std::vector<AEvent> TakeAResponses() override;
@@ -127,10 +118,8 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   std::map<DomainName, DNSQuestion, DomainNameComparator> srv_questions_;
   std::map<DomainName, DNSQuestion, DomainNameComparator> txt_questions_;
 
-  std::map<platform::UdpSocketIPv4Ptr, NetworkInterfaceInfo>
-      v4_responder_interface_info_;
-  std::map<platform::UdpSocketIPv6Ptr, NetworkInterfaceInfo>
-      v6_responder_interface_info_;
+  std::map<platform::UdpSocketPtr, NetworkInterfaceInfo>
+      responder_interface_info_;
 
   std::vector<AEvent> a_responses_;
   std::vector<AaaaEvent> aaaa_responses_;

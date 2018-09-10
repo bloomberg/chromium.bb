@@ -19,44 +19,21 @@ namespace platform {
 
 static constexpr int kUdpMaxPacketSize = 1 << 16;
 
-struct ReceivedDataIPv4 {
-  ReceivedDataIPv4();
-  ~ReceivedDataIPv4();
-
-  IPv4Endpoint source;
-  IPv4Endpoint original_destination;
-  std::array<uint8_t, kUdpMaxPacketSize> bytes;
-  ssize_t length;
-  UdpSocketIPv4Ptr socket;
-};
-
-struct ReceivedDataIPv6 {
-  ReceivedDataIPv6();
-  ~ReceivedDataIPv6();
-
-  IPv6Endpoint source;
-  IPv6Endpoint original_destination;
-  std::array<uint8_t, kUdpMaxPacketSize> bytes;
-  ssize_t length;
-  UdpSocketIPv6Ptr socket;
-};
-
 struct ReceivedData {
   ReceivedData();
   ~ReceivedData();
-  ReceivedData(ReceivedData&& o);
-  ReceivedData& operator=(ReceivedData&& o);
 
-  std::vector<ReceivedDataIPv4> v4_data;
-  std::vector<ReceivedDataIPv6> v6_data;
+  IPEndpoint source;
+  IPEndpoint original_destination;
+  std::array<uint8_t, kUdpMaxPacketSize> bytes;
+  ssize_t length;
+  UdpSocketPtr socket;
 };
 
-bool ReceiveDataFromIPv4Event(const UdpSocketIPv4ReadableEvent& read_event,
-                              ReceivedDataIPv4* data);
-bool ReceiveDataFromIPv6Event(const UdpSocketIPv6ReadableEvent& read_event,
-                              ReceivedDataIPv6* data);
-ReceivedData HandleUdpSocketReadEvents(const Events& events);
-ReceivedData OnePlatformLoopIteration(EventWaiterPtr waiter);
+bool ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
+                          ReceivedData* data);
+std::vector<ReceivedData> HandleUdpSocketReadEvents(const Events& events);
+std::vector<ReceivedData> OnePlatformLoopIteration(EventWaiterPtr waiter);
 
 }  // namespace platform
 }  // namespace openscreen

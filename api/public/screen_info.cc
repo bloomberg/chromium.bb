@@ -10,10 +10,8 @@ bool ScreenInfo::operator==(const ScreenInfo& other) const {
   return (screen_id == other.screen_id &&
           friendly_name == other.friendly_name &&
           network_interface == other.network_interface &&
-          ipv4_endpoint.address == other.ipv4_endpoint.address &&
-          ipv4_endpoint.port == other.ipv4_endpoint.port &&
-          ipv6_endpoint.address == other.ipv6_endpoint.address &&
-          ipv6_endpoint.port == other.ipv6_endpoint.port);
+          endpoint.address == other.endpoint.address &&
+          endpoint.port == other.endpoint.port);
 }
 
 bool ScreenInfo::operator!=(const ScreenInfo& other) const {

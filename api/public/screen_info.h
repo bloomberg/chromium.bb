@@ -25,9 +25,7 @@ struct ScreenInfo {
   std::string network_interface;
 
   // The network endpoint to create a new connection to the screen.
-  // At least one of these two must be set.
-  IPv4Endpoint ipv4_endpoint;
-  IPv6Endpoint ipv6_endpoint;
+  IPEndpoint endpoint;
 };
 
 }  // namespace openscreen

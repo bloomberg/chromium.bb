@@ -6,10 +6,97 @@
 
 #include <cstring>
 
+#include "platform/api/logging.h"
+
 namespace openscreen {
 
 // static
-bool IPv4Address::Parse(const std::string& s, IPv4Address* address) {
+bool IPAddress::Parse(const std::string& s, IPAddress* address) {
+  return ParseV4(s, address) || ParseV6(s, address);
+}
+
+IPAddress::IPAddress() : version_(Version::kV4), bytes_({}) {}
+IPAddress::IPAddress(const std::array<uint8_t, 4>& bytes)
+    : version_(Version::kV4), bytes_{bytes[0], bytes[1], bytes[2], bytes[3]} {}
+IPAddress::IPAddress(const uint8_t (&b)[4])
+    : version_(Version::kV4), bytes_{{b[0], b[1], b[2], b[3]}} {}
+IPAddress::IPAddress(Version version, const uint8_t* b) : version_(version) {
+  if (version_ == Version::kV4) {
+    bytes_ = {b[0], b[1], b[2], b[3]};
+  } else {
+    bytes_ = {b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
+              b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]};
+  }
+}
+IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
+    : version_(Version::kV4), bytes_{{b1, b2, b3, b4}} {}
+IPAddress::IPAddress(const std::array<uint8_t, 16>& bytes)
+    : version_(Version::kV6), bytes_(bytes) {}
+IPAddress::IPAddress(const uint8_t (&b)[16])
+    : version_(Version::kV6),
+      bytes_{{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10],
+              b[11], b[12], b[13], b[14], b[15]}} {}
+IPAddress::IPAddress(uint8_t b1,
+                     uint8_t b2,
+                     uint8_t b3,
+                     uint8_t b4,
+                     uint8_t b5,
+                     uint8_t b6,
+                     uint8_t b7,
+                     uint8_t b8,
+                     uint8_t b9,
+                     uint8_t b10,
+                     uint8_t b11,
+                     uint8_t b12,
+                     uint8_t b13,
+                     uint8_t b14,
+                     uint8_t b15,
+                     uint8_t b16)
+    : version_(Version::kV6),
+      bytes_{{b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
+              b16}} {}
+IPAddress::IPAddress(const IPAddress& o) = default;
+
+IPAddress& IPAddress::operator=(const IPAddress& o) = default;
+
+bool IPAddress::operator==(const IPAddress& o) const {
+  if (version_ != o.version_) {
+    return false;
+  }
+  if (version_ == Version::kV4) {
+    return bytes_[0] == o.bytes_[0] && bytes_[1] == o.bytes_[1] &&
+           bytes_[2] == o.bytes_[2] && bytes_[3] == o.bytes_[3];
+  }
+  return bytes_ == o.bytes_;
+}
+
+bool IPAddress::operator!=(const IPAddress& o) const {
+  return !(*this == o);
+}
+
+IPAddress::operator bool() const {
+  if (version_ == Version::kV4) {
+    return bytes_[0] | bytes_[1] | bytes_[2] | bytes_[3];
+  }
+  for (const auto& byte : bytes_)
+    if (byte)
+      return true;
+
+  return false;
+}
+
+void IPAddress::CopyToV4(uint8_t x[4]) const {
+  // DCHECK(version_ == Version::kV4);
+  std::memcpy(x, bytes_.data(), 4);
+}
+
+void IPAddress::CopyToV6(uint8_t x[16]) const {
+  // DCHECK(version_ == Version::kV6);
+  std::memcpy(x, bytes_.data(), 16);
+}
+
+// static
+bool IPAddress::ParseV4(const std::string& s, IPAddress* address) {
   if (s.size() > 0 && s[0] == '.') {
     return false;
   }
@@ -21,7 +108,7 @@ bool IPv4Address::Parse(const std::string& s, IPv4Address* address) {
       if (previous_dot) {
         return false;
       }
-      address->bytes[i++] = static_cast<uint8_t>(next_octet);
+      address->bytes_[i++] = static_cast<uint8_t>(next_octet);
       next_octet = 0;
       previous_dot = true;
       if (i > 3) {
@@ -44,38 +131,13 @@ bool IPv4Address::Parse(const std::string& s, IPv4Address* address) {
   if (i != 3) {
     return false;
   }
-  address->bytes[i] = static_cast<uint8_t>(next_octet);
+  address->bytes_[i] = static_cast<uint8_t>(next_octet);
+  address->version_ = Version::kV4;
   return true;
 }
 
-IPv4Address::IPv4Address() : bytes({}) {}
-IPv4Address::IPv4Address(const std::array<uint8_t, 4>& bytes) : bytes(bytes) {}
-IPv4Address::IPv4Address(const uint8_t (&b)[4])
-    : bytes{{b[0], b[1], b[2], b[3]}} {}
-IPv4Address::IPv4Address(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
-    : bytes{{b1, b2, b3, b4}} {}
-IPv4Address::IPv4Address(const IPv4Address& o) = default;
-
-IPv4Address& IPv4Address::operator=(const IPv4Address& o) = default;
-
-bool IPv4Address::operator==(const IPv4Address& o) const {
-  return bytes == o.bytes;
-}
-
-bool IPv4Address::operator!=(const IPv4Address& o) const {
-  return !(*this == o);
-}
-
-IPv4Address::operator bool() const {
-  return bytes[0] | bytes[1] | bytes[2] | bytes[3];
-}
-
-void IPv4Address::CopyTo(uint8_t x[4]) const {
-  std::memcpy(x, bytes.data(), 4);
-}
-
 // static
-bool IPv6Address::Parse(const std::string& s, IPv6Address* address) {
+bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
   if (s.size() > 1 && s[0] == ':' && s[1] != ':') {
     return false;
   }
@@ -132,61 +194,15 @@ bool IPv6Address::Parse(const std::string& s, IPv6Address* address) {
   }
   for (int j = 15; j >= 0;) {
     if (i == double_colon_index) {
-      address->bytes[j--] = values[i--];
+      address->bytes_[j--] = values[i--];
       while (j > i)
-        address->bytes[j--] = 0;
+        address->bytes_[j--] = 0;
     } else {
-      address->bytes[j--] = values[i--];
+      address->bytes_[j--] = values[i--];
     }
   }
+  address->version_ = Version::kV6;
   return true;
-}
-
-IPv6Address::IPv6Address() : bytes({}) {}
-IPv6Address::IPv6Address(const std::array<uint8_t, 16>& bytes) : bytes(bytes) {}
-IPv6Address::IPv6Address(const uint8_t (&b)[16])
-    : bytes{{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10],
-             b[11], b[12], b[13], b[14], b[15]}} {}
-IPv6Address::IPv6Address(uint8_t b1,
-                         uint8_t b2,
-                         uint8_t b3,
-                         uint8_t b4,
-                         uint8_t b5,
-                         uint8_t b6,
-                         uint8_t b7,
-                         uint8_t b8,
-                         uint8_t b9,
-                         uint8_t b10,
-                         uint8_t b11,
-                         uint8_t b12,
-                         uint8_t b13,
-                         uint8_t b14,
-                         uint8_t b15,
-                         uint8_t b16)
-    : bytes{{b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
-             b16}} {}
-IPv6Address::IPv6Address(const IPv6Address& o) = default;
-
-IPv6Address& IPv6Address::operator=(const IPv6Address& o) = default;
-
-bool IPv6Address::operator==(const IPv6Address& o) const {
-  return bytes == o.bytes;
-}
-
-bool IPv6Address::operator!=(const IPv6Address& o) const {
-  return !(*this == o);
-}
-
-IPv6Address::operator bool() const {
-  for (const auto& byte : bytes)
-    if (byte)
-      return true;
-
-  return false;
-}
-
-void IPv6Address::CopyTo(uint8_t x[16]) const {
-  std::memcpy(x, bytes.data(), 16);
 }
 
 }  // namespace openscreen

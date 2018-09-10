@@ -20,6 +20,11 @@ namespace {
 // octet.
 constexpr size_t kMaxDnsStringLength = 255;
 
+static_assert(sizeof(mDNSAddr::ip.v4.b) == 4u,
+              "mDNSResponder IPv4 address must be 4 bytes");
+static_assert(sizeof(mDNSAddr::ip.v6.b) == 16u,
+              "mDNSResponder IPv6 address must be 16 bytes");
+
 void AssignMdnsPort(mDNSIPPort* mdns_port, uint16_t port) {
   mdns_port->b[0] = (port >> 8) & 0xff;
   mdns_port->b[1] = port & 0xff;
@@ -62,8 +67,20 @@ bool IsValidServiceProtocol(const std::string& protocol) {
 }
 #endif  // if DCHECK_IS_ON()
 
-void MakeSubnetMaskFromPrefixLength(uint8_t mask[4], uint8_t prefix_length) {
+void MakeSubnetMaskFromPrefixLengthV4(uint8_t mask[4], uint8_t prefix_length) {
   for (int i = 0; i < 4; prefix_length -= 8, ++i) {
+    if (prefix_length >= 8) {
+      mask[i] = 0xff;
+    } else if (prefix_length > 0) {
+      mask[i] = 0xff << (8 - prefix_length);
+    } else {
+      mask[i] = 0;
+    }
+  }
+}
+
+void MakeSubnetMaskFromPrefixLengthV6(uint8_t mask[16], uint8_t prefix_length) {
+  for (int i = 0; i < 16; prefix_length -= 8, ++i) {
     if (prefix_length >= 8) {
       mask[i] = 0xff;
     } else if (prefix_length > 0) {
@@ -166,101 +183,83 @@ bool MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {
 
 bool MdnsResponderAdapterImpl::RegisterInterface(
     const platform::InterfaceInfo& interface_info,
-    const platform::IPv4Subnet& interface_address,
-    platform::UdpSocketIPv4Ptr socket) {
-  const auto info_it = v4_responder_interface_info_.find(socket);
-  if (info_it != v4_responder_interface_info_.end()) {
+    const platform::IPSubnet& interface_address,
+    platform::UdpSocketPtr socket) {
+  const auto info_it = responder_interface_info_.find(socket);
+  if (info_it != responder_interface_info_.end()) {
     return true;
   }
-  NetworkInterfaceInfo& info = v4_responder_interface_info_[socket];
+  NetworkInterfaceInfo& info = responder_interface_info_[socket];
   std::memset(&info, 0, sizeof(NetworkInterfaceInfo));
   info.InterfaceID = reinterpret_cast<decltype(info.InterfaceID)>(socket);
   info.Advertise = mDNSfalse;
-  info.ip.type = mDNSAddrType_IPv4;
-  interface_address.address.CopyTo(info.ip.ip.v4.b);
-  info.mask.type = mDNSAddrType_IPv4;
+  if (interface_address.address.IsV4()) {
+    info.ip.type = mDNSAddrType_IPv4;
+    interface_address.address.CopyToV4(info.ip.ip.v4.b);
+    info.mask.type = mDNSAddrType_IPv4;
+    MakeSubnetMaskFromPrefixLengthV4(info.mask.ip.v4.b,
+                                     interface_address.prefix_length);
+  } else {
+    info.ip.type = mDNSAddrType_IPv6;
+    interface_address.address.CopyToV6(info.ip.ip.v6.b);
+    info.mask.type = mDNSAddrType_IPv6;
+    MakeSubnetMaskFromPrefixLengthV6(info.mask.ip.v6.b,
+                                     interface_address.prefix_length);
+  }
 
-  MakeSubnetMaskFromPrefixLength(info.mask.ip.v4.b,
-                                 interface_address.prefix_length);
   interface_info.CopyHardwareAddressTo(info.MAC.b);
   info.McastTxRx = 1;
-  platform_storage_.v4_sockets.push_back(socket);
+  platform_storage_.sockets.push_back(socket);
   auto result = mDNS_RegisterInterface(&mdns_, &info, mDNSfalse);
   LOG_IF(WARN, result != mStatus_NoError)
       << "mDNS_RegisterInterface failed: " << result;
   return result == mStatus_NoError;
 }
 
-bool MdnsResponderAdapterImpl::RegisterInterface(
-    const platform::InterfaceInfo& interface_info,
-    const platform::IPv6Subnet& interface_address,
-    platform::UdpSocketIPv6Ptr socket) {
-  UNIMPLEMENTED();
-  return false;
-}
-
 bool MdnsResponderAdapterImpl::DeregisterInterface(
-    platform::UdpSocketIPv4Ptr socket) {
-  const auto info_it = v4_responder_interface_info_.find(socket);
-  if (info_it == v4_responder_interface_info_.end()) {
+    platform::UdpSocketPtr socket) {
+  const auto info_it = responder_interface_info_.find(socket);
+  if (info_it == responder_interface_info_.end()) {
     return false;
   }
-  const auto it = std::find(platform_storage_.v4_sockets.begin(),
-                            platform_storage_.v4_sockets.end(), socket);
-  DCHECK(it != platform_storage_.v4_sockets.end());
-  platform_storage_.v4_sockets.erase(it);
+  const auto it = std::find(platform_storage_.sockets.begin(),
+                            platform_storage_.sockets.end(), socket);
+  DCHECK(it != platform_storage_.sockets.end());
+  platform_storage_.sockets.erase(it);
   if (info_it->second.RR_A.namestorage.c[0]) {
     mDNS_Deregister(&mdns_, &info_it->second.RR_A);
     info_it->second.RR_A.namestorage.c[0] = 0;
   }
   mDNS_DeregisterInterface(&mdns_, &info_it->second, mDNSfalse);
-  v4_responder_interface_info_.erase(info_it);
+  responder_interface_info_.erase(info_it);
   return true;
 }
 
-bool MdnsResponderAdapterImpl::DeregisterInterface(
-    platform::UdpSocketIPv6Ptr socket) {
-  UNIMPLEMENTED();
-  return false;
-}
-
 void MdnsResponderAdapterImpl::OnDataReceived(
-    const IPv4Endpoint& source,
-    const IPv4Endpoint& original_destination,
+    const IPEndpoint& source,
+    const IPEndpoint& original_destination,
     const uint8_t* data,
     size_t length,
-    platform::UdpSocketIPv4Ptr receiving_socket) {
+    platform::UdpSocketPtr receiving_socket) {
   mDNSAddr src;
-  src.type = mDNSAddrType_IPv4;
-  source.address.CopyTo(src.ip.v4.b);
+  if (source.address.IsV4()) {
+    src.type = mDNSAddrType_IPv4;
+    source.address.CopyToV4(src.ip.v4.b);
+  } else {
+    src.type = mDNSAddrType_IPv6;
+    source.address.CopyToV6(src.ip.v6.b);
+  }
   mDNSIPPort srcport;
   AssignMdnsPort(&srcport, source.port);
 
   mDNSAddr dst;
-  dst.type = mDNSAddrType_IPv4;
-  original_destination.address.CopyTo(dst.ip.v4.b);
-  mDNSIPPort dstport;
-  AssignMdnsPort(&dstport, original_destination.port);
-
-  mDNSCoreReceive(&mdns_, const_cast<uint8_t*>(data), data + length, &src,
-                  srcport, &dst, dstport,
-                  reinterpret_cast<mDNSInterfaceID>(receiving_socket));
-}
-void MdnsResponderAdapterImpl::OnDataReceived(
-    const IPv6Endpoint& source,
-    const IPv6Endpoint& original_destination,
-    const uint8_t* data,
-    size_t length,
-    platform::UdpSocketIPv6Ptr receiving_socket) {
-  mDNSAddr src;
-  src.type = mDNSAddrType_IPv6;
-  source.address.CopyTo(src.ip.v6.b);
-  mDNSIPPort srcport;
-  AssignMdnsPort(&srcport, source.port);
-
-  mDNSAddr dst;
-  dst.type = mDNSAddrType_IPv6;
-  original_destination.address.CopyTo(dst.ip.v6.b);
+  if (source.address.IsV4()) {
+    dst.type = mDNSAddrType_IPv4;
+    original_destination.address.CopyToV4(dst.ip.v4.b);
+  } else {
+    dst.type = mDNSAddrType_IPv6;
+    original_destination.address.CopyToV6(dst.ip.v6.b);
+  }
   mDNSIPPort dstport;
   AssignMdnsPort(&dstport, original_destination.port);
 
@@ -638,7 +637,7 @@ void MdnsResponderAdapterImpl::AQueryCallback(mDNS* m,
   DomainName domain(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
-  IPv4Address address(answer->rdata->u.ipv4.b);
+  IPAddress address(answer->rdata->u.ipv4.b);
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
@@ -652,7 +651,7 @@ void MdnsResponderAdapterImpl::AQueryCallback(mDNS* m,
     DCHECK_EQ(added, QC_addnocache);
   }
   adapter->a_responses_.emplace_back(
-      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketIPv4Ptr>(
+      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
                                        answer->InterfaceID)},
       std::move(domain), address);
 }
@@ -668,7 +667,7 @@ void MdnsResponderAdapterImpl::AaaaQueryCallback(mDNS* m,
   DomainName domain(std::vector<uint8_t>(
       question->qname.c,
       question->qname.c + DomainNameLength(&question->qname)));
-  IPv6Address address(answer->rdata->u.ipv6.b);
+  IPAddress address(IPAddress::Version::kV6, answer->rdata->u.ipv6.b);
 
   auto* adapter =
       reinterpret_cast<MdnsResponderAdapterImpl*>(question->QuestionContext);
@@ -682,7 +681,7 @@ void MdnsResponderAdapterImpl::AaaaQueryCallback(mDNS* m,
     DCHECK_EQ(added, QC_addnocache);
   }
   adapter->aaaa_responses_.emplace_back(
-      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketIPv4Ptr>(
+      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
                                        answer->InterfaceID)},
       std::move(domain), address);
 }
@@ -711,7 +710,7 @@ void MdnsResponderAdapterImpl::PtrQueryCallback(mDNS* m,
     DCHECK_EQ(added, QC_addnocache);
   }
   adapter->ptr_responses_.emplace_back(
-      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketIPv4Ptr>(
+      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
                                        answer->InterfaceID)},
       std::move(result));
 }
@@ -744,7 +743,7 @@ void MdnsResponderAdapterImpl::SrvQueryCallback(mDNS* m,
     DCHECK_EQ(added, QC_addnocache);
   }
   adapter->srv_responses_.emplace_back(
-      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketIPv4Ptr>(
+      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
                                        answer->InterfaceID)},
       std::move(service), std::move(result),
       GetNetworkOrderPort(answer->rdata->u.srv.port));
@@ -775,7 +774,7 @@ void MdnsResponderAdapterImpl::TxtQueryCallback(mDNS* m,
     DCHECK_EQ(added, QC_addnocache);
   }
   adapter->txt_responses_.emplace_back(
-      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketIPv4Ptr>(
+      QueryEventHeader{event_type, reinterpret_cast<platform::UdpSocketPtr>(
                                        answer->InterfaceID)},
       std::move(service), std::move(lines));
 }
@@ -804,7 +803,7 @@ void MdnsResponderAdapterImpl::ServiceCallback(mDNS* m,
 }
 
 void MdnsResponderAdapterImpl::AdvertiseInterfaces() {
-  for (auto& info : v4_responder_interface_info_) {
+  for (auto& info : responder_interface_info_) {
     NetworkInterfaceInfo& interface_info = info.second;
     mDNS_SetupResourceRecord(&interface_info.RR_A, /** RDataStorage */ nullptr,
                              mDNSInterface_Any, kDNSType_A, kHostNameTTL,
@@ -812,18 +811,11 @@ void MdnsResponderAdapterImpl::AdvertiseInterfaces() {
                              /** Callback */ nullptr, /** Context */ nullptr);
     AssignDomainName(&interface_info.RR_A.namestorage,
                      &mdns_.MulticastHostname);
-    interface_info.RR_A.resrec.rdata->u.ipv4 = interface_info.ip.ip.v4;
-    mDNS_Register(&mdns_, &interface_info.RR_A);
-  }
-  for (auto& info : v6_responder_interface_info_) {
-    NetworkInterfaceInfo& interface_info = info.second;
-    mDNS_SetupResourceRecord(&interface_info.RR_A, /** RDataStorage */ nullptr,
-                             mDNSInterface_Any, kDNSType_AAAA, kHostNameTTL,
-                             kDNSRecordTypeUnique, AuthRecordAny,
-                             /** Callback */ nullptr, /** Context */ nullptr);
-    AssignDomainName(&interface_info.RR_A.namestorage,
-                     &mdns_.MulticastHostname);
-    interface_info.RR_A.resrec.rdata->u.ipv6 = interface_info.ip.ip.v6;
+    if (interface_info.ip.type == mDNSAddrType_IPv4) {
+      interface_info.RR_A.resrec.rdata->u.ipv4 = interface_info.ip.ip.v4;
+    } else {
+      interface_info.RR_A.resrec.rdata->u.ipv6 = interface_info.ip.ip.v6;
+    }
     mDNS_Register(&mdns_, &interface_info.RR_A);
   }
 }
@@ -833,14 +825,7 @@ void MdnsResponderAdapterImpl::DeadvertiseInterfaces() {
   // whether the record was advertised.  AdvertiseInterfaces sets the domain
   // name before registering the A record, and this clears it after
   // deregistering.
-  for (auto& info : v4_responder_interface_info_) {
-    NetworkInterfaceInfo& interface_info = info.second;
-    if (interface_info.RR_A.namestorage.c[0]) {
-      mDNS_Deregister(&mdns_, &interface_info.RR_A);
-      interface_info.RR_A.namestorage.c[0] = 0;
-    }
-  }
-  for (auto& info : v6_responder_interface_info_) {
+  for (auto& info : responder_interface_info_) {
     NetworkInterfaceInfo& interface_info = info.second;
     if (interface_info.RR_A.namestorage.c[0]) {
       mDNS_Deregister(&mdns_, &interface_info.RR_A);

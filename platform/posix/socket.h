@@ -8,12 +8,13 @@
 namespace openscreen {
 namespace platform {
 
-struct UdpSocketIPv4Private {
+struct UdpSocketPrivate {
+  enum class Version {
+    kV4,
+    kV6,
+  };
   const int fd;
-};
-
-struct UdpSocketIPv6Private {
-  const int fd;
+  Version version;
 };
 
 }  // namespace platform

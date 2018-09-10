@@ -16,20 +16,12 @@ namespace platform {
 struct EventWaiterPrivate;
 using EventWaiterPtr = EventWaiterPrivate*;
 
-struct UdpSocketIPv4ReadableEvent {
-  UdpSocketIPv4Ptr socket;
+struct UdpSocketReadableEvent {
+  UdpSocketPtr socket;
 };
 
-struct UdpSocketIPv6ReadableEvent {
-  UdpSocketIPv6Ptr socket;
-};
-
-struct UdpSocketIPv4WritableEvent {
-  UdpSocketIPv4Ptr socket;
-};
-
-struct UdpSocketIPv6WritableEvent {
-  UdpSocketIPv6Ptr socket;
+struct UdpSocketWritableEvent {
+  UdpSocketPtr socket;
 };
 
 // This struct represents a set of events associated with a particular
@@ -42,10 +34,8 @@ struct Events {
   Events(Events&& o);
   Events& operator=(Events&& o);
 
-  std::vector<UdpSocketIPv4ReadableEvent> udpv4_readable_events;
-  std::vector<UdpSocketIPv6ReadableEvent> udpv6_readable_events;
-  std::vector<UdpSocketIPv4WritableEvent> udpv4_writable_events;
-  std::vector<UdpSocketIPv6WritableEvent> udpv6_writable_events;
+  std::vector<UdpSocketReadableEvent> udp_readable_events;
+  std::vector<UdpSocketWritableEvent> udp_writable_events;
 };
 
 EventWaiterPtr CreateEventWaiter();
@@ -54,28 +44,20 @@ void DestroyEventWaiter(EventWaiterPtr waiter);
 // Returns true if |socket| was successfully added to the set of watched
 // sockets, false otherwise.  It will also return false if |socket| is already
 // being watched.
-bool WatchUdpSocketIPv4Readable(EventWaiterPtr waiter, UdpSocketIPv4Ptr socket);
-bool WatchUdpSocketIPv6Readable(EventWaiterPtr waiter, UdpSocketIPv6Ptr socket);
+bool WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
 // Returns true if |socket| was successfully removed from the set of watched
 // sockets.
-bool StopWatchingUdpSocketIPv4Readable(EventWaiterPtr waiter,
-                                       UdpSocketIPv4Ptr socket);
-bool StopWatchingUdpSocketIPv6Readable(EventWaiterPtr waiter,
-                                       UdpSocketIPv6Ptr socket);
+bool StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
 // Returns true if |socket| was successfully added to the set of watched
 // sockets, false otherwise.  It will also return false if |socket| is already
 // being watched.
-bool WatchUdpSocketIPv4Writable(EventWaiterPtr waiter, UdpSocketIPv4Ptr socket);
-bool WatchUdpSocketIPv6Writable(EventWaiterPtr waiter, UdpSocketIPv6Ptr socket);
+bool WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
 // Returns true if |socket| was successfully removed from the set of watched
 // sockets.
-bool StopWatchingUdpSocketIPv4Writable(EventWaiterPtr waiter,
-                                       UdpSocketIPv4Ptr socket);
-bool StopWatchingUdpSocketIPv6Writable(EventWaiterPtr waiter,
-                                       UdpSocketIPv6Ptr socket);
+bool StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
 // Returns true if |waiter| successfully started monitoring network change
 // events, false otherwise.  It will also return false if |waiter| is already

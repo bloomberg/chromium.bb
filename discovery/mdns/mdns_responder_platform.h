@@ -10,8 +10,7 @@
 #include "platform/api/socket.h"
 
 struct mDNS_PlatformSupport_struct {
-  std::vector<openscreen::platform::UdpSocketIPv4Ptr> v4_sockets;
-  std::vector<openscreen::platform::UdpSocketIPv6Ptr> v6_sockets;
+  std::vector<openscreen::platform::UdpSocketPtr> sockets;
 };
 
 #endif  // DISCOVERY_MDNS_MDNS_RESPONDER_PLATFORM_H_

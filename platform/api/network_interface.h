@@ -35,8 +35,8 @@ struct InterfaceInfo {
   Type type = Type::kOther;
 };
 
-struct IPv4Subnet {
-  IPv4Address address;
+struct IPSubnet {
+  IPAddress address;
 
   // Prefix length of |address|, which is another way of specifying a subnet
   // mask.  For example, 192.168.0.10/24 is a common representation of the
@@ -45,22 +45,11 @@ struct IPv4Subnet {
   uint8_t prefix_length = 0;
 };
 
-struct IPv6Subnet {
-  IPv6Address address;
-
-  // Prefix length of |address|.  This works the same was as
-  // IPv4PrefixedAddress.prefix_length, but can be larger.
-  uint8_t prefix_length = 0;
-};
-
 struct InterfaceAddresses {
   InterfaceInfo info = {};
 
-  // All IPv4 addresses associated with the interface identified by |info|.
-  std::vector<IPv4Subnet> ipv4_addresses;
-
-  // All IPv6 addresses associated with the interface identified by |info|.
-  std::vector<IPv6Subnet> ipv6_addresses;
+  // All IP addresses associated with the interface identified by |info|.
+  std::vector<IPSubnet> addresses;
 };
 
 // Returns at most one InterfaceAddresses per interface, so there will be no

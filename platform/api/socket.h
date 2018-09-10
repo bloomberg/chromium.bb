@@ -11,49 +11,31 @@ namespace openscreen {
 namespace platform {
 
 // Opaque type for the platform to implement.
-struct UdpSocketIPv4Private;
-using UdpSocketIPv4Ptr = UdpSocketIPv4Private*;
-struct UdpSocketIPv6Private;
-using UdpSocketIPv6Ptr = UdpSocketIPv6Private*;
+struct UdpSocketPrivate;
+using UdpSocketPtr = UdpSocketPrivate*;
 
-UdpSocketIPv4Ptr CreateUdpSocketIPv4();
-UdpSocketIPv6Ptr CreateUdpSocketIPv6();
+UdpSocketPtr CreateUdpSocketIPv4();
+UdpSocketPtr CreateUdpSocketIPv6();
 
 // Closes the underlying platform socket and frees any allocated memory.
-void DestroyUdpSocket(UdpSocketIPv4Ptr socket);
-void DestroyUdpSocket(UdpSocketIPv6Ptr socket);
+void DestroyUdpSocket(UdpSocketPtr socket);
 
-bool BindUdpSocketIPv4(UdpSocketIPv4Ptr socket,
-                       const IPv4Endpoint& endpoint,
-                       int32_t ifindex);
-bool BindUdpSocketIPv6(UdpSocketIPv6Ptr socket,
-                       const IPv6Endpoint& endpoint,
-                       int32_t ifindex);
-bool JoinUdpMulticastGroupIPv4(UdpSocketIPv4Ptr socket,
-                               const IPv4Address& address,
-                               int32_t ifindex);
-bool JoinUdpMulticastGroupIPv6(UdpSocketIPv6Ptr socket,
-                               const IPv6Address& address,
-                               int32_t ifindex);
+bool BindUdpSocket(UdpSocketPtr socket,
+                   const IPEndpoint& endpoint,
+                   int32_t ifindex);
+bool JoinUdpMulticastGroup(UdpSocketPtr socket,
+                           const IPAddress& address,
+                           int32_t ifindex);
 
-int64_t ReceiveUdpIPv4(UdpSocketIPv4Ptr socket,
-                       void* data,
-                       int64_t length,
-                       IPv4Endpoint* src,
-                       IPv4Endpoint* original_destination);
-int64_t ReceiveUdpIPv6(UdpSocketIPv6Ptr socket,
-                       void* data,
-                       int64_t length,
-                       IPv6Endpoint* src,
-                       IPv6Endpoint* original_destination);
-int64_t SendUdpIPv4(UdpSocketIPv4Ptr socket,
-                    const void* data,
-                    int64_t length,
-                    const IPv4Endpoint& dest);
-int64_t SendUdpIPv6(UdpSocketIPv6Ptr socket,
-                    const void* data,
-                    int64_t length,
-                    const IPv6Endpoint& dest);
+int64_t ReceiveUdp(UdpSocketPtr socket,
+                   void* data,
+                   int64_t length,
+                   IPEndpoint* src,
+                   IPEndpoint* original_destination);
+int64_t SendUdp(UdpSocketPtr socket,
+                const void* data,
+                int64_t length,
+                const IPEndpoint& dest);
 
 }  // namespace platform
 }  // namespace openscreen

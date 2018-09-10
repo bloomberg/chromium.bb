@@ -12,95 +12,76 @@
 
 namespace openscreen {
 
-// TODO(issues/9): Merge v4 and v6 IP address types.
-struct IPv4Address {
+class IPAddress {
  public:
-  // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") and
-  // puts the result into |address|.  Returns true if the parsing was successful
-  // and |address| was set, false otherwise.
-  static bool Parse(const std::string& s, IPv4Address* address);
+  enum class Version {
+    kV4,
+    kV6,
+  };
 
-  IPv4Address();
-  explicit IPv4Address(const std::array<uint8_t, 4>& bytes);
-  explicit IPv4Address(const uint8_t (&b)[4]);
-  // IPv4Address(const uint8_t*) disambiguated with
-  // IPv4Address(const uint8_t (&)[4]).
-  template <typename T,
-            typename = typename std::enable_if<
-                std::is_convertible<T, const uint8_t*>::value &&
-                !std::is_convertible<T, const uint8_t (&)[4]>::value>::type>
-  explicit IPv4Address(T b) : bytes{{b[0], b[1], b[2], b[3]}} {}
-  IPv4Address(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
-  IPv4Address(const IPv4Address& o);
-  ~IPv4Address() = default;
+  static constexpr size_t kV4Size = 4;
+  static constexpr size_t kV6Size = 16;
 
-  IPv4Address& operator=(const IPv4Address& o);
+  // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") or an
+  // IPv6 address (e.g. "abcd::1234") and puts the result into |address|.
+  // Returns true if the parsing was successful and |address| was set, false
+  // otherwise.
+  static bool Parse(const std::string& s, IPAddress* address);
 
-  bool operator==(const IPv4Address& o) const;
-  bool operator!=(const IPv4Address& o) const;
+  IPAddress();
+  explicit IPAddress(const std::array<uint8_t, 4>& bytes);
+  explicit IPAddress(const uint8_t (&b)[4]);
+  explicit IPAddress(Version version, const uint8_t* b);
+  IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
+
+  explicit IPAddress(const std::array<uint8_t, 16>& bytes);
+  explicit IPAddress(const uint8_t (&b)[16]);
+  IPAddress(uint8_t b1,
+            uint8_t b2,
+            uint8_t b3,
+            uint8_t b4,
+            uint8_t b5,
+            uint8_t b6,
+            uint8_t b7,
+            uint8_t b8,
+            uint8_t b9,
+            uint8_t b10,
+            uint8_t b11,
+            uint8_t b12,
+            uint8_t b13,
+            uint8_t b14,
+            uint8_t b15,
+            uint8_t b16);
+  IPAddress(const IPAddress& o);
+  ~IPAddress() = default;
+
+  IPAddress& operator=(const IPAddress& o);
+
+  bool operator==(const IPAddress& o) const;
+  bool operator!=(const IPAddress& o) const;
   explicit operator bool() const;
 
-  void CopyTo(uint8_t x[4]) const;
+  Version version() const { return version_; }
+  bool IsV4() const { return version_ == Version::kV4; }
+  bool IsV6() const { return version_ == Version::kV6; }
 
-  std::array<uint8_t, 4> bytes;
+  // These methods assume |x| is the appropriate size, but due to various
+  // callers' casting needs we can't check them like the constructors above.
+  // Callers should instead make any necessary checks themselves.
+  void CopyToV4(uint8_t* x) const;
+  void CopyToV6(uint8_t* x) const;
+
+ private:
+  static bool ParseV4(const std::string& s, IPAddress* address);
+  static bool ParseV6(const std::string& s, IPAddress* address);
+
+  Version version_;
+  std::array<uint8_t, 16> bytes_;
 };
 
-struct IPv6Address {
+struct IPEndpoint {
  public:
-  // Parses a text representation of an IPv6 address (e.g. "abcd::1234") and
-  // puts the result into |address|.  Returns true if the parsing was successful
-  // and |address| was set, false otherwise.
-  static bool Parse(const std::string& s, IPv6Address* address);
-
-  IPv6Address();
-  explicit IPv6Address(const std::array<uint8_t, 16>& bytes);
-  explicit IPv6Address(const uint8_t (&b)[16]);
-  template <typename T,
-            typename = typename std::enable_if<
-                std::is_convertible<T, const uint8_t*>::value &&
-                !std::is_convertible<T, const uint8_t (&)[16]>::value>::type>
-  explicit IPv6Address(T b)
-      : bytes{{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9],
-               b[10], b[11], b[12], b[13], b[14], b[15]}} {}
-  IPv6Address(uint8_t b1,
-              uint8_t b2,
-              uint8_t b3,
-              uint8_t b4,
-              uint8_t b5,
-              uint8_t b6,
-              uint8_t b7,
-              uint8_t b8,
-              uint8_t b9,
-              uint8_t b10,
-              uint8_t b11,
-              uint8_t b12,
-              uint8_t b13,
-              uint8_t b14,
-              uint8_t b15,
-              uint8_t b16);
-  IPv6Address(const IPv6Address& o);
-  ~IPv6Address() = default;
-
-  IPv6Address& operator=(const IPv6Address& o);
-
-  bool operator==(const IPv6Address& o) const;
-  bool operator!=(const IPv6Address& o) const;
-  explicit operator bool() const;
-
-  void CopyTo(uint8_t x[16]) const;
-
-  std::array<uint8_t, 16> bytes;
-};
-
-struct IPv4Endpoint {
- public:
-  IPv4Address address;
-  uint16_t port;
-};
-
-struct IPv6Endpoint {
- public:
-  IPv6Address address;
+  IPAddress address;
   uint16_t port;
 };
 

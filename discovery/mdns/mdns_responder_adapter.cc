@@ -9,15 +9,8 @@ namespace mdns {
 
 QueryEventHeader::QueryEventHeader() = default;
 QueryEventHeader::QueryEventHeader(QueryEventHeader::Type response_type,
-                                   platform::UdpSocketIPv4Ptr v4_socket)
-    : response_type(response_type),
-      receiving_socket_type(SocketType::kIPv4),
-      v4_socket(v4_socket) {}
-QueryEventHeader::QueryEventHeader(QueryEventHeader::Type response_type,
-                                   platform::UdpSocketIPv6Ptr v6_socket)
-    : response_type(response_type),
-      receiving_socket_type(SocketType::kIPv6),
-      v6_socket(v6_socket) {}
+                                   platform::UdpSocketPtr socket)
+    : response_type(response_type), socket(socket) {}
 QueryEventHeader::QueryEventHeader(const QueryEventHeader&) = default;
 QueryEventHeader::~QueryEventHeader() = default;
 QueryEventHeader& QueryEventHeader::operator=(const QueryEventHeader&) =
@@ -26,7 +19,7 @@ QueryEventHeader& QueryEventHeader::operator=(const QueryEventHeader&) =
 AEvent::AEvent() = default;
 AEvent::AEvent(const QueryEventHeader& header,
                DomainName domain_name,
-               const IPv4Address& address)
+               const IPAddress& address)
     : header(header), domain_name(std::move(domain_name)), address(address) {}
 AEvent::AEvent(AEvent&&) = default;
 AEvent::~AEvent() = default;
@@ -35,7 +28,7 @@ AEvent& AEvent::operator=(AEvent&&) = default;
 AaaaEvent::AaaaEvent() = default;
 AaaaEvent::AaaaEvent(const QueryEventHeader& header,
                      DomainName domain_name,
-                     const IPv6Address& address)
+                     const IPAddress& address)
     : header(header), domain_name(std::move(domain_name)), address(address) {}
 AaaaEvent::AaaaEvent(AaaaEvent&&) = default;
 AaaaEvent::~AaaaEvent() = default;
