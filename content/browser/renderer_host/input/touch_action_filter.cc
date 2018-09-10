@@ -55,10 +55,12 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   switch (gesture_event->GetType()) {
     case WebInputEvent::kGestureScrollBegin: {
       DCHECK(!suppress_manipulation_events_);
-      // In VR, GestureScrollBegin could come without GestureTapDown.
+      // In VR or virtual keyboard (https://crbug.com/880701),
+      // GestureScrollBegin could come without GestureTapDown.
       if (!gesture_sequence_in_progress_) {
         gesture_sequence_in_progress_ = true;
-        SetTouchAction(cc::kTouchActionAuto);
+        if (!scrolling_touch_action_.has_value())
+          SetTouchAction(cc::kTouchActionAuto);
       }
       gesture_sequence_.append("B");
       if (!scrolling_touch_action_.has_value()) {
