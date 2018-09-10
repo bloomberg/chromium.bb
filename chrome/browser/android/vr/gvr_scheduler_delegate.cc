@@ -208,8 +208,6 @@ void GvrSchedulerDelegate::ConnectPresentingService(
     CreateOrResizeWebXrSurface(webxr_size);
   }
 
-  ScheduleOrCancelWebVrFrameTimeout();
-
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
   submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
   submit_frame_sink->provider = presentation_provider.PassInterface();
@@ -219,6 +217,8 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   session->data_provider = frame_data_provider.PassInterface();
   session->submit_frame_sink = std::move(submit_frame_sink);
   session->display_info = std::move(display_info);
+
+  ScheduleOrCancelWebVrFrameTimeout();
 
   browser_->SendRequestPresentReply(std::move(session));
 }
