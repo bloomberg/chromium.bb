@@ -163,6 +163,15 @@ MetadataModel.prototype.addEventListener = function(type, callback) {
 };
 
 /**
+ * Removes event listener from internal cache object.
+ * @param {string} type Name of the event to removed.
+ * @param {function(Event):undefined} callback Event listener.
+ */
+MetadataModel.prototype.removeEventListener = function(type, callback) {
+  this.cache_.removeEventListener(type, callback);
+};
+
+/**
  * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
  * @param {!MetadataCacheSet} cache
