@@ -21,6 +21,9 @@
         "browse:news:cnn": {
             "DEFAULT": "system_health_desktop_013.wprgo"
         },
+        "browse:news:cnn:2018": {
+            "DEFAULT": "system_health_desktop_060.wprgo"
+        },
         "browse:news:flipboard": {
             "DEFAULT": "system_health_desktop_021.wprgo"
         },

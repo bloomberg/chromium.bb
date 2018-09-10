@@ -113,6 +113,14 @@ class CnnStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 2
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.HEALTH_CHECK]
 
+class CnnStory2018(_ArticleBrowsingStory):
+  """The second top website in http://www.alexa.com/topsites/category/News"""
+  NAME = 'browse:news:cnn:2018'
+  URL = 'http://edition.cnn.com/'
+  ITEM_SELECTOR = '.cd__content > h3 > a'
+  ITEMS_TO_VISIT = 2
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.HEALTH_CHECK]
+
 
 class FacebookMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:social:facebook'

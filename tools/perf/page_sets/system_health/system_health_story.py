@@ -49,8 +49,8 @@ class SystemHealthStory(page.Page):
   """Abstract base class for System Health user stories."""
   __metaclass__ = _MetaSystemHealthStory
 
-  # The full name of a single page story has the form CASE:GROUP:PAGE (e.g.
-  # 'load:search:google').
+  # The full name of a single page story has the form CASE:GROUP:PAGE:[VERSION]
+  # (e.g. 'load:search:google' or 'load:search:google:2018').
   NAME = NotImplemented
   URL = NotImplemented
   ABSTRACT_STORY = True
