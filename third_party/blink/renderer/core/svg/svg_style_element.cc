@@ -117,7 +117,7 @@ Node::InsertionNotificationRequest SVGStyleElement::InsertedInto(
 
 void SVGStyleElement::RemovedFrom(ContainerNode& insertion_point) {
   SVGElement::RemovedFrom(insertion_point);
-  StyleElement::RemovedFrom(*this, &insertion_point);
+  StyleElement::RemovedFrom(*this, insertion_point);
 }
 
 void SVGStyleElement::ChildrenChanged(const ChildrenChange& change) {
