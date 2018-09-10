@@ -1281,8 +1281,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
     rd->thresh_mult[THR_NEARESTG] = 0;
   }
 
-  rd->thresh_mult[THR_DC] += 1000;
-
   rd->thresh_mult[THR_NEWMV] += 1000;
   rd->thresh_mult[THR_NEWL2] += 1000;
   rd->thresh_mult[THR_NEWL3] += 1000;
@@ -1306,8 +1304,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_GLOBALA2] = 2000;
   rd->thresh_mult[THR_GLOBALG] += 2000;
   rd->thresh_mult[THR_GLOBALA] += 2000;
-
-  rd->thresh_mult[THR_PAETH] += 1000;
 
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLA] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL2A] += 1000;
@@ -1423,15 +1419,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEWGA2] += 2000;
   rd->thresh_mult[THR_COMP_GLOBAL_GLOBALGA2] += 2500;
 
-  rd->thresh_mult[THR_H_PRED] += 2000;
-  rd->thresh_mult[THR_V_PRED] += 2000;
-  rd->thresh_mult[THR_D135_PRED] += 2500;
-  rd->thresh_mult[THR_D203_PRED] += 2500;
-  rd->thresh_mult[THR_D157_PRED] += 2500;
-  rd->thresh_mult[THR_D67_PRED] += 2500;
-  rd->thresh_mult[THR_D113_PRED] += 2500;
-  rd->thresh_mult[THR_D45_PRED] += 2500;
-
   rd->thresh_mult[THR_COMP_NEAR_NEARLL2] += 1600;
   rd->thresh_mult[THR_COMP_NEAREST_NEWLL2] += 2000;
   rd->thresh_mult[THR_COMP_NEW_NEARESTLL2] += 2000;
@@ -1463,6 +1450,20 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEARBA] += 2200;
   rd->thresh_mult[THR_COMP_NEW_NEWBA] += 2400;
   rd->thresh_mult[THR_COMP_GLOBAL_GLOBALBA] += 3200;
+
+  rd->thresh_mult[THR_DC] += 1000;
+  rd->thresh_mult[THR_PAETH] += 1000;
+  rd->thresh_mult[THR_SMOOTH] += 2000;
+  rd->thresh_mult[THR_SMOOTH_V] += 2000;
+  rd->thresh_mult[THR_SMOOTH_H] += 2000;
+  rd->thresh_mult[THR_H_PRED] += 2000;
+  rd->thresh_mult[THR_V_PRED] += 2000;
+  rd->thresh_mult[THR_D135_PRED] += 2500;
+  rd->thresh_mult[THR_D203_PRED] += 2500;
+  rd->thresh_mult[THR_D157_PRED] += 2500;
+  rd->thresh_mult[THR_D67_PRED] += 2500;
+  rd->thresh_mult[THR_D113_PRED] += 2500;
+  rd->thresh_mult[THR_D45_PRED] += 2500;
 }
 
 void av1_set_rd_speed_thresholds_sub8x8(AV1_COMP *cpi) {
