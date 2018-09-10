@@ -187,6 +187,17 @@ bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
   return false;
 }
 
+AutofillWalletSyncBridge::StopSyncResponse
+AutofillWalletSyncBridge::ApplyStopSyncChanges(
+    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
+  // If a metadata change list gets passed in, that means sync is actually
+  // disabled, so we want to delete the payments data.
+  if (delete_metadata_change_list) {
+    SetSyncData(syncer::EntityChangeList());
+  }
+  return StopSyncResponse::kModelStillReadyToSync;
+}
+
 void AutofillWalletSyncBridge::SetSyncData(
     const syncer::EntityChangeList& entity_data) {
   bool wallet_data_changed = false;
