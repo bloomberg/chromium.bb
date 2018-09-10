@@ -147,6 +147,14 @@ DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
 }
 
 // static
+DevToolsWindow* DevToolsWindowTesting::OpenDiscoveryDevToolsWindowSync(
+    Profile* profile) {
+  DevToolsWindow* window = DevToolsWindow::OpenNodeFrontendWindow(profile);
+  WaitForDevToolsWindowLoad(window);
+  return window;
+}
+
+// static
 void DevToolsWindowTesting::CloseDevToolsWindow(
     DevToolsWindow* window) {
   if (window->is_docked_) {

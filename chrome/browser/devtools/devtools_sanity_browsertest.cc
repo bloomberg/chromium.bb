@@ -2251,18 +2251,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, CreateBrowserContext) {
   embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-
   GURL url(embedded_test_server()->GetURL("/devtools/empty.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  window_ =
-      DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
+  window_ = DevToolsWindowTesting::OpenDiscoveryDevToolsWindowSync(
+      browser()->profile());
   RunTestMethod("testCreateBrowserContext", url.spec().c_str());
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DisposeEmptyBrowserContext) {
-  window_ =
-      DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
+  window_ = DevToolsWindowTesting::OpenDiscoveryDevToolsWindowSync(
+      browser()->profile());
   RunTestMethod("testDisposeEmptyBrowserContext");
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
 }

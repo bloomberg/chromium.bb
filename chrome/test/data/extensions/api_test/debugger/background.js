@@ -16,7 +16,7 @@ var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
 var DETACHED_WHILE_HANDLING = "Detached while handling command.";
 
-chrome.test.runTests([
+chrome.test.getConfig(config => chrome.test.runTests([
 
   function attachMalformedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
@@ -296,5 +296,44 @@ chrome.test.runTests([
 
       chrome.debugger.attach(debuggee, protocolVersion, onAttach);
     });
+  },
+
+  function autoAttachToOOPIF() {
+    if (!config.customArg) {
+      chrome.test.succeed();
+      return;
+    }
+
+    var urls = config.customArg.split(";");
+    var mainFrameUrl = urls[0];
+    var oopFrameUrl = urls[1];
+
+    chrome.tabs.query({url: "http://*/*" + mainFrameUrl}, function(tabs) {
+      chrome.test.assertNoLastError();
+      var debuggee = {tabId: tabs[0].id};
+      var gotTarget = false;
+
+      function onEvent(_, method, params) {
+        if (method === "Target.attachedToTarget") {
+          chrome.test.assertTrue(
+              params.targetInfo.url.indexOf(oopFrameUrl) !== -1);
+          gotTarget = true;
+        }
+      }
+
+      function finish() {
+        chrome.test.assertNoLastError();
+        chrome.test.assertTrue(gotTarget);
+        chrome.debugger.onEvent.removeListener(onEvent);
+        chrome.debugger.detach(debuggee, pass());
+      }
+
+      chrome.debugger.attach(debuggee, protocolVersion, () => {
+        chrome.test.assertNoLastError();
+        chrome.debugger.onEvent.addListener(onEvent);
+        chrome.debugger.sendCommand(debuggee, "Target.setAutoAttach",
+            {autoAttach: true, waitForDebuggerOnStart: false}, finish);
+      });
+    });
   }
-]);
+]));

@@ -38,8 +38,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
                                      CertErrorCallback callback);
 
   // DevToolsAgentHost implementation.
-  void AttachClient(DevToolsAgentHostClient* client) override;
-  bool AttachRestrictedClient(DevToolsAgentHostClient* client) override;
+  bool AttachClient(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;
   bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                const std::string& message) override;
@@ -91,8 +90,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   friend class TargetRegistry;  // for subtarget management
 
   bool InnerAttachClient(DevToolsAgentHostClient* client,
-                         TargetRegistry* registry,
-                         bool restricted);
+                         TargetRegistry* registry);
   void InnerDetachClient(DevToolsAgentHostClient* client);
   void NotifyAttached();
   void NotifyDetached();

@@ -27,7 +27,7 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
   ~ForwardingAgentHost() override;
 
   // DevToolsAgentHost implementation
-  void AttachClient(DevToolsAgentHostClient* client) override;
+  bool AttachClient(DevToolsAgentHostClient* client) override;
   bool DetachClient(DevToolsAgentHostClient* client) override;
   bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                const std::string& message) override;
