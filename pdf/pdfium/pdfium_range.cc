@@ -12,8 +12,6 @@ namespace chrome_pdf {
 
 namespace {
 
-constexpr base::char16 kZeroWidthWhitespace = 0x200B;
-
 void AdjustForBackwardsRange(int* index, int* count) {
   int& char_index = *index;
   int& char_count = *count;
@@ -108,7 +106,7 @@ base::string16 PDFiumRange::GetText() const {
   }
 
   // Strip ignorable non-displaying whitespace
-  rv.erase(std::remove(rv.begin(), rv.end(), kZeroWidthWhitespace), rv.end());
+  rv.erase(std::remove(rv.begin(), rv.end(), kZeroWidthSpace), rv.end());
 
   return rv;
 }

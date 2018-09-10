@@ -52,6 +52,10 @@ class VarDictionary;
 
 namespace chrome_pdf {
 
+// Zero Width Whitespace character that requires special handling in multiple
+// locations.
+constexpr base::char16 kZeroWidthSpace = 0x200B;
+
 // Do one time initialization of the SDK.
 bool InitializeSDK();
 // Tells the SDK that we're shutting down.
