@@ -14,6 +14,7 @@
 #include "base/containers/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/predictors/proxy_lookup_client_impl.h"
 #include "chrome/browser/predictors/resolve_host_client_impl.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "url/gurl.h"
@@ -32,13 +33,11 @@ struct PreconnectRequest;
 
 struct PreconnectedRequestStats {
   PreconnectedRequestStats(const GURL& origin,
-                           bool was_preresolve_cached,
                            bool was_preconnected);
   PreconnectedRequestStats(const PreconnectedRequestStats& other);
   ~PreconnectedRequestStats();
 
   GURL origin;
-  bool was_preresolve_cached;
   bool was_preconnected;
 };
 
@@ -79,7 +78,9 @@ struct PreresolveJob {
                 PreresolveInfo* info);
   PreresolveJob(PreresolveJob&& other);
   ~PreresolveJob();
-  bool need_preconnect() const { return num_sockets > 0; }
+  bool need_preconnect() const {
+    return num_sockets > 0 && !(info && info->was_canceled);
+  }
 
   GURL url;
   int num_sockets;
@@ -90,6 +91,7 @@ struct PreresolveJob {
   // May be equal to nullptr in case of detached job.
   PreresolveInfo* info;
   std::unique_ptr<ResolveHostClientImpl> resolve_host_client;
+  std::unique_ptr<ProxyLookupClientImpl> proxy_lookup_client;
 
   DISALLOW_COPY_AND_ASSIGN(PreresolveJob);
 };
@@ -125,9 +127,9 @@ class PreconnectManager {
     virtual void OnPreconnectUrl(const GURL& url,
                                  int num_sockets,
                                  bool allow_credentials) {}
-    virtual void OnPreresolveUrl(const GURL& url) {}
 
     virtual void OnPreresolveFinished(const GURL& url, bool success) {}
+    virtual void OnProxyLookupFinished(const GURL& url, bool success) {}
   };
 
   static const size_t kMaxInflightPreresolves = 3;
@@ -165,16 +167,19 @@ class PreconnectManager {
   friend class PreconnectManagerTest;
 
   void PreconnectUrl(const GURL& url,
-                     const GURL& site_for_cookies,
                      int num_sockets,
                      bool allow_credentials) const;
   std::unique_ptr<ResolveHostClientImpl> PreresolveUrl(
       const GURL& url,
       ResolveHostCallback callback) const;
+  std::unique_ptr<ProxyLookupClientImpl> LookupProxyForUrl(
+      const GURL& url,
+      ProxyLookupCallback callback) const;
 
   void TryToLaunchPreresolveJobs();
   void OnPreresolveFinished(PreresolveJobId job_id, bool success);
-  void FinishPreresolve(PreresolveJobId job_id, bool found, bool cached);
+  void OnProxyLookupFinished(PreresolveJobId job_id, bool success);
+  void FinishPreresolveJob(PreresolveJobId job_id, bool success);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
   network::mojom::NetworkContext* GetNetworkContext() const;
 
