@@ -26,9 +26,9 @@
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 
@@ -103,17 +103,18 @@ void ChromeSubresourceFilterClient::ShowNotification() {
   }
 }
 
-subresource_filter::ActivationLevel
+subresource_filter::mojom::ActivationLevel
 ChromeSubresourceFilterClient::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    subresource_filter::ActivationLevel initial_activation_level,
+    subresource_filter::mojom::ActivationLevel initial_activation_level,
     subresource_filter::ActivationDecision* decision) {
   DCHECK(navigation_handle->IsInMainFrame());
 
-  subresource_filter::ActivationLevel effective_activation_level =
+  subresource_filter::mojom::ActivationLevel effective_activation_level =
       initial_activation_level;
   if (activated_via_devtools_) {
-    effective_activation_level = subresource_filter::ActivationLevel::ENABLED;
+    effective_activation_level =
+        subresource_filter::mojom::ActivationLevel::kEnabled;
     *decision = subresource_filter::ActivationDecision::FORCED_ACTIVATION;
   }
 
@@ -121,15 +122,15 @@ ChromeSubresourceFilterClient::OnPageActivationComputed(
   if (url.SchemeIsHTTPOrHTTPS()) {
     settings_manager_->ResetSiteMetadataBasedOnActivation(
         url, effective_activation_level ==
-                 subresource_filter::ActivationLevel::ENABLED);
+                 subresource_filter::mojom::ActivationLevel::kEnabled);
   }
 
   if (settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW) {
     if (effective_activation_level ==
-        subresource_filter::ActivationLevel::ENABLED) {
+        subresource_filter::mojom::ActivationLevel::kEnabled) {
       *decision = subresource_filter::ActivationDecision::URL_WHITELISTED;
     }
-    return subresource_filter::ActivationLevel::DISABLED;
+    return subresource_filter::mojom::ActivationLevel::kDisabled;
   }
   return effective_activation_level;
 }

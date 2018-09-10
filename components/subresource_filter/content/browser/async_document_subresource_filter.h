@@ -13,10 +13,10 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -60,7 +60,7 @@ class AsyncDocumentSubresourceFilter {
     // that is: the main-frame |document| URL, the page-level
     // |activation_level|, and whether or not to |measure_performance|.
     InitializationParams(GURL document_url,
-                         ActivationLevel activation_level,
+                         mojom::ActivationLevel activation_level,
                          bool measure_performance);
 
     // Takes parameters needed for calculating the sub-frame ActivationState,
@@ -93,8 +93,8 @@ class AsyncDocumentSubresourceFilter {
   // Once the ActivationState for the current frame is calculated, it is
   // reported back via |activation_state_callback| on the task runner associated
   // with the current thread. If MemoryMappedRuleset is not present or
-  // malformed, then a default ActivationState is reported (with ActivationLevel
-  // equal to DISABLED).
+  // malformed, then a default ActivationState is reported (with
+  // mojom::ActivationLevel equal to DISABLED).
   //
   // If deleted before |activation_state_callback| is called, the callback will
   // never be called.

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 
 namespace base {
 namespace trace_event {
@@ -22,7 +22,7 @@ namespace subresource_filter {
 struct ActivationState {
   ActivationState() = default;
 
-  explicit ActivationState(ActivationLevel activation_level)
+  explicit ActivationState(mojom::ActivationLevel activation_level)
       : activation_level(activation_level) {}
 
   bool operator==(const ActivationState& rhs) const {
@@ -41,7 +41,7 @@ struct ActivationState {
   std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
   // The degree to which subresource filtering is activated for the page load.
-  ActivationLevel activation_level = ActivationLevel::DISABLED;
+  mojom::ActivationLevel activation_level = mojom::ActivationLevel::kDisabled;
 
   // Even when subresource filtering is activated at the page level, a document
   // in the current frame (and/or ancestors thereof) may still match special

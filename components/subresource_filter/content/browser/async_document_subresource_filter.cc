@@ -71,12 +71,13 @@ using InitializationParams =
 
 InitializationParams::InitializationParams() = default;
 
-InitializationParams::InitializationParams(GURL document_url,
-                                           ActivationLevel activation_level,
-                                           bool measure_performance)
+InitializationParams::InitializationParams(
+    GURL document_url,
+    mojom::ActivationLevel activation_level,
+    bool measure_performance)
     : document_url(std::move(document_url)),
       parent_activation_state(activation_level) {
-  DCHECK_NE(ActivationLevel::DISABLED, activation_level);
+  DCHECK_NE(mojom::ActivationLevel::kDisabled, activation_level);
   parent_activation_state.measure_performance = measure_performance;
 }
 
@@ -87,7 +88,7 @@ InitializationParams::InitializationParams(
     : document_url(std::move(document_url)),
       parent_document_origin(std::move(parent_document_origin)),
       parent_activation_state(parent_activation_state) {
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             parent_activation_state.activation_level);
 }
 
@@ -105,7 +106,7 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     : task_runner_(ruleset_handle->task_runner()),
       core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)),
       weak_ptr_factory_(this) {
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             params.parent_activation_state.activation_level);
 
   // Note: It is safe to post |ruleset_handle|'s VerifiedRuleset pointer,
@@ -166,7 +167,7 @@ void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
   // DISABLED activation level implies that the ruleset is somehow invalid. Make
   // sure that we don't update the state in that case.
   DCHECK(has_activation_state());
-  if (activation_state_->activation_level == ActivationLevel::DISABLED)
+  if (activation_state_->activation_level == mojom::ActivationLevel::kDisabled)
     return;
 
   // TODO(csharrison): Split ActivationState into multiple structs, with one
@@ -213,13 +214,14 @@ ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(
   DCHECK(verified_ruleset);
 
   if (!verified_ruleset->Get())
-    return ActivationState(ActivationLevel::DISABLED);
+    return ActivationState(mojom::ActivationLevel::kDisabled);
 
   ActivationState activation_state = ComputeActivationState(
       params.document_url, params.parent_document_origin,
       params.parent_activation_state, verified_ruleset->Get());
 
-  DCHECK_NE(ActivationLevel::DISABLED, activation_state.activation_level);
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            activation_state.activation_level);
   filter_.emplace(url::Origin::Create(params.document_url), activation_state,
                   verified_ruleset->Get());
 

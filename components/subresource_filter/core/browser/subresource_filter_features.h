@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 
 namespace base {
 namespace trace_event {
@@ -74,7 +74,7 @@ struct Configuration {
     // any RenderFrame. When set to DISABLED, this configuration will cause
     // subresource filtering to be de-activated for a navigation if this is the
     // highest priority configuration with its activation conditions met.
-    ActivationLevel activation_level = ActivationLevel::DISABLED;
+    mojom::ActivationLevel activation_level = mojom::ActivationLevel::kDisabled;
 
     // A number in the range [0, 1], indicating the fraction of page loads that
     // should have extended performance measurements enabled.
@@ -92,7 +92,7 @@ struct Configuration {
   // methods when adding new fields here!
 
   Configuration();
-  Configuration(ActivationLevel activation_level,
+  Configuration(mojom::ActivationLevel activation_level,
                 ActivationScope activation_scope,
                 ActivationList activation_list = ActivationList::NONE);
   Configuration(const Configuration&);
@@ -111,7 +111,7 @@ struct Configuration {
   // this config's activation level due to things like warning mode or client
   // whitelisting.
   ActivationState GetActivationState(
-      ActivationLevel effective_activation_level) const;
+      mojom::ActivationLevel effective_activation_level) const;
 
   // Factory methods for preset configurations.
   //

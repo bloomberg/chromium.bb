@@ -83,7 +83,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
 
   void LogMetricsOnChecksComplete(ActivationList matched_list,
                                   ActivationDecision decision,
-                                  ActivationLevel level) const;
+                                  mojom::ActivationLevel level) const;
   bool HasFinishedAllSafeBrowsingChecks() const;
   // Gets the configuration with the highest priority among those activated.
   // Returns it, or none if no valid activated configurations.

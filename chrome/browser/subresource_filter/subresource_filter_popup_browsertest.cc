@@ -99,7 +99,7 @@ class SubresourceFilterPopupBrowserTest
  public:
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
-    Configuration config(subresource_filter::ActivationLevel::ENABLED,
+    Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                          subresource_filter::ActivationScope::ACTIVATION_LIST,
                          subresource_filter::ActivationList::BETTER_ADS);
     ResetConfiguration(std::move(config));

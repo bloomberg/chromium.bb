@@ -141,7 +141,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
@@ -149,7 +149,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
 
   RunUntilIdle();
   activation_state.ExpectReceivedOnce(
-      ActivationState(ActivationLevel::ENABLED));
+      ActivationState(mojom::ActivationLevel::kEnabled));
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, DeleteFilter_NoActivationCallback) {
@@ -158,7 +158,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DeleteFilter_NoActivationCallback) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
@@ -176,7 +176,8 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://whitelisted.subframe.com"), ActivationLevel::ENABLED, false);
+      GURL("http://whitelisted.subframe.com"), mojom::ActivationLevel::kEnabled,
+      false);
   params.parent_document_origin =
       url::Origin::Create(GURL("http://example.com"));
 
@@ -186,7 +187,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
 
   RunUntilIdle();
 
-  ActivationState expected_activation_state(ActivationLevel::ENABLED);
+  ActivationState expected_activation_state(mojom::ActivationLevel::kEnabled);
   expected_activation_state.generic_blocking_rules_disabled = true;
   activation_state.ExpectReceivedOnce(expected_activation_state);
 }
@@ -199,7 +200,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
@@ -207,7 +208,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
 
   RunUntilIdle();
   activation_state.ExpectReceivedOnce(
-      ActivationState(ActivationLevel::DISABLED));
+      ActivationState(mojom::ActivationLevel::kDisabled));
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
@@ -216,7 +217,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
@@ -241,7 +242,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
 
   TestCallbackReceiver first_disallowed_load_receiver;
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::ENABLED, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
@@ -274,21 +275,22 @@ TEST_F(AsyncDocumentSubresourceFilterTest, UpdateActivationState) {
       ruleset().path, /*expected_checksum=*/0, base::DoNothing());
   auto ruleset_handle = CreateRulesetHandle();
 
-  // Initialize |filter| with a starting ActivationLevel of DRYRUN. This value
-  // will be updated later on.
+  // Initialize |filter| with a starting mojom::ActivationLevel of DRYRUN. This
+  // value will be updated later on.
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://example.com"), ActivationLevel::DRYRUN, false);
+      GURL("http://example.com"), mojom::ActivationLevel::kDryRun, false);
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
       ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   // Make sure the ADSF computes its initial activation before updating it.
   RunUntilIdle();
-  activation_state.ExpectReceivedOnce(ActivationState(ActivationLevel::DRYRUN));
+  activation_state.ExpectReceivedOnce(
+      ActivationState(mojom::ActivationLevel::kDryRun));
 
   // Update the ActivationState before calling GetLoadPolicyForSubdocument.
   filter->UpdateWithMoreAccurateState(
-      ActivationState(ActivationLevel::ENABLED));
+      ActivationState(mojom::ActivationLevel::kEnabled));
 
   LoadPolicyCallbackReceiver load_policy_1;
   filter->GetLoadPolicyForSubdocument(GURL("http://example.com/allowed.html"),
@@ -330,10 +332,10 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
         testing::TestRuleset::Open(test_ruleset_pair.indexed));
   }
 
-  static ActivationState MakeState(
-      bool filtering_disabled_for_document,
-      bool generic_blocking_rules_disabled = false,
-      ActivationLevel activation_level = ActivationLevel::ENABLED) {
+  static ActivationState MakeState(bool filtering_disabled_for_document,
+                                   bool generic_blocking_rules_disabled = false,
+                                   mojom::ActivationLevel activation_level =
+                                       mojom::ActivationLevel::kEnabled) {
     ActivationState activation_state(activation_level);
     activation_state.filtering_disabled_for_document =
         filtering_disabled_for_document;

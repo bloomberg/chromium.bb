@@ -15,10 +15,10 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "components/url_pattern_index/url_rule_util.h"
@@ -82,7 +82,7 @@ const url_pattern_index::flat::UrlRule* FindMatchingUrlRule(
   subresource_filter::DocumentSubresourceFilter filter(
       document_origin,
       subresource_filter::ActivationState(
-          subresource_filter::ActivationLevel::ENABLED),
+          subresource_filter::mojom::ActivationLevel::kEnabled),
       ruleset);
 
   return filter.FindMatchingUrlRule(request_url, type);

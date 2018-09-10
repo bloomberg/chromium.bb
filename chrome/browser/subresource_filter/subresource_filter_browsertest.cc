@@ -45,12 +45,12 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
 
-  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ACTIVATION_LIST,
                        subresource_filter::ActivationList::SUBRESOURCE_FILTER);
   ResetConfiguration(std::move(config));
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
 
-  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ACTIVATION_LIST,
                        subresource_filter::ActivationList::BETTER_ADS);
   ResetConfiguration(std::move(config));
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   web_contents()->SetDelegate(&console_observer);
 
   Configuration config(
-      subresource_filter::ActivationLevel::DISABLED,
+      subresource_filter::mojom::ActivationLevel::kDisabled,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
   ResetConfiguration(std::move(config));
@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   web_contents()->SetDelegate(&console_observer);
 
   Configuration config(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
   ResetConfiguration(std::move(config));
@@ -709,7 +709,8 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
 
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
-      static_cast<base::Histogram::Sample>(ActivationLevel::ENABLED), 6);
+      static_cast<base::Histogram::Sample>(mojom::ActivationLevel::kEnabled),
+      6);
 
   EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsTotal),
               ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
@@ -783,7 +784,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Although SubresourceFilterAgents still record the activation decision.
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
-      static_cast<base::Histogram::Sample>(ActivationLevel::DISABLED), 6);
+      static_cast<base::Histogram::Sample>(mojom::ActivationLevel::kDisabled),
+      6);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

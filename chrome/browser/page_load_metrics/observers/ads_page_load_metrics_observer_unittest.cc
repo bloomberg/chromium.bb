@@ -339,7 +339,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
 TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
   // Make this page DRYRUN.
   scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ALL_SITES));
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);

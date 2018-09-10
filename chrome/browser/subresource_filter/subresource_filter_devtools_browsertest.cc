@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ConfigureURLWithWarning(url,
                           {safe_browsing::SubresourceFilterType::BETTER_ADS});
 
-  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ACTIVATION_LIST,
                        subresource_filter::ActivationList::BETTER_ADS);
   ResetConfiguration(std::move(config));

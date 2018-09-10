@@ -29,11 +29,11 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -71,15 +71,16 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   MockSubresourceFilterClient() = default;
   ~MockSubresourceFilterClient() override = default;
 
-  ActivationLevel OnPageActivationComputed(
+  mojom::ActivationLevel OnPageActivationComputed(
       content::NavigationHandle* handle,
-      ActivationLevel effective_level,
+      mojom::ActivationLevel effective_level,
       ActivationDecision* decision) override {
     DCHECK(handle->IsInMainFrame());
     if (whitelisted_hosts_.count(handle->GetURL().host())) {
-      if (effective_level == subresource_filter::ActivationLevel::ENABLED)
+      if (effective_level ==
+          subresource_filter::mojom::ActivationLevel::kEnabled)
         *decision = subresource_filter::ActivationDecision::URL_WHITELISTED;
-      return ActivationLevel::DISABLED;
+      return mojom::ActivationLevel::kDisabled;
     }
     return effective_level;
   }
@@ -173,7 +174,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
 
   virtual void Configure() {
     scoped_configuration_.ResetConfiguration(Configuration(
-        ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
+        mojom::ActivationLevel::kEnabled, ActivationScope::ACTIVATION_LIST,
         ActivationList::SUBRESOURCE_FILTER));
   }
 
@@ -358,7 +359,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleParamTest
   void Configure() override {
     const ActivationListTestData& test_data = GetParam();
     scoped_configuration()->ResetConfiguration(Configuration(
-        ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
+        mojom::ActivationLevel::kEnabled, ActivationScope::ACTIVATION_LIST,
         test_data.activation_list_type));
   }
 
@@ -413,21 +414,21 @@ class SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling
 };
 
 struct ActivationScopeTestData {
-  ActivationLevel expected_activation_level;
+  mojom::ActivationLevel expected_activation_level;
   bool url_matches_activation_list;
   ActivationScope activation_scope;
 };
 
 const ActivationScopeTestData kActivationScopeTestData[] = {
-    {ActivationLevel::ENABLED, false /* url_matches_activation_list */,
+    {mojom::ActivationLevel::kEnabled, false /* url_matches_activation_list */,
      ActivationScope::ALL_SITES},
-    {ActivationLevel::ENABLED, true /* url_matches_activation_list */,
+    {mojom::ActivationLevel::kEnabled, true /* url_matches_activation_list */,
      ActivationScope::ALL_SITES},
-    {ActivationLevel::DISABLED, true /* url_matches_activation_list */,
+    {mojom::ActivationLevel::kDisabled, true /* url_matches_activation_list */,
      ActivationScope::NO_SITES},
-    {ActivationLevel::ENABLED, true /* url_matches_activation_list */,
+    {mojom::ActivationLevel::kEnabled, true /* url_matches_activation_list */,
      ActivationScope::ACTIVATION_LIST},
-    {ActivationLevel::DISABLED, false /* url_matches_activation_list */,
+    {mojom::ActivationLevel::kDisabled, false /* url_matches_activation_list */,
      ActivationScope::ACTIVATION_LIST},
 };
 
@@ -446,21 +447,23 @@ class SubresourceFilterSafeBrowsingActivationThrottleScopeTest
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, NoConfigs) {
   scoped_configuration()->ResetConfiguration(std::vector<Configuration>());
   SimulateNavigateAndCommit({GURL(kURL)}, main_rfh());
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        MultipleSimultaneousConfigs) {
-  Configuration config1(ActivationLevel::DRYRUN, ActivationScope::NO_SITES);
+  Configuration config1(mojom::ActivationLevel::kDryRun,
+                        ActivationScope::NO_SITES);
   config1.activation_conditions.priority = 2;
 
-  Configuration config2(ActivationLevel::DISABLED,
+  Configuration config2(mojom::ActivationLevel::kDisabled,
                         ActivationScope::ACTIVATION_LIST,
                         ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
   config2.activation_conditions.priority = 1;
 
-  Configuration config3(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
+  Configuration config3(mojom::ActivationLevel::kEnabled,
+                        ActivationScope::ALL_SITES);
   config3.activation_conditions.priority = 0;
 
   scoped_configuration()->ResetConfiguration({config1, config2, config3});
@@ -474,69 +477,69 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   ConfigureForMatch(match_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
                     metadata);
   SimulateNavigateAndCommit({match_url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Should match |config3|.
   SimulateNavigateAndCommit({non_match_url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        ActivationLevelDisabled_NoActivation) {
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::DISABLED, ActivationScope::ACTIVATION_LIST,
-                    ActivationList::SUBRESOURCE_FILTER));
+  scoped_configuration()->ResetConfiguration(Configuration(
+      mojom::ActivationLevel::kDisabled, ActivationScope::ACTIVATION_LIST,
+      ActivationList::SUBRESOURCE_FILTER));
   GURL url(kURL);
 
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   ConfigureForMatch(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Whitelisting occurs last, so the decision should still be DISABLED.
   client()->WhitelistInCurrentWebContents(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        AllSiteEnabled_Activates) {
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
+  scoped_configuration()->ResetConfiguration(Configuration(
+      mojom::ActivationLevel::kEnabled, ActivationScope::ALL_SITES));
   GURL url(kURL);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   ConfigureForMatch(url);
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Adding performance measurement should keep activation.
-  Configuration config_with_perf(
-      Configuration(ActivationLevel::ENABLED, ActivationScope::ALL_SITES));
+  Configuration config_with_perf(Configuration(mojom::ActivationLevel::kEnabled,
+                                               ActivationScope::ALL_SITES));
   config_with_perf.activation_options.performance_measurement_rate = 1.0;
   scoped_configuration()->ResetConfiguration(std::move(config_with_perf));
   SimulateNavigateAndCommit({url}, main_rfh());
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        NavigationFails_NoActivation) {
-  EXPECT_EQ(base::Optional<ActivationLevel>(),
+  EXPECT_EQ(base::Optional<mojom::ActivationLevel>(),
             observer()->GetPageActivationForLastCommittedLoad());
   content::NavigationSimulator::NavigateAndFailFromDocument(
       GURL(kURL), net::ERR_TIMED_OUT, main_rfh());
-  EXPECT_EQ(base::Optional<ActivationLevel>(),
+  EXPECT_EQ(base::Optional<mojom::ActivationLevel>(),
             observer()->GetPageActivationForLastCommittedLoad());
 }
 
@@ -552,67 +555,71 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
   const struct {
-    ActivationLevel expected_activation_level;
+    mojom::ActivationLevel expected_activation_level;
     ActivationList activation_list;
     safe_browsing::SBThreatType threat_type;
     safe_browsing::ThreatPatternType threat_type_metadata;
   } kTestCases[] = {
-      {ActivationLevel::DISABLED, ActivationList::NONE,
+      {mojom::ActivationLevel::kDisabled, ActivationList::NONE,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled,
+       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled,
+       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::MALWARE_LANDING},
-      {ActivationLevel::DISABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled,
+       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_API_ABUSE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_SAFE,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::ENABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kEnabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationLevel::ENABLED, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
+      {mojom::ActivationLevel::kEnabled,
+       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::ENABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kEnabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-      {ActivationLevel::ENABLED, ActivationList::SUBRESOURCE_FILTER,
+      {mojom::ActivationLevel::kEnabled, ActivationList::SUBRESOURCE_FILTER,
        safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
        safe_browsing::ThreatPatternType::NONE},
-      {ActivationLevel::DISABLED, ActivationList::PHISHING_INTERSTITIAL,
+      {mojom::ActivationLevel::kDisabled, ActivationList::PHISHING_INTERSTITIAL,
        safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
        safe_browsing::ThreatPatternType::NONE},
   };
   const GURL test_url("https://matched_url.com/");
   for (const auto& test_case : kTestCases) {
     scoped_configuration()->ResetConfiguration(Configuration(
-        ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
+        mojom::ActivationLevel::kEnabled, ActivationScope::ACTIVATION_LIST,
         test_case.activation_list));
     ClearAllBlacklistedUrls();
     safe_browsing::ThreatMetadata metadata;
@@ -677,8 +684,8 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkmDryRun) {
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::DRYRUN, ActivationScope::ALL_SITES));
+  scoped_configuration()->ResetConfiguration(Configuration(
+      mojom::ActivationLevel::kDryRun, ActivationScope::ALL_SITES));
   ukm::InitializeSourceUrlRecorderForWebContents(
       RenderViewHostTestHarness::web_contents());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
@@ -701,9 +708,9 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkmDryRun) {
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
        ActivateForScopeType) {
   const ActivationScopeTestData& test_data = GetParam();
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::ENABLED, test_data.activation_scope,
-                    ActivationList::SUBRESOURCE_FILTER));
+  scoped_configuration()->ResetConfiguration(Configuration(
+      mojom::ActivationLevel::kEnabled, test_data.activation_scope,
+      ActivationList::SUBRESOURCE_FILTER));
 
   const GURL test_url(kURLWithParams);
   if (test_data.url_matches_activation_list)
@@ -714,7 +721,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
   if (test_data.url_matches_activation_list) {
     client()->WhitelistInCurrentWebContents(test_url);
     SimulateNavigateAndCommit({test_url}, main_rfh());
-    EXPECT_EQ(ActivationLevel::DISABLED,
+    EXPECT_EQ(mojom::ActivationLevel::kDisabled,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 };
@@ -723,9 +730,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
        ActivateForSupportedUrlScheme) {
   const ActivationScopeTestData& test_data = GetParam();
-  scoped_configuration()->ResetConfiguration(
-      Configuration(ActivationLevel::ENABLED, test_data.activation_scope,
-                    ActivationList::SUBRESOURCE_FILTER));
+  scoped_configuration()->ResetConfiguration(Configuration(
+      mojom::ActivationLevel::kEnabled, test_data.activation_scope,
+      ActivationList::SUBRESOURCE_FILTER));
 
   // data URLs are also not supported, but not listed here, as it's not possible
   // for a page to redirect to them after https://crbug.com/594215 is fixed.
@@ -739,7 +746,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     if (test_data.url_matches_activation_list)
       ConfigureForMatch(GURL(url));
     SimulateNavigateAndCommit({GURL(url)}, main_rfh());
-    EXPECT_EQ(ActivationLevel::DISABLED,
+    EXPECT_EQ(mojom::ActivationLevel::kDisabled,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 
@@ -758,7 +765,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   const GURL url(kURL);
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
@@ -774,7 +781,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   ConfigureForMatchParam(url);
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -788,7 +795,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
@@ -802,7 +809,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -825,7 +832,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   EXPECT_EQ(expected_delay, test_io_task_runner()->NextPendingTaskDelay());
   test_io_task_runner()->FastForwardBy(expected_delay);
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
@@ -843,7 +850,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -868,7 +875,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
@@ -900,11 +907,11 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   GURL worse_url("https://example.worse");
 
   // Set up the configurations, make phishing worse than subresource_filter.
-  Configuration config_p1(ActivationLevel::ENABLED,
+  Configuration config_p1(mojom::ActivationLevel::kEnabled,
                           ActivationScope::ACTIVATION_LIST,
                           ActivationList::SUBRESOURCE_FILTER);
   config_p1.activation_conditions.priority = 1;
-  Configuration config_p2(ActivationLevel::ENABLED,
+  Configuration config_p2(mojom::ActivationLevel::kEnabled,
                           ActivationScope::ACTIVATION_LIST,
                           ActivationList::PHISHING_INTERSTITIAL);
   config_p2.activation_conditions.priority = 2;
@@ -933,12 +940,12 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
     RunUntilIdle();
     SimulateCommitAndExpectProceed();
     if (test_case.expected_activation) {
-      EXPECT_EQ(ActivationLevel::ENABLED,
+      EXPECT_EQ(mojom::ActivationLevel::kEnabled,
                 *observer()->GetPageActivationForLastCommittedLoad());
       histograms.ExpectUniqueSample(histogram_string,
                                     test_case.expected_position, 1);
     } else {
-      EXPECT_EQ(ActivationLevel::DISABLED,
+      EXPECT_EQ(mojom::ActivationLevel::kDisabled,
                 *observer()->GetPageActivationForLastCommittedLoad());
       histograms.ExpectTotalCount(histogram_string, 0);
     }
@@ -967,8 +974,9 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
 
     SimulateStartAndExpectProceed(url);
     SimulateCommitAndExpectProceed();
-    EXPECT_EQ(enable_adblock_on_abusive_sites ? ActivationLevel::ENABLED
-                                              : ActivationLevel::DISABLED,
+    EXPECT_EQ(enable_adblock_on_abusive_sites
+                  ? mojom::ActivationLevel::kEnabled
+                  : mojom::ActivationLevel::kDisabled,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 }
@@ -989,7 +997,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   RunUntilIdle();
 
   SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationLevel::DISABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kDisabled,
             *observer()->GetPageActivationForLastCommittedLoad());
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);

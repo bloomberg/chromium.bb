@@ -18,10 +18,10 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -73,7 +73,7 @@ TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
   // If the site later activates as DRYRUN due to e.g. a configuration change,
   // it should also be removed from the metadata.
   scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::SUBRESOURCE_FILTER));
 
@@ -107,7 +107,7 @@ TEST_F(SubresourceFilterTest, SimpleAllowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
+  EXPECT_EQ(subresource_filter::mojom::ActivationLevel::kEnabled,
             observer.GetPageActivation(url).value());
 
   GURL allowed_url("https://example.test/foo");
@@ -126,7 +126,7 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   subresource_filter::TestSubresourceFilterObserver observer(web_contents());
   SimulateNavigateAndCommit(url, main_rfh());
 
-  EXPECT_EQ(subresource_filter::ActivationLevel::ENABLED,
+  EXPECT_EQ(subresource_filter::mojom::ActivationLevel::kEnabled,
             observer.GetPageActivation(url).value());
 
   GURL disallowed_url(SubresourceFilterTest::kDefaultDisallowedUrl);
@@ -283,7 +283,7 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
 
 TEST_F(SubresourceFilterTest, WarningSite_NoMetadata) {
   subresource_filter::Configuration config(
-      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::mojom::ActivationLevel::kEnabled,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::BETTER_ADS);
   scoped_configuration().ResetConfiguration(std::move(config));

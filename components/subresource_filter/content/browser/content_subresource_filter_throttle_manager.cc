@@ -102,8 +102,8 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
     return;
 
   // A filter with DISABLED activation indicates a corrupted ruleset.
-  ActivationLevel level = filter->activation_state().activation_level;
-  if (level == ActivationLevel::DISABLED)
+  mojom::ActivationLevel level = filter->activation_state().activation_level;
+  if (level == mojom::ActivationLevel::kDisabled)
     return;
 
   TRACE_EVENT1(
@@ -153,16 +153,17 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
           std::make_unique<PageLoadStatistics>(filter->activation_state());
       if (filter->activation_state().enable_logging) {
         DCHECK(filter->activation_state().activation_level !=
-               ActivationLevel::DISABLED);
+               mojom::ActivationLevel::kDisabled);
         NavigationConsoleLogger::LogMessageOnCommit(
             navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
             kActivationConsoleMessage);
       }
     }
-    ActivationLevel level = filter ? filter->activation_state().activation_level
-                                   : ActivationLevel::DISABLED;
+    mojom::ActivationLevel level =
+        filter ? filter->activation_state().activation_level
+               : mojom::ActivationLevel::kDisabled;
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationState",
-                              level, ActivationLevel::LAST);
+                              level);
   }
 
   // Make sure |activated_frame_hosts_| is updated or cleaned up depending on
@@ -227,7 +228,7 @@ void ContentSubresourceFilterThrottleManager::OnPageActivationComputed(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted());
   // Do not notify the throttle if activation is disabled.
-  if (activation_state.activation_level == ActivationLevel::DISABLED)
+  if (activation_state.activation_level == mojom::ActivationLevel::kDisabled)
     return;
 
   auto it = ongoing_activation_throttles_.find(navigation_handle);
@@ -315,7 +316,8 @@ ContentSubresourceFilterThrottleManager::
             navigation_handle);
     if (base::FeatureList::IsEnabled(kAdTagging)) {
       throttle->NotifyPageActivationWithRuleset(
-          EnsureRulesetHandle(), ActivationState(ActivationLevel::DRYRUN));
+          EnsureRulesetHandle(),
+          ActivationState(mojom::ActivationLevel::kDryRun));
     }
     return throttle;
   }
@@ -367,7 +369,7 @@ void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
   auto it = activated_frame_hosts_.find(web_contents()->GetMainFrame());
   if (it == activated_frame_hosts_.end() ||
       it->second->activation_state().activation_level !=
-          ActivationLevel::ENABLED) {
+          mojom::ActivationLevel::kEnabled) {
     return;
   }
   client_->ShowNotification();
