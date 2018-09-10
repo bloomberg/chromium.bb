@@ -24,12 +24,6 @@
 
 namespace nux {
 
-struct EmailProviderType {
-  const char* name;
-  const char* url;
-  const int icon;
-};
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class EmailProviders {
@@ -41,6 +35,13 @@ enum class EmailProviders {
   kCount,
 };
 
+struct EmailProviderType {
+  const EmailProviders id;
+  const char* name;
+  const char* url;
+  const int icon;
+};
+
 const char* kEmailInteractionHistogram =
     "FirstRun.NewUserExperience.EmailInteraction";
 
@@ -48,11 +49,13 @@ const char* kEmailInteractionHistogram =
 // Translate before wide release.
 // TODO(hcarmona): populate with icon ids.
 const EmailProviderType kEmail[] = {
-    {"Gmail", "https://accounts.google.com/b/0/AddMailService", 0},
-    {"Yahoo", "https://mail.yahoo.com", 0},
-    {"Outlook", "https://login.live.com/login.srf?", 0},
-    {"AOL", "https://mail.aol.com", 0},
-    {"iCloud", "https://www.icloud.com/mail", 0},
+    {EmailProviders::kGmail, "Gmail",
+     "https://accounts.google.com/b/0/AddMailService", 0},
+    {EmailProviders::kYahoo, "Yahoo", "https://mail.yahoo.com", 0},
+    {EmailProviders::kOutlook, "Outlook", "https://login.live.com/login.srf?",
+     0},
+    {EmailProviders::kAol, "AOL", "https://mail.aol.com", 0},
+    {EmailProviders::kiCloud, "iCloud", "https://www.icloud.com/mail", 0},
 };
 
 constexpr const int kEmailIconSize = 48;  // Pixels.
@@ -171,6 +174,7 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
 
   // Add constants to loadtime data
   for (size_t i = 0; i < (size_t)EmailProviders::kCount; ++i) {
+    html_source->AddInteger("email_id_" + std::to_string(i), (int)kEmail[i].id);
     html_source->AddString("email_name_" + std::to_string(i), kEmail[i].name);
     html_source->AddString("email_url_" + std::to_string(i), kEmail[i].url);
   }

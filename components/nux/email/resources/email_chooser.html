@@ -139,10 +139,12 @@
       <paper-button on-click="onNoThanksClicked_">
         $i18n{noThanks}
       </paper-button>
-      <paper-button class="action-button" on-click="onGetStartedClicked_"
-          disabled="[[!selectedEmailProvider_]]">
-        $i18n{getStarted}
-      </paper-button>
+      <div on-click="onActionButtonClicked_">
+        <paper-button class="action-button" on-click="onGetStartedClicked_"
+            disabled="[[!selectedEmailProvider_]]">
+          $i18n{getStarted}
+        </paper-button>
+      </div>
     </div>
   </template>
   <script src="email_chooser.js"></script>
