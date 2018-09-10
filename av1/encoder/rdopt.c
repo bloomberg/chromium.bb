@@ -646,11 +646,12 @@ static int get_est_rate_dist(TileDataEnc *tile_data, BLOCK_SIZE bsize,
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
   if (md->ready) {
     const double est_ld = md->a * sse + md->b;
-    *est_residue_cost = (int)round((sse - md->dist_mean) / est_ld);
-    *est_dist = (int64_t)round(md->dist_mean);
     if (sse < md->dist_mean) {
       *est_residue_cost = 0;
       *est_dist = sse;
+    } else {
+      *est_residue_cost = (int)round((sse - md->dist_mean) / est_ld);
+      *est_dist = (int64_t)round(md->dist_mean);
     }
     return 1;
   }
