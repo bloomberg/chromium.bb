@@ -18,7 +18,6 @@
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
-class ScriptTrackerTest;
 
 // The script tracker keeps track of which scripts are available, which are
 // running, which have run, which are runnable whose preconditions are met.
@@ -66,8 +65,6 @@ class ScriptTracker {
   bool running() const { return executor_ != nullptr; }
 
  private:
-  friend ScriptTrackerTest;
-
   void OnScriptRun(base::OnceCallback<void(bool)> original_callback,
                    bool success);
   void UpdateRunnableScriptsIfNecessary();

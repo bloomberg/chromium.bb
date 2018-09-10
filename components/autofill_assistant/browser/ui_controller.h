@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
 
+#include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 
