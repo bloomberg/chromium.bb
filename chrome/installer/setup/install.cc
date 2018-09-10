@@ -35,7 +35,6 @@
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
 #include "chrome/installer/setup/user_experiment.h"
 #include "chrome/installer/util/beacons.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_old_versions.h"
@@ -445,7 +444,6 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 
   // Make Chrome the default browser if desired when possible. Otherwise, only
   // register it with Windows.
-  BrowserDistribution* dist = product.distribution();
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(kChromeExe));
   VLOG(1) << "Registering Chrome as browser: " << chrome_exe.value();
@@ -454,9 +452,9 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
     int level = ShellUtil::CURRENT_USER;
     if (installer_state.system_install())
       level = level | ShellUtil::SYSTEM_LEVEL;
-    ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
+    ShellUtil::MakeChromeDefault(level, chrome_exe, true);
   } else {
-    ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(), false);
+    ShellUtil::RegisterChromeBrowser(chrome_exe, base::string16(), false);
   }
 }
 
@@ -552,8 +550,6 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
         make_chrome_default || force_chrome_default_for_user, new_version);
 
     if (!installer_state.system_install()) {
-      DCHECK_EQ(chrome_product.distribution(),
-                BrowserDistribution::GetDistribution());
       UpdateDefaultBrowserBeaconForPath(
           installer_state.target_path().Append(kChromeExe));
     }

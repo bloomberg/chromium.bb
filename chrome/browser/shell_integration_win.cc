@@ -46,7 +46,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 #include "chrome/installer/util/shell_util.h"
@@ -537,8 +536,7 @@ bool SetAsDefaultBrowser() {
   }
 
   // From UI currently we only allow setting default browser for current user.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefault(dist, ShellUtil::CURRENT_USER, chrome_exe,
+  if (!ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER, chrome_exe,
                                     true /* elevate_if_not_admin */)) {
     LOG(ERROR) << "Chrome could not be set as default browser.";
     return false;
@@ -561,9 +559,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   }
 
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe,
-                                                  wprotocol)) {
+  if (!ShellUtil::MakeChromeDefaultProtocolClient(chrome_exe, wprotocol)) {
     LOG(ERROR) << "Chrome could not be set as default handler for "
                << protocol << ".";
     return false;
@@ -640,8 +636,7 @@ bool SetAsDefaultBrowserUsingIntentPicker() {
     return false;
   }
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_exe)) {
     LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
     return false;
   }
@@ -666,7 +661,6 @@ void SetAsDefaultBrowserUsingSystemSettings(
   std::unique_ptr<DefaultBrowserActionRecorder> recorder(
       new DefaultBrowserActionRecorder(base::Bind(
           base::IgnoreResult(&ShellUtil::ShowMakeChromeDefaultSystemUI),
-          base::Unretained(BrowserDistribution::GetDistribution()),
           chrome_exe)));
 
   // The helper manages its own lifetime. Bind the action recorder
@@ -687,9 +681,8 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
     return false;
   }
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
+  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe,
                                                               wprotocol)) {
     LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
     return false;
@@ -716,9 +709,7 @@ void SetAsDefaultProtocolClientUsingSystemSettings(
   const wchar_t* const kProtocols[] = {wprotocol.c_str(), nullptr};
   OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
-                                                         wprotocol);
+  ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe, wprotocol);
 }
 
 base::string16 GetAppModelIdForProfile(const base::string16& app_name,

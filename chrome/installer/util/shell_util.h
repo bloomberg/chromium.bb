@@ -26,7 +26,6 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/work_item_list.h"
 
-class BrowserDistribution;
 class RegistryEntry;
 
 namespace base {
@@ -464,8 +463,7 @@ class ShellUtil {
   // chrome_exe: The chrome.exe path to register as default browser.
   // elevate_if_not_admin: On Vista if user is not admin, try to elevate for
   //                       Chrome registration.
-  static bool MakeChromeDefault(BrowserDistribution* dist,
-                                int shell_change,
+  static bool MakeChromeDefault(int shell_change,
                                 const base::FilePath& chrome_exe,
                                 bool elevate_if_not_admin);
 
@@ -485,16 +483,13 @@ class ShellUtil {
   // dialog focused on default apps is launched. The function does not wait
   // in this case.
   //
-  // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.
-  static bool ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
-                                            const base::FilePath& chrome_exe);
+  static bool ShowMakeChromeDefaultSystemUI(const base::FilePath& chrome_exe);
 
   // Make Chrome the default application for a protocol.
   // chrome_exe: The chrome.exe path to register as default browser.
   // protocol: The protocol to register as the default handler for.
-  static bool MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
-                                              const base::FilePath& chrome_exe,
+  static bool MakeChromeDefaultProtocolClient(const base::FilePath& chrome_exe,
                                               const base::string16& protocol);
 
   // Shows and waits for the Windows 8 "How do you want to open links of this
@@ -502,11 +497,9 @@ class ShellUtil {
   // handler. Also does XP-era registrations if Chrome is chosen or was already
   // the default for |protocol|. Do not use on pre-Win8 OSes.
   //
-  // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.
   // |protocol| is the protocol being registered.
   static bool ShowMakeChromeDefaultProtocolClientSystemUI(
-      BrowserDistribution* dist,
       const base::FilePath& chrome_exe,
       const base::string16& protocol);
 
@@ -535,8 +528,7 @@ class ShellUtil {
   // (e.g. "Make Chrome Default") as it allows this method to UAC.
   //
   // Returns true if Chrome is successfully registered (or already registered).
-  static bool RegisterChromeBrowser(BrowserDistribution* dist,
-                                    const base::FilePath& chrome_exe,
+  static bool RegisterChromeBrowser(const base::FilePath& chrome_exe,
                                     const base::string16& unique_suffix,
                                     bool elevate_if_not_admin);
 
@@ -557,8 +549,7 @@ class ShellUtil {
   // |protocol| The protocol to register as being capable of handling.s
   // |elevate_if_not_admin| if true will make this method try alternate methods
   // as described above.
-  static bool RegisterChromeForProtocol(BrowserDistribution* dist,
-                                        const base::FilePath& chrome_exe,
+  static bool RegisterChromeForProtocol(const base::FilePath& chrome_exe,
                                         const base::string16& unique_suffix,
                                         const base::string16& protocol,
                                         bool elevate_if_not_admin);

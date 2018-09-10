@@ -55,7 +55,6 @@
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/beacons.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
@@ -689,8 +688,7 @@ bool IsChromeRegisteredForProtocol(const base::string16& suffix,
 // registration on Windows 7 for per-user installs where setup.exe did not have
 // permission to register Chrome during install. It may also be used on Windows
 // 7 for system-level installs to register Chrome for a specific protocol.
-bool ElevateAndRegisterChrome(BrowserDistribution* dist,
-                              const base::FilePath& chrome_exe,
+bool ElevateAndRegisterChrome(const base::FilePath& chrome_exe,
                               const base::string16& suffix,
                               const base::string16& protocol) {
   // Check for setup.exe in the same directory as chrome.exe, as is the case
@@ -703,7 +701,8 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
   const bool is_per_user = InstallUtil::IsPerUserInstall();
   if (!base::PathExists(exe_path)) {
     RegKey key(is_per_user ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE,
-               dist->GetStateKey().c_str(), KEY_QUERY_VALUE | KEY_WOW64_32KEY);
+               install_static::GetClientStateKeyPath().c_str(),
+               KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     base::string16 uninstall_string;
     if (key.ReadValue(installer::kUninstallStringField, &uninstall_string) ==
         ERROR_SUCCESS) {
@@ -1964,13 +1963,9 @@ ShellUtil::InteractiveSetDefaultMode ShellUtil::GetInteractiveSetDefaultMode() {
   return InteractiveSetDefaultMode::INTENT_PICKER;
 }
 
-bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
-                                  int shell_change,
+bool ShellUtil::MakeChromeDefault(int shell_change,
                                   const base::FilePath& chrome_exe,
                                   bool elevate_if_not_admin) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   DCHECK(!(shell_change & SYSTEM_LEVEL) || IsUserAnAdmin());
 
   if (!install_static::SupportsSetAsDefaultBrowser())
@@ -1983,8 +1978,8 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
     return false;
   }
 
-  if (!RegisterChromeBrowser(
-           dist, chrome_exe, base::string16(), elevate_if_not_admin)) {
+  if (!RegisterChromeBrowser(chrome_exe, base::string16(),
+                             elevate_if_not_admin)) {
     return false;
   }
 
@@ -2054,18 +2049,14 @@ bool ShellUtil::LaunchUninstallAppsSettings() {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 bool ShellUtil::ShowMakeChromeDefaultSystemUI(
-    BrowserDistribution* dist,
     const base::FilePath& chrome_exe) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   DCHECK(!CanMakeChromeDefaultUnattended());
 
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
-  if (!RegisterChromeBrowser(dist, chrome_exe, base::string16(), true))
-      return false;
+  if (!RegisterChromeBrowser(chrome_exe, base::string16(), true))
+    return false;
 
   bool succeeded = true;
   bool is_default = (GetChromeDefaultState() == IS_DEFAULT);
@@ -2098,17 +2089,12 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(
 }
 
 bool ShellUtil::MakeChromeDefaultProtocolClient(
-    BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
-  if (!RegisterChromeForProtocol(
-           dist, chrome_exe, base::string16(), protocol, true))
+  if (!RegisterChromeForProtocol(chrome_exe, base::string16(), protocol, true))
     return false;
 
   // Windows 8 does not permit making a browser default just like that.
@@ -2146,19 +2132,14 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
 }
 
 bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
-    BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   DCHECK(!CanMakeChromeDefaultUnattended());
 
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
-  if (!RegisterChromeForProtocol(
-           dist, chrome_exe, base::string16(), protocol, true))
+  if (!RegisterChromeForProtocol(chrome_exe, base::string16(), protocol, true))
     return false;
 
   bool succeeded = true;
@@ -2191,13 +2172,9 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
   return succeeded;
 }
 
-bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
-                                      const base::FilePath& chrome_exe,
+bool ShellUtil::RegisterChromeBrowser(const base::FilePath& chrome_exe,
                                       const base::string16& unique_suffix,
                                       bool elevate_if_not_admin) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
   base::string16 suffix;
@@ -2256,7 +2233,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   // Try to elevate and register if requested for per-user installs if the user
   // is not an admin.
   if (elevate_if_not_admin &&
-      ElevateAndRegisterChrome(dist, chrome_exe, suffix, base::string16())) {
+      ElevateAndRegisterChrome(chrome_exe, suffix, base::string16())) {
     return true;
   }
   // If we got to this point then all we can do is create ProgId and basic app
@@ -2283,14 +2260,10 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   return AddRegistryEntries(HKEY_CURRENT_USER, entries);
 }
 
-bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
-                                          const base::FilePath& chrome_exe,
+bool ShellUtil::RegisterChromeForProtocol(const base::FilePath& chrome_exe,
                                           const base::string16& unique_suffix,
                                           const base::string16& protocol,
                                           bool elevate_if_not_admin) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   base::string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
@@ -2315,7 +2288,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
     // We can do this operation directly.
     // First, make sure Chrome is fully registered on this machine.
-    if (!RegisterChromeBrowser(dist, chrome_exe, suffix, false))
+    if (!RegisterChromeBrowser(chrome_exe, suffix, false))
       return false;
 
     // Write in the capabillity for the protocol.
@@ -2324,7 +2297,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
     return AddRegistryEntries(root, entries);
   } else if (elevate_if_not_admin) {
     // Elevate to do the whole job
-    return ElevateAndRegisterChrome(dist, chrome_exe, suffix, protocol);
+    return ElevateAndRegisterChrome(chrome_exe, suffix, protocol);
   } else {
     // Admin rights are required to register capabilities before Windows 8.
     return false;

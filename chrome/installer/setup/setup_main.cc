@@ -730,10 +730,8 @@ installer::InstallStatus RegisterDevChrome(
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
     const base::CommandLine& cmd_line) {
-  BrowserDistribution* chrome_dist = BrowserDistribution::GetDistribution();
-
   // Only proceed with registering a dev chrome if no real Chrome installation
-  // of the same distribution are present on this system.
+  // of the same install mode is present on this system.
   const ProductState* existing_chrome = original_state.GetProductState(false);
   if (!existing_chrome)
     existing_chrome = original_state.GetProductState(true);
@@ -772,10 +770,9 @@ installer::InstallStatus RegisterDevChrome(
 
     // Register Chrome at user-level and make it default.
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
-      ShellUtil::MakeChromeDefault(chrome_dist, ShellUtil::CURRENT_USER,
-                                   chrome_exe, true);
+      ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER, chrome_exe, true);
     } else {
-      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_dist, chrome_exe);
+      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_exe);
     }
   } else {
     LOG(ERROR) << "Path not found: " << chrome_exe.value();
@@ -882,7 +879,6 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
-    const Product& chrome_install = installer_state->product();
     // If --register-chrome-browser option is specified, register all Chrome
     // protocol/file associations, as well as register it as a valid browser for
     // Start Menu->Internet shortcut. This switch will also register Chrome as a
@@ -911,13 +907,11 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
       // ShellUtil::RegisterChromeForProtocol performs all registration
       // done by ShellUtil::RegisterChromeBrowser, as well as registering
       // with Windows as capable of handling the supplied protocol.
-      if (ShellUtil::RegisterChromeForProtocol(chrome_install.distribution(),
-                                               chrome_exe, suffix, protocol,
+      if (ShellUtil::RegisterChromeForProtocol(chrome_exe, suffix, protocol,
                                                false))
         status = installer::IN_USE_UPDATED;
     } else {
-      if (ShellUtil::RegisterChromeBrowser(chrome_install.distribution(),
-                                           chrome_exe, suffix, false))
+      if (ShellUtil::RegisterChromeBrowser(chrome_exe, suffix, false))
         status = installer::IN_USE_UPDATED;
     }
     *exit_code = InstallUtil::GetInstallReturnCode(status);
