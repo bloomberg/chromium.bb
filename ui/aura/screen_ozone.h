@@ -5,6 +5,8 @@
 #ifndef UI_AURA_SCREEN_OZONE_H_
 #define UI_AURA_SCREEN_OZONE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
 #include "ui/display/screen.h"
