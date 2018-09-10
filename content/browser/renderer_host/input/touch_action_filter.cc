@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -242,17 +241,10 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
 }
 
 void TouchActionFilter::IncreaseActiveTouches() {
-  // The touch start and associated touch end should be acked in order. If not,
-  // dump.
-  if (num_of_active_touches_ > 0)
-    base::debug::DumpWithoutCrashing();
   num_of_active_touches_++;
 }
 
 void TouchActionFilter::DecreaseActiveTouches() {
-  // Something is seriously wrong if this is true.
-  if (num_of_active_touches_ == 0)
-    base::debug::DumpWithoutCrashing();
   num_of_active_touches_--;
 }
 
