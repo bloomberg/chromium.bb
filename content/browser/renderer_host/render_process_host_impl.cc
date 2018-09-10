@@ -2999,7 +2999,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebVR,
     switches::kExplicitlyAllowedPorts,
     switches::kFileUrlPathAlias,
-    switches::kForceColorProfile,
+    switches::kForceDisplayColorProfile,
     switches::kForceDeviceScaleFactor,
     switches::kForceGpuMemAvailableMb,
     switches::kForceGpuRasterization,

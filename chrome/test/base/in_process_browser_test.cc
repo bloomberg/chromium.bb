@@ -260,7 +260,7 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
 
   // Use an sRGB color profile to ensure that the machine's color profile does
   // not affect the results.
-  command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)

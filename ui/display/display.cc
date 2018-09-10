@@ -58,6 +58,33 @@ float GetForcedDeviceScaleFactorImpl() {
 
 int64_t internal_display_id_ = -1;
 
+gfx::ColorSpace ForcedColorProfileStringToColorSpace(const std::string& value) {
+  if (value == "srgb")
+    return gfx::ColorSpace::CreateSRGB();
+  if (value == "display-p3-d65")
+    return gfx::ColorSpace::CreateDisplayP3D65();
+  if (value == "scrgb-linear")
+    return gfx::ColorSpace::CreateSCRGBLinear();
+  if (value == "extended-srgb")
+    return gfx::ColorSpace::CreateExtendedSRGB();
+  if (value == "generic-rgb") {
+    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
+                           gfx::ColorSpace::TransferID::GAMMA18);
+  }
+  if (value == "color-spin-gamma24") {
+    // Run this color profile through an ICC profile. The resulting color space
+    // is slightly different from the input color space, and removing the ICC
+    // profile would require rebaselineing many layout tests.
+    gfx::ColorSpace color_space(
+        gfx::ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN,
+        gfx::ColorSpace::TransferID::GAMMA24);
+    return gfx::ICCProfile::FromParametricColorSpace(color_space)
+        .GetColorSpace();
+  }
+  LOG(ERROR) << "Invalid forced color profile: \"" << value << "\"";
+  return gfx::ColorSpace::CreateSRGB();
+}
+
 }  // namespace
 
 bool CompareDisplayIds(int64_t id1, int64_t id2) {
@@ -103,42 +130,33 @@ void Display::SetForceDeviceScaleFactor(double dsf) {
 }
 
 // static
-gfx::ColorSpace Display::GetForcedColorProfile() {
-  DCHECK(HasForceColorProfile());
+gfx::ColorSpace Display::GetForcedDisplayColorProfile() {
+  DCHECK(HasForceDisplayColorProfile());
   std::string value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kForceColorProfile);
-  if (value == "srgb") {
-    return gfx::ColorSpace::CreateSRGB();
-  } else if (value == "display-p3-d65") {
-    return gfx::ColorSpace::CreateDisplayP3D65();
-  } else if (value == "scrgb-linear") {
-    return gfx::ColorSpace::CreateSCRGBLinear();
-  } else if (value == "extended-srgb") {
-    return gfx::ColorSpace::CreateExtendedSRGB();
-  } else if (value == "generic-rgb") {
-    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
-                           gfx::ColorSpace::TransferID::GAMMA18);
-  } else if (value == "color-spin-gamma24") {
-    // Run this color profile through an ICC profile. The resulting color space
-    // is slightly different from the input color space, and removing the ICC
-    // profile would require rebaselineing many layout tests.
-    gfx::ColorSpace color_space(
-        gfx::ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN,
-        gfx::ColorSpace::TransferID::GAMMA24);
-    return gfx::ICCProfile::FromParametricColorSpace(color_space)
-        .GetColorSpace();
-  }
-  LOG(ERROR) << "Invalid forced color profile";
-  return gfx::ColorSpace::CreateSRGB();
+          switches::kForceDisplayColorProfile);
+  return ForcedColorProfileStringToColorSpace(value);
 }
 
 // static
-bool Display::HasForceColorProfile() {
-  static bool has_force_color_profile =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceColorProfile);
-  return has_force_color_profile;
+bool Display::HasForceDisplayColorProfile() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceDisplayColorProfile);
+}
+
+// static
+gfx::ColorSpace Display::GetForcedRasterColorProfile() {
+  DCHECK(HasForceRasterColorProfile());
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kForceRasterColorProfile);
+  return ForcedColorProfileStringToColorSpace(value);
+}
+
+// static
+bool Display::HasForceRasterColorProfile() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceRasterColorProfile);
 }
 
 // static
@@ -196,8 +214,8 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       color_space_(gfx::ColorSpace::CreateSRGB()),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
-  if (HasForceColorProfile())
-    SetColorSpaceAndDepth(GetForcedColorProfile());
+  if (HasForceDisplayColorProfile())
+    SetColorSpaceAndDepth(GetForcedDisplayColorProfile());
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

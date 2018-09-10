@@ -105,7 +105,8 @@
   {
     "prefix": "exotic-color-space",
     "base": "images",
-    "args": ["--force-color-profile=color-spin-gamma24"]
+    "args": ["--force-color-profile=srgb",
+             "--force-raster-color-profile=color-spin-gamma24"]
   },
   {
     "prefix": "stable",

@@ -802,14 +802,14 @@ const FeatureEntry::Choice kEnableAudioFocusChoices[] = {
 
 const FeatureEntry::Choice kForceColorProfileChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kForceColorProfileSRGB, switches::kForceColorProfile,
-     "srgb"},
-    {flag_descriptions::kForceColorProfileP3, switches::kForceColorProfile,
-     "display-p3-d65"},
+    {flag_descriptions::kForceColorProfileSRGB,
+     switches::kForceDisplayColorProfile, "srgb"},
+    {flag_descriptions::kForceColorProfileP3,
+     switches::kForceDisplayColorProfile, "display-p3-d65"},
     {flag_descriptions::kForceColorProfileColorSpin,
-     switches::kForceColorProfile, "color-spin-gamma24"},
-    {flag_descriptions::kForceColorProfileHdr, switches::kForceColorProfile,
-     "scrgb-linear"},
+     switches::kForceDisplayColorProfile, "color-spin-gamma24"},
+    {flag_descriptions::kForceColorProfileHdr,
+     switches::kForceDisplayColorProfile, "scrgb-linear"},
 };
 
 const FeatureEntry::FeatureParam kAutofillPreviewStyleBlackOnBlue050[] = {
