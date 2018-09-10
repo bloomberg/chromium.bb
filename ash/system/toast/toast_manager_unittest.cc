@@ -40,6 +40,9 @@ class ToastManagerTest : public AshTestBase {
 
     manager_->ResetSerialForTesting();
     EXPECT_EQ(0, GetToastSerial());
+
+    // Start in the ACTIVE (logged-in) state.
+    ChangeLockState(false);
   }
 
  protected:
@@ -106,7 +109,7 @@ class ToastManagerTest : public AshTestBase {
   void ChangeLockState(bool lock) {
     mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
     info_ptr->state = lock ? session_manager::SessionState::LOCKED
-                           : session_manager::SessionState::LOGIN_PRIMARY;
+                           : session_manager::SessionState::ACTIVE;
     Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
   }
 

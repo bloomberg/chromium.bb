@@ -113,10 +113,7 @@ void ToastManager::OnDurationPassed(int toast_number) {
 }
 
 void ToastManager::OnSessionStateChanged(session_manager::SessionState state) {
-  // Note that this method is called before the lock state is changed and
-  // OnLockStateChanged is called.
-
-  const bool locked = state == session_manager::SessionState::LOCKED;
+  const bool locked = state != session_manager::SessionState::ACTIVE;
 
   if ((locked != locked_) && current_toast_data_) {
     // Re-queue the currently visible toast which is not for lock screen.
@@ -125,18 +122,10 @@ void ToastManager::OnSessionStateChanged(session_manager::SessionState state) {
     // Hide the currently visible toast without any animation.
     overlay_.reset();
   }
-}
-
-void ToastManager::OnLockStateChanged(bool locked) {
-  if (locked_ == locked)
-    return;
 
   locked_ = locked;
-  DCHECK(!overlay_);
-
-  if (!overlay_ && !queue_.empty()) {
-    // Try to (re-)show a queued toast, which may be the queued one in
-    // OnSessionStateChanged..
+  if (!queue_.empty()) {
+    // Try to reshow a queued toast from a previous OnSessionStateChanged.
     ShowLatest();
   }
 }

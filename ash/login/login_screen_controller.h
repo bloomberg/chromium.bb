@@ -142,6 +142,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetFingerprintUnlockState(const AccountId& account_id,
                                  mojom::FingerprintUnlockState state) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
+  void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
