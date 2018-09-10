@@ -2828,13 +2828,18 @@
     {
       "id": 265,
       "cr_bugs": [811661],
-      "description": "Crash in glQueryCounter() in VMware driver",
+      "description": "Crash in glQueryCounter() and glBeginQuery() with VMware driver ",
       "os": {
         "type": "linux"
       },
       "gl_vendor": "VMware.*",
       "features": [
         "disable_timestamp_queries"
+      ],
+      "disabled_extensions": [
+        "GL_ARB_timer_query",
+        "GL_EXT_disjoint_timer_query",
+        "GL_EXT_disjoint_timer_query_webgl2"
       ]
     },
     {
