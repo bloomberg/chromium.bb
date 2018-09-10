@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"

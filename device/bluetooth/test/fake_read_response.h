@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 
 namespace bluetooth {

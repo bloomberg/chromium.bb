@@ -5,6 +5,8 @@
 #ifndef PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 #define PRINTING_BACKEND_PRINTING_RESTRICTIONS_H_
 
+#include <vector>
+
 #include "base/optional.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
