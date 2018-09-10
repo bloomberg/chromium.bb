@@ -26,9 +26,9 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -47,7 +47,7 @@ void SubresourceFilterTestHarness::SetUp() {
 
   // Ensure correct features.
   scoped_configuration_.ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::mojom::ActivationLevel::kEnabled,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::SUBRESOURCE_FILTER));
 

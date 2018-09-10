@@ -7,7 +7,7 @@
 
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -33,9 +33,9 @@ class SubresourceFilterClient {
   // the embedder if any decision changes.
   //
   // Precondition: The navigation must be a main frame navigation.
-  virtual ActivationLevel OnPageActivationComputed(
+  virtual mojom::ActivationLevel OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationLevel initial_activation_level,
+      mojom::ActivationLevel initial_activation_level,
       subresource_filter::ActivationDecision* decision) = 0;
 };
 

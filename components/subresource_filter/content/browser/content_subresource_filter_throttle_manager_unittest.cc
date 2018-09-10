@@ -21,10 +21,10 @@
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -66,13 +66,13 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
         activation_throttle_state_(activation_throttle_state) {
     // Add some default activations.
     mock_page_activations_[GURL(kTestURLWithActivation)] =
-        ActivationState(ActivationLevel::ENABLED);
+        ActivationState(mojom::ActivationLevel::kEnabled);
     mock_page_activations_[GURL(kTestURLWithActivation2)] =
-        ActivationState(ActivationLevel::ENABLED);
+        ActivationState(mojom::ActivationLevel::kEnabled);
     mock_page_activations_[GURL(kTestURLWithDryRun)] =
-        ActivationState(ActivationLevel::DRYRUN);
+        ActivationState(mojom::ActivationLevel::kDryRun);
     mock_page_activations_[GURL(kTestURLWithNoActivation)] =
-        ActivationState(ActivationLevel::DISABLED);
+        ActivationState(mojom::ActivationLevel::kDisabled);
   }
   ~MockPageStateActivationThrottle() override {}
 
@@ -169,8 +169,8 @@ class ContentSubresourceFilterThrottleManagerTest
     if (expect_activation) {
       std::tuple<ActivationState, bool> args;
       SubresourceFilterMsg_ActivateForNextCommittedLoad::Read(message, &args);
-      ActivationLevel level = std::get<0>(args).activation_level;
-      EXPECT_NE(ActivationLevel::DISABLED, level);
+      mojom::ActivationLevel level = std::get<0>(args).activation_level;
+      EXPECT_NE(mojom::ActivationLevel::kDisabled, level);
       bool is_ad_subframe = std::get<1>(args);
       EXPECT_EQ(expect_is_ad_subframe, is_ad_subframe);
     }
@@ -282,9 +282,9 @@ class ContentSubresourceFilterThrottleManagerTest
 
   // SubresourceFilterClient:
   void ShowNotification() override { ++disallowed_notification_count_; }
-  ActivationLevel OnPageActivationComputed(
+  mojom::ActivationLevel OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationLevel effective_activation_level,
+      mojom::ActivationLevel effective_activation_level,
       ActivationDecision* decision) override {
     return effective_activation_level;
   }
@@ -697,15 +697,18 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
       "SubresourceFilter.PageLoad.ActivationState";
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::DRYRUN), 1);
+                           static_cast<int>(mojom::ActivationLevel::kDryRun),
+                           1);
 
   NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::DISABLED), 1);
+                           static_cast<int>(mojom::ActivationLevel::kDisabled),
+                           1);
 
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::ENABLED), 1);
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
 
   // Navigate a subframe that is not filtered, but should still activate.
   CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());

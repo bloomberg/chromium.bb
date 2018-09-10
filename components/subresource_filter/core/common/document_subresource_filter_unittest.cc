@@ -20,8 +20,8 @@ namespace proto = url_pattern_index::proto;
 
 namespace {
 
-constexpr auto kDryRun = ActivationLevel::DRYRUN;
-constexpr auto kEnabled = ActivationLevel::ENABLED;
+constexpr auto kDryRun = mojom::ActivationLevel::kDryRun;
+constexpr auto kEnabled = mojom::ActivationLevel::kEnabled;
 
 constexpr auto kImageType = proto::ELEMENT_TYPE_IMAGE;
 constexpr auto kSubdocumentType = proto::ELEMENT_TYPE_SUBDOCUMENT;

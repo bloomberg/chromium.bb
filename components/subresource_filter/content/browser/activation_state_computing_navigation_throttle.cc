@@ -34,7 +34,7 @@ ActivationStateComputingNavigationThrottle::CreateForSubframe(
     VerifiedRuleset::Handle* ruleset_handle,
     const ActivationState& parent_activation_state) {
   DCHECK(!navigation_handle->IsInMainFrame());
-  DCHECK_NE(ActivationLevel::DISABLED,
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
             parent_activation_state.activation_level);
   DCHECK(ruleset_handle);
   return base::WrapUnique(new ActivationStateComputingNavigationThrottle(
@@ -59,7 +59,8 @@ void ActivationStateComputingNavigationThrottle::
         VerifiedRuleset::Handle* ruleset_handle,
         const ActivationState& page_activation_state) {
   DCHECK(navigation_handle()->IsInMainFrame());
-  DCHECK_NE(ActivationLevel::DISABLED, page_activation_state.activation_level);
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            page_activation_state.activation_level);
   parent_activation_state_ = page_activation_state;
   ruleset_handle_ = ruleset_handle;
 }

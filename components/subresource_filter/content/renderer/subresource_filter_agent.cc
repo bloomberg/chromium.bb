@@ -100,7 +100,7 @@ ActivationState SubresourceFilterAgent::GetParentActivationState(
     if (agent && agent->filter_for_last_committed_load_)
       return agent->filter_for_last_committed_load_->activation_state();
   }
-  return ActivationState(ActivationLevel::DISABLED);
+  return ActivationState(mojom::ActivationLevel::kDisabled);
 }
 
 void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
@@ -113,14 +113,13 @@ void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
     const ActivationState& activation_state) {
-  // Note: ActivationLevel used to be called ActivationState, the legacy name is
-  // kept for the histogram.
-  ActivationLevel activation_level = activation_state.activation_level;
+  // Note: mojom::ActivationLevel used to be called ActivationState, the legacy
+  // name is kept for the histogram.
+  mojom::ActivationLevel activation_level = activation_state.activation_level;
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.DocumentLoad.ActivationState",
-                            static_cast<int>(activation_level),
-                            static_cast<int>(ActivationLevel::LAST) + 1);
+                            activation_level);
 
-  if (activation_level != ActivationLevel::DISABLED) {
+  if (activation_level != mojom::ActivationLevel::kDisabled) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
                           ruleset_dealer_->IsRulesetFileAvailable());
   }
@@ -171,7 +170,7 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 
 void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ =
-      ActivationState(ActivationLevel::DISABLED);
+      ActivationState(mojom::ActivationLevel::kDisabled);
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -219,7 +218,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
     return;
 
   RecordHistogramsOnLoadCommitted(activation_state);
-  if (activation_state.activation_level == ActivationLevel::DISABLED ||
+  if (activation_state.activation_level == mojom::ActivationLevel::kDisabled ||
       !ruleset_dealer_->IsRulesetFileAvailable())
     return;
 

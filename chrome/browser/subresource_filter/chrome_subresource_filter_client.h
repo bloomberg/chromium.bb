@@ -76,9 +76,9 @@ class ChromeSubresourceFilterClient
 
   // SubresourceFilterClient:
   void ShowNotification() override;
-  subresource_filter::ActivationLevel OnPageActivationComputed(
+  subresource_filter::mojom::ActivationLevel OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      subresource_filter::ActivationLevel initial_activation_level,
+      subresource_filter::mojom::ActivationLevel initial_activation_level,
       subresource_filter::ActivationDecision* decision) override;
 
   // Should be called by devtools in response to a protocol command to enable ad

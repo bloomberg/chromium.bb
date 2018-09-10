@@ -78,13 +78,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   auto ruleset_handle =
       std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+      GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver receiver;
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::ENABLED));
+  receiver.ExpectReceivedOnce(
+      ActivationState(mojom::ActivationLevel::kEnabled));
   histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
                                       VerifyStatus::kPassValidChecksum, 1);
 }
@@ -101,13 +102,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
   auto ruleset_handle =
       std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+      GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver receiver;
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
+  receiver.ExpectReceivedOnce(
+      ActivationState(mojom::ActivationLevel::kDisabled));
   histogram_tester.ExpectTotalCount(kIndexedRulesetVerifyHistogram, 0);
 }
 
@@ -139,13 +141,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   auto ruleset_handle =
       std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+      GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver receiver;
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
+  receiver.ExpectReceivedOnce(
+      ActivationState(mojom::ActivationLevel::kDisabled));
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
   // If AdTagging is enabled, then the initial SetRuleset will trigger
@@ -188,13 +191,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   auto ruleset_handle =
       std::make_unique<VerifiedRuleset::Handle>(service->ruleset_dealer());
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("https://example.com/"), ActivationLevel::ENABLED, false);
+      GURL("https://example.com/"), mojom::ActivationLevel::kEnabled, false);
 
   testing::TestActivationStateCallbackReceiver receiver;
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(ActivationState(ActivationLevel::DISABLED));
+  receiver.ExpectReceivedOnce(
+      ActivationState(mojom::ActivationLevel::kDisabled));
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
   histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
