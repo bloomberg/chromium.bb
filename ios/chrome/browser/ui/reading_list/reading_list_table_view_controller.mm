@@ -74,6 +74,12 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // The action sheet used to confirm whether items should be marked as read or
 // unread.
 @property(nonatomic, strong) ActionSheetCoordinator* markConfirmationSheet;
+// Whether the table view is being edited after tapping on the edit button in
+// the toolbar.
+@property(nonatomic, assign, getter=isEditingWithToolbarButtons)
+    BOOL editingWithToolbarButtons;
+// Whether the table view is being edited by the swipe-to-delete button.
+@property(nonatomic, readonly, getter=isEditingWithSwipe) BOOL editingWithSwipe;
 
 @end
 
@@ -87,6 +93,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @synthesize selectedUnreadItemCount = _selectedUnreadItemCount;
 @synthesize selectedReadItemCount = _selectedReadItemCount;
 @synthesize markConfirmationSheet = _markConfirmationSheet;
+@synthesize editingWithToolbarButtons = _editingWithToolbarButtons;
 
 - (instancetype)init {
   self = [super initWithTableViewStyle:UITableViewStylePlain
@@ -123,6 +130,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   self.selectedUnreadItemCount = 0;
   self.selectedReadItemCount = 0;
   [self updateToolbarItems];
+  if (!editing)
+    self.editingWithToolbarButtons = NO;
 }
 
 - (void)setSelectedUnreadItemCount:(NSUInteger)selectedUnreadItemCount {
@@ -149,6 +158,10 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     return;
   [_markConfirmationSheet stop];
   _markConfirmationSheet = markConfirmationSheet;
+}
+
+- (BOOL)isEditingWithSwipe {
+  return self.editing && !self.editingWithToolbarButtons;
 }
 
 #pragma mark - Public
@@ -194,6 +207,13 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
           initWithTarget:self
                   action:@selector(handleLongPress:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  if (self.editingWithSwipe)
+    [self exitEditingModeAnimated:YES];
 }
 
 #pragma mark - UITableViewDataSource
@@ -362,6 +382,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (void)enterReadingListEditMode {
   if (self.editing)
     return;
+  self.editingWithToolbarButtons = YES;
   [self setEditing:YES animated:YES];
 }
 
@@ -830,7 +851,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (void)exitEditingModeAnimated:(BOOL)animated {
   self.markConfirmationSheet = nil;
   [self setEditing:NO animated:animated];
-  [self updateToolbarItems];
 }
 
 #pragma mark - Emtpy Table Helpers
