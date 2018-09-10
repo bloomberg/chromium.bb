@@ -563,7 +563,7 @@ const base::Feature kSSLCommittedInterstitials{
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the ability to add a Samba Share to the Files app
-const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 // Enables a special visual treatment for windows with a single tab.
