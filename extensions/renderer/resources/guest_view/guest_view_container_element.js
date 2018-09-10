@@ -8,6 +8,7 @@
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var DocumentNatives = requireNative('document_natives');
 var IdGenerator = requireNative('id_generator');
+var logging = requireNative('logging');
 
 // Registers the browserplugin and guestview as custom elements once the
 // document has loaded.
@@ -128,16 +129,40 @@ function registerGuestViewElement(
 }
 
 // Forward public API methods from |containerElementType|'s prototype to their
-// internal implementations.
-function forwardApiMethods(containerElementType, methodNames) {
-  var createProtoHandler = function(m) {
+// internal implementations. If the method is defined on |containerType|, we
+// forward to that. Otherwise, we forward to the method on |internalApi|.
+function forwardApiMethods(
+    containerElementType, containerType, internalApi, methodNames) {
+  var createContainerImplHandler = function(m) {
     return function(var_args) {
       var internal = privates(this).internal;
       return $Function.apply(internal[m], internal, arguments);
     };
   };
+
+  var createInternalApiHandler = function(m) {
+    return function(var_args) {
+      var internal = privates(this).internal;
+      var instanceId = internal.guest.getId();
+      if (!instanceId) {
+        return false;
+      }
+      var args = $Array.concat([instanceId], $Array.slice(arguments));
+      $Function.apply(internalApi[m], null, args);
+      return true;
+    };
+  };
+
   for (var m of methodNames) {
-    containerElementType.prototype[m] = createProtoHandler(m);
+    if (!containerElementType.prototype[m]) {
+      if (containerType.prototype[m]) {
+        containerElementType.prototype[m] = createContainerImplHandler(m);
+      } else if (internalApi && internalApi[m]) {
+        containerElementType.prototype[m] = createInternalApiHandler(m);
+      } else {
+        logging.DCHECK(false, m + ' has no implementation.');
+      }
+    }
   }
 }
 

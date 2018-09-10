@@ -12,6 +12,6 @@ var AppViewImpl = require('appView').AppViewImpl;
 
 class AppViewElement extends GuestViewContainerElement {}
 
-forwardApiMethods(AppViewElement, ['connect']);
+forwardApiMethods(AppViewElement, AppViewImpl, null, ['connect']);
 
 registerElement('AppView', AppViewElement, AppViewImpl);

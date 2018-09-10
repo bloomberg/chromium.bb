@@ -15,6 +15,7 @@ var EXTENSION_VIEW_API_METHODS =
 class ExtensionViewElement extends GuestViewContainerElement {}
 
 // Forward ExtensionViewElement.foo* method calls to ExtensionViewImpl.foo*.
-forwardApiMethods(ExtensionViewElement, EXTENSION_VIEW_API_METHODS);
+forwardApiMethods(
+    ExtensionViewElement, ExtensionViewImpl, null, EXTENSION_VIEW_API_METHODS);
 
 registerElement('ExtensionView', ExtensionViewElement, ExtensionViewImpl);
