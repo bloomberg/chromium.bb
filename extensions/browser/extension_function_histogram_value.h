@@ -1335,7 +1335,6 @@ enum HistogramValue {
   FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER = 1272,
   AUTOTESTPRIVATE_SETCROSTINIENABLED = 1273,
   AUTOTESTPRIVATE_GETHISTOGRAM = 1274,
-  TABCAPTURE_GETMEDIASTREAMID = 1275,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
