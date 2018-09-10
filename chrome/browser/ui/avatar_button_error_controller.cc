@@ -30,10 +30,9 @@ void AvatarButtonErrorController::UpdateSigninError(bool has_signin_error) {
 }
 
 void AvatarButtonErrorController::UpdateSyncError(bool has_sync_error) {
-  bool had_error = HasAvatarError();
   has_sync_error_ = has_sync_error;
-  if (had_error != HasAvatarError())
-    delegate_->OnAvatarErrorChanged();
+  // Always notify observers, so they can handle errors differently.
+  delegate_->OnAvatarErrorChanged();
 }
 
 AvatarButtonErrorController::SigninErrorObserver::SigninErrorObserver(
