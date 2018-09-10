@@ -41,6 +41,7 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -494,6 +495,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::SpecialStoragePolicy* special_storage_policy)
     : partition_path_(partition_path),
       special_storage_policy_(special_storage_policy),
+      network_context_client_binding_(this),
       browser_context_(browser_context),
       deletion_helpers_running_(0),
       weak_factory_(this) {}
@@ -873,6 +875,26 @@ void StoragePartitionImpl::OpenSessionStorage(
   dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
                                            bindings_.GetBadMessageCallback(),
                                            std::move(request));
+}
+
+void StoragePartitionImpl::OnCanSendReportingReports(
+    const std::vector<url::Origin>& origins,
+    OnCanSendReportingReportsCallback callback) {
+  PermissionController* permission_controller =
+      BrowserContext::GetPermissionController(browser_context_);
+  DCHECK(permission_controller);
+
+  std::vector<url::Origin> origins_out;
+  for (auto& origin : origins) {
+    GURL origin_url = origin.GetURL();
+    bool allowed = permission_controller->GetPermissionStatus(
+                       PermissionType::BACKGROUND_SYNC, origin_url,
+                       origin_url) == blink::mojom::PermissionStatus::GRANTED;
+    if (allowed)
+      origins_out.push_back(origin);
+  }
+
+  std::move(callback).Run(origins_out);
 }
 
 void StoragePartitionImpl::ClearDataImpl(
@@ -1281,6 +1303,10 @@ void StoragePartitionImpl::InitNetworkContext() {
                        base::Unretained(network_context_owner_.get()),
                        MakeRequest(&network_context_), url_request_context_));
   }
+  network::mojom::NetworkContextClientPtr client_ptr;
+  network_context_client_binding_.Close();
+  network_context_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
+  network_context_->SetClient(std::move(client_ptr));
   network_context_.set_connection_error_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
 }
