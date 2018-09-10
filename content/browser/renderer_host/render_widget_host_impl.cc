@@ -2332,8 +2332,10 @@ bool RenderWidgetHostImpl::IsWheelScrollInProgress() {
 }
 
 void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
-  if (delegate_)
-    delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
+  if (!delegate_ || !delegate_->GetInputEventRouter())
+    return;
+
+  delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
 }
 
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
