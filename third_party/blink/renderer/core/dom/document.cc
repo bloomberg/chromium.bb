@@ -5439,7 +5439,7 @@ const KURL Document::SiteForCookies() const {
     return ImportsController()->Master()->SiteForCookies();
 
   if (!GetFrame())
-    return SecurityOrigin::UrlWithUniqueOpaqueOrigin();
+    return NullURL();
 
   // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
   // look at their URL, but we can't because we don't know what it is.
@@ -5454,7 +5454,7 @@ const KURL Document::SiteForCookies() const {
     if (origin)
       top_document_url = KURL(NullURL(), origin->ToString());
     else
-      top_document_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
+      top_document_url = NullURL();
   }
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
@@ -5488,8 +5488,9 @@ const KURL Document::SiteForCookies() const {
     // login forms into HTTP pages; we should allow this kind of upgrade.
     if (access_entry.MatchesDomain(
             *current_frame->GetSecurityContext()->GetSecurityOrigin()) ==
-        network::cors::OriginAccessEntry::kDoesNotMatchOrigin)
-      return SecurityOrigin::UrlWithUniqueOpaqueOrigin();
+        network::cors::OriginAccessEntry::kDoesNotMatchOrigin) {
+      return NullURL();
+    }
 
     current_frame = current_frame->Tree().Parent();
   }

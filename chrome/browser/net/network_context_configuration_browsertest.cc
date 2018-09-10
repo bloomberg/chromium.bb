@@ -479,6 +479,8 @@ class NetworkContextConfigurationBrowserTest
     request->url = embedded_test_server()->GetURL("/set-cookie?" + cookie_line);
     if (cookie_type == CookieType::kThirdParty)
       request->site_for_cookies = GURL("http://example.com");
+    else
+      request->site_for_cookies = embedded_test_server()->base_url();
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),

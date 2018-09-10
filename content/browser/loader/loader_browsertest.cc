@@ -927,8 +927,6 @@ struct RequestData {
         referrer(referrer) {}
 };
 
-const GURL kURLWithUniqueOrigin("data:,");
-
 }  // namespace
 
 class RequestDataBrowserTest : public ContentBrowserTest {
@@ -1085,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
   // document in which they're embedded.
   for (size_t i = 2; i < requests.size(); i++) {
     SCOPED_TRACE(requests[i].url);
-    EXPECT_EQ(kURLWithUniqueOrigin, requests[i].first_party);
+    EXPECT_EQ(GURL::EmptyGURL(), requests[i].first_party);
     EXPECT_EQ(nested_origin, requests[i].initiator);
   }
 }
@@ -1252,7 +1250,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginNested) {
   // Cross-origin subresource requests have a unique first-party, and an
   // initiator that matches the document in which they're embedded.
   EXPECT_EQ(nested_js_url, requests[3].url);
-  EXPECT_EQ(kURLWithUniqueOrigin, requests[3].first_party);
+  EXPECT_EQ(GURL::EmptyGURL(), requests[3].first_party);
   EXPECT_EQ(nested_origin, requests[3].initiator);
 }
 
