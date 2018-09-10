@@ -245,19 +245,17 @@ TEST_F(ParkableStringTest, TableMultiple) {
 }
 
 TEST_F(ParkableStringTest, ShouldPark) {
-  String null_string;
-  EXPECT_FALSE(ParkableStringManager::ShouldPark(null_string.Impl()));
   String empty_string("");
-  EXPECT_FALSE(ParkableStringManager::ShouldPark(empty_string.Impl()));
+  EXPECT_FALSE(ParkableStringManager::ShouldPark(*empty_string.Impl()));
   std::vector<char> data(20 * 1000, 'a');
 
   String parkable(String(data.data(), data.size()).ReleaseImpl());
-  EXPECT_TRUE(ParkableStringManager::ShouldPark(parkable.Impl()));
+  EXPECT_TRUE(ParkableStringManager::ShouldPark(*parkable.Impl()));
 
   std::thread t([]() {
     std::vector<char> data(20 * 1000, 'a');
     String parkable(String(data.data(), data.size()).ReleaseImpl());
-    EXPECT_FALSE(ParkableStringManager::ShouldPark(parkable.Impl()));
+    EXPECT_FALSE(ParkableStringManager::ShouldPark(*parkable.Impl()));
   });
   t.join();
 }

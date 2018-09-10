@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
@@ -18,9 +19,6 @@ void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
 
 }  // namespace
 
-ParkableStringImpl::ParkableStringImpl()
-    : ParkableStringImpl({nullptr}, ParkableState::kNotParkable) {}
-
 ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
                                        ParkableState parkable)
     : mutex_(),
@@ -33,13 +31,11 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
       owning_thread_(CurrentThread())
 #endif
 {
+  DCHECK(!string_.IsNull());
 }
 
 ParkableStringImpl::~ParkableStringImpl() {
-  // Null strings (default-constructed) can be destroyed on a different thread.
-  if (!string_.IsNull())
-    AssertOnValidThread();
-
+  AssertOnValidThread();
   if (is_parkable_)
     ParkableStringManager::Instance().Remove(string_.Impl());
 }
@@ -107,7 +103,12 @@ void ParkableStringImpl::Unpark() {
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {
-  bool is_parkable = ParkableStringManager::ShouldPark(impl.get());
+  if (!impl) {
+    impl_ = nullptr;
+    return;
+  }
+
+  bool is_parkable = ParkableStringManager::ShouldPark(*impl);
   if (is_parkable) {
     impl_ = ParkableStringManager::Instance().Add(std::move(impl));
   } else {
@@ -132,15 +133,12 @@ bool ParkableString::Is8Bit() const {
   return impl_->Is8Bit();
 }
 
-bool ParkableString::IsNull() const {
-  return impl_->IsNull();
-}
-const String& ParkableString::ToString() const {
-  return impl_->ToString();
+String ParkableString::ToString() const {
+  return impl_ ? impl_->ToString() : String();
 }
 
 unsigned ParkableString::CharactersSizeInBytes() const {
-  return impl_->CharactersSizeInBytes();
+  return impl_ ? impl_->CharactersSizeInBytes() : 0;
 }
 
 }  // namespace blink

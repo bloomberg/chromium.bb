@@ -50,7 +50,6 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
   enum class ParkableState { kParkable, kNotParkable };
 
-  ParkableStringImpl();
   // Not all parkable strings can actually be parked. If |parkable| is
   // kNotParkable, then one cannot call |Park()|, and the underlying StringImpl
   // will not move.
@@ -109,7 +108,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
 class PLATFORM_EXPORT ParkableString final {
  public:
-  ParkableString() : impl_(base::MakeRefCounted<ParkableStringImpl>()) {}
+  ParkableString() : impl_(nullptr) {}
   explicit ParkableString(scoped_refptr<StringImpl>&& impl);
   ParkableString(const ParkableString& rhs) : impl_(rhs.impl_) {}
   ~ParkableString();
@@ -125,15 +124,15 @@ class PLATFORM_EXPORT ParkableString final {
 
   // See the matching String methods.
   bool Is8Bit() const;
-  bool IsNull() const;
-  unsigned length() const { return impl_->length(); }
+  bool IsNull() const { return !impl_; }
+  unsigned length() const { return impl_ ? impl_->length() : 0; }
   bool is_parkable() const { return impl_ && impl_->is_parkable(); }
 
-  ParkableStringImpl* Impl() const { return impl_.get(); }
+  ParkableStringImpl* Impl() const { return impl_ ? impl_.get() : nullptr; }
   // Returns an unparked version of the string.
   // The string is guaranteed to be valid for
   // max(lifetime of a copy of the returned reference, current thread task).
-  const String& ToString() const;
+  String ToString() const;
   unsigned CharactersSizeInBytes() const;
 
   // Causes the string to be unparked. Note that the pointer must not be
