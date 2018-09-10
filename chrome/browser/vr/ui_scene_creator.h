@@ -46,12 +46,10 @@ class UiSceneCreator {
   void CreateOverflowMenu();
   void CreateOmnibox();
   void CreateCloseButton();
-  void CreateExitPrompt();
   void CreatePrompts();
   void CreateToasts();
   void CreateVoiceSearchUiGroup();
   void CreateContentRepositioningAffordance();
-  void CreateExitWarning();
   void CreateWebVrSubtree();
   void CreateWebVrOverlayElements();
   void CreateWebVrTimeoutScreen();

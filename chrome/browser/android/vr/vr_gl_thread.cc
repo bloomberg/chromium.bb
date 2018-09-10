@@ -405,13 +405,6 @@ void VrGLThread::SetCapturingState(
                                 background_capturing, potential_capturing));
 }
 
-void VrGLThread::SetIsExiting() {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserUiInterface::SetIsExiting, weak_browser_ui_));
-}
-
 void VrGLThread::ShowExitVrPrompt(UiUnsupportedMode reason) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,

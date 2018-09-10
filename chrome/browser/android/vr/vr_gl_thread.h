@@ -124,7 +124,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetIncognito(bool incognito) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;
-  void SetIsExiting() override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetCapturingState(
       const CapturingStateModel& active_capturing,

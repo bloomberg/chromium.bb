@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_MODEL_MODEL_H_
 
 #include <memory>
+#include <vector>
 
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
@@ -100,7 +101,6 @@ struct VR_UI_EXPORT Model {
   CapturingStateModel background_capturing;
   CapturingStateModel potential_capturing;
   bool skips_redraw_when_not_dirty = false;
-  bool exiting_vr = false;
   HostedPlatformUi hosted_platform_ui;
 
   std::unique_ptr<const PlatformToast> platform_toast;
