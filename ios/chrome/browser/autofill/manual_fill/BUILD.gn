@@ -14,7 +14,6 @@ source_set("manual_fill") {
     "//components/autofill/core/common:common",
     "//components/keyed_service/core:core",
     "//components/password_manager/core/browser:browser",
-    "//ios/chrome/browser/autofill:autofill_shared",
     "//ios/chrome/browser/browser_state:browser_state",
     "//ios/chrome/browser/passwords:passwords",
   ]

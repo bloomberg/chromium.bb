@@ -1,0 +1,35 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
+
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+
+class WebStateList;
+
+// Creates and manages a view controller to present passwords to the user.
+// Any selected password will be sent to the current field in the active web
+// state.
+@interface ManualFillPasswordCoordinator : ChromeCoordinator
+
+// The view controller of this coordinator.
+@property(nonatomic, readonly) UIViewController* viewController;
+
+// Creates a coordinator that uses a |viewController| a |browserState| and
+// a |webStateList|.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                              webStateList:(WebStateList*)webStateList;
+
+// Unavailable, use -initWithBaseViewController:browserState:webStateList:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
+@end
+
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_

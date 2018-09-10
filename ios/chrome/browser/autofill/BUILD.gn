@@ -12,9 +12,6 @@ source_set("autofill") {
     "form_input_accessory_view.mm",
     "form_input_accessory_view_controller.h",
     "form_input_accessory_view_controller.mm",
-    "form_input_accessory_view_delegate.h",
-    "form_input_accessory_view_handler.h",
-    "form_input_accessory_view_handler.mm",
     "form_input_accessory_view_provider.h",
     "form_suggestion_controller.h",
     "form_suggestion_controller.mm",
@@ -63,6 +60,8 @@ source_set("autofill") {
     "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/autofill/manual_fill",
+    "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/image_util",
     "//ios/web",
     "//third_party/libaddressinput",
@@ -75,7 +74,16 @@ source_set("autofill") {
 source_set("autofill_shared") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "form_input_accessory_view_delegate.h",
+    "form_input_accessory_view_handler.h",
+    "form_input_accessory_view_handler.mm",
     "form_input_accessory_view_provider.h",
+  ]
+  deps = [
+    "//base",
+    "//components/autofill/core/browser",
+    "//components/autofill/ios/browser",
+    "//ios/chrome/browser/ui",
   ]
   libs = [ "UIKit.framework" ]
 }
@@ -480,6 +488,7 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/autofill/ios/browser:browser",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/autofill:autofill_shared",
     "//ios/chrome/browser/ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
