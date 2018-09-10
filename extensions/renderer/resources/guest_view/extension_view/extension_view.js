@@ -7,8 +7,6 @@
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
-var EXTENSION_VIEW_API_METHODS =
-    require('extensionViewApiMethods').EXTENSION_VIEW_API_METHODS;
 var ExtensionViewAttributes =
     require('extensionViewAttributes').ExtensionViewAttributes;
 var ExtensionViewEvents = require('extensionViewEvents').ExtensionViewEvents;
