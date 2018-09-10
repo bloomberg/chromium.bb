@@ -198,8 +198,10 @@ void RouteMouseEventAndWaitUntilDispatch(
   waiter.Wait();
 }
 
+// Dispatch |event| to the specified view using browser process hit testing.
 void DispatchMouseEventAndWaitUntilDispatch(
     WebContentsImpl* web_contents,
+    blink::WebMouseEvent& event,
     RenderWidgetHostViewBase* location_view,
     const gfx::PointF& location,
     RenderWidgetHostViewBase* expected_target,
@@ -210,23 +212,35 @@ void DispatchMouseEventAndWaitUntilDispatch(
       expected_target->GetRenderWidgetHost());
   gfx::PointF root_location =
       location_view->TransformPointToRootCoordSpaceF(location);
-  blink::WebMouseEvent down_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  down_event.button = blink::WebPointerProperties::Button::kLeft;
-  down_event.click_count = 1;
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   auto* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  SetWebEventPositions(&down_event, root_location, root_view);
+  SetWebEventPositions(&event, root_location, root_view);
   RouteMouseEventAndWaitUntilDispatch(router, root_view, expected_target,
-                                      &down_event);
+                                      &event);
   EXPECT_TRUE(monitor.EventWasReceived());
   EXPECT_NEAR(expected_location.x(), monitor.event().PositionInWidget().x, 2)
       << " & original location was " << location.x() << ", " << location.y()
       << " & root_location was " << root_location.x() << ", "
       << root_location.y();
   EXPECT_NEAR(expected_location.y(), monitor.event().PositionInWidget().y, 2);
+}
+
+// Wrapper for the above method that creates a MouseDown to send.
+void DispatchMouseEventAndWaitUntilDispatch(
+    WebContentsImpl* web_contents,
+    RenderWidgetHostViewBase* location_view,
+    const gfx::PointF& location,
+    RenderWidgetHostViewBase* expected_target,
+    const gfx::PointF& expected_location) {
+  blink::WebMouseEvent down_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  down_event.button = blink::WebPointerProperties::Button::kLeft;
+  down_event.click_count = 1;
+  DispatchMouseEventAndWaitUntilDispatch(web_contents, down_event,
+                                         location_view, location,
+                                         expected_target, expected_location);
 }
 
 // Helper function that performs a surface hittest.
@@ -2821,6 +2835,113 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   interceptor->Wait();
   EXPECT_FALSE(interceptor->Capturing());
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       MouseCaptureOnDragSelection) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  // Target MouseDown to child frame.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.click_count = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, gfx::PointF(15.0, 5.0),
+                                         rwhv_child, gfx::PointF(15.0, 5.0));
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  scoped_refptr<SetMouseCaptureInterceptor> interceptor =
+      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
+          child_node->current_frame_host()->GetRenderWidgetHost()));
+
+  // Target MouseMove to child frame to start drag. This should cause the
+  // child to start capturing mouse input.
+  mouse_event.SetType(blink::WebInputEvent::kMouseMove);
+  mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, gfx::PointF(5.0, 5.0),
+                                         rwhv_child, gfx::PointF(5.0, 5.0));
+
+  // Dispatch twice because the router generates an extra MouseLeave for the
+  // main frame.
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, gfx::PointF(5.0, 5.0),
+                                         rwhv_child, gfx::PointF(5.0, 5.0));
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  // Wait for the mouse capture message.
+  interceptor->Wait();
+  EXPECT_TRUE(interceptor->Capturing());
+  // Yield the thread, in order to let the capture message be processed by its
+  // actual handler.
+  {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
+  // Now that the child frame is capturing, a MouseMove targeted to the main
+  // frame should be received by the child frame.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, gfx::PointF(-25.0, -25.0),
+                                         rwhv_child, gfx::PointF(-25.0, -25.0));
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  // A MouseUp sent anywhere should cancel the mouse capture.
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetModifiers(0);
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, gfx::PointF(-25.0, -25.0),
+                                         rwhv_child, gfx::PointF(-25.0, -25.0));
+
+  interceptor->Wait();
+  EXPECT_FALSE(interceptor->Capturing());
 }
 
 // There are no cursors on Android.
