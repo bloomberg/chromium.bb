@@ -4,13 +4,17 @@
 
 #include "chrome/browser/ui/webui/net_export_ui.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -38,7 +42,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_ANDROID)
@@ -106,9 +109,6 @@ class NetExportMessageHandler
   void OnNewState(const base::DictionaryValue& state) override;
 
  private:
-  using URLRequestContextGetterList =
-      std::vector<scoped_refptr<net::URLRequestContextGetter>>;
-
   // Send NetLog data via email.
   static void SendEmail(const base::FilePath& file_to_send);
 
