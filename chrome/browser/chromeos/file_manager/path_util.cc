@@ -37,6 +37,7 @@ const char kDownloadsFolderName[] = "Downloads";
 const char kGoogleDriveDisplayName[] = "Google Drive";
 const char kRootRelativeToDriveMount[] = "root";
 const char kTeamDrivesRelativeToDriveMount[] = "team_drives";
+const char kAndroidFilesMountPointName[] = "android_files";
 
 // Sync with the file provider in ARC++ side.
 constexpr char kArcFileProviderUrl[] =
@@ -126,6 +127,10 @@ std::string GetDownloadsMountPointName(Profile* profile) {
           : nullptr;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
+}
+
+std::string GetAndroidFilesMountPointName() {
+  return kAndroidFilesMountPointName;
 }
 
 std::string GetCrostiniMountPointName(Profile* profile) {

@@ -35,6 +35,16 @@ const BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.hiddenFile
 ];
 
+const BASIC_ANDROID_ENTRY_SET = [
+  ENTRIES.directoryDocuments, ENTRIES.directoryMovies, ENTRIES.directoryMusic,
+  ENTRIES.directoryPictures
+];
+
+const BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN = [
+  ENTRIES.directoryDocuments, ENTRIES.directoryMovies, ENTRIES.directoryMusic,
+  ENTRIES.directoryPictures, ENTRIES.hello, ENTRIES.world, ENTRIES.directoryA
+];
+
 /**
  * Expected files shown in Drive with Google Docs disabled
  *
@@ -57,11 +67,39 @@ const BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS = [
  * @return {!Array} The test steps to toggle hidden files
  */
 function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
+  return getTestCaseStepsForHiddenFilesWithMenuItem(
+      basicSet, hiddenEntrySet, '#gear-menu-toggle-hidden-files');
+}
+
+/**
+ * Gets the common steps to toggle Android hidden files in the Files app
+ * @param {!Array<!TestEntryInfo>} basicSet Files expected before showing hidden
+ * @param {!Array<!TestEntryInfo>} hiddenEntrySet Files expected after showing
+ * hidden
+ * @return {!Array} The test steps to toggle hidden files
+ */
+function getTestCaseStepsForAndroidHiddenFiles(basicSet, hiddenEntrySet) {
+  return getTestCaseStepsForHiddenFilesWithMenuItem(
+      basicSet, hiddenEntrySet, '#gear-menu-toggle-hidden-android-folders');
+}
+
+/**
+ * Gets the common steps to toggle hidden files in the Files app
+ * @param {!Array<!TestEntryInfo>} basicSet Files expected before showing hidden
+ * @param {!Array<!TestEntryInfo>} hiddenEntrySet Files expected after showing
+ * hidden
+ * @param {string} toggleMenuItemSelector Selector for the menu item that
+ * toggles hidden file visibility
+ * @return {!Array} The test steps to toggle hidden files
+ */
+function getTestCaseStepsForHiddenFilesWithMenuItem(
+    basicSet, hiddenEntrySet, toggleMenuItemSelector) {
   var appId;
   return [
     function(id) {
       appId = id;
-      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+      remoteCall.waitForElement(appId, '#gear-button:not([hidden])')
+          .then(this.next);
     },
     // Open the gear menu by clicking the gear button.
     function() {
@@ -76,25 +114,26 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
     },
     // Wait for menu item to appear.
     function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files:not([disabled])').then(this.next);
+      remoteCall
+          .waitForElement(appId, toggleMenuItemSelector + ':not([disabled])')
+          .then(this.next);
     },
     // Wait for menu item to appear.
     function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files:not([checked])').then(this.next);
+      remoteCall
+          .waitForElement(appId, toggleMenuItemSelector + ':not([checked])')
+          .then(this.next);
     },
     // Click the menu item.
     function(results) {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files'],
-              this.next);
+          'fakeMouseClick', appId, [toggleMenuItemSelector], this.next);
     },
     // Wait for item to be checked.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files[checked]').then(this.next);
+      remoteCall.waitForElement(appId, toggleMenuItemSelector + '[checked]')
+          .then(this.next);
     },
     // Check the hidden files are displayed.
     function(result) {
@@ -104,7 +143,8 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
     },
     // Repeat steps to toggle again.
     function(inAppId) {
-      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+      remoteCall.waitForElement(appId, '#gear-button:not([hidden])')
+          .then(this.next);
     },
     function() {
       remoteCall.callRemoteTestUtil(
@@ -116,22 +156,23 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
           this.next);
     },
     function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files:not([disabled])').then(this.next);
+      remoteCall
+          .waitForElement(appId, toggleMenuItemSelector + ':not([disabled])')
+          .then(this.next);
     },
     function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files[checked]').then(this.next);
+      remoteCall.waitForElement(appId, toggleMenuItemSelector + '[checked]')
+          .then(this.next);
     },
     function(results) {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files'],
-              this.next);
+          'fakeMouseClick', appId, [toggleMenuItemSelector], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId,
-          '#gear-menu-toggle-hidden-files:not([checked])').then(this.next);
+      remoteCall
+          .waitForElement(appId, toggleMenuItemSelector + ':not([checked])')
+          .then(this.next);
     },
     function(result) {
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(basicSet),
@@ -274,6 +315,126 @@ testcase.toogleGoogleDocsDrive = function() {
       checkIfNoErrorsOccured(this.next);
     },
   ]);
+};
+
+/**
+ * Tests that toggle-hidden-android-folders menu item exists when "Play files"
+ * is selected, but hidden in Recents.
+ */
+testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = function() {
+  var appId;
+  StepsRunner.run([
+    // Open Files.App on Play Files.
+    function() {
+      openNewWindow(null, RootPath.ANDROID_FILES).then(this.next);
+    },
+    function(inAppId) {
+      appId = inAppId;
+      addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET, this.next);
+    },
+    // Wait for the file list to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
+    },
+    // Wait for the gear menu button to appear.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button:not([hidden])')
+          .then(this.next);
+    },
+    // Click the gear menu button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for the gear menu to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // #toggle-hidden-android-folders command should be shown and disabled by
+    // default.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId,
+              '#gear-menu-toggle-hidden-android-folders' +
+                  ':not([checked]):not([hidden])')
+          .then(this.next);
+    },
+    // Click the file list: the gear menu should hide.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#file-list'], this.next);
+    },
+    // Wait for the gear menu to hide.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
+    },
+    // Navigate to Recent.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['span[root-type-icon=\'recent\']'],
+          this.next);
+    },
+    // Click the gear menu button.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for the gear menu to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // #toggle-hidden-android-folders command should be hidden.
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId, '#gear-menu-toggle-hidden-android-folders[hidden]')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests that "Play files" shows the full set of files after
+ * toggle-hidden-android-folders is enabled.
+ */
+testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = function() {
+  var appId;
+  var steps = [
+    // Open Files.App on Play Files.
+    function() {
+      openNewWindow(null, RootPath.ANDROID_FILES).then(this.next);
+    },
+    function(inAppId) {
+      appId = inAppId;
+      addEntries(
+          ['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN, this.next);
+    },
+    // Wait for the file list to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
+    },
+    // Wait for the gear menu button to appear.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button:not([hidden])')
+          .then(this.next);
+    },
+    function() {
+      this.next(appId);
+    }
+  ];
+  steps = steps.concat(getTestCaseStepsForAndroidHiddenFiles(
+      BASIC_ANDROID_ENTRY_SET, BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN));
+  StepsRunner.run(steps);
 };
 
 /**

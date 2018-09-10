@@ -218,6 +218,7 @@ var SharedOption = Object.freeze({
 var RootPath = Object.seal({
   DOWNLOADS: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
+  ANDROID_FILES: '/must-be-filled-in-test-setup',
 });
 
 
@@ -732,5 +733,67 @@ var ENTRIES = {
       canDelete: false,
       canShare: true
     },
-  })
+  }),
+
+  // Default Android directories.
+  directoryDocuments: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Documents',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Documents',
+    sizeText: '--',
+    typeText: 'Folder',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: true,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
+  directoryMovies: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Movies',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Movies',
+    sizeText: '--',
+    typeText: 'Folder',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: true,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
+  directoryMusic: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Music',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Music',
+    sizeText: '--',
+    typeText: 'Folder',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: true,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
+  directoryPictures: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Pictures',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Pictures',
+    sizeText: '--',
+    typeText: 'Folder',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: true,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
 };
