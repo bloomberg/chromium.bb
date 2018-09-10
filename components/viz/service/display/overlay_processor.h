@@ -84,6 +84,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   OutputSurface* surface_;
   gfx::Rect overlay_damage_rect_;
   gfx::Rect previous_frame_underlay_rect_;
+  bool previous_frame_underlay_was_unoccluded_ = false;
 
  private:
   bool ProcessForCALayers(
@@ -105,6 +106,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   // Update |damage_rect| by removing damage casued by |candidates|.
   void UpdateDamageRect(OverlayCandidateList* candidates,
                         const gfx::Rect& previous_frame_underlay_rect,
+                        bool previous_frame_underlay_was_unoccluded,
                         gfx::Rect* damage_rect);
 
   DCLayerOverlayProcessor dc_processor_;
