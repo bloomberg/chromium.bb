@@ -267,12 +267,15 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     base::FilePath path;
-    if (IsSupportedDevToolsURL(request->url(), &path))
-      return new net::URLRequestFileJob(
+    if (IsSupportedDevToolsURL(request->url(), &path)) {
+      net::URLRequestFileJob* job = new net::URLRequestFileJob(
           request, network_delegate, path,
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      job->ShouldServeMimeTypeAsContentTypeHeader();
+      return job;
+    }
 
     return NULL;
   }
