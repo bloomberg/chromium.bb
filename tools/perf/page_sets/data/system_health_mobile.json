@@ -36,6 +36,9 @@
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
         },
+        "browse:news:cnn:2018": {
+            "DEFAULT": "system_health_mobile_066.wprgo"
+        },
         "browse:news:cricbuzz": {
             "DEFAULT": "system_health_mobile_055.wprgo"
         },
