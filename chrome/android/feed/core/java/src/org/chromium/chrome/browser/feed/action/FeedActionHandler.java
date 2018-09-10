@@ -9,7 +9,10 @@ import android.support.annotation.NonNull;
 import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.host.action.ActionApi;
 
+import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -20,23 +23,30 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 public class FeedActionHandler implements ActionApi {
     private final SuggestionsNavigationDelegate mDelegate;
     private final Runnable mSuggestionConsumedObserver;
+    private final FeedOfflineIndicator mOfflineIndicator;
+    private final OfflinePageBridge mOfflinePageBridge;
 
     /**
      * @param delegate The {@link SuggestionsNavigationDelegate} that this handler calls when
-     *                 handling some of the actions.
+     * handling some of the actions.
      * @param suggestionConsumedObserver An observer that is interested in any time a suggestion is
-     *                                   consumed by the user.
+     * consumed by the user.
+     * @param offlineIndicator Tracks offline pages and can supply this handler with offline ids.
+     * @param offlinePageBridge Capable of updating {@link LoadUrlParams} to include offline ids.
      */
     public FeedActionHandler(@NonNull SuggestionsNavigationDelegate delegate,
-            @NonNull Runnable suggestionConsumedObserver) {
+            @NonNull Runnable suggestionConsumedObserver,
+            @NonNull FeedOfflineIndicator offlineIndicator,
+            @NonNull OfflinePageBridge offlinePageBridge) {
         mDelegate = delegate;
         mSuggestionConsumedObserver = suggestionConsumedObserver;
+        mOfflineIndicator = offlineIndicator;
+        mOfflinePageBridge = offlinePageBridge;
     }
 
     @Override
     public void openUrl(String url) {
-        mDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB, createLoadUrlParams(url));
-        mSuggestionConsumedObserver.run();
+        openOfflineIfPossible(WindowOpenDisposition.CURRENT_TAB, url);
     }
 
     @Override
@@ -57,8 +67,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void openUrlInNewTab(String url) {
-        mDelegate.openUrl(WindowOpenDisposition.NEW_BACKGROUND_TAB, createLoadUrlParams(url));
-        mSuggestionConsumedObserver.run();
+        openOfflineIfPossible(WindowOpenDisposition.NEW_BACKGROUND_TAB, url);
     }
 
     @Override
@@ -68,8 +77,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void openUrlInNewWindow(String url) {
-        mDelegate.openUrl(WindowOpenDisposition.NEW_WINDOW, createLoadUrlParams(url));
-        mSuggestionConsumedObserver.run();
+        openOfflineIfPossible(WindowOpenDisposition.NEW_WINDOW, url);
     }
 
     @Override
@@ -102,5 +110,29 @@ public class FeedActionHandler implements ActionApi {
 
     private LoadUrlParams createLoadUrlParams(String url) {
         return new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+    }
+
+    /**
+     * Opens the given url in offline mode if possible by setting load params so the offline
+     * interceptor will handle the request. If there is no offline id, fall back to just opening the
+     * |url| through the |mDelegate|.
+     *
+     * @param disposition How to open the article. Should not be OFF_THE_RECORD, as offline pages
+     * does not support opening articles while incognito.
+     * @param url The url of the article. Should match what was previously requested by Feed to
+     * OfflineIndicatorApi implementation exactly.
+     */
+    private void openOfflineIfPossible(int disposition, String url) {
+        Long maybeOfflineId = mOfflineIndicator.getOfflineIdIfPageIsOfflined(url);
+        if (maybeOfflineId == null) {
+            mDelegate.openUrl(disposition, createLoadUrlParams(url));
+        } else {
+            mOfflinePageBridge.getLoadUrlParamsByOfflineId(
+                    maybeOfflineId, LaunchLocation.SUGGESTION, (loadUrlParams) -> {
+                        loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
+                        mDelegate.openUrl(disposition, loadUrlParams);
+                    });
+        }
+        mSuggestionConsumedObserver.run();
     }
 }

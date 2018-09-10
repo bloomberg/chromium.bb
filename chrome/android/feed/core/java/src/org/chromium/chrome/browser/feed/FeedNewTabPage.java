@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -276,9 +277,12 @@ public class FeedNewTabPage extends NewTabPage {
         Profile profile = mTab.getProfile();
 
         mImageLoader = new FeedImageLoader(profile, activity);
-        ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
-                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed());
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
+        Runnable consumptionObserver =
+                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed();
+        ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
+                consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile));
+
         FeedStreamScope streamScope =
                 feedProcessScope
                         .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,

@@ -41,6 +41,7 @@ if (enable_feed_in_chrome) {
     "junit/src/org/chromium/chrome/browser/feed/FeedJournalStorageTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedOfflineBridgeTest.java",
     "junit/src/org/chromium/chrome/browser/feed/StreamLifecycleManagerTest.java",
+    "junit/src/org/chromium/chrome/browser/feed/action/FeedActionHandlerTest.java",
   ]
 
   feed_test_java_sources = [
