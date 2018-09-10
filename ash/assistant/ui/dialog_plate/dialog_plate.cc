@@ -146,6 +146,9 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
   using assistant::util::CreateTransformElement;
   using assistant::util::StartLayerAnimationSequencesTogether;
 
+  keyboard_layout_container_->SetVisible(true);
+  voice_layout_container_->SetVisible(true);
+
   switch (input_modality) {
     case InputModality::kKeyboard: {
       // Animate voice layout container opacity to 0%.
@@ -387,15 +390,16 @@ bool DialogPlate::OnAnimationEnded(
   InputModality input_modality = assistant_controller_->interaction_controller()
                                      ->model()
                                      ->input_modality();
-  SetFocusMode(input_modality);
   SetFocus(input_modality);
 
   switch (input_modality) {
     case InputModality::kKeyboard:
       keyboard_layout_container_->set_can_process_events_within_subtree(true);
+      voice_layout_container_->SetVisible(false);
       break;
     case InputModality::kVoice:
       voice_layout_container_->set_can_process_events_within_subtree(true);
+      keyboard_layout_container_->SetVisible(false);
       break;
     case InputModality::kStylus:
       // No action necessary.
@@ -413,26 +417,6 @@ void DialogPlate::SetFocus(InputModality input_modality) {
       break;
     case InputModality::kVoice:
       animated_voice_input_toggle_->RequestFocus();
-      break;
-    case InputModality::kStylus:
-      // No action necessary.
-      break;
-  }
-}
-
-void DialogPlate::SetFocusMode(InputModality input_modality) {
-  switch (input_modality) {
-    case InputModality::kKeyboard:
-      textfield_->SetFocusBehavior(FocusBehavior::ALWAYS);
-      voice_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
-      keyboard_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
-      animated_voice_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
-      break;
-    case InputModality::kVoice:
-      textfield_->SetFocusBehavior(FocusBehavior::NEVER);
-      voice_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
-      keyboard_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
-      animated_voice_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
       break;
     case InputModality::kStylus:
       // No action necessary.
