@@ -27,12 +27,13 @@ namespace web {
 namespace test {
 
 id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
-  __block NSString* result;
+  __block NSString* result = nil;
+  __block NSError* error = nil;
   __block bool completed = false;
   [manager executeJavaScript:script
-           completionHandler:^(id execution_result, NSError* error) {
-             DCHECK(!error);
+           completionHandler:^(id execution_result, NSError* execution_error) {
              result = [execution_result copy];
+             error = [execution_error copy];
              completed = true;
            }];
 
@@ -40,10 +41,12 @@ id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
     return completed;
   });
   // Log stack trace to provide some context.
-  EXPECT_TRUE(success)
+  EXPECT_TRUE(success && !error)
       << "CRWJSInjectionManager failed to complete javascript execution.\n"
       << base::SysNSStringToUTF8(
-             [[NSThread callStackSymbols] componentsJoinedByString:@"\n"]);
+             [[NSThread callStackSymbols] componentsJoinedByString:@"\n"])
+      << "error: \n"
+      << base::SysNSStringToUTF8(error.description);
   return result;
 }
 
