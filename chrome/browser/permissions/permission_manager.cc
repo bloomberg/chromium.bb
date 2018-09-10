@@ -34,6 +34,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller.h"
@@ -323,10 +324,15 @@ void PermissionManager::Shutdown() {
 
 GURL PermissionManager::GetCanonicalOrigin(const GURL& requesting_origin,
                                            const GURL& embedding_origin) const {
-  if (requesting_origin.GetOrigin() ==
-      GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()) {
-    return GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue())
-        .GetOrigin();
+  if (embedding_origin.GetOrigin() ==
+      GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+    if (requesting_origin.GetOrigin() ==
+        GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()) {
+      return GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue())
+          .GetOrigin();
+    } else {
+      return requesting_origin;
+    }
   }
 
   if (base::FeatureList::IsEnabled(features::kPermissionDelegation)) {
