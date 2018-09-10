@@ -27,6 +27,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/property/arc_property_bridge.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -48,8 +49,17 @@ namespace app_list {
 
 namespace {
 constexpr char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
+
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.google.android.GoogleCameraArc").
 constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.android.camera2").
 constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
+// Generated as ArcAppListPrefs::GetAppIdByPackageName(
+//     "com.android.googlecameramigration").
+constexpr char kAndroidCameraMigrationAppId[] =
+    "ngmkobaiicipbagcngcmilfkhejlnfci";
 
 const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
                                                        const Profile* profile) {
@@ -138,9 +148,26 @@ int GetIconResourceIdByAppId(const std::string& app_id) {
   return app ? app->icon_resource_id : 0;
 }
 
-void ShowCameraApp(const std::string& app_id,
-                   Profile* profile,
-                   int event_flags) {
+void OnGetMigrationProperty(Profile* profile,
+                            int event_flags,
+                            const base::Optional<std::string>& result) {
+  const char* app_id = kAndroidCameraAppId;
+  if (!result.has_value() || result.value() != "true") {
+    VLOG(1) << "GCA migration is not finished. Launch migration app.";
+    app_id = kAndroidCameraMigrationAppId;
+  }
+
+  AppListClientImpl* controller = AppListClientImpl::GetInstance();
+  if (!arc::LaunchApp(profile, app_id, event_flags,
+                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
+                      controller->GetAppListDisplayId())) {
+    arc::LaunchApp(profile, kAndroidLegacyCameraAppId, event_flags,
+                   arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
+                   controller->GetAppListDisplayId());
+  }
+}
+
+void ShowCameraApp(Profile* profile, int event_flags) {
   std::string chrome_app_id(kChromeCameraAppId);
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
@@ -148,18 +175,17 @@ void ShowCameraApp(const std::string& app_id,
       registry->GetInstalledExtension(chrome_app_id);
 
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
-  bool media_consolidated =
+  bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
   AppListClientImpl* controller = AppListClientImpl::GetInstance();
-  if (arc_enabled && (!extension || media_consolidated)) {
-    // Open ARC++ camera app.
-    if (!arc::LaunchApp(profile, kAndroidCameraAppId, event_flags,
-                        arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
-                        controller->GetAppListDisplayId())) {
-      arc::LaunchApp(profile, kAndroidLegacyCameraAppId, event_flags,
-                     arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
-                     controller->GetAppListDisplayId());
-    }
+
+  if (arc_enabled && (!extension || chrome_camera_migrated)) {
+    // Open Google camera app or GCA migration app according to GCA
+    // migration system property.
+    arc::ArcPropertyBridge* property =
+        arc::ArcPropertyBridge::GetForBrowserContext(profile);
+    property->GetGcaMigrationProperty(
+        base::BindOnce(&OnGetMigrationProperty, profile, event_flags));
   } else if (extension) {
     // Open Chrome camera app.
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
@@ -186,7 +212,7 @@ void OpenInternalApp(const std::string& app_id,
   } else if (app_id == kInternalAppIdSettings) {
     chrome::ShowSettingsSubPageForProfile(profile, std::string());
   } else if (app_id == kInternalAppIdCamera) {
-    ShowCameraApp(app_id, profile, event_flags);
+    ShowCameraApp(profile, event_flags);
   } else if (app_id == kInternalAppIdDiscover) {
 #if defined(OS_CHROMEOS)
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));
