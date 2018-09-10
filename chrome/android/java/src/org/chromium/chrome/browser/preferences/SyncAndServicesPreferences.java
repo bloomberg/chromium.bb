@@ -689,6 +689,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         boolean syncEverything = mUseSyncAndAllServices.isChecked();
         boolean passwordSyncConfigurable = mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isCryptographerReady();
+        boolean hasCustomPassphrase = mProfileSyncService.isEngineInitialized()
+                && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
         Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
         for (CheckBoxPreference pref : mSyncAllTypes) {
@@ -698,6 +700,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             if (pref == mSyncPaymentsIntegration) {
                 canSyncType = syncAutofill || syncEverything;
             }
+            if (pref == mSyncActivityAndInteractions) canSyncType = !hasCustomPassphrase;
 
             if (syncEverything) {
                 pref.setChecked(canSyncType);
@@ -717,7 +720,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                     passwordSyncConfigurable && syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
             mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
-            mSyncActivityAndInteractions.setChecked(syncTypes.contains(ModelType.USER_EVENTS));
+            mSyncActivityAndInteractions.setChecked(
+                    !hasCustomPassphrase && syncTypes.contains(ModelType.USER_EVENTS));
         }
     }
 
