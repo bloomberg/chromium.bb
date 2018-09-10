@@ -565,14 +565,17 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu, /* gear_menu.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("showHiddenFilesDownloads"),
-                      TestCase("showHiddenFilesDownloads").InGuestMode(),
-                      TestCase("showHiddenFilesDrive"),
-                      TestCase("showHiddenFilesDrive").EnableDriveFs(),
-                      TestCase("toogleGoogleDocsDrive"),
-                      TestCase("toogleGoogleDocsDrive").EnableDriveFs(),
-                      TestCase("showPasteIntoCurrentFolder"),
-                      TestCase("showSelectAllInCurrentFolder")));
+    ::testing::Values(
+        TestCase("showHiddenFilesDownloads"),
+        TestCase("showHiddenFilesDownloads").InGuestMode(),
+        TestCase("showHiddenFilesDrive"),
+        TestCase("showHiddenFilesDrive").EnableDriveFs(),
+        TestCase("toogleGoogleDocsDrive"),
+        TestCase("toogleGoogleDocsDrive").EnableDriveFs(),
+        TestCase("showPasteIntoCurrentFolder"),
+        TestCase("showSelectAllInCurrentFolder"),
+        TestCase("showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles"),
+        TestCase("enableToggleHiddenAndroidFoldersShowsHiddenFiles")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Crostini, /* crostini.js */

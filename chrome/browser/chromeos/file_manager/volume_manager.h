@@ -106,7 +106,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const std::string& root_document_id);
   static std::unique_ptr<Volume> CreateForSshfsCrostini(
       const base::FilePath& crostini_path);
-  static std::unique_ptr<Volume> CreateForAndroidFiles();
+  static std::unique_ptr<Volume> CreateForAndroidFiles(
+      const base::FilePath& mount_path);
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
@@ -303,6 +304,14 @@ class VolumeManager : public KeyedService,
   // For testing purpose, registers a native local file system pointing to
   // |path| with CROSTINI type, and adds its volume info.
   bool RegisterCrostiniDirectoryForTesting(const base::FilePath& path);
+
+  // For testing purpose, registers a native local file system pointing to
+  // |path| with ANDROID_FILES type, and adds its volume info.
+  bool RegisterAndroidFilesDirectoryForTesting(const base::FilePath& path);
+
+  // For testing purpose, removes a registered native local file system
+  // pointing to |path| with ANDROID_FILES type, and removes its volume info.
+  bool RemoveAndroidFilesDirectoryForTesting(const base::FilePath& path);
 
   // For testing purpose, adds a volume info pointing to |path|, with TESTING
   // type. Assumes that the mount point is already registered.

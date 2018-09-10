@@ -100,7 +100,13 @@ struct AddEntriesMessage {
   struct TestEntryInfo;
 
   // Represents the various volumes available for adding entries.
-  enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, CROSTINI_VOLUME, USB_VOLUME };
+  enum TargetVolume {
+    LOCAL_VOLUME,
+    DRIVE_VOLUME,
+    CROSTINI_VOLUME,
+    USB_VOLUME,
+    ANDROID_FILES_VOLUME
+  };
 
   // Represents the different types of entries (e.g. file, folder).
   enum EntryType { FILE, DIRECTORY, TEAM_DRIVE };
@@ -143,6 +149,8 @@ struct AddEntriesMessage {
       *volume = CROSTINI_VOLUME;
     else if (value == "usb")
       *volume = USB_VOLUME;
+    else if (value == "android_files")
+      *volume = ANDROID_FILES_VOLUME;
     else
       return false;
     return true;
@@ -486,6 +494,30 @@ class DownloadsTestVolume : public LocalTestVolume {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsTestVolume);
+};
+
+class AndroidFilesTestVolume : public LocalTestVolume {
+ public:
+  AndroidFilesTestVolume() : LocalTestVolume("AndroidFiles") {}
+  ~AndroidFilesTestVolume() override = default;
+
+  bool Initialize(Profile* profile) { return CreateRootDirectory(profile); }
+
+  bool Mount(Profile* profile) override {
+    return CreateRootDirectory(profile) &&
+           VolumeManager::Get(profile)->RegisterAndroidFilesDirectoryForTesting(
+               root_path());
+  }
+
+  const base::FilePath& mount_path() const { return root_path(); }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveAndroidFilesDirectoryForTesting(
+        root_path());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AndroidFilesTestVolume);
 };
 
 // CrostiniTestVolume: local test volume for the "Linux files" directory.
@@ -1040,6 +1072,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
+
+    android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
+    android_files_volume_->Mount(profile());
   }
 
   display_service_ =
@@ -1173,6 +1208,10 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         dictionary.SetString(
             "drive", base::StrCat({"/", drive_mount_name.value(), "/root"}));
       }
+      if (android_files_volume_) {
+        dictionary.SetString("android_files",
+                             "/" + util::GetAndroidFilesMountPointName());
+      }
     }
     base::JSONWriter::Write(dictionary, output);
     return;
@@ -1228,6 +1267,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           } else {
             LOG(FATAL) << "Add entry: but no USB volume.";
           }
+          break;
+        case AddEntriesMessage::ANDROID_FILES_VOLUME:
+          CHECK(android_files_volume_);
+          ASSERT_TRUE(android_files_volume_->Initialize(profile()));
+          android_files_volume_->CreateEntry(*message.entries[i]);
           break;
       }
     }

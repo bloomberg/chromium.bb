@@ -457,6 +457,7 @@ window.addEventListener('load', function() {
       var roots = JSON.parse(paths);
       RootPath.DOWNLOADS = roots.downloads;
       RootPath.DRIVE = roots.drive;
+      RootPath.ANDROID_FILES = roots.android_files;
       chrome.test.sendMessage(
           JSON.stringify({name: 'getTestName'}), steps.shift());
     },

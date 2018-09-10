@@ -12,6 +12,7 @@ testcase.showMyFiles = function() {
     'Recent: FakeItem',
     'My files: EntryListItem',
     'Downloads: SubDirectoryItem',
+    'Play files: SubDirectoryItem',
     'Linux files: FakeItem',
     'Google Drive: DriveVolumeItem',
     'My Drive: SubDirectoryItem',
@@ -192,10 +193,11 @@ testcase.myFilesDisplaysAndOpensEntries = function() {
     function(result) {
       chrome.test.assertTrue(result);
       const downloadsRow = ['Downloads', '--', 'Folder'];
+      const playFilesRow = ['Play files', '--', 'Folder'];
       const crostiniRow = ['Linux files', '--', 'Folder'];
       remoteCall
           .waitForFiles(
-              appId, [downloadsRow, crostiniRow],
+              appId, [downloadsRow, playFilesRow, crostiniRow],
               {ignoreFileSize: true, ignoreLastModifiedTime: true})
           .then(this.next);
     },

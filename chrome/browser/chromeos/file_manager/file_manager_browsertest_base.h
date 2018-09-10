@@ -25,6 +25,7 @@ class DriveTestVolume;
 class FakeTestVolume;
 class LocalTestVolume;
 class CrostiniTestVolume;
+class AndroidFilesTestVolume;
 
 class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
  protected:
@@ -109,6 +110,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   std::unique_ptr<LocalTestVolume> local_volume_;
   std::unique_ptr<CrostiniTestVolume> crostini_volume_;
+  std::unique_ptr<AndroidFilesTestVolume> android_files_volume_;
   std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
   DriveTestVolume* drive_volume_ = nullptr;
   std::unique_ptr<FakeTestVolume> usb_volume_;
