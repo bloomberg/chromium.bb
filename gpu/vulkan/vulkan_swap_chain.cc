@@ -8,7 +8,6 @@
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_image_view.h"
 
 namespace gpu {
 
@@ -311,14 +310,6 @@ bool VulkanSwapChain::InitializeSwapImages(
         command_pool_->CreatePrimaryCommandBuffer();
     image_data->post_raster_command_buffer =
         command_pool_->CreatePrimaryCommandBuffer();
-
-    // Create the image view.
-    image_data->image_view.reset(new VulkanImageView(device_queue_));
-    if (!image_data->image_view->Initialize(
-            images[i], VK_IMAGE_VIEW_TYPE_2D, VulkanImageView::IMAGE_TYPE_COLOR,
-            surface_format.format, size_.width(), size_.height(), 0, 1, 0, 1)) {
-      return false;
-    }
   }
 
   result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
@@ -362,12 +353,6 @@ void VulkanSwapChain::DestroySwapImages() {
       image_data->post_raster_command_buffer->Wait(UINT64_MAX);
       image_data->post_raster_command_buffer->Destroy();
       image_data->post_raster_command_buffer.reset();
-    }
-
-    // Destroy Image View.
-    if (image_data->image_view) {
-      image_data->image_view->Destroy();
-      image_data->image_view.reset();
     }
 
     // Destroy Semaphores.

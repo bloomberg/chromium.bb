@@ -19,7 +19,6 @@ namespace gpu {
 class VulkanCommandBuffer;
 class VulkanCommandPool;
 class VulkanDeviceQueue;
-class VulkanImageView;
 
 class VulkanSwapChain {
  public:
@@ -38,15 +37,6 @@ class VulkanSwapChain {
   uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
   uint32_t current_image() const { return current_image_; }
   const gfx::Size& size() const { return size_; }
-
-  VulkanImageView* GetImageView(uint32_t index) const {
-    DCHECK_LT(index, images_.size());
-    return images_[index]->image_view.get();
-  }
-
-  VulkanImageView* GetCurrentImageView() const {
-    return GetImageView(current_image_);
-  }
 
   VulkanCommandBuffer* GetCurrentCommandBuffer() const {
     DCHECK_LT(current_image_, images_.size());
@@ -92,7 +82,6 @@ class VulkanSwapChain {
 
     VkImage image = VK_NULL_HANDLE;
     VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
-    std::unique_ptr<VulkanImageView> image_view;
     std::unique_ptr<VulkanCommandBuffer> pre_raster_command_buffer;
     std::unique_ptr<VulkanCommandBuffer> post_raster_command_buffer;
 
