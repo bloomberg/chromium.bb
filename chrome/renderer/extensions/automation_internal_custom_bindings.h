@@ -82,7 +82,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                            ui::AXNode* node);
   void SendAutomationEvent(int tree_id,
                            const gfx::Point& mouse_location,
-                           ui::AXEvent& event,
+                           const ui::AXEvent& event,
                            api::automation::EventType event_type);
 
  private:
