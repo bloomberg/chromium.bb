@@ -68,6 +68,8 @@ const UsbBlocklist::Entry kStaticEntries[] = {
     {0x096e, 0x085b, kMaxVersion},  // Feitian
     {0x096e, 0x0880, kMaxVersion},  // HyperFIDO
 
+    {0x09c3, 0x0023, kMaxVersion},  // HID Global BlueTrust Token
+
     // Yubikey devices. https://crbug.com/818807
     {0x1050, 0x0010, kMaxVersion},
     {0x1050, 0x0018, kMaxVersion},
