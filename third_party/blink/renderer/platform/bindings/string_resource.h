@@ -63,7 +63,7 @@ class StringResourceBase {
         -reduced_external_memory);
   }
 
-  const String& GetWTFString() {
+  String GetWTFString() {
     if (!parkable_string_.IsNull()) {
       DCHECK(plain_string_.IsNull());
       DCHECK(atomic_string_.IsNull());

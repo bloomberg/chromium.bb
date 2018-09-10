@@ -17,7 +17,7 @@ struct StringTraits {
 
 template <>
 struct StringTraits<String> {
-  static const String& FromStringResource(StringResourceBase* resource) {
+  static const String FromStringResource(StringResourceBase* resource) {
     return resource->GetWTFString();
   }
   template <typename V8StringTrait>

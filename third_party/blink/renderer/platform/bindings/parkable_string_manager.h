@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool IsRendererBackgrounded() const;
 
   // Whether a string is parkable or not. Can be called from any thread.
-  static bool ShouldPark(const StringImpl* string);
+  static bool ShouldPark(const StringImpl& string);
 
  private:
   friend class ParkableString;

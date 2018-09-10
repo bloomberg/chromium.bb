@@ -47,11 +47,11 @@ bool ParkableStringManager::IsRendererBackgrounded() const {
 }
 
 // static
-bool ParkableStringManager::ShouldPark(const StringImpl* string) {
+bool ParkableStringManager::ShouldPark(const StringImpl& string) {
   // Don't attempt to park strings smaller than this size.
   static constexpr unsigned int kSizeThreshold = 10000;
   // TODO(lizeb): Consider parking non-main thread strings.
-  return string && string->length() > kSizeThreshold && IsMainThread();
+  return string.length() > kSizeThreshold && IsMainThread();
 }
 
 scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
@@ -68,7 +68,8 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
 }
 
 void ParkableStringManager::Remove(StringImpl* string) {
-  DCHECK(ShouldPark(string));
+  DCHECK(string);
+  DCHECK(ShouldPark(*string));
   auto it = table_.find(string);
   DCHECK(it != table_.end());
   table_.erase(it);
