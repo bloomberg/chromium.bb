@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
@@ -30,6 +31,7 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -708,17 +710,16 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
   request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
                              &header_value);
 
-  // Brotli should not be already present in the header since the URL is non-
-  // cryptographic. This is an approximate check, and would trigger even if the
-  // accept-encoding header contains an encoding that has prefix |kBrotli|.
-  DCHECK_EQ(std::string::npos, header_value.find(kBrotli));
-
-  request_headers->RemoveHeader(net::HttpRequestHeaders::kAcceptEncoding);
-  if (!header_value.empty())
-    header_value += ", ";
-  header_value += kBrotli;
-  request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
-                             header_value);
+  // Only add Brotli to the header if it is not already present.
+  std::set<std::string> header_entry_set;
+  if (net::HttpUtil::ParseAcceptEncoding(header_value, &header_entry_set) &&
+      header_entry_set.find(kBrotli) == header_entry_set.end()) {
+    if (!header_value.empty())
+      header_value += ", ";
+    header_value += kBrotli;
+    request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                               header_value);
+  }
 }
 
 void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
