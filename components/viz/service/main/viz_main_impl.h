@@ -78,8 +78,6 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
     DISALLOW_COPY_AND_ASSIGN(ExternalDependencies);
   };
 
-  // TODO(kylechar): Provide a quit closure for the appropriate RunLoop instance
-  // to stop the thread and remove base::RunLoop::QuitCurrentDeprecated() usage.
   VizMainImpl(Delegate* delegate,
               ExternalDependencies dependencies,
               std::unique_ptr<gpu::GpuInit> gpu_init = nullptr);

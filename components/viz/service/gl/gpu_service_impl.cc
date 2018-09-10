@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
-#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -159,6 +158,8 @@ GpuServiceImpl::GpuServiceImpl(
       bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
+  DCHECK(exit_callback_);
+
 #if defined(OS_CHROMEOS)
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // defined(OS_CHROMEOS)
@@ -540,9 +541,8 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
   gpu::RecordGpuSupportedRuntimeVersionHistograms(&gpu_info_);
   std::move(callback).Run(gpu_info_);
   if (!in_host_process()) {
-    // The unsandboxed GPU process fulfilled its duty. Rest
-    // in peace.
-    base::RunLoop().QuitCurrentWhenIdleDeprecated();
+    // The unsandboxed GPU process fulfilled its duty. Bye bye.
+    ExitProcess();
   }
 #endif
 }
@@ -566,9 +566,8 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
             std::move(callback).Run(gpu_service->gpu_info_);
 #if defined(OS_WIN)
             if (!gpu_service->in_host_process()) {
-              // The unsandboxed GPU process fulfilled its duty. Rest
-              // in peace.
-              base::RunLoop::QuitCurrentWhenIdleDeprecated();
+              // The unsandboxed GPU process fulfilled its duty. Bye bye.
+              gpu_service->ExitProcess();
             }
 #endif
           },
@@ -684,11 +683,8 @@ void GpuServiceImpl::StoreShaderToDisk(int client_id,
 }
 
 void GpuServiceImpl::ExitProcess() {
-  if (is_exiting_)
-    return;
-
-  is_exiting_ = true;
-  std::move(exit_callback_).Run();
+  if (exit_callback_)
+    std::move(exit_callback_).Run();
 }
 
 #if defined(OS_WIN)
