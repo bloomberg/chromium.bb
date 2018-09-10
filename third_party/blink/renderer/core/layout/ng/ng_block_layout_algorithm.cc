@@ -972,7 +972,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
       (child_available_size_.inline_size - inline_margin.ClampNegativeToZero())
           .ClampNegativeToZero();
 
-  Vector<NGLayoutOpportunity> opportunities =
+  LayoutOpportunityVector opportunities =
       exclusion_space_->AllLayoutOpportunities(origin_offset, inline_size);
 
   // We should always have at least one opportunity.
