@@ -691,8 +691,7 @@ void DevToolsUIBindings::SendMessageAck(int request_id,
 
 void DevToolsUIBindings::InnerAttach() {
   DCHECK(agent_host_.get());
-  // Note: we could use ForceAttachClient here to disconnect other clients
-  // if any problems arise.
+  // TODO(dgozman): handle return value of AttachClient.
   agent_host_->AttachClient(this);
 }
 

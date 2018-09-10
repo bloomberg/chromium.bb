@@ -113,7 +113,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const DevToolsToggleAction& action);
 
   // Node frontend is always undocked.
-  static void OpenNodeFrontendWindow(Profile* profile);
+  static DevToolsWindow* OpenNodeFrontendWindow(Profile* profile);
 
   static void InspectElement(content::RenderFrameHost* inspected_frame_host,
                              int x,

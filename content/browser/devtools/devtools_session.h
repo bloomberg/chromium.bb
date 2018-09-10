@@ -25,12 +25,10 @@ class DevToolsSession : public protocol::FrontendChannel,
                         public blink::mojom::DevToolsSessionHost {
  public:
   DevToolsSession(DevToolsAgentHostImpl* agent_host,
-                  DevToolsAgentHostClient* client,
-                  bool restricted);
+                  DevToolsAgentHostClient* client);
   ~DevToolsSession() override;
   void Dispose();
 
-  bool restricted() { return restricted_; }
   DevToolsAgentHost* agent_host() { return agent_host_; };
   DevToolsAgentHostClient* client() { return client_; };
 
@@ -101,7 +99,6 @@ class DevToolsSession : public protocol::FrontendChannel,
   blink::mojom::DevToolsSessionPtr io_session_ptr_;
   DevToolsAgentHostImpl* agent_host_;
   DevToolsAgentHostClient* client_;
-  bool restricted_;
   bool browser_only_ = false;
   base::flat_map<std::string, std::unique_ptr<protocol::DevToolsDomainHandler>>
       handlers_;

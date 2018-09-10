@@ -657,11 +657,11 @@ void DevToolsWindow::OpenExternalFrontend(
 }
 
 // static
-void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
+DevToolsWindow* DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
   for (DevToolsWindow* window : g_devtools_window_instances.Get()) {
     if (window->frontend_type_ == kFrontendNode) {
       window->ActivateWindow();
-      return;
+      return window;
     }
   }
 
@@ -669,9 +669,10 @@ void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
       Create(profile, nullptr, kFrontendNode, std::string(), false,
              std::string(), std::string(), false);
   if (!window)
-    return;
+    return nullptr;
   window->bindings_->AttachTo(DevToolsAgentHost::CreateForDiscovery());
   window->ScheduleShow(DevToolsToggleAction::Show());
+  return window;
 }
 
 // static

@@ -177,10 +177,9 @@ DevToolsSession* DevToolsAgentHostImpl::SessionByClient(
 }
 
 bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
-                                              TargetRegistry* registry,
-                                              bool restricted) {
+                                              TargetRegistry* registry) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  DevToolsSession* session = new DevToolsSession(this, client, restricted);
+  DevToolsSession* session = new DevToolsSession(this, client);
   sessions_.insert(session);
   session_by_client_[client].reset(session);
   if (!AttachSession(session, registry)) {
@@ -197,10 +196,10 @@ bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
   return true;
 }
 
-void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
+bool DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   if (SessionByClient(client))
-    return;
-  InnerAttachClient(client, nullptr, false /* restricted */);
+    return false;
+  return InnerAttachClient(client, nullptr);
 }
 
 void DevToolsAgentHostImpl::AttachSubtargetClient(
@@ -208,14 +207,7 @@ void DevToolsAgentHostImpl::AttachSubtargetClient(
     TargetRegistry* registry) {
   if (SessionByClient(client))
     return;
-  InnerAttachClient(client, registry, false /* restricted */);
-}
-
-bool DevToolsAgentHostImpl::AttachRestrictedClient(
-    DevToolsAgentHostClient* client) {
-  if (SessionByClient(client))
-    return false;
-  return InnerAttachClient(client, nullptr, true /* restricted */);
+  InnerAttachClient(client, registry);
 }
 
 bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {

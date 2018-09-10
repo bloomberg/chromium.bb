@@ -141,6 +141,8 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
                                const std::string& message) override;
   bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
                            bool is_webui) override;
+  bool MayAttachToBrowser() override;
+  bool MayDiscoverTargets() override;
 
  private:
   using PendingRequests =
@@ -204,7 +206,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
 bool ExtensionDevToolsClientHost::Attach() {
   // Attach to debugger and tell it we are ready.
-  if (!agent_host_->AttachRestrictedClient(this))
+  if (!agent_host_->AttachClient(this))
     return false;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -369,6 +371,14 @@ bool ExtensionDevToolsClientHost::MayAttachToRenderer(
 
   return ExtensionCanAttachToURL(*extension_, site_instance_url, profile_,
                                  &error);
+}
+
+bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
+  return false;
+}
+
+bool ExtensionDevToolsClientHost::MayDiscoverTargets() {
+  return false;
 }
 
 // DebuggerFunction -----------------------------------------------------------
@@ -596,7 +606,10 @@ const char kTargetUrlField[] = "url";
 const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetTabIdField[] = "tabId";
 const char kTargetExtensionIdField[] = "extensionId";
+const char kTargetTypePage[] = "page";
+const char kTargetTypeBackgroundPage[] = "background_page";
 const char kTargetTypeWorker[] = "worker";
+const char kTargetTypeOther[] = "other";
 
 std::unique_ptr<base::DictionaryValue> SerializeTarget(
     scoped_refptr<DevToolsAgentHost> host) {
@@ -608,20 +621,21 @@ std::unique_ptr<base::DictionaryValue> SerializeTarget(
   dictionary->SetString(kTargetUrlField, host->GetURL().spec());
 
   std::string type = host->GetType();
+  std::string target_type = kTargetTypeOther;
   if (type == DevToolsAgentHost::kTypePage) {
     int tab_id =
         extensions::ExtensionTabUtil::GetTabId(host->GetWebContents());
     dictionary->SetInteger(kTargetTabIdField, tab_id);
+    target_type = kTargetTypePage;
   } else if (type == ChromeDevToolsManagerDelegate::kTypeBackgroundPage) {
     dictionary->SetString(kTargetExtensionIdField, host->GetURL().host());
+    target_type = kTargetTypeBackgroundPage;
+  } else if (type == DevToolsAgentHost::kTypeServiceWorker ||
+             type == DevToolsAgentHost::kTypeSharedWorker) {
+    target_type = kTargetTypeWorker;
   }
 
-  if (type == DevToolsAgentHost::kTypeServiceWorker ||
-      type == DevToolsAgentHost::kTypeSharedWorker) {
-    type = kTargetTypeWorker;
-  }
-
-  dictionary->SetString(kTargetTypeField, type);
+  dictionary->SetString(kTargetTypeField, target_type);
 
   GURL favicon_url = host->GetFaviconURL();
   if (favicon_url.is_valid())

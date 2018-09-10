@@ -52,7 +52,7 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 
 bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                              TargetRegistry* parent_registry) {
-  if (session->restricted())
+  if (!session->client()->MayAttachToBrowser())
     return false;
 
   TargetRegistry* registry = parent_registry;
@@ -63,7 +63,7 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
   }
   session->SetBrowserOnly(true);
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      true /* browser_only */, GetId(), registry));
+      protocol::TargetHandler::AccessMode::kBrowser, GetId(), registry));
   if (only_discovery_)
     return true;
 

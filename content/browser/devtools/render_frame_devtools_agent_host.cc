@@ -452,10 +452,11 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
-  if (!session->restricted()) {
-    session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
-        false /* browser_only */, GetId(), registry)));
-  }
+  session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
+      session->client()->MayDiscoverTargets()
+          ? protocol::TargetHandler::AccessMode::kRegular
+          : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
+      GetId(), registry)));
   session->AddHandler(
       base::WrapUnique(new protocol::PageHandler(emulation_handler)));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));

@@ -32,17 +32,14 @@ bool ShouldSendOnIO(const std::string& method) {
 }  // namespace
 
 DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
-                                 DevToolsAgentHostClient* client,
-                                 bool restricted)
+                                 DevToolsAgentHostClient* client)
     : binding_(this),
       agent_host_(agent_host),
       client_(client),
-      restricted_(restricted),
       process_host_id_(ChildProcessHost::kInvalidUniqueID),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
   // It is Ok for session to be deleted without the dispose -

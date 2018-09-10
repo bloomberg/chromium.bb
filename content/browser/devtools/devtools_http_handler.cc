@@ -316,6 +316,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
         connection_id_(connection_id),
         agent_host_(agent_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // TODO(dgozman): handle return value of AttachClient.
     agent_host_->AttachClient(this);
   }
 
