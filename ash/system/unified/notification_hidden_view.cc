@@ -32,12 +32,6 @@ NotificationHiddenView::NotificationHiddenView() {
   label->SetLineHeight(kUnifiedNotificationHiddenLineHeight);
   label->SetBorder(views::CreateEmptyBorder(kUnifiedNotificationHiddenPadding));
 
-  auto* clear_all_button = new RoundedLabelButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE));
-  clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP));
-
   auto* container = new views::View;
   container->SetBackground(views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(kUnifiedMenuButtonColor,
@@ -48,8 +42,15 @@ NotificationHiddenView::NotificationHiddenView() {
 
   container->AddChildView(label);
   layout->SetFlexForView(label, 1);
+
   if (lock_screen_notification_enabled) {
-    container->AddChildView(clear_all_button);
+    auto* change_button = new RoundedLabelButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE));
+    change_button->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP));
+
+    container->AddChildView(change_button);
   }
 
   SetBorder(
