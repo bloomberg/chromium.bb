@@ -124,8 +124,7 @@ class BuilderStage(object):
     self._portage_extra_env = {}
     useflags = self._run.config.useflags[:]
 
-    if self._run.options.clobber:
-      self._portage_extra_env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+    self._portage_extra_env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     if self._run.options.chrome_root:
       self._portage_extra_env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
