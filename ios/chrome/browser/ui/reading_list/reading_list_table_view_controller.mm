@@ -80,6 +80,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     BOOL editingWithToolbarButtons;
 // Whether the table view is being edited by the swipe-to-delete button.
 @property(nonatomic, readonly, getter=isEditingWithSwipe) BOOL editingWithSwipe;
+// Whether to remove empty sections after editing is reset to NO.
+@property(nonatomic, assign) BOOL needsSectionCleanupAfterEditing;
 
 @end
 
@@ -94,6 +96,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @synthesize selectedReadItemCount = _selectedReadItemCount;
 @synthesize markConfirmationSheet = _markConfirmationSheet;
 @synthesize editingWithToolbarButtons = _editingWithToolbarButtons;
+@synthesize needsSectionCleanupAfterEditing = _needsSectionCleanupAfterEditing;
 
 - (instancetype)init {
   self = [super initWithTableViewStyle:UITableViewStylePlain
@@ -130,8 +133,13 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   self.selectedUnreadItemCount = 0;
   self.selectedReadItemCount = 0;
   [self updateToolbarItems];
-  if (!editing)
+  if (!editing) {
     self.editingWithToolbarButtons = NO;
+    if (self.needsSectionCleanupAfterEditing) {
+      [self removeEmptySections];
+      self.needsSectionCleanupAfterEditing = NO;
+    }
+  }
 }
 
 - (void)setSelectedUnreadItemCount:(NSUInteger)selectedUnreadItemCount {
@@ -223,7 +231,15 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
   base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteEntry"));
-  [self deleteItemsAtIndexPaths:@[ indexPath ]];
+  // The UIKit animation for the swipe-to-delete gesture throws an exception if
+  // the section of the deleted item is removed before the animation is
+  // finished.  To prevent this from happening, record that cleanup is needed
+  // and remove the section when self.tableView.editing is reset to NO when the
+  // animation finishes.
+  self.needsSectionCleanupAfterEditing = YES;
+  [self deleteItemsAtIndexPaths:@[ indexPath ]
+                     endEditing:NO
+            removeEmptySections:NO];
 }
 
 #pragma mark - UITableViewDelegate
@@ -728,14 +744,26 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   return [self itemsForSection:sectionID].count > 0;
 }
 
-// Deletes the items at |indexPaths|.
+// Deletes the items at |indexPaths|, exiting editing and removing empty
+// sections upon completion.
 - (void)deleteItemsAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
+  [self deleteItemsAtIndexPaths:indexPaths
+                     endEditing:YES
+            removeEmptySections:YES];
+}
+
+// Deletes the items at |indexPaths|.  Exits editing mode if |endEditing| is
+// YES.  Removes empty sections upon completion if |removeEmptySections| is YES.
+- (void)deleteItemsAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
+                     endEditing:(BOOL)endEditing
+            removeEmptySections:(BOOL)removeEmptySections {
   // Delete the items in the data source and exit editing mode.
   ReadingListListItemUpdater updater = ^(id<ReadingListListItem> item) {
     [self.dataSource removeEntryFromItem:item];
   };
   [self updateItemsAtIndexPaths:indexPaths withItemUpdater:updater];
-  [self exitEditingModeAnimated:YES];
+  if (endEditing)
+    [self exitEditingModeAnimated:YES];
 
   // Update the model and table view for the deleted items.
   UITableView* tableView = self.tableView;
@@ -749,9 +777,13 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [tableView deleteRowsAtIndexPaths:indexPaths
                      withRowAnimation:UITableViewRowAnimationAutomatic];
   };
-  void (^completion)(BOOL) = ^(BOOL) {
-    [self batchEditDidFinish];
-  };
+
+  void (^completion)(BOOL) = nil;
+  if (removeEmptySections) {
+    completion = ^(BOOL) {
+      [self batchEditDidFinish];
+    };
+  }
   [self performBatchTableViewUpdates:updates completion:completion];
 }
 
