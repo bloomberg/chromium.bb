@@ -1621,7 +1621,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   void OnInstallEvent(
       mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
     if (!install_callback_.is_null())
-      install_callback_.Run();
+      std::move(install_callback_).Run();
     std::move(callback).Run(install_event_result_, has_fetch_handler_,
                             base::Time::Now());
   }
@@ -1631,8 +1631,8 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
     std::move(callback).Run(activate_event_result_, base::Time::Now());
   }
 
-  void set_install_callback(const base::Closure& callback) {
-    install_callback_ = callback;
+  void set_install_callback(base::OnceClosure callback) {
+    install_callback_ = std::move(callback);
   }
   void set_install_event_result(blink::mojom::ServiceWorkerEventStatus result) {
     install_event_result_ = result;
@@ -1646,7 +1646,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   }
 
  private:
-  base::Closure install_callback_;
+  base::OnceClosure install_callback_;
   blink::mojom::ServiceWorkerEventStatus install_event_result_;
   blink::mojom::ServiceWorkerEventStatus activate_event_result_;
   bool has_fetch_handler_ = true;
@@ -1673,8 +1673,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
 
   // Register another script. While installing, old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1715,8 +1715,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   // Register another script that fails to install. While installing,
   // old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   helper->set_install_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
@@ -1754,8 +1754,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   // Register another script that fails to activate. While installing,
   // old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   helper->set_activate_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));

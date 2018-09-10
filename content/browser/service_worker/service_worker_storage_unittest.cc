@@ -69,10 +69,10 @@ const uint8_t kTestPublicKey[] = {
 };
 
 void StatusAndQuitCallback(blink::ServiceWorkerStatusCode* result,
-                           const base::Closure& quit_closure,
+                           base::OnceClosure quit_closure,
                            blink::ServiceWorkerStatusCode status) {
   *result = status;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void StatusCallback(bool* was_called,
