@@ -1372,9 +1372,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             setStatusBarColor(null, mBaseStatusBarColor);
         }, coordinator);
 
-        mManualFillingController.initialize(getWindowAndroid(),
-                findViewById(R.id.keyboard_accessory_stub),
-                findViewById(R.id.keyboard_accessory_sheet_stub));
+        ViewStub accessoryBarStub = findViewById(R.id.keyboard_accessory_stub);
+        ViewStub accessorySheetStub = findViewById(R.id.keyboard_accessory_sheet_stub);
+        if (accessoryBarStub != null && accessorySheetStub != null) {
+            mManualFillingController.initialize(getWindowAndroid(),
+                    findViewById(R.id.keyboard_accessory_stub),
+                    findViewById(R.id.keyboard_accessory_sheet_stub));
+        }
 
         if (mToolbarManager != null && mToolbarManager.getToolbar() != null) {
             mToolbarManager.getToolbar().setScrim(mScrimView);
