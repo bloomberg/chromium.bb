@@ -1434,8 +1434,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDED);
   }
-  if (data.HasState(ax::mojom::State::kFocusable) ||
-      SelectionAndFocusAreTheSame())
+  if (data.HasState(ax::mojom::State::kFocusable))
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSABLE);
   if (data.HasState(ax::mojom::State::kHorizontal))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HORIZONTAL);
@@ -1466,11 +1465,10 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_BUSY);
   if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
     atk_state_set_add_state(atk_state_set, ATK_STATE_MODAL);
-  if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
-  if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
-
+  }
   if (IsPlainTextField() || IsRichTextField()) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE_TEXT);
     if (data.HasState(ax::mojom::State::kMultiline))
@@ -1525,10 +1523,7 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
-    : interface_mask_(0),
-      atk_object_(nullptr),
-      atk_hyperlink_(nullptr),
-      weak_factory_(this) {}
+    : interface_mask_(0), atk_object_(nullptr), atk_hyperlink_(nullptr) {}
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
   DestroyAtkObjects();
@@ -1615,61 +1610,12 @@ void AXPlatformNodeAuraLinux::OnFocused() {
                                  true);
 }
 
-base::WeakPtr<AXPlatformNodeAuraLinux>
-    AXPlatformNodeAuraLinux::current_selected_ = nullptr;
-
-void AXPlatformNodeAuraLinux::OnSelected() {
-  if (current_selected_ && !current_selected_->GetData().GetBoolAttribute(
-                               ax::mojom::BoolAttribute::kSelected)) {
-    atk_object_notify_state_change(ATK_OBJECT(current_selected_->atk_object_),
-                                   ATK_STATE_SELECTED, false);
-  }
-
-  current_selected_ = weak_factory_.GetWeakPtr();
-  if (ATK_IS_OBJECT(atk_object_)) {
-    atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_SELECTED,
-                                   true);
-  }
-
-  if (SelectionAndFocusAreTheSame())
-    OnFocused();
-}
-
-bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
-  if (AXPlatformNodeBase* container = GetSelectionContainer()) {
-    ax::mojom::Role role = container->GetData().role;
-    if (role == ax::mojom::Role::kMenuBar || role == ax::mojom::Role::kMenu)
-      return true;
-    if (role == ax::mojom::Role::kListBox &&
-        !container->GetData().HasState(ax::mojom::State::kMultiselectable)) {
-      return container->GetDelegate()->GetFocus() ==
-             container->GetNativeViewAccessible();
-    }
-  }
-
-  // TODO(accessibility): GetSelectionContainer returns nullptr when the current
-  // object is a descendant of a select element with a size of 1. Intentional?
-  // For now, handle that scenario here.
-  //
-  // If the selection is changing on a collapsed select element, focus remains
-  // on the select element and not the newly-selected descendant.
-  if (AXPlatformNodeBase* parent = FromNativeViewAccessible(GetParent())) {
-    if (parent->GetData().role == ax::mojom::Role::kMenuListPopup)
-      return !parent->GetData().HasState(ax::mojom::State::kInvisible);
-  }
-
-  return false;
-}
-
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
       OnFocused();
-      break;
-    case ax::mojom::Event::kSelection:
-      OnSelected();
       break;
     default:
       break;

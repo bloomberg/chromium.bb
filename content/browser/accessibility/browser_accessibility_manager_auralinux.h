@@ -34,8 +34,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireGeneratedEvent(AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
-  void FireSelectedEvent(BrowserAccessibility* node);
-
   AtkObject* parent_object() { return parent_object_; }
 
  protected:
