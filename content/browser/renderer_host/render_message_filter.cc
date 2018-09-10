@@ -245,7 +245,8 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
         base::BindOnce(&RenderMessageFilter::DidGenerateCacheableMetadataOnUI,
                        this, url, expected_response_time, data));
   } else {
-    if (!generated_code_cache_context_->generated_code_cache())
+    if (!generated_code_cache_context_ ||
+        !generated_code_cache_context_->generated_code_cache())
       return;
 
     base::Optional<url::Origin> requesting_origin =
@@ -260,7 +261,8 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
 
 void RenderMessageFilter::FetchCachedCode(const GURL& url,
                                           FetchCachedCodeCallback callback) {
-  if (!generated_code_cache_context_->generated_code_cache()) {
+  if (!generated_code_cache_context_ ||
+      !generated_code_cache_context_->generated_code_cache()) {
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
@@ -290,7 +292,8 @@ void RenderMessageFilter::OnReceiveCachedCode(
 }
 
 void RenderMessageFilter::ClearCodeCacheEntry(const GURL& url) {
-  if (!generated_code_cache_context_->generated_code_cache())
+  if (!generated_code_cache_context_ ||
+      !generated_code_cache_context_->generated_code_cache())
     return;
 
   base::Optional<url::Origin> requesting_origin =
