@@ -17,6 +17,8 @@
 
 namespace blink {
 
+typedef Vector<NGLayoutOpportunity, 8> LayoutOpportunityVector;
+
 // The exclusion space represents all of the exclusions within a block
 // formatting context.
 //
@@ -53,7 +55,7 @@ class CORE_EXPORT NGExclusionSpace {
         offset, available_inline_size, minimum_size);
   }
 
-  Vector<NGLayoutOpportunity> AllLayoutOpportunities(
+  LayoutOpportunityVector AllLayoutOpportunities(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size) const {
     // If the area clears all floats, we can just return a single layout
@@ -62,7 +64,7 @@ class CORE_EXPORT NGExclusionSpace {
       NGBfcOffset end_offset(
           offset.line_offset + available_inline_size.ClampNegativeToZero(),
           LayoutUnit::Max());
-      return Vector<NGLayoutOpportunity>(
+      return LayoutOpportunityVector(
           {NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr)});
     }
 
@@ -198,7 +200,7 @@ class CORE_EXPORT NGExclusionSpace {
         const LayoutUnit available_inline_size,
         const NGLogicalSize& minimum_size) const;
 
-    Vector<NGLayoutOpportunity> AllLayoutOpportunities(
+    LayoutOpportunityVector AllLayoutOpportunities(
         const NGBfcOffset& offset,
         const LayoutUnit available_inline_size) const;
 

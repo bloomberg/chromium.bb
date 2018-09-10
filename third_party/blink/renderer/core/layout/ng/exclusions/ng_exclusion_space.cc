@@ -476,7 +476,7 @@ NGLayoutOpportunity NGExclusionSpace::DerivedGeometry::FindLayoutOpportunity(
   // TODO(ikilpatrick): Determine what to do for a -ve available_inline_size.
   // TODO(ikilpatrick): Change this so that it iterates over the
   // shelves/opportunities instead for querying for all of them.
-  Vector<NGLayoutOpportunity> opportunities =
+  LayoutOpportunityVector opportunities =
       AllLayoutOpportunities(offset, available_inline_size);
 
   for (const auto& opportunity : opportunities) {
@@ -495,11 +495,11 @@ NGLayoutOpportunity NGExclusionSpace::DerivedGeometry::FindLayoutOpportunity(
   return NGLayoutOpportunity();
 }
 
-Vector<NGLayoutOpportunity>
+LayoutOpportunityVector
 NGExclusionSpace::DerivedGeometry::AllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size) const {
-  Vector<NGLayoutOpportunity> opportunities;
+  LayoutOpportunityVector opportunities;
 
   auto* shelves_it = shelves_.begin();
   auto* opps_it = opportunities_.begin();

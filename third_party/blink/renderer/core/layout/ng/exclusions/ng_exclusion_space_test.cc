@@ -19,10 +19,9 @@ namespace {
 TEST(NGExclusionSpaceTest, Empty) {
   NGExclusionSpace exclusion_space;
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(100));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(100));
 
   EXPECT_EQ(1u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(), LayoutUnit()),
@@ -55,10 +54,9 @@ TEST(NGExclusionSpaceTest, SingleExclusion) {
                 NGBfcOffset(LayoutUnit(60), LayoutUnit(90))),
       EFloat::kLeft));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(100));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(100));
 
   EXPECT_EQ(3u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(), LayoutUnit()),
@@ -124,10 +122,9 @@ TEST(NGExclusionSpaceTest, TwoExclusions) {
                 NGBfcOffset(LayoutUnit(400), LayoutUnit(150))),
       EFloat::kRight));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(400));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(400));
 
   EXPECT_EQ(4u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(150), LayoutUnit()),
@@ -175,10 +172,9 @@ TEST(NGExclusionSpaceTest, SolidEdges) {
                 NGBfcOffset(LayoutUnit(70), LayoutUnit(35))),
       EFloat::kRight));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(80));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(80));
 
   EXPECT_EQ(5u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(20), LayoutUnit()),
@@ -223,10 +219,9 @@ TEST(NGExclusionSpaceTest, OverlappingWithShelf) {
                 NGBfcOffset(LayoutUnit(90), LayoutUnit(35))),
       EFloat::kRight));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(80));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(80));
 
   EXPECT_EQ(4u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(20), LayoutUnit()),
@@ -271,10 +266,9 @@ TEST(NGExclusionSpaceTest, InsertBetweenShelves) {
                 NGBfcOffset(LayoutUnit(30), LayoutUnit(25))),
       EFloat::kLeft));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(30), LayoutUnit(15)},
-          /* available_size */ LayoutUnit(30));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(30), LayoutUnit(15)},
+      /* available_size */ LayoutUnit(30));
 
   // NOTE: This demonstrates a quirk when querying the exclusion space for
   // opportunities. The exclusion space may return multiple exclusions of
@@ -298,10 +292,9 @@ TEST(NGExclusionSpaceTest, ZeroInlineSizeOpportunity) {
                 NGBfcOffset(LayoutUnit(100), LayoutUnit(10))),
       EFloat::kLeft));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(100));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(100));
 
   EXPECT_EQ(2u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(100), LayoutUnit()),
@@ -318,10 +311,9 @@ TEST(NGExclusionSpaceTest, NegativeInlineSizeOpportunityLeft) {
                 NGBfcOffset(LayoutUnit(120), LayoutUnit(10))),
       EFloat::kLeft));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(100));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(100));
 
   EXPECT_EQ(2u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(120), LayoutUnit()),
@@ -338,10 +330,9 @@ TEST(NGExclusionSpaceTest, NegativeInlineSizeOpportunityRight) {
                 NGBfcOffset(LayoutUnit(100), LayoutUnit(10))),
       EFloat::kRight));
 
-  Vector<NGLayoutOpportunity> opportunites =
-      exclusion_space.AllLayoutOpportunities(
-          /* offset */ {LayoutUnit(), LayoutUnit()},
-          /* available_size */ LayoutUnit(100));
+  LayoutOpportunityVector opportunites = exclusion_space.AllLayoutOpportunities(
+      /* offset */ {LayoutUnit(), LayoutUnit()},
+      /* available_size */ LayoutUnit(100));
 
   EXPECT_EQ(2u, opportunites.size());
   TEST_OPPORTUNITY(opportunites[0], NGBfcOffset(LayoutUnit(), LayoutUnit()),
