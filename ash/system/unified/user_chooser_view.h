@@ -31,7 +31,7 @@ class UserItemButton : public views::Button, public views::ButtonListener {
                  bool has_close_button);
   ~UserItemButton() override = default;
 
-  void SetCaptureState(mojom::MediaCaptureState capture_state);
+  void SetCaptureState(mojom::MediaCaptureState capture_states);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -52,7 +52,8 @@ class UserChooserView : public views::View, public MediaCaptureObserver {
 
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
-      const std::vector<mojom::MediaCaptureState>& capture_states) override;
+      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
+      override;
 
  private:
   std::vector<UserItemButton*> user_item_buttons_;
