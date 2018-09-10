@@ -16,10 +16,6 @@ const base::Feature kSlimNavigationManager{"SlimNavigationManager",
 const base::Feature kWebErrorPages{"WebErrorPages",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kUseWebThreadInCertVerificationController{
-    "UseWebThreadInCertVerificationController",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
