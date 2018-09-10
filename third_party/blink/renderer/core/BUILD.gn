@@ -1710,6 +1710,7 @@ jumbo_source_set("unit_tests") {
     "animation/interpolation_effect_test.cc",
     "animation/keyframe_effect_model_test.cc",
     "animation/keyframe_effect_test.cc",
+    "animation/list_interpolation_functions_test.cc",
     "animation/property_handle_test.cc",
     "animation/scroll_timeline_test.cc",
     "animation/timing_calculations_test.cc",
