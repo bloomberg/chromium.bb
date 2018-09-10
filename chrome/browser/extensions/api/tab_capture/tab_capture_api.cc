@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tab_capture/offscreen_tabs_owner.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,7 +30,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
@@ -64,11 +62,6 @@ const char kTooManyOffscreenTabs[] =
     "Extension has already started too many off-screen tabs.";
 const char kCapturingSameOffscreenTab[] =
     "Cannot capture the same off-screen tab more than once.";
-
-const char kInvalidOriginError[] = "Caller tab.url is not a valid URL.";
-const char kInvalidTabIdError[] = "Invalid tab specified.";
-const char kTabUrlNotSecure[] =
-    "URL scheme for the specified tab is not secure.";
 
 // Keys/values passed to renderer-side JS bindings.
 const char kMediaStreamSource[] = "chromeMediaSource";
@@ -128,7 +121,7 @@ void FilterDeprecatedGoogConstraints(TabCapture::CaptureOptions* options) {
 
 bool GetAutoThrottlingFromOptions(TabCapture::CaptureOptions* options) {
   bool enable_auto_throttling = false;
-  if (options && options->video && *options->video) {
+  if (options->video && *options->video) {
     if (options->video_constraints) {
       // Check for the Tab Capture-specific video constraint for enabling
       // automatic resolution/rate throttling mode in the capture pipeline.  See
@@ -209,9 +202,10 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Figure out the active WebContents and retrieve the needed ids.
-  Browser* target_browser = chrome::FindLastActiveWithProfile(
-      Profile::FromBrowserContext(browser_context()));
-  if (!target_browser || target_browser->type() != Browser::TYPE_TABBED)
+  Browser* target_browser =
+      chrome::FindAnyBrowser(Profile::FromBrowserContext(browser_context()),
+                             include_incognito_information());
+  if (!target_browser)
     return RespondNow(Error(kFindingTabError));
 
   content::WebContents* target_contents =
@@ -229,7 +223,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
-                                  base::size(kMediaRouterExtensionIds))) {
+                                  arraysize(kMediaRouterExtensionIds))) {
     return RespondNow(Error(kGrantError));
   }
 
@@ -379,82 +373,6 @@ gfx::Size TabCaptureCaptureOffscreenTabFunction::DetermineInitialSize(
   // the minimum size.
   return gfx::Size(std::max(kDefaultWidth, min_size.width()),
                    std::max(kDefaultHeight, min_size.height()));
-}
-
-ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
-  std::unique_ptr<api::tab_capture::GetMediaStreamId::Params> params =
-      TabCapture::GetMediaStreamId::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  content::WebContents* target_contents = nullptr;
-  if (params->options && params->options->target_tab_id) {
-    if (!ExtensionTabUtil::GetTabById(*(params->options->target_tab_id),
-                                      browser_context(), true, nullptr, nullptr,
-                                      &target_contents, nullptr)) {
-      return RespondNow(Error(kInvalidTabIdError));
-    }
-  } else {
-    // Figure out the active WebContents and retrieve the needed ids.
-    Browser* target_browser = chrome::FindLastActiveWithProfile(
-        Profile::FromBrowserContext(browser_context()));
-    if (!target_browser || target_browser->type() != Browser::TYPE_TABBED)
-      return RespondNow(Error(kFindingTabError));
-
-    target_contents = target_browser->tab_strip_model()->GetActiveWebContents();
-  }
-  if (!target_contents)
-    return RespondNow(Error(kFindingTabError));
-
-  const std::string& extension_id = extension()->id();
-
-  // Make sure either we have been granted permission to capture through an
-  // extension icon click or our extension is whitelisted.
-  if (!extension()->permissions_data()->HasAPIPermissionForTab(
-          SessionTabHelper::IdForTab(target_contents).id(),
-          APIPermission::kTabCaptureForTab) &&
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) != extension_id) {
-    return RespondNow(Error(kGrantError));
-  }
-
-  // |consumer_contents| is the WebContents for which the stream is created.
-  content::WebContents* consumer_contents = nullptr;
-  std::string consumer_name;
-  GURL origin;
-  if (params->options && params->options->consumer_tab_id) {
-    if (!ExtensionTabUtil::GetTabById(*(params->options->consumer_tab_id),
-                                      browser_context(), true, nullptr, nullptr,
-                                      &consumer_contents, nullptr)) {
-      return RespondNow(Error(kInvalidTabIdError));
-    }
-
-    origin = consumer_contents->GetLastCommittedURL().GetOrigin();
-    if (!origin.is_valid()) {
-      return RespondNow(Error(kInvalidOriginError));
-    }
-
-    if (!content::IsOriginSecure(origin)) {
-      return RespondNow(Error(kTabUrlNotSecure));
-    }
-
-    consumer_name = net::GetHostAndOptionalPort(origin);
-  } else {
-    origin = extension()->url();
-    consumer_name = extension()->name();
-    consumer_contents = GetSenderWebContents();
-  }
-  EXTENSION_FUNCTION_VALIDATE(consumer_contents);
-
-  DesktopMediaID source = BuildDesktopMediaID(target_contents, nullptr);
-  TabCaptureRegistry* registry = TabCaptureRegistry::Get(browser_context());
-  std::string device_id =
-      registry->AddRequest(target_contents, extension_id, false, origin, source,
-                           consumer_name, consumer_contents);
-  if (device_id.empty()) {
-    return RespondNow(Error(kCapturingSameTab));
-  }
-
-  return RespondNow(OneArgument(std::make_unique<base::Value>(device_id)));
 }
 
 }  // namespace extensions
