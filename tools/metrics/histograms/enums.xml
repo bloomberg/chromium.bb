@@ -51591,6 +51591,13 @@ Full version information for the fingerprint enum values:
   <int value="9" label="Ignore Action"/>
 </enum>
 
+<enum name="WindowOpenFromAdState">
+  <int value="0" label="From ad script and ad frame"/>
+  <int value="1" label="From non-ad script and ad frame"/>
+  <int value="2" label="From ad script and non-ad frame"/>
+  <int value="3" label="From non-ad script and non-ad frame"/>
+</enum>
+
 <enum name="WindowsExitCode">
   <int value="-2147483645" label="0x80000003 - STATUS_BREAKPOINT"/>
   <int value="-1073741819" label="0xC0000005 - STATUS_ACCESS_VIOLATION"/>
