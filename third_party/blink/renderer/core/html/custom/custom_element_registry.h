@@ -80,7 +80,6 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   void CollectCandidates(const CustomElementDescriptor&,
                          HeapVector<Member<Element>>*);
 
-  class ElementDefinitionIsRunning;
   bool element_definition_is_running_;
 
   using DefinitionList =
