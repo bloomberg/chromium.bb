@@ -1027,9 +1027,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
-  base::string16 search_keyword(ASCIIToUTF16(kSearchKeyword));
-
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN));
+  // '?' isn't in the same place on all keyboard layouts, so send the character
+  // instead of keystrokes.
+  ASSERT_NO_FATAL_FAILURE({
+    omnibox_view->OnBeforePossibleChange();
+    omnibox_view->SetUserText(base::UTF8ToUTF16("?"));
+    omnibox_view->OnAfterPossibleChange(true);
+  });
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_FALSE(omnibox_view->model()->is_keyword_selected());
   ASSERT_EQ(ASCIIToUTF16("?"), omnibox_view->GetText());
