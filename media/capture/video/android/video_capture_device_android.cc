@@ -385,6 +385,10 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
     NOTREACHED() << "|callback_id| not found.";
     return;
   }
+  if (result == nullptr) {
+    get_photo_state_callbacks_.erase(reference_it);
+    return;
+  }
 
   base::android::ScopedJavaLocalRef<jobject> scoped_photo_capabilities(env,
                                                                        result);
