@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * schedule all tasks on one thread.
  */
 public final class CastCrashUploaderFactory {
-    private static ScheduledExecutorService sExecutorService = null;
+    private static ScheduledExecutorService sExecutorService;
     public static CastCrashUploader createCastCrashUploader(String crashDumpPath, String uuid,
             String applicationFeedback, boolean uploadCrashToStaging) {
         if (sExecutorService == null) {

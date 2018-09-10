@@ -50,7 +50,7 @@ class CastWebContentsSurfaceHelper {
     private MediaSessionGetter mMediaSessionGetter;
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
-    private boolean mTouchInputEnabled = false;
+    private boolean mTouchInputEnabled;
 
     public static class StartParams {
         public final Uri uri;

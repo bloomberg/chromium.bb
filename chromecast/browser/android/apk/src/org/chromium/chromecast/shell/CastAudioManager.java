@@ -22,7 +22,7 @@ import org.chromium.chromecast.base.Observable;
  */
 public class CastAudioManager {
     private static final String TAG = "CastAudioManager";
-    private static CastAudioManager sInstance = null;
+    private static CastAudioManager sInstance;
 
     public static CastAudioManager getAudioManager(Context context) {
         if (sInstance == null) {
