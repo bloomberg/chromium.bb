@@ -5139,7 +5139,3 @@ crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavi
 
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
-
-crbug.com/882292 http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
-crbug.com/882292 virtual/outofblink-cors/http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
-crbug.com/882292 virtual/outofblink-cors-ns/http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
