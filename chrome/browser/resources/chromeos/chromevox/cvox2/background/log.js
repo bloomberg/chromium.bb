@@ -31,6 +31,13 @@ LogPage.backgroundWindow;
  */
 LogPage.LogStore;
 
+/**
+ * Store the preferences of filters.
+ * @type {Object<string, boolean>}
+ * @private
+ */
+LogPage.urlPrefs_ = {};
+
 LogPage.init = function() {
   LogPage.backgroundWindow = chrome.extension.getBackgroundPage();
   LogPage.LogStore = LogPage.backgroundWindow.LogStore.getInstance();
@@ -41,14 +48,19 @@ LogPage.init = function() {
     location.reload();
   };
 
+  var params = new URLSearchParams(location.search);
+  for (var type in LogStore.LogType) {
+    var typeFilter = LogStore.LogType[type] + 'Filter';
+    LogPage.setFilterTypeEnabled(typeFilter, params.get(typeFilter));
+  }
   var saveLogButton = document.getElementById('saveLog');
   saveLogButton.onclick = LogPage.saveLogEvent;
 
   var checkboxes = document.getElementsByClassName('log-filter');
   var filterEventListener = function(event) {
     var target = event.target;
-    sessionStorage.setItem(target.name, target.checked);
-    location.reload();
+    LogPage.setFilterTypeEnabled(target.name, String(target.checked));
+    location.search = LogPage.createUrlParams();
   };
   for (var i = 0; i < checkboxes.length; i++)
     checkboxes[i].onclick = filterEventListener;
@@ -93,10 +105,7 @@ LogPage.update = function() {
   for (var i = 0; i < logTypes.length; i++) {
     var typeFilter = logTypes[i] + 'Filter';
     var element = document.getElementById(typeFilter);
-    /** If sessionStorage is null, set true. */
-    if (!sessionStorage.getItem(typeFilter))
-      sessionStorage.setItem(typeFilter, true);
-    element.checked = (sessionStorage.getItem(typeFilter) == 'true');
+    element.checked = LogPage.urlPrefs_[typeFilter];
   }
 
   var log = LogPage.LogStore.getLogs();
@@ -110,7 +119,7 @@ LogPage.update = function() {
  */
 LogPage.updateLog = function(log, div) {
   for (var i = 0; i < log.length; i++) {
-    if (sessionStorage.getItem(log[i].logType + 'Filter') != 'true')
+    if (!LogPage.urlPrefs_[log[i].logType + 'Filter'])
       continue;
 
     var p = document.createElement('p');
@@ -147,6 +156,31 @@ LogPage.updateLog = function(log, div) {
     p.appendChild(textWrapper);
     div.appendChild(p);
   }
+};
+
+/**
+ * Update urlPrefs_. Set true if checked is null.
+ * @param {string} typeFilter
+ * @param {?string} checked
+ */
+LogPage.setFilterTypeEnabled = function(typeFilter, checked) {
+  if (checked == null || checked == 'true')
+    LogPage.urlPrefs_[typeFilter] = true;
+  else
+    LogPage.urlPrefs_[typeFilter] = false;
+};
+
+/**
+ * Create URL parameter based on LogPage.urlPrefs_.
+ * @return {string}
+ */
+LogPage.createUrlParams = function() {
+  var urlParams = [];
+  for (var type in LogStore.LogType) {
+    var typeFilter = LogStore.LogType[type] + 'Filter';
+    urlParams.push(typeFilter + '=' + LogPage.urlPrefs_[typeFilter]);
+  }
+  return '?' + urlParams.join('&');
 };
 
 /**

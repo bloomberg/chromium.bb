@@ -112,8 +112,8 @@ CommandHandler.onCommand = function(command) {
       chrome.commandLinePrivate.hasSwitch(
           'enable-chromevox-developer-option', function(enable) {
             if (enable) {
-              var logPage = {url: 'cvox2/background/log.html', type: 'panel'};
-              chrome.windows.create(logPage);
+              var logPage = {url: 'cvox2/background/log.html'};
+              chrome.tabs.create(logPage);
             }
           });
       break;
