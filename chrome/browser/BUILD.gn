@@ -4997,6 +4997,7 @@ static_library("test_support") {
 
   public_deps = [
     ":browser",
+    "//chrome/browser/safe_browsing:test_support",
     "//chrome/browser/ui:test_support",
   ]
   deps = [

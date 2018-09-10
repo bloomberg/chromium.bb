@@ -98,8 +98,6 @@ static_library("safe_browsing") {
       "services_delegate.h",
       "test_safe_browsing_blocking_page_quiet.cc",
       "test_safe_browsing_blocking_page_quiet.h",
-      "test_safe_browsing_service.cc",
-      "test_safe_browsing_service.h",
       "trigger_creator.cc",
       "trigger_creator.h",
       "ui_manager.cc",
@@ -254,4 +252,18 @@ static_library("advanced_protection") {
     "//components/signin/core/browser:browser",
     "//content/public/browser:browser",
   ]
+}
+
+source_set("test_support") {
+  if (safe_browsing_mode != 0) {
+    sources = [
+      "test_safe_browsing_service.cc",
+      "test_safe_browsing_service.h",
+    ]
+
+    deps = [
+      "//chrome/common/safe_browsing:proto",
+      "//content/public/browser:browser",
+    ]
+  }
 }
