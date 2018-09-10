@@ -241,11 +241,7 @@ void CompanyInfo::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
 }
 
 base::string16 CompanyInfo::GetRawInfo(ServerFieldType type) const {
-  if (type == COMPANY_NAME &&
-      base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName))
-    return company_name_;
-
-  return base::string16();
+  return company_name_;
 }
 
 void CompanyInfo::SetRawInfo(ServerFieldType type,

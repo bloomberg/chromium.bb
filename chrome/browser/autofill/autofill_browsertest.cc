@@ -227,45 +227,6 @@ class AutofillTest : public InProcessBrowserTest {
   net::TestURLFetcherFactory url_fetcher_factory_;
 };
 
-class AutofillParamTest : public AutofillTest,
-                          public testing::WithParamInterface<bool> {
- protected:
-  AutofillParamTest() : enable_company_feature_state_(GetParam()) {
-    feature_list_.InitWithFeatureState(features::kAutofillEnableCompanyName,
-                                       enable_company_feature_state_);
-  }
-
-  const bool enable_company_feature_state_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Test that Autofill respects CompanyName Feature state
-IN_PROC_BROWSER_TEST_P(AutofillParamTest, CompanyNameTest) {
-  SCOPED_TRACE(enable_company_feature_state_ ? "Enabled" : "Disabled");
-
-  const char kCompanyName[] = "Google";
-  FormMap data;
-  data["NAME_FIRST"] = "Bob";
-  data["NAME_LAST"] = "Smith";
-  data["ADDRESS_HOME_LINE1"] = "1234 H St.";
-  data["ADDRESS_HOME_CITY"] = "Mountain View";
-  data["ADDRESS_HOME_STATE"] = "CA";
-  data["ADDRESS_HOME_ZIP"] = "94043";
-  data["COMPANY_NAME"] = kCompanyName;
-
-  std::string submit("document.forms[0].submit();");
-  FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
-                               false, true);
-
-  EXPECT_EQ(
-      ASCIIToUTF16(enable_company_feature_state_ ? kCompanyName : ""),
-      personal_data_manager()->GetProfiles()[0]->GetRawInfo(COMPANY_NAME));
-}
-
-INSTANTIATE_TEST_CASE_P(, AutofillParamTest, testing::Bool());
-
 // Test that Autofill aggregates a minimum valid profile.
 // The minimum required address fields must be specified: First Name, Last Name,
 // Address Line 1, City, Zip Code, and State.

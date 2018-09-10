@@ -1021,6 +1021,33 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
 }
 
 // Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+//  - bool company_name_enabled_: whether feature AutofillEnableCompanyName
+//        is enabled for testing.
+class AutofillCompanyInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
+ protected:
+  AutofillCompanyInteractiveTest()
+      : AutofillInteractiveTestBase(), company_name_enabled_(GetParam()) {}
+  ~AutofillCompanyInteractiveTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableCompanyName, company_name_enabled_);
+    AutofillInteractiveTestBase::SetUp();
+  }
+
+  const bool company_name_enabled_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test params:
+//  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
+//        is enabled.
 //  - bool single_click_enabled_: whether AutofillSingleClick is enabled.
 class AutofillSingleClickTest : public AutofillInteractiveTestBase,
                                 public testing::WithParamInterface<bool> {
@@ -1845,6 +1872,33 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
   ExpectFieldValue("PHONE_HOME_EXT-2", std::string());
 }
 
+// Test that Autofill does not fill in Company Name if disabled
+IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
+                       NoAutofillForCompanyName) {
+  std::string addr_line1("1234 H St.");
+  std::string company_name("Company X");
+
+  AutofillProfile profile;
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("bsmith@gmail.com"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16(addr_line1));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("San Jose"));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("95110"));
+  profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16(company_name));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("408-871-4567"));
+  SetTestProfile(browser(), profile);
+
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  PopulateForm("firstname");
+
+  ExpectFieldValue("address", addr_line1);
+  ExpectFieldValue("company", company_name_enabled_ ? company_name : "");
+}
+
 // Test that Autofill does not fill in read-only fields.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
   std::string addr_line1("1234 H St.");
@@ -2459,9 +2513,15 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_FALSE(IsPopupShown());
 }
 
-class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+class AutofillDynamicFormInteractiveTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<bool> {
  protected:
-  AutofillDynamicFormInteractiveTest() {
+  AutofillDynamicFormInteractiveTest()
+      : AutofillInteractiveTestBase(), company_name_enabled_(GetParam()) {
     // Setup that the test expects a re-fill to happen.
     test_delegate()->SetIsExpectingDynamicRefill(true);
   }
@@ -2469,12 +2529,22 @@ class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
 
   // AutofillInteractiveTestBase:
   void SetUp() override {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    if (company_name_enabled_) {
+      enabled_features.push_back(features::kAutofillEnableCompanyName);
+    } else {
+      disabled_features.push_back(features::kAutofillEnableCompanyName);
+    }
+
     // Explicitly enable the filling of dynamic forms and disabled the
     // requirement for a secure context to fill credit cards.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kAutofillDynamicForms},
-        {features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+    enabled_features.push_back(features::kAutofillDynamicForms);
+    disabled_features.push_back(
+        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     AutofillInteractiveTestBase::SetUp();
   }
 
@@ -2485,6 +2555,8 @@ class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
+  const bool company_name_enabled_;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -2492,7 +2564,7 @@ class AutofillDynamicFormInteractiveTest : public AutofillInteractiveTestBase {
 };
 
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill) {
   CreateTestProfile();
 
@@ -2513,12 +2585,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
@@ -2542,7 +2614,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 
@@ -2559,13 +2631,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form2", "4120 Freidrich Lane");
   ExpectFieldValue("state_form2", "TX");
   ExpectFieldValue("city_form2", "Austin");
-  ExpectFieldValue("company_form2", "Initech");
+  ExpectFieldValue("company_form2", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email_form2", "red.swingline@initech.com");
   ExpectFieldValue("phone_form2", "15125551234");
 }
 
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SecondChange) {
   CreateTestProfile();
 
@@ -2592,7 +2664,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
 
@@ -2619,7 +2691,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
 
@@ -2653,7 +2725,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can autofill forms that dynamically change select fields to text
 // fields by changing the visibilities.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_SelectToText) {
   CreateTestProfile();
 
@@ -2672,14 +2744,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state_us", "Texas");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the visibility of a
 // field after it's autofilled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_VisibilitySwitch) {
   CreateTestProfile();
 
@@ -2700,14 +2772,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("state_first", "Texas");
   ExpectFieldValue("state_second", "Texas");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappears) {
   CreateTestProfile();
 
@@ -2726,14 +2798,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
 
@@ -2752,14 +2824,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
 
@@ -2778,13 +2850,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("firstname2", "Milton");
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that credit card fields are never re-filled.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {
   CreateTestCreditCart();
 
@@ -2817,7 +2889,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
 
@@ -2838,14 +2910,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
 
@@ -2866,14 +2938,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "CA");   // Default value.
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically generated forms with no name if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_FormWithoutName) {
   CreateTestProfile();
 
@@ -2894,7 +2966,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_form1", "4120 Freidrich Lane");
   ExpectFieldValue("state_form1", "TX");
   ExpectFieldValue("city_form1", "Austin");
-  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("company_form1", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email_form1", "red.swingline@initech.com");
   ExpectFieldValue("phone_form1", "15125551234");
 }
@@ -2902,7 +2974,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
 
@@ -2924,14 +2996,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
 
@@ -2952,14 +3024,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address_syntheticform1", "4120 Freidrich Lane");
   ExpectFieldValue("state_syntheticform1", "TX");
   ExpectFieldValue("city_syntheticform1", "Austin");
-  ExpectFieldValue("company_syntheticform1", "Initech");
+  ExpectFieldValue("company_syntheticform1",
+                   company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email_syntheticform1", "red.swingline@initech.com");
   ExpectFieldValue("phone_syntheticform1", "15125551234");
 }
 
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
-IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();
 
@@ -2980,10 +3053,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
+
+INSTANTIATE_TEST_CASE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillDynamicFormInteractiveTest,
+                        testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillSingleClickTest,
