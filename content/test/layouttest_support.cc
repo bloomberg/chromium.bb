@@ -501,7 +501,7 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
   } else if (name == "adobeRGB") {
     return gfx::ICCProfileForTestingAdobeRGB().GetColorSpace();
   } else if (name == "reset") {
-    return display::Display::GetForcedColorProfile();
+    return display::Display::GetForcedDisplayColorProfile();
   }
   return gfx::ColorSpace();
 }

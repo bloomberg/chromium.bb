@@ -266,9 +266,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
     }
 
-    // If the virtual test suite didn't specify a color space, then force sRGB.
-    if (!command_line.HasSwitch(switches::kForceColorProfile))
-      command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+    // If the virtual test suite didn't specify a display color space, then
+    // force sRGB.
+    if (!command_line.HasSwitch(switches::kForceDisplayColorProfile)) {
+      command_line.AppendSwitchASCII(switches::kForceDisplayColorProfile,
+                                     "srgb");
+    }
 
     // We want stable/baseline results when running layout tests.
     command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);

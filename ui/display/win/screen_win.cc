@@ -153,7 +153,7 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
-  if (!Display::HasForceColorProfile()) {
+  if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
       display.SetColorSpaceAndDepth(
           gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(

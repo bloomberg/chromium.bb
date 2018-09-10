@@ -245,7 +245,7 @@ void BrowserTestBase::SetUp() {
 
   // Use an sRGB color profile to ensure that the machine's color profile does
   // not affect the results.
-  command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
+  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
   // Disable compositor Ukm in browser tests until crbug.com/761524 is resolved.
   command_line->AppendSwitch(switches::kDisableCompositorUkmForTests);
