@@ -9,6 +9,11 @@ declare_args() {
   cros_sdk_version = ""
 }
 
+# Ensure that if one is set, the other is as well.
+assert(cros_board == "" == (cros_sdk_version == ""))
+
+is_chromeos_chrome = cros_board != ""
+
 # Creates a script at $generated_script that can be used to launch a cros VM
 # and optionally run a test within it.
 # Args:

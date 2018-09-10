@@ -801,7 +801,11 @@ test("chromeos_unittests") {
   ]
 }
 
-if (cros_board != "") {
+# The following definitions only apply when building for a CrOS board (ie: not
+# linux-chromeos). See the following for reference:
+# https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
+# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
+if (is_chromeos_chrome) {
   generate_vm_runner_script("cros_vm_launcher") {
     generated_script = "$root_build_dir/bin/launch_cros_vm"
 
