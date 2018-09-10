@@ -287,7 +287,9 @@ bool GenerateExecutableElement(ExecutableType exe_type,
   EquivalenceMap equivalences =
       CreateEquivalenceMap(old_image_index, new_image_index,
                            new_disasm->num_equivalence_iterations());
-  OffsetMapper offset_mapper(equivalences, old_image.size(), new_image.size());
+  OffsetMapper offset_mapper(equivalences,
+                             base::checked_cast<offset_t>(old_image.size()),
+                             base::checked_cast<offset_t>(new_image.size()));
 
   ReferenceDeltaSink reference_delta_sink;
   for (const auto& old_targets : old_image_index.target_pools()) {
