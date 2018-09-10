@@ -50,12 +50,22 @@ class VulkanSwapChain {
 
   VulkanCommandBuffer* GetCurrentCommandBuffer() const {
     DCHECK_LT(current_image_, images_.size());
-    return images_[current_image_]->command_buffer.get();
+    return images_[current_image_]->pre_raster_command_buffer.get();
   }
 
-  VkImage GetCurrentImage(uint32_t index) const {
-    DCHECK_LT(index, images_.size());
-    return images_[index]->image;
+  VkImage GetCurrentImage() const {
+    DCHECK_LT(current_image_, images_.size());
+    return images_[current_image_]->image;
+  }
+
+  VkImageLayout GetCurrentImageLayout() const {
+    DCHECK_LT(current_image_, images_.size());
+    return images_[current_image_]->layout;
+  }
+
+  void SetCurrentImageLayout(VkImageLayout layout) {
+    DCHECK_LT(current_image_, images_.size());
+    images_[current_image_]->layout = layout;
   }
 
  private:
@@ -81,8 +91,10 @@ class VulkanSwapChain {
     ~ImageData();
 
     VkImage image = VK_NULL_HANDLE;
+    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
     std::unique_ptr<VulkanImageView> image_view;
-    std::unique_ptr<VulkanCommandBuffer> command_buffer;
+    std::unique_ptr<VulkanCommandBuffer> pre_raster_command_buffer;
+    std::unique_ptr<VulkanCommandBuffer> post_raster_command_buffer;
 
     VkSemaphore render_semaphore = VK_NULL_HANDLE;
     VkSemaphore present_semaphore = VK_NULL_HANDLE;

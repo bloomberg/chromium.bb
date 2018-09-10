@@ -280,6 +280,18 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
     skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
   } else {
     // TODO(penghuang): remove it when SkiaRenderer and SkDDL are always used.
+#if BUILDFLAG(ENABLE_VULKAN)
+    if (IsUsingVulkan()) {
+      auto backend = root_surface_->getBackendRenderTarget(
+          SkSurface::kFlushRead_BackendHandleAccess);
+      GrVkImageInfo vk_image_info;
+      if (!backend.getVkImageInfo(&vk_image_info))
+        NOTREACHED() << "Failed to get the image info.";
+      auto* vulkan_surface = output_surface_->GetVulkanSurface();
+      auto* swap_chain = vulkan_surface->GetSwapChain();
+      swap_chain->SetCurrentImageLayout(vk_image_info.fImageLayout);
+    }
+#endif
     output_surface_->SwapBuffers(std::move(output_frame));
   }
 
@@ -320,11 +332,12 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 #if BUILDFLAG(ENABLE_VULKAN)
       auto* vulkan_surface = output_surface_->GetVulkanSurface();
       auto* swap_chain = vulkan_surface->GetSwapChain();
-      VkImage image = swap_chain->GetCurrentImage(swap_chain->current_image());
+      VkImage image = swap_chain->GetCurrentImage();
+      VkImageLayout image_layout = swap_chain->GetCurrentImageLayout();
       GrVkImageInfo vk_image_info;
       vk_image_info.fImage = image;
       vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
-      vk_image_info.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+      vk_image_info.fImageLayout = image_layout;
       vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
       vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
       vk_image_info.fLevelCount = 1;

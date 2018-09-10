@@ -46,6 +46,7 @@ void VulkanDemo::Initialize() {
 
   // Sync up size between |window_| and |vulkan_surface_|
   vulkan_surface_->SetSize(size);
+  sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
 }
 
 void VulkanDemo::Destroy() {
@@ -66,7 +67,14 @@ void VulkanDemo::Run() {
 void VulkanDemo::OnBoundsChanged(const gfx::Rect& new_bounds) {
   if (vulkan_surface_->size() == new_bounds.size())
     return;
+  auto old_size = vulkan_surface_->size();
   vulkan_surface_->SetSize(new_bounds.size());
+  if (vulkan_surface_->size() != old_size) {
+    // Size has been changed, we need to clear all surfaces which will be
+    // recreated later.
+    sk_surfaces_.clear();
+    sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+  }
 }
 
 void VulkanDemo::OnCloseRequest() {
@@ -90,24 +98,35 @@ void VulkanDemo::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) {
 }
 
 void VulkanDemo::CreateSkSurface() {
-  SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
   auto* swap_chain = vulkan_surface_->GetSwapChain();
-  VkImage vk_image = swap_chain->GetCurrentImage(swap_chain->current_image());
-  GrVkImageInfo vk_image_info;
-  vk_image_info.fImage = vk_image;
-  vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
-  vk_image_info.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
-  vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  vk_image_info.fLevelCount = 1;
-  const auto& size = vulkan_surface_->size();
-  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
-                                      vk_image_info);
-  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      vulkan_context_provider_->GetGrContext(), render_target,
-      kTopLeft_GrSurfaceOrigin, kBGRA_8888_SkColorType, nullptr,
-      &surface_props);
+  auto index = swap_chain->current_image();
+  auto& sk_surface = sk_surfaces_[index];
+
+  if (!sk_surface) {
+    SkSurfaceProps surface_props =
+        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+    VkImage vk_image = swap_chain->GetCurrentImage();
+    VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
+    GrVkImageInfo vk_image_info;
+    vk_image_info.fImage = vk_image;
+    vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
+    vk_image_info.fImageLayout = vk_image_layout;
+    vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+    vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    vk_image_info.fLevelCount = 1;
+    const auto& size = vulkan_surface_->size();
+    GrBackendRenderTarget render_target(size.width(), size.height(), 0, 0,
+                                        vk_image_info);
+    sk_surface = SkSurface::MakeFromBackendRenderTarget(
+        vulkan_context_provider_->GetGrContext(), render_target,
+        kTopLeft_GrSurfaceOrigin, kBGRA_8888_SkColorType, nullptr,
+        &surface_props);
+  } else {
+    auto backend = sk_surface->getBackendRenderTarget(
+        SkSurface::kFlushRead_BackendHandleAccess);
+    backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
+  }
+  sk_surface_ = sk_surface;
 }
 
 void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
@@ -168,6 +187,13 @@ void VulkanDemo::RenderFrame() {
     return;
   CreateSkSurface();
   Draw(sk_surface_->getCanvas(), 0.7);
+  auto backend = sk_surface_->getBackendRenderTarget(
+      SkSurface::kFlushRead_BackendHandleAccess);
+  GrVkImageInfo vk_image_info;
+  if (!backend.getVkImageInfo(&vk_image_info))
+    NOTREACHED() << "Failed to get image info";
+  vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
+      vk_image_info.fImageLayout);
   vulkan_surface_->SwapBuffers();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
