@@ -1341,10 +1341,10 @@ static INLINE void src_convert_hbd_copy(const uint16_t *src, int src_stride,
   }
 }
 
-void av1_selfguided_restoration_neon(const uint8_t *dat8, int width, int height,
-                                     int stride, int32_t *flt0, int32_t *flt1,
-                                     int flt_stride, int sgr_params_idx,
-                                     int bit_depth, int highbd) {
+int av1_selfguided_restoration_neon(const uint8_t *dat8, int width, int height,
+                                    int stride, int32_t *flt0, int32_t *flt1,
+                                    int flt_stride, int sgr_params_idx,
+                                    int bit_depth, int highbd) {
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
   assert(!(params->r[0] == 0 && params->r[1] == 0));
 
@@ -1377,6 +1377,7 @@ void av1_selfguided_restoration_neon(const uint8_t *dat8, int width, int height,
   if (params->r[1] > 0)
     restoration_internal(dgd16, width, height, dgd16_stride, flt1, flt_stride,
                          bit_depth, sgr_params_idx, 1);
+  return 0;
 }
 
 void apply_selfguided_restoration_neon(const uint8_t *dat8, int width,

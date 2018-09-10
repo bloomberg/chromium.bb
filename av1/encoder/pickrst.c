@@ -522,9 +522,11 @@ static void apply_sgr(int sgr_params_idx, const uint8_t *dat8, int width,
     // Iterate over the stripe in blocks of width pu_width
     for (int j = 0; j < width; j += pu_width) {
       const int w = AOMMIN(pu_width, width - j);
-      av1_selfguided_restoration(dat8_row + j, w, h, dat_stride, flt0_row + j,
-                                 flt1_row + j, flt_stride, sgr_params_idx,
-                                 bit_depth, use_highbd);
+      const int ret = av1_selfguided_restoration(
+          dat8_row + j, w, h, dat_stride, flt0_row + j, flt1_row + j,
+          flt_stride, sgr_params_idx, bit_depth, use_highbd);
+      (void)ret;
+      assert(!ret);
     }
   }
 }
