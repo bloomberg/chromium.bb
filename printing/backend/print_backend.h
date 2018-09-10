@@ -48,7 +48,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
   bool copies_capable;
 
-  bool duplex_capable;
+  std::vector<DuplexMode> duplex_modes;
   DuplexMode duplex_default;
 
   bool color_changeable;

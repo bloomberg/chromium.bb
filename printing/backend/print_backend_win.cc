@@ -291,8 +291,11 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   caps.color_model = printing::COLOR;
   caps.bw_model = printing::GRAY;
 
-  caps.duplex_capable =
-      (DeviceCapabilities(name, port, DC_DUPLEX, nullptr, nullptr) == 1);
+  caps.duplex_modes.push_back(SIMPLEX);
+  if (DeviceCapabilities(name, port, DC_DUPLEX, nullptr, nullptr) == 1) {
+    caps.duplex_modes.push_back(LONG_EDGE);
+    caps.duplex_modes.push_back(SHORT_EDGE);
+  }
 
   caps.collate_capable =
       (DeviceCapabilities(name, port, DC_COLLATE, nullptr, nullptr) == 1);

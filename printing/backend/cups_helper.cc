@@ -40,6 +40,7 @@ const char kHighGray[] = "High.Gray";
 
 constexpr char kDuplex[] = "Duplex";
 constexpr char kDuplexNone[] = "None";
+constexpr char kDuplexNoTumble[] = "DuplexNoTumble";
 constexpr char kDuplexTumble[] = "DuplexTumble";
 constexpr char kPageSize[] = "PageSize";
 
@@ -132,23 +133,31 @@ void MarkLpOptions(base::StringPiece printer_name, ppd_file_t** ppd) {
 }
 
 void GetDuplexSettings(ppd_file_t* ppd,
-                       bool* duplex_capable,
+                       std::vector<DuplexMode>* duplex_modes,
                        DuplexMode* duplex_default) {
   ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
-  if (!duplex_choice) {
-    ppd_option_t* option = ppdFindOption(ppd, kDuplex);
-    if (!option)
-      option = ppdFindOption(ppd, kBrotherDuplex);
-    if (!option)
-      return;
+  ppd_option_t* option = ppdFindOption(ppd, kDuplex);
+  if (!option)
+    option = ppdFindOption(ppd, kBrotherDuplex);
 
+  if (!option)
+    return;
+
+  if (!duplex_choice)
     duplex_choice = ppdFindChoice(option, option->defchoice);
-  }
+
+  if (ppdFindChoice(option, kDuplexNone))
+    duplex_modes->push_back(SIMPLEX);
+
+  if (ppdFindChoice(option, kDuplexNoTumble))
+    duplex_modes->push_back(LONG_EDGE);
+
+  if (ppdFindChoice(option, kDuplexTumble))
+    duplex_modes->push_back(SHORT_EDGE);
 
   if (!duplex_choice)
     return;
 
-  *duplex_capable = true;
   const char* choice = duplex_choice->choice;
   if (EqualsCaseInsensitiveASCII(choice, kDuplexNone)) {
     *duplex_default = SIMPLEX;
@@ -452,7 +461,7 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
   caps.collate_default = true;
   caps.copies_capable = true;
 
-  GetDuplexSettings(ppd, &caps.duplex_capable, &caps.duplex_default);
+  GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
 
   bool is_color = false;
   ColorModel cm_color = UNKNOWN_COLOR_MODEL, cm_black = UNKNOWN_COLOR_MODEL;

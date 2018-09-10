@@ -283,6 +283,7 @@ test("printing_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//printing/common",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",
