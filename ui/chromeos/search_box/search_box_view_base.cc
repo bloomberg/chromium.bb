@@ -208,6 +208,23 @@ class SearchBoxTextfield : public views::Textfield {
     Textfield::OnBlur();
   }
 
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_LONG_PRESS:
+      case ui::ET_GESTURE_LONG_TAP:
+        // Prevent Long Press from being handled at all, if inactive
+        if (!search_box_view_->is_search_box_active()) {
+          event->SetHandled();
+          break;
+        }
+        // If |search_box_view_| is active, handle it as normal below
+        FALLTHROUGH;
+      default:
+        // Handle all other events as normal
+        Textfield::OnGestureEvent(event);
+    }
+  }
+
  private:
   SearchBoxViewBase* const search_box_view_;
 
