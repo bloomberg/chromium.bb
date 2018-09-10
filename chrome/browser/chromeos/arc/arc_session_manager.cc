@@ -302,9 +302,13 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     scoped_opt_in_tracker_->TrackError();
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
-    // TODO(poromov): Consider PublicSession offline mode.
-    if (IsRobotOrOfflineDemoAccountMode()) {
+    // TODO(poromov): Consider ARC PublicSession offline mode.
+    // Currently ARC session will be exited below, while the main user session
+    // will be kept alive without Android apps.
+    if (IsRobotOrOfflineDemoAccountMode())
       VLOG(1) << "Robot account auth code fetching error";
+    if (IsArcKioskMode()) {
+      VLOG(1) << "Exiting kiosk session due to provisioning failure";
       // Log out the user. All the cleanup will be done in Shutdown() method.
       // The callback is not called because auth code is empty.
       attempt_user_exit_callback_.Run();

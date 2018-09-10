@@ -1047,6 +1047,43 @@ TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
   EXPECT_TRUE(terminated);
 }
 
+class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerPublicSessionTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    const AccountId account_id(
+        AccountId::FromUserEmail(profile()->GetProfileUserName()));
+    GetFakeUserManager()->AddPublicAccountUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerPublicSessionTest);
+};
+
+TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Replace chrome::AttemptUserExit() for testing.
+  // At the end of test, leave the dangling pointer |terminated|,
+  // assuming the callback is never invoked in OnProvisioningFinished()
+  // and not invoked then, including TearDown().
+  bool terminated = false;
+  arc_session_manager()->SetAttemptUserExitCallbackForTesting(
+      base::BindRepeating([](bool* terminated) { *terminated = true; },
+                          &terminated));
+
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+  EXPECT_FALSE(terminated);
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+}
+
 class ArcSessionOobeOptInNegotiatorTest
     : public ArcSessionManagerTest,
       public chromeos::ArcTermsOfServiceScreenView,
