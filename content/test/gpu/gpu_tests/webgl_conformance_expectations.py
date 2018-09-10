@@ -604,10 +604,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
 
     # Nexus 5X
-    # The following two tests just started timing out randomly on the
+    # The following test recently became so flaky that it had to be
+    # upgraded to Fail.
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=882323)
+    # The following test just started timing out randomly on the
     # android_optional_gpu_tests_rel tryserver with no apparent cause.
-    self.Flaky('deqp/data/gles2/shaders/conversions.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     self.Flaky('deqp/data/gles2/shaders/swizzles.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     # This one is causing intermittent timeouts on the device, and it
