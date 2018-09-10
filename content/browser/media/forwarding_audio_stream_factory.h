@@ -17,7 +17,6 @@
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
@@ -85,15 +84,6 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       uint32_t shared_memory_count,
       bool mute_source,
       mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
-
-  // Creates a loopback stream that captures the audio from
-  // |frame_of_source_web_contents|, or the default system playback if the
-  // source is not provided. The source/system audio is muted during capturing.
-  void CreateInProcessLoopbackStream(
-      RenderFrameHost* frame_of_source_web_contents,
-      const media::AudioParameters& params,
-      uint32_t shared_memory_count,
-      const AudioLoopbackStreamCreator::StreamCreatedCallback& callback);
 
   // Sets the muting state for all output streams created through this factory.
   void SetMuted(bool muted);

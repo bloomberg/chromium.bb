@@ -8,9 +8,47 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
+#include "media/audio/audio_device_description.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
+
+namespace {
+
+// A mojom::RendererAudioInputStreamFactoryClient that holds a
+// AudioLoopbackStreamCreator::StreamCreatedCallback. The callback runs when the
+// requested audio stream is created.
+class StreamCreatedCallbackAdapter final
+    : public mojom::RendererAudioInputStreamFactoryClient {
+ public:
+  explicit StreamCreatedCallbackAdapter(
+      const AudioLoopbackStreamCreator::StreamCreatedCallback& callback)
+      : callback_(callback) {
+    DCHECK(callback_);
+  }
+
+  ~StreamCreatedCallbackAdapter() override {}
+
+  // mojom::RendererAudioInputStreamFactoryClient implementation.
+  void StreamCreated(
+      media::mojom::AudioInputStreamPtr stream,
+      media::mojom::AudioInputStreamClientRequest client_request,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
+      bool initially_muted,
+      const base::Optional<base::UnguessableToken>& stream_id) override {
+    DCHECK(!initially_muted);  // Loopback streams shouldn't be started muted.
+    callback_.Run(std::move(stream), std::move(client_request),
+                  std::move(data_pipe));
+  }
+
+ private:
+  const AudioLoopbackStreamCreator::StreamCreatedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StreamCreatedCallbackAdapter);
+};
+
+}  // namespace
 
 InProcessAudioLoopbackStreamCreator::InProcessAudioLoopbackStreamCreator()
     : factory_(nullptr,
@@ -37,8 +75,21 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
     loopback_source_frame = loopback_source->GetMainFrame();
     DCHECK(loopback_source_frame);
   }
-  factory_.CreateInProcessLoopbackStream(loopback_source_frame, params,
-                                         total_segments, callback);
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  mojo::MakeStrongBinding(
+      std::make_unique<StreamCreatedCallbackAdapter>(callback),
+      mojo::MakeRequest(&client));
+  if (loopback_source_frame) {
+    factory_.CreateLoopbackStream(nullptr, loopback_source_frame, params,
+                                  total_segments, true /* mute_source */,
+                                  std::move(client));
+  } else {
+    // A null |frame_of_source_web_contents| requests system-wide loopback.
+    factory_.CreateInputStream(
+        nullptr, media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
+        params, total_segments, false /* enable_agc */,
+        nullptr /* processing_config */, std::move(client));
+  }
 }
 
 }  // namespace content
