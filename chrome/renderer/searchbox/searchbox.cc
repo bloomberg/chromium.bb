@@ -56,9 +56,10 @@ const char* GetIconTypeUrlHost(SearchBox::ImageSourceType type) {
       return "favicon";
     case SearchBox::THUMB:
       return "thumb";
-    default:
-      NOTREACHED();
+    case SearchBox::NONE:
+      break;
   }
+  NOTREACHED();
   return nullptr;
 }
 
@@ -66,7 +67,6 @@ const char* GetIconTypeUrlHost(SearchBox::ImageSourceType type) {
 // depending on |type| of image URL. Returns -1 if parse fails.
 int GetImagePathStartOfPageURL(SearchBox::ImageSourceType type,
                                const std::string& path) {
-  // TODO(huangs): Refactor this: http://crbug.com/468320.
   switch (type) {
     case SearchBox::FAVICON: {
       chrome::ParsedFaviconPath parsed;
@@ -75,11 +75,10 @@ int GetImagePathStartOfPageURL(SearchBox::ImageSourceType type,
     case SearchBox::THUMB: {
       return 0;
     }
-    default: {
-      NOTREACHED();
+    case SearchBox::NONE:
       break;
-    }
   }
+  NOTREACHED();
   return -1;
 }
 
