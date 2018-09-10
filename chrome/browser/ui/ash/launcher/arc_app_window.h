@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
@@ -86,6 +87,11 @@ class ArcAppWindow : public AppWindowBase,
   // Keeps current full-screen mode.
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   ArcAppWindowLauncherController* const owner_;
+
+  // Set to true in case image fetch is requested. This indicates that default
+  // app icon is returned in |OnAppImageUpdated|.
+  bool image_fetching_ = false;
+  base::OneShotTimer apply_default_image_timer_;
 
   Profile* const profile_;
 

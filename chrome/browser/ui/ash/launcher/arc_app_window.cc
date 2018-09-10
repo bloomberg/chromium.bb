@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 
+#include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -17,6 +18,11 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+
+namespace {
+constexpr base::TimeDelta kSetDefaultIconDelayMs =
+    base::TimeDelta::FromMilliseconds(1000);
+}  // namespace
 
 ArcAppWindow::ArcAppWindow(int task_id,
                            const arc::ArcAppShelfId& app_shelf_id,
@@ -75,7 +81,16 @@ void ArcAppWindow::Close() {
 
 void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,
                                      const gfx::ImageSkia& image) {
-  SetIcon(image);
+  if (image_fetching_) {
+    // This is default app icon. Don't assign it right now to avoid flickering.
+    // Wait for another image is loaded and only in case next image is not
+    // coming set this as a fallback.
+    apply_default_image_timer_.Start(
+        FROM_HERE, kSetDefaultIconDelayMs,
+        base::BindOnce(&ArcAppWindow::SetIcon, base::Unretained(this), image));
+  } else {
+    SetIcon(image);
+  }
 }
 
 void ArcAppWindow::SetDefaultAppIcon() {
@@ -83,10 +98,15 @@ void ArcAppWindow::SetDefaultAppIcon() {
     app_icon_loader_ = std::make_unique<ArcAppIconLoader>(
         profile_, extension_misc::EXTENSION_ICON_SMALL, this);
   }
+  DCHECK(!image_fetching_);
+  base::AutoReset<bool> auto_image_fetching(&image_fetching_, true);
   app_icon_loader_->FetchImage(app_shelf_id_.ToString());
 }
 
 void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
+  // Reset any pending request to set default app icon.
+  apply_default_image_timer_.Stop();
+
   if (!exo::ShellSurfaceBase::GetMainSurface(GetNativeWindow())) {
     // Support unit tests where we don't have exo system initialized.
     views::NativeWidgetAura::AssignIconToAuraWindow(

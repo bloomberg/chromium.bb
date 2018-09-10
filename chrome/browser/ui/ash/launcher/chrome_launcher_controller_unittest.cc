@@ -287,7 +287,7 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
 class TestShelfController : public ash::mojom::ShelfController {
  public:
   TestShelfController() : binding_(this) {}
-  ~TestShelfController() override {}
+  ~TestShelfController() override = default;
 
   size_t added_count() const { return added_count_; }
   size_t removed_count() const { return removed_count_; }
@@ -315,7 +315,19 @@ class TestShelfController : public ash::mojom::ShelfController {
   void UpdateShelfItem(const ash::ShelfItem& item) override {
     updated_count_++;
     last_item_ = item;
+    if (updated_count_ == expected_updated_count_ &&
+        !updated_callback_.is_null()) {
+      base::ResetAndReturn(&updated_callback_).Run();
+    }
   }
+
+  void WaitForUpdates(size_t expected_updates) {
+    base::RunLoop run_loop;
+    expected_updated_count_ = expected_updates + updated_count_;
+    updated_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
   void SetShelfItemDelegate(const ash::ShelfID&,
                             ash::mojom::ShelfItemDelegatePtr) override {
     set_delegate_count_++;
@@ -354,6 +366,8 @@ class TestShelfController : public ash::mojom::ShelfController {
   size_t added_count_ = 0;
   size_t removed_count_ = 0;
   size_t updated_count_ = 0;
+  size_t expected_updated_count_ = 0;
+  base::OnceClosure updated_callback_;
   size_t set_delegate_count_ = 0;
   ash::ShelfItem last_item_;
 
@@ -2525,6 +2539,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   // Reseting custom icon of active window resets shelf icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 std::string());
+  // Wait for default icon load.
+  shelf_controller->WaitForUpdates(ui::GetSupportedScaleFactors().size());
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
                                          shelf_controller->GetLastItemImage()));
   window1->CloseNow();
@@ -4025,6 +4041,7 @@ class ChromeLauncherControllerArcDefaultAppsTest
   void SetUp() override {
     if (GetParam())
       arc::SetArcAlwaysStartForTesting(true);
+    ArcAppIcon::DisableSafeDecodingForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
   }
@@ -4066,6 +4083,10 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
 
+  TestShelfController* shelf_controller =
+      launcher_controller_->test_shelf_controller();
+  ASSERT_TRUE(shelf_controller);
+
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnablePlayStore(false);
   EXPECT_FALSE(arc::IsArcPlayStoreEnabledForProfile(profile()));
@@ -4081,6 +4102,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   // Stop ARC again. Shelf item should go away.
   EnablePlayStore(false);
+
   EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
 
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
@@ -4093,18 +4115,36 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   ASSERT_TRUE(item_delegate);
   EXPECT_TRUE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
+  // Wait for non-default item.
+  shelf_controller->GetLastItemImage();
   EXPECT_FALSE(item_delegate->image_set_by_controller());
+
+  const size_t update_count_before_launch = shelf_controller->updated_count();
 
   std::string window_app_id("org.chromium.arc.1");
   CreateArcWindow(window_app_id);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_default_apps()[0],
                                             std::string());
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  // Refresh delegate, it was changed.
   item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
   ASSERT_TRUE(item_delegate);
   EXPECT_FALSE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
-  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  // Default icon is not set.
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_EQ(update_count_before_launch, shelf_controller->updated_count());
+
+  item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
+  // Shelf icon should not be overwritten by default app icon.
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_EQ(update_count_before_launch, shelf_controller->updated_count());
+
+  // Wait for real app icon image is decoded and set for shelf item.
+  shelf_controller->GetLastItemImage();
+  // Should have only one update that guarantees default icon was not set in
+  // between.
+  EXPECT_EQ(update_count_before_launch + 1, shelf_controller->updated_count());
 }
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
