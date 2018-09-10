@@ -282,8 +282,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
-    if (password_client_ &&
-        password_client_->IsFillingFallbackEnabledForCurrentPage()) {
       autofill::Suggestion suggestion(
           l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS),
           std::string(), std::string(),
@@ -292,7 +290,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
       metrics_util::LogContextOfShowAllSavedPasswordsShown(
           metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
-    }
   }
 
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
