@@ -76,4 +76,9 @@ void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
   shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 
+void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
+  shell_->EnableKeyboard();
+  std::move(cb).Run();
+}
+
 }  // namespace ash

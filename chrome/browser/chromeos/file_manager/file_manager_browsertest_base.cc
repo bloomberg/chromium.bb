@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
@@ -46,6 +48,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -54,6 +57,7 @@
 #include "google_apis/drive/test_util.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -1050,6 +1054,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
   test::AddDefaultComponentExtensionsOnMainThread(profile());
+
+  // For tablet mode tests, enable the Ash virtual keyboard.
+  if (IsTabletModeTest()) {
+    EnableVirtualKeyboard();
+  }
 }
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {
@@ -1317,6 +1326,17 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   }
   CHECK(crostini_volume_->Mount(profile()));
   return crostini_volume_->mount_path();
+}
+
+void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
+  CHECK(IsTabletModeTest());
+
+  ash::mojom::ShellTestApiPtr shell_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
+  waiter.EnableVirtualKeyboard();
 }
 
 }  // namespace file_manager

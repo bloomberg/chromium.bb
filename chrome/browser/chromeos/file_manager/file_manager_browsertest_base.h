@@ -102,6 +102,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
       const std::string& source_path,
       const std::vector<std::string>& mount_options);
 
+  // Called during tablet mode test setup to enable the Ash virtual keyboard.
+  void EnableVirtualKeyboard();
+
   base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<LocalTestVolume> local_volume_;
