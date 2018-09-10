@@ -44,17 +44,6 @@ namespace {
 base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
     g_gesture_recognizer_instance = LAZY_INSTANCE_INITIALIZER;
 
-NativeWidgetMac* GetNativeWidgetMacForNativeWindow(
-    gfx::NativeWindow native_window) {
-  id<NSWindowDelegate> window_delegate = [native_window delegate];
-  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
-    ViewsNSWindowDelegate* delegate =
-        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
-    return [delegate nativeWidgetMac];
-  }
-  return nullptr;  // Not created by NativeWidgetMac.
-}
-
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
   // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
@@ -95,16 +84,22 @@ NativeWidgetMac::~NativeWidgetMac() {
 // static
 BridgedNativeWidgetImpl* NativeWidgetMac::GetBridgeImplForNativeWindow(
     gfx::NativeWindow window) {
-  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
-    return widget->bridge_impl();
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return BridgedNativeWidgetImpl::GetFromId(
+        [widget_window bridgedNativeWidgetId]);
+  }
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
 // static
 BridgedNativeWidgetHostImpl* NativeWidgetMac::GetBridgeHostImplForNativeWindow(
     gfx::NativeWindow window) {
-  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
-    return widget->bridge_host_.get();
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return BridgedNativeWidgetHostImpl::GetFromId(
+        [widget_window bridgedNativeWidgetId]);
+  }
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
@@ -152,7 +147,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
   bridge()->CreateContentView(GetWidget()->GetRootView()->bounds());
-  bridge_impl()->CreateDragDropClient(GetWidget()->GetRootView());
+  if (bridge_impl())
+    bridge_impl()->CreateDragDropClient(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     bridge()->MakeFirstResponder();
     bridge_host_->SetFocusManager(focus_manager);
@@ -697,8 +693,10 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow window) {
-  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
-    return widget;
+  if (BridgedNativeWidgetHostImpl* bridge_host_impl =
+          NativeWidgetMac::GetBridgeHostImplForNativeWindow(window)) {
+    return bridge_host_impl->native_widget_mac();
+  }
   return nullptr;  // Not created by NativeWidgetMac.
 }
 

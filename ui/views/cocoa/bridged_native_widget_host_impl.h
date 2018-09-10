@@ -46,15 +46,30 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       public ui::LayerOwner,
       public ui::AcceleratedWidgetMacNSView {
  public:
+  // Unique integer id handles are used to bridge between the
+  // BridgedNativeWidgetHostImpl in one process and the BridgedNativeWidgetHost
+  // potentially in another.
+  static BridgedNativeWidgetHostImpl* GetFromId(
+      uint64_t bridged_native_widget_id);
+  uint64_t bridged_native_widget_id() const { return id_; }
+
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidgetHostImpl(NativeWidgetMac* parent);
   ~BridgedNativeWidgetHostImpl() override;
 
-  // Provide direct access to the BridgedNativeWidgetImpl that this is hosting.
+  // The NativeWidgetMac that owns |this|.
+  views::NativeWidgetMac* native_widget_mac() const {
+    return native_widget_mac_;
+  }
+
+  // The mojo interface through which to communicate with the underlying
+  // NSWindow and NSView.
+  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
+
+  // Direct access to the BridgedNativeWidgetImpl that this is hosting.
   // TODO(ccameron): Remove all accesses to this member, and replace them
   // with methods that may be sent across processes.
   BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
-  views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
 
@@ -132,6 +147,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  bool* found_word,
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
+  double SheetPositionY() override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
@@ -174,6 +190,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                            bool* is_button_enabled,
                            bool* is_button_default) override;
   bool GetDoDialogButtonsExist(bool* buttons_exist) override;
+  bool GetShouldShowWindowTitle(bool* should_show_window_title) override;
+  bool GetCanWindowBecomeKey(bool* can_window_become_key) override;
+  bool GetAlwaysRenderWindowAsKey(bool* always_render_as_key) override;
+  bool GetCanWindowClose(bool* can_window_close) override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -194,6 +214,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                            GetDialogButtonInfoCallback callback) override;
   void GetDoDialogButtonsExist(
       GetDoDialogButtonsExistCallback callback) override;
+  void GetShouldShowWindowTitle(
+      GetShouldShowWindowTitleCallback callback) override;
+  void GetCanWindowBecomeKey(GetCanWindowBecomeKeyCallback callback) override;
+  void GetAlwaysRenderWindowAsKey(
+      GetAlwaysRenderWindowAsKeyCallback callback) override;
+  void GetCanWindowClose(GetCanWindowCloseCallback callback) override;
 
   // DialogObserver:
   void OnDialogModelChanged() override;
@@ -213,6 +239,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // ui::AcceleratedWidgetMacNSView:
   void AcceleratedWidgetCALayerParamsUpdated() override;
 
+  const uint64_t id_;
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
