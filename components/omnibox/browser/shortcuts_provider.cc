@@ -424,8 +424,6 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     }
   }
 
-  match.EnsureUWYTIsAllowedToBeDefault(input, client_->GetTemplateURLService());
-
   // Try to mark pieces of the contents and description as matches if they
   // appear in |input.text()|.
   if (!terms_map.empty()) {

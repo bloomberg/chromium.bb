@@ -368,15 +368,6 @@ TEST_F(ShortcutsProviderTest, TrickySingleMatch) {
   RunShortcutsProviderTest(provider_, text, true, expected_urls, expected_url,
                            ASCIIToUTF16("ace/long-url-with-space.html"));
 
-  // Test when the user input has a trailing slash but fill_into_edit does
-  // not.  This should still be allowed to be default.
-  text = ASCIIToUTF16("notrailing.com/");
-  expected_url = "http://notrailing.com/";
-  expected_urls.clear();
-  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
-  RunShortcutsProviderTest(provider_, text, true, expected_urls, expected_url,
-                           base::string16());
-
   // Test when the user input has a typo that can be fixed up for matching
   // fill_into_edit.  This should still be allowed to be default.
   text = ASCIIToUTF16("http:///foo.com");

@@ -647,19 +647,6 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(
       destination_url, input, template_url_service, keyword);
 }
 
-void AutocompleteMatch::EnsureUWYTIsAllowedToBeDefault(
-    const AutocompleteInput& input,
-    TemplateURLService* template_url_service) {
-  if (!allowed_to_be_default_match) {
-    const GURL& stripped_canonical_input_url =
-        GURLToStrippedGURL(input.canonicalized_url(), input,
-                           template_url_service, base::string16());
-    ComputeStrippedDestinationURL(input, template_url_service);
-    allowed_to_be_default_match =
-        stripped_canonical_input_url == stripped_destination_url;
-  }
-}
-
 void AutocompleteMatch::GetKeywordUIState(
     TemplateURLService* template_url_service,
     base::string16* keyword,
