@@ -127,12 +127,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  // |use_effective_urls| specifies whether to resolve |url| to an effective
-  // URL (via ContentBrowserClient::GetEffectiveURL()) before determining the
-  // site.
+  // |should_use_effective_urls| specifies whether to resolve |url| to an
+  // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
+  // determining the site.
   static GURL GetSiteForURL(BrowserContext* context,
                             const GURL& url,
-                            bool use_effective_urls);
+                            bool should_use_effective_urls);
+
+  // Returns the site of a given |origin|.  Unlike GetSiteForURL(), this does
+  // not utilize effective URLs, isolated origins, or other special logic.  It
+  // only translates an origin into a site (i.e., scheme and eTLD+1) and is
+  // used internally by GetSiteForURL().  For making process model decisions,
+  // GetSiteForURL() should be used instead.
+  static GURL GetSiteForOrigin(const url::Origin& origin);
 
   // Returns the URL to which a process should be locked for the given URL.
   // This is computed similarly to the site URL (see GetSiteForURL), but

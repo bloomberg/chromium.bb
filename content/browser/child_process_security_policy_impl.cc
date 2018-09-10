@@ -1230,10 +1230,18 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     return true;  // Remove.
   });
 
-  // Taking the lock once and doing a batch insertion via base::flat_set::insert
-  // is important because of performance characteristics of base::flat_set.
   base::AutoLock lock(lock_);
-  isolated_origins_.insert(origins_to_add.begin(), origins_to_add.end());
+  for (const url::Origin& origin : origins_to_add) {
+    // GetSiteForOrigin() is used to look up the site URL of |origin| to speed
+    // up the isolated origin lookup.  This only performs a straightforward
+    // translation of an origin to eTLD+1; it does *not* take into account
+    // effective URLs, isolated origins, and other logic that's not needed
+    // here, but *is* typically needed for making process model decisions. Be
+    // very careful about using GetSiteForOrigin() elsewhere, and consider
+    // whether you should be using GetSiteForURL() instead.
+    GURL key(SiteInstanceImpl::GetSiteForOrigin(origin));
+    isolated_origins_[key].insert(origin);
+  }
 }
 
 bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
@@ -1245,20 +1253,53 @@ bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
 bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
     const url::Origin& origin,
     url::Origin* result) {
+  // GetSiteForOrigin() is used to look up the site URL of |origin| to speed
+  // up the isolated origin lookup.  This only performs a straightforward
+  // translation of an origin to eTLD+1; it does *not* take into account
+  // effective URLs, isolated origins, and other logic that's not needed
+  // here, but *is* typically needed for making process model decisions. Be
+  // very careful about using GetSiteForOrigin() elsewhere, and consider
+  // whether you should be using GetSiteForURL() instead.
+  return GetMatchingIsolatedOrigin(
+      origin, SiteInstanceImpl::GetSiteForOrigin(origin), result);
+}
+
+bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
+    const url::Origin& origin,
+    const GURL& site_url,
+    url::Origin* result) {
   *result = url::Origin();
   base::AutoLock lock(lock_);
 
+  // Look up the list of origins corresponding to |origin|'s site.
+  auto it = isolated_origins_.find(site_url);
+
+  // Subtle corner case: if the site's host ends with a dot, do the lookup
+  // without it.  A trailing dot shouldn't be able to bypass isolated origins:
+  // if "https://foo.com" is an isolated origin, "https://foo.com." should
+  // match it.
+  if (it == isolated_origins_.end() && site_url.host().back() == '.') {
+    GURL::Replacements replacements;
+    std::string host = site_url.host();
+    host.pop_back();
+    replacements.SetHostStr(host);
+    it = isolated_origins_.find(site_url.ReplaceComponents(replacements));
+  }
+
   // If multiple isolated origins are registered with a common domain suffix,
   // return the most specific one.  For example, if foo.isolated.com and
-  // isolated.com are both isolated origins, bar.foo.isolated.com should return
-  // foo.isolated.com.
+  // isolated.com are both isolated origins, bar.foo.isolated.com should
+  // return foo.isolated.com.
   bool found = false;
-  for (auto isolated_origin : isolated_origins_) {
-    if (IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(origin,
-                                                          isolated_origin)) {
-      if (!found || result->host().length() < isolated_origin.host().length()) {
-        *result = isolated_origin;
-        found = true;
+  if (it != isolated_origins_.end()) {
+    for (const url::Origin& isolated_origin : it->second) {
+      if (IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(origin,
+                                                            isolated_origin)) {
+        if (!found ||
+            result->host().length() < isolated_origin.host().length()) {
+          *result = isolated_origin;
+          found = true;
+        }
       }
     }
   }
@@ -1268,8 +1309,11 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
 
 void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
     const url::Origin& origin) {
+  GURL key(SiteInstanceImpl::GetSiteForOrigin(origin));
   base::AutoLock lock(lock_);
-  isolated_origins_.erase(origin);
+  isolated_origins_[key].erase(origin);
+  if (isolated_origins_[key].empty())
+    isolated_origins_.erase(key);
 }
 
 }  // namespace content

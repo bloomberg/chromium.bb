@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -96,6 +97,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
   bool GetMatchingIsolatedOrigin(const url::Origin& origin,
                                  url::Origin* result) override;
+
+  // A version of GetMatchingIsolatedOrigin that takes in both the |origin| and
+  // the |site_url| that |origin| corresponds to.  |site_url| is the key by
+  // which |origin| will be looked up in |isolated_origins_|; this function
+  // allows it to be passed in when it is already known to avoid recomputing it
+  // internally.
+  bool GetMatchingIsolatedOrigin(const url::Origin& origin,
+                                 const GURL& site_url,
+                                 url::Origin* result);
 
   // Returns if |child_id| can read all of the |files|.
   bool CanReadAllFiles(int child_id, const std::vector<base::FilePath>& files);
@@ -361,7 +371,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // when making process model decisions, rather than the origin's scheme and
   // eTLD+1. Each of these origins requires a dedicated process.  This set is
   // protected by |lock_|.
-  base::flat_set<url::Origin> isolated_origins_;
+  //
+  // The origins are stored in a map indexed by a site URL computed for each
+  // origin.  For example, adding https://foo.com, https://bar.foo.com, and
+  // https://www.bar.com would result in the following structure:
+  //   https://foo.com -> { https://foo.com, https://bar.foo.com }
+  //   https://bar.com -> { https://www.bar.com }
+  // This organization speeds up lookups of isolated origins. The site can be
+  // found in O(log n) time, and the corresponding list of origins to search
+  // using the expensive DoesOriginMatchIsolatedOrigin() comparison is
+  // typically small.
+  base::flat_map<GURL, base::flat_set<url::Origin>> isolated_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
