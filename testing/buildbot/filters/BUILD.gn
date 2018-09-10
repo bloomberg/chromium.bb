@@ -46,6 +46,14 @@ source_set("chromeos_filters") {
   ]
 }
 
+source_set("chrome_public_test_apk_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter",
+  ]
+}
+
 source_set("content_unittests_filters") {
   testonly = true
 
@@ -86,5 +94,13 @@ source_set("interactive_ui_tests_filters") {
 
   data = [
     "//testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
+  ]
+}
+
+source_set("webview_instrumentation_test_apk_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
   ]
 }
