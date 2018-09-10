@@ -1223,29 +1223,27 @@ TEST(UrlFormatterTest, FormatUrl) {
 
       // -------- omit trivial subdomains --------
 #if defined(OS_ANDROID) || defined(OS_IOS)
-      {"omit trivial subdomains - trim m", "http://m.google.com/",
+      {"omit trivial subdomains - trim leading m", "http://m.google.com/",
       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
       L"http://google.com/", 7},
-      {"omit trivial subdomains - trim m and www", "http://m.www.google.com/",
+      {"omit trivial subdomains - trim leading m and www",
+      "http://m.www.google.com/",
       kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
       L"http://google.com/", 7},
-      {"omit trivial subdomains - trim m from middle",
-      "http://en.m.wikipedia.org/", kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::NORMAL, L"http://en.wikipedia.org/", 7},
 #else  // !(defined(OS_ANDROID) || defined(OS_IOS))
-      {"omit trivial subdomains - don't trim m on desktop",
+      {"omit trivial subdomains - don't trim leading m on desktop",
       "http://m.google.com/", kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::NORMAL, L"http://m.google.com/", 7},
-      {"omit trivial subdomains - trim www but leave m on desktop",
+      {"omit trivial subdomains - don't trim www after a leading m on desktop",
       "http://m.www.google.com/", kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::NORMAL, L"http://m.google.com/", 7},
-      {"omit trivial subdomains - don't trim m from middle on desktop",
-      "http://en.m.wikipedia.org/", kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::NORMAL, L"http://en.m.wikipedia.org/", 7},
+      net::UnescapeRule::NORMAL, L"http://m.www.google.com/", 7},
 #endif
-      {"omit trivial subdomains - don't do blind substring matches for m",
-       "http://foom.google.com/", kFormatUrlOmitTrivialSubdomains,
-       net::UnescapeRule::NORMAL, L"http://foom.google.com/", 7},
+      {"omit trivial subdomains - don't trim www from middle",
+      "http://en.www.wikipedia.org/", kFormatUrlOmitTrivialSubdomains,
+      net::UnescapeRule::NORMAL, L"http://en.www.wikipedia.org/", 7},
+      {"omit trivial subdomains - don't do blind substring matches for www",
+       "http://foowww.google.com/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://foowww.google.com/", 7},
       {"omit trivial subdomains - don't crash on multiple delimiters",
        "http://www....foobar...google.com/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://...foobar...google.com/", 7},
@@ -1262,7 +1260,7 @@ TEST(UrlFormatterTest, FormatUrl) {
       {"omit trivial subdomains - sanity check for IDN",
        "http://www.xn--cy2a840a.www.xn--cy2a840a.com",
        kFormatUrlOmitTrivialSubdomains, net::UnescapeRule::NORMAL,
-       L"http://\x89c6\x9891.\x89c6\x9891.com/", 7},
+       L"http://\x89c6\x9891.www.\x89c6\x9891.com/", 7},
 
       {"omit trivial subdomains but leave registry and domain alone - trivial",
        "http://google.com/", kFormatUrlOmitTrivialSubdomains,
@@ -1273,6 +1271,10 @@ TEST(UrlFormatterTest, FormatUrl) {
       {"omit trivial subdomains but leave registry and domain alone - co.uk",
        "http://m.co.uk/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://m.co.uk/", 7},
+      {"omit trivial subdomains but leave eTLD (effective TLD) alone",
+       "http://www.appspot.com/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://www.appspot.com/", 7},
+
 
       {"omit trivial subdomains but leave intranet hostnames alone",
        "http://router/", kFormatUrlOmitTrivialSubdomains,
@@ -1742,15 +1744,15 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   const size_t strip_trivial_subdomains_offsets_2[] = {
-      0,  1,     2,     3,     4,  5,  6,  7,  kNpos, 7,  8,  9,
-      10, kNpos, kNpos, kNpos, 10, 11, 12, 13, 14,    15, 16, 17};
+      0,  1,  2,  3,  4,  5,  6,  7,  kNpos, 7,  8,  9,
+      10, 11, 12, 13, 14, 15, 16, 17, 18,    19, 20, 21};
   CheckAdjustedOffsets(
       "http://m.en.www.foo.com/", kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::NORMAL, strip_trivial_subdomains_offsets_2);
 #else  // !(defined(OS_ANDROID) || defined(OS_IOS))
   const size_t strip_trivial_subdomains_offsets_2[] = {
-      0,  1,     2,     3,     4,  5,  6,  7,  8,  9,  10, 11,
-      12, kNpos, kNpos, kNpos, 12, 13, 14, 15, 16, 17, 18, 19};
+      0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+      12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
   CheckAdjustedOffsets(
       "http://m.en.www.foo.com/", kFormatUrlOmitTrivialSubdomains,
       net::UnescapeRule::NORMAL, strip_trivial_subdomains_offsets_2);

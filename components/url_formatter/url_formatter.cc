@@ -94,7 +94,7 @@ class HostComponentTransform : public AppendComponentTransform {
     std::string domain_and_registry =
         net::registry_controlled_domains::GetDomainAndRegistry(
             component_text,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
     // If there is no domain and registry, we may be looking at an intranet
     // or otherwise non-standard host. Leave those alone.
@@ -107,11 +107,16 @@ class HostComponentTransform : public AppendComponentTransform {
         component_text.end() - domain_and_registry.length(), ".");
     tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
 
+    bool reached_non_trivial_subdomain = false;
     std::string transformed_subdomain;
     while (tokenizer.GetNext()) {
-      // Append delimiters and non-trivial subdomains to the new subdomain part.
-      if (tokenizer.token_is_delim() ||
-          !IsTrivialSubdomain(tokenizer.token_piece())) {
+      // Record whether a trivial subdomain has been encountered.
+      if (!IsTrivialSubdomain(tokenizer.token_piece()))
+        reached_non_trivial_subdomain = true;
+
+      // Append delimiters and everything encountered at or after the first
+      // non-trivial subdomain.
+      if (tokenizer.token_is_delim() || reached_non_trivial_subdomain) {
         transformed_subdomain += tokenizer.token();
         continue;
       }
