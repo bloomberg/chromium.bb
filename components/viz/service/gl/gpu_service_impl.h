@@ -301,7 +301,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Callback that safely exits GPU process.
   base::OnceClosure exit_callback_;
-  bool is_exiting_ = false;
 
   base::Time start_time_;
 
