@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/renderer_preferences.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -340,6 +342,34 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
     std::move(terminate_all_workers_callback_).Run();
 }
 
+// TODO(nhiroki): Align this function with AddAdditionalRequestHeaders() in
+// navigation_request.cc, FrameFetchContext, and WorkerFetchContext.
+void SharedWorkerServiceImpl::AddAdditionalRequestHeaders(
+    net::HttpRequestHeaders* headers,
+    BrowserContext* browser_context) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+
+  // Set the "Accept" header.
+  headers->SetHeaderIfMissing(network::kAcceptHeader,
+                              network::kDefaultAcceptHeader);
+
+  // Set the "DNT" header if necessary.
+  RendererPreferences renderer_preferences;
+  GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
+      browser_context, &renderer_preferences);
+  if (renderer_preferences.enable_do_not_track)
+    headers->SetHeaderIfMissing(kDoNotTrackHeader, "1");
+
+  // Set the "Save-Data" header if necessary.
+  if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context) &&
+      !base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
+                                               "holdback_web", false)) {
+    headers->SetHeaderIfMissing("Save-Data", "on");
+  }
+
+  // TODO(nhiroki): Set the "Sec-Metadata" header (https://crbug.com/715632).
+}
+
 void SharedWorkerServiceImpl::CreateWorker(
     std::unique_ptr<SharedWorkerInstance> instance,
     mojom::SharedWorkerClientPtr client,
@@ -389,21 +419,10 @@ void SharedWorkerServiceImpl::CreateWorker(
           weak_host->instance()->constructor_origin();
       resource_request->resource_type = RESOURCE_TYPE_SHARED_WORKER;
 
-      // Set the "Accept" header.
-      resource_request->headers.SetHeader(network::kAcceptHeader,
-                                          network::kDefaultAcceptHeader);
-
-      // Set the "DNT" header if necessary.
-      RendererPreferences renderer_preferences;
-      GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
-          RenderProcessHost::FromID(process_id)->GetBrowserContext(),
-          &renderer_preferences);
-      if (renderer_preferences.enable_do_not_track)
-        resource_request->headers.SetHeader(kDoNotTrackHeader, "1");
-
-      // TODO(nhiroki): Set the "Sec-Metadata" header and the "Save-Data"
-      // header. See AddAdditionalRequestHeaders() in navigation_request.cc for
-      // reference (https://crbug.com/715632).
+      auto* render_process_host = RenderProcessHost::FromID(process_id);
+      DCHECK(!IsShuttingDown(render_process_host));
+      AddAdditionalRequestHeaders(&resource_request->headers,
+                                  render_process_host->GetBrowserContext());
     }
 
     // NetworkService (PlzWorker):
