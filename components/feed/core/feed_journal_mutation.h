@@ -9,10 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/feed/core/feed_journal_operation.h"
 
 namespace feed {
-
-class JournalOperation;
 
 // Native counterpart of JournalMutation.java.
 // To commit a set of JournalOperation into FeedJournalDatabase, first,
@@ -36,6 +35,8 @@ class JournalMutation {
   // This will remove the first JournalOperation in |operations_list_| and
   // return it to caller.
   JournalOperation TakeFristOperation();
+
+  JournalOperation::Type FirstOperationType();
 
  private:
   const std::string journal_name_;

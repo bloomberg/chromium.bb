@@ -12,6 +12,8 @@
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/feed/core/feed_content_mutation.h"
+#include "components/feed/core/feed_content_operation.h"
 #include "components/feed/core/proto/content_storage.pb.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 

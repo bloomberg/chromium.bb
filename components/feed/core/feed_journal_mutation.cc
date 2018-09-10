@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/feed/core/feed_journal_operation.h"
+#include "base/logging.h"
 
 namespace feed {
 
@@ -41,6 +41,11 @@ JournalOperation JournalMutation::TakeFristOperation() {
   JournalOperation operation = std::move(operations_list_.front());
   operations_list_.pop_front();
   return operation;
+}
+
+JournalOperation::Type JournalMutation::FirstOperationType() {
+  DCHECK(!operations_list_.empty());
+  return operations_list_.front().type();
 }
 
 }  // namespace feed
