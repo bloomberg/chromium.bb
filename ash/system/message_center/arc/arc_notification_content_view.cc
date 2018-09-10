@@ -104,7 +104,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         widget->OnScrollEvent(located_event->AsScrollEvent());
       } else if (located_event->IsGestureEvent() &&
                  event->type() != ui::ET_GESTURE_TAP) {
-        bool event_for_android_only = false;
+        bool slide_handled_by_android = false;
         if ((event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
              event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
              event->type() == ui::ET_GESTURE_SCROLL_END ||
@@ -120,7 +120,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
           if (contains && event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
             swipe_captured_ = true;
 
-          event_for_android_only = contains && swipe_captured_;
+          slide_handled_by_android = contains && swipe_captured_;
         }
 
         if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
@@ -129,8 +129,17 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         if (event->type() == ui::ET_GESTURE_SCROLL_END)
           swipe_captured_ = false;
 
-        if (!event_for_android_only)
-          widget->OnGestureEvent(located_event->AsGestureEvent());
+        if (slide_handled_by_android &&
+            event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+          is_current_slide_handled_by_android_ = true;
+          owner_->message_view_->DisableSlideForcibly(true);
+        } else if (is_current_slide_handled_by_android_ &&
+                   event->type() == ui::ET_GESTURE_SCROLL_END) {
+          is_current_slide_handled_by_android_ = false;
+          owner_->message_view_->DisableSlideForcibly(false);
+        }
+
+        widget->OnGestureEvent(located_event->AsGestureEvent());
       }
     }
 
@@ -152,6 +161,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
   }
 
   ArcNotificationContentView* const owner_;
+  bool is_current_slide_handled_by_android_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };

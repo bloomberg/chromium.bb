@@ -629,6 +629,30 @@ TEST_F(NotificationViewMDTest, SlideOutNested) {
   EXPECT_TRUE(IsRemoved(kDefaultNotificationId));
 }
 
+TEST_F(NotificationViewMDTest, DisableSlideForcibly) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  notification_view()->DisableSlideForcibly(true);
+
+  BeginScroll();
+  ScrollBy(-10);
+  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
+
+  notification_view()->DisableSlideForcibly(false);
+
+  BeginScroll();
+  ScrollBy(-10);
+  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+  EXPECT_EQ(-10.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_FALSE(IsRemoved(kDefaultNotificationId));
+}
+
 // Pinning notification is ChromeOS only feature.
 #if defined(OS_CHROMEOS)
 
