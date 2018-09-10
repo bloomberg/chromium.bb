@@ -175,6 +175,9 @@ interface LoginScreen {
   // Update the kiosk app data for the login screen.
   SetKioskApps(array<KioskAppInfo> kiosk_apps);
 
+  // Display a toast describing the latest kiosk app launch error.
+  ShowKioskAppError(string message);
+
   // Called when the dialog hosting oobe has changed state. The oobe dialog
   // provides support for any part of login that is implemented in JS/HTML, such
   // as add user or powerwash.
