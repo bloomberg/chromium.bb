@@ -37,11 +37,6 @@ ProxyLookupRequest::~ProxyLookupRequest() {
 void ProxyLookupRequest::Start(const GURL& url) {
   proxy_lookup_client_.set_connection_error_handler(
       base::BindOnce(&ProxyLookupRequest::DestroySelf, base::Unretained(this)));
-  net::ProxyDelegate* proxy_delegate = network_context_->url_request_context()
-                                           ->http_transaction_factory()
-                                           ->GetSession()
-                                           ->context()
-                                           .proxy_delegate;
   // TODO(mmenke): The NetLogWithSource() means nothing is logged. Fix that.
   int result =
       network_context_->url_request_context()
@@ -49,7 +44,7 @@ void ProxyLookupRequest::Start(const GURL& url) {
           ->ResolveProxy(url, std::string(), &proxy_info_,
                          base::BindOnce(&ProxyLookupRequest::OnResolveComplete,
                                         base::Unretained(this)),
-                         &request_, proxy_delegate, net::NetLogWithSource());
+                         &request_, net::NetLogWithSource());
   if (result != net::ERR_IO_PENDING)
     OnResolveComplete(result);
 }

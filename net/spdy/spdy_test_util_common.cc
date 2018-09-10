@@ -410,7 +410,6 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
   context.http_server_properties = session_deps->http_server_properties.get();
-  context.proxy_delegate = session_deps->proxy_delegate.get();
   context.net_log = session_deps->net_log;
   return context;
 }

@@ -150,7 +150,6 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
     proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
-    context_.set_proxy_delegate(proxy_delegate_.get());
 
     // Only use the primary data reduction proxy in order to make it easier to
     // test bypassed bytes due to proxy fallbacks. This way, a test just needs
@@ -307,6 +306,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
 
   void InitializeContext() {
     context_.Init();
+    context_.proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
     drp_test_context_->DisableWarmupURLFetch();
     drp_test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }

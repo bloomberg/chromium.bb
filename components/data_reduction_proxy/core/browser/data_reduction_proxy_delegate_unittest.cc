@@ -189,9 +189,10 @@ class DataReductionProxyDelegateTest : public testing::Test {
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
-    context_.set_proxy_delegate(proxy_delegate_.get());
-
     context_.Init();
+    context_.proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
+
     proxy_delegate_->InitializeOnIOThread(test_context_->io_data());
 
     test_context_->DisableWarmupURLFetch();

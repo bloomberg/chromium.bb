@@ -248,16 +248,13 @@ int ProxyResolvingClientSocket::DoLoop(int result) {
 
 int ProxyResolvingClientSocket::DoProxyResolve() {
   next_state_ = STATE_PROXY_RESOLVE_COMPLETE;
-  // TODO(xunjieli): Having a null ProxyDelegate is bad. Figure out how to
-  // interact with the new interface for proxy delegate.
-  // https://crbug.com/793071.
   // base::Unretained(this) is safe because resolution request is canceled when
   // |proxy_resolve_request_| is destroyed.
   return network_session_->proxy_resolution_service()->ResolveProxy(
       url_, "POST", &proxy_info_,
       base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
                           base::Unretained(this)),
-      &proxy_resolve_request_, nullptr /*proxy_delegate*/, net_log_);
+      &proxy_resolve_request_, net_log_);
 }
 
 int ProxyResolvingClientSocket::DoProxyResolveComplete(int result) {
@@ -334,8 +331,7 @@ int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {
     return ReconsiderProxyAfterError(result);
   }
 
-  network_session_->proxy_resolution_service()->ReportSuccess(proxy_info_,
-                                                              nullptr);
+  network_session_->proxy_resolution_service()->ReportSuccess(proxy_info_);
   return net::OK;
 }
 

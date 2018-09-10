@@ -171,8 +171,7 @@ HttpNetworkSession::Context::Context()
       quic_clock(nullptr),
       quic_random(nullptr),
       quic_crypto_client_stream_factory(
-          QuicCryptoClientStreamFactory::GetDefaultFactory()),
-      proxy_delegate(nullptr) {}
+          QuicCryptoClientStreamFactory::GetDefaultFactory()) {}
 
 HttpNetworkSession::Context::Context(const Context& other) = default;
 

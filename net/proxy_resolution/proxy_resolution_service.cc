@@ -835,7 +835,6 @@ class ProxyResolutionService::RequestImpl
   RequestImpl(ProxyResolutionService* service,
               const GURL& url,
               const std::string& method,
-              ProxyDelegate* proxy_delegate,
               ProxyInfo* results,
               const CompletionOnceCallback user_callback,
               const NetLogWithSource& net_log);
@@ -884,7 +883,6 @@ class ProxyResolutionService::RequestImpl
   ProxyInfo* results_;
   GURL url_;
   std::string method_;
-  ProxyDelegate* proxy_delegate_;
   std::unique_ptr<ProxyResolver::Request> resolve_job_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
   NetLogWithSource net_log_;
@@ -899,7 +897,6 @@ ProxyResolutionService::RequestImpl::RequestImpl(
     ProxyResolutionService* service,
     const GURL& url,
     const std::string& method,
-    ProxyDelegate* proxy_delegate,
     ProxyInfo* results,
     CompletionOnceCallback user_callback,
     const NetLogWithSource& net_log)
@@ -908,7 +905,6 @@ ProxyResolutionService::RequestImpl::RequestImpl(
       results_(results),
       url_(url),
       method_(method),
-      proxy_delegate_(proxy_delegate),
       resolve_job_(nullptr),
       net_log_(net_log),
       creation_time_(base::TimeTicks::Now()) {
@@ -947,8 +943,7 @@ int ProxyResolutionService::RequestImpl::Start() {
 
 void ProxyResolutionService::RequestImpl::
     StartAndCompleteCheckingForSynchronous() {
-  int rv =
-      service_->TryToCompleteSynchronously(url_, proxy_delegate_, results_);
+  int rv = service_->TryToCompleteSynchronously(url_, results_);
   if (rv == ERR_IO_PENDING)
     rv = Start();
   if (rv != ERR_IO_PENDING)
@@ -970,8 +965,8 @@ int ProxyResolutionService::RequestImpl::QueryDidComplete(int result_code) {
   resolve_job_.reset();
 
   // Note that DidFinishResolvingProxy might modify |results_|.
-  int rv = service_->DidFinishResolvingProxy(url_, method_, proxy_delegate_,
-                                             results_, result_code, net_log_);
+  int rv = service_->DidFinishResolvingProxy(url_, method_, results_,
+                                             result_code, net_log_);
 
   // Make a note in the results which configuration was in use at the
   // time of the resolve.
@@ -1119,11 +1114,10 @@ int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
                                          ProxyInfo* result,
                                          CompletionOnceCallback callback,
                                          std::unique_ptr<Request>* out_request,
-                                         ProxyDelegate* proxy_delegate,
                                          const NetLogWithSource& net_log) {
   DCHECK(!callback.is_null());
   return ResolveProxyHelper(raw_url, method, result, std::move(callback),
-                            out_request, proxy_delegate, net_log);
+                            out_request, net_log);
 }
 
 int ProxyResolutionService::ResolveProxyHelper(
@@ -1132,7 +1126,6 @@ int ProxyResolutionService::ResolveProxyHelper(
     ProxyInfo* result,
     CompletionOnceCallback callback,
     std::unique_ptr<Request>* out_request,
-    ProxyDelegate* proxy_delegate,
     const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(out_request || callback.is_null());
@@ -1156,10 +1149,9 @@ int ProxyResolutionService::ResolveProxyHelper(
 
   // Check if the request can be completed right away. (This is the case when
   // using a direct connection for example).
-  int rv = TryToCompleteSynchronously(url, proxy_delegate, result);
+  int rv = TryToCompleteSynchronously(url, result);
   if (rv != ERR_IO_PENDING) {
-    rv = DidFinishResolvingProxy(url, method, proxy_delegate, result, rv,
-                                 net_log);
+    rv = DidFinishResolvingProxy(url, method, result, rv, net_log);
     return rv;
   }
 
@@ -1167,7 +1159,7 @@ int ProxyResolutionService::ResolveProxyHelper(
     return ERR_IO_PENDING;
 
   std::unique_ptr<RequestImpl> req = std::make_unique<RequestImpl>(
-      this, url, method, proxy_delegate, result, std::move(callback), net_log);
+      this, url, method, result, std::move(callback), net_log);
 
   if (current_state_ == STATE_READY) {
     // Start the resolve request.
@@ -1193,16 +1185,13 @@ bool ProxyResolutionService::TryResolveProxySynchronously(
     const GURL& raw_url,
     const std::string& method,
     ProxyInfo* result,
-    ProxyDelegate* proxy_delegate,
     const NetLogWithSource& net_log) {
   return ResolveProxyHelper(raw_url, method, result, CompletionOnceCallback(),
-                            nullptr /* out_request*/, proxy_delegate,
-                            net_log) == OK;
+                            nullptr /* out_request*/, net_log) == OK;
 }
 
 int ProxyResolutionService::TryToCompleteSynchronously(
     const GURL& url,
-    ProxyDelegate* proxy_delegate,
     ProxyInfo* result) {
   DCHECK_NE(STATE_NONE, current_state_);
 
@@ -1367,8 +1356,7 @@ bool ProxyResolutionService::MarkProxiesAsBadUntil(
   return result.proxy_list_.size() > (additional_bad_proxies.size() + 1);
 }
 
-void ProxyResolutionService::ReportSuccess(const ProxyInfo& result,
-                                           ProxyDelegate* proxy_delegate) {
+void ProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const ProxyRetryInfoMap& new_retry_info = result.proxy_retry_info();
@@ -1380,11 +1368,11 @@ void ProxyResolutionService::ReportSuccess(const ProxyInfo& result,
     ProxyRetryInfoMap::iterator existing = proxy_retry_info_.find(iter->first);
     if (existing == proxy_retry_info_.end()) {
       proxy_retry_info_[iter->first] = iter->second;
-      if (proxy_delegate) {
+      if (proxy_delegate_) {
         const ProxyServer& bad_proxy =
             ProxyServer::FromURI(iter->first, ProxyServer::SCHEME_HTTP);
         const ProxyRetryInfo& proxy_retry_info = iter->second;
-        proxy_delegate->OnFallback(bad_proxy, proxy_retry_info.net_error);
+        proxy_delegate_->OnFallback(bad_proxy, proxy_retry_info.net_error);
       }
     }
     else if (existing->second.bad_until < iter->second.bad_until)
@@ -1409,16 +1397,17 @@ void ProxyResolutionService::RemovePendingRequest(RequestImpl* req) {
 int ProxyResolutionService::DidFinishResolvingProxy(
     const GURL& url,
     const std::string& method,
-    ProxyDelegate* proxy_delegate,
     ProxyInfo* result,
     int result_code,
     const NetLogWithSource& net_log) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   // Log the result of the proxy resolution.
   if (result_code == OK) {
     // Allow the proxy delegate to interpose on the resolution decision,
     // possibly modifying the ProxyInfo.
-    if (proxy_delegate)
-      proxy_delegate->OnResolveProxy(url, method, proxy_retry_info_, result);
+    if (proxy_delegate_)
+      proxy_delegate_->OnResolveProxy(url, method, proxy_retry_info_, result);
 
     net_log.AddEvent(
         NetLogEventType::PROXY_RESOLUTION_SERVICE_RESOLVED_PROXY_LIST,
@@ -1451,8 +1440,8 @@ int ProxyResolutionService::DidFinishResolvingProxy(
 
       // Allow the proxy delegate to interpose on the resolution decision,
       // possibly modifying the ProxyInfo.
-      if (proxy_delegate)
-        proxy_delegate->OnResolveProxy(url, method, proxy_retry_info_, result);
+      if (proxy_delegate_)
+        proxy_delegate_->OnResolveProxy(url, method, proxy_retry_info_, result);
     } else {
       result_code = ERR_MANDATORY_PROXY_CONFIGURATION_FAILED;
     }
@@ -1479,6 +1468,16 @@ void ProxyResolutionService::SetPacFileFetchers(
   dhcp_pac_file_fetcher_ = std::move(dhcp_pac_file_fetcher);
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();
+}
+
+void ProxyResolutionService::SetProxyDelegate(ProxyDelegate* delegate) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  proxy_delegate_ = delegate;
+}
+
+void ProxyResolutionService::AssertNoProxyDelegate() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!proxy_delegate_);
 }
 
 void ProxyResolutionService::OnShutdown() {
