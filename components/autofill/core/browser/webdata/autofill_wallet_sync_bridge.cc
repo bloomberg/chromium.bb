@@ -146,14 +146,34 @@ void AutofillWalletSyncBridge::GetAllDataForDebugging(DataCallback callback) {
     return;
   }
 
+  // Convert all non base 64 strings so that they can be displayed properly.
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
+    std::unique_ptr<EntityData> entity_data =
+        CreateEntityDataFromAutofillServerProfile(*entry);
+    sync_pb::WalletPostalAddress* wallet_address =
+        entity_data->specifics.mutable_autofill_wallet()->mutable_address();
+
+    wallet_address->set_id(GetBase64EncodedServerId(wallet_address->id()));
+
     batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
-               CreateEntityDataFromAutofillServerProfile(*entry));
+               std::move(entity_data));
   }
   for (const std::unique_ptr<CreditCard>& entry : cards) {
+    std::unique_ptr<EntityData> entity_data = CreateEntityDataFromCard(*entry);
+    sync_pb::WalletMaskedCreditCard* wallet_card =
+        entity_data->specifics.mutable_autofill_wallet()->mutable_masked_card();
+
+    wallet_card->set_id(GetBase64EncodedServerId(wallet_card->id()));
+    // The billing address id might refer to a local profile guid which doesn't
+    // need to be encoded.
+    if (!base::IsStringUTF8(wallet_card->billing_address_id())) {
+      wallet_card->set_billing_address_id(
+          GetBase64EncodedServerId(wallet_card->billing_address_id()));
+    }
+
     batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
-               CreateEntityDataFromCard(*entry));
+               std::move(entity_data));
   }
 
   if (customer_data) {
@@ -196,6 +216,37 @@ AutofillWalletSyncBridge::ApplyStopSyncChanges(
     SetSyncData(syncer::EntityChangeList());
   }
   return StopSyncResponse::kModelStillReadyToSync;
+}
+
+void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  std::unique_ptr<PaymentsCustomerData> customer_data;
+  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
+      !GetAutofillTable()->GetServerCreditCards(&cards) ||
+      !GetAutofillTable()->GetPaymentsCustomerData(&customer_data)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from table."});
+    return;
+  }
+
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
+    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+               CreateEntityDataFromAutofillServerProfile(*entry));
+  }
+  for (const std::unique_ptr<CreditCard>& entry : cards) {
+    batch->Put(GetStorageKeyForEntryServerId(entry->server_id()),
+               CreateEntityDataFromCard(*entry));
+  }
+
+  if (customer_data) {
+    batch->Put(GetStorageKeyForEntryServerId(customer_data->customer_id),
+               CreateEntityDataFromPaymentsCustomerData(*customer_data));
+  }
+  std::move(callback).Run(std::move(batch));
 }
 
 void AutofillWalletSyncBridge::SetSyncData(

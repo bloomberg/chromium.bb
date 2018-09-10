@@ -67,6 +67,10 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
       std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
       override;
 
+  // Sends all Wallet Data to the |callback| and keeps all the strings in their
+  // original format.
+  void GetAllDataForTesting(DataCallback callback);
+
  private:
   struct AutofillWalletDiff {
     int items_added = 0;

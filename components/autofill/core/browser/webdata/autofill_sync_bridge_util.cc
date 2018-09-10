@@ -115,10 +115,14 @@ CreditCard::CardType CardTypeFromWalletCardClass(
 
 }  // namespace
 
+std::string GetBase64EncodedServerId(const std::string& server_id) {
+  std::string encoded_id;
+  base::Base64Encode(server_id, &encoded_id);
+  return encoded_id;
+}
+
 std::string GetSpecificsIdForEntryServerId(const std::string& server_id) {
-  std::string specifics_id;
-  base::Base64Encode(server_id, &specifics_id);
-  return specifics_id;
+  return GetBase64EncodedServerId(server_id);
 }
 
 std::string GetStorageKeyForSpecificsId(const std::string& specifics_id) {
