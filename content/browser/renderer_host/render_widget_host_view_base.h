@@ -88,6 +88,7 @@ class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebContentsAccessibility;
 class WebCursor;
+class DelegatedFrameHost;
 struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
@@ -161,6 +162,16 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void OnRenderFrameSubmission() override;
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
+
+  static void CopyMainAndPopupFromSurface(
+      base::WeakPtr<RenderWidgetHostImpl> main_host,
+      base::WeakPtr<DelegatedFrameHost> main_frame_host,
+      base::WeakPtr<RenderWidgetHostImpl> popup_host,
+      base::WeakPtr<DelegatedFrameHost> popup_frame_host,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      float scale_factor,
+      base::OnceCallback<void(const SkBitmap&)> callback);
 
   void SetPopupType(blink::WebPopupType popup_type);
 

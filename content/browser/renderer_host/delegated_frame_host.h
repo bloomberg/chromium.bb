@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -179,6 +180,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   // |other|.
   void TakeFallbackContentFrom(DelegatedFrameHost* other);
 
+  base::WeakPtr<DelegatedFrameHost> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   friend class DelegatedFrameHostClient;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -241,6 +246,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   std::vector<std::unique_ptr<viz::CopyOutputRequest>>
       pending_first_frame_requests_;
+
+  base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHost);
 };
