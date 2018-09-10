@@ -22,6 +22,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/java_script_dialog_callback.h"
 #include "ios/web/public/java_script_dialog_type.h"
+#include "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -176,6 +177,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // It should display |previewing_view_controller| inside the app.
   void CommitPreviewingViewController(
       UIViewController* previewing_view_controller);
+
+  // Called when a new frame is available in the web_state.
+  void OnWebFrameAvailable(web::WebFrame* frame);
+  // Called when a frame is removed  in the web_state
+  void OnWebFrameUnavailable(web::WebFrame* frame);
 
   // WebState:
   WebStateDelegate* GetDelegate() override;

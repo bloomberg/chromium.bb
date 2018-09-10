@@ -651,6 +651,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message;
 // Handles frame became unavailable message.
 - (void)frameBecameUnavailableWithMessage:(WKScriptMessage*)message;
+// Clears the frames list.
+- (void)removeAllWebFrames;
 // Registers load request with empty referrer and link or client redirect
 // transition based on user interaction state. Returns navigation context for
 // this request.
@@ -1947,8 +1949,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->ClearTransientContent();
 
   // Reset tracked frames because JavaScript unload handler will not be called.
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
-
+  [self removeAllWebFrames];
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   const bool isCurrentURLAppSpecific =
@@ -2077,7 +2078,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_webView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   [self loadCancelled];
 }
 
@@ -2463,6 +2464,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return NO;
 }
 
+#pragma mark -
+#pragma mark Web frames management
+
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
   // Validate all expected message components because any frame could falsify
   // this message.
@@ -2501,6 +2505,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
           frameID, std::move(frameKey), initialMessageID,
           message.frameInfo.mainFrame, messageFrameOrigin, self.webState);
       framesManager->AddFrame(std::move(newFrame));
+      _webStateImpl->OnWebFrameAvailable(
+          framesManager->GetFrameWithId(frameID));
     }
   }
 }
@@ -2511,8 +2517,23 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
   std::string frameID = base::SysNSStringToUTF8(message.body);
-  web::WebFramesManagerImpl::FromWebState(self.webState)
-      ->RemoveFrameWithId(frameID);
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState([self webState]);
+
+  if (framesManager->GetFrameWithId(frameID)) {
+    _webStateImpl->OnWebFrameUnavailable(
+        framesManager->GetFrameWithId(frameID));
+    framesManager->RemoveFrameWithId(frameID);
+  }
+}
+
+- (void)removeAllWebFrames {
+  web::WebFramesManagerImpl* framesManager =
+      web::WebFramesManagerImpl::FromWebState([self webState]);
+  for (auto* frame : framesManager->GetAllWebFrames()) {
+    _webStateImpl->OnWebFrameUnavailable(frame);
+  }
+  framesManager->RemoveAllWebFrames();
 }
 
 #pragma mark -
@@ -4623,7 +4644,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   // This must be reset at the end, since code above may need information about
   // the pending load.
   _pendingNavigationInfo = nil;
@@ -4715,7 +4736,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -4957,7 +4978,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
           forNavigation:navigation];
 
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -5009,7 +5030,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didReceiveWebViewNavigationDelegateCallback];
 
   _certVerificationErrors->Clear();
-  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
+  [self removeAllWebFrames];
   [self webViewWebProcessDidCrash];
 }
 

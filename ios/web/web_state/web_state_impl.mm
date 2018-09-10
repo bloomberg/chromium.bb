@@ -545,6 +545,18 @@ void WebStateImpl::BindInterfaceRequestFromMainFrame(
   }
 }
 
+#pragma mark - WebFrame management
+
+void WebStateImpl::OnWebFrameAvailable(web::WebFrame* frame) {
+  for (auto& observer : observers_)
+    observer.WebFrameDidBecomeAvailable(this, frame);
+}
+
+void WebStateImpl::OnWebFrameUnavailable(web::WebFrame* frame) {
+  for (auto& observer : observers_)
+    observer.WebFrameWillBecomeUnavailable(this, frame);
+}
+
 #pragma mark - WebState implementation
 
 bool WebStateImpl::IsWebUsageEnabled() const {

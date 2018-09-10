@@ -25,6 +25,7 @@
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
@@ -404,6 +405,22 @@ TEST_P(WebStateImplTest, ObserverTest) {
             actual_favicon_url.icon_sizes[0].width());
   EXPECT_EQ(favicon_url.icon_sizes[0].height(),
             actual_favicon_url.icon_sizes[0].height());
+
+  // Test that WebFrameDidBecomeAvailable() is called.
+  ASSERT_FALSE(observer->web_frame_available_info());
+  web::FakeWebFrame main_frame("main", true, GURL());
+  web_state_->OnWebFrameAvailable(&main_frame);
+  ASSERT_TRUE(observer->web_frame_available_info());
+  EXPECT_EQ(web_state_.get(), observer->web_frame_available_info()->web_state);
+  EXPECT_EQ(&main_frame, observer->web_frame_available_info()->web_frame);
+
+  // Test that WebFrameWillBecomeUnavailable() is called.
+  ASSERT_FALSE(observer->web_frame_unavailable_info());
+  web_state_->OnWebFrameUnavailable(&main_frame);
+  ASSERT_TRUE(observer->web_frame_unavailable_info());
+  EXPECT_EQ(web_state_.get(),
+            observer->web_frame_unavailable_info()->web_state);
+  EXPECT_EQ(&main_frame, observer->web_frame_unavailable_info()->web_frame);
 
   // Test that RenderProcessGone() is called.
   SetIgnoreRenderProcessCrashesDuringTesting(true);

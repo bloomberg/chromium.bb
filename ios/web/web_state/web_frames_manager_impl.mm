@@ -45,7 +45,9 @@ WebFramesManagerImpl* WebFramesManagerImpl::FromWebState(WebState* web_state) {
       WebFramesManager::FromWebState(web_state));
 }
 
-WebFramesManagerImpl::~WebFramesManagerImpl() = default;
+WebFramesManagerImpl::~WebFramesManagerImpl() {
+  RemoveAllWebFrames();
+}
 
 WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
     : web_state_(web_state) {}
@@ -58,7 +60,8 @@ void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
     main_web_frame_ = frame.get();
   }
   DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
-  web_frames_[frame->GetFrameId()] = std::move(frame);
+  std::string frame_id = frame->GetFrameId();
+  web_frames_[frame_id] = std::move(frame);
 }
 
 void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {

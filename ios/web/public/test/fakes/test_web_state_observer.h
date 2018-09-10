@@ -70,6 +70,14 @@ class TestWebStateObserver : public WebStateObserver {
   update_favicon_url_candidates_info() {
     return update_favicon_url_candidates_info_.get();
   }
+  // Arguments passed to |WebFrameDidBecomeAvailable|.
+  web::TestWebFrameAvailabilityInfo* web_frame_available_info() {
+    return web_frame_available_info_.get();
+  }
+  // Arguments passed to |WebFrameWillBecomeUnavailable|.
+  web::TestWebFrameAvailabilityInfo* web_frame_unavailable_info() {
+    return web_frame_unavailable_info_.get();
+  }
   // Arguments passed to |RenderProcessGone|.
   web::TestRenderProcessGoneInfo* render_process_gone_info() {
     return render_process_gone_info_.get();
@@ -108,6 +116,10 @@ class TestWebStateObserver : public WebStateObserver {
   void DidSuppressDialog(WebState* web_state) override;
   void FaviconUrlUpdated(WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
+  void WebFrameDidBecomeAvailable(WebState* web_state,
+                                  WebFrame* web_frame) override;
+  void WebFrameWillBecomeUnavailable(WebState* web_state,
+                                     WebFrame* web_frame) override;
   void RenderProcessGone(WebState* web_state) override;
   void WebStateDestroyed(WebState* web_state) override;
   void DidStartLoading(WebState* web_state) override;
@@ -135,6 +147,9 @@ class TestWebStateObserver : public WebStateObserver {
   std::unique_ptr<web::TestDidSuppressDialogInfo> did_suppress_dialog_info_;
   std::unique_ptr<web::TestUpdateFaviconUrlCandidatesInfo>
       update_favicon_url_candidates_info_;
+  std::unique_ptr<web::TestWebFrameAvailabilityInfo> web_frame_available_info_;
+  std::unique_ptr<web::TestWebFrameAvailabilityInfo>
+      web_frame_unavailable_info_;
   std::unique_ptr<web::TestRenderProcessGoneInfo> render_process_gone_info_;
   std::unique_ptr<web::TestWebStateDestroyedInfo> web_state_destroyed_info_;
   std::unique_ptr<web::TestStartLoadingInfo> start_loading_info_;

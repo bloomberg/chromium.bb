@@ -165,6 +165,7 @@ source_set("context_menu") {
 
 source_set("web_frame") {
   deps = [
+    ":web_state_impl_header",
     "//base",
     "//crypto",
     "//ios/web/public",
