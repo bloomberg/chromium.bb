@@ -320,7 +320,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 14
+  NB_GIT_REPOS = 16
 
   def populateGit(self):
     # Testing:
@@ -550,6 +550,8 @@ deps = {
     'url': None,
   },
   'src/repo8': '/repo_8',
+  'src/repo15': '/repo_15',
+  'src/repo16': '/repo_16',
 }
 deps_os ={
   'mac': {
@@ -592,6 +594,8 @@ hooks_os = {
 recursedeps = [
   'src/repo2',
   'src/repo8',
+  'src/repo15',
+  'src/repo16',
 ]""" % {
         'git_base': self.git_base,
         'hash': self.git_hashes['repo_2'][1][0][:7]
@@ -778,6 +782,29 @@ deps = {
       'origin': 'git/repo_14@2\n'
     })
 
+    # A repo with a hook to be recursed in, without use_relative_hooks
+    self._commit_git('repo_15', {
+      'DEPS': textwrap.dedent("""\
+        hooks = [{
+          "name": "absolute_cwd",
+          "pattern": ".",
+          "action": ["python", "-c", "pass"]
+        }]"""),
+      'origin': 'git/repo_15@2\n'
+    })
+    # A repo with a hook to be recursed in, with use_relative_hooks
+    self._commit_git('repo_16', {
+      'DEPS': textwrap.dedent("""\
+        use_relative_paths=True
+        use_relative_hooks=True
+        hooks = [{
+          "name": "relative_cwd",
+          "pattern": ".",
+          "action": ["python", "relative.py"]
+        }]"""),
+      'relative.py': 'pass',
+      'origin': 'git/repo_16@2\n'
+    })
 
 class FakeRepoSkiaDEPS(FakeReposBase):
   """Simulates the Skia DEPS transition in Chrome."""

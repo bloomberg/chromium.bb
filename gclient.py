@@ -151,7 +151,7 @@ class Hook(object):
   """Descriptor of command ran before/after sync or on demand."""
 
   def __init__(self, action, pattern=None, name=None, cwd=None, condition=None,
-               variables=None, verbose=False):
+               variables=None, verbose=False, cwd_base=None):
     """Constructor.
 
     Arguments:
@@ -169,9 +169,11 @@ class Hook(object):
     self._condition = condition
     self._variables = variables
     self._verbose = verbose
+    self._cwd_base = cwd_base
 
   @staticmethod
-  def from_dict(d, variables=None, verbose=False, conditions=None):
+  def from_dict(d, variables=None, verbose=False, conditions=None,
+                cwd_base=None):
     """Creates a Hook instance from a dict like in the DEPS file."""
     # Merge any local and inherited conditions.
     gclient_eval.UpdateCondition(d, 'and', conditions)
@@ -183,7 +185,8 @@ class Hook(object):
         d.get('condition'),
         variables=variables,
         # Always print the header if not printing to a TTY.
-        verbose=verbose or not setup_color.IS_TTY)
+        verbose=verbose or not setup_color.IS_TTY,
+        cwd_base=cwd_base)
 
   @property
   def action(self):
@@ -201,6 +204,13 @@ class Hook(object):
   def condition(self):
     return self._condition
 
+  @property
+  def effective_cwd(self):
+    cwd = self._cwd_base
+    if self._cwd:
+      cwd = os.path.join(cwd, self._cwd)
+    return cwd
+
   def matches(self, file_list):
     """Returns true if the pattern matches any of files in the list."""
     if not self._pattern:
@@ -208,7 +218,7 @@ class Hook(object):
     pattern = re.compile(self._pattern)
     return bool([f for f in file_list if pattern.search(f)])
 
-  def run(self, root):
+  def run(self):
     """Executes the hook's command (provided the condition is met)."""
     if (self._condition and
         not gclient_eval.EvaluateCondition(self._condition, self._variables)):
@@ -224,13 +234,10 @@ class Hook(object):
     elif cmd[0] == 'vpython' and _detect_host_os() == 'win':
       cmd[0] += '.bat'
 
-    cwd = root
-    if self._cwd:
-      cwd = os.path.join(cwd, self._cwd)
     try:
       start_time = time.time()
       gclient_utils.CheckCallAndFilterAndHeader(
-          cmd, cwd=cwd, always=self._verbose)
+          cmd, cwd=self.effective_cwd, always=self._verbose)
     except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
@@ -755,6 +762,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     deps_to_add = self._deps_to_objects(
         self._postprocess_deps(deps, rel_prefix), use_relative_paths)
 
+    # compute which working directory should be used for hooks
+    use_relative_hooks = local_scope.get('use_relative_hooks', False)
+    hooks_cwd = self.root.root_dir
+    if use_relative_hooks:
+      if not use_relative_paths:
+        raise gclient_utils.Error(
+            'ParseDepsFile(%s): use_relative_hooks must be used with '
+            'use_relative_paths' % self.name)
+      hooks_cwd = os.path.join(hooks_cwd, self.name)
+      logging.warning('Updating hook base working directory to %s.',
+                      hooks_cwd)
+
     # override named sets of hooks by the custom hooks
     hooks_to_run = []
     hook_names_to_suppress = [c.get('name', '') for c in self.custom_hooks]
@@ -770,11 +789,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if self.should_recurse:
       self._pre_deps_hooks = [
           Hook.from_dict(hook, variables=self.get_vars(), verbose=True,
-                         conditions=self.condition)
+                         conditions=self.condition, cwd_base=hooks_cwd)
           for hook in local_scope.get('pre_deps_hooks', [])
       ]
 
-    self.add_dependencies_and_close(deps_to_add, hooks_to_run)
+    self.add_dependencies_and_close(deps_to_add, hooks_to_run,
+                                    hooks_cwd=hooks_cwd)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def _get_option(self, attr, default):
@@ -783,15 +803,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       obj = obj.parent
     return getattr(obj._options, attr, default)
 
-  def add_dependencies_and_close(self, deps_to_add, hooks):
+  def add_dependencies_and_close(self, deps_to_add, hooks, hooks_cwd=None):
     """Adds the dependencies, hooks and mark the parsing as done."""
+    if hooks_cwd == None:
+      hooks_cwd = self.root.root_dir
+
     for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
     self._mark_as_parsed([
         Hook.from_dict(
             h, variables=self.get_vars(), verbose=self.root._options.verbose,
-            conditions=self.condition)
+            conditions=self.condition, cwd_base=hooks_cwd)
         for h in hooks
     ])
 
@@ -1021,7 +1044,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for hook in hooks:
       if progress:
         progress.update(extra=hook.name or '')
-      hook.run(self.root.root_dir)
+      hook.run()
     if progress:
       progress.end()
 
@@ -1034,7 +1057,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       assert not s.processed
     self._pre_deps_hooks_ran = True
     for hook in self.pre_deps_hooks:
-      hook.run(self.root.root_dir)
+      hook.run()
 
   def GetCipdRoot(self):
     if self.root is self:
@@ -2257,9 +2280,10 @@ def _HooksToLines(name, hooks):
       s.append('    "pattern": "%s",' % hook.pattern)
     if hook.condition is not None:
       s.append('    "condition": %r,' % hook.condition)
+    # Flattened hooks need to be written relative to the root gclient dir
+    cwd = os.path.relpath(os.path.normpath(hook.effective_cwd))
     s.extend(
-        # Hooks run in the parent directory of their dep.
-        ['    "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
+        ['    "cwd": "%s",' % cwd] +
         ['    "action": ['] +
         ['        "%s",' % arg for arg in hook.action] +
         ['    ]', '  },', '']
@@ -2286,9 +2310,10 @@ def _HooksOsToLines(hooks_os):
         s.append('      "pattern": "%s",' % hook.pattern)
       if hook.condition is not None:
         s.append('    "condition": %r,' % hook.condition)
+      # Flattened hooks need to be written relative to the root gclient dir
+      cwd = os.path.relpath(os.path.normpath(hook.effective_cwd))
       s.extend(
-          # Hooks run in the parent directory of their dep.
-          ['      "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
+          ['    "cwd": "%s",' % cwd] +
           ['      "action": ['] +
           ['          "%s",' % arg for arg in hook.action] +
           ['      ]', '    },', '']

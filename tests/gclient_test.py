@@ -202,6 +202,21 @@ class GclientTest(trial_dir.TestCase):
       pass
     return items
 
+  def _get_hooks(self):
+    """Retrieves the hooks that would be run"""
+    parser = gclient.OptionParser()
+    options, _ = parser.parse_args([])
+    options.force = True
+
+    client = gclient.GClient.LoadCurrentConfig(options)
+    work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
+    for s in client.dependencies:
+      work_queue.enqueue(s)
+    work_queue.flush({}, None, [], options=options, patch_refs={},
+                     target_branches={})
+
+    return client.GetHooks(options)
+
   def testAutofix(self):
     # Invalid urls causes pain when specifying requirements. Make sure it's
     # auto-fixed.
@@ -296,18 +311,8 @@ class GclientTest(trial_dir.TestCase):
     write(os.path.join('top', 'fake.txt'),
           "bogus content")
 
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    options.force = True
-
-    client = gclient.GClient.LoadCurrentConfig(options)
-    work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
-    for s in client.dependencies:
-      work_queue.enqueue(s)
-    work_queue.flush({}, None, [], options=options, patch_refs={},
-                     target_branches={})
     self.assertEqual(
-        [h.action for h in client.GetHooks(options)],
+        [h.action for h in self._get_hooks()],
         [tuple(x['action']) for x in hooks])
 
   def testCustomHooks(self):
@@ -348,19 +353,82 @@ class GclientTest(trial_dir.TestCase):
     write(os.path.join('bottom', 'fake.txt'),
           "bogus content")
 
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    options.force = True
-
-    client = gclient.GClient.LoadCurrentConfig(options)
-    work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
-    for s in client.dependencies:
-      work_queue.enqueue(s)
-    work_queue.flush({}, None, [], options=options, patch_refs={},
-                     target_branches={})
     self.assertEqual(
-        [h.action for h in client.GetHooks(options)],
+        [h.action for h in self._get_hooks()],
         [tuple(x['action']) for x in hooks + extra_hooks + sub_hooks])
+
+  def testRecurseDepsAndHooks(self):
+    """Verifies that hooks in recursedeps are ran."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'use_relative_paths = True\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recursedeps = ["bar"]')
+    write(
+        os.path.join('foo', 'bar', 'DEPS'),
+        'hooks = [{\n'
+        '  "name": "toto",\n'
+        '  "pattern": ".",\n'
+        '  "action": ["tata", "titi"]\n'
+        '}]\n')
+    write(os.path.join('foo', 'bar', 'fake.txt'),
+          "bogus content")
+
+    self.assertEqual(
+        [h.action for h in self._get_hooks()],
+        [('tata', 'titi')])
+
+  def testRecurseDepsAndHooksCwd(self):
+    """Verifies that hooks run in the correct directory with our without
+    use_relative_hooks"""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'use_relative_paths = True\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '  "baz": "/baz",\n'
+        '}\n'
+        'recursedeps = ["bar", "baz"]')
+
+    write(
+        os.path.join('foo', 'bar', 'DEPS'),
+        'hooks = [{\n'
+        '  "name": "toto",\n'
+        '  "pattern": ".",\n'
+        '  "action": ["tata", "titi"]\n'
+        '}]\n')
+    write(os.path.join('foo', 'bar', 'fake.txt'),
+          "bogus content")
+
+    write(
+        os.path.join('foo', 'baz', 'DEPS'),
+        'use_relative_paths=True\n'
+        'use_relative_hooks=True\n'
+        'hooks = [{\n'
+        '  "name": "lazors",\n'
+        '  "pattern": ".",\n'
+        '  "action": ["fire", "lazors"]\n'
+        '}]\n')
+    write(os.path.join('foo', 'baz', 'fake.txt'),
+          "bogus content")
+
+    self.assertEqual([(h.action, h.effective_cwd) for h in self._get_hooks()],
+        [
+            (('tata', 'titi'), self.root_dir),
+            (('fire', 'lazors'), os.path.join(self.root_dir, "foo", "baz"))
+        ])
 
   def testTargetOS(self):
     """Verifies that specifying a target_os pulls in all relevant dependencies.
@@ -705,7 +773,7 @@ class GclientTest(trial_dir.TestCase):
         '.gclient',
         'solutions = [\n'
         '  { "name": "foo", "url": "svn://example.com/foo" },\n'
-          ']')
+        ']')
     write(
         os.path.join('foo', 'DEPS'),
         'use_relative_paths = True\n'
@@ -741,7 +809,7 @@ class GclientTest(trial_dir.TestCase):
         '.gclient',
         'solutions = [\n'
         '  { "name": "foo", "url": "svn://example.com/foo" },\n'
-          ']')
+        ']')
     write(
         os.path.join('foo', 'DEPS'),
         'use_relative_paths = True\n'
