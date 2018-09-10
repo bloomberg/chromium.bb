@@ -23,11 +23,17 @@ struct UrlRule;  // The FlatBuffers version of UrlRule.
 // of the UrlRule that owns it, and to match it against URLs.
 class UrlPattern {
  public:
+  enum class MatchCase {
+    kTrue,
+    kFalse,
+  };
+
   UrlPattern();
 
-  // Creates a |url_pattern| of a certain |type|.
+  // Creates a |url_pattern| of a certain |type| and case-sensitivity.
   UrlPattern(base::StringPiece url_pattern,
-             proto::UrlPatternType type = proto::URL_PATTERN_TYPE_WILDCARDED);
+             proto::UrlPatternType type = proto::URL_PATTERN_TYPE_WILDCARDED,
+             MatchCase match_case = MatchCase::kFalse);
 
   // Creates a WILDCARDED |url_pattern| with the specified anchors.
   UrlPattern(base::StringPiece url_pattern,
@@ -43,7 +49,7 @@ class UrlPattern {
   base::StringPiece url_pattern() const { return url_pattern_; }
   proto::AnchorType anchor_left() const { return anchor_left_; }
   proto::AnchorType anchor_right() const { return anchor_right_; }
-  bool match_case() const { return match_case_; }
+  bool match_case() const { return match_case_ == MatchCase::kTrue; }
 
   // Returns whether the |url| matches the URL |pattern|. Requires the type of
   // |this| pattern to be either SUBSTRING or WILDCARDED.
@@ -63,8 +69,7 @@ class UrlPattern {
   proto::AnchorType anchor_left_ = proto::ANCHOR_TYPE_NONE;
   proto::AnchorType anchor_right_ = proto::ANCHOR_TYPE_NONE;
 
-  // TODO(pkalinnikov): Implement case-insensitive matching.
-  bool match_case_ = false;
+  MatchCase match_case_ = MatchCase::kFalse;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPattern);
 };

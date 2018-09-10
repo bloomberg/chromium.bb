@@ -55,12 +55,12 @@ VerifyStatus GetVerifyStatus(const uint8_t* buffer,
 // static
 // Keep this in sync with the version number in
 // tools/perf/core/default_local_state.json.
-const int RulesetIndexer::kIndexedFormatVersion = 20;
+const int RulesetIndexer::kIndexedFormatVersion = 21;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating RulesetIndexer::kIndexedFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 1,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 2,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated RulesetIndexer::kIndexedFormatVersion above.");
 
