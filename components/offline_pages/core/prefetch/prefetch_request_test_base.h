@@ -6,12 +6,12 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_REQUEST_FETCHER_TEST_BASE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -29,13 +29,17 @@ class PrefetchRequestTestBase : public testing::Test {
   void SetUpExperimentOption();
 
   void RespondWithNetError(int net_error);
-  void RespondWithHttpError(int http_error);
+  void RespondWithHttpError(net::HttpStatusCode http_error);
   void RespondWithData(const std::string& data);
-  net::TestURLFetcher* GetRunningFetcher();
-  std::string GetExperiementHeaderValue(net::TestURLFetcher* fetcher);
+  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
+      size_t index = 0);
 
-  net::URLRequestContextGetter* request_context() const {
-    return request_context_.get();
+  std::string GetExperiementHeaderValue(
+      network::TestURLLoaderFactory::PendingRequest* pending_request);
+
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
+      const {
+    return test_shared_url_loader_factory_;
   }
 
   void RunUntilIdle();
@@ -48,10 +52,14 @@ class PrefetchRequestTestBase : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
+  network::ResourceRequest last_resource_request_;
+
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

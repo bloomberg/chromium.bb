@@ -12,7 +12,6 @@
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 #include "components/version_info/channel.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,14 +33,13 @@ class PrefetchNetworkRequestFactoryTest : public PrefetchRequestTestBase {
   }
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   std::unique_ptr<PrefetchNetworkRequestFactoryImpl> request_factory_;
 };
 
-PrefetchNetworkRequestFactoryTest::PrefetchNetworkRequestFactoryTest()
-    : request_context_(new net::TestURLRequestContextGetter(task_runner())) {
+PrefetchNetworkRequestFactoryTest::PrefetchNetworkRequestFactoryTest() {
   request_factory_ = std::make_unique<PrefetchNetworkRequestFactoryImpl>(
-      request_context_.get(), version_info::Channel::UNKNOWN, "a user agent");
+      shared_url_loader_factory(), version_info::Channel::UNKNOWN,
+      "a user agent");
 }
 
 TEST_F(PrefetchNetworkRequestFactoryTest, TestMakeGetOperationRequest) {
@@ -217,6 +215,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GetOperationRequestDoneUMA) {
   // Have the test system callback into GetOperationRequestDone with an error
   // code that will cause the SHOULD_SUSPEND response.
   RespondWithHttpError(net::HTTP_NOT_IMPLEMENTED);
+  RunUntilIdle();
 
   // Check that operation names have been cleaned up.
   EXPECT_FALSE(request_factory()->HasOutstandingRequests());
@@ -248,6 +247,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GeneratePageBundleRequestDoneUMA) {
   // Have the test framework call back into the GeneratePageBundleRequestDone
   // method with an error code that will produce SHOULD_RETRY_WITHOUT_BACKOFF.
   RespondWithNetError(net::ERR_NETWORK_CHANGED);
+  RunUntilIdle();
 
   // Make sure the operation data got cleaned up properly.
   EXPECT_FALSE(request_factory()->HasOutstandingRequests());

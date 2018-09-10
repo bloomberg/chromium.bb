@@ -7,5 +7,7 @@ include_rules = [
   "+components/ntp_snippets",
   "+components/version_info",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+sql",
 ]
