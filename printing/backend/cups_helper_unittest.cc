@@ -4,6 +4,7 @@
 
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
@@ -35,7 +36,9 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_TRUE(caps.duplex_capable);
+  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
+                                     printing::SIMPLEX, printing::LONG_EDGE,
+                                     printing::SHORT_EDGE));
   EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
@@ -62,7 +65,9 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_TRUE(caps.duplex_capable);
+  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
+                                     printing::SIMPLEX, printing::LONG_EDGE,
+                                     printing::SHORT_EDGE));
   EXPECT_EQ(printing::SIMPLEX, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
@@ -88,7 +93,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_FALSE(caps.duplex_capable);
+  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre());
   EXPECT_EQ(printing::UNKNOWN_DUPLEX_MODE, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
@@ -123,7 +128,9 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexShortEdge) {
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_TRUE(caps.duplex_capable);
+  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
+                                     printing::SIMPLEX, printing::LONG_EDGE,
+                                     printing::SHORT_EDGE));
   EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
@@ -162,7 +169,9 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
-  EXPECT_TRUE(caps.duplex_capable);
+  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
+                                     printing::SIMPLEX, printing::LONG_EDGE,
+                                     printing::SHORT_EDGE));
   EXPECT_EQ(printing::LONG_EDGE, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
@@ -249,7 +258,9 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
 
     printing::PrinterSemanticCapsAndDefaults caps;
     EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
-    EXPECT_TRUE(caps.duplex_capable);
+    EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(
+                                       printing::SIMPLEX, printing::LONG_EDGE,
+                                       printing::SHORT_EDGE));
     EXPECT_EQ(printing::SHORT_EDGE, caps.duplex_default);
   }
 }
