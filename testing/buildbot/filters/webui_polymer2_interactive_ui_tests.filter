@@ -12,6 +12,7 @@ CrSettingsAnimatedPagesTest.All
 CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
 MaterialBookmarksFocusTest.All
+MaterialHistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.FocusSearchBox
 PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady
 SettingsUIBrowserTest.All
