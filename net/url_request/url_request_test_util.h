@@ -71,12 +71,6 @@ class TestURLRequestContext : public URLRequestContext {
     client_socket_factory_ = factory;
   }
 
-  ProxyDelegate* proxy_delegate() { return proxy_delegate_; }
-
-  void set_proxy_delegate(ProxyDelegate* proxy_delegate) {
-    proxy_delegate_ = proxy_delegate;
-  }
-
   void set_http_network_session_params(
       std::unique_ptr<HttpNetworkSession::Params> session_params) {
     http_network_session_params_ = std::move(session_params);
@@ -107,8 +101,6 @@ class TestURLRequestContext : public URLRequestContext {
 
   // Not owned:
   ClientSocketFactory* client_socket_factory_ = nullptr;
-
-  ProxyDelegate* proxy_delegate_ = nullptr;
 
   bool create_default_http_user_agent_settings_ = true;
 

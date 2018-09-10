@@ -158,9 +158,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     context_->set_client_socket_factory(mock_socket_factory_.get());
     test_context_->AttachToURLRequestContext(context_storage_.get());
     delegate_ = test_context_->io_data()->CreateProxyDelegate();
-    context_->set_proxy_delegate(delegate_.get());
 
     context_->Init();
+    context_->proxy_resolution_service()->SetProxyDelegate(delegate_.get());
 
     // Disable fetching of warmup URL to avoid generating extra traffic which
     // would need to be satisfied using mock sockets.

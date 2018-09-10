@@ -5801,7 +5801,8 @@ class SpdyNetworkTransactionPushUrlTest
     auto proxy_delegate = std::make_unique<TestProxyDelegate>();
     proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
         "https://123.45.67.89:443", net::ProxyServer::SCHEME_HTTP));
-    session_deps->proxy_delegate = std::move(proxy_delegate);
+    session_deps->proxy_resolution_service->SetProxyDelegate(
+        proxy_delegate.get());
     NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                        std::move(session_deps));
 

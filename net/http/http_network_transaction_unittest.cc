@@ -9059,7 +9059,8 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -9175,7 +9176,8 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -9259,7 +9261,8 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 

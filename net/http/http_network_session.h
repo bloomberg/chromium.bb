@@ -58,7 +58,6 @@ class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
 class NetworkQualityProvider;
-class ProxyDelegate;
 class ProxyResolutionService;
 }  // namespace net
 namespace quic {
@@ -266,8 +265,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     quic::QuicRandom* quic_random;
     // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
-
-    ProxyDelegate* proxy_delegate;
   };
 
   enum SocketPoolType {

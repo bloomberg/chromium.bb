@@ -19,7 +19,6 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -212,7 +211,6 @@ struct SpdySessionDependencies {
   size_t session_max_recv_window_size;
   spdy::SettingsMap http2_settings;
   SpdySession::TimeFunc time_func;
-  std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool enable_http2_alternative_service;
   bool enable_websocket_over_http2;
   base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;

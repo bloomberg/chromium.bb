@@ -945,7 +945,8 @@ void SetupForQuicAlternativeProxyTest(
     test_proxy_delegate->set_alternative_proxy_server(
         ProxyServer::FromPacString("QUIC badproxy:99"));
   }
-  session_context->proxy_delegate = test_proxy_delegate;
+
+  proxy_resolution_service->SetProxyDelegate(test_proxy_delegate);
 }
 
 }  // namespace

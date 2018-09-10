@@ -118,7 +118,7 @@ void URLRequestFtpJob::Start() {
         request_->url(), "GET", &proxy_info_,
         base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
                    base::Unretained(this)),
-        &proxy_resolve_request_, NULL, request_->net_log());
+        &proxy_resolve_request_, request_->net_log());
 
     if (rv == ERR_IO_PENDING)
       return;

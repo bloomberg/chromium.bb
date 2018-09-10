@@ -1294,8 +1294,7 @@ int HttpStreamFactory::Job::DoCreateStreamComplete(int result) {
   if (result < 0)
     return result;
 
-  session_->proxy_resolution_service()->ReportSuccess(
-      proxy_info_, session_->context().proxy_delegate);
+  session_->proxy_resolution_service()->ReportSuccess(proxy_info_);
   next_state_ = STATE_NONE;
   return OK;
 }

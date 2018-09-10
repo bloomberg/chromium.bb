@@ -125,7 +125,6 @@ void TestURLRequestContext::Init() {
     if (http_network_session_context_)
       session_context = *http_network_session_context_;
     session_context.client_socket_factory = client_socket_factory();
-    session_context.proxy_delegate = proxy_delegate();
     session_context.host_resolver = host_resolver();
     session_context.cert_verifier = cert_verifier();
     session_context.cert_transparency_verifier = cert_transparency_verifier();

@@ -226,13 +226,10 @@ class HttpStreamFactoryJobControllerTest
 
   void Initialize(const HttpRequestInfo& request_info) {
     ASSERT_FALSE(test_proxy_delegate_);
-    auto test_proxy_delegate = std::make_unique<TestProxyDelegate>();
-    test_proxy_delegate_ = test_proxy_delegate.get();
-
-    test_proxy_delegate->set_alternative_proxy_server(
+    test_proxy_delegate_ = std::make_unique<TestProxyDelegate>();
+    test_proxy_delegate_->set_alternative_proxy_server(
         ProxyServer::FromPacString("QUIC myproxy.org:443"));
-    EXPECT_TRUE(test_proxy_delegate->alternative_proxy_server().is_quic());
-    session_deps_.proxy_delegate = std::move(test_proxy_delegate);
+    EXPECT_TRUE(test_proxy_delegate_->alternative_proxy_server().is_quic());
 
     if (quic_data_)
       quic_data_->AddSocketDataToFactory(session_deps_.socket_factory.get());
@@ -246,6 +243,10 @@ class HttpStreamFactoryJobControllerTest
       session_deps_.proxy_resolution_service =
           std::move(proxy_resolution_service);
     }
+
+    session_deps_.proxy_resolution_service->SetProxyDelegate(
+        test_proxy_delegate_.get());
+
     session_deps_.net_log = net_log_.bound().net_log();
     HttpNetworkSession::Params params =
         SpdySessionDependencies::CreateSessionParams(&session_deps_);
@@ -268,7 +269,7 @@ class HttpStreamFactoryJobControllerTest
   }
 
   TestProxyDelegate* test_proxy_delegate() const {
-    return test_proxy_delegate_;
+    return test_proxy_delegate_.get();
   }
 
   ~HttpStreamFactoryJobControllerTest() override {
@@ -335,8 +336,7 @@ class HttpStreamFactoryJobControllerTest
   bool enable_alternative_services_ = true;
 
  private:
-  // Not owned by |this|.
-  TestProxyDelegate* test_proxy_delegate_ = nullptr;
+  std::unique_ptr<TestProxyDelegate> test_proxy_delegate_;
   bool create_job_controller_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryJobControllerTest);
@@ -442,9 +442,7 @@ class JobControllerReconsiderProxyAfterErrorTest
       public ::testing::WithParamInterface<::testing::tuple<bool, int>> {
  public:
   void Initialize(
-      std::unique_ptr<ProxyResolutionService> proxy_resolution_service,
-      std::unique_ptr<ProxyDelegate> proxy_delegate) {
-    session_deps_.proxy_delegate = std::move(proxy_delegate);
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service) {
     session_deps_.proxy_resolution_service =
         std::move(proxy_resolution_service);
     session_ = std::make_unique<HttpNetworkSession>(
@@ -551,8 +549,8 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   request_info.method = "GET";
   request_info.url = GURL("http://www.example.com");
 
-  Initialize(std::move(proxy_resolution_service),
-             std::move(test_proxy_delegate));
+  proxy_resolution_service->SetProxyDelegate(test_proxy_delegate.get());
+  Initialize(std::move(proxy_resolution_service));
   EXPECT_EQ(set_alternative_proxy_server,
             test_proxy_delegate_raw->alternative_proxy_server().is_quic());
 
@@ -614,8 +612,7 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest, ReconsiderErrMsgTooBig) {
   request_info.method = "GET";
   request_info.url = GURL("http://www.example.com");
 
-  Initialize(std::move(proxy_resolution_service),
-             std::make_unique<TestProxyDelegate>());
+  Initialize(std::move(proxy_resolution_service));
 
   ProxyInfo used_proxy_info;
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, _))
@@ -662,8 +659,7 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
   request_info.method = "GET";
   request_info.url = GURL("http://www.example.com");
 
-  Initialize(std::move(proxy_resolution_service),
-             std::make_unique<TestProxyDelegate>());
+  Initialize(std::move(proxy_resolution_service));
 
   ProxyInfo used_proxy_info;
   EXPECT_CALL(request_delegate_, OnStreamFailed(ERR_MSG_TOO_BIG, _, _))
@@ -698,8 +694,8 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
   test_proxy_delegate->set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC myproxy.org:443"));
 
-  Initialize(std::move(proxy_resolution_service),
-             std::move(test_proxy_delegate));
+  proxy_resolution_service->SetProxyDelegate(test_proxy_delegate.get());
+  Initialize(std::move(proxy_resolution_service));
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();

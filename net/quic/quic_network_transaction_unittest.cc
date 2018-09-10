@@ -856,10 +856,10 @@ class QuicNetworkTransactionTest
     test_proxy_delegate.set_alternative_proxy_server(
         ProxyServer::FromPacString("QUIC myproxy.org:443"));
 
-    session_context_.proxy_delegate = &test_proxy_delegate;
     proxy_resolution_service_ =
         ProxyResolutionService::CreateFixedFromPacResult(
             "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+    proxy_resolution_service_->SetProxyDelegate(&test_proxy_delegate);
 
     CreateSession();
     EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_valid());
@@ -3773,7 +3773,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
 
   test_proxy_delegate.set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC mail.example.org:443"));
-  session_context_.proxy_delegate = &test_proxy_delegate;
+  proxy_resolution_service_->SetProxyDelegate(&test_proxy_delegate);
 
   request_.url = GURL("http://mail.example.org/");
 
@@ -4220,7 +4220,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
 
   test_proxy_delegate.set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC mail.example.org:443"));
-  session_context_.proxy_delegate = &test_proxy_delegate;
+  proxy_resolution_service_->SetProxyDelegate(&test_proxy_delegate);
   CreateSession();
   EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
@@ -5303,9 +5303,9 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
       ProxyServer::FromPacString("QUIC myproxy.org:443"));
   EXPECT_TRUE(test_proxy_delegate.alternative_proxy_server().is_quic());
 
-  session_context_.proxy_delegate = &test_proxy_delegate;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+  proxy_resolution_service_->SetProxyDelegate(&test_proxy_delegate);
   request_.url = GURL("http://mail.example.org/");
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -5371,7 +5371,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   test_proxy_delegate.set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC mail.example.org:443"));
-  session_context_.proxy_delegate = &test_proxy_delegate;
+  proxy_resolution_service_->SetProxyDelegate(&test_proxy_delegate);
 
   request_.url = GURL("http://mail.example.org/");
 

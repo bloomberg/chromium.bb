@@ -134,9 +134,11 @@ class DataReductionProxyProtocolEmbeddedServerTest : public testing::Test {
     context_->set_job_factory(job_factory_.get());
 
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
-    context_->set_proxy_delegate(proxy_delegate_.get());
 
     context_->Init();
+
+    context_->proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
   }
 
  protected:
@@ -295,11 +297,13 @@ class DataReductionProxyProtocolTest : public testing::Test {
 
     context_->set_job_factory(job_factory_.get());
 
+    context_->Init();
+
     if (use_drp_proxy_delegate) {
       proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
-      context_->set_proxy_delegate(proxy_delegate_.get());
+      context_->proxy_resolution_service()->SetProxyDelegate(
+          proxy_delegate_.get());
     }
-    context_->Init();
   }
 
   // Simulates a request to a data reduction proxy that may result in bypassing
@@ -1115,9 +1119,9 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
 
   void AttachToContextAndInit() {
     drp_test_context_->AttachToURLRequestContext(storage_.get());
-    context_->set_proxy_delegate(
-        drp_test_context_->io_data()->proxy_delegate());
     context_->Init();
+    context_->proxy_resolution_service()->SetProxyDelegate(
+        drp_test_context_->io_data()->proxy_delegate());
   }
 
   net::TestURLRequestContext* context() { return context_.get(); }
