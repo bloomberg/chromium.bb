@@ -24,6 +24,10 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
+// The accessibility label to use for the message label.  Default value is the
+// message iteself.
+@property(nonatomic, strong) NSString* messageAccessibilityLabel;
+
 // The empty view's accessibility identifier.
 + (NSString*)accessibilityIdentifier;
 
