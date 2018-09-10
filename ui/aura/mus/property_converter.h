@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 
 namespace base {
+class TimeDelta;
 class UnguessableToken;
 }
 
@@ -111,6 +112,9 @@ class AURA_EXPORT PropertyConverter {
                               const char* transport_name);
   void RegisterString16Property(const WindowProperty<base::string16*>* property,
                                 const char* transport_name);
+  void RegisterTimeDeltaProperty(
+      const WindowProperty<base::TimeDelta>* property,
+      const char* transport_name);
   void RegisterUnguessableTokenProperty(
       const WindowProperty<base::UnguessableToken*>* property,
       const char* transport_name);

@@ -161,5 +161,26 @@ interface WindowManager {
   // A boolean determining whether to show the window's title.
   const string kWindowTitleShown_Property = "prop:window-title-shown";
 
+  // Duration of an animation, as a TimeDelta. This maps to
+  // kWindowVisibilityAnimationDuration.
+  const string kWindowVisibilityAnimationDuration_Property =
+      "prop:window-visibility-animation-duration";
+
+  // When the animation should be used. This is an int, and maps to
+  // WindowVisibilityAnimationTransition (which is a bitmask).
+  const string kWindowVisibilityAnimationTransition_Property =
+      "prop:window-visibility-animation-transition";
+
+  // Type of animation for the window. This is an int, and maps to
+  // WindowVisibilityAnimationType (which allows for any int value as well).
+  const string kWindowVisibilityAnimationType_Property =
+      "prop:window-visibility-animation-type";
+
+  // Distance to translate a window during an animation of type
+  // WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL. This is a float, and maps to
+  // kWindowVisibilityAnimationVerticalPositionKey.
+  const string kWindowVisibilityAnimationVerticalPosition_Property =
+      "prop:window-visibility-animation-vertical-position";
+
   // End long lived properties. ------------------------------------------------
 };
