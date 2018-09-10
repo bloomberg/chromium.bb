@@ -1304,6 +1304,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (field_group_type == NO_GROUP)
       continue;
 
+    if (field_group_type == COMPANY &&
+        !base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName)) {
+      continue;
+    }
+
     // On a refill, only fill fields from type groups that were present during
     // the initial fill.
     if (is_refill &&
