@@ -56,7 +56,10 @@ class CORE_EXPORT AXObjectCache
   virtual ~AXObjectCache();
   void Trace(blink::Visitor*) override;
 
-  virtual void Dispose() = 0;
+  // Clear all AXObjects. This can be called to invalidate the whole
+  // accessibility tree, or when the Document that owns this AXObjectCache
+  // will be detached.
+  virtual void Clear() = 0;
 
   virtual void SelectionChanged(Node*) = 0;
   virtual void ChildrenChanged(Node*) = 0;

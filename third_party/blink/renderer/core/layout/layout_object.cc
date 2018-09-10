@@ -285,7 +285,6 @@ LayoutObject::LayoutObject(Node* node)
       previous_(nullptr),
       next_(nullptr),
 #if DCHECK_IS_ON()
-      has_ax_object_(false),
       set_needs_layout_forbidden_(false),
 #endif
       bitfields_(node) {
@@ -295,9 +294,6 @@ LayoutObject::LayoutObject(Node* node)
 }
 
 LayoutObject::~LayoutObject() {
-#if DCHECK_IS_ON()
-  DCHECK(!has_ax_object_);
-#endif
   InstanceCounters::DecrementCounter(InstanceCounters::kLayoutObjectCounter);
 }
 

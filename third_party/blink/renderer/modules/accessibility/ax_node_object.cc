@@ -96,7 +96,6 @@ AXNodeObject* AXNodeObject::Create(Node* node,
 }
 
 AXNodeObject::~AXNodeObject() {
-  DCHECK(!node_);
 }
 
 void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
