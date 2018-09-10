@@ -166,10 +166,12 @@ base::RepeatingCallback<void(int)> MakeBarrierCompletionCallback(
 void RunOperationAndCallback(
     base::OnceCallback<int(net::CompletionOnceCallback)> operation,
     net::CompletionOnceCallback operation_callback) {
-  auto copyable_callback =
-      base::AdaptCallbackForRepeating(std::move(operation_callback));
+  base::RepeatingCallback<void(int)> copyable_callback;
+  if (operation_callback)
+    copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(operation_callback));
   const int operation_result = std::move(operation).Run(copyable_callback);
-  if (operation_result != net::ERR_IO_PENDING)
+  if (operation_result != net::ERR_IO_PENDING && copyable_callback)
     copyable_callback.Run(operation_result);
 }
 
