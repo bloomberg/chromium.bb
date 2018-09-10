@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//ui/file_manager/js_unit_tests.gni")
+import("//third_party/closure_compiler/js_unit_tests.gni")
 
 js_type_check("closure_compile_module") {
   deps = [

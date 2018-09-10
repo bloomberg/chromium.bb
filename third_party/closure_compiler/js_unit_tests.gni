@@ -43,7 +43,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 template("js_unit_tests") {
   html_gen_target_name = target_name + "_html_gen"
   action_foreach(html_gen_target_name) {
-    script_path = "//ui/file_manager"
+    script_path = "//third_party/closure_compiler"
     script = "$script_path/js_unit_test.py"
     forward_variables_from(invoker,
                            [
