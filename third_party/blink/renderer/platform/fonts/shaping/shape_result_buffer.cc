@@ -200,7 +200,7 @@ Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
 }
 
 void ShapeResultBuffer::AddRunInfoAdvances(const ShapeResult::RunInfo& run_info,
-                                           float offset,
+                                           double offset,
                                            Vector<double>& advances) {
   const unsigned num_glyphs = run_info.glyph_data_.size();
   const unsigned num_chars = run_info.num_characters_;
@@ -254,7 +254,7 @@ Vector<double> ShapeResultBuffer::IndividualCharacterAdvances(
     float total_width) const {
   unsigned character_offset = 0;
   Vector<double> advances;
-  float current_x = direction == TextDirection::kRtl ? total_width : 0;
+  double current_x = direction == TextDirection::kRtl ? total_width : 0;
 
   for (const scoped_refptr<const ShapeResult> result : results_) {
     unsigned run_count = result->runs_.size();

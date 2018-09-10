@@ -72,7 +72,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
       unsigned to);
 
   static void AddRunInfoAdvances(const ShapeResult::RunInfo& run_info,
-                                 float offset,
+                                 double offset,
                                  Vector<double>& advances);
   static void AddRunInfoRanges(const ShapeResult::RunInfo&,
                                float offset,
