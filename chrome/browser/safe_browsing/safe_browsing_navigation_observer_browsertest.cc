@@ -420,7 +420,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
         host_to_ip_map();
     ASSERT_EQ(1U, actual_host_ip_map->size());
     auto ip_list =
-        actual_host_ip_map->at(embedded_test_server()->base_url().host());
+        (*actual_host_ip_map)[embedded_test_server()->base_url().host()];
     ASSERT_EQ(1U, ip_list.size());
     EXPECT_EQ(embedded_test_server()->host_port_pair().host(),
               ip_list.back().ip);
@@ -1999,8 +1999,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, TwoServerRedirects) {
                         nav_list->Get(1));
   const auto redirect_vector = nav_list->Get(1)->server_redirect_urls;
   ASSERT_EQ(2U, redirect_vector.size());
-  EXPECT_EQ(redirect_url, redirect_vector.at(0));
-  EXPECT_EQ(destination_url, redirect_vector.at(1));
+  EXPECT_EQ(redirect_url, redirect_vector[0]);
+  EXPECT_EQ(destination_url, redirect_vector[1]);
 
   ReferrerChain referrer_chain;
   IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
@@ -2092,11 +2092,11 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, AddIPMapping) {
   ip_map->clear();
   ip_map->insert(
       std::make_pair(test_server_host, std::vector<ResolvedIPAddress>()));
-  ASSERT_EQ(std::size_t(0), ip_map->at(test_server_host).size());
+  ASSERT_EQ(std::size_t(0), (*ip_map)[test_server_host].size());
   ClickTestLink("direct_download", 1, initial_url);
-  EXPECT_EQ(1U, ip_map->at(test_server_host).size());
+  EXPECT_EQ(1U, (*ip_map)[test_server_host].size());
   EXPECT_EQ(embedded_test_server()->host_port_pair().host(),
-            ip_map->at(test_server_host).back().ip);
+            (*ip_map)[test_server_host].back().ip);
 }
 
 // If we have already seen an IP associated with a host, update its timestamp.
@@ -2110,15 +2110,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, IPListDedup) {
   ip_map->insert(
       std::make_pair(test_server_host, std::vector<ResolvedIPAddress>()));
   base::Time yesterday(base::Time::Now() - base::TimeDelta::FromDays(1));
-  ip_map->at(test_server_host)
-      .push_back(ResolvedIPAddress(
-          yesterday, embedded_test_server()->host_port_pair().host()));
-  ASSERT_EQ(1U, ip_map->at(test_server_host).size());
+  (*ip_map)[test_server_host].push_back(ResolvedIPAddress(
+      yesterday, embedded_test_server()->host_port_pair().host()));
+  ASSERT_EQ(1U, (*ip_map)[test_server_host].size());
   ClickTestLink("direct_download", 1, initial_url);
-  EXPECT_EQ(1U, ip_map->at(test_server_host).size());
+  EXPECT_EQ(1U, (*ip_map)[test_server_host].size());
   EXPECT_EQ(embedded_test_server()->host_port_pair().host(),
-            ip_map->at(test_server_host).back().ip);
-  EXPECT_NE(yesterday, ip_map->at(test_server_host).front().timestamp);
+            (*ip_map)[test_server_host].back().ip);
+  EXPECT_NE(yesterday, (*ip_map)[test_server_host].front().timestamp);
 }
 
 // Download via html5 file API.
