@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/page/create_window.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -197,16 +198,38 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
   return nullptr;
 }
 
-static void MaybeLogWindowOpenUKM(LocalFrame& opener_frame) {
+enum class WindowOpenFromAdState {
+  // This is used for a UMA histogram. Please never alter existing values, only
+  // append new ones and make sure to update enums.xml.
+  kAdScriptAndAdFrame = 0,
+  kNonAdScriptAndAdFrame = 1,
+  kAdScriptAndNonAdFrame = 2,
+  kNonAdScriptAndNonAdFrame = 3,
+  kMaxValue = kNonAdScriptAndNonAdFrame,
+};
+
+static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   AdTracker* ad_tracker = opener_frame.GetAdTracker();
   if (!ad_tracker) {
     return;
   }
 
-  ukm::UkmRecorder* ukm_recorder = opener_frame.GetDocument()->UkmRecorder();
-  ukm::SourceId source_id = opener_frame.GetDocument()->UkmSourceID();
   bool is_ad_subframe = opener_frame.IsAdSubframe();
   bool is_ad_script_in_stack = ad_tracker->IsAdScriptInStack();
+
+  // Log to UMA.
+  WindowOpenFromAdState state =
+      is_ad_subframe ? (is_ad_script_in_stack
+                            ? WindowOpenFromAdState::kAdScriptAndAdFrame
+                            : WindowOpenFromAdState::kNonAdScriptAndAdFrame)
+                     : (is_ad_script_in_stack
+                            ? WindowOpenFromAdState::kAdScriptAndNonAdFrame
+                            : WindowOpenFromAdState::kNonAdScriptAndNonAdFrame);
+  UMA_HISTOGRAM_ENUMERATION("Blink.WindowOpen.FromAdState", state);
+
+  // Log to UKM.
+  ukm::UkmRecorder* ukm_recorder = opener_frame.GetDocument()->UkmRecorder();
+  ukm::SourceId source_id = opener_frame.GetDocument()->UkmSourceID();
   if (source_id != ukm::kInvalidSourceId) {
     ukm::builders::AbusiveExperienceHeuristic_WindowOpen(source_id)
         .SetFromAdSubframe(is_ad_subframe)
@@ -276,7 +299,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
   page->GetChromeClient().Show(policy);
 
-  MaybeLogWindowOpenUKM(opener_frame);
+  MaybeLogWindowOpen(opener_frame);
   created = true;
   return &frame;
 }
