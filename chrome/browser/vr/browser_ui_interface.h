@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_BROWSER_UI_INTERFACE_H_
 #define CHROME_BROWSER_VR_BROWSER_UI_INTERFACE_H_
 
+#include <memory>
+
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
@@ -32,7 +34,6 @@ class VR_EXPORT BrowserUiInterface {
   virtual void SetIncognito(bool enabled) = 0;
   virtual void SetLoading(bool loading) = 0;
   virtual void SetLoadProgress(float progress) = 0;
-  virtual void SetIsExiting() = 0;
   virtual void SetHistoryButtonsEnabled(bool can_go_back,
                                         bool can_go_forward) = 0;
   virtual void SetCapturingState(

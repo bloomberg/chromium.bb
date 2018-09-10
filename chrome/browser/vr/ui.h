@@ -15,7 +15,9 @@
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "chrome/browser/vr/model/tab_model.h"
+#include "chrome/browser/vr/scheduler_ui_interface.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_initial_state.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -27,7 +29,6 @@
 namespace vr {
 
 class AudioDelegate;
-class BrowserUiInterface;
 class ContentElement;
 class ContentInputDelegate;
 class PlatformInputHandler;
@@ -46,7 +47,10 @@ struct ReticleModel;
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VR_UI_EXPORT Ui : public UiInterface {
+class VR_UI_EXPORT Ui : public UiInterface,
+                        public BrowserUiInterface,
+                        public KeyboardUiInterface,
+                        public SchedulerUiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,
@@ -77,7 +81,6 @@ class VR_UI_EXPORT Ui : public UiInterface {
   UiElementRenderer* ui_element_renderer() {
     return ui_element_renderer_.get();
   }
-  UiRenderer* ui_renderer() { return ui_renderer_.get(); }
   UiInputManager* input_manager() { return input_manager_.get(); }
   Model* model_for_test() { return model_.get(); }
 
@@ -89,7 +92,6 @@ class VR_UI_EXPORT Ui : public UiInterface {
   void SetIncognito(bool enabled) override;
   void SetLoading(bool loading) override;
   void SetLoadProgress(float progress) override;
-  void SetIsExiting() override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetCapturingState(
       const CapturingStateModel& active_capturing,
@@ -119,11 +121,12 @@ class VR_UI_EXPORT Ui : public UiInterface {
   void RemoveAllTabs() override;
 
   // UiInterface
+  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;
+  SchedulerUiInterface* GetSchedulerUiPtr() override;
   void OnGlInitialized(GlTextureLocation textures_location,
                        unsigned int content_texture_id,
                        unsigned int content_overlay_texture_id,
                        unsigned int platform_ui_texture_id) override;
-  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;
   void SetAlertDialogEnabled(bool enabled,
                              PlatformUiInputDelegate* delegate,
                              float width,

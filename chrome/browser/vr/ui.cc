@@ -128,6 +128,10 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+SchedulerUiInterface* Ui::GetSchedulerUiPtr() {
+  return this;
+}
+
 void Ui::SetWebVrMode(bool enabled) {
   if (enabled) {
     model_->web_vr.has_received_permissions = false;
@@ -164,10 +168,6 @@ void Ui::SetLoading(bool loading) {
 
 void Ui::SetLoadProgress(float progress) {
   model_->load_progress = progress;
-}
-
-void Ui::SetIsExiting() {
-  model_->exiting_vr = true;
 }
 
 void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {

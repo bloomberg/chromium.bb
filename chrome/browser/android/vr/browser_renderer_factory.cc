@@ -71,9 +71,9 @@ std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
       params->gvr_api, params->reprojected_rendering, params->pause_content,
       params->low_density, kSlidingAverageSize);
   auto scheduler_delegate = std::make_unique<GvrSchedulerDelegate>(
-      vr_gl_thread, ui.get(), params->gvr_api, graphics_delegate.get(),
-      params->ui_initial_state.in_web_vr, params->cardboard_gamepad,
-      kSlidingAverageSize);
+      vr_gl_thread, ui->GetSchedulerUiPtr(), params->gvr_api,
+      graphics_delegate.get(), params->ui_initial_state.in_web_vr,
+      params->cardboard_gamepad, kSlidingAverageSize);
   graphics_delegate->set_webxr_presentation_state(scheduler_delegate->webxr());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

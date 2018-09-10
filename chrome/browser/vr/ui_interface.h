@@ -11,11 +11,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/keyboard_ui_interface.h"
-#include "chrome/browser/vr/scheduler_ui_interface.h"
 
 namespace gfx {
 class Point3F;
@@ -28,6 +25,7 @@ namespace vr {
 class BrowserUiInterface;
 class InputEvent;
 class PlatformUiInputDelegate;
+class SchedulerUiInterface;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
@@ -38,13 +36,12 @@ using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
 // feature module.
-class UiInterface : public BrowserUiInterface,
-                    public SchedulerUiInterface,
-                    public KeyboardUiInterface {
+class UiInterface {
  public:
-  ~UiInterface() override {}
+  virtual ~UiInterface() = default;
 
   virtual base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() = 0;
+  virtual SchedulerUiInterface* GetSchedulerUiPtr() = 0;
 
   // Textures from 2D UI that are positioned in the 3D scene.
   // Content refers to the web contents, as coming from the Chrome compositor.
