@@ -27,6 +27,8 @@
 #if defined(OS_MACOSX)
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
+#include "base/containers/span.h"
+#include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/common/safe_browsing/mach_o_image_reader_mac.h"
 #endif  // OS_MACOSX
 
@@ -116,6 +118,47 @@ void AnalyzeContainedBinary(
   }
 }
 
+// Helper class to get a certain size trailer of the extracted file. Extracts
+// the file into memory, retaining only the last |trailer_size_bytes| bytes.
+class TrailerWriterDelegate : public zip::WriterDelegate {
+ public:
+  explicit TrailerWriterDelegate(size_t trailer_size_bytes);
+
+  // zip::WriterDelegate implementation:
+  bool PrepareOutput() override { return true; }
+  bool WriteBytes(const char* data, int num_bytes) override;
+  void SetTimeModified(const base::Time& time) override {}
+
+  const std::string& trailer() { return trailer_; }
+
+ private:
+  size_t trailer_size_bytes_;
+  std::string trailer_;
+};
+
+TrailerWriterDelegate::TrailerWriterDelegate(size_t trailer_size_bytes)
+    : trailer_size_bytes_(trailer_size_bytes), trailer_() {}
+
+bool TrailerWriterDelegate::WriteBytes(const char* data, int num_bytes) {
+  // TODO(drubery): WriterDelegate::WriteBytes should probably have |num_bytes|
+  // by a size_t. Investigate how difficult it would be to migrate
+  // implementations of WriterDelegate over.
+  base::CheckedNumeric<size_t> num_bytes_size(num_bytes);
+  if (!num_bytes_size.IsValid())
+    return false;
+
+  if (num_bytes_size.ValueOrDie() >= trailer_size_bytes_) {
+    trailer_ = std::string(data + num_bytes - trailer_size_bytes_,
+                           trailer_size_bytes_);
+  } else {
+    trailer_.append(data, num_bytes);
+    if (trailer_.size() > trailer_size_bytes_) {
+      trailer_ = trailer_.substr(trailer_.size() - trailer_size_bytes_);
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 void AnalyzeZipFile(base::File zip_file,
@@ -145,12 +188,38 @@ void AnalyzeZipFile(base::File zip_file,
     }
     const base::FilePath& file = reader.current_entry_info()->file_path();
     bool current_entry_is_executable;
+
 #if defined(OS_MACOSX)
     std::string magic;
     reader.ExtractCurrentEntryToString(sizeof(uint32_t), &magic);
+
+    std::string dmg_header;
+    reader.ExtractCurrentEntryToString(
+        DiskImageTypeSnifferMac::AppleDiskImageTrailerSize(), &dmg_header);
+
     current_entry_is_executable =
         FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file) ||
-        StringIsMachOMagic(magic);
+        StringIsMachOMagic(magic) ||
+        DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(
+            base::span<const uint8_t>(
+                reinterpret_cast<const uint8_t*>(dmg_header.c_str()),
+                dmg_header.size()));
+
+    // We can skip checking the trailer if we already know the file is
+    // executable.
+    if (!current_entry_is_executable) {
+      TrailerWriterDelegate trailer_writer(
+          DiskImageTypeSnifferMac::AppleDiskImageTrailerSize());
+      reader.ExtractCurrentEntry(
+          &trailer_writer,
+          FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"));
+      const std::string& trailer = trailer_writer.trailer();
+      current_entry_is_executable =
+          DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(
+              base::span<const uint8_t>(
+                  reinterpret_cast<const uint8_t*>(trailer.data()),
+                  trailer.size()));
+    }
 #else
     current_entry_is_executable =
         FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file);

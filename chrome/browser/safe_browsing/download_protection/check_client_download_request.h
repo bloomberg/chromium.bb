@@ -31,7 +31,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/safe_browsing/download_protection/disk_image_type_sniffer_mac.h"
+#include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
 

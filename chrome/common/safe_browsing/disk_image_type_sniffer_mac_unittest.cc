@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/disk_image_type_sniffer_mac.h"
+#include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -102,6 +102,14 @@ const ArchiveTestCase cases[] = {
 INSTANTIATE_TEST_CASE_P(DiskImageTypeSnifferMacTestInstantiation,
                         DiskImageTypeSnifferMacTest,
                         testing::ValuesIn(cases));
+
+TEST(DiskImageTypeSnifferMacTest, IsAppleDiskImageTrailerIsCorrect) {
+  uint8_t good_header[4] = {'k', 'o', 'l', 'y'};
+  EXPECT_TRUE(DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(good_header));
+
+  uint8_t bad_header[6] = {'f', 'o', 'o', 'b', 'a', 'r'};
+  EXPECT_FALSE(DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(bad_header));
+}
 
 }  // namespace
 }  // namespace safe_browsing
