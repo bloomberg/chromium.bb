@@ -50,16 +50,21 @@ public class LazyConstructionPropertyMcp<M extends PropertyObservable<P>, V exte
 
         mPendingProperties.addAll(mModel.getAllSetProperties());
 
-        mViewProvider.whenLoaded(this ::onViewCreated);
+        mViewProvider.whenLoaded(this::onViewCreated);
 
         // The model should start out hidden.
         assert !mVisibilityPredicate.isVisible(mModel);
+
+        // The visibility property should be set initially, to avoid spurious property change
+        // notifications that would cause the view to be inflated prematurely.
+        assert mPendingProperties.contains(mVisibilityProperty);
+
         mModel.addObserver(this);
     }
 
     public static <M extends PropertyModel, V extends View>
             LazyConstructionPropertyMcp<M, V, PropertyKey> create(M model,
-                    PropertyModel.BooleanPropertyKey visibilityProperty,
+                    PropertyModel.WritableBooleanPropertyKey visibilityProperty,
                     ViewProvider<V> viewFactory,
                     PropertyModelChangeProcessor.ViewBinder<M, V, PropertyKey> viewBinder) {
         return new LazyConstructionPropertyMcp<>(model, visibilityProperty,

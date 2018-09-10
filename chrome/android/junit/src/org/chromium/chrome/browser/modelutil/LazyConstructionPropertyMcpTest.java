@@ -27,9 +27,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.modelutil.PropertyModel.BooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.IntPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ObjectPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 
@@ -39,9 +39,10 @@ import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class LazyConstructionPropertyMcpTest {
-    private static final BooleanPropertyKey VISIBILITY = new BooleanPropertyKey();
-    private static final ObjectPropertyKey<String> STRING_PROPERTY = new ObjectPropertyKey<>();
-    private static final IntPropertyKey INT_PROPERTY = new IntPropertyKey();
+    private static final WritableBooleanPropertyKey VISIBILITY = new WritableBooleanPropertyKey();
+    private static final WritableObjectPropertyKey<String> STRING_PROPERTY =
+            new WritableObjectPropertyKey<>();
+    private static final WritableIntPropertyKey INT_PROPERTY = new WritableIntPropertyKey();
     private static final PropertyKey[] ALL_PROPERTIES =
             new PropertyKey[] {VISIBILITY, STRING_PROPERTY, INT_PROPERTY};
     private PropertyModel mModel;

@@ -16,39 +16,42 @@ import org.chromium.ui.resources.ResourceManager;
  */
 public class BottomToolbarModel extends PropertyModel {
     /** The Y offset of the view in px. */
-    public static final IntPropertyKey Y_OFFSET = new IntPropertyKey();
+    public static final WritableIntPropertyKey Y_OFFSET = new WritableIntPropertyKey();
 
     /** Whether the Android view version of the toolbar is visible. */
-    public static final BooleanPropertyKey ANDROID_VIEW_VISIBLE = new BooleanPropertyKey();
+    public static final WritableBooleanPropertyKey ANDROID_VIEW_VISIBLE =
+            new WritableBooleanPropertyKey();
 
     /** Whether the composited version of the toolbar is visible. */
-    public static final BooleanPropertyKey COMPOSITED_VIEW_VISIBLE = new BooleanPropertyKey();
+    public static final WritableBooleanPropertyKey COMPOSITED_VIEW_VISIBLE =
+            new WritableBooleanPropertyKey();
 
     /** A {@link LayoutManager} to attach overlays to. */
-    public static final ObjectPropertyKey<LayoutManager> LAYOUT_MANAGER = new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<LayoutManager> LAYOUT_MANAGER =
+            new WritableObjectPropertyKey<>();
 
     /** The browser's {@link ToolbarSwipeLayout}. */
-    public static final ObjectPropertyKey<ToolbarSwipeLayout> TOOLBAR_SWIPE_LAYOUT =
-            new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<ToolbarSwipeLayout> TOOLBAR_SWIPE_LAYOUT =
+            new WritableObjectPropertyKey<>();
 
     /** A {@link ResourceManager} for loading textures into the compositor. */
-    public static final ObjectPropertyKey<ResourceManager> RESOURCE_MANAGER =
-            new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<ResourceManager> RESOURCE_MANAGER =
+            new WritableObjectPropertyKey<>();
 
     /** A handler for swipe events on the toolbar. */
-    public static final ObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
-            new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
+            new WritableObjectPropertyKey<>();
 
     /** Data used to show the first button. */
-    public static final ObjectPropertyKey<ToolbarButtonData> FIRST_BUTTON_DATA =
-            new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<ToolbarButtonData> FIRST_BUTTON_DATA =
+            new WritableObjectPropertyKey<>();
 
     /** Data used to show the second button. */
-    public static final ObjectPropertyKey<ToolbarButtonData> SECOND_BUTTON_DATA =
-            new ObjectPropertyKey<>();
+    public static final WritableObjectPropertyKey<ToolbarButtonData> SECOND_BUTTON_DATA =
+            new WritableObjectPropertyKey<>();
 
     /** Primary color of bottom toolbar. */
-    public static final IntPropertyKey PRIMARY_COLOR = new IntPropertyKey();
+    public static final WritableIntPropertyKey PRIMARY_COLOR = new WritableIntPropertyKey();
 
     /** Default constructor. */
     public BottomToolbarModel() {

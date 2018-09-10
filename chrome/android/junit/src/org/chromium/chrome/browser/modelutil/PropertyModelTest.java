@@ -17,10 +17,10 @@ import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.modelutil.PropertyModel.BooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.FloatPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.IntPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ObjectPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableFloatPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 
 import java.util.ArrayList;
@@ -36,21 +36,24 @@ public class PropertyModelTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    public static BooleanPropertyKey BOOLEAN_PROPERTY_A = new BooleanPropertyKey();
-    public static BooleanPropertyKey BOOLEAN_PROPERTY_B = new BooleanPropertyKey();
-    public static BooleanPropertyKey BOOLEAN_PROPERTY_C = new BooleanPropertyKey();
+    public static WritableBooleanPropertyKey BOOLEAN_PROPERTY_A = new WritableBooleanPropertyKey();
+    public static WritableBooleanPropertyKey BOOLEAN_PROPERTY_B = new WritableBooleanPropertyKey();
+    public static WritableBooleanPropertyKey BOOLEAN_PROPERTY_C = new WritableBooleanPropertyKey();
 
-    public static FloatPropertyKey FLOAT_PROPERTY_A = new FloatPropertyKey();
-    public static FloatPropertyKey FLOAT_PROPERTY_B = new FloatPropertyKey();
-    public static FloatPropertyKey FLOAT_PROPERTY_C = new FloatPropertyKey();
+    public static WritableFloatPropertyKey FLOAT_PROPERTY_A = new WritableFloatPropertyKey();
+    public static WritableFloatPropertyKey FLOAT_PROPERTY_B = new WritableFloatPropertyKey();
+    public static WritableFloatPropertyKey FLOAT_PROPERTY_C = new WritableFloatPropertyKey();
 
-    public static IntPropertyKey INT_PROPERTY_A = new IntPropertyKey();
-    public static IntPropertyKey INT_PROPERTY_B = new IntPropertyKey();
-    public static IntPropertyKey INT_PROPERTY_C = new IntPropertyKey();
+    public static WritableIntPropertyKey INT_PROPERTY_A = new WritableIntPropertyKey();
+    public static WritableIntPropertyKey INT_PROPERTY_B = new WritableIntPropertyKey();
+    public static WritableIntPropertyKey INT_PROPERTY_C = new WritableIntPropertyKey();
 
-    public static ObjectPropertyKey<Object> OBJECT_PROPERTY_A = new ObjectPropertyKey<>();
-    public static ObjectPropertyKey<String> OBJECT_PROPERTY_B = new ObjectPropertyKey<>();
-    public static ObjectPropertyKey<List<Integer>> OBJECT_PROPERTY_C = new ObjectPropertyKey<>();
+    public static WritableObjectPropertyKey<Object> OBJECT_PROPERTY_A =
+            new WritableObjectPropertyKey<>();
+    public static WritableObjectPropertyKey<String> OBJECT_PROPERTY_B =
+            new WritableObjectPropertyKey<>();
+    public static WritableObjectPropertyKey<List<Integer>> OBJECT_PROPERTY_C =
+            new WritableObjectPropertyKey<>();
 
     @Test
     public void getAllSetProperties() {
@@ -73,7 +76,8 @@ public class PropertyModelTest {
         verifyBooleanUpdate(model, BOOLEAN_PROPERTY_B, false);
     }
 
-    private void verifyBooleanUpdate(PropertyModel model, BooleanPropertyKey key, boolean value) {
+    private void verifyBooleanUpdate(
+            PropertyModel model, WritableBooleanPropertyKey key, boolean value) {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
@@ -102,7 +106,7 @@ public class PropertyModelTest {
         verifyFloatUpdate(model, FLOAT_PROPERTY_A, Float.MAX_VALUE);
     }
 
-    private void verifyFloatUpdate(PropertyModel model, FloatPropertyKey key, float value) {
+    private void verifyFloatUpdate(PropertyModel model, WritableFloatPropertyKey key, float value) {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
@@ -127,7 +131,7 @@ public class PropertyModelTest {
         verifyIntUpdate(model, INT_PROPERTY_A, Integer.MIN_VALUE);
     }
 
-    private void verifyIntUpdate(PropertyModel model, IntPropertyKey key, int value) {
+    private void verifyIntUpdate(PropertyModel model, WritableIntPropertyKey key, int value) {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);
@@ -163,7 +167,8 @@ public class PropertyModelTest {
         verifyObjectUpdate(model, OBJECT_PROPERTY_C, list);
     }
 
-    private <T> void verifyObjectUpdate(PropertyModel model, ObjectPropertyKey<T> key, T value) {
+    private <T> void verifyObjectUpdate(
+            PropertyModel model, WritableObjectPropertyKey<T> key, T value) {
         @SuppressWarnings("unchecked")
         PropertyObserver<PropertyKey> observer = Mockito.mock(PropertyObserver.class);
         model.addObserver(observer);

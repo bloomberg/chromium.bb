@@ -23,6 +23,12 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
@@ -46,6 +52,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
+import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.DeferredViewStubInflationProvider;
@@ -63,7 +71,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class KeyboardAccessoryViewTest {
-    private KeyboardAccessoryModel mModel;
+    private PropertyModel mModel;
     private BlockingQueue<KeyboardAccessoryView> mKeyboardAccessoryView;
 
     @Rule
@@ -95,16 +103,21 @@ public class KeyboardAccessoryViewTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel = new KeyboardAccessoryModel();
+            mModel = new PropertyModel
+                             .Builder(ACTIONS, TABS, VISIBLE, BOTTOM_OFFSET_PX, ACTIVE_TAB,
+                                     TAB_SELECTION_CALLBACKS)
+                             .with(TABS, new ListModel<>())
+                             .with(ACTIONS, new ListModel<>())
+                             .with(VISIBLE, false)
+                             .build();
             ViewStub viewStub =
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
 
             mKeyboardAccessoryView = new ArrayBlockingQueue<>(1);
             ViewProvider<KeyboardAccessoryView> provider =
                     new DeferredViewStubInflationProvider<>(viewStub);
-            new LazyConstructionPropertyMcp<>(mModel,
-                    KeyboardAccessoryModel.PropertyKey.VISIBLE, KeyboardAccessoryModel::isVisible,
-                    provider, KeyboardAccessoryViewBinder::bind);
+            LazyConstructionPropertyMcp.create(
+                    mModel, VISIBLE, provider, KeyboardAccessoryViewBinder::bind);
             provider.whenLoaded(mKeyboardAccessoryView::add);
         });
     }
@@ -117,12 +130,12 @@ public class KeyboardAccessoryViewTest {
         assertNull(mKeyboardAccessoryView.poll());
 
         // After setting the visibility to true, the view should exist and be visible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(true); });
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, true); });
         KeyboardAccessoryView view = mKeyboardAccessoryView.take();
         assertEquals(view.getVisibility(), View.VISIBLE);
 
         // After hiding the view, the view should still exist but be invisible.
-        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.setVisible(false); });
+        ThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(VISIBLE, false); });
         assertNotEquals(view.getVisibility(), View.VISIBLE);
     }
 
@@ -134,8 +147,8 @@ public class KeyboardAccessoryViewTest {
                 "Test Button", GENERATE_PASSWORD_AUTOMATIC, action -> buttonClicked.set(true));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getActionList().add(testAction);
+            mModel.set(VISIBLE, true);
+            mModel.get(ACTIONS).add(testAction);
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Test Button")));
@@ -148,8 +161,8 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testCanAddSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
+            mModel.set(VISIBLE, true);
+            mModel.get(ACTIONS).set(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action(
                             "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
                     new KeyboardAccessoryData.Action("Second", AUTOFILL_SUGGESTION, action -> {})});
@@ -161,7 +174,7 @@ public class KeyboardAccessoryViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.getActionList().add(new KeyboardAccessoryData.Action(
+                        -> mModel.get(ACTIONS).add(new KeyboardAccessoryData.Action(
                                 "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
@@ -174,8 +187,8 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testCanRemoveSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
+            mModel.set(VISIBLE, true);
+            mModel.get(ACTIONS).set(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action(
                             "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
                     new KeyboardAccessoryData.Action(
@@ -190,7 +203,7 @@ public class KeyboardAccessoryViewTest {
         onView(withText("Third")).check(matches(isDisplayed()));
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.getActionList().remove(mModel.getActionList().get(1)));
+                () -> mModel.get(ACTIONS).remove(mModel.get(ACTIONS).get(1)));
 
         onView(isRoot()).check((root, e)
                                        -> waitForView((ViewGroup) root, withText("Second"),
@@ -204,8 +217,8 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testRemovesTabs() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getTabList().set(new KeyboardAccessoryData.Tab[] {createTestTab("FirstTab"),
+            mModel.set(VISIBLE, true);
+            mModel.get(TABS).set(new KeyboardAccessoryData.Tab[] {createTestTab("FirstTab"),
                     createTestTab("SecondTab"), createTestTab("ThirdTab")});
         });
 
@@ -215,8 +228,7 @@ public class KeyboardAccessoryViewTest {
         onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
         onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.getTabList().remove(mModel.getTabList().get(1)));
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.get(TABS).remove(mModel.get(TABS).get(1)));
 
         onView(isRoot()).check(
                 (root, e)
@@ -231,8 +243,8 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testAddsTabs() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getTabList().set(new KeyboardAccessoryData.Tab[] {
+            mModel.set(VISIBLE, true);
+            mModel.get(TABS).set(new KeyboardAccessoryData.Tab[] {
                     createTestTab("FirstTab"), createTestTab("SecondTab")});
         });
 
@@ -242,7 +254,7 @@ public class KeyboardAccessoryViewTest {
         onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
         onView(isTabWithDescription("ThirdTab")).check(doesNotExist());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.getTabList().add(createTestTab("ThirdTab")));
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.get(TABS).add(createTestTab("ThirdTab")));
 
         onView(isRoot()).check(
                 (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("ThirdTab")));
