@@ -41,19 +41,8 @@ const variations::VariationID kNewUIExperimentTrialID = 3314529;
 // on release channel.
 base::FieldTrial::Probability UIRefreshHoldbackPercent(
     version_info::Channel channel) {
-  switch (channel) {
-    // Stable Channel has 3% of users held back with Old UI.
-    case version_info::Channel::STABLE:
-    case version_info::Channel::UNKNOWN:  // Same as DEFAULT
-      return 3;
-    // Beta Channel is 50/50 split between Old UI and New UI.
-    case version_info::Channel::BETA:
-      return 50;
-    // Canary and Dev is 100% rolled out with New UI.
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV:
-      return 0;
-  }
+  // There will be no holdback for Old UI starting with M70 release.
+  return 0;
 }
 
 // Field trials do not take effect until configurations have been downloaded.
