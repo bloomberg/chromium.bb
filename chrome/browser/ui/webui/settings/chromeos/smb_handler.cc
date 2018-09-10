@@ -92,17 +92,22 @@ void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {
     return;
   }
 
-  service->GatherSharesInNetwork(base::BindRepeating(
-      &SmbHandler::HandleGatherSharesResponse, weak_ptr_factory_.GetWeakPtr()));
+  service->GatherSharesInNetwork(
+      base::BindOnce(&SmbHandler::HandleDiscoveryDone,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&SmbHandler::HandleGatherSharesResponse,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SmbHandler::HandleGatherSharesResponse(
-    const std::vector<smb_client::SmbUrl>& shares_gathered) {
+void SmbHandler::HandleDiscoveryDone() {
   host_discovery_done_ = true;
   if (!stored_mount_call_.is_null()) {
     std::move(stored_mount_call_).Run();
   }
+}
 
+void SmbHandler::HandleGatherSharesResponse(
+    const std::vector<smb_client::SmbUrl>& shares_gathered) {
   AllowJavascript();
   FireWebUIListener("on-shares-found", BuildShareList(shares_gathered));
 }
