@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -211,7 +212,18 @@ void HTMLVideoElement::ParseAttribute(
   } else if (params.name == intrinsicsizeAttr &&
              RuntimeEnabledFeatures::
                  ExperimentalProductivityFeaturesEnabled()) {
-    ParseIntrinsicSizeAttribute(params.new_value);
+    String message;
+    bool intrinsic_size_changed =
+        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+            params.new_value, &overridden_intrinsic_size_, &message);
+    if (!message.IsEmpty()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, message));
+    }
+
+    if (intrinsic_size_changed && GetLayoutObject() &&
+        GetLayoutObject()->IsVideo())
+      ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }
@@ -240,31 +252,6 @@ IntSize HTMLVideoElement::videoVisibleSize() const {
 
 IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
   return overridden_intrinsic_size_;
-}
-
-void HTMLVideoElement::ParseIntrinsicSizeAttribute(const String& value) {
-  unsigned new_width = 0, new_height = 0;
-  Vector<String> size;
-  value.Split('x', size);
-  if (!value.IsEmpty() &&
-      (size.size() != 2 ||
-       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
-       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                               "Unable to parse intrinsicSize: expected "
-                               "[unsigned] x [unsigned], got " +
-                                   value));
-    new_width = 0;
-    new_height = 0;
-  }
-
-  IntSize new_size(new_width, new_height);
-  if (overridden_intrinsic_size_ != new_size) {
-    overridden_intrinsic_size_ = new_size;
-    if (GetLayoutObject() && GetLayoutObject()->IsVideo())
-      ToLayoutVideo(GetLayoutObject())->IntrinsicSizeChanged();
-  }
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {

@@ -220,8 +220,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
 
-  void ParseIntrinsicSizeAttribute(const String& value);
-
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
       custom_controls_fullscreen_detector_;
