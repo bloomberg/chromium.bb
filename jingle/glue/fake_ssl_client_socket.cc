@@ -64,9 +64,9 @@ static const uint8_t kSslServerHello[] = {
     0x00                                             // null compression
 };
 
-net::DrainableIOBuffer* NewDrainableIOBufferWithSize(int size) {
-  return new net::DrainableIOBuffer(base::MakeRefCounted<net::IOBuffer>(size),
-                                    size);
+scoped_refptr<net::DrainableIOBuffer> NewDrainableIOBufferWithSize(int size) {
+  return base::MakeRefCounted<net::DrainableIOBuffer>(
+      base::MakeRefCounted<net::IOBuffer>(size), size);
 }
 
 }  // namespace
