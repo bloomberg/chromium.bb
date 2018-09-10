@@ -78,7 +78,7 @@ class CompoundBufferTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    data_ = new IOBuffer(kDataSize);
+    data_ = base::MakeRefCounted<IOBuffer>(kDataSize);
     for (int i = 0; i < kDataSize; ++i) {
       data_->data()[i] = i;
     }

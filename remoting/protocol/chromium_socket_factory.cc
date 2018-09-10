@@ -110,7 +110,7 @@ UdpPacketSocket::PendingPacket::PendingPacket(const void* buffer,
                                               int buffer_size,
                                               const net::IPEndPoint& address,
                                               const rtc::PacketOptions& options)
-    : data(new net::IOBufferWithSize(buffer_size)),
+    : data(base::MakeRefCounted<net::IOBufferWithSize>(buffer_size)),
       address(address),
       retried(false),
       options(options) {
@@ -339,7 +339,7 @@ void UdpPacketSocket::OnSendCompleted(int result) {
 void UdpPacketSocket::DoRead() {
   int result = 0;
   while (result >= 0) {
-    receive_buffer_ = new net::IOBuffer(kReceiveBufferSize);
+    receive_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReceiveBufferSize);
     result = socket_->RecvFrom(
         receive_buffer_.get(),
         kReceiveBufferSize,

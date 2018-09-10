@@ -20,7 +20,8 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
   // int32_t of the serialized message size for framing.
   const int kExtraBytes = sizeof(int32_t);
   int size = msg.ByteSize() + kExtraBytes;
-  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
+  scoped_refptr<net::IOBufferWithSize> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(size);
   rtc::SetBE32(buffer->data(), msg.GetCachedSize());
   msg.SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8_t*>(buffer->data()) + kExtraBytes);

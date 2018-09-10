@@ -31,7 +31,8 @@ SecurityKeySocket::SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
                                      base::TimeDelta timeout,
                                      const base::Closure& timeout_callback)
     : socket_(std::move(socket)),
-      read_buffer_(new net::IOBufferWithSize(kRequestReadBufferLength)) {
+      read_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
+          kRequestReadBufferLength)) {
   timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE, timeout, timeout_callback);
 }
