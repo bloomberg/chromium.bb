@@ -10,7 +10,7 @@
 namespace blink {
 
 struct PaintInfo;
-class PaintInfoWithOffset;
+class ScopedPaintState;
 class InlineBox;
 class LayoutBlock;
 class LayoutBox;
@@ -31,13 +31,11 @@ class BlockPainter {
   void PaintOverflowControlsIfNeeded(const PaintInfo&,
                                      const LayoutPoint& paint_offset);
 
-  // See ObjectPainter::paintAllPhasesAtomically().
+  // See ObjectPainter::PaintAllPhasesAtomically().
   void PaintAllChildPhasesAtomically(const LayoutBox&, const PaintInfo&);
   static void PaintChildrenOfFlexibleBox(const LayoutFlexibleBox&,
                                          const PaintInfo&);
   static void PaintInlineBox(const InlineBox&, const PaintInfo&);
-
-  bool ShouldPaint(const PaintInfoWithOffset&) const;
 
  private:
   // Paint scroll hit test placeholders in the correct paint order (see:
@@ -49,6 +47,8 @@ class BlockPainter {
   void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintBlockFlowContents(const PaintInfo&, const LayoutPoint&);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
+
+  bool ShouldPaint(const ScopedPaintState&) const;
 
   const LayoutBlock& layout_block_;
 };

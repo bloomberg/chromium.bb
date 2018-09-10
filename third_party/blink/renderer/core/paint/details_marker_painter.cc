@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
@@ -25,19 +25,18 @@ void DetailsMarkerPainter::Paint(const PaintInfo& paint_info) {
           paint_info.context, layout_details_marker_, paint_info.phase))
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_details_marker_,
-                                             paint_info);
-  if (!paint_info_with_offset.LocalRectIntersectsCullRect(
+  ScopedPaintState paint_state(layout_details_marker_, paint_info);
+  if (!paint_state.LocalRectIntersectsCullRect(
           layout_details_marker_.PhysicalVisualOverflowRect()))
     return;
 
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  const auto& local_paint_info = paint_state.GetPaintInfo();
   DrawingRecorder recorder(local_paint_info.context, layout_details_marker_,
                            local_paint_info.phase);
   const Color color(layout_details_marker_.ResolveColor(GetCSSPropertyColor()));
   local_paint_info.context.SetFillColor(color);
 
-  auto box_origin = paint_info_with_offset.PaintOffset();
+  auto box_origin = paint_state.PaintOffset();
   box_origin.Move(
       layout_details_marker_.BorderLeft() +
           layout_details_marker_.PaddingLeft(),

@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -62,8 +62,8 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   if (path.IsEmpty())
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_image_, paint_info);
-  auto paint_offset = paint_info_with_offset.PaintOffset();
+  ScopedPaintState paint_state(layout_image_, paint_info);
+  auto paint_offset = paint_state.PaintOffset();
   path.Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(

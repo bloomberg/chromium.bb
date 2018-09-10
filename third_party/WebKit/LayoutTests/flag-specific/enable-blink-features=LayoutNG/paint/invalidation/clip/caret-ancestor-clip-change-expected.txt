@@ -18,12 +18,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTextControl INPUT id='target'",
+          "object": "LayoutNGBlockFlow DIV",
           "rect": [8, 58, 105, 62],
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "object": "LayoutTextControl INPUT id='target'",
           "rect": [8, 58, 105, 62],
           "reason": "incremental"
         },

@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_set_element.h"
 #include "third_party/blink/renderer/core/layout/layout_frame_set.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
@@ -154,10 +154,10 @@ void FrameSetPainter::Paint(const PaintInfo& paint_info) {
   if (!child)
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_frame_set_, paint_info);
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  ScopedPaintState paint_state(layout_frame_set_, paint_info);
+  const auto& local_paint_info = paint_state.GetPaintInfo();
   PaintChildren(local_paint_info);
-  PaintBorders(local_paint_info, paint_info_with_offset.PaintOffset());
+  PaintBorders(local_paint_info, paint_state.PaintOffset());
 }
 
 }  // namespace blink

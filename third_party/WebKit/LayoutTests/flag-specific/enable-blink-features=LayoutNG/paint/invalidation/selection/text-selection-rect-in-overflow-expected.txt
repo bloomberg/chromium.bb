@@ -23,7 +23,7 @@
           "reason": "selection"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='t'",
+          "object": "LayoutNGBlockFlow DIV id='t'",
           "rect": [8, 27, 197, 1],
           "reason": "incremental"
         }

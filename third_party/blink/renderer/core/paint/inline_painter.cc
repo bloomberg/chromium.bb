@@ -10,15 +10,15 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 namespace blink {
 
 void InlinePainter::Paint(const PaintInfo& paint_info) {
-  PaintInfoWithOffset paint_info_with_offset(layout_inline_, paint_info);
-  auto paint_offset = paint_info_with_offset.PaintOffset();
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
+  ScopedPaintState paint_state(layout_inline_, paint_info);
+  auto paint_offset = paint_state.PaintOffset();
+  const auto& local_paint_info = paint_state.GetPaintInfo();
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     // Inline box with self painting layer is painted in this code path.
