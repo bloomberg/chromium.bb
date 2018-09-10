@@ -179,10 +179,18 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
       break;
     case Event::LIVE_REGION_CHANGED:
-      // NVDA and JAWS are inconsistent about speaking this event in content.
-      // Because of this, and because Firefox does not currently fire it, we
-      // are avoiding this event for now.
-      // FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
+      // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
+      // however, JAWS 2018 and earlier do not process the text inserted
+      // events when "virtual cursor mode" is turned off (Insert+Z).
+      // Fortunately, firing the redudant event does not cause duplicate
+      // verbalizations in either screen reader.
+      // Future versions of JAWS may process the text inserted event when
+      // in focus mode, and so at some point the live region
+      // changed events may truly become redundant with the text inserted
+      // events. Note: Firefox does not fire this event, but JAWS processes
+      // Firefox live region events differently (utilizes MSAA's
+      // EVENT_OBJECT_SHOW).
+      FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
       break;
     case Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
