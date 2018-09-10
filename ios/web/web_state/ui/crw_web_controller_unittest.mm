@@ -538,9 +538,9 @@ TEST_P(CRWWebControllerPageScrollStateTest,
   [web_controller() restoreStateFromHistory];
 
   // |-restoreStateFromHistory| is async; wait for its completion.
-  base::test::ios::WaitUntilCondition(^bool() {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  });
+  }));
 
   ASSERT_EQ(original_zoom_state,
             web_controller().pageDisplayState.zoom_state());
@@ -568,9 +568,9 @@ TEST_P(CRWWebControllerPageScrollStateTest,
   [web_controller() restoreStateFromHistory];
 
   // |-restoreStateFromHistory| is async; wait for its completion.
-  base::test::ios::WaitUntilCondition(^bool() {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  });
+  }));
 
   PageZoomState final_zoom_state =
       web_controller().pageDisplayState.zoom_state();
