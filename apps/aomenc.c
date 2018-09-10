@@ -180,9 +180,6 @@ static const arg_def_t use_webm =
     ARG_DEF(NULL, "webm", 0, "Output WebM (default when WebM IO is enabled)");
 static const arg_def_t use_ivf = ARG_DEF(NULL, "ivf", 0, "Output IVF");
 static const arg_def_t use_obu = ARG_DEF(NULL, "obu", 0, "Output OBU");
-static const arg_def_t out_part =
-    ARG_DEF("P", "output-partitions", 0,
-            "Makes encoder output partitions. Requires IVF output!");
 static const arg_def_t q_hist_n =
     ARG_DEF(NULL, "q-hist", 1, "Show quantizer histogram (n-buckets)");
 static const arg_def_t rate_hist_n =
@@ -228,7 +225,6 @@ static const arg_def_t *main_args[] = { &help,
                                         &use_webm,
                                         &use_ivf,
                                         &use_obu,
-                                        &out_part,
                                         &q_hist_n,
                                         &rate_hist_n,
                                         &disable_warnings,
@@ -932,9 +928,7 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
       global->framerate = arg_parse_rational(&arg);
       validate_positive_rational(arg.name, &global->framerate);
       global->have_framerate = 1;
-    } else if (arg_match(&arg, &out_part, argi))
-      global->out_part = 1;
-    else if (arg_match(&arg, &debugmode, argi))
+    } else if (arg_match(&arg, &debugmode, argi))
       global->debug = 1;
     else if (arg_match(&arg, &q_hist_n, argi))
       global->show_q_hist_buckets = arg_parse_uint(&arg);
@@ -1545,7 +1539,6 @@ static void initialize_encoder(struct stream_state *stream,
   int flags = 0;
 
   flags |= global->show_psnr ? AOM_CODEC_USE_PSNR : 0;
-  flags |= global->out_part ? AOM_CODEC_USE_OUTPUT_PARTITION : 0;
   flags |= stream->config.use_16bit_internal ? AOM_CODEC_USE_HIGHBITDEPTH : 0;
 
   /* Construct Encoder Context */
