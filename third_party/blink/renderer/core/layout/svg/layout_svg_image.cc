@@ -65,13 +65,25 @@ static float ResolveHeightForRatio(float width,
   return width * intrinsic_ratio.Height() / intrinsic_ratio.Width();
 }
 
-FloatSize LayoutSVGImage::CalculateObjectSize() const {
-  ImageResourceContent* cached_image = image_resource_->CachedImage();
-  if (!cached_image || cached_image->ErrorOccurred() ||
-      !cached_image->IsSizeAvailable())
-    return object_bounding_box_.Size();
+IntSize LayoutSVGImage::GetOverriddenIntrinsicSize() const {
+  if (auto* svg_image = ToSVGImageElementOrNull(GetElement())) {
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+      return svg_image->GetOverriddenIntrinsicSize();
+  }
+  return IntSize();
+}
 
-  FloatSize intrinsic_size = FloatSize(cached_image->GetImage()->Size());
+FloatSize LayoutSVGImage::CalculateObjectSize() const {
+  FloatSize intrinsic_size = FloatSize(GetOverriddenIntrinsicSize());
+  ImageResourceContent* cached_image = image_resource_->CachedImage();
+  if (intrinsic_size.IsEmpty()) {
+    if (!cached_image || cached_image->ErrorOccurred() ||
+        !cached_image->IsSizeAvailable())
+      return object_bounding_box_.Size();
+
+    intrinsic_size = FloatSize(cached_image->GetImage()->Size());
+  }
+
   if (StyleRef().Width().IsAuto() && StyleRef().Height().IsAuto())
     return intrinsic_size;
 

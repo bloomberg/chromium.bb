@@ -1879,6 +1879,7 @@ svg element image
     property getScreenCTM
     property height
     property href
+    property intrinsicSize
     property nearestViewportElement
     property preserveAspectRatio
     property requiredExtensions
