@@ -1,0 +1,27 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
+# These tests currently fail when run with --enable-features=NetworkService
+
+# Uncategorized timeouts or test failures.
+-org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromUserGestureInSubFrame
+
+# Fails because it expects to have no features enabled when run.
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
+
+# http://crbug.com/882019
+-org.chromium.chrome.browser.UrlSchemeTest.testContentUrlAccess
+-org.chromium.chrome.browser.UrlSchemeTest.testContentUrlIframeAccessFromContentUrl
+-org.chromium.chrome.browser.UrlSchemeTest.testContentUrlImageFromContentUrl
+
+# https://crbug.com/721403
+-org.chromium.chrome.browser.infobar.InfoBarTest.testDataReductionPromoInfoBar
+
+# http://crbug.com/882060
+-org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallback
+-org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackAndShortTimeout
+-org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackInSubFrame
+-org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromImageOnLoad
+-org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromXHRCallback
+-org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromXHRCallbackAndShortTimeout

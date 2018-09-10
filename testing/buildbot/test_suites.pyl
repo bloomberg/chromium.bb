@@ -1806,6 +1806,45 @@
       },
       'test': 'content_browsertests',
     },
+    'network_service_components_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'components_browsertests',
+    },
+    'network_service_chrome_public_test_apk': {
+      'swarming': {
+        'shards': 20,
+      },
+      'args': [
+        # TODO(crbug.com/881572): Fix crash when running network service OOP on
+        # Android.
+        '--enable-features=NetworkService,NetworkServiceInProcess',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter',
+      ],
+      'test': 'chrome_public_test_apk',
+    },
+    'network_service_content_shell_test_apk': {
+      'swarming': {
+        'shards': 5,
+      },
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'content_shell_test_apk',
+    },
+    'network_service_webview_instrumentation_test_apk': {
+      'swarming': {
+        'shards': 20,
+      },
+      'args': [
+        # TODO(crbug.com/881572): Fix crash when running network service OOP on
+        # Android.
+        '--enable-features=NetworkService,NetworkServiceInProcess',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter',
+      ],
+      'test': 'webview_instrumentation_test_apk',
+    },
   },
 
   'network_service_gtests': {
