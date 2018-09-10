@@ -838,7 +838,7 @@ Date:   Tue Aug 14 10:53:06 2018 -0700
 libavformat/mov.c
 
 ------------------------------------------------------------------
-commit 89863ce983b1b93c5b149b1914ef650a7fc049f6
+commit 97b257f94dbc861d8a5a59a6be85dc540c3f210e
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Tue Aug 21 15:42:31 2018 -0700
 
@@ -851,4 +851,38 @@ Date:   Tue Aug 21 15:42:31 2018 -0700
 
  Affects: 
 libavformat/mov.c
+
+------------------------------------------------------------------
+commit 178c540a56c919146cb66751c5165d7b486c4299
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Thu Aug 30 15:18:25 2018 -0700
+
+    avformat/mov: Error on too large stsd entry counts.
+    
+    Entries are always at least 8 bytes per the parsing code, so if we
+    see an impossible entry count avoid massive allocations. This is
+    similar to an existing check in mov_read_stsc().
+    
+    Since ff_mov_read_stsd_entries() does eof checks, an alternative
+    approach could be to clamp the entry count to atom.size / 8.
+    
+    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
+    Signed-off-by: Michael Niedermayer <michael@niedermayer.cc>
+
+ Affects: 
+libavformat/mov.c
+
+------------------------------------------------------------------
+commit fa9c18db8b63d9217e3c55885f81e13138487522
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Fri Sep 7 15:37:09 2018 -0700
+
+    avformat/utils: Don't calculate duration using AV_NOPTS_VALUE for start_time.
+    
+    Found by ClusterFuzz, https://crbug.com/879852
+    
+    Signed-off-by: Michael Niedermayer <michael@niedermayer.cc>
+
+ Affects: 
+libavformat/utils.c
 
