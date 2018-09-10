@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/common/file_system.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
@@ -35,6 +37,11 @@ namespace file_tasks {
 namespace {
 
 constexpr char kAppIdSeparator = '/';
+
+constexpr char kIntentHelperFileproviderUrl[] =
+    "content://org.chromium.arc.intent_helper.fileprovider/";
+constexpr char kFileSystemFileproviderUrl[] =
+    "content://org.chromium.arc.file_system.fileprovider/";
 
 // Converts an Android intent action (see kIntentAction* in
 // components/arc/intent_helper/intent_constants.h) to a file task action ID
@@ -81,6 +88,51 @@ arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
     name->activity_name = id.substr(separator + 1);
   }
   return name;
+}
+
+// Constructs a vector of UrlWithMimeType to be passed to
+// IntentHelperInstance.HandleUrlListDeprecated.
+std::vector<arc::mojom::UrlWithMimeTypePtr> ConstructUrlWithMimeTypeList(
+    const std::vector<GURL>& content_urls,
+    const std::vector<std::string>& mime_types) {
+  std::vector<arc::mojom::UrlWithMimeTypePtr> urls;
+  for (size_t i = 0; i < content_urls.size(); ++i) {
+    arc::mojom::UrlWithMimeTypePtr url_with_type =
+        arc::mojom::UrlWithMimeType::New();
+    url_with_type->url = content_urls[i].spec();
+    url_with_type->mime_type = mime_types[i];
+    urls.push_back(std::move(url_with_type));
+  }
+  return urls;
+}
+
+// Constructs an OpenUrlsRequest to be passed to
+// FileSystemInstance.OpenUrlsWithPermission.
+arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
+    const TaskDescriptor& task,
+    const std::vector<GURL>& content_urls,
+    const std::vector<std::string>& mime_types) {
+  arc::mojom::OpenUrlsRequestPtr request = arc::mojom::OpenUrlsRequest::New();
+  request->action_type = FileTaskActionIdToArcActionType(task.action_id);
+  request->activity_name = AppIdToActivityName(task.app_id);
+  for (size_t i = 0; i < content_urls.size(); ++i) {
+    // Replace intent_helper.fileprovider with file_system.fileprovider in URL.
+    // TODO(niwa): Remove this and update path_util to use
+    // file_system.fileprovider by default once we complete migration.
+    std::string url_string = content_urls[i].spec();
+    if (base::StartsWith(url_string, kIntentHelperFileproviderUrl,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      url_string.replace(0, strlen(kIntentHelperFileproviderUrl),
+                         kFileSystemFileproviderUrl);
+    }
+
+    arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
+        arc::mojom::ContentUrlWithMimeType::New();
+    url_with_type->content_url = GURL(url_string);
+    url_with_type->mime_type = mime_types[i];
+    request->urls.push_back(std::move(url_with_type));
+  }
+  return request;
 }
 
 // Below is the sequence of thread-hopping for loading ARC file tasks.
@@ -216,40 +268,57 @@ void ExecuteArcTaskAfterContentUrlsResolved(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(content_urls.size(), mime_types.size());
 
-  arc::mojom::IntentHelperInstance* arc_intent_helper = nullptr;
-  // File manager in secondary profile cannot access ARC.
-  if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    auto* arc_service_manager = arc::ArcServiceManager::Get();
-    if (arc_service_manager) {
-      // TODO(niwa): Switch to FileSystemInstance.OpenUrlsWithPermission().
-      arc_intent_helper = ARC_GET_INSTANCE_FOR_METHOD(
-          arc_service_manager->arc_bridge_service()->intent_helper(),
-          HandleUrlListDeprecated);
+  for (size_t i = 0; i < content_urls.size(); ++i) {
+    if (!content_urls[i].is_valid()) {
+      done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+      return;
     }
   }
-  if (!arc_intent_helper) {
+
+  // File manager in secondary profile cannot access ARC.
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
     return;
   }
 
-  std::vector<arc::mojom::UrlWithMimeTypePtr> urls;
-  for (size_t i = 0; i < content_urls.size(); ++i) {
-    const GURL& content_url = content_urls[i];
-    if (!content_url.is_valid()) {
-      done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
-      return;
-    }
-    arc::mojom::UrlWithMimeTypePtr url_with_type =
-        arc::mojom::UrlWithMimeType::New();
-    url_with_type->url = content_url.spec();
-    url_with_type->mime_type = mime_types[i];
-    urls.push_back(std::move(url_with_type));
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+    return;
   }
 
-  arc_intent_helper->HandleUrlListDeprecated(
-      std::move(urls), AppIdToActivityName(task.app_id),
-      FileTaskActionIdToArcActionType(task.action_id));
-  done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+  // Try FileSystemInstance.OpenUrlsWithPermission first.
+  arc::mojom::FileSystemInstance* arc_file_system = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->file_system(),
+      OpenUrlsWithPermission);
+  if (arc_file_system) {
+    arc::mojom::OpenUrlsRequestPtr request =
+        ConstructOpenUrlsRequest(task, content_urls, mime_types);
+    arc_file_system->OpenUrlsWithPermission(std::move(request),
+                                            base::DoNothing());
+    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+    return;
+  }
+
+  // Use IntentHelperInstance.HandleUrlListDeprecated as a fallback if
+  // OpenUrlsWithPermission is not supported yet.
+  // TODO(niwa): Remove this once we complete migration.
+  arc::mojom::IntentHelperInstance* arc_intent_helper =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrlListDeprecated);
+  if (arc_intent_helper) {
+    LOG(WARNING) << "Using HandleUrlListDeprecated because "
+                 << "OpenUrlsWithPermission is not supported yet.";
+    arc_intent_helper->HandleUrlListDeprecated(
+        ConstructUrlWithMimeTypeList(content_urls, mime_types),
+        AppIdToActivityName(task.app_id),
+        FileTaskActionIdToArcActionType(task.action_id));
+    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+    return;
+  }
+
+  done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
 }
 
 }  // namespace
