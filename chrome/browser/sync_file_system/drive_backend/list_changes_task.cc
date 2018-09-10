@@ -75,10 +75,23 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  change_list_.reserve(change_list_.size() +
-                       change_list->mutable_items()->size());
-  std::move(change_list->mutable_items()->begin(),
-            change_list->mutable_items()->end(),
+  auto* mutable_items = change_list->mutable_items();
+
+  // google_apis::ChangeList can contain both FileResource and TeamDriveResource
+  // entries. We only care about FileResource entries, so filter out any entries
+  // that are TeamDriveReasource.
+  mutable_items->erase(
+      std::remove_if(
+          mutable_items->begin(), mutable_items->end(),
+          [](const auto& change_resource) {
+            return change_resource->type() ==
+                   google_apis::ChangeResource::ChangeType::TEAM_DRIVE;
+          }),
+      mutable_items->end());
+
+  change_list_.reserve(change_list_.size() + mutable_items->size());
+
+  std::move(mutable_items->begin(), mutable_items->end(),
             std::back_inserter(change_list_));
   change_list->mutable_items()->clear();
 
