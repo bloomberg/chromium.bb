@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -489,8 +490,8 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
 #else
     ascii_filename = ref_filename.BaseName().value();
 #endif
-    return base::StringPrintf("%s_segment_%d", ascii_filename.c_str(),
-                              (int)segment_number);
+    return base::StringPrintf("%s_segment_%" PRIuS, ascii_filename.c_str(),
+                              segment_number);
   }
 
  protected:
@@ -589,6 +590,7 @@ class AudioRecorder {
     recording_application_.WaitForExit(&exit_code);
     return exit_code == 0;
   }
+
  private:
   base::Process recording_application_;
 };
