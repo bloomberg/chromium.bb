@@ -56,19 +56,19 @@ public class NativeLibraries {
 #if defined(ENABLE_CHROMIUM_LINKER)
     public static boolean sUseLinker = true;
 #else
-    public static boolean sUseLinker = false;
+    public static boolean sUseLinker;
 #endif
 
 #if defined(ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE)
     public static boolean sUseLibraryInZipFile = true;
 #else
-    public static boolean sUseLibraryInZipFile = false;
+    public static boolean sUseLibraryInZipFile;
 #endif
 
 #if defined(ENABLE_CHROMIUM_LINKER_TESTS)
     public static boolean sEnableLinkerTests = true;
 #else
-    public static boolean sEnableLinkerTests = false;
+    public static boolean sEnableLinkerTests;
 #endif
 
     // This is the list of native libraries to be loaded (in the correct order)
