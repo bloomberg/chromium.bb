@@ -83,9 +83,9 @@ void ChromotingClientRuntime::Init(
   DCHECK(delegate);
   DCHECK(!delegate_);
   delegate_ = delegate;
-  log_writer_ = std::make_unique<TelemetryLogWriter>(
-      kTelemetryBaseUrl,
-      CreateOAuthTokenGetter());
+  url_requester_ = new URLRequestContextGetter(network_task_runner_);
+  log_writer_ = std::make_unique<TelemetryLogWriter>(kTelemetryBaseUrl,
+                                                     CreateOAuthTokenGetter());
   network_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ChromotingClientRuntime::InitializeOnNetworkThread,
@@ -106,7 +106,6 @@ ChromotingClientRuntime::url_loader_factory() {
 
 void ChromotingClientRuntime::InitializeOnNetworkThread() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
-  url_requester_ = new URLRequestContextGetter(network_task_runner_);
   url_loader_factory_owner_ =
       std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
           url_requester_);
