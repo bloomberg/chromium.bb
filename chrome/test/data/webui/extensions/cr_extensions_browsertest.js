@@ -670,36 +670,6 @@ TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-// Extension View Manager Tests
-
-CrExtensionsViewManagerTest = class extends CrExtensionsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/view_manager.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'view_manager_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return extension_view_manager_tests.suiteName;
-  }
-};
-
-TEST_F('CrExtensionsViewManagerTest', 'VisibilityTest', function() {
-  this.runMochaTest(extension_view_manager_tests.TestNames.Visibility);
-});
-
-TEST_F('CrExtensionsViewManagerTest', 'EventFiringTest', function() {
-  this.runMochaTest(extension_view_manager_tests.TestNames.EventFiring);
-});
-
-////////////////////////////////////////////////////////////////////////////////
 // Error Console tests
 
 CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {

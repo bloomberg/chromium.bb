@@ -455,7 +455,7 @@ cr.define('extensions', function() {
         this.errorPageItem_ = assert(data);
 
       if (fromPage != toPage) {
-        /** @type {extensions.ViewManager} */ (this.$.viewManager)
+        /** @type {CrViewManagerElement} */ (this.$.viewManager)
             .switchView(toPage);
       }
 
