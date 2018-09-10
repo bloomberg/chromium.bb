@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_FILE_HANDLERS_NON_NATIVE_FILE_SYSTEM_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_FILE_HANDLERS_NON_NATIVE_FILE_SYSTEM_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -30,7 +33,8 @@ class NonNativeFileSystemDelegate {
   virtual void GetNonNativeLocalPathMimeType(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool, const std::string&)>& callback) = 0;
+      base::OnceCallback<void(const base::Optional<std::string>&)>
+          callback) = 0;
 
   // Checks whether |path| points to a non-local filesystem directory and calls
   // |callback| with the result asynchronously.

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_NON_NATIVE_FILE_SYSTEM_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_HANDLERS_NON_NATIVE_FILE_SYSTEM_DELEGATE_CHROMEOS_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "extensions/browser/api/file_handlers/non_native_file_system_delegate.h"
 
 namespace content {
@@ -27,7 +30,8 @@ class NonNativeFileSystemDelegateChromeOS
   void GetNonNativeLocalPathMimeType(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool, const std::string&)>& callback) override;
+      base::OnceCallback<void(const base::Optional<std::string>&)> callback)
+      override;
   void IsNonNativeLocalPathDirectory(
       content::BrowserContext* context,
       const base::FilePath& path,

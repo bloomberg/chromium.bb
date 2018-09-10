@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 class Profile;
@@ -36,14 +37,13 @@ bool IsUnderNonNativeLocalPath(Profile* profile, const base::FilePath& path);
 void GetNonNativeLocalPathMimeType(
     Profile* profile,
     const base::FilePath& path,
-    const base::Callback<void(bool, const std::string&)>& callback);
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback);
 
 // Checks whether the |path| points to a directory, and asynchronously sends
 // the result to |callback|.
-void IsNonNativeLocalPathDirectory(
-    Profile* profile,
-    const base::FilePath& path,
-    const base::Callback<void(bool)>& callback);
+void IsNonNativeLocalPathDirectory(Profile* profile,
+                                   const base::FilePath& path,
+                                   base::OnceCallback<void(bool)> callback);
 
 // Ensures a file exists at |path|, i.e., it does nothing if a file is already
 // present, or creates a file there if it isn't, and asynchronously sends to
@@ -51,7 +51,7 @@ void IsNonNativeLocalPathDirectory(
 void PrepareNonNativeLocalFileForWritableApp(
     Profile* profile,
     const base::FilePath& path,
-    const base::Callback<void(bool)>& callback);
+    base::OnceCallback<void(bool)> callback);
 
 }  // namespace util
 }  // namespace file_manager
