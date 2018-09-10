@@ -224,8 +224,6 @@ class CORE_EXPORT HTMLImageElement final
   void NotifyViewportChanged();
   void CreateMediaQueryListIfDoesNotExist();
 
-  void ParseIntrinsicSizeAttribute(const String& value);
-
   Member<HTMLImageLoader> image_loader_;
   Member<ViewportChangeListener> listener_;
   Member<HTMLFormElement> form_;

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -292,7 +293,18 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == intrinsicsizeAttr &&
              RuntimeEnabledFeatures::
                  ExperimentalProductivityFeaturesEnabled()) {
-    ParseIntrinsicSizeAttribute(params.new_value);
+    String message;
+    bool intrinsic_size_changed =
+        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+            params.new_value, &overridden_intrinsic_size_, &message);
+    if (!message.IsEmpty()) {
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel, message));
+    }
+
+    if (intrinsic_size_changed && GetLayoutObject() &&
+        GetLayoutObject()->IsLayoutImage())
+      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -587,31 +599,6 @@ IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
             static_cast<float>(overridden_intrinsic_size_.Width()))));
   }
   return overridden_intrinsic_size_;
-}
-
-void HTMLImageElement::ParseIntrinsicSizeAttribute(const String& value) {
-  unsigned new_width = 0, new_height = 0;
-  Vector<String> size;
-  value.Split('x', size);
-  if (!value.IsEmpty() &&
-      (size.size() != 2 ||
-       !ParseHTMLNonNegativeInteger(size.at(0), new_width) ||
-       !ParseHTMLNonNegativeInteger(size.at(1), new_height))) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                               "Unable to parse intrinsicSize: expected "
-                               "[unsigned] x [unsigned], got " +
-                                   value));
-    new_width = 0;
-    new_height = 0;
-  }
-
-  IntSize new_size(new_width, new_height);
-  if (overridden_intrinsic_size_ != new_size) {
-    overridden_intrinsic_size_ = new_size;
-    if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage())
-      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
-  }
 }
 
 KURL HTMLImageElement::Src() const {
