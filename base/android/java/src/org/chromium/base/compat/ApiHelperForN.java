@@ -5,6 +5,8 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.os.Build;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -29,5 +31,10 @@ public final class ApiHelperForN {
     public static boolean shouldOverrideUrlLoading(
             WebViewClient webViewClient, WebView webView, WebResourceRequest request) {
         return webViewClient.shouldOverrideUrlLoading(webView, request);
+    }
+
+    /** See {@link JobScheduler#getPendingJob(int)}. */
+    public static JobInfo getPendingJob(JobScheduler scheduler, int jobId) {
+        return scheduler.getPendingJob(jobId);
     }
 }

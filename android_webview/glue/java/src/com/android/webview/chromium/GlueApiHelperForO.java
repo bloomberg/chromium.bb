@@ -9,6 +9,7 @@ import android.os.Build;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewDelegate;
 
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.base.annotations.DoNotInline;
@@ -45,5 +46,9 @@ public final class GlueApiHelperForO {
                 return detail.rendererPriority();
             }
         });
+    }
+
+    public static boolean isMultiProcessEnabled(WebViewDelegate webViewDelegate) {
+        return webViewDelegate.isMultiProcessEnabled();
     }
 }
