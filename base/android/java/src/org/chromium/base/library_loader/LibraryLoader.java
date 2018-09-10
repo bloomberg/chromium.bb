@@ -358,8 +358,9 @@ public class LibraryLoader {
 
         @Override
         protected Void doInBackground() {
-            try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory")) {
-                int percentage = nativePercentageOfResidentNativeLibraryCode();
+            int percentage = nativePercentageOfResidentNativeLibraryCode();
+            try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory",
+                         Integer.toString(percentage))) {
                 // Arbitrary percentage threshold. If most of the native library is already
                 // resident (likely with monochrome), don't bother creating a prefetch process.
                 boolean prefetch = mColdStart && percentage < 90;
