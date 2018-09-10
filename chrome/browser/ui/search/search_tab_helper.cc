@@ -258,8 +258,7 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
   // doing nothing instead of crashing the browser process (intentional no-op).
   switch (state) {
     case OMNIBOX_FOCUS_VISIBLE:
-      omnibox_view->SetFocus();
-      omnibox_view->model()->SetCaretVisibility(true);
+      NOTREACHED();
       break;
     case OMNIBOX_FOCUS_INVISIBLE:
       omnibox_view->SetFocus();
