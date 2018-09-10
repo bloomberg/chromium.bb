@@ -12103,8 +12103,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test to verify that viewport intersection is propagated to nested OOPIFs
 // even when a parent OOPIF has been throttled.
-// TODO(crbug.com/869758) The test is flaky on android
-#if defined(OS_ANDROID)
+// TODO(crbug.com/869758) The test is flaky on android and Linux.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NestedFrameViewportIntersectionUpdated \
   DISABLED_NestedFrameViewportIntersectionUpdated
 #else
