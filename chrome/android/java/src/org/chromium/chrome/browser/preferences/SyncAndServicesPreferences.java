@@ -84,6 +84,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
     private static final String PREF_SIGNIN = "sign_in";
+    private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
+    private static final String PREF_SYNC_ERROR_CARD_DIVIDER = "sync_error_card_divider";
     private static final String PREF_USE_SYNC_AND_ALL_SERVICES = "use_sync_and_all_services";
 
     private static final String PREF_SYNC_AND_PERSONALIZATION = "sync_and_personalization";
@@ -99,7 +101,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
     private static final String PREF_ENCRYPTION = "encryption";
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
-    private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
     private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
     private static final String PREF_NONPERSONALIZED_SERVICES = "nonpersonalized_services";
@@ -137,6 +138,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             createManagedPreferenceDelegate();
 
     private SignInPreference mSigninPreference;
+    private Preference mSyncErrorCard;
+    private Preference mSyncErrorCardDivider;
     private ChromeSwitchPreference mUseSyncAndAllServices;
 
     private SigninExpandablePreferenceGroup mSyncGroup;
@@ -154,7 +157,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private Preference mGoogleActivityControls;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
-    private Preference mSyncErrorCard;
     private @Nullable Preference mContextualSuggestions;
 
     private SigninExpandablePreferenceGroup mNonpersonalizedServices;
@@ -190,6 +192,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
 
+        mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
+        mSyncErrorCard.setOnPreferenceClickListener(
+                toOnClickListener(this::onSyncErrorCardClicked));
+        mSyncErrorCardDivider = findPreference(PREF_SYNC_ERROR_CARD_DIVIDER);
+
         mUseSyncAndAllServices =
                 (ChromeSwitchPreference) findPreference(PREF_USE_SYNC_AND_ALL_SERVICES);
         mUseSyncAndAllServices.setOnPreferenceChangeListener(this);
@@ -216,9 +223,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mManageSyncData = findPreference(PREF_SYNC_MANAGE_DATA);
         mManageSyncData.setOnPreferenceClickListener(
                 toOnClickListener(this::openDashboardTabInNewActivityStack));
-        mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
-        mSyncErrorCard.setOnPreferenceClickListener(
-                toOnClickListener(this::onSyncErrorCardClicked));
 
         mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
         if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
@@ -720,11 +724,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private void updateSyncErrorCard() {
         mCurrentSyncError = getSyncError();
         if (mCurrentSyncError == SyncError.NO_ERROR) {
-            mSyncGroup.removePreference(mSyncErrorCard);
+            getPreferenceScreen().removePreference(mSyncErrorCard);
+            getPreferenceScreen().removePreference(mSyncErrorCardDivider);
         } else {
             String summary = getSyncErrorHint(mCurrentSyncError);
             mSyncErrorCard.setSummary(summary);
-            mSyncGroup.addPreference(mSyncErrorCard);
+            getPreferenceScreen().addPreference(mSyncErrorCard);
+            getPreferenceScreen().addPreference(mSyncErrorCardDivider);
         }
     }
 
