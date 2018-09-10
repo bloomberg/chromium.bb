@@ -10994,13 +10994,14 @@ static void analyze_single_states(const AV1_COMP *cpi,
       int64_t best_rd;
       SingleInterModeState(*state)[FWD_REFS];
 
-      // Prune the unlikely reference frames within the same mode
+      // Use the best rd of GLOBALMV or NEWMV to prune the unlikely
+      // reference frames for all the modes (NEARESTMV and NEARMV may not
+      // have same motion vectors). Always keep the best of each mode
+      // because it might form the best possible combination with other mode.
       state = search_state->single_state[dir];
+      best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
+                       state[INTER_OFFSET(GLOBALMV)][0].rd);
       for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        // single_state is sorted by simple rd. Use the first element of
-        // each mode to eliminate the reference frames with substantially
-        // larger rd within the same mode.
-        best_rd = state[mode][0].rd;
         for (i = 1; i < search_state->single_state_cnt[dir][mode]; ++i) {
           if (state[mode][i].rd != INT64_MAX &&
               (state[mode][i].rd >> 1) > best_rd) {
@@ -11010,11 +11011,9 @@ static void analyze_single_states(const AV1_COMP *cpi,
       }
 
       state = search_state->single_state_modelled[dir];
+      best_rd = AOMMIN(state[INTER_OFFSET(NEWMV)][0].rd,
+                       state[INTER_OFFSET(GLOBALMV)][0].rd);
       for (mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-        // single_state_modelled is sorted by modelled rd. Use the first
-        // element of each mode to eliminate the reference frames with
-        // substantially larger rd within the same mode.
-        best_rd = state[mode][0].rd;
         for (i = 1; i < search_state->single_state_modelled_cnt[dir][mode];
              ++i) {
           if (state[mode][i].rd != INT64_MAX &&
