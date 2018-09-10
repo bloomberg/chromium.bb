@@ -1,0 +1,56 @@
+This is a testharness.js-based test.
+PASS Interface test
+PASS Partial interface Window: original interface defined
+PASS Partial interface ServiceWorkerGlobalScope: original interface defined
+PASS ServiceWorkerGlobalScope interface: attribute cookieStore
+PASS ServiceWorkerGlobalScope interface: attribute oncookiechange
+PASS Window interface: existence and properties of interface object
+PASS CookieStore interface: existence and properties of interface object
+PASS CookieStore interface object length
+PASS CookieStore interface object name
+PASS CookieStore interface: existence and properties of interface prototype object
+PASS CookieStore interface: existence and properties of interface prototype object's "constructor" property
+PASS CookieStore interface: existence and properties of interface prototype object's @@unscopables property
+PASS CookieStore interface: operation get(USVString)
+PASS CookieStore interface: operation get(CookieStoreGetOptions)
+PASS CookieStore interface: operation getAll(USVString)
+PASS CookieStore interface: operation getAll(CookieStoreGetOptions)
+PASS CookieStore interface: operation set(USVString, USVString, CookieStoreSetOptions)
+PASS CookieStore interface: operation set(CookieStoreSetExtraOptions)
+PASS CookieStore interface: operation delete(USVString)
+PASS CookieStore interface: operation delete(CookieStoreDeleteOptions)
+PASS CookieStore interface: operation subscribeToChanges([object Object])
+PASS CookieStore interface: operation getChangeSubscriptions()
+FAIL CookieStore interface: attribute onchange assert_true: The prototype object must have a property "onchange" expected true got false
+PASS CookieStore must be primary interface of self.cookieStore
+PASS Stringification of self.cookieStore
+PASS CookieStore interface: self.cookieStore must inherit property "get(USVString)" with the proper type
+PASS CookieStore interface: calling get(USVString) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "get(CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling get(CookieStoreGetOptions) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "getAll(USVString)" with the proper type
+PASS CookieStore interface: calling getAll(USVString) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "getAll(CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling getAll(CookieStoreGetOptions) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "set(USVString, USVString, CookieStoreSetOptions)" with the proper type
+PASS CookieStore interface: calling set(USVString, USVString, CookieStoreSetOptions) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "set(CookieStoreSetExtraOptions)" with the proper type
+PASS CookieStore interface: calling set(CookieStoreSetExtraOptions) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "delete(USVString)" with the proper type
+PASS CookieStore interface: calling delete(USVString) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "delete(CookieStoreDeleteOptions)" with the proper type
+PASS CookieStore interface: calling delete(CookieStoreDeleteOptions) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "subscribeToChanges([object Object])" with the proper type
+PASS CookieStore interface: calling subscribeToChanges([object Object]) on self.cookieStore with too few arguments must throw TypeError
+PASS CookieStore interface: self.cookieStore must inherit property "getChangeSubscriptions()" with the proper type
+FAIL CookieStore interface: self.cookieStore must inherit property "onchange" with the proper type assert_inherits: property "onchange" not found in prototype chain
+FAIL CookieChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface object length assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface object name assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface: attribute changed assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+FAIL CookieChangeEvent interface: attribute deleted assert_own_property: self does not have own property "CookieChangeEvent" expected property "CookieChangeEvent" missing
+Harness: the test ran to completion.
+

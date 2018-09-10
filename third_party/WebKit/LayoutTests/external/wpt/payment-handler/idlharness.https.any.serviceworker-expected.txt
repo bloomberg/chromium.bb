@@ -50,14 +50,12 @@ PASS CanMakePaymentEvent interface: existence and properties of interface protot
 PASS CanMakePaymentEvent interface: attribute topOrigin
 PASS CanMakePaymentEvent interface: attribute paymentRequestOrigin
 PASS CanMakePaymentEvent interface: attribute methodData
-PASS CanMakePaymentEvent interface: attribute modifiers
 PASS CanMakePaymentEvent interface: operation respondWith([object Object])
 FAIL CanMakePaymentEvent must be primary interface of new CanMakePaymentEvent("type") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL Stringification of new CanMakePaymentEvent("type") assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL CanMakePaymentEvent interface: new CanMakePaymentEvent("type") must inherit property "topOrigin" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL CanMakePaymentEvent interface: new CanMakePaymentEvent("type") must inherit property "paymentRequestOrigin" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL CanMakePaymentEvent interface: new CanMakePaymentEvent("type") must inherit property "methodData" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
-FAIL CanMakePaymentEvent interface: new CanMakePaymentEvent("type") must inherit property "modifiers" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL CanMakePaymentEvent interface: new CanMakePaymentEvent("type") must inherit property "respondWith([object Object])" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 FAIL CanMakePaymentEvent interface: calling respondWith([object Object]) on new CanMakePaymentEvent("type") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: Failed to construct 'CanMakePaymentEvent': 2 arguments required, but only 1 present."
 PASS PaymentRequestEvent interface: existence and properties of interface object
