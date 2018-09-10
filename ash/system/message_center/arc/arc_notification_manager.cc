@@ -229,6 +229,10 @@ void ArcNotificationManager::OpenMessageCenter() {
   delegate_->ShowMessageCenter();
 }
 
+void ArcNotificationManager::CloseMessageCenter() {
+  delegate_->HideMessageCenter();
+}
+
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
   auto it = items_.find(key);
   if (it == items_.end()) {

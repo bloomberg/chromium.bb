@@ -55,4 +55,20 @@ void ArcNotificationManagerDelegateImpl::ShowMessageCenter() {
   }
 }
 
+void ArcNotificationManagerDelegateImpl::HideMessageCenter() {
+  // Close the message center on all the displays.
+  for (auto* root_window_controller :
+       RootWindowController::root_window_controllers()) {
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      root_window_controller->GetStatusAreaWidget()
+          ->unified_system_tray()
+          ->CloseBubble();
+    } else {
+      root_window_controller->GetStatusAreaWidget()
+          ->notification_tray()
+          ->ShowMessageCenter(false /* show_by_click */);
+    }
+  }
+}
+
 }  // namespace ash

@@ -21,6 +21,7 @@ class ArcNotificationManagerDelegateImpl
   void GetAppIdByPackageName(const std::string& package_name,
                              GetAppIdByPackageNameCallback callback) override;
   void ShowMessageCenter() override;
+  void HideMessageCenter() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManagerDelegateImpl);
