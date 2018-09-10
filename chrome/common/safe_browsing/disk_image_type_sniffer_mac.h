@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFER_MAC_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFER_MAC_H_
+#ifndef CHROME_COMMON_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFER_MAC_H_
+#define CHROME_COMMON_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFER_MAC_H_
 
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +24,12 @@ class DiskImageTypeSnifferMac
   // FILE thread.
   static bool IsAppleDiskImage(const base::FilePath& dmg_file);
 
+  // Returns true when the trailer is a valid trailer for a DMG type.
+  static bool IsAppleDiskImageTrailer(const base::span<const uint8_t>& trailer);
+
+  // Returns the size of a DMG trailer.
+  static size_t AppleDiskImageTrailerSize();
+
  private:
   friend class base::RefCountedThreadSafe<DiskImageTypeSnifferMac>;
 
@@ -33,4 +40,4 @@ class DiskImageTypeSnifferMac
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFE_MAC_H_
+#endif  // CHROME_COMMON_SAFE_BROWSING_DISK_IMAGE_TYPE_SNIFFE_MAC_H_
