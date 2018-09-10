@@ -21,3 +21,4 @@ Local modifications:
   *_private.js files.
 - Fix bug in js_binary.py causing it to drop externs.
 - Cache dependency subtrees in js_binary.py for a huge performance boost.
+- Add js_unit_tests.gni for generating .html files for running unit tests.

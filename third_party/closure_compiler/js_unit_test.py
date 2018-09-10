@@ -8,31 +8,15 @@ files to build an html file used for js unit tests.
 """
 
 from argparse import ArgumentParser
+from js_binary import CrawlDepsTree
 
-def flatten(deps):
+def Flatten(deps):
   """
   Recursively follows a list of dep files and returns source files in
   dependency order. Ignores externs.
   """
-  if len(deps) == 0:
-    return []
-  sources = []
-  moredeps = []
-  for d in deps:
-    with open(d, "r") as depfile:
-      assert depfile.readline(
-          ) == 'sources:\n', "Depfile parse error (expected 'sources:')."
-      line = depfile.readline()
-      while line != 'deps:\n':
-        assert line != '', "Depfile parse error (expected 'deps:')."
-        sources.append(line[:-1])
-        line = depfile.readline()
-      line = depfile.readline()
-      while line != 'externs:\n':
-        assert line != '', "Depfile parse error (expected 'externs:')."
-        moredeps.append(line[:-1])
-        line = depfile.readline()
-  return flatten(moredeps) + sources
+  sources, externs = CrawlDepsTree(deps)
+  return sources
 
 def main():
   parser = ArgumentParser()
@@ -44,14 +28,7 @@ def main():
                       help='Generated html output with flattened dependencies')
   args = parser.parse_args()
 
-  alldeps = flatten([args.input])
-  uniquedeps = []
-  # No such thing as include guards, so do that here with a set.
-  seen = set()
-  for d in alldeps:
-    if d not in seen:
-      seen.add(d)
-      uniquedeps.append(d)
+  uniquedeps = Flatten([args.input])
   with open(args.output, 'w') as out:
     out.write('<!DOCTYPE html>\n<html>\n<body>\n')
     out.write(
