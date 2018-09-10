@@ -4058,7 +4058,7 @@ static void init_first_partition_pass_stats_tables(
 }
 
 // clear pc_tree_stats
-static inline void clear_pc_tree_stats(PC_TREE *pt) {
+static INLINE void clear_pc_tree_stats(PC_TREE *pt) {
   if (pt == NULL) return;
   pt->pc_tree_stats.valid = 0;
   for (int i = 0; i < 4; ++i) {
