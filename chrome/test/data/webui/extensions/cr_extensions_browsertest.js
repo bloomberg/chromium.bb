@@ -121,7 +121,13 @@ TEST_F('CrExtensionsToolbarTest', 'DevModeToggle', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.DevModeToggle);
 });
 
-TEST_F('CrExtensionsToolbarTest', 'ClickHandlers', function() {
+// TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
+GEN('#if !defined(OS_MACOSX)');
+GEN('#define MAYBE_ClickHandlers DISABLED_ClickHandlers');
+GEN('#else');
+GEN('#define MAYBE_ClickHandlers ClickHandlers');
+GEN('#endif');
+TEST_F('CrExtensionsToolbarTest', 'MAYBE_ClickHandlers', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.ClickHandlers);
 });
 
