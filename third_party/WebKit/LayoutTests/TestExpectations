@@ -5139,3 +5139,6 @@ crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavi
 
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
+
+# Sheriff 2018-09-10
+crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]
