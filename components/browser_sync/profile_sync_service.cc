@@ -388,6 +388,11 @@ void ProfileSyncService::StartSyncingWithServer() {
 
   if (engine_)
     engine_->StartSyncingWithServer();
+
+  if (IsLocalSyncEnabled()) {
+    TriggerRefresh(
+        syncer::Intersection(GetActiveDataTypes(), syncer::ProtocolTypes()));
+  }
 }
 
 bool ProfileSyncService::IsDataTypeControllerRunning(
