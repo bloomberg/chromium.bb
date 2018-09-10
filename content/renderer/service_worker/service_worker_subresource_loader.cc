@@ -200,11 +200,6 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   fetch_request_restarted_ = false;
 
   response_head_.service_worker_start_time = base::TimeTicks::Now();
-  // TODO(horo): Reset |service_worker_ready_time| when the the connection to
-  // the service worker is revived.
-  response_head_.service_worker_ready_time = base::TimeTicks::Now();
-  response_head_.load_timing.send_start = base::TimeTicks::Now();
-  response_head_.load_timing.send_end = base::TimeTicks::Now();
   DispatchFetchEvent();
 }
 
@@ -214,6 +209,14 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
+
+  // GetControllerServiceWorker() makes sure that the connection to the
+  // service worker is established, which means that the service worker
+  // has started if it wasn't running.
+  response_head_.service_worker_ready_time = base::TimeTicks::Now();
+  response_head_.load_timing.send_start = base::TimeTicks::Now();
+  response_head_.load_timing.send_end = base::TimeTicks::Now();
+
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerSubresourceLoader::DispatchFetchEvent",
                "controller", (controller ? "exists" : "does not exist"));
