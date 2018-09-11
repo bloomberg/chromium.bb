@@ -122,6 +122,7 @@ InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
 
 void InsecureInputTabHelper::FormActivityRegistered(
     web::WebState* web_state,
+    web::WebFrame* sender_frame,
     const autofill::FormActivityParams& params) {
   DCHECK_EQ(web_state_, web_state);
   if (params.type == "input" &&

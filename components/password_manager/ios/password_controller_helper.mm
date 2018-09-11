@@ -168,7 +168,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
-                   formInMainFrame:(BOOL)formInMainFrame {
+                   formInMainFrame:(BOOL)formInMainFrame
+                           inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
   __weak PasswordControllerHelper* weakSelf = self;
   // This code is racing against the new page loading and will not get the

@@ -21,22 +21,24 @@ TestFormActivityTabHelper::TestFormActivityTabHelper(web::WebState* web_state)
 TestFormActivityTabHelper::~TestFormActivityTabHelper() {}
 
 void TestFormActivityTabHelper::FormActivityRegistered(
+    web::WebFrame* sender_frame,
     FormActivityParams const& params) {
   autofill::FormActivityTabHelper* form_activity_tab_helper =
       autofill::FormActivityTabHelper::GetOrCreateForWebState(web_state_);
   for (auto& observer : form_activity_tab_helper->observers_) {
-    observer.FormActivityRegistered(web_state_, params);
+    observer.FormActivityRegistered(web_state_, sender_frame, params);
   }
 }
 
-void TestFormActivityTabHelper::DocumentSubmitted(const std::string& form_name,
+void TestFormActivityTabHelper::DocumentSubmitted(web::WebFrame* sender_frame,
+                                                  const std::string& form_name,
                                                   bool has_user_gesture,
                                                   bool form_in_main_frame) {
   autofill::FormActivityTabHelper* form_activity_tab_helper =
       autofill::FormActivityTabHelper::GetOrCreateForWebState(web_state_);
   for (auto& observer : form_activity_tab_helper->observers_) {
-    observer.DocumentSubmitted(web_state_, form_name, has_user_gesture,
-                               form_in_main_frame);
+    observer.DocumentSubmitted(web_state_, sender_frame, form_name,
+                               has_user_gesture, form_in_main_frame);
   }
 }
 }  // namespace autofill

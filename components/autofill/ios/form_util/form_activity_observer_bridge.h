@@ -12,15 +12,17 @@
 
 @protocol FormActivityObserver<NSObject>
 @optional
-// Invoked by WebStateObserverBridge::FormActivity.
+// Invoked by FormActivityObserverBridge::FormActivity.
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const autofill::FormActivityParams&)params;
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params
+                    inFrame:(web::WebFrame*)frame;
 
-// Invoked by WebStateObserverBridge::DidSubmitDocument.
+// Invoked by FormActivityObserverBridge::DidSubmitDocument.
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
-                   formInMainFrame:(BOOL)formInMainFrame;
+                   formInMainFrame:(BOOL)formInMainFrame
+                           inFrame:(web::WebFrame*)frame;
 
 @end
 
@@ -41,11 +43,12 @@ class FormActivityObserverBridge : public FormActivityObserver {
   ~FormActivityObserverBridge() override;
 
   // FormActivityObserver overrides:
-  void FormActivityRegistered(
-      web::WebState* web_state,
-      const FormActivityParams& params) override;
+  void FormActivityRegistered(web::WebState* web_state,
+                              web::WebFrame* sender_frame,
+                              const FormActivityParams& params) override;
 
   void DocumentSubmitted(web::WebState* web_state,
+                         web::WebFrame* sender_frame,
                          const std::string& form_name,
                          bool has_user_gesture,
                          bool form_in_main_frame) override;
