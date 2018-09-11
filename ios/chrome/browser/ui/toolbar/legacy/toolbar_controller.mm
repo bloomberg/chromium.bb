@@ -709,21 +709,7 @@ using ios::material::TimingFunction;
     [self updateForFullscreenProgress:1.0];
 }
 
-- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator {
-  [self addFullscreenAnimationsToAnimator:animator];
-}
-
-- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator {
-  [self addFullscreenAnimationsToAnimator:animator];
-}
-
-- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator {
-  [self addFullscreenAnimationsToAnimator:animator];
-}
-
-#pragma mark - FullscreenUIElement helpers
-
-- (void)addFullscreenAnimationsToAnimator:(FullscreenAnimator*)animator {
+- (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
   CGFloat finalProgress = animator.finalProgress;
   [animator addAnimations:^{
     [self updateForFullscreenProgress:finalProgress];

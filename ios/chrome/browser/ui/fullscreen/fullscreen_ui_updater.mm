@@ -25,26 +25,8 @@ void FullscreenUIUpdater::FullscreenEnabledStateChanged(
   [ui_element_ updateForFullscreenEnabled:enabled];
 }
 
-void FullscreenUIUpdater::FullscreenScrollEventEnded(
+void FullscreenUIUpdater::FullscreenWillAnimate(
     FullscreenController* controller,
     FullscreenAnimator* animator) {
-  [ui_element_ finishFullscreenScrollWithAnimator:animator];
-}
-
-void FullscreenUIUpdater::FullscreenWillScrollToTop(
-    FullscreenController* controller,
-    FullscreenAnimator* animator) {
-  [ui_element_ scrollFullscreenToTopWithAnimator:animator];
-}
-
-void FullscreenUIUpdater::FullscreenWillEnterForeground(
-    FullscreenController* controller,
-    FullscreenAnimator* animator) {
-  [ui_element_ showToolbarWithAnimator:animator];
-}
-
-void FullscreenUIUpdater::FullscreenModelWasReset(
-    FullscreenController* controller,
-    FullscreenAnimator* animator) {
-  [ui_element_ showToolbarWithAnimator:animator];
+  [ui_element_ animateFullscreenWithAnimator:animator];
 }

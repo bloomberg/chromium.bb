@@ -45,7 +45,7 @@ void FullscreenMediator::ScrollToTop() {
 
   SetUpAnimator(scrollToTopStyle);
   for (auto& observer : observers_) {
-    observer.FullscreenWillScrollToTop(controller_, animator_);
+    observer.FullscreenWillAnimate(controller_, animator_);
   }
   StartAnimator();
 }
@@ -59,7 +59,7 @@ void FullscreenMediator::WillEnterForeground() {
 
   SetUpAnimator(enterForegroundStyle);
   for (auto& observer : observers_) {
-    observer.FullscreenWillEnterForeground(controller_, animator_);
+    observer.FullscreenWillAnimate(controller_, animator_);
   }
   StartAnimator();
 }
@@ -72,7 +72,7 @@ void FullscreenMediator::AnimateModelReset() {
 
   SetUpAnimator(resetStyle);
   for (auto& observer : observers_) {
-    observer.FullscreenModelWasReset(controller_, animator_);
+    observer.FullscreenWillAnimate(controller_, animator_);
   }
 
   // Instruct the model to ignore the remainder of the current scroll when
@@ -141,7 +141,7 @@ void FullscreenMediator::FullscreenModelScrollEventEnded(
 
   SetUpAnimator(scrollEndStyle);
   for (auto& observer : observers_) {
-    observer.FullscreenScrollEventEnded(controller_, animator_);
+    observer.FullscreenWillAnimate(controller_, animator_);
   }
   StartAnimator();
 }

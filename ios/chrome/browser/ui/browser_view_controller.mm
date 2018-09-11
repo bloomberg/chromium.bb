@@ -4096,7 +4096,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self updateForFullscreenProgress:1.0];
 }
 
-- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator {
+- (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
   // If the headers are being hidden, it's possible that this will reveal a
   // portion of the webview beyond the top of the page's rendered content.  In
   // order to prevent that, update the top padding and content before the
@@ -4129,22 +4129,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [weakSelf updateBrowserViewportForFullscreenProgress:
                   [weakAnimator progressForAnimatingPosition:finalPosition]];
-  }];
-}
-
-- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator {
-  CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^{
-    [self updateHeadersForFullscreenProgress:finalProgress];
-    [self updateFootersForFullscreenProgress:finalProgress];
-    [self updateBrowserViewportForFullscreenProgress:finalProgress];
-  }];
-}
-
-- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator {
-  CGFloat finalProgress = animator.finalProgress;
-  [animator addAnimations:^{
-    [self updateForFullscreenProgress:finalProgress];
   }];
 }
 
