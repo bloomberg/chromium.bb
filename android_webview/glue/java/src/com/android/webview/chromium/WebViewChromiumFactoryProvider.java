@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -43,6 +44,7 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.components.autofill.AutofillProvider;
@@ -67,6 +69,26 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     private static final String SUPPORT_LIB_GLUE_AND_BOUNDARY_INTERFACE_PREFIX =
             "org.chromium.support_lib_";
+
+    /**
+     * This holds objects of classes that are defined in N and above to ensure that run-time class
+     * verification does not occur until it is actually used for N and above.
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    @DoNotInline
+    private static class ObjectHolderForN {
+        public ServiceWorkerController mServiceWorkerController;
+    }
+
+    /**
+     * This holds objects of classes that are defined in P and above to ensure that run-time class
+     * verification does not occur until it is actually used for P and above.
+     */
+    @TargetApi(Build.VERSION_CODES.P)
+    @DoNotInline
+    private static class ObjectHolderForP {
+        public TracingController mTracingController;
+    }
 
     private final static Object sSingletonLock = new Object();
     private static WebViewChromiumFactoryProvider sSingleton;
@@ -101,13 +123,19 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     private SharedPreferences mWebViewPrefs;
     private WebViewDelegate mWebViewDelegate;
-    private TracingController mTracingController;
 
-    boolean mShouldDisableThreadChecking;
+    private boolean mShouldDisableThreadChecking;
 
     // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
-    private Object mServiceWorkerControllerAdapter;
+
+    @TargetApi(Build.VERSION_CODES.N)
+    private ObjectHolderForN mObjectHolderForN =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? new ObjectHolderForN() : null;
+
+    @TargetApi(Build.VERSION_CODES.P)
+    private ObjectHolderForP mObjectHolderForP =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? new ObjectHolderForP() : null;
 
     /**
      * Thread-safe way to set the one and only WebViewChromiumFactoryProvider.
@@ -470,12 +498,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @Override
     public ServiceWorkerController getServiceWorkerController() {
         synchronized (mAwInit.getLock()) {
-            if (mServiceWorkerControllerAdapter == null) {
-                mServiceWorkerControllerAdapter =
+            if (mObjectHolderForN.mServiceWorkerController == null) {
+                mObjectHolderForN.mServiceWorkerController =
                         GlueApiHelperForN.createServiceWorkerControllerAdapter(mAwInit);
             }
         }
-        return (ServiceWorkerController) mServiceWorkerControllerAdapter;
+        return mObjectHolderForN.mServiceWorkerController;
     }
 
     @Override
@@ -540,14 +568,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mAwInit.getLock()) {
             mAwInit.ensureChromiumStartedLocked(true);
             // ensureChromiumStartedLocked() can release the lock on first call while
-            // waiting for startup. Hence check the mTracingControler here to ensure
+            // waiting for startup. Hence check the mTracingController here to ensure
             // the singleton property.
-            if (mTracingController == null) {
-                mTracingController =
+            if (mObjectHolderForP.mTracingController == null) {
+                mObjectHolderForP.mTracingController =
                         GlueApiHelperForP.createTracingControllerAdapter(this, mAwInit);
             }
         }
-        return mTracingController;
+        return mObjectHolderForP.mTracingController;
     }
 
     private static class FilteredClassLoader extends ClassLoader {
