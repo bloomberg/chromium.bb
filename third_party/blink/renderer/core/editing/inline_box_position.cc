@@ -283,12 +283,7 @@ bool NeedsLineEndAdjustment(
 // Returns the first InlineBoxPosition at next line of last InlineBoxPosition
 // in |layout_object| if it exists to avoid making InlineBoxPosition at end of
 // line.
-template <typename Strategy>
-InlineBoxPosition NextLinePositionOf(
-    const PositionWithAffinityTemplate<Strategy>& adjusted) {
-  const PositionTemplate<Strategy>& position = adjusted.GetPosition();
-  const LayoutText& layout_text =
-      ToLayoutTextOrDie(*position.AnchorNode()->GetLayoutObject());
+InlineBoxPosition NextLinePositionOf(const LayoutText& layout_text) {
   InlineTextBox* const last = layout_text.LastTextBox();
   if (!last)
     return InlineBoxPosition();
@@ -307,10 +302,25 @@ InlineBoxPosition NextLinePositionOf(
 }
 
 template <typename Strategy>
+InlineBoxPosition ComputeInlineBoxPositionForLineEnd(
+    const PositionWithAffinityTemplate<Strategy>& adjusted) {
+  const LayoutText& layout_text = ToLayoutText(
+      *adjusted.GetPosition().AnchorNode()->GetLayoutObject());
+  const InlineBoxPosition next_line_position = NextLinePositionOf(layout_text);
+  if (next_line_position.inline_box)
+    return next_line_position;
+  // |adjusted| is after line end and no layout object after the position.
+  // Fall back to previous position.
+  DCHECK_GE(layout_text.TextLength(), 1u);
+  return ComputeInlineBoxPositionForTextNode(
+      &layout_text, layout_text.TextLength() - 1u, adjusted.Affinity());
+}
+
+template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& adjusted) {
   if (NeedsLineEndAdjustment(adjusted))
-    return NextLinePositionOf(adjusted);
+    return ComputeInlineBoxPositionForLineEnd(adjusted);
 
   const PositionTemplate<Strategy>& position = adjusted.GetPosition();
   DCHECK(!position.AnchorNode()->IsShadowRoot()) << adjusted;
