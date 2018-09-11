@@ -40,7 +40,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -123,7 +122,6 @@ class DriveBackendSyncTest : public testing::Test,
         nullptr,  // extension_service
         nullptr,  // signin_manager
         nullptr,  // token_service
-        nullptr,  // request_context
         nullptr,  // url_loader_factory
         nullptr,  // drive_service
         in_memory_env_.get()));

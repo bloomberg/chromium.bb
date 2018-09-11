@@ -541,8 +541,7 @@ DriveIntegrationService::DriveIntegrationService(
                                ->GetSharedURLLoaderFactory();
     }
     drive_service_ = std::make_unique<DriveAPIService>(
-        oauth_service, g_browser_process->system_request_context(),
-        url_loader_factory, blocking_task_runner_.get(),
+        oauth_service, url_loader_factory, blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
         GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET);

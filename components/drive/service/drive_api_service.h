@@ -38,9 +38,6 @@ class BatchUploadRequest;
 }  // namespace drive
 }  // namespace google_apis
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -110,7 +107,6 @@ class DriveAPIService : public DriveServiceInterface,
   // be created to perform this service.
   DriveAPIService(
       OAuth2TokenService* oauth2_token_service,
-      net::URLRequestContextGetter* url_request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::SequencedTaskRunner* blocking_task_runner,
       const GURL& base_url,
@@ -282,7 +278,6 @@ class DriveAPIService : public DriveServiceInterface,
   base::ThreadChecker thread_checker_;
 
   OAuth2TokenService* oauth2_token_service_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<google_apis::RequestSender> sender_;
