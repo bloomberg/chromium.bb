@@ -198,4 +198,38 @@ TEST_F(BluetoothTest, FidoBleDiscoveryFindsUpdatedDevice) {
   }
 }
 
+TEST_F(BluetoothTest, FidoBleDiscoveryRejectsCableDevice) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+
+  FidoBleDiscovery discovery;
+  MockFidoDiscoveryObserver observer;
+  discovery.set_observer(&observer);
+
+  {
+    base::RunLoop run_loop;
+    auto quit = run_loop.QuitClosure();
+    EXPECT_CALL(observer, DiscoveryStarted(&discovery, true))
+        .WillOnce(ReturnFromAsyncCall(quit));
+
+    discovery.Start();
+    run_loop.Run();
+  }
+
+  EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
+
+  // Simulates a discovery of two Cable devices one of which is an Android Cable
+  // authenticator and other is IOS Cable authenticator.
+  SimulateLowEnergyDevice(8);
+  SimulateLowEnergyDevice(9);
+
+  // Simulates a device change update received from the BluetoothAdapter. As the
+  // updated device has an address that we know is an Cable device, this should
+  // not trigger DeviceAdded().
+  SimulateLowEnergyDevice(7);
+}
+
 }  // namespace device
