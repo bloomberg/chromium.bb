@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
@@ -60,6 +61,7 @@ public class MediaLauncherActivityTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/882938")
     @SmallTest
     public void testHandleVideoIntent() throws Exception {
         String url = TestContentProvider.createContentUrl("media/test.mp4");
@@ -67,6 +69,7 @@ public class MediaLauncherActivityTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/882938")
     @SmallTest
     public void testHandleAudioIntent() throws Exception {
         String url = TestContentProvider.createContentUrl("media/audio.mp3");
@@ -74,6 +77,7 @@ public class MediaLauncherActivityTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/882938")
     @SmallTest
     public void testHandleImageIntent() throws Exception {
         String url = TestContentProvider.createContentUrl("google.png");
@@ -81,6 +85,7 @@ public class MediaLauncherActivityTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/882938")
     @SmallTest
     public void testHandleFileURIIntent() throws Exception {
         String url = UrlUtils.getTestFileUrl("google.png");
