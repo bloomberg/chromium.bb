@@ -168,7 +168,7 @@ suite('settings-fingerprint-list', function() {
       // First tap on the sensor to start fingerprint enrollment.
       browserProxy.scanReceived(
           settings.FingerprintResultType.SUCCESS, false, 20 /* percent */);
-      assertEquals(0, dialog.percentComplete_);
+      assertEquals(20, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
       assertTrue(dialog.$$('#scannerLocation').hidden);
       assertFalse(dialog.$$('#arc').hidden);
@@ -177,7 +177,7 @@ suite('settings-fingerprint-list', function() {
       // problem message should be visible.
       browserProxy.scanReceived(
           settings.FingerprintResultType.TOO_FAST, false, 20 /* percent */);
-      assertEquals(0, dialog.percentComplete_);
+      assertEquals(20, dialog.percentComplete_);
       assertEquals(
           'visible',
           window.getComputedStyle(dialog.$$('#messageDiv')).visibility);
