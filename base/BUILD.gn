@@ -1430,6 +1430,7 @@ jumbo_component("base") {
       "process/memory_fuchsia.cc",
       "process/process_fuchsia.cc",
       "process/process_handle_fuchsia.cc",
+      "process/process_info_fuchsia.cc",
       "process/process_iterator_fuchsia.cc",
       "process/process_metrics_fuchsia.cc",
       "process/process_metrics_posix.cc",
