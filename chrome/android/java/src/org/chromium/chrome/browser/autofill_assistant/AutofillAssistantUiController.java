@@ -14,6 +14,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
  * Autofill Assistant related UIs and forward UI events to native side.
@@ -82,10 +85,13 @@ public class AutofillAssistantUiController implements BottomBarController.Client
     }
 
     @CalledByNative
-    private void onUpdateScripts(String[] scripts) {
-        // TODO(crbug.com/806868): Pass a Script handle instead of a string so that we can report
-        // back what script got selected.
-        mBottomBarController.updateScripts(scripts);
+    private void onUpdateScripts(String[] scriptNames, String[] scriptPaths) {
+        List<BottomBarController.ScriptHandle> scriptHandles = new ArrayList<>();
+        // Note that scriptNames and scriptPaths are one-on-one matched by index.
+        for (int i = 0; i < scriptNames.length; i++) {
+            scriptHandles.add(new BottomBarController.ScriptHandle(scriptNames[i], scriptPaths[i]));
+        }
+        mBottomBarController.updateScripts(scriptHandles);
     }
 
     // native methods.

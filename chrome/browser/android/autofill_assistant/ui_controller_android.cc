@@ -63,16 +63,17 @@ void UiControllerAndroid::HideOverlay() {
 
 void UiControllerAndroid::UpdateScripts(
     const std::vector<ScriptHandle>& scripts) {
-  // TODO(crbug.com/806868): Pass the handles directly instead of the path.
   std::vector<std::string> script_paths;
+  std::vector<std::string> script_names;
   for (const auto& script : scripts) {
     script_paths.emplace_back(script.path);
+    script_names.emplace_back(script.name);
   }
-
   JNIEnv* env = AttachCurrentThread();
-  auto jscripts = base::android::ToJavaArrayOfStrings(env, script_paths);
   Java_AutofillAssistantUiController_onUpdateScripts(
-      env, java_autofill_assistant_ui_controller_, jscripts);
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ToJavaArrayOfStrings(env, script_names),
+      base::android::ToJavaArrayOfStrings(env, script_paths));
 }
 
 void UiControllerAndroid::OnScriptSelected(
