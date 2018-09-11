@@ -50,7 +50,8 @@
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
-    _passwordViewController = [[PasswordViewController alloc] init];
+    _passwordViewController =
+        [[PasswordViewController alloc] initWithSearchController:nil];
 
     _manualFillInjectionHandler =
         [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList];
@@ -80,8 +81,12 @@
 #pragma mark - PasswordListDelegate
 
 - (void)openAllPasswordsList {
-  PasswordViewController* allPasswordsViewController =
-      [[PasswordViewController alloc] init];
+  UISearchController* searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  searchController.searchResultsUpdater = self.passwordMediator;
+
+  PasswordViewController* allPasswordsViewController = [
+      [PasswordViewController alloc] initWithSearchController:searchController];
   self.passwordMediator.disableFilter = YES;
   self.passwordMediator.consumer = allPasswordsViewController;
 
@@ -97,8 +102,9 @@
 }
 
 - (void)dismissPresentedViewController {
-  [self.allPasswordsViewController dismissViewControllerAnimated:YES
-                                                      completion:nil];
+  [self.allPasswordsViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
 }
 
 @end

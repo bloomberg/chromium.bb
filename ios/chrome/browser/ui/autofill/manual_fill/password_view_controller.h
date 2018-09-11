@@ -14,7 +14,8 @@
 @interface PasswordViewController
     : ChromeTableViewController<ManualFillPasswordConsumer>
 
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSearchController:(UISearchController*)searchController
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:
