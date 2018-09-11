@@ -336,12 +336,14 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                       InputEventAckSource ack_source,
                                       InputEventAckState ack_result) {
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
+    touch_action_filter_.AppendToGestureSequenceForDebugging("T");
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        std::to_string(ack_result).c_str());
     touch_action_filter_.IncreaseActiveTouches();
     // Touchstart events sent to the renderer indicate a new touch sequence, but
     // in some cases we may filter out sending the touchstart - catch those
     // here.
     if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-      touch_action_filter_.AppendToGestureSequenceForDebugging("T");
       // Touch action must be auto when there is no consumer
       touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
       UpdateTouchAckTimeoutEnabled();
