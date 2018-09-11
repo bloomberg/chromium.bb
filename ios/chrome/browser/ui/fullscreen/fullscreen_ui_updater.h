@@ -22,14 +22,8 @@ class FullscreenUIUpdater : public FullscreenControllerObserver {
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,
                                      bool enabled) override;
-  void FullscreenScrollEventEnded(FullscreenController* controller,
-                                  FullscreenAnimator* animator) override;
-  void FullscreenWillScrollToTop(FullscreenController* controller,
-                                 FullscreenAnimator* animator) override;
-  void FullscreenWillEnterForeground(FullscreenController* controller,
-                                     FullscreenAnimator* animator) override;
-  void FullscreenModelWasReset(FullscreenController* controller,
-                               FullscreenAnimator* animator) override;
+  void FullscreenWillAnimate(FullscreenController* controller,
+                             FullscreenAnimator* animator) override;
 
   // The UI element being updated by this observer.
   __weak id<FullscreenUIElement> ui_element_;

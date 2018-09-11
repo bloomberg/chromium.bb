@@ -15,8 +15,8 @@
 class TestNoopAnimationProvider : public FullscreenControllerObserver {
  public:
   // FullscreenControllerObserver:
-  void FullscreenScrollEventEnded(FullscreenController* controller,
-                                  FullscreenAnimator* animator) override {
+  void FullscreenWillAnimate(FullscreenController* controller,
+                             FullscreenAnimator* animator) override {
     [animator addAnimations:^{
     }];
   }
