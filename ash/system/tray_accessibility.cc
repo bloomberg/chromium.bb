@@ -23,6 +23,7 @@
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -476,6 +477,9 @@ TrayAccessibility::~TrayAccessibility() {
 void TrayAccessibility::SetTrayIconVisible(bool visible) {
   if (tray_view())
     tray_view()->SetVisible(visible);
+
+  SetIconColor(TrayIconColor(
+      ash::Shell::Get()->session_controller()->GetSessionState()));
   tray_icon_visible_ = visible;
 }
 
@@ -541,6 +545,11 @@ void TrayAccessibility::OnAccessibilityStatusChanged() {
 
   if (detailed_menu_)
     detailed_menu_->OnAccessibilityStatusChanged();
+}
+
+void TrayAccessibility::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  SetTrayIconVisible(GetInitialVisibility());
 }
 
 }  // namespace ash
