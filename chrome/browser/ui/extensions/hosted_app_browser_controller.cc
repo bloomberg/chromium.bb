@@ -27,6 +27,8 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/favicon_size.h"
@@ -262,12 +264,22 @@ const Extension* HostedAppBrowserController::GetExtension() const {
       ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
 }
 
+const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
+  return GetExtension();
+}
+
 std::string HostedAppBrowserController::GetAppShortName() const {
   return GetExtension()->short_name();
 }
 
 base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
   return FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
+}
+
+bool HostedAppBrowserController::CanUninstall() const {
+  return extensions::ExtensionSystem::Get(browser_->profile())
+      ->management_policy()
+      ->UserMayModifySettings(GetExtension(), nullptr);
 }
 
 void HostedAppBrowserController::Uninstall(UninstallReason reason,
