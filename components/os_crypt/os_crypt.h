@@ -19,11 +19,6 @@
 class KeyStorageLinux;
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-class PrefRegistrySimple;
-class PrefService;
-#endif
-
 namespace os_crypt {
 struct Config;
 }
@@ -72,17 +67,6 @@ class OSCrypt {
   static COMPONENT_EXPORT(OS_CRYPT) bool DecryptString(
       const std::string& ciphertext,
       std::string* plaintext);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Registers preferences used by OSCrypt.
-  static COMPONENT_EXPORT(OS_CRYPT) void RegisterLocalPrefs(
-      PrefRegistrySimple* registry);
-
-  // Initialises OSCrypt.
-  // This method should be called on the main UI thread before any calls to
-  // encryption or decryption.
-  static COMPONENT_EXPORT(OS_CRYPT) void Init(PrefService* local_state);
-#endif
 
 #if defined(OS_MACOSX)
   // For unit testing purposes we instruct the Encryptor to use a mock Keychain
