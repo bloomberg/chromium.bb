@@ -967,9 +967,9 @@ void GtkUi::LoadGtkValues() {
           SK_ColorTRANSPARENT;
 
       const SkColor background_tab_text_color =
-          GetFgColor(header_selector + " GtkLabel");
+          GetFgColor(header_selector + " GtkLabel.title");
       const SkColor background_tab_text_color_inactive =
-          GetFgColor(header_selector_inactive + " GtkLabel");
+          GetFgColor(header_selector_inactive + " GtkLabel.title");
 
       color_map[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
           background_tab_text_color;
