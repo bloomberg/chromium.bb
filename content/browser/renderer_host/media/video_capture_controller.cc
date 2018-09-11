@@ -47,17 +47,66 @@ static const int kInfiniteRatio = 99999;
   base::UmaHistogramSparse(                             \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
-void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.VideoCapture.FrameDrop", reason,
-      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1);
+void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
+                       MediaStreamType stream_type) {
+  const int kEnumCount =
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop", reason, kEnumCount);
+  switch (stream_type) {
+    case MEDIA_DEVICE_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DeviceCapture",
+                                reason, kEnumCount);
+      break;
+    case MEDIA_GUM_TAB_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.GumTabCapture",
+                                reason, kEnumCount);
+      break;
+    case MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.FrameDrop.GumDesktopCapture", reason, kEnumCount);
+      break;
+    case MEDIA_DISPLAY_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.FrameDrop.DisplayCapture",
+                                reason, kEnumCount);
+      break;
+    default:
+      // Do nothing
+      return;
+  }
 }
 
 void LogMaxConsecutiveVideoFrameDropCountExceeded(
-    media::VideoCaptureFrameDropReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.VideoCapture.MaxFrameDropExceeded", reason,
-      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1);
+    media::VideoCaptureFrameDropReason reason,
+    MediaStreamType stream_type) {
+  const int kEnumCount =
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.MaxFrameDropExceeded", reason,
+                            kEnumCount);
+  switch (stream_type) {
+    case MEDIA_DEVICE_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.MaxFrameDropExceeded.DeviceCapture", reason,
+          kEnumCount);
+      break;
+    case MEDIA_GUM_TAB_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.MaxFrameDropExceeded.GumTabCapture", reason,
+          kEnumCount);
+      break;
+    case MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.MaxFrameDropExceeded.GumDesktopCapture", reason,
+          kEnumCount);
+      break;
+    case MEDIA_DISPLAY_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.MaxFrameDropExceeded.DisplayCapture", reason,
+          kEnumCount);
+      break;
+    default:
+      // Do nothing
+      return;
+  }
 }
 
 void CallOnError(media::VideoCaptureError error,
@@ -540,7 +589,7 @@ void VideoCaptureController::OnFrameDropped(
     if (++frame_drop_log_state_.drop_count >
         kMaxConsecutiveFrameDropForSameReasonCount) {
       frame_drop_log_state_.max_log_count_exceeded = true;
-      LogMaxConsecutiveVideoFrameDropCountExceeded(reason);
+      LogMaxConsecutiveVideoFrameDropCountExceeded(reason, stream_type_);
       std::ostringstream string_stream;
       string_stream << "Too many consecutive frames dropped with reason code "
                     << static_cast<int>(reason)
@@ -553,7 +602,7 @@ void VideoCaptureController::OnFrameDropped(
     frame_drop_log_state_ = FrameDropLogState(reason);
   }
 
-  LogVideoFrameDrop(reason);
+  LogVideoFrameDrop(reason, stream_type_);
   std::ostringstream string_stream;
   string_stream << "Frame dropped with reason code "
                 << static_cast<int>(reason);
