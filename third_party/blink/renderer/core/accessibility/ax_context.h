@@ -6,12 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ACCESSIBILITY_AX_CONTEXT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
+
+class AXObjectCache;
 
 // An AXContext enables accessibility support in a Document for as
 // long as the AXContext is alive. While the AXContext exists,
@@ -27,7 +28,7 @@ class CORE_EXPORT AXContext {
   AXObjectCache& GetAXObjectCache();
 
  protected:
-  Persistent<AXObjectCache> ax_object_cache_;
+  WeakPersistent<Document> document_;
 
   DISALLOW_COPY_AND_ASSIGN(AXContext);
 };

@@ -97,7 +97,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();
 
-  void Clear() override;
+  void Dispose() override;
 
   //
   // Iterators.
@@ -279,6 +279,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   HashSet<AXID> ids_in_use_;
 
   std::unique_ptr<AXRelationCache> relation_cache_;
+
+#if DCHECK_IS_ON()
+  // Verified when finalizing.
+  bool has_been_disposed_ = false;
+#endif
 
   TaskRunnerTimer<AXObjectCacheImpl> notification_post_timer_;
   HeapVector<std::pair<Member<AXObject>, AXNotification>>

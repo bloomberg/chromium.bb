@@ -215,6 +215,9 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
       layout_object_(layout_object),
       is_autofill_available_(false) {
 // TODO(aleventhal) Get correct current state of autofill.
+#if DCHECK_IS_ON()
+  layout_object_->SetHasAXObject(true);
+#endif
 }
 
 AXLayoutObject* AXLayoutObject::Create(LayoutObject* layout_object,
@@ -223,6 +226,7 @@ AXLayoutObject* AXLayoutObject::Create(LayoutObject* layout_object,
 }
 
 AXLayoutObject::~AXLayoutObject() {
+  DCHECK(IsDetached());
 }
 
 LayoutBoxModelObject* AXLayoutObject::GetLayoutBoxModelObject() const {
@@ -365,6 +369,10 @@ void AXLayoutObject::Detach() {
 
   DetachRemoteSVGRoot();
 
+#if DCHECK_IS_ON()
+  if (layout_object_)
+    layout_object_->SetHasAXObject(false);
+#endif
   layout_object_ = nullptr;
 }
 

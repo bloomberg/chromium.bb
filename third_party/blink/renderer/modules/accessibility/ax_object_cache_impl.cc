@@ -109,9 +109,12 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
 }
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {
+#if DCHECK_IS_ON()
+  DCHECK(has_been_disposed_);
+#endif
 }
 
-void AXObjectCacheImpl::Clear() {
+void AXObjectCacheImpl::Dispose() {
   notification_post_timer_.Stop();
 
   for (auto& entry : objects_) {
@@ -120,12 +123,9 @@ void AXObjectCacheImpl::Clear() {
     RemoveAXID(obj);
   }
 
-  accessible_node_mapping_.clear();
-  layout_object_mapping_.clear();
-  node_object_mapping_.clear();
-  inline_text_box_object_mapping_.clear();
-  ids_in_use_.clear();
-  relation_cache_.reset(new AXRelationCache(this));
+#if DCHECK_IS_ON()
+  has_been_disposed_ = true;
+#endif
 }
 
 AXObject* AXObjectCacheImpl::Root() {

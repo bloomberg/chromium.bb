@@ -2812,13 +2812,9 @@ void Document::Shutdown() {
   }
   sequential_focus_navigation_starting_point_ = nullptr;
 
-  if (this == &AXObjectCacheOwner() && ax_object_cache_) {
-    // Remove all objects from the AXObjectCache.
-    ax_object_cache_->Clear();
-
-    // Clear the member variable so that any teardown code doesn't try to
-    // update the AXObjectCache.
-    ax_object_cache_.Clear();
+  if (this == &AXObjectCacheOwner()) {
+    ax_contexts_.clear();
+    ClearAXObjectCache();
   }
 
   layout_view_ = nullptr;
@@ -2918,18 +2914,54 @@ Document& Document::AXObjectCacheOwner() const {
   return *doc;
 }
 
-void Document::SetAXObjectCache(AXObjectCache* ax_object_cache) {
-  DCHECK_EQ(this, &AXObjectCacheOwner());
-  DCHECK(!ax_object_cache_);
-  DCHECK_LT(lifecycle_.GetState(), DocumentLifecycle::kStopping);
+void Document::AddAXContext(AXContext* context) {
+  // The only case when |&cache_owner| is not |this| is when this is a
+  // pop-up. We want pop-ups to share the AXObjectCache of their parent
+  // document. However, there's no valid reason to explicitly create an
+  // AXContext for a pop-up document, so check to make sure we're not
+  // trying to do that here.
+  DCHECK_EQ(&AXObjectCacheOwner(), this);
 
-  ax_object_cache_ = ax_object_cache;
+  // If the document has already been detached, do not make a new AXObjectCache.
+  if (!GetLayoutView())
+    return;
+
+  ax_contexts_.push_back(context);
+  if (ax_contexts_.size() != 1)
+    return;
+
+  if (!ax_object_cache_)
+    ax_object_cache_ = AXObjectCache::Create(*this);
+}
+
+void Document::RemoveAXContext(AXContext* context) {
+  auto** iter =
+      std::find_if(ax_contexts_.begin(), ax_contexts_.end(),
+                   [&context](const auto& item) { return item == context; });
+  if (iter != ax_contexts_.end())
+    ax_contexts_.erase(iter);
+  if (ax_contexts_.size() == 0)
+    ClearAXObjectCache();
 }
 
 void Document::ClearAXObjectCache() {
   DCHECK_EQ(&AXObjectCacheOwner(), this);
+
+  // Clear the cache member variable before calling delete because attempts
+  // are made to access it during destruction.
   if (ax_object_cache_)
-    ax_object_cache_->Clear();
+    ax_object_cache_->Dispose();
+  ax_object_cache_.Clear();
+
+  // If there's at least one AXContext in scope and there's still a LayoutView
+  // around, recreate an empty AXObjectCache.
+  //
+  // TODO(dmazzoni): right now ClearAXObjectCache() is being used as a way
+  // to invalidate / reset the AXObjectCache while keeping it around. We
+  // should rewrite that as a method on AXObjectCache rather than destroying
+  // and recreating it here.
+  if (ax_contexts_.size() > 0 && GetLayoutView())
+    ax_object_cache_ = AXObjectCache::Create(*this);
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
