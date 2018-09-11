@@ -8,6 +8,7 @@
   "manifest_version": 2,
   "description": "An experimental wallpaper picker UI",
   "icons": {
+    "48": "images/icon48.png",
     "192": "images/icon192.png"
   },
   "permissions": [
