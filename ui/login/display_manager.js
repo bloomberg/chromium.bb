@@ -726,6 +726,19 @@ cr.define('cr.ui.login', function() {
       if (this.currentScreen.id == SCREEN_DEVICE_DISABLED)
         return;
 
+      // Prevent initial GAIA signin load from interrupting the kiosk splash
+      // screen.
+      // TODO: remove this special case when a better fix is found for the race
+      // condition. This if statement was introduced to fix http://b/113786350.
+      if ((this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH ||
+           this.currentScreen.id == SCREEN_ARC_KIOSK_SPLASH) &&
+          screen.id == SCREEN_GAIA_SIGNIN) {
+        console.log(
+            this.currentScreen.id +
+            ' screen showing. Ignoring switch to Gaia screen.');
+        return;
+      }
+
       var screenId = screen.id;
       if (screenId == SCREEN_ACCOUNT_PICKER && this.showingViewsLogin) {
         chrome.send('hideOobeDialog');
