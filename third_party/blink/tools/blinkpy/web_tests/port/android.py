@@ -790,10 +790,14 @@ class ChromiumAndroidDriver(driver.Driver):
             crashes = self._pull_crash_dumps_from_device()
             for crash in crashes:
                 stack = self._port._dump_reader._get_stack_from_dump(crash)  # pylint: disable=protected-access
+                try:
+                  stack_str = stack.encode('ascii', 'replace')
+                except Exception as e:
+                  stack_str = '<No Stack> (%s)' % e
                 stderr += '********* [%s] breakpad minidump %s:\n%s' % (
                     self._port.host.filesystem.basename(crash),
                     self._device.serial,
-                    stack.encode('ascii', 'replace'))
+                    stack_str)
 
         return super(ChromiumAndroidDriver, self)._get_crash_log(
             stdout, stderr, newer_than)
