@@ -279,12 +279,7 @@ public class NavigationPopupTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ListView list = popup.getListView();
             View view = list.getAdapter().getView(list.getAdapter().getCount() - 1, null, list);
-            TextView text = null;
-            if (view instanceof TextView) {
-                text = (TextView) view;
-            } else {
-                text = (TextView) view.findViewById(R.id.entry_title);
-            }
+            TextView text = (TextView) view.findViewById(R.id.entry_title);
             Assert.assertNotNull(text);
             Assert.assertEquals(text.getResources().getString(R.string.show_full_history),
                     text.getText().toString());
