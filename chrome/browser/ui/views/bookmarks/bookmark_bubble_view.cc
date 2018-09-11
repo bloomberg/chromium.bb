@@ -70,7 +70,7 @@ views::Widget* BookmarkBubbleView::ShowBubble(
   // Bookmark bubble should always anchor TOP_RIGHT, but the
   // LocationBarBubbleDelegateView does not know that and may use different
   // arrow anchoring.
-  bookmark_bubble_->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  bookmark_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
   if (!anchor_view) {
     bookmark_bubble_->SetAnchorRect(anchor_rect);
     bookmark_bubble_->set_parent_window(parent_window);

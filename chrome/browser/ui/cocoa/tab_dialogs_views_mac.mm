@@ -129,7 +129,7 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
 
   PasswordBubbleViewBase* bubble_view = PasswordBubbleViewBase::CreateBubble(
       web_contents(), nullptr, anchor_point, reason);
-  bubble_view->set_arrow(arrow);
+  bubble_view->SetArrow(arrow);
   bubble_view->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->ShowForReason(reason);

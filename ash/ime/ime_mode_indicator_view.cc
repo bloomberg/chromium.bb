@@ -54,7 +54,7 @@ ImeModeIndicatorView::ImeModeIndicatorView(const gfx::Rect& cursor_bounds,
   set_can_activate(false);
   set_accept_events(false);
   set_shadow(views::BubbleBorder::NO_SHADOW);
-  set_arrow(views::BubbleBorder::TOP_CENTER);
+  SetArrow(views::BubbleBorder::TOP_CENTER);
 }
 
 ImeModeIndicatorView::~ImeModeIndicatorView() = default;

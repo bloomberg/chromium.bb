@@ -202,12 +202,12 @@ View* BubbleDialogDelegateView::GetAnchorView() const {
   return anchor_view_tracker_->view();
 }
 
-void BubbleDialogDelegateView::set_arrow(BubbleBorder::Arrow arrow) {
+void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
   if (arrow_ == arrow)
     return;
   arrow_ = arrow;
 
-  // If set_arrow() is called before CreateWidget(), there's no need to update
+  // If SetArrow() is called before CreateWidget(), there's no need to update
   // the BubbleFrameView.
   if (GetBubbleFrameView()) {
     GetBubbleFrameView()->bubble_border()->set_arrow(arrow);

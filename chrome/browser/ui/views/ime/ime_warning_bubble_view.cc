@@ -144,7 +144,7 @@ void ImeWarningBubbleView::InitAnchorView() {
         browser_view_->toolbar_button_provider()->GetAppMenuButton();
   }
   SetAnchorView(reference_view);
-  set_arrow(views::BubbleBorder::TOP_RIGHT);
+  SetArrow(views::BubbleBorder::TOP_RIGHT);
 }
 
 void ImeWarningBubbleView::InitLayout() {

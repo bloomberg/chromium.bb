@@ -79,7 +79,7 @@ views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
   std::tie(anchor_button, anchor_point) = GetAnchor(browser);
   auto* bubble_view = new RelaunchRecommendedBubbleView(
       anchor_button, anchor_point, detection_time, std::move(on_accept));
-  bubble_view->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  bubble_view->SetArrow(views::BubbleBorder::TOP_RIGHT);
 
 #if defined(OS_MACOSX)
   // Parent the bubble to the browser window when there is no anchor view.

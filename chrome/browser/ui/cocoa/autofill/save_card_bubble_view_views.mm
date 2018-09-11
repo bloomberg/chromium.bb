@@ -56,7 +56,7 @@ SaveCardBubbleView* CreateSaveCardBubbleView(
 
   // Usually the anchor view determines the arrow type, but there is none in
   // MacViews. So always use TOP_RIGHT, even in fullscreen.
-  bubble->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  bubble->SetArrow(views::BubbleBorder::TOP_RIGHT);
   bubble->set_parent_window(platform_util::GetViewForWindow(parent_window));
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE

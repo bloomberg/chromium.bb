@@ -240,7 +240,7 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor() {
   SetAnchorView(configuration.anchor_view);
   if (!configuration.anchor_view)
     SetAnchorRect(GetPermissionAnchorRect(owner_->browser()));
-  set_arrow(configuration.bubble_arrow);
+  SetArrow(configuration.bubble_arrow);
 }
 
 //////////////////////////////////////////////////////////////////////////////
