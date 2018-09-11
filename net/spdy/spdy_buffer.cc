@@ -93,8 +93,8 @@ void SpdyBuffer::Consume(size_t consume_size) {
   ConsumeHelper(consume_size, CONSUME);
 }
 
-IOBuffer* SpdyBuffer::GetIOBufferForRemainingData() {
-  return new SharedFrameIOBuffer(shared_frame_, offset_);
+scoped_refptr<IOBuffer> SpdyBuffer::GetIOBufferForRemainingData() {
+  return base::MakeRefCounted<SharedFrameIOBuffer>(shared_frame_, offset_);
 }
 
 size_t SpdyBuffer::EstimateMemoryUsage() const {
