@@ -317,6 +317,10 @@ void HttpBridge::MakeAsynchronousPost() {
   RecordSyncRequestContentLengthHistograms(request_to_send.size(),
                                            request_content_.size());
 
+  // Sync relies on HTTP errors being detectable (and distinct from
+  // net/connection errors).
+  url_loader->SetAllowHttpErrorResults(true);
+
   url_loader->SetOnUploadProgressCallback(base::BindRepeating(
       &HttpBridge::OnURLLoadUploadProgress, base::Unretained(this)));
   url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -424,7 +428,7 @@ void HttpBridge::OnURLLoadCompleteInternal(
 
   fetch_state_.end_time = base::Time::Now();
   fetch_state_.request_completed = true;
-  fetch_state_.request_succeeded = !!response_body;
+  fetch_state_.request_succeeded = net_error == net::OK && response_code != -1;
   fetch_state_.http_response_code = response_code;
   fetch_state_.error_code = net_error;
 

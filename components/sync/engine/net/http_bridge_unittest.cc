@@ -13,11 +13,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -304,6 +306,62 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestResponseHeader) {
 
   EXPECT_EQ(http_bridge->GetResponseHeaderValue("Content-type"), "text/html");
   EXPECT_TRUE(http_bridge->GetResponseHeaderValue("invalid-header").empty());
+}
+
+TEST_F(MAYBE_SyncHttpBridgeTest, HttpErrors) {
+  ASSERT_TRUE(test_server_.Start());
+
+  auto function = base::BindLambdaForTesting([&](net::HttpStatusCode code) {
+    scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+    GURL echo_status = test_server_.GetURL(std::string("/echo?status=") +
+                                           std::to_string(code));
+    http_bridge->SetURL(echo_status.spec().c_str(), echo_status.IntPort());
+
+    std::string test_payload = "###TEST PAYLOAD###";
+    http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
+                                test_payload.c_str());
+
+    int os_error = 0;
+    int response_code = 0;
+    bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+    EXPECT_TRUE(success) << "Sync failed for HTTP code status " << code;
+    EXPECT_EQ(code, response_code);
+    EXPECT_EQ(0, os_error);
+  });
+
+  // A sample collection of HTTP errors that can be relevant to sync engine.
+  net::HttpStatusCode http_errors[] = {
+      net::HTTP_BAD_REQUEST,
+      net::HTTP_UNAUTHORIZED,
+      net::HTTP_NOT_FOUND,
+      net::HTTP_CONFLICT,
+      net::HTTP_INTERNAL_SERVER_ERROR,
+      net::HTTP_BAD_GATEWAY,
+      net::HTTP_SERVICE_UNAVAILABLE,
+      net::HTTP_GATEWAY_TIMEOUT,
+  };
+  for (auto error : http_errors) {
+    function.Run(error);
+  }
+}
+
+TEST_F(MAYBE_SyncHttpBridgeTest, NetErrorUnreached) {
+  // Test deliberately does not start the EmbeddedTestServer.
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  http_bridge->SetURL("http://anything", 9999);
+
+  std::string test_payload = "###TEST PAYLOAD###";
+  http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
+                              test_payload.c_str());
+
+  int os_error = 0;
+  int response_code = 0;
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(-1, response_code);
+  EXPECT_NE(0, os_error);
 }
 
 TEST_F(MAYBE_SyncHttpBridgeTest, Abort) {
