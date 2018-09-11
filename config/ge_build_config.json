@@ -1673,6 +1673,21 @@
         },
         {
           "board_name": "coral",
+          "name": "blacktiplte",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild"
+          ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "coral",
           "name": "blue",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
