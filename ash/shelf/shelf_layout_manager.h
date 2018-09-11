@@ -145,6 +145,9 @@ class ASH_EXPORT ShelfLayoutManager
   // it's only allowed in tablet mode, not in laptop mode.
   bool IsDraggingWindowFromTopOrCaptionArea() const;
 
+  // Returns whether background blur is enabled.
+  bool IsBackgroundBlurEnabled() { return is_background_blur_enabled_; }
+
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,

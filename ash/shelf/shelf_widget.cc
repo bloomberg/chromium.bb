@@ -217,7 +217,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
         mask_ = views::Painter::CreatePaintedLayer(
             views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
         mask_->layer()->SetBounds(opaque_background_bounds);
-        opaque_background_.SetBackgroundBlur(kShelfBlurRadius);
+        if (shelf_widget_->shelf_layout_manager()->IsBackgroundBlurEnabled())
+          opaque_background_.SetBackgroundBlur(kShelfBlurRadius);
         opaque_background_.SetMaskLayer(mask_->layer());
       }
     }
@@ -249,6 +250,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            shelf_,
                            Shell::Get()->wallpaper_controller()),
+      shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
       shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
       login_shelf_view_(
@@ -279,7 +281,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   GetContentsView()->AddChildView(shelf_view_);
   GetContentsView()->AddChildView(login_shelf_view_);
 
-  shelf_layout_manager_ = new ShelfLayoutManager(this, shelf_);
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   background_animator_.PaintBackground(
