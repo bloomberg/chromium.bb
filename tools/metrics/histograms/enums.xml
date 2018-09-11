@@ -49473,6 +49473,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Requests not allowed: EULA not accepted"/>
   <int value="4" label="Requests not allowed: network down"/>
   <int value="5" label="Requests not allowed: disabled by command line"/>
+  <int value="6" label="Waiting for network status"/>
 </enum>
 
 <enum name="VariationsSeedDateChange">

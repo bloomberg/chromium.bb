@@ -122,6 +122,7 @@ std::string GetRestrictParameterPref(VariationsServiceClient* client,
   return policy_pref_service->GetString(prefs::kVariationsRestrictParameter);
 }
 
+// Reported to UMA, keep in sync with enums.xml and don't renumber entries.
 enum ResourceRequestsAllowedState {
   RESOURCE_REQUESTS_ALLOWED,
   RESOURCE_REQUESTS_NOT_ALLOWED,
