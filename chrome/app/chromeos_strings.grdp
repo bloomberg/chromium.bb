@@ -460,20 +460,14 @@
   <message name="IDS_OOBE_SPOKEN_FEEDBACK_OPTION" desc="Spoken feedback option shown on OOBE screens accessibility menu.">
     ChromeVox (spoken feedback)
   </message>
-  <message name="IDS_SPOKEN_FEEDBACK_OPTION_OFF" desc="A value for Spoken Feedback accessibility option when it is off.">
+  <message name="IDS_A11Y_SETTING_TOGGLE_OPTION_OFF" desc="A value for an accessibility toggle option when it is off.">
     Off
   </message>
-  <message name="IDS_SPOKEN_FEEDBACK_OPTION_ON" desc="A value for Spoken Feedback accessibility option when it is on.">
+  <message name="IDS_A11Y_SETTING_TOGGLE_OPTION_ON" desc="A value for an accessibility toggle option when it is on.">
     On
   </message>
   <message name="IDS_OOBE_SELECT_TO_SPEAK_OPTION" desc="Select to Speak option shown on OOBE screens accessibility menu.">
     Select to speak
-  </message>
-  <message name="IDS_SELECT_TO_SPEAK_OPTION_OFF" desc="A value for Select to Speak accessibility option when it is off.">
-    Off
-  </message>
-  <message name="IDS_SELECT_TO_SPEAK_OPTION_ON" desc="A value for Select to Speak accessibility option when it is on.">
-    On
   </message>
   <message name="IDS_OOBE_LARGE_CURSOR_OPTION" desc="Large mouse cursor option shown on OOBE screens accessibility menu.">
     Large mouse cursor
@@ -487,32 +481,14 @@
   <message name="IDS_OOBE_HIGH_CONTRAST_MODE_OPTION" desc="High contrast mode option shown on OOBE screens accessibility menu.">
     High contrast mode
   </message>
-  <message name="IDS_HIGH_CONTRAST_OPTION_OFF" desc="A value for High Contrast Mode accessibility option when it is off.">
-    Off
-  </message>
-  <message name="IDS_HIGH_CONTRAST_OPTION_ON" desc="A value for High Contrast Mode accessibility option when it is on.">
-    On
-  </message>
   <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
     Screen magnifier
   </message>
   <message name="IDS_OOBE_DOCKED_MAGNIFIER_OPTION" desc="Docked magnifier option shown on OOBE screens accessibility menu.">
     Docked magnifier
   </message>
-  <message name="IDS_SCREEN_MAGNIFIER_OPTION_OFF" desc="A value for Screen or Docked Magnifier Option accessibility option when it is off.">
-    Off
-  </message>
-  <message name="IDS_SCREEN_MAGNIFIER_OPTION_ON" desc="A value for Screen or Docked Magnifier Option accessibility option when it is on.">
-    On
-  </message>
   <message name="IDS_OOBE_VIRTUAL_KEYBOARD_OPTION" desc="Virtual keyboard option shown on the OOBE screens accessibility menu.">
     On-screen keyboard
-  </message>
-  <message name="IDS_VIRTUAL_KEYBOARD_OPTION_OFF" desc="A value for Virtual Keyboard accessibility option when it is off.">
-    Off
-  </message>
-  <message name="IDS_VIRTUAL_KEYBOARD_OPTION_ON" desc="A value for Virtual Keyboard accessibility option when it is on.">
-    On
   </message>
   <message name="IDS_OOBE_CLOSE_ACCESSIBILITY_MENU" desc="Text to be spoken when focus is set to the close button of accessibility options menu.">
     Close accessibility menu
