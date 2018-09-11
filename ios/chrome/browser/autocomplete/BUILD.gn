@@ -36,6 +36,7 @@ source_set("autocomplete") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/unified_consent",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//url",
