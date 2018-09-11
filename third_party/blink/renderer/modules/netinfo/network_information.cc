@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -66,11 +64,6 @@ String ConnectionTypeToString(WebConnectionType type) {
   return "none";
 }
 
-String GetConsoleLogStringForWebHoldback() {
-  return "Network quality values are overridden using a holdback experiment, "
-         "and so may be inaccurate";
-}
-
 }  // namespace
 
 NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
@@ -102,15 +95,7 @@ double NetworkInformation::downlinkMax() const {
   return downlink_max_mbps_;
 }
 
-String NetworkInformation::effectiveType() {
-  MaybeShowWebHoldbackConsoleMsg();
-  base::Optional<WebEffectiveConnectionType> override_ect =
-      GetNetworkStateNotifier().GetWebHoldbackEffectiveType();
-  if (override_ect) {
-    return NetworkStateNotifier::EffectiveConnectionTypeToString(
-        override_ect.value());
-  }
-
+String NetworkInformation::effectiveType() const {
   // effective_type_ is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
   if (!IsObserving()) {
@@ -122,14 +107,7 @@ String NetworkInformation::effectiveType() {
   return NetworkStateNotifier::EffectiveConnectionTypeToString(effective_type_);
 }
 
-unsigned long NetworkInformation::rtt() {
-  MaybeShowWebHoldbackConsoleMsg();
-  base::Optional<TimeDelta> override_rtt =
-      GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
-  if (override_rtt) {
-    return GetNetworkStateNotifier().RoundRtt(Host(), override_rtt.value());
-  }
-
+unsigned long NetworkInformation::rtt() const {
   if (!IsObserving()) {
     return GetNetworkStateNotifier().RoundRtt(
         Host(), GetNetworkStateNotifier().HttpRtt());
@@ -138,15 +116,7 @@ unsigned long NetworkInformation::rtt() {
   return http_rtt_msec_;
 }
 
-double NetworkInformation::downlink() {
-  MaybeShowWebHoldbackConsoleMsg();
-  base::Optional<double> override_downlink_mbps =
-      GetNetworkStateNotifier().GetWebHoldbackDownlinkThroughputMbps();
-  if (override_downlink_mbps) {
-    return GetNetworkStateNotifier().RoundMbps(Host(),
-                                               override_downlink_mbps.value());
-  }
-
+double NetworkInformation::downlink() const {
   if (!IsObserving()) {
     return GetNetworkStateNotifier().RoundMbps(
         Host(), GetNetworkStateNotifier().DownlinkThroughputMbps());
@@ -178,27 +148,20 @@ void NetworkInformation::ConnectionChange(
   double new_downlink_mbps =
       GetNetworkStateNotifier().RoundMbps(host, downlink_mbps);
 
-  bool network_quality_estimate_changed = false;
-  // Allow setting |network_quality_estimate_changed| to true only if the
-  // network quality holdback experiment is not enabled.
-  if (!GetNetworkStateNotifier().GetWebHoldbackEffectiveType()) {
-    network_quality_estimate_changed = effective_type_ != effective_type ||
-                                       http_rtt_msec_ != new_http_rtt_msec ||
-                                       downlink_mbps_ != new_downlink_mbps;
-  }
-
   // This can happen if the observer removes and then adds itself again
   // during notification, or if |transport_rtt| was the only metric that
   // changed.
   if (type_ == type && downlink_max_mbps_ == downlink_max_mbps &&
-      !network_quality_estimate_changed && save_data_ == save_data) {
+      effective_type_ == effective_type &&
+      http_rtt_msec_ == new_http_rtt_msec &&
+      downlink_mbps_ == new_downlink_mbps && save_data_ == save_data) {
     return;
   }
 
-  // If the NetInfoDownlinkMaxEnabled is not enabled, then |type| and
-  // |downlink_max_mbps| should not be checked for change.
   if (!RuntimeEnabledFeatures::NetInfoDownlinkMaxEnabled() &&
-      !network_quality_estimate_changed && save_data_ == save_data) {
+      effective_type_ == effective_type &&
+      http_rtt_msec_ == new_http_rtt_msec &&
+      downlink_mbps_ == new_downlink_mbps && save_data_ == save_data) {
     return;
   }
 
@@ -208,11 +171,9 @@ void NetworkInformation::ConnectionChange(
 
   type_ = type;
   downlink_max_mbps_ = downlink_max_mbps;
-  if (network_quality_estimate_changed) {
-    effective_type_ = effective_type;
-    http_rtt_msec_ = new_http_rtt_msec;
-    downlink_mbps_ = new_downlink_mbps;
-  }
+  effective_type_ = effective_type;
+  http_rtt_msec_ = new_http_rtt_msec;
+  downlink_mbps_ = new_downlink_mbps;
   save_data_ = save_data;
 
   if (type_changed)
@@ -233,7 +194,6 @@ void NetworkInformation::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  MaybeShowWebHoldbackConsoleMsg();
   StartObserving();
 }
 
@@ -283,20 +243,18 @@ void NetworkInformation::StopObserving() {
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
     : ContextLifecycleObserver(context),
-      web_holdback_console_message_shown_(false),
+      type_(GetNetworkStateNotifier().ConnectionType()),
+      downlink_max_mbps_(GetNetworkStateNotifier().MaxBandwidth()),
+      effective_type_(GetNetworkStateNotifier().EffectiveType()),
+      http_rtt_msec_(GetNetworkStateNotifier().RoundRtt(
+          Host(),
+          GetNetworkStateNotifier().HttpRtt())),
+      downlink_mbps_(GetNetworkStateNotifier().RoundMbps(
+          Host(),
+          GetNetworkStateNotifier().DownlinkThroughputMbps())),
+      save_data_(GetNetworkStateNotifier().SaveDataEnabled() &&
+                 !IsInDataSaverHoldbackWebApi(GetExecutionContext())),
       context_stopped_(false) {
-  base::Optional<TimeDelta> http_rtt;
-  base::Optional<double> downlink_mbps;
-
-  GetNetworkStateNotifier().GetMetricsWithWebHoldback(
-      &type_, &downlink_max_mbps_, &effective_type_, &http_rtt, &downlink_mbps,
-      &save_data_);
-
-  http_rtt_msec_ = GetNetworkStateNotifier().RoundRtt(Host(), http_rtt);
-  downlink_mbps_ = GetNetworkStateNotifier().RoundMbps(Host(), downlink_mbps);
-  save_data_ =
-      save_data_ && !IsInDataSaverHoldbackWebApi(GetExecutionContext());
-
   DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
 }
@@ -308,17 +266,6 @@ void NetworkInformation::Trace(blink::Visitor* visitor) {
 
 const String NetworkInformation::Host() const {
   return GetExecutionContext() ? GetExecutionContext()->Url().Host() : String();
-}
-
-void NetworkInformation::MaybeShowWebHoldbackConsoleMsg() {
-  if (web_holdback_console_message_shown_)
-    return;
-  web_holdback_console_message_shown_ = true;
-  if (!GetNetworkStateNotifier().GetWebHoldbackEffectiveType())
-    return;
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                             GetConsoleLogStringForWebHoldback()));
 }
 
 }  // namespace blink

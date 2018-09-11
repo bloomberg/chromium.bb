@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
 // Make sure the changes in the effective connection typeare notified to the
 // render thread.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
-                       EffectiveConnectionTypeChangeNotified) {
+                       EffectiveConnectionTypeChangeNotfied) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
       std::map<std::string, std::string>(), false, false, true,
