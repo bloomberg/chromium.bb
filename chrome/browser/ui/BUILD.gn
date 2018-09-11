@@ -3589,6 +3589,7 @@ jumbo_split_static_library("ui") {
       "//ash/app_list",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/resources/vector_icons",
+      "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//ui/views/mus/remote_view:remote_view_provider",
     ]
 

@@ -1,0 +1,36 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package app_list;
+
+// HourAppLaunchPredictorProto is used for materializing HourAppLaunchPredictor.
+message HourAppLaunchPredictorProto {
+  // A frequency table records app launches that happened in a particular bin.
+  message FrequencyTable {
+    // Total number of launches (within this bin), should equal to the sum of
+    // frequency below.
+    optional int32 total_counts = 1;
+    // Number of launches for each app (within this bin).
+    map<string, int32> frequency = 2;
+  }
+  // A map from bin indices to each FrequencyTable of that bin.
+  map<int32, FrequencyTable> binned_frequency_table = 1;
+}
+
+// Used only for testing AppSearchResultRanker.
+message FakeAppLaunchPredictorProto {
+  map<string, float> rank_result = 1;
+}
+
+// AppLaunchPredictorProto contains one type of the predictor proto above.
+message AppLaunchPredictorProto {
+  oneof predictor {
+    FakeAppLaunchPredictorProto fake_app_launch_predictor = 1;
+    HourAppLaunchPredictorProto hour_app_launch_predictor = 2;
+  }
+}
