@@ -345,6 +345,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
 
+  // TODO(lanwei): Use TestApi interface to write functions that are used in
+  // tests and remove FRIEND_TEST_ALL_PREFIXES.
+  void SetLastPointerType(ui::EventPointerType last_pointer_type) {
+    last_pointer_type_ = last_pointer_type;
+  }
+
  protected:
   ~RenderWidgetHostViewAura() override;
 
@@ -412,6 +418,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            DiscardDelegatedFramesWithMemoryPressure);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverDestroyed);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
+                           KeyboardObserverForOnlyTouchInput);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                            DropFallbackWhenHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,

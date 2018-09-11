@@ -17,6 +17,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/events/event_constants.h"
+#endif
+
 namespace ipc {
 class Message;
 }
@@ -194,6 +198,9 @@ class TextInputStateSender {
   void SetFlags(int flags);
   void SetCanComposeInline(bool can_compose_inline);
   void SetShowVirtualKeyboardIfEnabled(bool show_ime_if_needed);
+#if defined(USE_AURA)
+  void SetLastPointerType(ui::EventPointerType last_pointer_type);
+#endif
 
  private:
   std::unique_ptr<TextInputState> text_input_state_;
