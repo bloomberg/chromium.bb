@@ -45,6 +45,9 @@ js_type_check("closure_compile") {
   ]
 }
 
+# Remaining targets in this file are private.
+visibility = [ ":*" ]
+
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [

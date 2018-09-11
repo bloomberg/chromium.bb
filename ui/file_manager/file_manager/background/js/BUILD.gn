@@ -4,6 +4,22 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+# TODO(tapted): This folder should be restricted to file_manager, but related
+# apps currently depend on background_base, which depends on
+# volume_manager_factory, and that pulls in nearly everything else. For now,
+# document externally-exposed targets visible with this helper, and hide
+# transitive dependencies (but note those transitive dependencies should move
+# elsewhere too).
+related_apps = [
+  "//ui/file_manager/audio_player/*",
+  "//ui/file_manager/file_manager/*",
+  "//ui/file_manager/gallery/*",
+  "//ui/file_manager/video_player/*",
+]
+
+# Default to private.
+visibility = [ ":*" ]
+
 js_type_check("closure_compile") {
   deps = [
     ":app_window_wrapper",
@@ -60,6 +76,7 @@ js_library("closure_compile_externs") {
 }
 
 js_library("app_window_wrapper") {
+  visibility += related_apps
   deps = [
     ":app_windows",
     "../../common/js:async_util",
@@ -92,6 +109,7 @@ js_library("background") {
 }
 
 js_library("background_base") {
+  visibility += related_apps
   deps = [
     ":app_windows",
     ":volume_manager_factory",
@@ -209,6 +227,7 @@ js_library("media_scanner") {
 }
 
 js_library("mock_volume_manager") {
+  visibility += related_apps
   deps = [
     ":volume_info_impl",
     ":volume_info_list_impl",
@@ -234,6 +253,12 @@ js_library("task_queue") {
 }
 
 js_library("test_util_base") {
+  # TODO(tapted): Move this target to //ui/file_manager/base. It is used in the
+  # background page of all |related_apps|, but accessed via extension messaging.
+  # So it doesn't need to be visible as a closure dependency, except for the
+  # "unpacked" test framework.
+  visibility += [ "//ui/file_manager/file_manager/test/js:test_util" ]
+
   deps = [
     ":app_windows",
     "../../common/js:error_util",

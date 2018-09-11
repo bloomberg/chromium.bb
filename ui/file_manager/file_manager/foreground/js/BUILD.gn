@@ -5,6 +5,11 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
 
+visibility = [
+  "//ui/file_manager/file_manager/foreground/*",
+  "//ui/file_manager/file_manager/test/js/*",
+]
+
 js_type_check("closure_compile_module") {
   deps = [
     ":actions_controller",
@@ -578,7 +583,9 @@ js_library("task_history") {
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("thumbnail_loader") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "../../../image_loader:image_loader_client",
     "../../common/js:file_type",
@@ -606,7 +613,13 @@ js_library("toolbar_controller") {
   ]
 }
 
+# TODO(tapted): Move this to //ui/file_manager/base.
 js_library("volume_manager_wrapper") {
+  visibility += [
+    "//ui/file_manager/audio_player/*",
+    "//ui/file_manager/gallery/*",
+    "//ui/file_manager/video_player/*",
+  ]
   deps = [
     "../../../externs:file_manager_private",
     "../../common/js:async_util",
@@ -643,6 +656,7 @@ js_unit_tests("unit_tests") {
 }
 
 group("closure_compile") {
+  visibility += [ "*" ]
   deps = [
     ":closure_compile_module",
     ":unit_tests_type_check",
