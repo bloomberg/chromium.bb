@@ -41,7 +41,7 @@
 <translation id="1570871743947603115">Увімкнути/вимкнути Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1608626060424371292">Вилучити цього користувача</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT" /></translation>
-<translation id="1654477262762802994">Почати вводити голосовий запит</translation>
+<translation id="1654477262762802994">Ввести голосовий запит</translation>
 <translation id="1658406695958299976">На жаль, поки не вдалося підтвердити ваш пароль. Зверніть увагу: якщо ви нещодавно змінили пароль, новий пароль буде застосовано, щойно ви вийдете з облікового запису. Скористайтеся старим паролем тут.</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Адреса IPv6: <ph name="ADDRESS" /></translation>
@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
 <translation id="2761704814324807722">Панель статусу, час: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Під’єднання до мережі <ph name="NAME" /></translation>
+<translation id="2790844815106384441">визначати, чи дозволено веб-сайтам використовувати служби локації або мікрофон, камеру чи інші функції пристрою;</translation>
 <translation id="2792498699870441125">Alt+клавіша пошуку</translation>
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2808012452536866044">Функція Better Together тепер є на новому телефоні</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">Розгорнути меню</translation>
 <translation id="3087734570205094154">Низ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3124698051292518391">Завжди показувати полицю</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
 <translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="315116470104423982">Мобільне передавання даних</translation>
@@ -180,7 +180,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3891340733213178823">Щоб вийти, двічі натисніть Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосові підказки)</translation>
-<translation id="3897533311200664389">Почати вводити текстовий запит</translation>
+<translation id="3897533311200664389">Ввести текстовий запит</translation>
 <translation id="3899995891769452915">Голосовий ввід</translation>
 <translation id="3900355044994618856">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Під’єднання до <ph name="NAME" /></translation>
@@ -194,6 +194,7 @@
 <translation id="4200057768455216496">Ви натиснули комбінацію клавіш для закріпленої лупи. Увімкнути?</translation>
 <translation id="4217571870635786043">Диктування</translation>
 <translation id="4261870227682513959">Показати налаштування сповіщень. Сповіщення вимкнено</translation>
+<translation id="4269883910223712419">Адміністратор цього пристрою може:</translation>
 <translation id="4274921305979314545">Підключіть Chromebook до телефона</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4292681942966152062">Активується мережа: <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +222,7 @@
 <translation id="4734965478015604180">Горизонтально</translation>
 <translation id="476166673298332917">Адміністратор цього пристрою має доступ до всієї активності, зокрема паролів і взаємодій.</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google Асистент недоступний у демонстраційному сеансі.</translation>
 <translation id="479989351350248267">пошук</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
@@ -336,6 +338,7 @@
 <translation id="6751826523481687655">Відстеження ефективності ввімкнено</translation>
 <translation id="6785414152754474415">Акумулятор заряджений на <ph name="PERCENTAGE" />% і заряджається.</translation>
 <translation id="6803622936009808957">Не вдалося дублювати зображення екранів, оскільки не знайдено підтримувані значення роздільної здатності. Натомість запущено режим розширеного робочого столу.</translation>
+<translation id="6814658242098378692">керувати додатками, розширеннями й темами;</translation>
 <translation id="6820676911989879663">Зробіть перерву!</translation>
 <translation id="683971173229319003">Search (Пошук)+L</translation>
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
+<translation id="7303365578352795231">Відповідь на іншому пристрої.</translation>
 <translation id="7348093485538360975">Екранна клавіатура</translation>
 <translation id="735745346212279324">VPN від’єднано</translation>
 <translation id="7377169924702866686">Клавішу Caps Lock увімкнено.</translation>
@@ -391,6 +395,7 @@
 <translation id="7842211907556571265">Під’єднання до мережі: <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Попередження. Експериментальна функція</translation>
 <translation id="7846634333498149051">Клавіатура</translation>
+<translation id="7886169021410746335">змінювати налаштування конфіденційності.</translation>
 <translation id="7886277072580235377">Коли ви вийдете з облікового запису, дані інтернет-сеансу буде стерто. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Надішли електронний лист</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>

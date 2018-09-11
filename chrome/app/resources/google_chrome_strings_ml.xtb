@@ -88,7 +88,7 @@
 <translation id="3080151273017101988">Google Chrome അടച്ചാലും പശ്ചാത്തല ആപ്ലിക്കേഷനുകള്‍ പ്രവര്‍ത്തിപ്പിക്കുന്നത് തുടരുക</translation>
 <translation id="3089968997497233615">ഒരു പുതിയ സുരക്ഷിതമായGoogle Chrome ന്‍റെ പതിപ്പ് ലഭ്യമാണ്.</translation>
 <translation id="3149510190863420837">Chrome അപ്ലിക്കേഷനുകൾ</translation>
-<translation id="3180085900771989961">നിങ്ങളുടെ മാനേജർ നീക്കംചെയ്‌ത് Chrome-ലേക്ക് തിരികെ ചേർക്കേണ്ടതാണ്.</translation>
+<translation id="3180085900771989961">നിങ്ങളുടെ മാനേജർ നീക്കം ചെയ്‌ത് Chrome-ലേക്ക് തിരികെ ചേർക്കേണ്ടതാണ്.</translation>
 <translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> എന്നതിന് ഏതൊക്കെ വെബ്‌സൈറ്റുകൾ കാണാനാകുമെന്ന് സജ്ജമാക്കാൻ, <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. സന്ദർശിച്ച് നിയന്ത്രണങ്ങളും ക്രമീകരണവും കോൺഫിഗർ ചെയ്യാം. നിങ്ങൾ ഡിഫോൾട്ട് ക്രമീകരണം മാറ്റുന്നില്ലെങ്കിൽ, <ph name="NEW_PROFILE_NAME" /> എന്നതിന് വെബിൽ എല്ലാ കാര്യങ്ങളും ബ്രൗസ് ചെയ്യാനാകും.
 
 നിങ്ങളുടെ അക്കൗണ്ട് ആക്‌സസ്സ് ചെയ്യുന്നതിൽ നിന്ന് <ph name="NEW_PROFILE_NAME" /> എന്നതിനെ തടയാൻ, Chrome ഉപയോഗിക്കാത്തപ്പോൾ നിങ്ങളുടെ പ്രൊഫൈൽ ലോക്ക് ചെയ്യുന്ന കാര്യം ഉറപ്പാക്കുക. ഇങ്ങനെ ചെയ്യാൻ, ബ്രൗസറിന് മുകളിൽ വലതുകോണിലുള്ള നിങ്ങളുടെ പ്രൊഫൈൽ പേരിൽ ക്ലിക്ക് ചെയ്‌ത്, "പുറത്ത് കടന്ന് ചൈൽഡ്‌ലോക്ക് ചെയ്യുക" തിരഞ്ഞെടുക്കുക.
@@ -197,7 +197,7 @@
 <translation id="6291089322031436445">Chrome Dev ആപ്പുകൾ</translation>
 <translation id="6291549208091401781">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലെ എല്ലാ ഉപയോക്താക്കൾക്കുമായി Google Chrome നിലവിൽ ഇൻസ്റ്റാൾ ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="6338556085225130112">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു</translation>
-<translation id="6368958679917195344">അനുബന്ധ <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പണ്‍ ഉറവിട സോഫ്റ്റ്‍വെയര്‍<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ് Chrome OS നിര്‍മ്മിച്ചിരിക്കുന്നത്.</translation>
+<translation id="6368958679917195344">അനുബന്ധ <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പണ്‍ സോഴ്‌സ് സോഫ്റ്റ്‍വെയര്‍<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ് Chrome OS സാധ്യമാക്കിയിട്ടുള്ളത്.</translation>
 <translation id="6468844726266617801">{0,plural, =1{ഒരു ദിവസത്തിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കുക}other{# ദിവസത്തിനുള്ളിൽ Chrome വീണ്ടും സമാരംഭിക്കുക}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു, (<ph name="PROGRESS_PERCENT" />)</translation>

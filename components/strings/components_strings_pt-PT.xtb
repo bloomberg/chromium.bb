@@ -723,7 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em utilização}other{# em utilização}}</translation>
 <translation id="5922853866070715753">Estamos quase a terminar</translation>
 <translation id="5939518447894949180">Repor</translation>
-<translation id="5951495562196540101">Não é possível inscrever com conta de consumidor (licença em pacote disponível).</translation>
+<translation id="5951495562196540101">Não é possível inscrever-se com conta de consumidor (licença incluída disponível).</translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Reduzir</translation>
@@ -846,6 +846,7 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Desativar som (predefinição)</translation>
 <translation id="6984479912851154518">Está a sair do modo privado para pagar através de uma aplicação externa. Pretende continuar?</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>

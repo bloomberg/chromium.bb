@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1151972924205500581">Kinakailangan ang password</translation>
 <translation id="1152921474424827756">Mag-access ng <ph name="BEGIN_LINK" />naka-cache na kopya<ph name="END_LINK" /> ng <ph name="URL" /></translation>
+<translation id="1156303062776767266">Tumitingin ka ng lokal o nakabahaging file</translation>
 <translation id="1158211211994409885">Pinutol ng <ph name="HOST_NAME" /> ang koneksyon nang hindi inaasahan.</translation>
 <translation id="1161325031994447685">Muling kumonekta sa Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
@@ -534,6 +535,7 @@
 <translation id="4592951414987517459">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang makabagong cipher suite.</translation>
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
 <translation id="4619615317237390068">Mga tab mula sa iba pang mga device</translation>
+<translation id="4646534391647090355">Dalhin na ako roon</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; naglalaman ng mga error ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4690462567478992370">Ihinto ang paggamit ng di-wastong certificate</translation>
@@ -580,6 +582,7 @@
 <translation id="4958444002117714549">Palawakin ang listahan</translation>
 <translation id="4974590756084640048">Muling i-enable ang mga babala</translation>
 <translation id="4988217478422488391">Mas pinapabilis ang pagbabayad para sa mga bagay online</translation>
+<translation id="4989163558385430922">Tingnan lahat</translation>
 <translation id="4989809363548539747">Hindi sinusuportahan ang plugin na ito</translation>
 <translation id="5002932099480077015">Kung naka-enable, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="5018422839182700155">Hindi mabuksan ang page na ito</translation>
@@ -724,6 +727,7 @@
 <translation id="5922853866070715753">Malapit nang matapos</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
+<translation id="5966151627327109289">Sina-sign out ka sa karamihang site. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
@@ -745,6 +749,7 @@
 <translation id="6071091556643036997">Invalid ang uri ng patakaran.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Mase-save ang card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}one{Mase-save ang mga card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}other{Mase-save ang mga card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}}</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
+<translation id="6096619198407627433">Sina-sign out ka sa karamihang site. Hindi ka masa-sign out sa iyong Google Account. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Wala}=1{1 password (naka-sync)}one{# password (naka-sync)}other{# na password (naka-sync)}}</translation>
 <translation id="6146055958333702838">Tingnan ang anumang mga kable at i-reboot ang anumang mga router, modem o iba
@@ -816,6 +821,7 @@
 <translation id="6710594484020273272">&lt;I-type ang termino para sa paghahanap&gt;</translation>
 <translation id="6711464428925977395">May problema sa proxy server, o mali ang address.</translation>
 <translation id="674375294223700098">Hindi alam na error sa certificate ng server</translation>
+<translation id="6744009308914054259">Habang naghihintay ng koneksyon, maaari mong bisitahin ang Mga Download para magbasa ng mga offline na artikulo.</translation>
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
 <translation id="6757797048963528358">Nag-sleep ang iyong device.</translation>
 <translation id="6778737459546443941">Hindi pa ito inaaprubahan ng iyong magulang</translation>
@@ -846,6 +852,7 @@
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Tinukoy ang parehong mga hindi nababagong proxy server at isang .pac script URL.</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">I-mute (default)</translation>
 <translation id="6984479912851154518">Aalis sa pribadong mode para magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
 <translation id="6989763994942163495">Ipakita ang mga advanced na setting...</translation>
@@ -912,6 +919,7 @@ Mga karagdagang detalye:
 <translation id="7416351320495623771">Pamahalaan ang Mga Password...</translation>
 <translation id="7419106976560586862">Path ng Profile</translation>
 <translation id="7437289804838430631">Magdagdag ng Impormasyon ng Contact</translation>
+<translation id="7440140511386898319">Mag-explore habang offline</translation>
 <translation id="7441627299479586546">Maling paksa ng patakaran</translation>
 <translation id="7444046173054089907">Naka-block ang site na ito</translation>
 <translation id="7445762425076701745">Hindi ganap na mapatunayan ang pagkakakilanlan ng server na konektado ka. Konektado ka sa server gamit ang pangalan na angkop lamang sa loob ng iyong network, na walang paraan ang panglabas na certificate authority na patunayan ang pagmamay-ari. Dahil magbibigay ang ilang kinauukulan sa certificate para sa mga pangalang ito, walang paraan upang matiyak na konektado ka sa nilayong website at hindi isang umaatake.</translation>

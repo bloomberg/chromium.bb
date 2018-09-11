@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
+<translation id="2790844815106384441">選擇網站是否可使用定位服務，或是裝置的麥克風、相機或其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2808012452536866044">Better Together 已改與新手機連結</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">展開選單</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (藍牙)</translation>
-<translation id="3124698051292518391">一律顯示檔案櫃</translation>
 <translation id="3126069444801937830">重新啟動即可更新</translation>
 <translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
@@ -194,6 +194,7 @@
 <translation id="4200057768455216496">你按下了停駐放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4217571870635786043">語音輸入</translation>
 <translation id="4261870227682513959">顯示通知設定。已關閉所有通知</translation>
+<translation id="4269883910223712419">這部裝置的管理員擁有下列權限：</translation>
 <translation id="4274921305979314545">為你的 Chromebook 和手機建立連結</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4292681942966152062">正在啟動<ph name="NETWORK_NAME" /></translation>
@@ -221,6 +222,7 @@
 <translation id="4734965478015604180">橫向</translation>
 <translation id="476166673298332917">這個裝置的管理員擁有所有活動的存取權限，包含存取密碼和通訊記錄的相關權限。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
+<translation id="4778095205580009397">Google 助理不適用於示範工作階段。</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
@@ -336,6 +338,7 @@
 <translation id="6751826523481687655">效能追蹤已啟用</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
+<translation id="6814658242098378692">管理應用程式、擴充功能和主題</translation>
 <translation id="6820676911989879663">目前禁止使用裝置！</translation>
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
+<translation id="7303365578352795231">正在透過其他裝置回答問題。</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>
@@ -391,6 +395,7 @@
 <translation id="7842211907556571265">正在連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：實驗功能</translation>
 <translation id="7846634333498149051">鍵盤</translation>
+<translation id="7886169021410746335">調整隱私權設定</translation>
 <translation id="7886277072580235377">登出帳戶後，系統將清除你的網際網路工作階段。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">傳送電子郵件</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>

@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Ismeretlen termék (<ph name="PRODUCT_ID" />) a következő forgalmazótól: <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">A jegyzékfájl érvénytelen</translation>
 <translation id="7217838517480956708">Az eszköz rendszergazdája megköveteli, hogy a(z) <ph name="EXTENSION_NAME" /> telepítve legyen. A bővítményt nem lehet eltávolítani vagy módosítani.</translation>
+<translation id="7612608473764576263">A privát kulcs beviteli értékét érvényes formátumban kell megadnia (PKCS#8 formátumú, PEM-kódolású RSA-kulcs).</translation>
 <translation id="7939686037314084444">Nem sikerült megfelelően betölteni a bővítményt. Előfordulhat, hogy nem tud hálózati kéréseket fogadni.</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Előlapi</translation>

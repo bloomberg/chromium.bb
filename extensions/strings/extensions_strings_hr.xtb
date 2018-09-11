@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Nepoznati proizvod <ph name="PRODUCT_ID" />, <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Datoteka manifesta nije važeća</translation>
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME" />. Ona se ne može ukloniti ni izmijeniti.</translation>
+<translation id="7612608473764576263">Vrijednost unosa osobnog ključa mora biti u važećem formatu (RSA ključ u formatu PKCS#8 s PEM kodiranjem).</translation>
 <translation id="7939686037314084444">Proširenje se nije pravilno učitalo. Možda neće moći presresti mrežne zahtjeve.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Prema korisniku</translation>

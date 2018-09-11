@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Файл маніфесту недійсний</translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME" />. Його не можна видаляти чи змінювати.</translation>
+<translation id="7612608473764576263">Значення секретного ключа потрібно ввести у правильному форматі (PKCS#8, з кодуванням PEM і шифруванням RSA).</translation>
 <translation id="7939686037314084444">Розширення завантажилося неправильно. Можливо, йому не вдасться перехоплювати запити мережі.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальна камера</translation>

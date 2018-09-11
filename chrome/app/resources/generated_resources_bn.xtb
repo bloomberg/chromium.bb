@@ -880,7 +880,7 @@
 <translation id="2307462900900812319">নেটওয়ার্ক কনফিগার করুন</translation>
 <translation id="230927227160767054">এই পৃষ্ঠাটি একটি পরিষেবা নিয়ন্ত্রক ইনস্টল করতে চায়৷</translation>
 <translation id="2309620859903500144">এই সাইটটি আপনার মোশন এবং লাইট সেন্সর অ্যাক্সেস করতে পারবে না।</translation>
-<translation id="2315414688463285945">Linux কনফিগার করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
+<translation id="2315414688463285945">Linux ফাইল কনফিগার করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
 <translation id="2315821125498993513">ফোনের সাথে কানেক্ট করা যায়নি। <ph name="LINK_BEGIN" />আরও জানুন।<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% হয়েছে</translation>
@@ -1514,7 +1514,6 @@
 <translation id="3285322247471302225">নতুন &amp;ট্যাব</translation>
 <translation id="3288047731229977326">ডেভেলপার মোডে চলমান এক্সটেনশানগুলি আপনার কম্পিউটারের ক্ষতি করতে পারে৷ যদি আপনি একজন ডেভেলপার না হন, তবে সুরক্ষিত থাকার জন্য আপনার এই এক্সটেনশানগুলিকে ডেভেলপার মোডে চালানো অক্ষম করা উচিৎ৷</translation>
 <translation id="3289856944988573801">আপডেটগুলি পরীক্ষা করার জন্য, দয়া করে Ethernet বা ওয়াই-ফাই ব্যবহার করুন৷</translation>
-<translation id="3292421191230118801">মোবাইল থেকে আপনার Chromebook-এ সাইটগুলি আবার দেখা শুরু করুন</translation>
 <translation id="32939749466444286">Linux কন্টেনারটি শুরু হয়নি। আবার চেষ্টা করুন।</translation>
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="329838636886466101">মেরামত</translation>
@@ -2480,7 +2479,7 @@
 <translation id="4821935166599369261">&amp;প্রোফাইলিং সক্ষমিত</translation>
 <translation id="4823484602432206655">ব্যবহারকারী এবং ডিভাইস সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="4823651846660089135">ডিভাইস শুধুমাত্র পঠনযোগ্য</translation>
-<translation id="4823955295535347797">আপনার স্ক্রিন চালু থাকাকালীন "OK Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন।</translation>
+<translation id="4823955295535347797">আপনার স্ক্রিন চালু থাকাকালীন "হ্যালো Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন।</translation>
 <translation id="4828937774870308359">অস্ট্রেলীয়</translation>
 <translation id="4829768588131278040">পিন সেট আপ করুন</translation>
 <translation id="4830502475412647084">OS আপডেট ইনস্টল করা হচ্ছে</translation>
@@ -2828,7 +2827,7 @@
 <translation id="532776649628038357">আমি রাজি</translation>
 <translation id="532943162177641444">এই ডিভাইসে ব্যবহার করার জন্য মোবাইল হটস্পট সেট আপ করতে আপনার <ph name="PHONE_NAME" /> এ বিজ্ঞপ্তিটির উপরে ক্লিক করুন।</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
-<translation id="5329945517224105597">আপনার অ্যাসিস্ট্যান্ট আপনার স্ক্রিনে যা রয়েছে সেই বিষয়ে আরও সম্পর্কিত সাজেশন এবং নির্দিষ্ট অ্যাকশন প্রস্তাব করতে পারে। আপনি অ্যাসিস্ট্যান্ট সেটিংসে এটি পরিবর্তন করতে পারেন</translation>
+<translation id="5329945517224105597">আপনার অ্যাসিস্ট্যান্ট স্ক্রিনে যা রয়েছে সেই বিষয়ে আরও সম্পর্কিত সাজেশন এবং নির্দিষ্ট অ্যাকশন প্রস্তাব করতে পারে। আপনি অ্যাসিস্ট্যান্ট সেটিংসে এটি পরিবর্তন করতে পারেন</translation>
 <translation id="5330145655348521461">এই ফাইলগুলি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) এ সরান৷</translation>
 <translation id="5330512191124428349">তথ্য পান</translation>
 <translation id="5331069282670671859">এই বিভাগে আপনার কোনও শংসাপত্র নেই</translation>
@@ -3083,7 +3082,7 @@
    <ph name="LINE_BREAKS" />
    আর্কাইভ বা ভার্চুয়াল ডিস্কের সমস্ত ফাইল বন্ধ করে আবার চেষ্টা করুন।</translation>
 <translation id="5687326903064479980">সময় অঞ্চল</translation>
-<translation id="568824803367507355">"Ok Google" শনাক্তকরণ</translation>
+<translation id="568824803367507355">"হ্যালো Google" শনাক্তকরণ</translation>
 <translation id="5689516760719285838">লোকেশন</translation>
 <translation id="56907980372820799">ডেটা লিঙ্ক করুন</translation>
 <translation id="5691511426247308406">পরিবারিক</translation>
@@ -3547,7 +3546,7 @@
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />সিস্টেমের তথ্য<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
 <translation id="6397094776139756010">সিঙ্ক এবং নিজের মতো সাজিয়ে নেওয়ার বিকল্পগুলি</translation>
 <translation id="6397592254427394018">ছ্দ্মবেশী উইন্ডোতে &amp;সকল বুকমার্ক খুলুন</translation>
-<translation id="639777613761517128">$1-ব্যবহার করে ফাইল খুলতে আগে সেগুলি Linux ফাইল ফোল্ডারে কপি করুন।</translation>
+<translation id="639777613761517128">$1 ব্যবহার করে ফাইল খুলতে আগে সেটিকে Linux ফাইল ফোল্ডারে কপি করুন।</translation>
 <translation id="6398715114293939307">Google Play স্টোর সরান</translation>
 <translation id="6398765197997659313">পূর্ণ স্ক্রীণ বন্ধ করুন</translation>
 <translation id="6399774419735315745">গুপ্তচর</translation>
@@ -4957,7 +4956,6 @@
 <translation id="8557930019681227453">ম্যানিফেস্ট</translation>
 <translation id="8559694214572302298">ছবি সঙ্কেতমোচক</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">পড়তে থাকুন</translation>
 <translation id="8565650234829130278">অ্যাপ্লিকেশন ডাউনগ্রেড করার প্রয়াস করেছেন৷</translation>
 <translation id="8569002732135253578">এখন <ph name="DOCUMENT_NAME" /> প্রিন্ট করা হচ্ছে</translation>
 <translation id="8569682776816196752">কোনো গন্তব্যস্থল পাওয়া যায়নি</translation>

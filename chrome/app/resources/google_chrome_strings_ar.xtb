@@ -26,6 +26,7 @@
 <translation id="1587325591171447154">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chrome.</translation>
 <translation id="1619887657840448962">‏لجعل Chrome أكثر أمنًا، أوقفنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> وربما تكون قد أضيفت دون علمك.</translation>
 <translation id="1628000112320670027">‏الحصول على مساعدة في Chrome</translation>
+<translation id="1662639173275167396">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" />إضافي، كما في نظام التشغيل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (إصدار تجريبي)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">‏فتح الرابط في نافذة تصفح متخفٍ في Chrome</translation>
 <translation id="1682634494516646069">‏يتعذر على Google Chrome القراءة والكتابة في دليل البيانات الخاص به:
 

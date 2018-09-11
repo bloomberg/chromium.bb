@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
+<translation id="2790844815106384441">Valige, kas veebisaidid tohivad kasutada asukohateenuseid ja seadme mikrofoni, kaamerat või muid funktsioone</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2808012452536866044">Better Together lülitati uuele telefonile</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">Laienda menüü</translation>
 <translation id="3087734570205094154">Alaserv</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3124698051292518391">Kuva alati riiul</translation>
 <translation id="3126069444801937830">Taaskäivitage värskendamiseks</translation>
 <translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="315116470104423982">Mobiilne andmeside</translation>
@@ -195,6 +195,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4200057768455216496">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="4217571870635786043">Dikteerimine</translation>
 <translation id="4261870227682513959">Kuvab märguandeseaded. Märguanded on välja lülitatud</translation>
+<translation id="4269883910223712419">Selle seadme administraator saab teha järgmist.</translation>
 <translation id="4274921305979314545">Ühendage Chromebook oma telefoniga</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4292681942966152062">Võrgu <ph name="NETWORK_NAME" /> aktiveerimine</translation>
@@ -222,6 +223,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4734965478015604180">Horisontaalne</translation>
 <translation id="476166673298332917">Seadme aministraatoril on juurdepääs kõigile tegevustele, sh paroolidele ja sidele.</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
+<translation id="4778095205580009397">Google'i assistent ei ole demoseansi puhul saadaval.</translation>
 <translation id="479989351350248267">otsing</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
 <translation id="4849058404725798627">Klaviatuuri fookusega objekti esiletõstmine</translation>
@@ -337,6 +339,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
+<translation id="6814658242098378692">Rakenduste, laienduste ja teemade haldamine</translation>
 <translation id="6820676911989879663">Tehke paus!</translation>
 <translation id="683971173229319003">Otsing + L</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +363,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
+<translation id="7303365578352795231">Vastamine muus seadmes.</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
 <translation id="735745346212279324">VPN-i ühendus on katkestatud</translation>
 <translation id="7377169924702866686">Suurtähelukk on sisse lülitatud.</translation>
@@ -392,6 +396,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7842211907556571265">Ühenduse loomine võrguga <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Hoiatus: katseline funktsioon</translation>
 <translation id="7846634333498149051">Klaviatuur</translation>
+<translation id="7886169021410746335">Privaatsusseadete kohandamine</translation>
 <translation id="7886277072580235377">Teie Interneti-seanss kustutatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Saada meil</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>

@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">ข้อมูลและกิจกรรมการท่องเว็บซึ่งซิงค์กับบัญชี Google</translation>
 <translation id="116280672541001035">ใช้ไป</translation>
 <translation id="1172593791219290334">หน้าเริ่มต้นใช้งาน</translation>
+<translation id="1175310183703641346">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และอื่นๆ จะเลิกซิงค์กับบัญชี Google</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">ลบ</translation>
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
+<translation id="1360432990279830238">ออกจากระบบและปิดการซิงค์ไหม</translation>
 <translation id="136248372334525878">โหลดหน้าเว็บไว้ล่วงหน้าเพื่อให้โหลดได้เร็วและไว้อ่านแบบออฟไลน์</translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
@@ -69,7 +71,6 @@
 <translation id="1445680696957526815">คอมโพเนนต์ของ Chrome ไม่สามารถทำงานร่วมกันได้ Chrome อาจกำลังอัปเกรด โปรดรอสักครู่แล้วลองอีกครั้ง หากยังมีปัญหาอยู่ ให้ลองถอนการติดตั้งและติดตั้ง Chrome ใหม่อีกครั้ง</translation>
 <translation id="1446450296470737166">ควบคุมอุปกรณ์ MIDI ได้สมบูรณ์</translation>
 <translation id="145097072038377568">ปิดในการตั้งค่า Android</translation>
-<translation id="1455941322673536744">การป้อนอัตโนมัติและการชำระเงิน</translation>
 <translation id="1477626028522505441">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะเซิร์ฟเวอร์มีปัญหา</translation>
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
@@ -159,6 +160,7 @@
 <translation id="2131665479022868825">ประหยัดไป <ph name="DATA" /></translation>
 <translation id="213279576345780926">ปิด <ph name="TAB_TITLE" /> แล้ว</translation>
 <translation id="2139186145475833000">เพิ่มไปยังหน้าจอหลัก</translation>
+<translation id="2142289305367051020">หน้าโปรดของคุณอยู่ตรงนี้แล้ว</translation>
 <translation id="2146738493024040262">เปิด Instant App</translation>
 <translation id="2148716181193084225">วันนี้</translation>
 <translation id="2154484045852737596">แก้ไขบัตร</translation>
@@ -349,6 +351,7 @@
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
+<translation id="3868004864571585162">คุกกี้ ใบอนุญาตสื่อ และข้อมูลเว็บไซต์</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -811,6 +814,7 @@
 <translation id="7413229368719586778">วันที่เริ่มต้น <ph name="DATE" /></translation>
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7423538860840206698">บล็อกไม่ให้อ่านคลิปบอร์ด</translation>
+<translation id="7431991332293347422">ควบคุมการใช้ประวัติการท่องเว็บเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ในแบบของคุณ</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7444811645081526538">หมวดหมู่อื่นๆ</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
@@ -879,6 +883,7 @@
 <translation id="7963646190083259054">ผู้ขาย:</translation>
 <translation id="7981313251711023384">โหลดหน้าเว็บล่วงหน้าเพื่อให้เรียกดูและค้นหาได้เร็วขึ้น</translation>
 <translation id="79859296434321399">ติดตั้ง ARCore เพื่อดูเนื้อหา Augmented Reality</translation>
+<translation id="7986741934819883144">เลือกรายชื่อติดต่อ</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
 <translation id="7987764905897278458">ใช้ฟีเจอร์เจ๋งๆ จาก Google มากขึ้น</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -907,6 +912,7 @@
 <translation id="8109613176066109935">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="8116925261070264013">ปิดเสียง</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
+<translation id="8156139159503939589">คุณอ่านภาษาใดได้บ้าง</translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="8186512483418048923">เหลืออีก <ph name="FILES" /> ไฟล์</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
@@ -919,6 +925,7 @@
 <translation id="8260126382462817229">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8266862848225348053">ตำแหน่งที่ดาวน์โหลด</translation>
+<translation id="8274165955039650276">ดูการดาวน์โหลด</translation>
 <translation id="8283853025636624853">กำลังซิงค์กับ <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
 <translation id="8313455859591948645">แก้ไขหน้าเริ่มต้นใช้งาน</translation>
@@ -935,6 +942,7 @@
 <translation id="8441146129660941386">ย้อนกลับ</translation>
 <translation id="8445448999790540984">ส่งออกรหัสผ่านไม่ได้</translation>
 <translation id="8447861592752582886">เพิกถอนสิทธิ์ของอุปกรณ์</translation>
+<translation id="8477071352266846533">ปิดการซิงค์สำหรับ <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8489271220582375723">เปิดหน้าประวัติการเข้าชม</translation>
 <translation id="8493948351860045254">เพิ่มพื้นที่ว่าง</translation>
@@ -974,6 +982,7 @@
 <translation id="8728487861892616501">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ <ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /> ของ Chrome รวมถึง <ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="8748850008226585750">เนื้อหาถูกซ่อนไว้</translation>
+<translation id="8751914237388039244">เลือกรูปภาพ</translation>
 <translation id="8788968922598763114">เปิดแท็บที่เพิ่งปิดอีกครั้ง</translation>
 <translation id="8812260976093120287">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับด้านบนในอุปกรณ์ของคุณ</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome รวมถึง<ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>

@@ -1512,7 +1512,6 @@
 <translation id="3285322247471302225">Pes&amp;tanya nova</translation>
 <translation id="3288047731229977326">Les extensions que funcionen amb el mode de desenvolupador poden malmetre el vostre ordinador. Si no sou desenvolupador, hauríeu de desactivar aquestes extensions per continuar protegit.</translation>
 <translation id="3289856944988573801">Per comprovar si hi ha actualitzacions, feu servir Ethernet o Wi-Fi.</translation>
-<translation id="3292421191230118801">Reprèn la visualització de llocs web des del mòbil a Chromebook</translation>
 <translation id="32939749466444286">El contenidor de Linux no s'ha iniciat. Torna-ho a provar.</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="329838636886466101">Repara</translation>
@@ -4958,7 +4957,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8557930019681227453">Fitxer de manifest</translation>
 <translation id="8559694214572302298">Descodificador d'imatges</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">Continua llegint</translation>
 <translation id="8565650234829130278">S'ha intentat canviar a una versió anterior de l'aplicació.</translation>
 <translation id="8569002732135253578">S'està imprimint <ph name="DOCUMENT_NAME" /></translation>
 <translation id="8569682776816196752">No s'ha trobat cap destinació</translation>

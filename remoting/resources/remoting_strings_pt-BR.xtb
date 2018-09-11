@@ -330,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
 <translation id="8548209692293300397">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Google Chrome<ph name="LINK_END" /> usando essa conta e reinstale a Área de trabalho remota do Google Chrome.</translation>
 <translation id="8642984861538780905">Regular</translation>
+<translation id="8705151241155781642">• Compatibilidade com o Android 9.0 Pie adicionada.
+• Compatibilidade com redimensionamento da resolução da área de trabalho remota para correspondência com a tela do seu dispositivo Android.</translation>
 <translation id="8712909229180978490">Não consigo ver meus arquivos salvos on-line no Google Drive.</translation>
 <translation id="8743328882720071828">Quer permitir que <ph name="CLIENT_USERNAME" /> veja e controle seu computador?</translation>
 <translation id="8747048596626351634">Ocorreu uma falha na sessão ou não foi possível iniciá-la. Se ~/.chrome-remote-desktop-session existe no computador remoto, verifique se ele inicia um processo de execução longa em primeiro plano, como um ambiente de área de trabalho ou um gerenciador de janelas.</translation>

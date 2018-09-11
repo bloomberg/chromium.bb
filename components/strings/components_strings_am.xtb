@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በኮምፒውተርዎ ስርዓተ ክወና የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="1151972924205500581">የይለፍ ቃል ያስፈልጋል</translation>
 <translation id="1152921474424827756">የ<ph name="URL" /> <ph name="BEGIN_LINK" />የተሸጎጠ ቅጂ<ph name="END_LINK" /> ይድረሱ</translation>
+<translation id="1156303062776767266">አካባቢያዊ ወይም የተጋራ ፋይል እየተመለከቱ ነው</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ሳይታሰብ ግንኙነቱን ዘግቷል።</translation>
 <translation id="1161325031994447685">ከWi-Fi ጋር ዳግም በማገናኘት</translation>
 <translation id="1165039591588034296">ስህተት</translation>
@@ -533,6 +534,7 @@
 <translation id="4592951414987517459">ወደ የእርስዎ <ph name="DOMAIN" /> ግንኙነት ዘመናዊ የምስጠራ ጥቅል በመጠቀም ተመስጥሯል።</translation>
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4619615317237390068">ከሌሎች መሣሪያዎች የመጡ ትሮች</translation>
+<translation id="4646534391647090355">አሁን ወደዚያ ውሰደኝ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው ስህተቶች አሉበት። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="4690462567478992370">ልክ ያልሆነ የእውቅና ማረጋገጫ መጠቀም አቁም</translation>
@@ -579,6 +581,7 @@
 <translation id="4958444002117714549">ዝርዝሩን ዘርጋ</translation>
 <translation id="4974590756084640048">ማስጠንቀቂያዎችን ዳግም አንቃ</translation>
 <translation id="4988217478422488391">ለነገሮች መስመር ላይ ለመክፈል ይበልጥ የፈጠነ ያደርገዋል</translation>
+<translation id="4989163558385430922">ሁሉንም ይመልከቱ</translation>
 <translation id="4989809363548539747">ይህ ተሰኪ አይደገፍም</translation>
 <translation id="5002932099480077015">የነቃ እንደሆነ Chrome ለበለጠ ፈጣን ቅጽ አሞላል ሲባል በዚህ መሳሪያ ላይ ያለው የካርድዎን ቅጂ ያከማቻል።</translation>
 <translation id="5018422839182700155">ይህን ገጽ መክፈት አልተቻለም</translation>
@@ -723,6 +726,7 @@
 <translation id="5922853866070715753">በቃ ሊያልቅ ነው</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="5951495562196540101">በሸማች መለያ መመዝገብ አይቻልም (የጥቅል ፈቃድ ይገኛል)።</translation>
+<translation id="5966151627327109289">ከአብዛኛዎቹ ጣቢያዎች ዘግቶ ያስወጣዎታል። ከ<ph name="SITE" /> እና ሌሎች አንዳንድ ጣቢያዎች የመጣ ጥበቃ የሚደረግለት የይዘት መዳረሻ ሊያጡ ይችላሉ።</translation>
 <translation id="5967592137238574583">የዕውቂያ መረጃን ያርትዑ</translation>
 <translation id="5967867314010545767">ከታሪክ አስወግድ</translation>
 <translation id="5975083100439434680">አሳንስ</translation>
@@ -744,6 +748,7 @@
 <translation id="6071091556643036997">የመመሪያው አይነት ልክ ያልሆነ ነው።</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{በመላ መሣሪያዎች ላይ ይበልጥ ፈጥነው ተመዝግበው ለመውጣት ይህ ካርድ በGoogle መለያዎ ላይ ይቀመጣል።}one{በመላ መሣሪያዎች ላይ ይበልጥ ፈጥነው ተመዝግበው ለመውጣት እነዚህ ካርዶች በGoogle መለያዎ ላይ ይቀመጣሉ።}other{በመላ መሣሪያዎች ላይ ይበልጥ ፈጥነው ተመዝግበው ለመውጣት እነዚህ ካርዶች በGoogle መለያዎ ላይ ይቀመጣሉ።}}</translation>
 <translation id="6080696365213338172">በአስተዳዳሪ የቀረበ የእውቅና ማረጋገጫ በመጠቀም ይዘት ደርሰዋል። ለ<ph name="DOMAIN" /> የሚያቀርቡት ውሂብ በአስተዳዳሪዎ ሊያዝ ይችላል።</translation>
+<translation id="6096619198407627433">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም። የ<ph name="SITE" /> እና የአንዳንድ ሌሎች ጣቢያዎች የተጠበቀ ይዘት መዳረሻ ሊያጡ ይችላሉ።</translation>
 <translation id="610911394827799129">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ምንም}=1{1 የይለፍ ቃል (የተሰመረ)}one{# የይለፍ ቃሎች (የተሰመሩ)}other{# የይለፍ ቃሎች (የተሰመሩ)}}</translation>
 <translation id="6146055958333702838">ማናቸውም ገመዶችን ይፈትሹና እየተጠቀሙ ሊሆኑ የሚችሏቸውን ማንኛውም ራውተሮች፣
@@ -815,6 +820,7 @@
 <translation id="6710594484020273272">&lt;የፍለጋ ቃል ይተይቡ&gt;</translation>
 <translation id="6711464428925977395">በተኪ አገልጋዩ ላይ የሆነ ችግር አለ ወይም አድራሻው ትክክል አይደለም።</translation>
 <translation id="674375294223700098">ያልታወቀ የአገልጋይ እውቅና ማረጋገጫ ስህተት።</translation>
+<translation id="6744009308914054259">ግንኙነትን እየተጠባበቁ ሳሉ የመስመር ውጪ ጽሑፎችን ለማንበብ ውርዶችን መጎብኘት ይችላሉ።</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6757797048963528358">የእርስዎ መሣሪያ ተኝቷል።</translation>
 <translation id="6778737459546443941">የእርስዎ ወላጅ ገና አላጸደቁትም</translation>
@@ -845,6 +851,7 @@
 <translation id="6965978654500191972">መሣሪያ</translation>
 <translation id="6970216967273061347">ወረዳ</translation>
 <translation id="6973656660372572881">ሁለቱም ቋሚ ተኪ አገልጋዮች እና የ.pac ስክሪፕት ዩአርኤል ተገልጸዋል።</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">ድምጸ-ከል አድርግ (ነባሪ)</translation>
 <translation id="6984479912851154518">በውጫዊ ማከማቻ በኩል ለማጫወት ከግል ሁነታ በመውጣት ላይ። ይቀጥል?</translation>
 <translation id="6989763994942163495">የላቁ ቅንብሮችን አሳይ...</translation>
@@ -911,6 +918,7 @@
 <translation id="7416351320495623771">የይለፍ ቃላትን ያስተዳድሩ...</translation>
 <translation id="7419106976560586862">የመገለጫ ዱካ</translation>
 <translation id="7437289804838430631">የእውቂያ መረጃ አክል</translation>
+<translation id="7440140511386898319">ከመስመር ውጪ ሆነው ሳለ ያስሱ</translation>
 <translation id="7441627299479586546">የተሳሳተ የመምሪያ ርዕሰ ጉዳይ</translation>
 <translation id="7444046173054089907">ይህ ጣቢያ ታግዷል</translation>
 <translation id="7445762425076701745">የተገናኙት የአገልጋይ ማንነት ሙሉ ለሙሉ ሊረጋገጥ አልቻለም። ስሙ በአውታረ መረብዎ ውስጥ ብቻ ልክ ከሆነ አገልጋይ ጋር ነው የተገናኙት፣ እና ባለቤትነቱ በውጫዊ የእውቅና ማረጋገጫ ሊረጋገጥ አይችልም። አንዳንድ የእውቅና ማረጋገጫ ባለስልጣናት ይሁን ብለው ለእነዚህ ስሞች የእውቅና ማረጋገጫዎች መስጠታቸው የማይቀር እንደመሆኑ መጠን፣ ከአጥቂ ሳይሆን ከታሰበው ድር ጣቢያ ጋር መገናኘትዎን የሚረጋገጥበት ምንም መንገድ የለም።</translation>

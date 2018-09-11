@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del computer. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="1151972924205500581">Password obbligatoria</translation>
 <translation id="1152921474424827756">Accedi a una <ph name="BEGIN_LINK" />copia memorizzata nella cache<ph name="END_LINK" /> di <ph name="URL" /></translation>
+<translation id="1156303062776767266">È visualizzato un file locale o condiviso</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha chiuso in modo imprevisto la connessione.</translation>
 <translation id="1161325031994447685">Riconnessione alla rete Wi-Fi</translation>
 <translation id="1165039591588034296">Errore</translation>
@@ -531,6 +532,7 @@
 <translation id="4592951414987517459">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia moderno.</translation>
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
 <translation id="4619615317237390068">Schede di altri dispositivi</translation>
+<translation id="4646534391647090355">Vai subito</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza contiene errori. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="4690462567478992370">Interrompi l'utilizzo di un certificato non valido</translation>
@@ -577,6 +579,7 @@
 <translation id="4958444002117714549">Espandi elenco</translation>
 <translation id="4974590756084640048">Riattiva avvisi</translation>
 <translation id="4988217478422488391">Velocizza il pagamento per gli acquisti online</translation>
+<translation id="4989163558385430922">Mostra tutto</translation>
 <translation id="4989809363548539747">Questo plug-in non è supportato</translation>
 <translation id="5002932099480077015">Se questa opzione viene attivata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="5018422839182700155">Impossibile aprire questa pagina</translation>
@@ -720,7 +723,8 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in uso}other{# in uso}}</translation>
 <translation id="5922853866070715753">Hai quasi finito.</translation>
 <translation id="5939518447894949180">Ripristina</translation>
-<translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza in pacchetto).</translation>
+<translation id="5951495562196540101">Impossibile effettuare la registrazione con l'account consumer (è disponibile la licenza inclusa).</translation>
+<translation id="5966151627327109289">Uscirai dalla maggior parte dei siti. Potresti non riuscire più ad accedere ai contenuti protetti del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="5967592137238574583">Modifica informazioni di contatto</translation>
 <translation id="5967867314010545767">Rimuovi da cronologia</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
@@ -742,6 +746,7 @@
 <translation id="6071091556643036997">Il tipo di norma non è valido.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{ Questa carta verrà salvata nel tuo Account Google per un pagamento più rapido su tutti i dispositivi.}other{ Queste carte verranno salvate nel tuo Account Google per un pagamento più rapido su tutti i dispositivi.}}</translation>
 <translation id="6080696365213338172">Hai raggiunto i contenuti utilizzando un certificato fornito dall'amministratore. I dati che fornisci a <ph name="DOMAIN" /> possono essere intercettati dal tuo amministratore.</translation>
+<translation id="6096619198407627433">Uscirai dalla maggior parte dei siti, ma non dal tuo Account Google. Potresti non riuscire più ad accedere ai contenuti protetti del sito <ph name="SITE" /> e di altri siti.</translation>
 <translation id="610911394827799129">Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nessuna}=1{1 password (sincronizzata)}other{# password (sincronizzate)}}</translation>
 <translation id="6146055958333702838">Controlla eventuali cavi e riavvia eventuali router, modem o altri dispositivi di rete in uso.</translation>
@@ -812,6 +817,7 @@
 <translation id="6710594484020273272">&lt;Digita un termine di ricerca&gt;</translation>
 <translation id="6711464428925977395">Si è verificato un problema con il server proxy oppure l'indirizzo non è corretto.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
+<translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
 <translation id="6753269504797312559">Valore norma</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
 <translation id="6778737459546443941">Il tuo genitore non ha ancora approvato la richiesta</translation>
@@ -842,6 +848,7 @@
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="6970216967273061347">Distretto</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
+<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Disattivazione audio (impostazione predefinita)</translation>
 <translation id="6984479912851154518">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione privata. Vuoi continuare?</translation>
 <translation id="6989763994942163495">Mostra impostazioni avanzate...</translation>
@@ -908,6 +915,7 @@ Ulteriori dettagli:
 <translation id="7416351320495623771">Gestisci password…</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
+<translation id="7440140511386898319">Esplora offline</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
 <translation id="7444046173054089907">Questo sito è bloccato</translation>
 <translation id="7445762425076701745">Impossibile convalidare completamente l'identità del server a cui sei collegato. Sei collegato a un server con un nome valido soltanto nella tua rete, di cui un'autorità di certificazione esterna non può convalidare in alcun modo la proprietà. Poiché alcune autorità di certificazione emettono comunque certificati per questi nomi, non è in alcun modo possibile garantire che tu sia collegato al sito web desiderato anziché a un sito dannoso.</translation>

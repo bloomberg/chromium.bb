@@ -26,6 +26,7 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ஆபத்தானது என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="1619887657840448962">Chromeஐப் பாதுகாப்பானதாக்க, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படாத பின்வரும் நீட்டிப்பை முடக்கியுள்ளோம், மேலும் அது உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
 <translation id="1628000112320670027">Chrome தொடர்பான உதவி பெறுக</translation>
+<translation id="1662639173275167396">Chrome OS, <ph name="BEGIN_LINK_LINUX_OSS" />Linuxஸைப் (பீட்டா)<ph name="END_LINK_LINUX_OSS" /> போலவே கூடுதல் <ph name="BEGIN_LINK_CROS_OSS" />ஓப்பன் சோர்ஸ் மென்பொருளால்<ph name="END_LINK_CROS_OSS" /> உருவாக்கப்பட்டுள்ளது.</translation>
 <translation id="1674870198290878346">Chrome மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
 <translation id="1682634494516646069">பின்வரும் தரவுக் கோப்பகத்தில் Google Chrome படிக்கவும் எழுதவும் செய்யாது:<ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome என்ற வலை உலாவியானது, வலைப்பக்கங்களையும் பயன்பாடுகளையும் மின்னல் வேகத்தில் இயக்கும் திறன் கொண்டது. இது வேகமானது, நிலையானது மற்றும் பயன்படுத்துவதற்கு எளிதானது. Google Chrome இல் அமையப்பெற்றுள்ள தீப்பொருள் மற்றும் ஃபிஷிங் பாதுகாப்பைக் கொண்டு பாதுகாப்பாக வலையில் உலாவ முடியும்.</translation>
