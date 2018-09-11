@@ -57,6 +57,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.RenderProcessLimit;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.reflect.AnnotatedElement;
@@ -389,8 +390,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
-     * Starts the Main activity as if it was started from an external application, on the specified
-     * URL.
+     * Starts the Main activity as if it was started from an external application, on the
+     * specified URL.
      */
     public void startMainActivityFromExternalApp(String url, String appId)
             throws InterruptedException {
@@ -634,6 +635,16 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      */
     public WebContents getWebContents() {
         return getActivity().getActivityTab().getWebContents();
+    }
+
+    /**
+     * @return {@link KeyboardVisibilityDelegate} for the activity.
+     */
+    public KeyboardVisibilityDelegate getKeyboardDelegate() {
+        if (getActivity().getWindowAndroid() == null) {
+            return KeyboardVisibilityDelegate.getInstance();
+        }
+        return getActivity().getWindowAndroid().getKeyboardDelegate();
     }
 
     public void setActivity(T chromeActivity) {
