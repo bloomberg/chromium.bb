@@ -13,8 +13,8 @@ package content.proto;
 //
 // Next Tag: 9
 message BackgroundFetchRegistration {
-  enum BackgroundFetchState {
-    PENDING = 0;  // Default value.
+  enum BackgroundFetchResult {
+    UNSET = 0;  // Default value.
     FAILURE = 1;
     SUCCESS = 2;
   }
@@ -41,7 +41,7 @@ message BackgroundFetchRegistration {
   optional uint64 uploaded = 4;
   optional uint64 download_total = 5;
   optional uint64 downloaded = 6;
-  optional BackgroundFetchState state = 7;
+  optional BackgroundFetchResult result = 7;
   optional BackgroundFetchFailureReason failure_reason = 8;
 }
 

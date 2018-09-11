@@ -140,11 +140,11 @@ void BackgroundFetchJobController::UpdateUI(
 
 std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchJobController::NewRegistration(
-    blink::mojom::BackgroundFetchState state) const {
+    blink::mojom::BackgroundFetchResult result) const {
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
       0 /* upload_total */, 0 /* uploaded */, total_downloads_size_,
-      complete_requests_downloaded_bytes_cache_, state, reason_to_abort_);
+      complete_requests_downloaded_bytes_cache_, result, reason_to_abort_);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {

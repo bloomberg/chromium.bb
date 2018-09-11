@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/background-fetch/#background-fetch-registration
-enum BackgroundFetchState { "pending", "success", "failure" };
-
 enum BackgroundFetchFailureReason {
   "",
   // The operation was aborted by the user, or abort() was called.
@@ -20,6 +18,8 @@ enum BackgroundFetchFailureReason {
   "total-download-exceeded"
 };
 
+enum BackgroundFetchResult { "", "success", "failure" };
+
 [
     Exposed=(Window,Worker),
     RuntimeEnabled=BackgroundFetch
@@ -29,7 +29,7 @@ enum BackgroundFetchFailureReason {
     readonly attribute unsigned long long uploaded;
     readonly attribute unsigned long long downloadTotal;
     readonly attribute unsigned long long downloaded;
-    readonly attribute BackgroundFetchState state;
+    readonly attribute BackgroundFetchResult result;
     readonly attribute BackgroundFetchFailureReason failureReason;
 
     attribute EventHandler onprogress;

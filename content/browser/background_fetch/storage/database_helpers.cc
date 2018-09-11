@@ -101,15 +101,15 @@ bool ToBackgroundFetchRegistration(
   registration->uploaded = registration_proto.uploaded();
   registration->download_total = registration_proto.download_total();
   registration->downloaded = registration_proto.downloaded();
-  switch (registration_proto.state()) {
-    case proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING:
-      registration->state = blink::mojom::BackgroundFetchState::PENDING;
+  switch (registration_proto.result()) {
+    case proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET:
+      registration->result = blink::mojom::BackgroundFetchResult::UNSET;
       break;
-    case proto::BackgroundFetchRegistration_BackgroundFetchState_FAILURE:
-      registration->state = blink::mojom::BackgroundFetchState::FAILURE;
+    case proto::BackgroundFetchRegistration_BackgroundFetchResult_FAILURE:
+      registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
       break;
-    case proto::BackgroundFetchRegistration_BackgroundFetchState_SUCCESS:
-      registration->state = blink::mojom::BackgroundFetchState::SUCCESS;
+    case proto::BackgroundFetchRegistration_BackgroundFetchResult_SUCCESS:
+      registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
       break;
     default:
       NOTREACHED();

@@ -79,7 +79,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Returns a unique_ptr to a BackgroundFetchRegistration object
   // created with member fields.
   std::unique_ptr<BackgroundFetchRegistration> NewRegistration(
-      blink::mojom::BackgroundFetchState state) const;
+      blink::mojom::BackgroundFetchResult result) const;
 
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }

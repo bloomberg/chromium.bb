@@ -17,7 +17,7 @@
 namespace blink {
 namespace mojom {
 enum class BackgroundFetchFailureReason;
-enum class BackgroundFetchState;
+enum class BackgroundFetchResult;
 }  // namespace mojom
 }  // namespace blink
 
@@ -48,7 +48,7 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
       uint64_t uploaded,
       uint64_t download_total,
       uint64_t downloaded,
-      blink::mojom::BackgroundFetchState state,
+      blink::mojom::BackgroundFetchResult result,
       blink::mojom::BackgroundFetchFailureReason failure_reason);
   BackgroundFetchRegistration(const BackgroundFetchRegistration& other);
   ~BackgroundFetchRegistration();
@@ -65,7 +65,7 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   uint64_t uploaded = 0;
   uint64_t download_total = 0;
   uint64_t downloaded = 0;
-  blink::mojom::BackgroundFetchState state;
+  blink::mojom::BackgroundFetchResult result;
   blink::mojom::BackgroundFetchFailureReason failure_reason;
 };
 

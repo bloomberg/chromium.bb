@@ -101,8 +101,8 @@ void CreateMetadataTask::InitializeMetadataProto() {
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
   registration_proto->set_download_total(options_.download_total);
-  registration_proto->set_state(
-      proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING);
+  registration_proto->set_result(
+      proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
       proto::BackgroundFetchRegistration_BackgroundFetchFailureReason_NONE);
 

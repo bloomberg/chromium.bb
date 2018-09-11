@@ -30,7 +30,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     unsigned long long uploaded,
     unsigned long long download_total,
     unsigned long long downloaded,
-    mojom::BackgroundFetchState state,
+    mojom::BackgroundFetchResult result,
     mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id_(developer_id),
       unique_id_(unique_id),
@@ -38,7 +38,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       uploaded_(uploaded),
       download_total_(download_total),
       downloaded_(downloaded),
-      state_(state),
+      result_(result),
       failure_reason_(failure_reason),
       observer_binding_(this) {}
 
@@ -51,7 +51,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       uploaded_(web_registration.uploaded),
       download_total_(web_registration.download_total),
       downloaded_(web_registration.downloaded),
-      state_(web_registration.state),
+      result_(web_registration.result),
       failure_reason_(web_registration.failure_reason),
       observer_binding_(this) {
   DCHECK(registration);
@@ -254,14 +254,14 @@ void BackgroundFetchRegistration::DidAbort(
   NOTREACHED();
 }
 
-const String BackgroundFetchRegistration::state() const {
-  switch (state_) {
-    case mojom::BackgroundFetchState::SUCCESS:
+const String BackgroundFetchRegistration::result() const {
+  switch (result_) {
+    case mojom::BackgroundFetchResult::SUCCESS:
       return "success";
-    case mojom::BackgroundFetchState::FAILURE:
+    case mojom::BackgroundFetchResult::FAILURE:
       return "failure";
-    case mojom::BackgroundFetchState::PENDING:
-      return "pending";
+    case mojom::BackgroundFetchResult::UNSET:
+      return "";
   }
   NOTREACHED();
 }

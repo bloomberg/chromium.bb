@@ -22,7 +22,7 @@ struct WebBackgroundFetchRegistration {
       uint64_t uploaded,
       uint64_t download_total,
       uint64_t downloaded,
-      mojom::BackgroundFetchState state,
+      mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason)
       : developer_id(developer_id),
         unique_id(unique_id),
@@ -30,7 +30,7 @@ struct WebBackgroundFetchRegistration {
         uploaded(uploaded),
         download_total(download_total),
         downloaded(downloaded),
-        state(state),
+        result(result),
         failure_reason(failure_reason) {}
 
   ~WebBackgroundFetchRegistration() = default;
@@ -41,7 +41,7 @@ struct WebBackgroundFetchRegistration {
   uint64_t uploaded;
   uint64_t download_total;
   uint64_t downloaded;
-  mojom::BackgroundFetchState state;
+  mojom::BackgroundFetchResult result;
   mojom::BackgroundFetchFailureReason failure_reason;
 };
 

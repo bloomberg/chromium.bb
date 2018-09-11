@@ -238,7 +238,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Called when all processing for the |registration_id| has been finished and
   // the job is ready to be deleted. |blob_handles| are unused, but some callers
   // use it to keep blobs alive for the right duration.
-  // |partial cleanup|, when set, preserves  the registration ID, and the state
+  // |partial cleanup|, when set, preserves  the registration ID, and the result
   // of Fetch when it completed, in |completed_fetches_|. This is not done when
   // fetch is aborted or cancelled. We use this information to propagate
   // BackgroundFetchClicked event to the developer, when the user taps the UI.
@@ -246,7 +246,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<std::unique_ptr<storage::BlobDataHandle>>&
           blob_data_handles,
-      blink::mojom::BackgroundFetchState background_fetch_state,
+      blink::mojom::BackgroundFetchResult background_fetch_result,
       bool preserve_info_to_dispatch_click_event = false);
 
   // Called when the last JavaScript BackgroundFetchRegistration object has been

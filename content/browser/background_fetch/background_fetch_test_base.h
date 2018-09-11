@@ -61,7 +61,7 @@ class BackgroundFetchTestBase : public ::testing::Test {
   CreateBackgroundFetchRegistration(
       const std::string& developer_id,
       const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      blink::mojom::BackgroundFetchResult result,
       blink::mojom::BackgroundFetchFailureReason failure_reason);
 
   // Returns the embedded worker test helper instance, which can be used to

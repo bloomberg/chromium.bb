@@ -23,7 +23,7 @@ TypeConverter<blink::BackgroundFetchRegistration*,
       mojo_registration->developer_id, mojo_registration->unique_id,
       mojo_registration->upload_total, mojo_registration->uploaded,
       mojo_registration->download_total, mojo_registration->downloaded,
-      mojo_registration->state, mojo_registration->failure_reason);
+      mojo_registration->result, mojo_registration->failure_reason);
 }
 
 blink::mojom::blink::BackgroundFetchOptionsPtr TypeConverter<

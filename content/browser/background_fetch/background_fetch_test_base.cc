@@ -167,11 +167,11 @@ std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
     const std::string& developer_id,
     const std::string& unique_id,
-    blink::mojom::BackgroundFetchState state,
+    blink::mojom::BackgroundFetchResult result,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
   auto registration = std::make_unique<BackgroundFetchRegistration>(
       developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state, failure_reason);
+      0 /* download_total */, 0 /* downloaded */, result, failure_reason);
   return registration;
 }
 
