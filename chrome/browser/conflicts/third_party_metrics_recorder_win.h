@@ -54,6 +54,9 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   size_t loaded_third_party_module_count_ = 0;
   size_t not_loaded_third_party_module_count_ = 0;
 
+  // Counts the number of shell extensions.
+  size_t shell_extensions_count_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsRecorder);
 };
 

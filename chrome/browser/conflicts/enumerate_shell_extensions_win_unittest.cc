@@ -4,7 +4,6 @@
 
 #include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
 
-#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
@@ -48,9 +48,9 @@ class EnumerateShellExtensionsTest : public testing::Test {
 // Adds a fake shell extension entry to the registry that should be found by
 // the ShellExtensionEnumerator. The call must be wrapped inside an
 // ASSERT_NO_FATAL_FAILURE.
-void RegisterFakeShellExtension(HKEY key,
-                                const wchar_t* guid,
-                                const wchar_t* path) {
+void RegisterFakeApprovedShellExtension(HKEY key,
+                                        const wchar_t* guid,
+                                        const wchar_t* path) {
   base::win::RegKey class_id(
       HKEY_CLASSES_ROOT,
       base::StringPrintf(kClassIdRegistryKeyFormat, guid).c_str(), KEY_WRITE);
@@ -58,8 +58,32 @@ void RegisterFakeShellExtension(HKEY key,
 
   ASSERT_EQ(ERROR_SUCCESS, class_id.WriteValue(nullptr, path));
 
-  base::win::RegKey registration(key, kShellExtensionRegistryKey, KEY_WRITE);
+  base::win::RegKey registration(key, kApprovedShellExtensionRegistryKey,
+                                 KEY_WRITE);
   ASSERT_EQ(ERROR_SUCCESS, registration.WriteValue(guid, L""));
+}
+
+// Adds a fake shell extension entry to the registry that should be found by
+// the ShellExtensionEnumerator. The call must be wrapped inside an
+// ASSERT_NO_FATAL_FAILURE.
+void RegisterFakeShellExtension(const wchar_t* guid,
+                                const wchar_t* path,
+                                const wchar_t* shell_extension_type,
+                                const wchar_t* shell_object_type) {
+  base::win::RegKey class_id(
+      HKEY_CLASSES_ROOT,
+      base::StringPrintf(kClassIdRegistryKeyFormat, guid).c_str(), KEY_WRITE);
+  ASSERT_TRUE(class_id.Valid());
+
+  ASSERT_EQ(ERROR_SUCCESS, class_id.WriteValue(nullptr, path));
+
+  base::win::RegKey registration(
+      HKEY_CLASSES_ROOT,
+      base::StringPrintf(L"%ls\\shellex\\%ls\\&ls", shell_object_type,
+                         shell_extension_type, guid)
+          .c_str(),
+      KEY_WRITE);
+  ASSERT_EQ(ERROR_SUCCESS, registration.WriteValue(nullptr, guid));
 }
 
 void OnShellExtensionPathEnumerated(
@@ -82,20 +106,23 @@ void OnEnumerationFinished(bool* is_enumeration_finished) {
 
 }  // namespace
 
-// Registers a few fake shell extensions then see if
+// Registers a few fake approved shell extensions then see if
 // EnumerateShellExtensionPaths() finds them.
-TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensionPaths) {
-  const std::tuple<HKEY, const wchar_t*, const wchar_t*> test_cases[] = {
+TEST_F(EnumerateShellExtensionsTest, EnumerateApprovedShellExtensionPaths) {
+  struct {
+    HKEY hkey_root;
+    const wchar_t* guid;
+    const wchar_t* path;
+  } kTestCases[] = {
       {HKEY_CURRENT_USER, L"{FAKE_GUID_0001}", L"c:\\module.dll"},
       {HKEY_LOCAL_MACHINE, L"{FAKE_GUID_0002}", L"c:\\dir\\shell_ext.dll"},
       {HKEY_LOCAL_MACHINE, L"{FAKE_GUID_0003}", L"c:\\path\\test.dll"},
   };
 
-  // Register all fake shell extensions in test_cases.
-  for (const auto& test_case : test_cases) {
-    ASSERT_NO_FATAL_FAILURE(RegisterFakeShellExtension(std::get<0>(test_case),
-                                                       std::get<1>(test_case),
-                                                       std::get<2>(test_case)));
+  // Register all fake shell extensions in kTestCases.
+  for (const auto& test_case : kTestCases) {
+    ASSERT_NO_FATAL_FAILURE(RegisterFakeApprovedShellExtension(
+        test_case.hkey_root, test_case.guid, test_case.path));
   }
 
   std::vector<base::FilePath> shell_extension_paths;
@@ -104,18 +131,18 @@ TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensionPaths) {
                           base::Unretained(&shell_extension_paths)));
 
   ASSERT_EQ(3u, shell_extension_paths.size());
-  for (size_t i = 0; i < arraysize(test_cases); i++) {
+  for (size_t i = 0; i < base::size(kTestCases); i++) {
     // The inefficiency is fine as long as the number of test cases stays small.
-    EXPECT_TRUE(base::ContainsValue(
-        shell_extension_paths, base::FilePath(std::get<2>(test_cases[i]))));
+    EXPECT_TRUE(base::ContainsValue(shell_extension_paths,
+                                    base::FilePath(kTestCases[i].path)));
   }
 }
 
-TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensions) {
+TEST_F(EnumerateShellExtensionsTest, EnumerateApprovedShellExtensions) {
   // Use the current exe file as an arbitrary module that exists.
   base::FilePath file_exe;
   ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &file_exe));
-  ASSERT_NO_FATAL_FAILURE(RegisterFakeShellExtension(
+  ASSERT_NO_FATAL_FAILURE(RegisterFakeApprovedShellExtension(
       HKEY_LOCAL_MACHINE, L"{FAKE_GUID}", file_exe.value().c_str()));
 
   std::vector<base::FilePath> shell_extension_paths;
@@ -131,4 +158,44 @@ TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensions) {
   EXPECT_TRUE(is_enumeration_finished);
   ASSERT_EQ(1u, shell_extension_paths.size());
   EXPECT_EQ(file_exe, shell_extension_paths[0]);
+}
+
+TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensionPaths) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kExtendedShellExtensionsEnumeration);
+
+  struct {
+    const wchar_t* guid;
+    const wchar_t* path;
+    const wchar_t* shell_extension_type;
+    const wchar_t* shell_object_type;
+  } kTestCases[] = {
+      {L"{FAKE_GUID_0001}", L"c:\\module.dll", L"ColumnHandlers", L"Folder"},
+      {L"{FAKE_GUID_0002}", L"c:\\dir\\shell_ext.dll", L"ContextMenuHandlers",
+       L"*"},
+      {L"{FAKE_GUID_0003}", L"c:\\path\\test.dll", L"CopyHookHandlers",
+       L"Printers"},
+      {L"{FAKE_GUID_0004}", L"c:\\foo\\bar.dll", L"DragDropHandlers", L"Drive"},
+      {L"{FAKE_GUID_0005}", L"c:\\foo\\baz.dll", L"PropertySheetHandlers",
+       L"AllFileSystemObjects"},
+  };
+
+  // Register all fake shell extensions in kTestCases.
+  for (const auto& test_case : kTestCases) {
+    ASSERT_NO_FATAL_FAILURE(RegisterFakeShellExtension(
+        test_case.guid, test_case.path, test_case.shell_extension_type,
+        test_case.shell_object_type));
+  }
+
+  std::vector<base::FilePath> shell_extension_paths;
+  internal::EnumerateShellExtensionPaths(
+      base::BindRepeating(&OnShellExtensionPathEnumerated,
+                          base::Unretained(&shell_extension_paths)));
+
+  ASSERT_EQ(5u, shell_extension_paths.size());
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    // The inefficiency is fine as long as the number of test cases stays small.
+    EXPECT_TRUE(base::ContainsValue(shell_extension_paths,
+                                    base::FilePath(kTestCases[i].path)));
+  }
 }
