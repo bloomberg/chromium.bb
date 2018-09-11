@@ -134,9 +134,12 @@ void OverlayProcessor::ProcessForOverlays(
 #endif
 
   // Reset |previous_frame_underlay_rect_| in case UpdateDamageRect() not being
-  // invoked.
+  // invoked.  Also reset |previous_frame_underlay_was_unoccluded_|.
   const gfx::Rect previous_frame_underlay_rect = previous_frame_underlay_rect_;
   previous_frame_underlay_rect_ = gfx::Rect();
+  bool previous_frame_underlay_was_unoccluded =
+      previous_frame_underlay_was_unoccluded_;
+  previous_frame_underlay_was_unoccluded_ = false;
 
   RenderPass* render_pass = render_passes->back().get();
 
@@ -170,7 +173,8 @@ void OverlayProcessor::ProcessForOverlays(
       continue;
     }
     successful_strategy = strategy.get();
-    UpdateDamageRect(candidates, previous_frame_underlay_rect, damage_rect);
+    UpdateDamageRect(candidates, previous_frame_underlay_rect,
+                     previous_frame_underlay_was_unoccluded, damage_rect);
     break;
   }
 
@@ -193,6 +197,7 @@ void OverlayProcessor::ProcessForOverlays(
 void OverlayProcessor::UpdateDamageRect(
     OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
+    bool previous_frame_underlay_was_unoccluded,
     gfx::Rect* damage_rect) {
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
@@ -217,11 +222,18 @@ void OverlayProcessor::UpdateDamageRect(
       // has been chosen and the previous underlay rect should be damaged
       // because it has changed planes from the underlay plane to the
       // main plane.
+      //
+      // We also insist that the underlay is unoccluded for at leat one frame,
+      // else when content above the overlay transitions from not fully
+      // transparent to fully transparent, we still need to erase it from the
+      // framebuffer.  Otherwise, the last non-transparent frame will remain.
+      // https://crbug.com/875879
       this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
       if ((this_frame_underlay_rect == previous_frame_underlay_rect) &&
-          overlay.is_unoccluded) {
+          overlay.is_unoccluded && previous_frame_underlay_was_unoccluded) {
         damage_rect->Subtract(this_frame_underlay_rect);
       }
+      previous_frame_underlay_was_unoccluded_ = overlay.is_unoccluded;
     }
   }
 
