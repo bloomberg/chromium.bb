@@ -36,6 +36,7 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/message_center/message_center.h"
 
 using session_manager::SessionState;
 
@@ -497,6 +498,8 @@ void SessionController::SetIsDemoSession() {
 
   is_demo_session_ = true;
   Shell::Get()->metrics()->StartDemoSessionMetricsRecording();
+  // Notifications should be silenced during demo sessions.
+  message_center::MessageCenter::Get()->SetQuietMode(true);
 }
 
 void SessionController::SetSessionState(SessionState state) {
