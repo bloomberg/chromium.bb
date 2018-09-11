@@ -120,7 +120,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
 
   web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
   NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
+      web_client.Get()->GetDocumentStartScriptForAllFrames(browser_state());
   web::test::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::test::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));

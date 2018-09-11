@@ -135,6 +135,7 @@ js_compile_bundle("chrome_bundle_all_frames") {
     "//components/autofill/ios/form_util/resources/form.js",
     "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
+    "resources/print.js",
   ]
 }
 
@@ -146,7 +147,6 @@ js_compile_bundle("chrome_bundle_main_frame") {
     "//components/password_manager/ios/resources/password_controller.js",
     "resources/chrome_bundle_main_frame.js",
     "resources/image_fetch.js",
-    "resources/print.js",
   ]
 
   deps = [
