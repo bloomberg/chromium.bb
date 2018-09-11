@@ -9,6 +9,7 @@
 
 namespace sql {
 class Database;
+class MetaTable;
 }  // namespace sql
 
 namespace explore_sites {
@@ -19,6 +20,9 @@ class ExploreSitesSchema {
  public:
   static constexpr int kCurrentVersion = 1;
   static constexpr int kCompatibleVersion = 1;
+
+  // Initializes the given meta table using the appropriate versions.
+  static bool InitMetaTable(sql::Database* db, sql::MetaTable* meta_table);
 
   // Creates or upgrade the database schema as needed from information stored in
   // a metadata table. Returns |true| if the database is ready to be used,
