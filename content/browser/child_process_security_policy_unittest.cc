@@ -1175,4 +1175,13 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   }
 }
 
+// Check that an unsuccessful isolated origin lookup for a URL with an empty
+// host doesn't crash. See https://crbug.com/882686.
+TEST_F(ChildProcessSecurityPolicyTest, IsIsolatedOriginWithEmptyHost) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_FALSE(p->IsIsolatedOrigin(url::Origin::Create(GURL())));
+  EXPECT_FALSE(p->IsIsolatedOrigin(url::Origin::Create(GURL("file:///foo"))));
+}
+
 }  // namespace content
