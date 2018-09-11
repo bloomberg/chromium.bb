@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/gvr_controller_delegate.h"
+#include "chrome/browser/android/vr/gvr_input_delegate.h"
 
 #include <utility>
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/render_info.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 
 namespace {
 constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
@@ -19,15 +20,23 @@ constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
 
 namespace vr {
 
-GvrControllerDelegate::GvrControllerDelegate(gvr::GvrApi* gvr_api,
-                                             GlBrowserInterface* browser)
-    : controller_(std::make_unique<VrController>(gvr_api)), browser_(browser) {}
+GvrInputDelegate::GvrInputDelegate(gvr::GvrApi* gvr_api,
+                                   GlBrowserInterface* browser)
+    : controller_(std::make_unique<VrController>(gvr_api)),
+      gvr_api_(gvr_api),
+      browser_(browser) {}
 
-GvrControllerDelegate::~GvrControllerDelegate() = default;
+GvrInputDelegate::~GvrInputDelegate() = default;
 
-void GvrControllerDelegate::UpdateController(const gfx::Transform& head_pose,
-                                             base::TimeTicks current_time,
-                                             bool is_webxr_frame) {
+gfx::Transform GvrInputDelegate::GetHeadPose() {
+  gfx::Transform head_pose;
+  device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_, &head_pose);
+  return head_pose;
+}
+
+void GvrInputDelegate::UpdateController(const gfx::Transform& head_pose,
+                                        base::TimeTicks current_time,
+                                        bool is_webxr_frame) {
   controller_->UpdateState(head_pose);
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
@@ -36,7 +45,7 @@ void GvrControllerDelegate::UpdateController(const gfx::Transform& head_pose,
   browser_->UpdateGamepadData(controller_data);
 }
 
-ControllerModel GvrControllerDelegate::GetModel(
+ControllerModel GvrInputDelegate::GetControllerModel(
     const gfx::Transform& head_pose) {
   gfx::Vector3dF head_direction = GetForwardVector(head_pose);
 
@@ -88,15 +97,13 @@ ControllerModel GvrControllerDelegate::GetModel(
   return controller_model;
 }
 
-InputEventList GvrControllerDelegate::GetGestures(
-    base::TimeTicks current_time) {
+InputEventList GvrInputDelegate::GetGestures(base::TimeTicks current_time) {
   if (!controller_->IsConnected())
     return {};
   return gesture_detector_.DetectGestures(*controller_, current_time);
 }
 
-device::mojom::XRInputSourceStatePtr
-GvrControllerDelegate::GetInputSourceState() {
+device::mojom::XRInputSourceStatePtr GvrInputDelegate::GetInputSourceState() {
   device::mojom::XRInputSourceStatePtr state =
       device::mojom::XRInputSourceState::New();
   state->description = device::mojom::XRInputSourceDescription::New();
@@ -141,11 +148,11 @@ GvrControllerDelegate::GetInputSourceState() {
   return state;
 }
 
-void GvrControllerDelegate::OnResume() {
+void GvrInputDelegate::OnResume() {
   controller_->OnResume();
 }
 
-void GvrControllerDelegate::OnPause() {
+void GvrInputDelegate::OnPause() {
   controller_->OnPause();
 }
 

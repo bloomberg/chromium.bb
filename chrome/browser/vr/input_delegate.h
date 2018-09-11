@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_CONTROLLER_DELEGATE_H_
-#define CHROME_BROWSER_VR_CONTROLLER_DELEGATE_H_
+#ifndef CHROME_BROWSER_VR_INPUT_DELEGATE_H_
+#define CHROME_BROWSER_VR_INPUT_DELEGATE_H_
 
 #include <memory>
 #include <vector>
@@ -22,16 +22,17 @@ struct ControllerModel;
 
 using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 
-// Communicates with the PlatformController to update it and obtain input and
-// movement information.
-class ControllerDelegate {
+// Obtains input from the controller and head poses from the headset.
+class InputDelegate {
  public:
-  virtual ~ControllerDelegate() {}
+  virtual ~InputDelegate() {}
 
+  virtual gfx::Transform GetHeadPose() = 0;
   virtual void UpdateController(const gfx::Transform& head_pose,
                                 base::TimeTicks current_time,
                                 bool is_webxr_frame) = 0;
-  virtual ControllerModel GetModel(const gfx::Transform& head_pose) = 0;
+  virtual ControllerModel GetControllerModel(
+      const gfx::Transform& head_pose) = 0;
   virtual InputEventList GetGestures(base::TimeTicks current_time) = 0;
   virtual device::mojom::XRInputSourceStatePtr GetInputSourceState() = 0;
   virtual void OnResume() = 0;
@@ -40,4 +41,4 @@ class ControllerDelegate {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_CONTROLLER_DELEGATE_H_
+#endif  // CHROME_BROWSER_VR_INPUT_DELEGATE_H_

@@ -64,13 +64,14 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
  private:
   // SchedulerDelegate overrides.
-  gfx::Transform GetHeadPose() override;
   void AddInputSourceState(device::mojom::XRInputSourceStatePtr state) override;
   void OnPause() override;
   void OnResume() override;
   void OnTriggerEvent(bool pressed) override;
   void SetWebXrMode(bool enabled) override;
   void SetShowingVrDialog(bool showing) override;
+  void SubmitDrawnFrame(FrameType frame_type,
+                        const gfx::Transform& head_pose) override;
   void SetBrowserRenderer(
       SchedulerBrowserRendererInterface* browser_renderer) override;
   void ConnectPresentingService(
@@ -84,11 +85,11 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
   void WebVrSendRenderNotification(bool was_rendered);
   void UpdatePendingBounds(int16_t frame_index);
-  void SubmitDrawnFrame(bool is_webxr_frame);
-  void DrawFrameSubmitWhenReady(bool is_webxr_frame,
+  void DrawFrameSubmitWhenReady(FrameType frame_type,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFenceEGL> fence);
-  void DrawFrameSubmitNow(bool is_webxr_frame, const gfx::Transform& head_pose);
+  void DrawFrameSubmitNow(FrameType frame_type,
+                          const gfx::Transform& head_pose);
 
   // Used for discarding unwanted WebXR frames while UI is showing. We can't
   // safely cancel frames from processing start until they show up in
@@ -192,8 +193,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
   AndroidVSyncHelper vsync_helper_;
 
-  gfx::Transform head_pose_;
-
   mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
   mojo::Binding<device::mojom::XRFrameDataProvider> frame_data_binding_;
 
@@ -229,7 +228,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   // for later. If we exit WebVR before it is executed, we need to
   // cancel it to avoid inconsistent state.
   base::CancelableOnceCallback<
-      void(bool, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
+      void(FrameType, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
       webxr_delayed_gvr_submit_;
 
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;

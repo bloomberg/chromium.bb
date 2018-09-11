@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/vr/fov_rectangle.h"
+#include "chrome/browser/vr/frame_type.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_export.h"
 
@@ -29,7 +30,6 @@ struct RenderInfo;
 class VR_EXPORT GraphicsDelegate {
  public:
   using Transform = float[16];
-  enum FrameType { kUiFrame, kWebXrFrame };
   using SkiaContextCallback = base::OnceCallback<void()>;
   using TexturesInitializedCallback = base::OnceCallback<
       void(GlTextureLocation, unsigned int, unsigned int, unsigned int)>;
