@@ -239,6 +239,8 @@ void UkmRecorderImpl::EnableRecording(bool extensions) {
 
 void UkmRecorderImpl::DisableRecording() {
   DVLOG(1) << "UkmRecorderImpl::DisableRecording";
+  if (recording_enabled_)
+    recording_is_continuous_ = false;
   recording_enabled_ = false;
   extensions_enabled_ = false;
 }
@@ -250,6 +252,7 @@ void UkmRecorderImpl::DisableSamplingForTesting() {
 void UkmRecorderImpl::Purge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   recordings_.Reset();
+  recording_is_continuous_ = false;
 }
 
 void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
@@ -358,6 +361,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   recordings_.source_counts.Reset();
   recordings_.entries.clear();
   recordings_.event_aggregations.clear();
+
+  report->set_is_continuous(recording_is_continuous_);
+  recording_is_continuous_ = true;
 
   // Keep at most |max_kept_sources|, prioritizing most-recent entries (by
   // creation time).
