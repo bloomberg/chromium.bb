@@ -1567,6 +1567,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/882003")
     public void testToolbarSwipeNextThenPrevTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
@@ -1588,6 +1589,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/882003")
     public void testToolbarSwipeNextThenPrevTabIncognito()
             throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
