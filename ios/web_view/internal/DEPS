@@ -14,6 +14,7 @@ include_rules = [
   "+components/language/core/common",
   "+components/net_log",
   "+components/password_manager/core",
+  "+components/password_manager/ios",
   "+components/password_manager/sync",
   "+components/pref_registry",
   "+components/prefs",

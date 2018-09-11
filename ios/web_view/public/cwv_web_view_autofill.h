@@ -7,6 +7,8 @@
 
 #import "cwv_web_view.h"
 
+@class CWVAutofillController;
+
 @interface CWVWebView (Autofill)
 
 // The web view's autofill controller.
