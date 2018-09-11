@@ -398,19 +398,6 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
     // after this point without null checking it first.
   }
 
-  if (frame_tree_node->IsMainFrame() && frame_tree_node->navigation_request()) {
-    // For the trace below we're using the navigation handle as the async
-    // trace id, |navigation_start| as the timestamp and reporting the
-    // FrameTreeNode id as a parameter. For navigations where no network
-    // request is made (data URLs, JavaScript URLs, etc) there is no handle
-    // and so no tracing is done.
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "navigation", "Navigation timeToNetworkStack",
-        frame_tree_node->navigation_request()->navigation_handle(),
-        frame_tree_node->navigation_request()->common_params().navigation_start,
-        "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
-  }
-
   // Make sure no code called via RFH::Navigate clears the pending entry.
   if (is_pending_entry)
     CHECK_EQ(nav_entry_id, controller_->GetPendingEntry()->GetUniqueID());
