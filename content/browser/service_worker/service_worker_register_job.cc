@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
 namespace content {
@@ -64,9 +65,15 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
-      skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
       weak_factory_(this) {
+  // |skip_script_comparison_| should be true when
+  // ServiceWorkerImportedScriptUpdateCheck is enabled, because then script
+  // comparison happens before starting a worker and it doesn't need to happen
+  // during the worker startup.
+  skip_script_comparison_ =
+      blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled() ||
+      skip_script_comparison;
   internal_.registration = registration;
 }
 
@@ -279,6 +286,36 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   // TODO(michaeln): If the last update check was less than 24 hours
   // ago, depending on the freshness of the cached worker script we
   // may be able to complete the update job right here.
+
+  if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {
+    update_checker_ =
+        std::make_unique<ServiceWorkerUpdateChecker>(registration());
+    update_checker_->Start(
+        base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  UpdateAndContinue();
+}
+
+void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
+  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+  if (!script_changed) {
+    // TODO(momohatt): Set phase correctly.
+    // TODO(momohatt): Update the last update check time correctly.
+    ServiceWorkerVersion* newest_version = registration()->GetNewestVersion();
+    if (newest_version->force_bypass_cache_for_scripts()) {
+      registration()->set_last_update_check(base::Time::Now());
+    }
+    context_->storage()->UpdateLastUpdateCheckTime(registration());
+    ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
+                   registration());
+    // This terminates the current job (|this|).
+    Complete(blink::ServiceWorkerStatusCode::kErrorExists,
+             "The updated worker is identical to the incumbent.");
+    return;
+  }
 
   UpdateAndContinue();
 }
@@ -608,6 +645,7 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
 }
 
 void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
+  DCHECK(!blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
   net::URLRequestStatus status =
       new_version()->script_cache_map()->main_script_status();
   if (!status.is_success()) {
