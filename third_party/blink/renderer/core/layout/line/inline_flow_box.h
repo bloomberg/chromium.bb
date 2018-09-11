@@ -105,14 +105,6 @@ class InlineFlowBox : public InlineBox {
   InlineBox* FirstLeafChild() const;
   InlineBox* LastLeafChild() const;
 
-  typedef void (*CustomInlineBoxRangeReverse)(
-      Vector<InlineBox*>::iterator first,
-      Vector<InlineBox*>::iterator last);
-  void CollectLeafBoxesInLogicalOrder(
-      Vector<InlineBox*>&,
-      CustomInlineBoxRangeReverse custom_reverse_implementation =
-          nullptr) const;
-
   DISABLE_CFI_PERF
   void SetConstructed() final {
     InlineBox::SetConstructed();
