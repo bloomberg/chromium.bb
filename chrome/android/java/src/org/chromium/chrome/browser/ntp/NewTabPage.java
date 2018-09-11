@@ -225,9 +225,6 @@ public class NewTabPage
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
             if (!mTab.isHidden()) recordNTPShown();
-            if (mTab.getUrl().contains(UrlConstants.CONTENT_SUGGESTIONS_SUFFIX)) {
-                scrollToSuggestions();
-            }
         }
     }
 
@@ -370,13 +367,6 @@ public class NewTabPage
 
         controller.setEntryExtraData(
                 index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
-    }
-
-    /**
-     * Scroll to the list of suggested articles.
-     */
-    protected void scrollToSuggestions() {
-        mNewTabPageView.scrollToSuggestions();
     }
 
     /** @return The view container for the new tab page. */
