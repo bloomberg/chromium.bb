@@ -28,13 +28,6 @@ namespace views {
 
 namespace {
 
-gfx::Insets FocusBorderInsets(const Label& label) {
-  // StyledLabel never adds a border, so the only Insets added are for the
-  // possible focus ring.
-  DCHECK(label.View::GetInsets().IsEmpty());
-  return label.GetInsets();
-}
-
 std::unique_ptr<Label> CreateLabelRange(
     const base::string16& text,
     int text_context,
@@ -214,24 +207,6 @@ void StyledLabel::SizeToFit(int max_width) {
 
 const char* StyledLabel::GetClassName() const {
   return kViewClassName;
-}
-
-gfx::Insets StyledLabel::GetInsets() const {
-  gfx::Insets insets = View::GetInsets();
-  if (Link::GetDefaultFocusStyle() != Link::FocusStyle::RING)
-    return insets;
-
-  // We need a focus border iff we contain a link that will have a focus border.
-  // That in turn will be true only if the link is non-empty.
-  for (StyleRanges::const_iterator i(style_ranges_.begin());
-        i != style_ranges_.end(); ++i) {
-    if (i->style_info.IsLink() && !i->range.is_empty()) {
-      insets += gfx::Insets(Link::kFocusBorderPadding);
-      break;
-    }
-  }
-
-  return insets;
 }
 
 void StyledLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -488,26 +463,18 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     gfx::Size view_size = child_view->GetPreferredSize();
     // |offset.y()| already contains |insets.top()|.
     gfx::Point view_origin(insets.left() + offset.x(), offset.y());
-    gfx::Insets focus_border_insets;
-    if (Link::GetDefaultFocusStyle() == Link::FocusStyle::RING && label) {
-      // Calculate the size of the optional focus border, and overlap by that
-      // amount. Otherwise, "<a>link</a>," will render as "link ,".
-      focus_border_insets = FocusBorderInsets(*label);
-    }
-    view_origin.Offset(-focus_border_insets.left(), -focus_border_insets.top());
     // The custom view could be wider than the available width; clamp as needed.
-    if (custom_view) {
-      view_size.set_width(std::min(
-          view_size.width(), width - offset.x() + focus_border_insets.width()));
-    }
+    if (custom_view)
+      view_size.set_width(std::min(view_size.width(), width - offset.x()));
+
     child_view->SetBoundsRect(gfx::Rect(view_origin, view_size));
-    offset.set_x(offset.x() + view_size.width() - focus_border_insets.width());
+    offset.set_x(offset.x() + view_size.width());
     total_height =
-        std::max(total_height, child_view->bounds().bottom() + insets.bottom() -
-                                   focus_border_insets.bottom());
+        std::max(total_height, std::max(child_view->bounds().bottom(),
+                                        offset.y() + default_line_height) +
+                                   insets.bottom());
     used_width = std::max(used_width, offset.x());
-    max_line_height = std::max(
-        max_line_height, view_size.height() - focus_border_insets.height());
+    max_line_height = std::max(max_line_height, view_size.height());
 
     if (!dry_run) {
       views_in_a_line.push_back(child_view);
