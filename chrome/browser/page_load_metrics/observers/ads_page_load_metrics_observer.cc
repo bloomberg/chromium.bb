@@ -244,6 +244,13 @@ void AdsPageLoadMetricsObserver::OnComplete(
   RecordHistograms();
 }
 
+void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources)
+    UpdateResource(resource);
+}
+
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
     content::NavigationHandle* navigation_handle,
     subresource_filter::LoadPolicy load_policy,
@@ -344,10 +351,85 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
   }
 }
 
+void AdsPageLoadMetricsObserver::UpdateResource(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  auto it = page_resources_.find(resource->request_id);
+  // A new resource has been observed.
+  if (it == page_resources_.end())
+    total_number_page_resources_++;
+
+  page_resource_bytes_ += resource->delta_bytes;
+  if (resource->reported_as_ad_resource) {
+    // If the resource had already started loading, and is now labeled as an ad,
+    // but was not before, we need to account for all the previously received
+    // bytes.
+    bool is_new_ad =
+        (it != page_resources_.end()) && !it->second->reported_as_ad_resource;
+    int unaccounted_ad_bytes =
+        is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
+    page_ad_resource_bytes_ += resource->delta_bytes + unaccounted_ad_bytes;
+    if (resource->is_main_frame_resource) {
+      page_main_frame_ad_resource_bytes_ +=
+          resource->delta_bytes + unaccounted_ad_bytes;
+    }
+  }
+
+  // Update resource map.
+  if (resource->is_complete) {
+    RecordResourceHistogram(resource);
+    if (it != page_resources_.end())
+      page_resources_.erase(it);
+  } else {
+    // Must clone resource so it will be accessible when the observer is
+    // destroyed.
+    if (it != page_resources_.end()) {
+      it->second = resource->Clone();
+    } else {
+      page_resources_.emplace(std::piecewise_construct,
+                              std::forward_as_tuple(resource->request_id),
+                              std::forward_as_tuple(resource->Clone()));
+    }
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordResourceHistogram(
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  if (resource->is_main_frame_resource && resource->reported_as_ad_resource) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mainframe.AdResource",
+                         resource->received_data_length);
+  } else if (resource->is_main_frame_resource) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mainframe.VanillaResource",
+                         resource->received_data_length);
+  } else if (resource->reported_as_ad_resource) {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Subframe.AdResource",
+                         resource->received_data_length);
+  } else {
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Subframe.VanillaResource",
+                         resource->received_data_length);
+  }
+}
+
+void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms() {
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Total",
+                       page_resource_bytes_);
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
+                       page_ad_resource_bytes_);
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds",
+                       page_main_frame_ad_resource_bytes_);
+  size_t unfinished_bytes = 0;
+  for (auto const& kv : page_resources_)
+    unfinished_bytes += kv.second->received_data_length;
+  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Unfinished",
+                       unfinished_bytes);
+}
+
 void AdsPageLoadMetricsObserver::RecordHistograms() {
   RecordHistogramsForType(AD_TYPE_GOOGLE);
   RecordHistogramsForType(AD_TYPE_SUBRESOURCE_FILTER);
   RecordHistogramsForType(AD_TYPE_ALL);
+  RecordPageResourceTotalHistograms();
+  for (auto const& kv : page_resources_)
+    RecordResourceHistogram(kv.second);
 }
 
 void AdsPageLoadMetricsObserver::RecordHistogramsForType(int ad_type) {

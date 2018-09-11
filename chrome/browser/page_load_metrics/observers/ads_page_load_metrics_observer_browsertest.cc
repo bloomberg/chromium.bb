@@ -19,11 +19,13 @@
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -160,10 +162,10 @@ class AdsPageLoadMetricsTestWaiter
     : public page_load_metrics::PageLoadMetricsTestWaiter {
  public:
   explicit AdsPageLoadMetricsTestWaiter(content::WebContents* web_contents)
-      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents){};
+      : page_load_metrics::PageLoadMetricsTestWaiter(web_contents) {}
   void AddMinimumAdResourceExpectation(int num_ad_resources) {
     expected_minimum_num_ad_resources_ = num_ad_resources;
-  };
+  }
 
  protected:
   bool ExpectationsSatisfied() const override {
@@ -274,4 +276,98 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // ad.
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
+}
+
+// Verify that per-resource metrics are recorded correctly.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       ReceivedAdResourceMetrics) {
+  base::HistogramTester histogram_tester;
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto main_html_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          true /*relative_url_is_prefix*/);
+  auto ad_script_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ad_script.js",
+          true /*relative_url_is_prefix*/);
+  auto iframe_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/iframe.html",
+          true /*relative_url_is_prefix*/);
+  auto vanilla_script_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/vanilla_script.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_html_response->WaitForRequest();
+  main_html_response->Send(kHttpResponseHeader);
+  main_html_response->Send(
+      "<html><body></body><script src=\"ad_script.js\"></script></html>");
+  main_html_response->Done();
+
+  ad_script_response->WaitForRequest();
+  ad_script_response->Send(kHttpResponseHeader);
+  ad_script_response->Send(
+      "var iframe = document.createElement(\"iframe\");"
+      "iframe.src =\"iframe.html\";"
+      "document.body.appendChild(iframe);");
+  ad_script_response->Send(std::string(1000, ' '));
+  ad_script_response->Done();
+
+  iframe_response->WaitForRequest();
+  iframe_response->Send(kHttpResponseHeader);
+  iframe_response->Send("<html><script src=\"vanilla_script.js\"></script>");
+  iframe_response->Send(std::string(2000, ' '));
+  iframe_response->Send("</html>");
+  iframe_response->Done();
+
+  vanilla_script_response->WaitForRequest();
+  vanilla_script_response->Send(kHttpResponseHeader);
+  vanilla_script_response->Send(std::string(1024, ' '));
+  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->Wait();
+
+  // Verify correct numbers of resources are recorded.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Mainframe.VanillaResource", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Mainframe.AdResource", 1);
+  // Verify unfinished resource not yet recorded.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Subframe.AdResource", 1);
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Subframe.VanillaResource", 0);
+
+  // Close all tabs instead of navigating as the embedded_test_server will
+  // hang waiting for loads to finish when we have an unfinished
+  // ControlledHttpReseonse.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  // Verify unfinished resource recorded when page is destroyed.
+  histogram_tester.ExpectTotalCount(
+      "Ads.ResourceUsage.Size.Subframe.AdResource", 2);
+
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.Total", 4, 1);
+  // We have received 4 KB of ads and 1 KB of toplevel ads.
+  histogram_tester.ExpectBucketCount("PageLoad.Clients.Ads.Resources.Bytes.Ads",
+                                     4, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds", 1, 1);
+
+  // 4 resources loaded, one unfinished.
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Resources.Bytes.Unfinished", 1, 1);
 }
