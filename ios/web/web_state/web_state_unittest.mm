@@ -15,6 +15,7 @@
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/features.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -302,6 +303,7 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  WebState* web_state_ptr = web_state.get();
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   // TODO(crbug.com/873729): The session will not be restored until
   // LoadIfNecessary call. Fix the bug and remove extra call.
@@ -312,14 +314,49 @@ TEST_P(WebStateTest, RestoreLargeSession) {
                                ? wk_navigation_util::kMaxSessionSize
                                : kItemCount;
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    bool restored = navigation_manager->GetItemCount() == kExpectedItemCount;
+    bool restored = navigation_manager->GetItemCount() == kExpectedItemCount &&
+                    navigation_manager->CanGoForward();
     if (!restored) {
-      EXPECT_FALSE(navigation_manager->CanGoBack());
       EXPECT_FALSE(navigation_manager->CanGoForward());
+      // TODO(crbug.com/877671): Ensure that the following API work correctly:
+      //  - WebState::GetLastCommittedURL
+      //  - NavigationManager::GetBackwardItems
+      //  - NavigationManager::GetForwardItems
+      //  - NavigationManager::GetLastCommittedItem
+      //  - NavigationManager::GetPendingItem
+      //  - NavigationManager::GetLastCommittedItemIndex
+      //  - NavigationManager::GetPendingItemIndex
+    } else {
+      EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());
+      NavigationItem* last_committed_item =
+          navigation_manager->GetLastCommittedItem();
+      EXPECT_TRUE(last_committed_item);
+      EXPECT_TRUE(last_committed_item &&
+                  last_committed_item->GetURL() == "http://www.0.com/");
+      EXPECT_FALSE(navigation_manager->GetPendingItem());
+      EXPECT_EQ(0, navigation_manager->GetLastCommittedItemIndex());
+      EXPECT_EQ(-1, navigation_manager->GetPendingItemIndex());
+      EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
+      EXPECT_EQ(std::max(navigation_manager->GetItemCount() - 1, 0),
+                static_cast<int>(navigation_manager->GetForwardItems().size()));
     }
+    // TODO(crbug.com/877671): Ensure that the following API work correctly:
+    //  - WebState::GetTitle
+    //  - WebState::IsLoading
+    //  - WebState::GetLoadingProgress
+    EXPECT_FALSE(web_state_ptr->IsCrashed());
+    EXPECT_FALSE(web_state_ptr->IsEvicted());
+    EXPECT_EQ("http://www.0.com/", web_state_ptr->GetVisibleURL());
+    NavigationItem* visible_item = navigation_manager->GetVisibleItem();
+    EXPECT_TRUE(visible_item);
+    EXPECT_TRUE(visible_item && visible_item->GetURL() == "http://www.0.com/");
+    EXPECT_FALSE(navigation_manager->CanGoBack());
+    EXPECT_FALSE(navigation_manager->GetTransientItem());
+
     return restored;
   }));
   EXPECT_EQ(kExpectedItemCount, navigation_manager->GetItemCount());
+  EXPECT_TRUE(navigation_manager->CanGoForward());
 }
 
 INSTANTIATE_TEST_CASE_P(
