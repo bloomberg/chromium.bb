@@ -66,6 +66,12 @@ def main():
     print >>sys.stderr, 'usage: %s' % sys.argv[0]
     return 1
 
+  # Quietly exit if there's no SDK support for this platform.
+  try:
+    GetHostOsFromPlatform()
+  except:
+    return 0
+
   # Previously SDK was unpacked in //third_party/fuchsia-sdk instead of
   # //third_party/fuchsia-sdk/sdk . Remove the old files if they are still
   # there.
