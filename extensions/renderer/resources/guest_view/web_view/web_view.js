@@ -19,7 +19,8 @@ var WebViewInternal = getInternalApi ?
 // Represents the internal state of <webview>.
 function WebViewImpl(webviewElement) {
   $Function.call(GuestViewContainer, this, webviewElement, 'webview');
-  this.cachedZoom = 1;
+  this.pendingZoomFactor_ = null;
+  this.userAgentOverride = null;
   this.setupElementProperties();
   new WebViewEvents(this, this.viewInstanceId);
 }
@@ -162,8 +163,10 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
 };
 
 WebViewImpl.prototype.buildContainerParams = function() {
-  var params = { 'initialZoomFactor': this.cachedZoomFactor,
-                 'userAgentOverride': this.userAgentOverride };
+  var params = {
+    'initialZoomFactor': this.pendingZoomFactor_,
+    'userAgentOverride': this.userAgentOverride
+  };
   for (var i in this.attributes) {
     var value = this.attributes[i].getValueIfDirty();
     if (value)
@@ -234,10 +237,10 @@ WebViewImpl.prototype.loadDataWithBaseUrl = function(
 
 WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
   if (!this.guest.getId()) {
-    this.cachedZoomFactor = zoomFactor;
+    this.pendingZoomFactor_ = zoomFactor;
     return false;
   }
-  this.cachedZoomFactor = 1;
+  this.pendingZoomFactor_ = null;
   WebViewInternal.setZoom(this.guest.getId(), zoomFactor, callback);
   return true;
 };
