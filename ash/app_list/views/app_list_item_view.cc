@@ -27,6 +27,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -80,35 +81,37 @@ constexpr int kIconShadowBlur = 10;
 // The shadow color of icon.
 constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
 
-// The class clips the provided folder icon image.
-class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
+// The class clips the provided icon image.
+class ClippedIconImageSource : public gfx::CanvasImageSource {
  public:
-  explicit ClippedFolderIconImageSource(const gfx::ImageSkia& image)
-      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size(),
-                               false),
-        image_(image) {}
-  ~ClippedFolderIconImageSource() override = default;
+  ClippedIconImageSource(const gfx::ImageSkia& image,
+                         const gfx::Size& clipped_size)
+      : gfx::CanvasImageSource(clipped_size, false),
+        image_(image),
+        clipped_size_(clipped_size) {}
+  ~ClippedIconImageSource() override = default;
 
   void Draw(gfx::Canvas* canvas) override {
     // Draw the unclipped icon on the center of the canvas with a circular mask.
-    const gfx::Size size = AppListConfig::instance().folder_icon_size();
     gfx::Path circular_mask;
-    circular_mask.addCircle(SkFloatToScalar(size.width() / 2),
-                            SkFloatToScalar(size.height() / 2),
-                            SkIntToScalar(size.width() / 2));
+    circular_mask.addCircle(SkFloatToScalar(clipped_size_.width() / 2),
+                            SkFloatToScalar(clipped_size_.height() / 2),
+                            SkIntToScalar(clipped_size_.width() / 2));
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
-    canvas->DrawImageInPath(image_, (size.width() - image_.size().width()) / 2,
-                            (size.height() - image_.size().height()) / 2,
-                            circular_mask, flags);
+    canvas->DrawImageInPath(
+        image_, (clipped_size_.width() - image_.size().width()) / 2,
+        (clipped_size_.height() - image_.size().height()) / 2, circular_mask,
+        flags);
   }
 
  private:
   const gfx::ImageSkia image_;
+  const gfx::Size clipped_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClippedFolderIconImageSource);
+  DISALLOW_COPY_AND_ASSIGN(ClippedIconImageSource);
 };
 
 }  // namespace
@@ -175,7 +178,9 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   AddChildView(title_);
   AddChildView(progress_bar_);
 
-  SetIcon(item->icon());
+  SetIcon(
+      item->icon(), is_folder_ /* clip */,
+      is_folder_ ? AppListConfig::instance().folder_icon_size() : gfx::Size());
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
               base::UTF8ToUTF16(item->name()));
   SetItemIsInstalling(item->is_installing());
@@ -187,7 +192,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   SetAnimationDuration(0);
 
   preview_circle_radius_ = 0;
-  folder_icon_insets_ = AppListConfig::instance().folder_icon_insets();
 }
 
 AppListItemView::~AppListItemView() {
@@ -195,7 +199,9 @@ AppListItemView::~AppListItemView() {
     item_weak_->RemoveObserver(this);
 }
 
-void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
+void AppListItemView::SetIcon(const gfx::ImageSkia& icon,
+                              bool clip,
+                              const gfx::Size& clipped_size) {
   // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
     icon_->SetImage(nullptr);
@@ -204,23 +210,28 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
     return;
   }
 
-  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
+  gfx::ImageSkia resized = gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST,
       is_folder_ ? AppListConfig::instance().folder_unclipped_icon_size()
-                 : AppListConfig::instance().grid_icon_size()));
+                 : AppListConfig::instance().grid_icon_size());
+
+  gfx::ImageSkia clipped =
+      clip ? gfx::CanvasImageSource::MakeImageSkia<ClippedIconImageSource>(
+                 resized, clipped_size)
+           : icon;
+
   if (shadow_animator_)
-    shadow_animator_->SetOriginalImage(resized);
+    shadow_animator_->SetOriginalImage(clipped);
   else
-    icon_->SetImage(resized);
+    icon_->SetImage(clipped);
 
   if (icon_shadow_) {
     // Create a shadow for the shown icon.
     gfx::ImageSkia shadowed =
         gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-            GetIconImage(),
-            gfx::ShadowValues(1,
-                              gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur,
-                                               kIconShadowColor)));
+            clipped, gfx::ShadowValues(
+                         1, gfx::ShadowValue(gfx::Vector2d(), kIconShadowBlur,
+                                             kIconShadowColor)));
     icon_shadow_->SetImage(shadowed);
   }
 
@@ -523,18 +534,6 @@ void AppListItemView::Layout() {
         GetIconBoundsForTargetViewBounds(rect, icon_shadow_->GetImage().size());
     icon_shadow_->SetBoundsRect(icon_shadow_bounds);
   }
-  if (is_new_style_launcher_enabled_ && is_folder_) {
-    // Add a folder icon mask to clip the folder icon.
-    folder_icon_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(
-            SK_ColorBLACK,
-            AppListConfig::instance().folder_unclipped_icon_dimension() / 2 -
-                folder_icon_insets_,
-            gfx::Insets(folder_icon_insets_, folder_icon_insets_)));
-    folder_icon_mask_->layer()->SetFillsBoundsOpaquely(false);
-    folder_icon_mask_->layer()->SetBounds(icon_bounds);
-    icon_->layer()->SetMaskLayer(folder_icon_mask_->layer());
-  }
   title_->SetBoundsRect(
       GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize()));
   SetTitleSubpixelAA();
@@ -697,10 +696,12 @@ void AppListItemView::OnDraggedViewExit() {
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
   if (is_folder_) {
-    folder_icon_insets_ = gfx::Tween::IntValueBetween(
-        animation->GetCurrentValue(),
-        AppListConfig::instance().folder_icon_insets(), 0);
-    Layout();
+    SetIcon(item_weak_->icon(), true /* clip */,
+            gfx::ToRoundedSize(gfx::Tween::SizeValueBetween(
+                animation->GetCurrentValue(),
+                gfx::SizeF(AppListConfig::instance().folder_icon_size()),
+                gfx::SizeF(
+                    AppListConfig::instance().folder_unclipped_icon_size()))));
     return;
   }
 
@@ -739,8 +740,8 @@ gfx::ImageSkia AppListItemView::GetIconImage() const {
   if (!is_folder_)
     return icon_->GetImage();
 
-  return gfx::CanvasImageSource::MakeImageSkia<ClippedFolderIconImageSource>(
-      icon_->GetImage());
+  return gfx::CanvasImageSource::MakeImageSkia<ClippedIconImageSource>(
+      icon_->GetImage(), AppListConfig::instance().folder_icon_size());
 }
 
 void AppListItemView::SetIconVisible(bool visible) {
@@ -806,7 +807,22 @@ void AppListItemView::SetTitleSubpixelAA() {
 
 void AppListItemView::ItemIconChanged() {
   DCHECK(item_weak_);
-  SetIcon(item_weak_->icon());
+  if (!is_folder_) {
+    SetIcon(item_weak_->icon(), false /* clip */, gfx::Size());
+    return;
+  }
+
+  gfx::Size clipped_size = AppListConfig::instance().folder_icon_size();
+  if (dragged_view_hover_animation_ &&
+      dragged_view_hover_animation_->is_animating()) {
+    // The icon is updated before the folder icon animation ended, so clip the
+    // icon to the size in progress here.
+    clipped_size = gfx::ToRoundedSize(gfx::Tween::SizeValueBetween(
+        dragged_view_hover_animation_->GetCurrentValue(),
+        gfx::SizeF(AppListConfig::instance().folder_icon_size()),
+        gfx::SizeF(AppListConfig::instance().folder_unclipped_icon_size())));
+  }
+  SetIcon(item_weak_->icon(), true /* clip */, clipped_size);
 }
 
 void AppListItemView::ItemNameChanged() {
