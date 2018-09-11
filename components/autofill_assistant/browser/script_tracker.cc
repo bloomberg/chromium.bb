@@ -14,7 +14,10 @@ namespace autofill_assistant {
 
 ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
-    : delegate_(delegate), listener_(listener), weak_ptr_factory_(this) {
+    : delegate_(delegate),
+      listener_(listener),
+      pending_precondition_check_count_(0),
+      weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
 }
