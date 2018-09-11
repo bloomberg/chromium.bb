@@ -26,6 +26,8 @@ static_library("test_config") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "../memory/fake_memory_pressure_monitor.cc",
+    "../memory/fake_memory_pressure_monitor.h",
     "../task/sequence_manager/test/fake_task.cc",
     "../task/sequence_manager/test/fake_task.h",
     "../task/sequence_manager/test/lazy_thread_controller_for_test.cc",

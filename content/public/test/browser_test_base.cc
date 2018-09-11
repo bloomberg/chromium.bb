@@ -170,6 +170,12 @@ void BrowserTestBase::SetUp() {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  // Features that depend on external factors (e.g. memory pressure monitor) can
+  // disable themselves based on the switch below (to ensure that browser tests
+  // behave deterministically / do not flakily change behavior based on external
+  // factors).
+  command_line->AppendSwitch(switches::kBrowserTest);
+
   // Override the child process connection timeout since tests can exceed that
   // when sharded.
   command_line->AppendSwitchASCII(

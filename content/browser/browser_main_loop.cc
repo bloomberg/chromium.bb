@@ -437,6 +437,31 @@ void SetFileUrlPathAliasForIpcFuzzer() {
 const base::Feature kBrowserResponsivenessCalculator{
     "BrowserResponsivenessCalculator", base::FEATURE_DISABLED_BY_DEFAULT};
 
+std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
+    const base::CommandLine& command_line) {
+  // Behavior of browser tests should not depend on things outside of their
+  // control (like the amount of memory on the system running the tests).
+  if (command_line.HasSwitch(switches::kBrowserTest))
+    return nullptr;
+
+// TODO(chrisha): Simplify this code once MemoryPressureMonitor is made a
+// concrete class.
+#if defined(OS_CHROMEOS)
+  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
+    return std::make_unique<base::chromeos::MemoryPressureMonitor>(
+        chromeos::switches::GetMemoryPressureThresholds());
+  }
+  return nullptr;
+#elif defined(OS_MACOSX)
+  return std::make_unique<base::mac::MemoryPressureMonitor>();
+#elif defined(OS_WIN)
+  return CreateWinMemoryPressureMonitor(command_line);
+#else
+  // No memory monitor on other platforms...
+  return nullptr;
+#endif
+}
+
 }  // namespace
 
 #if defined(USE_X11)
@@ -1498,21 +1523,7 @@ bool BrowserMainLoop::UsingInProcessGpu() const {
 }
 
 void BrowserMainLoop::InitializeMemoryManagementComponent() {
-  // TODO(chrisha): Abstract away this construction mess to a helper function,
-  // once MemoryPressureMonitor is made a concrete class.
-#if defined(OS_CHROMEOS)
-  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    memory_pressure_monitor_ =
-        std::make_unique<base::chromeos::MemoryPressureMonitor>(
-            chromeos::switches::GetMemoryPressureThresholds());
-  }
-#elif defined(OS_MACOSX)
-  memory_pressure_monitor_ =
-      std::make_unique<base::mac::MemoryPressureMonitor>();
-#elif defined(OS_WIN)
-  memory_pressure_monitor_ =
-      CreateWinMemoryPressureMonitor(parsed_command_line_);
-#endif
+  memory_pressure_monitor_ = CreateMemoryPressureMonitor(parsed_command_line_);
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     MemoryCoordinatorImpl::GetInstance()->Start();

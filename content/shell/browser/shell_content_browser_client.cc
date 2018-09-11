@@ -297,8 +297,8 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
   // to shell_main.cc that it's a browser test.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kContentBrowserTest)) {
-    command_line->AppendSwitch(switches::kContentBrowserTest);
+          switches::kBrowserTest)) {
+    command_line->AppendSwitch(switches::kBrowserTest);
   }
 #endif
 }
