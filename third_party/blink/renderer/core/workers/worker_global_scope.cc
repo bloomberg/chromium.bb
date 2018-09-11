@@ -39,12 +39,15 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -57,6 +60,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -96,6 +100,7 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   closing_ = true;
+  paused_calls_.clear();
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
@@ -305,6 +310,74 @@ service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
 
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
+}
+
+void WorkerGlobalScope::TasksWereUnpaused() {
+  WorkerOrWorkletGlobalScope::TasksWereUnpaused();
+  Vector<base::OnceClosure> calls;
+  paused_calls_.swap(calls);
+  for (auto& call : calls)
+    std::move(call).Run();
+}
+
+void WorkerGlobalScope::EvaluateClassicScriptPausable(
+    const KURL& script_url,
+    String source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  if (IsContextPaused()) {
+    paused_calls_.push_back(
+        WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptPausable,
+                  WrapWeakPersistent(this), script_url, source_code,
+                  WTF::Passed(std::move(cached_meta_data)), stack_id));
+    return;
+  }
+  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(stack_id);
+  EvaluateClassicScript(script_url, source_code, std::move(cached_meta_data));
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(stack_id);
+}
+
+void WorkerGlobalScope::ImportModuleScriptPausable(
+    const KURL& module_url_record,
+    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    network::mojom::FetchCredentialsMode mode) {
+  if (IsContextPaused()) {
+    paused_calls_.push_back(
+        WTF::Bind(&WorkerGlobalScope::ImportModuleScriptPausable,
+                  WrapWeakPersistent(this), module_url_record,
+                  WrapPersistent(outside_settings_object), mode));
+    return;
+  }
+  ImportModuleScript(module_url_record, outside_settings_object, mode);
+}
+
+void WorkerGlobalScope::ReceiveMessagePausable(
+    BlinkTransferableMessage message) {
+  if (IsContextPaused()) {
+    paused_calls_.push_back(
+        WTF::Bind(&WorkerGlobalScope::ReceiveMessagePausable,
+                  WrapWeakPersistent(this), std::move(message)));
+    return;
+  }
+
+  MessagePortArray* ports =
+      MessagePort::EntanglePorts(*this, std::move(message.ports));
+  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
+  UserActivation* user_activation = nullptr;
+  if (message.user_activation) {
+    user_activation =
+        new UserActivation(message.user_activation->has_been_active,
+                           message.user_activation->was_active);
+  }
+  DispatchEvent(*MessageEvent::Create(ports, std::move(message.message),
+                                      user_activation));
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
 }
 
 void WorkerGlobalScope::EvaluateClassicScript(

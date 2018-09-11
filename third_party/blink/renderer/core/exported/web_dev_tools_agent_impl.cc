@@ -103,18 +103,6 @@ bool IsMainFrame(WebLocalFrameImpl* frame) {
   return frame->ViewImpl() && !frame->Parent();
 }
 
-bool ShouldInterruptForMethod(const String& method) {
-  // Keep in sync with DevToolsSession::ShouldSendOnIO.
-  // TODO(dgozman): find a way to share this.
-  return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
-         method == "Debugger.setBreakpointByUrl" ||
-         method == "Debugger.removeBreakpoint" ||
-         method == "Debugger.setBreakpointsActive" ||
-         method == "Performance.getMetrics" || method == "Page.crash" ||
-         method == "Runtime.terminateExecution" ||
-         method == "Emulation.setScriptExecutionDisabled";
-}
-
 }  // namespace
 
 class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
@@ -288,7 +276,7 @@ class WebDevToolsAgentImpl::Session::IOSession
   void DispatchProtocolCommand(int call_id,
                                const String& method,
                                const String& message) override {
-    DCHECK(ShouldInterruptForMethod(method));
+    DCHECK(InspectorSession::ShouldInterruptForMethod(method));
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);

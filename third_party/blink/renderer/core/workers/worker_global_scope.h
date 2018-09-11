@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/dom_window_base64.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -133,17 +134,18 @@ class CORE_EXPORT WorkerGlobalScope
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
 
-  // Evaluates the given top-level classic script.
-  virtual void EvaluateClassicScript(
+  // The following methods implement PausbaleObject semantic
+  // so that WorkerGlobalScope can be paused.
+  void EvaluateClassicScriptPausable(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data);
-
-  // Imports the top-level module script for |module_url_record|.
-  virtual void ImportModuleScript(
+      std::unique_ptr<Vector<char>> cached_meta_data,
+      const v8_inspector::V8StackTraceId& stack_id);
+  void ImportModuleScriptPausable(
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
-      network::mojom::FetchCredentialsMode) = 0;
+      network::mojom::FetchCredentialsMode);
+  void ReceiveMessagePausable(BlinkTransferableMessage);
 
   base::TimeTicks TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
@@ -171,6 +173,18 @@ class CORE_EXPORT WorkerGlobalScope
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
+
+  // Evaluates the given top-level classic script.
+  virtual void EvaluateClassicScript(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data);
+
+  // Imports the top-level module script for |module_url_record|.
+  virtual void ImportModuleScript(
+      const KURL& module_url_record,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      network::mojom::FetchCredentialsMode) = 0;
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
@@ -204,6 +218,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
+  void TasksWereUnpaused() override;
 
   const KURL url_;
   const ScriptType script_type_;
@@ -234,6 +249,8 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken agent_cluster_id_;
 
   HttpsState https_state_;
+
+  Vector<base::OnceClosure> paused_calls_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
@@ -152,17 +153,24 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
-  // Only callable on the main thread.
-  void AppendDebuggerTask(CrossThreadClosure);
+  // Only constructible on the main thread.
+  class CORE_EXPORT ScopedDebuggerTask {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ScopedDebuggerTask(WorkerThread*);
+    ~ScopedDebuggerTask();
+
+   private:
+    WorkerThread* thread_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedDebuggerTask);
+  };
+  InspectorTaskRunner* GetInspectorTaskRunner();
 
   // Callable on both the main thread and the worker thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
     return devtools_worker_token_;
   }
-
-  // Runs only debugger tasks while paused in debugger.
-  void StartRunningDebuggerTasksOnPauseOnWorkerThread();
-  void StopRunningDebuggerTasksOnPauseOnWorkerThread();
 
   // Can be called only on the worker thread, WorkerOrWorkletGlobalScope
   // and WorkerInspectorController are not thread safe.
@@ -297,9 +305,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Set on the main thread.
   bool requested_to_terminate_ GUARDED_BY(mutex_) = false;
 
-  // Accessed only on the worker thread.
-  bool paused_in_debugger_ = false;
-
   ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
   ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
@@ -307,6 +312,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   const base::UnguessableToken devtools_worker_token_;
+  int debugger_task_counter_ GUARDED_BY(mutex_) = 0;
 
   WorkerReportingProxy& worker_reporting_proxy_;
 

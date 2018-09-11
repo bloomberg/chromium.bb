@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank('Tests that worker can be interrupted and paused.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that worker can be interrupted with Debugger.pause.');
 
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-loop.js')}');
@@ -24,6 +24,7 @@
 
   var debuggerEnableRequestId = -1;
   var evaluateRequestId = -1;
+  var pauseRequestId = -1;
 
   dp.Target.onReceivedMessageFromTarget(async messageObject => {
     var message = JSON.parse(messageObject.params.message);
@@ -32,6 +33,10 @@
       // Start tight loop in the worker.
       await dp.Runtime.evaluate({expression: 'worker.postMessage(1)' });
       testRunner.log('Did post message to worker');
+    }
+    if (message.id === pauseRequestId) {
+      testRunner.log('Paused in worker');
+      evaluateRequestId = sendCommandToWorker('Runtime.evaluate', { 'expression': 'message_id > 1'});
     }
     if (message.id === evaluateRequestId) {
       var value = message.result.result.value;
@@ -50,5 +55,5 @@
   debuggerEnableRequestId = sendCommandToWorker('Debugger.enable', {});
 
   await session.evaluateAsync('workerMessageReceivedPromise');
-  evaluateRequestId = sendCommandToWorker('Runtime.evaluate', { 'expression': 'message_id > 1'});
+  pauseRequestId = sendCommandToWorker('Debugger.pause', {});
 })

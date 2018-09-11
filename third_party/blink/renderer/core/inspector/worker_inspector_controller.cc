@@ -69,6 +69,7 @@ WorkerInspectorController::~WorkerInspectorController() {
 }
 
 void WorkerInspectorController::ConnectFrontend(int session_id) {
+  WorkerThread::ScopedDebuggerTask debugger_task(thread_);
   if (sessions_.find(session_id) != sessions_.end())
     return;
 
@@ -94,6 +95,7 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
 }
 
 void WorkerInspectorController::DisconnectFrontend(int session_id) {
+  WorkerThread::ScopedDebuggerTask debugger_task(thread_);
   auto it = sessions_.find(session_id);
   if (it == sessions_.end())
     return;
@@ -106,6 +108,7 @@ void WorkerInspectorController::DisconnectFrontend(int session_id) {
 void WorkerInspectorController::DispatchMessageFromFrontend(
     int session_id,
     const String& message) {
+  WorkerThread::ScopedDebuggerTask debugger_task(thread_);
   auto it = sessions_.find(session_id);
   if (it == sessions_.end())
     return;

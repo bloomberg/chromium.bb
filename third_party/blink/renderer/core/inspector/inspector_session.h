@@ -66,6 +66,8 @@ class CORE_EXPORT InspectorSession
 
   void Trace(blink::Visitor*);
 
+  static bool ShouldInterruptForMethod(const String& method);
+
  private:
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
