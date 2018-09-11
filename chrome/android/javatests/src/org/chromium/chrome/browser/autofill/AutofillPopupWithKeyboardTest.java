@@ -28,7 +28,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
-import org.chromium.ui.UiUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -93,7 +92,8 @@ public class AutofillPopupWithKeyboardTest {
         CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
+                return mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                        mActivityTestRule.getActivity(),
                         mActivityTestRule.getActivity().getActivityTab().getContentView());
             }
         });
