@@ -73,23 +73,25 @@ void SendMessageToProcesses(
     tab_process->Send(create_message.Run(false));
 }
 
-std::unique_ptr<ActiveTabPermissionGranter::Delegate>& GetDelegateWrapper() {
+std::unique_ptr<ActiveTabPermissionGranter::Delegate>&
+GetActiveTabPermissionGranterDelegateWrapper() {
   static base::NoDestructor<
       std::unique_ptr<ActiveTabPermissionGranter::Delegate>>
       delegate_wrapper;
   return *delegate_wrapper;
 }
 
-ActiveTabPermissionGranter::Delegate* GetDelegate() {
-  return GetDelegateWrapper().get();
+ActiveTabPermissionGranter::Delegate* GetActiveTabPermissionGranterDelegate() {
+  return GetActiveTabPermissionGranterDelegateWrapper().get();
 }
 
 // Returns true if activeTab is allowed to be granted to the extension. This can
 // return false for platform-specific implementations.
 bool ShouldGrantActiveTabOrPrompt(const Extension* extension,
                                   content::WebContents* web_contents) {
-  return !GetDelegate() ||
-         GetDelegate()->ShouldGrantActiveTabOrPrompt(extension, web_contents);
+  return !GetActiveTabPermissionGranterDelegate() ||
+         GetActiveTabPermissionGranterDelegate()->ShouldGrantActiveTabOrPrompt(
+             extension, web_contents);
 }
 
 }  // namespace
@@ -109,7 +111,7 @@ ActiveTabPermissionGranter::~ActiveTabPermissionGranter() {}
 // static
 void ActiveTabPermissionGranter::SetPlatformDelegate(
     std::unique_ptr<Delegate> delegate) {
-  GetDelegateWrapper() = std::move(delegate);
+  GetActiveTabPermissionGranterDelegateWrapper() = std::move(delegate);
 }
 
 void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {

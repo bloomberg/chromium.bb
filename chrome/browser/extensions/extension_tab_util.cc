@@ -106,14 +106,15 @@ int GetTabIdForExtensions(const WebContents* web_contents) {
   return SessionTabHelper::IdForTab(web_contents).id();
 }
 
-std::unique_ptr<ExtensionTabUtil::Delegate>& GetDelegateWrapper() {
+std::unique_ptr<ExtensionTabUtil::Delegate>&
+GetExtensionTabUtilDelegateWrapper() {
   static base::NoDestructor<std::unique_ptr<ExtensionTabUtil::Delegate>>
       delegate_wrapper;
   return *delegate_wrapper;
 }
 
-ExtensionTabUtil::Delegate* GetDelegate() {
-  return GetDelegateWrapper().get();
+ExtensionTabUtil::Delegate* GetExtensionTabUtilDelegate() {
+  return GetExtensionTabUtilDelegateWrapper().get();
 }
 
 }  // namespace
@@ -500,7 +501,7 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
 
 // static
 void ExtensionTabUtil::SetPlatformDelegate(std::unique_ptr<Delegate> delegate) {
-  GetDelegateWrapper() = std::move(delegate);
+  GetExtensionTabUtilDelegateWrapper() = std::move(delegate);
 }
 
 // static
@@ -530,8 +531,10 @@ void ExtensionTabUtil::ScrubTabForExtension(const Extension* extension,
     tab->title.reset();
     tab->fav_icon_url.reset();
   }
-  if (GetDelegate())
-    GetDelegate()->ScrubTabForExtension(extension, contents, tab);
+  if (GetExtensionTabUtilDelegate()) {
+    GetExtensionTabUtilDelegate()->ScrubTabForExtension(extension, contents,
+                                                        tab);
+  }
 }
 
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
