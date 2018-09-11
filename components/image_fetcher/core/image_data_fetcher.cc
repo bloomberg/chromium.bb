@@ -120,7 +120,8 @@ void ImageDataFetcher::FetchImageData(
   std::unique_ptr<ImageDataFetcherRequest> request_track(
       new ImageDataFetcherRequest(std::move(callback), std::move(loader)));
 
-  pending_requests_[request_track->loader.get()] = std::move(request_track);
+  network::SimpleURLLoader* loader_raw = request_track->loader.get();
+  pending_requests_[loader_raw] = std::move(request_track);
 }
 
 void ImageDataFetcher::OnURLLoaderComplete(
@@ -155,8 +156,10 @@ void ImageDataFetcher::FinishRequest(const network::SimpleURLLoader* source,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto request_iter = pending_requests_.find(source);
   DCHECK(request_iter != pending_requests_.end());
-  std::move(request_iter->second->callback).Run(image_data, metadata);
+  auto callback = std::move(request_iter->second->callback);
   pending_requests_.erase(request_iter);
+  std::move(callback).Run(image_data, metadata);
+  // |this| might be destroyed now.
 }
 
 void ImageDataFetcher::InjectResultForTesting(const RequestMetadata& metadata,
