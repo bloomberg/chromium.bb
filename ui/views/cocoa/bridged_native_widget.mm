@@ -154,8 +154,6 @@ using NSViewComparatorValue = id;
 using NSViewComparatorValue = __kindof NSView*;
 #endif
 
-int kWindowPropertiesKey;
-
 // Returns true if the content_view is reparented.
 bool PositionWindowInNativeViewParent(NSView* content_view) {
   return [[content_view window] contentView] != content_view;
@@ -179,16 +177,6 @@ gfx::Size GetClientSizeForWindowSize(NSWindow* window,
   // be zero at this point, because Widget::GetMinimumSize() may later increase
   // the size.
   return gfx::Size([window contentRectForFrameRect:frame_rect].size);
-}
-
-void RankNSViews(View* view,
-                 const BridgedNativeWidgetImpl::AssociatedViews& hosts,
-                 RankMap* rank) {
-  auto it = hosts.find(view);
-  if (it != hosts.end())
-    rank->emplace(it->second, rank->size());
-  for (int i = 0; i < view->child_count(); ++i)
-    RankNSViews(view->child_at(i), hosts, rank);
 }
 
 NSComparisonResult SubviewSorter(NSViewComparatorValue lhs,
@@ -668,22 +656,6 @@ void BridgedNativeWidgetImpl::EndMoveLoop() {
   window_move_loop_.reset();
 }
 
-void BridgedNativeWidgetImpl::SetNativeWindowProperty(const char* name,
-                                                      void* value) {
-  NSString* key = [NSString stringWithUTF8String:name];
-  if (value) {
-    [GetWindowProperties() setObject:[NSValue valueWithPointer:value]
-                              forKey:key];
-  } else {
-    [GetWindowProperties() removeObjectForKey:key];
-  }
-}
-
-void* BridgedNativeWidgetImpl::GetNativeWindowProperty(const char* name) const {
-  NSString* key = [NSString stringWithUTF8String:name];
-  return [[GetWindowProperties() objectForKey:key] pointerValue];
-}
-
 void BridgedNativeWidgetImpl::SetCursor(NSCursor* cursor) {
   [window_delegate_ setCursor:cursor];
 }
@@ -909,28 +881,12 @@ void BridgedNativeWidgetImpl::InitCompositorView() {
   UpdateWindowGeometry();
 }
 
-void BridgedNativeWidgetImpl::SetAssociationForView(const View* view,
-                                                    NSView* native_view) {
-  DCHECK_EQ(0u, associated_views_.count(view));
-  associated_views_[view] = native_view;
-  native_widget_mac_->GetWidget()->ReorderNativeViews();
-}
-
-void BridgedNativeWidgetImpl::ClearAssociationForView(const View* view) {
-  auto it = associated_views_.find(view);
-  DCHECK(it != associated_views_.end());
-  associated_views_.erase(it);
-}
-
-void BridgedNativeWidgetImpl::ReorderChildViews() {
+void BridgedNativeWidgetImpl::SortSubviews(RankMap rank) {
   // Ignore layer manipulation during a Close(). This can be reached during the
   // orderOut: in Close(), which notifies visibility changes to Views.
   if (!bridged_view_)
     return;
 
-  RankMap rank;
-  Widget* widget = native_widget_mac_->GetWidget();
-  RankNSViews(widget->GetRootView(), associated_views_, &rank);
   // Unassociated NSViews should be ordered above associated ones. The exception
   // is the UI compositor's superview, which should always be on the very
   // bottom, so give it an explicit negative rank.
@@ -1310,17 +1266,6 @@ void BridgedNativeWidgetImpl::ShowAsModalSheet() {
        modalDelegate:window_
       didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
          contextInfo:nullptr];
-}
-
-NSMutableDictionary* BridgedNativeWidgetImpl::GetWindowProperties() const {
-  NSMutableDictionary* properties = objc_getAssociatedObject(
-      window_, &kWindowPropertiesKey);
-  if (!properties) {
-    properties = [NSMutableDictionary dictionary];
-    objc_setAssociatedObject(window_, &kWindowPropertiesKey,
-                             properties, OBJC_ASSOCIATION_RETAIN);
-  }
-  return properties;
 }
 
 }  // namespace views

@@ -298,6 +298,60 @@ gfx::Rect BridgedNativeWidgetHostImpl::GetRestoredBounds() const {
   return window_bounds_in_screen_;
 }
 
+void BridgedNativeWidgetHostImpl::SetNativeWindowProperty(const char* name,
+                                                          void* value) {
+  if (value)
+    native_window_properties_[name] = value;
+  else
+    native_window_properties_.erase(name);
+}
+
+void* BridgedNativeWidgetHostImpl::GetNativeWindowProperty(
+    const char* name) const {
+  auto found = native_window_properties_.find(name);
+  if (found == native_window_properties_.end())
+    return nullptr;
+  return found->second;
+}
+
+void BridgedNativeWidgetHostImpl::SetAssociationForView(const View* view,
+                                                        NSView* native_view) {
+  // TODO(ccameron): For the case of out-of-process NSWindows, it will be
+  // necessary to:
+  // - migrate |native_view| to the new process (for web contents).
+  // - use a dummy parent window if |native_view| is perforce in this process.
+  if (bridge_impl_)
+    [bridge_impl_->ns_view() addSubview:native_view];
+
+  DCHECK_EQ(0u, associated_views_.count(view));
+  associated_views_[view] = native_view;
+  native_widget_mac_->GetWidget()->ReorderNativeViews();
+}
+
+void BridgedNativeWidgetHostImpl::ClearAssociationForView(const View* view) {
+  auto it = associated_views_.find(view);
+  DCHECK(it != associated_views_.end());
+  associated_views_.erase(it);
+}
+
+void BridgedNativeWidgetHostImpl::ReorderChildViews() {
+  std::map<NSView*, int> rank;
+  Widget* widget = native_widget_mac_->GetWidget();
+  RankNSViewsRecursive(widget->GetRootView(), &rank);
+  if (bridge_impl_)
+    bridge_impl_->SortSubviews(std::move(rank));
+}
+
+void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
+    View* view,
+    std::map<NSView*, int>* rank) const {
+  auto it = associated_views_.find(view);
+  if (it != associated_views_.end())
+    rank->emplace(it->second, rank->size());
+  for (int i = 0; i < view->child_count(); ++i)
+    RankNSViewsRecursive(view->child_at(i), rank);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, views::BridgedNativeWidgetHostHelper:
 

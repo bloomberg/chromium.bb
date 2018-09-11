@@ -129,6 +129,17 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // fullscreen or transitioning between fullscreen states.
   gfx::Rect GetRestoredBounds() const;
 
+  // Properties set and queried by views. Not actually native.
+  void SetNativeWindowProperty(const char* name, void* value);
+  void* GetNativeWindowProperty(const char* name) const;
+
+  // Updates |associated_views_| on NativeViewHost::Attach()/Detach().
+  void SetAssociationForView(const views::View* view, NSView* native_view);
+  void ClearAssociationForView(const views::View* view);
+
+  // Sorts child NSViews according to NativeViewHosts order in views hierarchy.
+  void ReorderChildViews();
+
   bool IsVisible() const { return is_visible_; }
   bool IsMiniaturized() const { return is_miniaturized_; }
   bool IsWindowKey() const { return is_window_key_; }
@@ -138,6 +149,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   gfx::Vector2d GetBoundsOffsetForParent() const;
   void UpdateCompositorProperties();
   void DestroyCompositor();
+  void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
 
   // BridgedNativeWidgetHostHelper:
   NSView* GetNativeViewAccessible() override;
@@ -273,6 +285,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   gfx::Rect window_bounds_before_fullscreen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;
+
+  // Properties used by Set/GetNativeWindowProperty.
+  std::map<std::string, void*> native_window_properties_;
+
+  // Contains NativeViewHost->gfx::NativeView associations.
+  std::map<const views::View*, NSView*> associated_views_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetHostImpl);
 };
