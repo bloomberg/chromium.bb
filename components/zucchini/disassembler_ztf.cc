@@ -7,11 +7,13 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 #include <numeric>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/zucchini/algorithm.h"
 #include "components/zucchini/buffer_source.h"
 #include "components/zucchini/buffer_view.h"
@@ -384,6 +386,8 @@ bool ReadZtfHeader(ConstBufferView image) {
   // Reject empty images and "ZTxtxTZ\n" (missing 't').
   if (source.size() < kTotalMagicSize)
     return false;
+  if (source.size() > std::numeric_limits<offset_t>::max())
+    return false;
   return source.CheckNextBytes({'Z', 'T', 'x', 't'});
 }
 
@@ -405,7 +409,7 @@ bool ZtfTranslator::Init(ConstBufferView image) {
       // sentinel.
       if (line_starts_.size() >= ztf::kMaxDimValue)
         return false;
-      line_starts_.push_back(i + 1);
+      line_starts_.push_back(base::checked_cast<offset_t>(i + 1));
       // Check that the line length is reachable from an absolute reference.
       if (line_starts_.back() - *std::next(line_starts_.rbegin()) >=
           ztf::kMaxDimValue) {
