@@ -65,6 +65,9 @@ class StartupTabProvider {
 class StartupTabProviderImpl : public StartupTabProvider {
  public:
   struct StandardOnboardingTabsParams {
+    StandardOnboardingTabsParams();
+    ~StandardOnboardingTabsParams();
+
     bool is_first_run = false;
     bool has_seen_welcome_page = false;
     bool is_signin_allowed = false;
@@ -75,6 +78,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     bool has_seen_apps_promo = false;
     bool is_apps_promo_allowed = false;
+    bool has_seen_email_promo = false;
+    bool is_email_promo_allowed = false;
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   };
 
@@ -126,8 +131,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
 #if defined(GOOGLE_CHROME_BUILD)
   // Returns true if showing one of the new user experience experiments is
   // permissible.
-  static bool ShouldShowNewUserExperience(bool is_apps_promo_allowed,
-                                          bool has_seen_apps_promo);
+  static bool ShouldShowNewUserExperience(bool is_promo_allowed,
+                                          bool has_seen_promo);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 

@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://welcome/email/nux_email_proxy.html">
@@ -11,7 +13,7 @@
   <template>
     <style include="paper-button-style">
       :host {
-        display: initial;
+        display: block;
         white-space: nowrap;
       }
 
@@ -34,7 +36,7 @@
         outline: 0;
       }
 
-      .option:not(:first-child) {
+      .option:not(:first-of-type) {
         margin-inline-start: 24px;
       }
 
@@ -51,11 +53,12 @@
       }
 
       .option .email-icon {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 40px;
         margin: 0;
         margin-bottom: 4px;
-         /* TODO(scottchen): Replace below with logo once available. */
-        background: red;
-        height: 40px;
         width: 40px;
       }
 
@@ -92,6 +95,36 @@
         margin-top: 64px;
         justify-content: space-between;
       }
+
+      .gmail {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/gmail_1x.png) 1x,
+            url(chrome://welcome/email/gmail_2x.png) 2x);
+      }
+
+      .yahoo {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/yahoo_1x.png) 1x,
+            url(chrome://welcome/email/yahoo_2x.png) 2x);
+      }
+
+      .aol {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/aol_1x.png) 1x,
+            url(chrome://welcome/email/aol_2x.png) 2x);
+      }
+
+      .icloud {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/icloud_1x.png) 1x,
+            url(chrome://welcome/email/icloud_2x.png) 2x);
+      }
+
+      .outlook {
+        background-image: -webkit-image-set(
+            url(chrome://welcome/email/outlook_1x.png) 1x,
+            url(chrome://welcome/email/outlook_2x.png) 2x);
+      }
     </style>
 
     <template is="dom-repeat" items="[[emailList]]">
@@ -106,12 +139,14 @@
 
     <div class="button-bar">
       <paper-button on-click="onNoThanksClicked_">
-        TODO_NO_THANKS
+        $i18n{noThanks}
       </paper-button>
-      <paper-button class="action-button" on-click="onGetStartedClicked_"
-          disabled="[[!selectedEmailProvider_]]">
-        TODO_GET_STARTED
-      </paper-button>
+      <div on-click="onActionButtonClicked_">
+        <paper-button class="action-button" on-click="onGetStartedClicked_"
+            disabled="[[!selectedEmailProvider_]]">
+          $i18n{getStarted}
+        </paper-button>
+      </div>
     </div>
   </template>
   <script src="email_chooser.js"></script>

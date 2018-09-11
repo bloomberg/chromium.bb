@@ -142,6 +142,10 @@
 #include "chrome/browser/profiles/profile_statistics_factory.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 using base::UserMetricsAction;
 using content::BrowserThread;
 
@@ -1085,7 +1089,13 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->IsNewProfile() || first_run::IsChromeFirstRun()) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage, false);
+    // Enterprise users should not be included in any NUX flow.
+    if (!base::win::IsEnterpriseManaged()) {
+      profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage,
+                                      false);
+      profile->GetPrefs()->SetBoolean(prefs::kHasSeenEmailPromoPage, false);
+      profile->GetPrefs()->SetBoolean(prefs::kOnboardDuringNUX, true);
+    }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   }
 #endif  // !defined(OS_ANDROID)

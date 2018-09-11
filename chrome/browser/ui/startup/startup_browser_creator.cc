@@ -469,7 +469,15 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(scottchen): To make this testable early by trybots, instead of hiding
+  // behind GOOGLE_CHROME_BUILD, use a function that returns true for official
+  // builds and conditionally returns true based on a command line switch to
+  // be set by tests.
   registry->RegisterBooleanPref(prefs::kHasSeenGoogleAppsPromoPage, true);
+  registry->RegisterBooleanPref(prefs::kHasSeenEmailPromoPage, true);
+  // This  will be set to true for newly created profiles, and is used to
+  // indicate which users went through FRE after NUX is enabled.
+  registry->RegisterBooleanPref(prefs::kOnboardDuringNUX, false);
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 }
 

@@ -275,7 +275,8 @@
       "chrome://bookmarks/*",
       "chrome://extensions/*",
       "chrome://settings/*",
-      "chrome://sync-confirmation/*"
+      "chrome://sync-confirmation/*",
+      "chrome://welcome/*"
     ]
   }],
   "metricsPrivate.getIsCrashReportingEnabled": {

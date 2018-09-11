@@ -19,44 +19,20 @@ nux_email.EmailProviderModel;
 
 Polymer({
   is: 'email-chooser',
-  properties: {
-    // TODO(scottchen): get from C++
-    /** @private */
-    bookmarkBarWasHidden_: Boolean,
 
-    emailList: {
-      type: Array,
-      // TODO(scottchen): get from loadTimeData
-      value: function() {
-        return [
-          {
-            name: 'Gmail',
-            icon: 'gmail',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'YouTube',
-            icon: 'youtube',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'Maps',
-            icon: 'maps',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'Translate',
-            icon: 'translate',
-            url: 'https://gmail.com',
-          },
-          {
-            name: 'News',
-            icon: 'news',
-            url: 'https://gmail.com',
-          },
-        ];
-      },
+  behaviors: [I18nBehavior],
+
+  properties: {
+    emailList: Array,
+
+    /** @private */
+    bookmarkBarWasShown_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('bookmark_bar_shown'),
     },
+
+    /** @private */
+    finalized_: Boolean,
 
     /** @private {nux_email.EmailProviderModel} */
     selectedEmailProvider_: {
@@ -69,10 +45,31 @@ Polymer({
   /** @private {NuxEmailProxy} */
   browserProxy_: null,
 
+  /** @override */
+  attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+  },
+
+  /** @override */
   ready: function() {
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
+    this.browserProxy_.recordPageInitialized();
+
+    this.emailList = this.browserProxy_.getEmailList();
+
     window.addEventListener('beforeunload', () => {
-      this.revertBookmark_();
+      // Only need to clean up if user didn't interact with the buttons.
+      if (this.finalized_)
+        return;
+
+      if (this.selectedEmailProvider_) {
+        this.browserProxy_.recordProviderSelected(
+            this.selectedEmailProvider_.id);
+      }
+
+      this.browserProxy_.recordFinalize();
     });
   },
 
@@ -86,6 +83,8 @@ Polymer({
       this.selectedEmailProvider_ = null;
     else
       this.selectedEmailProvider_ = e.model.item;
+
+    this.browserProxy_.recordClickedOption();
   },
 
   /**
@@ -119,9 +118,6 @@ Polymer({
 
     if (emailProvider && emailProvider.bookmarkId)
       this.browserProxy_.removeBookmark(emailProvider.bookmarkId);
-
-    // TODO: also hide bookmark bar if this.selectedEmailProvider is now null &&
-    // the bookmarkBarWasHidden_ == true;
   },
 
   /**
@@ -130,6 +126,9 @@ Polymer({
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {
+    if (!this.browserProxy_)
+      return;
+
     if (prevEmail) {
       // If it was previously selected, it must've been assigned an id.
       assert(prevEmail.bookmarkId);
@@ -137,21 +136,50 @@ Polymer({
     }
 
     if (newEmail) {
+      this.browserProxy_.toggleBookmarkBar(true);
       this.browserProxy_.addBookmark(
-          {title: newEmail.name, url: newEmail.url, parentId: '1'}, results => {
+          {
+            title: newEmail.name,
+            url: newEmail.url,
+            parentId: '1',
+          },
+          newEmail.id, results => {
             this.selectedEmailProvider_.bookmarkId = results.id;
           });
+    } else {
+      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+    }
+
+    // Announcements are mutually exclusive, so keeping separate.
+    if (prevEmail && newEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkReplaced')});
+    } else if (prevEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkRemoved')});
+    } else if (newEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkAdded')});
     }
   },
 
   /** @private */
   onNoThanksClicked_: function() {
+    this.finalized_ = true;
     this.revertBookmark_();
+    this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
+    this.browserProxy_.recordNoThanks();
     window.location.replace('chrome://newtab');
   },
 
   /** @private */
   onGetStartedClicked_: function() {
+    this.finalized_ = true;
+    this.browserProxy_.recordProviderSelected(this.selectedEmailProvider_.id);
+    this.browserProxy_.recordGetStarted();
     window.location.replace(this.selectedEmailProvider_.url);
+  },
+
+  /** @private */
+  onActionButtonClicked_: function() {
+    if (this.$$('.action-button').disabled)
+      this.browserProxy_.recordClickedDisabledButton();
   },
 });

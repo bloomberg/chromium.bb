@@ -1297,9 +1297,16 @@ const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
 
 #if defined(GOOGLE_CHROME_BUILD)
 // Whether or not this profile has been shown the new user experience promo
-// page.
+// page for google apps.
 const char kHasSeenGoogleAppsPromoPage[] =
     "browser.has_seen_google_apps_promo_page";
+// Whether or not this profile has been shown the new user experience promo
+// page for adding email provider to bookmark.
+const char kHasSeenEmailPromoPage[] = "browser.has_seen_email_promo_page";
+// Whether or not this user went through the first-run experience after NUX
+// launched. This is necessary for determining which users to keep "tagging"
+// with the NUX finch experiment group, and allows a more accurate analysis.
+const char kOnboardDuringNUX[] = "browser.onboard_during_nux";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 

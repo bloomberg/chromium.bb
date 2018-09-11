@@ -122,9 +122,6 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
   // Enable bookmark bar.
   prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
-  // Wait to show bookmark bar.
-  // TODO(hcarmona): Any advice here would be helpful.
-
   // Show bookmark bubble.
   ShowPromoDelegate::CreatePromoDelegate(
       IDS_NUX_GOOGLE_APPS_DESCRIPTION_PROMO_BUBBLE)

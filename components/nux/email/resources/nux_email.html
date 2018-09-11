@@ -2,10 +2,11 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
-  <title>TODO_TITLE</title>
+  <title>$i18n{headerText}</title>
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="strings.js"></script>
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://welcome/email/email_chooser.html">
-  <link rel="import" href="chrome://welcome/email/nux_email_proxy.html">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <style>
     body {
@@ -19,21 +20,24 @@
         :host {
           align-items: center;
           display: flex;
-          height: 100vh;
-          justify-content: space-around;
+          height: fit-content;
+          margin: auto;
+          min-height: 100vh;
+          width: fit-content;
         }
 
         .email-ask {
           text-align: center;
-          width: 800px;
         }
 
         .email-logo {
-          background: red; /* TODO(scottchen): replace with logo. */
-          height: 36px;
+          content: -webkit-image-set(
+            url('chrome://welcome/logo.png') 1x,
+            url('chrome://welcome/logo2x.png') 2x);
+          height: 48px;
           margin: auto;
           margin-bottom: 16px;
-          width: 36px;
+          width: 48px;
         }
 
         h1 {
@@ -59,9 +63,9 @@
         }
       </style>
       <div class="email-ask">
-        <div class="email-logo"></div>
-        <h1>TODO_HEADER</h1>
-        <h2>TODO_SUBHEADER</h2>
+        <div class="email-logo" alt=""></div>
+        <h1>$i18n{welcomeTitle}</h1>
+        <h2>$i18n{emailPrompt}</h2>
         <email-chooser id="emailChooser"></email-chooser>
       </div>
     </template>

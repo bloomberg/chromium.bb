@@ -35377,6 +35377,31 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Null"/>
 </enum>
 
+<enum name="NuxEmailProvidersInteractions">
+  <summary>
+    All possible user journeys when interacting with the NUX email provider
+    page.
+  </summary>
+  <int value="0" label="Page Shown"/>
+  <int value="1" label="Did nothing and navigated away"/>
+  <int value="2" label="Did nothing and clicked skip"/>
+  <int value="3" label="Chose an option then navigated away"/>
+  <int value="4" label="Chose an option then chose skip"/>
+  <int value="5" label="Chose an option then chose next"/>
+  <int value="6" label="Clicked disabled next button then navigated away"/>
+  <int value="7" label="Clicked disabled next button then chose skip"/>
+  <int value="8" label="Clicked disabled next button then chose next"/>
+</enum>
+
+<enum name="NuxEmailProvidersSelections">
+  <summary>Email providers that can be added by the NUX.</summary>
+  <int value="0" label="Gmail"/>
+  <int value="1" label="Yahoo"/>
+  <int value="2" label="Outlook"/>
+  <int value="3" label="AOL"/>
+  <int value="4" label="iCloud"/>
+</enum>
+
 <enum name="NuxGoogleAppsInteractions">
   <summary>
     The button that a user pressed when interacting with the Google Apps NUX.
