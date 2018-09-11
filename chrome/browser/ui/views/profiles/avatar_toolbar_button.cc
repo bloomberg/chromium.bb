@@ -34,6 +34,20 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button_border.h"
 
+namespace {
+
+ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
+  ProfileAttributesEntry* entry;
+  if (!g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    return nullptr;
+  }
+  return entry;
+}
+
+}  // namespace
+
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
     : ToolbarButton(nullptr),
       browser_(browser),
@@ -193,7 +207,14 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
     return false;
 #endif  // !defined(OS_CHROMEOS)
-  return g_browser_process->profile_manager()
+
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
+  if (!entry) {
+    // This can happen if the user deletes the current profile.
+    return true;
+  }
+  return entry->IsUsingDefaultAvatar() &&
+         g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
          !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
@@ -253,10 +274,8 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
 }
 
 gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()
-           ->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
+  if (!entry) {
     // This can happen if the user deletes the current profile.
     return gfx::Image();
   }
