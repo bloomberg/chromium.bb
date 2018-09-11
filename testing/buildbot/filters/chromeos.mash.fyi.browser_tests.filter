@@ -183,7 +183,7 @@
 
 # content::WaitForChildFrameSurfaceReady hangs.
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
--WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
+-ChromeMimeHandlerViewBrowserPluginTest.TouchFocusesBrowserPluginInEmbedder
 
 # Function under test uses ash::Shell for window list.
 -SortWindowsByZIndexBrowserTest.*
