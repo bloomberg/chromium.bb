@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/redundant_credentials_cleaner.h"
+#include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
 
 #include <set>
 #include <string>
@@ -15,16 +15,16 @@
 
 namespace password_manager {
 
-RedundantCredentialsCleaner::RedundantCredentialsCleaner(
+BlacklistedDuplicatesCleaner::BlacklistedDuplicatesCleaner(
     scoped_refptr<PasswordStore> store,
     PrefService* prefs)
     : store_(std::move(store)), prefs_(prefs) {
   store_->GetBlacklistLogins(this);
 }
 
-RedundantCredentialsCleaner::~RedundantCredentialsCleaner() = default;
+BlacklistedDuplicatesCleaner::~BlacklistedDuplicatesCleaner() = default;
 
-void RedundantCredentialsCleaner::OnGetPasswordStoreResults(
+void BlacklistedDuplicatesCleaner::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   std::set<std::string> signon_realms;
   for (const auto& form : results) {
