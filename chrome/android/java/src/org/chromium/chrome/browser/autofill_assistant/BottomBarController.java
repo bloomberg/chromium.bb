@@ -16,6 +16,8 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 /** Controller to interact with the bottom bar. */
@@ -40,6 +42,32 @@ class BottomBarController {
          * @param scriptPath The path for the selected script.
          */
         void onScriptSelected(String scriptPath);
+    }
+
+    /**
+     * Java side equivalent of autofill_assistant::ScriptHandle.
+     */
+    protected static class ScriptHandle {
+        /** The display name of this script. */
+        private final String mName;
+        /** The script path. */
+        private final String mPath;
+
+        /** Constructor. */
+        public ScriptHandle(String name, String path) {
+            mName = name;
+            mPath = path;
+        }
+
+        /** Returns the display name. */
+        public String getName() {
+            return mName;
+        }
+
+        /** Returns the script path. */
+        public String getPath() {
+            return mPath;
+        }
     }
 
     /**
@@ -76,14 +104,15 @@ class BottomBarController {
      *
      * @param scripts List of scripts to show.
      */
-    public void updateScripts(String[] scripts) {
+    public void updateScripts(List<ScriptHandle> scriptHandles) {
         mScriptsViewContainer.removeAllViews();
-        if (scripts.length == 0) {
+        if (scriptHandles.isEmpty()) {
             return;
         }
-        for (String script : scripts) {
-            TextView scriptView = createScriptView(script);
-            scriptView.setOnClickListener((unusedView) -> { mClient.onScriptSelected(script); });
+        for (ScriptHandle scriptHandle : scriptHandles) {
+            TextView scriptView = createScriptView(scriptHandle.getName());
+            scriptView.setOnClickListener(
+                    (unusedView) -> { mClient.onScriptSelected(scriptHandle.getPath()); });
             mScriptsViewContainer.addView(scriptView);
         }
     }
