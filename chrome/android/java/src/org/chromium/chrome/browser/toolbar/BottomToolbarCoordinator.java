@@ -121,12 +121,13 @@ public class BottomToolbarCoordinator {
             OnClickListener tabSwitcherListener, AppMenuButtonHelper menuButtonHelper,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
             WindowAndroid windowAndroid, ToolbarButtonData firstSlotTabSwitcherButtonData,
-            ToolbarButtonData secondSlotTabSwitcherButtonData) {
+            ToolbarButtonData secondSlotTabSwitcherButtonData, boolean isIncognito) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
         mMediator.setWindowAndroid(windowAndroid);
+        setIncognito(isIncognito);
         mMediator.setTabSwitcherButtonData(
                 firstSlotTabSwitcherButtonData, secondSlotTabSwitcherButtonData);
 

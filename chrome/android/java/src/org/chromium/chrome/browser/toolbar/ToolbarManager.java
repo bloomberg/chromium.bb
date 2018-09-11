@@ -885,7 +885,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                         mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
                         mActivity.getWindowAndroid(), firstSlotTabSwitcherButtonData,
                         createNewTabButton(
-                                wrapBottomToolbarClickListenerForIPH(newTabClickHandler)));
+                                wrapBottomToolbarClickListenerForIPH(newTabClickHandler)),
+                        tabModelSelector.getCurrentModel().isIncognito());
 
                 Tab currentTab = tabModelSelector.getCurrentTab();
                 maybeShowDuetHelpBubble(currentTab);
