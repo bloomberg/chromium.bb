@@ -79,6 +79,7 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # Tests require multiple sessions, not supported on Android'
     'CorrectEventFiringTest.testShouldFireFocusEventInNonTopmostWindow',
     'PerformanceLoggingTest.testLogsSingleHttpCommand',
+    'ProxySettingTest.*',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
     'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
