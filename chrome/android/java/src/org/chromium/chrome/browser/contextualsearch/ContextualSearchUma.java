@@ -1489,6 +1489,37 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs the previous enabled-state of this user before the feature was turned full-on for
+     * Unified Consent (when integration is enabled).
+     * @param wasPreviouslyUndecided Whether the user was previously undecided.
+     */
+    static void logUnifiedConsentPreviousEnabledState(boolean wasPreviouslyUndecided) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.UnifiedConsent.PreviouslyUndecided",
+                wasPreviouslyUndecided);
+    }
+
+    /**
+     * Logs whether a request will be throttled for Unified Consent integration, for all requests
+     * regardless of whether the integration feature is enabled.  Logged multiple times per request.
+     * @param isRequestThrottled Whether the current request is being throttled.
+     */
+    static void logUnifiedConsentThrottledRequests(boolean isRequestThrottled) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.UnifiedConsent.ThrottledRequests", isRequestThrottled);
+    }
+
+    /**
+     * Logs whether this user was eligible for throttling of requests when Unified Consent
+     * integration is enabled and throttling is in effect.
+     * @param isThrottleEligible Whether this user is eligible to be throttled.
+     */
+    static void logUnifiedConsentThrottleEligible(boolean isThrottleEligible) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.UnifiedConsent.ThrottleEligible", isThrottleEligible);
+    }
+
+    /**
      * Gets the state-change code for the given parameters by doing a lookup in the given map.
      * @param state The panel state.
      * @param reason The reason the state changed.
