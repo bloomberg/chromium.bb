@@ -308,6 +308,13 @@ struct CONTENT_EXPORT WebPreferences {
   // See https://github.com/dtapuska/html-translate
   bool translate_service_available;
 
+  // A value other than net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN implies that the
+  // network quality estimate related Web APIs are in the holdback mode. When
+  // the holdback is enabled, the related Web APIs return network quality
+  // estimate corresponding to |network_quality_estimator_web_holdback|
+  // regardless of the actual quality.
+  net::EffectiveConnectionType network_quality_estimator_web_holdback;
+
   // Specifies how close a lazily loaded iframe or image should be from the
   // viewport before it should start being loaded in, depending on the effective
   // connection type of the current network. Blink will use the default distance
