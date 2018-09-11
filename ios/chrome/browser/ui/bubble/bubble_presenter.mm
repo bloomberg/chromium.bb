@@ -170,8 +170,10 @@ const CGFloat kBubblePresentationDelay = 1;
     [self presentNewTabTipBubble];
   if (!self.incognitoTabTipBubblePresenter.isUserEngaged)
     [self presentNewIncognitoTabTipBubble];
-  if (!self.bottomToolbarTipBubblePresenter.isUserEngaged)
-    [self presentBottomToolbarTipBubble];
+
+  // The bottom toolbar doesn't use the isUserEngaged, so don't check if the
+  // user is engaged here.
+  [self presentBottomToolbarTipBubble];
 }
 
 - (void)presentLongPressBubble {
