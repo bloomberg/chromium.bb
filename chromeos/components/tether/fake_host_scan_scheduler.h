@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H
-#define CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H
+#ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H_
+#define CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "chromeos/components/tether/host_scan_scheduler.h"
@@ -18,13 +18,13 @@ class FakeHostScanScheduler : public HostScanScheduler {
   FakeHostScanScheduler();
   ~FakeHostScanScheduler() override;
 
-  int num_scheduled_scans() { return num_scheduled_scans_; }
+  int num_attempted_scans() { return num_attempted_scans_; }
 
   // HostScanScheduler:
-  void ScheduleScan() override;
+  void AttemptScanIfOffline() override;
 
  private:
-  int num_scheduled_scans_ = 0;
+  int num_attempted_scans_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostScanScheduler);
 };
@@ -33,4 +33,4 @@ class FakeHostScanScheduler : public HostScanScheduler {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H
+#endif  // CHROMEOS_COMPONENTS_TETHER_FAKE_HOST_SCAN_SCHEDULER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
-#define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
+#ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H_
+#define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H_
 
 #include "base/macros.h"
 
@@ -17,9 +17,10 @@ class HostScanScheduler {
   HostScanScheduler() {}
   virtual ~HostScanScheduler() {}
 
-  // Schedules a scan to run immediately. If a scan is already active, this
-  // function is a no-op.
-  virtual void ScheduleScan() = 0;
+  // Attempts to perform a Tether host scan. If the device is already connected
+  // to the internet, a scan will not be performed. If a scan is already active,
+  // this function is a no-op.
+  virtual void AttemptScanIfOffline() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostScanScheduler);
@@ -29,4 +30,4 @@ class HostScanScheduler {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
+#endif  // CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H_

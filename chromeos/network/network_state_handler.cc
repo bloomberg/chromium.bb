@@ -977,19 +977,16 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
 
 void NetworkStateHandler::RequestScan(const NetworkTypePattern& type) {
   NET_LOG_USER("RequestScan", type.ToDebugString());
-  bool did_scan = false;
+
   if (type.MatchesType(shill::kTypeWifi)) {
     shill_property_handler_->RequestScanByType(shill::kTypeWifi);
-    did_scan = true;
   }
   if (type.Equals(NetworkTypePattern::Primitive(shill::kTypeCellular))) {
     // Only request a Cellular scan if Cellular is requested explicitly.
     shill_property_handler_->RequestScanByType(shill::kTypeCellular);
-    did_scan = true;
   }
-  if (!did_scan)
-    NET_LOG(ERROR) << "RequestScan: Invalid type: " << type.ToDebugString();
-  NotifyScanRequested();
+
+  NotifyScanRequested(type);
 }
 
 void NetworkStateHandler::RequestUpdateForNetwork(
@@ -1828,11 +1825,11 @@ void NetworkStateHandler::NotifyDevicePropertiesUpdated(
     observer.DevicePropertiesUpdated(device);
 }
 
-void NetworkStateHandler::NotifyScanRequested() {
+void NetworkStateHandler::NotifyScanRequested(const NetworkTypePattern& type) {
   SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_EVENT("NOTIFY:ScanRequested", "");
   for (auto& observer : observers_)
-    observer.ScanRequested();
+    observer.ScanRequested(type);
 }
 
 void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {

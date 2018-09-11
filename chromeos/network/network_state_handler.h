@@ -523,7 +523,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void NotifyDevicePropertiesUpdated(const DeviceState* device);
 
   // Called to ask observers to scan for networks.
-  void NotifyScanRequested();
+  void NotifyScanRequested(const NetworkTypePattern& type);
 
   // Called whenever Device.Scanning state transitions to false.
   void NotifyScanCompleted(const DeviceState* device);

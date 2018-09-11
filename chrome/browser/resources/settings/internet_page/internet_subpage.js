@@ -211,9 +211,9 @@ Polymer({
     if (this.scanIntervalId_ != null)
       return;
     const INTERVAL_MS = 10 * 1000;
-    this.networkingPrivate.requestNetworkScan();
+    this.networkingPrivate.requestNetworkScan(this.deviceState.Type);
     this.scanIntervalId_ = window.setInterval(() => {
-      this.networkingPrivate.requestNetworkScan();
+      this.networkingPrivate.requestNetworkScan(this.deviceState.Type);
     }, INTERVAL_MS);
   },
 
