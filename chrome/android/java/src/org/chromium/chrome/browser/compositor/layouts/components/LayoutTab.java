@@ -125,11 +125,6 @@ public class LayoutTab implements ChromeAnimation.Animatable {
      */
     private boolean mInitFromHostCalled;
 
-    /** The animation set specific to this LayoutTab. */
-    private ChromeAnimation<ChromeAnimation.Animatable> mCurrentAnimations;
-    private int mInitialThemeColor;
-    private int mFinalThemeColor;
-
     // All the members bellow are initialized from the delayed initialization.
     //
     // Begin section --------------
@@ -239,15 +234,6 @@ public class LayoutTab implements ChromeAnimation.Animatable {
         mInitFromHostCalled = true;
 
         return needsUpdate;
-    }
-
-    /**
-     * Update any animation controlled by this object.
-     * @param time The current app time in ms.
-     * @return Whether the animations controlled by this LayoutTab are finished.
-     */
-    public boolean onUpdateAnimation(long time) {
-        return mCurrentAnimations == null ? true : mCurrentAnimations.update(time);
     }
 
     /**
@@ -796,7 +782,6 @@ public class LayoutTab implements ChromeAnimation.Animatable {
      * @param visible True if the {@link LayoutTab} is visible and need to be drawn.
      */
     public void setVisible(boolean visible) {
-        if (!visible && mCurrentAnimations != null) mCurrentAnimations.updateAndFinish();
         mVisible = visible;
     }
 
@@ -995,9 +980,6 @@ public class LayoutTab implements ChromeAnimation.Animatable {
 
     @Override
     public void onPropertyAnimationFinished(@Property int prop) {
-        if (mCurrentAnimations != null && mCurrentAnimations.finished()) {
-            mCurrentAnimations = null;
-        }
     }
 
     public static final FloatProperty<LayoutTab> ALPHA = new FloatProperty<LayoutTab>("ALPHA") {
