@@ -64,7 +64,8 @@ ImageFetchTabHelper::ImageFetchTabHelper(web::WebState* web_state)
       base::BindRepeating(
           [](base::WeakPtr<ImageFetchTabHelper> ptr,
              const base::DictionaryValue& message, const GURL& page_url,
-             bool has_user_gesture, bool form_in_main_frame) {
+             bool has_user_gesture, bool form_in_main_frame,
+             web::WebFrame* sender_frame) {
             return ptr ? ptr->OnJsMessage(message) : true;
           },
           weak_ptr_factory_.GetWeakPtr()),

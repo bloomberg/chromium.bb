@@ -5,7 +5,7 @@
 #include "ios/web/web_state/web_frame_impl.h"
 
 #include "base/ios/ios_util.h"
-#import "base/test/ios/wait_util.mm"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -229,4 +229,75 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
   EXPECT_NSEQ(@1, ExecuteJavaScript(@"sensitiveValue"));
 }
 
-}  // namespace web
+// Tests that the main WebFrame is passed to the callback when sending a
+// JS -> native message.
+TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // Frame messaging is not supported on iOS 10.
+    return;
+  }
+  ASSERT_TRUE(LoadHtml("<p>"));
+  __block bool command_received = false;
+  // The callback doesn't care about any of the parameters not related to
+  // frames.
+  auto callback = base::BindRepeating(
+      ^bool(const base::DictionaryValue& /* json */,
+            const GURL& /* origin_url */, bool /* user_is_interacting */,
+            bool is_main_frame, web::WebFrame* sender_frame) {
+        command_received = true;
+        EXPECT_TRUE(is_main_frame);
+        EXPECT_EQ(GetMainWebFrameForWebState(web_state()), sender_frame);
+        return true;
+      });
+
+  web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
+  __block web::WebFramesManagerImpl* manager =
+      web::WebFramesManagerImpl::FromWebState(web_state());
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return manager->GetAllWebFrames().size() == 1;
+  }));
+  ExecuteJavaScript(
+      @"__gCrWeb.message.invokeOnHost({'command':"
+      @"'senderFrameTestCommand.mainframe'});");
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return command_received;
+  }));
+  web_state()->RemoveScriptCommandCallback("senderFrameTestCommand");
+}
+
+// Tests that an iframe WebFrame is passed to the callback when sending a
+// JS -> native message.
+TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // Frame messaging is not supported on iOS 10.
+    return;
+  }
+  ASSERT_TRUE(LoadHtml("<p><iframe>"));
+  __block bool command_received = false;
+  // The callback doesn't care about any of the parameters not related to
+  // frames.
+  auto callback = base::BindRepeating(
+      ^bool(const base::DictionaryValue& /* json */,
+            const GURL& /* origin_url */, bool /* user_is_interacting */,
+            bool is_main_frame, web::WebFrame* sender_frame) {
+        command_received = true;
+        EXPECT_FALSE(is_main_frame);
+        EXPECT_EQ(GetChildWebFrameForWebState(web_state()), sender_frame);
+        return true;
+      });
+
+  web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
+  __block web::WebFramesManagerImpl* manager =
+      web::WebFramesManagerImpl::FromWebState(web_state());
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return manager->GetAllWebFrames().size() == 2;
+  }));
+  ExecuteJavaScript(
+      @"window.frames[0].__gCrWeb.message.invokeOnHost({'command':'"
+      @"senderFrameTestCommand.iframe'});");
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return command_received;
+  }));
+  web_state()->RemoveScriptCommandCallback("senderFrameTestCommand");
+}
+}

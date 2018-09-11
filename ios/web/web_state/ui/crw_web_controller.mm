@@ -78,6 +78,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#import "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -639,7 +640,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
        userIsInteracting:(BOOL)userIsInteracting
                originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame;
+             isMainFrame:(BOOL)isMainFrame
+             senderFrame:(web::WebFrame*)senderFrame;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Returns a new script which wraps |script| with windowID check so |script| is
@@ -2343,7 +2345,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (BOOL)respondToMessage:(base::DictionaryValue*)message
        userIsInteracting:(BOOL)userIsInteracting
                originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame {
+             isMainFrame:(BOOL)isMainFrame
+             senderFrame:(web::WebFrame*)senderFrame {
   std::string command;
   if (!message->GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";
@@ -2352,8 +2355,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   SEL handler = [self selectorToHandleJavaScriptCommand:command];
   if (!handler) {
-    if (self.webStateImpl->OnScriptCommandReceived(
-            command, *message, originURL, userIsInteracting, isMainFrame)) {
+    if (self.webStateImpl->OnScriptCommandReceived(command, *message, originURL,
+                                                   userIsInteracting,
+                                                   isMainFrame, senderFrame)) {
       return YES;
     }
     // Message was either unexpected or not correctly handled.
@@ -2433,6 +2437,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // different origins.
     return NO;
   }
+  if (![scriptMessage.name isEqualToString:kScriptMessageName]) {
+    return NO;
+  }
 
   std::unique_ptr<base::Value> messageAsValue =
       web::ValueResultFromWKResult(scriptMessage.body);
@@ -2449,19 +2456,22 @@ registerLoadRequestForURL:(const GURL&)requestURL
                   << " != " << base::SysUTF8ToNSString(windowID);
     return NO;
   }
+  web::WebFrame* senderFrame = nullptr;
+  std::string frameID;
+  if (message->GetString("crwFrameId", &frameID)) {
+    web::WebFramesManagerImpl* framesManager =
+        web::WebFramesManagerImpl::FromWebState([self webState]);
+    senderFrame = framesManager->GetFrameWithId(frameID);
+  }
   base::DictionaryValue* command = nullptr;
   if (!message->GetDictionary("crwCommand", &command)) {
     return NO;
   }
-  if ([scriptMessage.name isEqualToString:kScriptMessageName]) {
-    return [self respondToMessage:command
-                userIsInteracting:[self userIsInteracting]
-                        originURL:net::GURLWithNSURL([_webView URL])
-                      isMainFrame:scriptMessage.frameInfo.mainFrame];
-  }
-
-  NOTREACHED();
-  return NO;
+  return [self respondToMessage:command
+              userIsInteracting:[self userIsInteracting]
+                      originURL:net::GURLWithNSURL([_webView URL])
+                    isMainFrame:scriptMessage.frameInfo.mainFrame
+                    senderFrame:senderFrame];
 }
 
 #pragma mark -
@@ -2470,6 +2480,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
   // Validate all expected message components because any frame could falsify
   // this message.
+  // TODO(crbug.com/881816): Create a WebFrame even if key is empty.
   if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
       ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]] ||
       ![message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] ||
@@ -2560,9 +2571,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
         DLOG(WARNING) << "JS message parameter not found: arguments";
         return NO;
       }
+      // WebFrame messaging is not supported in WebUI (as window.isSecureContext
+      // is false. Pass nullptr as sender_frame.
       _webStateImpl->OnScriptCommandReceived(
           messageContent, *message, currentURL, context[kUserIsInteractingKey],
-          [context[kIsMainFrame] boolValue]);
+          [context[kIsMainFrame] boolValue], nullptr);
       _webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
                                          *arguments);
       return YES;

@@ -202,7 +202,8 @@ bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
                                            const base::DictionaryValue& value,
                                            const GURL& url,
                                            bool user_is_interacting,
-                                           bool is_main_frame) {
+                                           bool is_main_frame,
+                                           web::WebFrame* sender_frame) {
   size_t dot_position = command.find_first_of('.');
   if (dot_position == 0 || dot_position == std::string::npos)
     return false;
@@ -212,7 +213,8 @@ bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
   if (it == script_command_callbacks_.end())
     return false;
 
-  return it->second.Run(value, url, user_is_interacting, is_main_frame);
+  return it->second.Run(value, url, user_is_interacting, is_main_frame,
+                        sender_frame);
 }
 
 void WebStateImpl::SetIsLoading(bool is_loading) {

@@ -128,7 +128,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     __weak PasswordControllerHelper* weakSelf = self;
     auto callback = base::BindRepeating(
         ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-              bool interacting, bool isMainFrame) {
+              bool interacting, bool isMainFrame, web::WebFrame* senderFrame) {
           if (!isMainFrame) {
             // Passwords is only supported on main frame.
             return false;

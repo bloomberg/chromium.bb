@@ -76,7 +76,8 @@ const char kScriptCommandPrefix[] = "webui";
     __weak CRWWebUIManager* weakSelf = self;
     _webState->AddScriptCommandCallback(
         base::BindRepeating(^bool(const base::DictionaryValue& message,
-                                  const GURL&, bool, bool isMainFrame) {
+                                  const GURL&, bool, bool isMainFrame,
+                                  web::WebFrame* senderFrame) {
           if (!isMainFrame) {
             // WebUI only supports main frame.
             return false;

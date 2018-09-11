@@ -74,7 +74,8 @@ bool LanguageDetectionController::OnTextCaptured(
     const base::DictionaryValue& command,
     const GURL& url,
     bool interacting,
-    bool is_main_frame) {
+    bool is_main_frame,
+    web::WebFrame* sender_frame) {
   if (!is_main_frame) {
     // Translate is only supported on main frame.
     return false;

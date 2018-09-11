@@ -98,7 +98,8 @@ class ImageFetchJsTest : public web::WebJsTest<web::WebTestWithWebState> {
   bool OnMessageFromJavaScript(const base::DictionaryValue& message,
                                const GURL& page_url,
                                bool has_user_gesture,
-                               bool form_in_main_frame) {
+                               bool form_in_main_frame,
+                               web::WebFrame* sender_frame) {
     message_received_ = true;
     message_ = message.Clone();
     return true;

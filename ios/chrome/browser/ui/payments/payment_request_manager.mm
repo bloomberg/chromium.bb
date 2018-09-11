@@ -327,7 +327,7 @@ struct PendingPaymentResponse {
     __weak PaymentRequestManager* weakSelf = self;
     auto callback = base::BindRepeating(
         ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-              bool interacting, bool isMainFrame) {
+              bool interacting, bool isMainFrame, web::WebFrame* senderFrame) {
           if (!isMainFrame) {
             // Payment request is only supported on main frame.
             return false;
