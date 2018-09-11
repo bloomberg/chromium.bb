@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 447 tests; 414 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 439 tests; 406 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface CSSStyleRule: original interface defined
@@ -411,14 +411,6 @@ PASS Stringification of matrix
 PASS CSSMatrixComponent interface: matrix must inherit property "matrix" with the proper type
 PASS CSSTransformComponent interface: matrix must inherit property "is2D" with the proper type
 PASS CSSTransformComponent interface: matrix must inherit property "toMatrix()" with the proper type
-PASS CSSPositionValue interface: existence and properties of interface object
-PASS CSSPositionValue interface object length
-PASS CSSPositionValue interface object name
-PASS CSSPositionValue interface: existence and properties of interface prototype object
-PASS CSSPositionValue interface: existence and properties of interface prototype object's "constructor" property
-PASS CSSPositionValue interface: existence and properties of interface prototype object's @@unscopables property
-PASS CSSPositionValue interface: attribute x
-PASS CSSPositionValue interface: attribute y
 PASS CSSImageValue interface: existence and properties of interface object
 PASS CSSImageValue interface object length
 PASS CSSImageValue interface object name
