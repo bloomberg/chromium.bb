@@ -951,10 +951,11 @@ void VolumeManager::OnArcPlayStoreEnabledChanged(bool enabled) {
                  Volume::CreateForMediaView(arc::kVideosRootDocumentId));
     DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                  Volume::CreateForMediaView(arc::kAudioRootDocumentId));
-    if (IsShowAndroidFilesEnabled())
+    if (IsShowAndroidFilesEnabled()) {
       DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                    Volume::CreateForAndroidFiles(
                        base::FilePath(util::kAndroidFilesPath)));
+    }
   } else {
     DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                    *Volume::CreateForMediaView(arc::kImagesRootDocumentId));

@@ -129,7 +129,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
 }
 
-std::string GetAndroidFilesMountPointName() {
+const std::string GetAndroidFilesMountPointName() {
   return kAndroidFilesMountPointName;
 }
 

@@ -301,12 +301,13 @@ testcase.toogleGoogleDocsDrive = function() {
       remoteCall.waitForElement(appId,
           '#gear-menu-drive-hosted-settings:not([disabled])').then(this.next);
     },
-    function(results) {
+    function(result) {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-menu-drive-hosted-settings'],
               this.next);
     },
     function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
           BASIC_DRIVE_ENTRY_SET), {ignoreFileSize: true,
           ignoreLastModifiedTime: true}).then(this.next);
@@ -369,7 +370,8 @@ testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = function() {
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
     // Wait for the gear menu to hide.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
     // Navigate to Recent.
@@ -379,7 +381,8 @@ testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = function() {
           this.next);
     },
     // Click the gear menu button.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
@@ -493,7 +496,8 @@ testcase.showPasteIntoCurrentFolder = function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
 
@@ -509,7 +513,8 @@ testcase.showPasteIntoCurrentFolder = function() {
     },
     // Wait for menu to appear.
     // The command is still shown.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall
           .waitForElement(
               appId,
@@ -522,7 +527,8 @@ testcase.showPasteIntoCurrentFolder = function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
 
@@ -532,7 +538,8 @@ testcase.showPasteIntoCurrentFolder = function() {
           'selectFile', appId, [ENTRIES.hello.nameText], this.next);
     },
     // Ctrl-C to copy the selected file
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall
           .fakeKeyDown(appId, '#file-list', 'c', 'U+0043', true, false, false)
           .then(this.next);
@@ -542,7 +549,8 @@ testcase.showPasteIntoCurrentFolder = function() {
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
     // The command appears enabled.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall
           .waitForElement(
               appId,
@@ -555,7 +563,8 @@ testcase.showPasteIntoCurrentFolder = function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
     function() {
@@ -589,7 +598,8 @@ testcase.showSelectAllInCurrentFolder = function() {
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
     // Wait for the gear menu to appear.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
           .then(this.next);
     },
@@ -609,7 +619,8 @@ testcase.showSelectAllInCurrentFolder = function() {
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
     // Wait for the gear menu to hide.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
     // Add a new file to Downloads.
@@ -644,7 +655,8 @@ testcase.showSelectAllInCurrentFolder = function() {
           'fakeMouseClick', appId, ['#gear-menu-select-all'], this.next);
     },
     // Check: the file-list should be selected.
-    function() {
+    function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#file-list li[selected]')
           .then(this.next);
     },
