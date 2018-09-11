@@ -277,6 +277,12 @@ else()
   # Add -Wundef only for C files to avoid massive gtest warning spam.
   add_c_flag_if_supported("-Wundef")
 
+  # Quiet gcc 6 vs 7 abi warnings:
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77728
+  if("${AOM_TARGET_CPU}" MATCHES "arm")
+    add_cxx_flag_if_supported("-Wno-psabi")
+  endif()
+
   if(ENABLE_WERROR)
     add_compiler_flag_if_supported("-Werror")
   endif()
