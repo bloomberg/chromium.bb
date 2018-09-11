@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
@@ -243,7 +244,7 @@ public class FindToolbar extends LinearLayout
                     if (mFindQuery.getText().length() > 0) {
                         mSearchKeyShouldTriggerSearch = true;
                     }
-                    mWindowAndroid.getKeyboardDelegate().hideKeyboard(mFindQuery);
+                    UiUtils.hideKeyboard(mFindQuery);
                 }
             }
         });
@@ -300,7 +301,7 @@ public class FindToolbar extends LinearLayout
                     mSearchKeyShouldTriggerSearch = false;
                     hideKeyboardAndStartFinding(true);
                 } else {
-                    mWindowAndroid.getKeyboardDelegate().hideKeyboard(mFindQuery);
+                    UiUtils.hideKeyboard(mFindQuery);
                     mFindInPageBridge.activateFindInPageResultForAccessibility();
                     mAccessibilityDidActivateResult = true;
                 }
@@ -347,7 +348,7 @@ public class FindToolbar extends LinearLayout
         final String findQuery = mFindQuery.getText().toString();
         if (findQuery.length() == 0) return;
 
-        mWindowAndroid.getKeyboardDelegate().hideKeyboard(mFindQuery);
+        UiUtils.hideKeyboard(mFindQuery);
         mFindInPageBridge.startFinding(findQuery, forward, false);
         mFindInPageBridge.activateFindInPageResultForAccessibility();
         mAccessibilityDidActivateResult = true;
@@ -634,7 +635,7 @@ public class FindToolbar extends LinearLayout
 
         mCurrentTab.removeObserver(mTabObserver);
 
-        mWindowAndroid.getKeyboardDelegate().hideKeyboard(mFindQuery);
+        UiUtils.hideKeyboard(mFindQuery);
         if (mFindQuery.getText().length() > 0) {
             clearResults();
             mFindInPageBridge.stopFinding(clearSelection);
@@ -784,6 +785,6 @@ public class FindToolbar extends LinearLayout
             mShowKeyboardOnceWindowIsFocused = true;
             return;
         }
-        mWindowAndroid.getKeyboardDelegate().showKeyboard(mFindQuery);
+        UiUtils.showKeyboard(mFindQuery);
     }
 }

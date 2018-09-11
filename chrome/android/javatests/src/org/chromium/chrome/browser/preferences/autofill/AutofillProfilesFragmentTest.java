@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.UiUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -270,7 +270,7 @@ public class AutofillProfilesFragmentTest {
         // Hide the keyboard.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = addProfile.getEditorDialog().getEditableTextFieldsForTest();
-            KeyboardVisibilityDelegate.getInstance().hideKeyboard(fields.get(0));
+            UiUtils.hideKeyboard(fields.get(0));
         });
         // Check that the keyboard is hidden.
         waitForKeyboardStatus(false, activity);
@@ -292,8 +292,8 @@ public class AutofillProfilesFragmentTest {
                     @Override
                     public boolean isSatisfied() {
                         return keyboardVisible
-                                == KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                                           activity, activity.findViewById(android.R.id.content));
+                                == UiUtils.isKeyboardShowing(
+                                activity, activity.findViewById(android.R.id.content));
                     }
                 });
     }

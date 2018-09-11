@@ -30,7 +30,6 @@ import android.widget.TextView;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,11 +64,6 @@ public class PasswordAccessoryIntegrationTest {
             new ChromeTabbedActivityTestRule();
 
     private final ManualFillingTestHelper mHelper = new ManualFillingTestHelper(mActivityTestRule);
-
-    @After
-    public void tearDown() {
-        mHelper.clear();
-    }
 
     @Test
     @SmallTest

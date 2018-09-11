@@ -33,7 +33,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
-import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
@@ -526,7 +526,7 @@ public class Desktop
      */
     public void showKeyboard() {
         if (!mHasPhysicalKeyboard) {
-            KeyboardVisibilityDelegate.getInstance().showKeyboard(mRemoteHostDesktop);
+            UiUtils.showKeyboard(mRemoteHostDesktop);
         }
     }
 

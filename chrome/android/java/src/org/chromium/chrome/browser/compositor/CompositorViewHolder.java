@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.SPenSupport;
@@ -258,8 +257,7 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mShowingFullscreen
-                && KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(getContext(), this)) {
+        if (mShowingFullscreen && UiUtils.isKeyboardShowing(getContext(), this)) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
             // On certain devices, getWindowVisibleDisplayFrame is larger than the screen size, so
@@ -800,8 +798,7 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        mIsKeyboardShowing =
-                KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(getContext(), this);
+        mIsKeyboardShowing = UiUtils.isKeyboardShowing(getContext(), this);
     }
 
     @Override
@@ -909,7 +906,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mUrlBar != null) mUrlBar.clearFocus();
         boolean wasVisible = false;
         if (hasFocus()) {
-            wasVisible = KeyboardVisibilityDelegate.getInstance().hideKeyboard(this);
+            wasVisible = UiUtils.hideKeyboard(this);
         }
         if (wasVisible) {
             mPostHideKeyboardTask = postHideTask;

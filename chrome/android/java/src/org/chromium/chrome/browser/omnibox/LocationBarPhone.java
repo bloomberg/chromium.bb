@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.ui.UiUtils;
 
 /**
  * A location bar implementation specific for smaller/phone screens.
@@ -133,7 +134,7 @@ public class LocationBarPhone extends LocationBarLayout {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+                    UiUtils.hideKeyboard(mUrlBar);
                 }
             }, KEYBOARD_HIDE_DELAY_MS);
             // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
@@ -148,7 +149,7 @@ public class LocationBarPhone extends LocationBarLayout {
             if (mBottomSheet == null) {
                 setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
             }
-            getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
+            UiUtils.showKeyboard(mUrlBar);
             // As the position of the navigation icon has changed, ensure the suggestions are
             // updated to reflect the new position.
             if (getSuggestionList() != null && getSuggestionList().isShown()) {

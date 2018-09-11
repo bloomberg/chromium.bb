@@ -34,6 +34,7 @@ import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -1228,8 +1229,7 @@ public class TabStripTest {
             public boolean isSatisfied() {
                 updateFailureReason("expectsShown: " + expectsShown);
                 return expectsShown
-                        == mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
-                                   mActivityTestRule.getActivity(),
+                        == UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
                                    mActivityTestRule.getActivity().getActivityTab().getView());
             }
         });

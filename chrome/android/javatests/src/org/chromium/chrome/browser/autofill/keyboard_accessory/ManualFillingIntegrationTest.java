@@ -24,7 +24,6 @@ import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,11 +62,6 @@ public class ManualFillingIntegrationTest {
             new ChromeTabbedActivityTestRule();
 
     private final ManualFillingTestHelper mHelper = new ManualFillingTestHelper(mActivityTestRule);
-
-    @After
-    public void tearDown() {
-        mHelper.clear();
-    }
 
     @Test
     @SmallTest
@@ -216,7 +210,7 @@ public class ManualFillingIntegrationTest {
         // Focus the field to bring up the accessory.
         mHelper.clickEmailField();
         mHelper.waitForKeyboard();
-        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
+        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup();
 
         assertThat(popup.isShowing(), is(true));
 
