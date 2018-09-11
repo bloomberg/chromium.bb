@@ -254,6 +254,13 @@ void AssistantMainStage::InitContentLayoutContainer() {
   layout_manager->SetFlexForView(ui_element_container_, 1);
 
   // Footer.
+  // Note that the |footer_| is placed within its own view container so that as
+  // its visibility changes, its parent container will still reserve the same
+  // layout space. This prevents jank that would otherwise occur due to
+  // |ui_element_container_| claiming that empty space.
+  views::View* footer_container = new views::View();
+  footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
+
   footer_ = new AssistantFooterView(assistant_controller_);
   footer_->AddObserver(this);
 
@@ -261,7 +268,8 @@ void AssistantMainStage::InitContentLayoutContainer() {
   footer_->SetPaintToLayer();
   footer_->layer()->SetFillsBoundsOpaquely(false);
 
-  content_layout_container_->AddChildView(footer_);
+  footer_container->AddChildView(footer_);
+  content_layout_container_->AddChildView(footer_container);
 
   AddChildView(content_layout_container_);
 }
