@@ -4,9 +4,12 @@
 
 #include "ios/web/web_state/web_frame_impl.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -14,7 +17,6 @@
 #include "crypto/random.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
-
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,18 +30,13 @@ const char kJavaScriptReplyCommandPrefix[] = "frameMessaging_";
 namespace web {
 
 WebFrameImpl::WebFrameImpl(const std::string& frame_id,
-                           std::unique_ptr<crypto::SymmetricKey> frame_key,
-                           int initial_message_id,
                            bool is_main_frame,
                            GURL security_origin,
                            web::WebState* web_state)
     : frame_id_(frame_id),
-      frame_key_(std::move(frame_key)),
-      next_message_id_(initial_message_id),
       is_main_frame_(is_main_frame),
       security_origin_(security_origin),
       web_state_(web_state) {
-  DCHECK(frame_key_);
   DCHECK(web_state);
   web_state->AddObserver(this);
 
@@ -52,6 +49,15 @@ WebFrameImpl::WebFrameImpl(const std::string& frame_id,
 WebFrameImpl::~WebFrameImpl() {
   CancelPendingRequests();
   DetachFromWebState();
+}
+
+void WebFrameImpl::SetEncryptionKey(
+    std::unique_ptr<crypto::SymmetricKey> frame_key) {
+  frame_key_ = std::move(frame_key);
+}
+
+void WebFrameImpl::SetNextMessageId(int message_id) {
+  next_message_id_ = message_id;
 }
 
 WebState* WebFrameImpl::GetWebState() {
@@ -76,6 +82,11 @@ bool WebFrameImpl::CallJavaScriptFunction(
     bool reply_with_result) {
   int message_id = next_message_id_;
   next_message_id_++;
+
+  if (!frame_key_) {
+    return ExecuteJavaScriptFunction(name, parameters, message_id,
+                                     reply_with_result);
+  }
 
   base::DictionaryValue message;
   message.SetKey("messageId", base::Value(message_id));
@@ -134,29 +145,71 @@ bool WebFrameImpl::CallJavaScriptFunction(
 
   base::PostDelayedTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                   timeout_callback_ptr->callback(), timeout);
-  return CallJavaScriptFunction(name, parameters, /*reply_with_result=*/true);
+  bool called =
+      CallJavaScriptFunction(name, parameters, /*reply_with_result=*/true);
+  if (!called) {
+    // Remove callbacks if the call failed.
+    auto request = pending_requests_.find(message_id);
+    if (request != pending_requests_.end()) {
+      pending_requests_.erase(request);
+    }
+  }
+  return called;
 }
 
-void WebFrameImpl::CancelRequest(int message_id) {
+bool WebFrameImpl::ExecuteJavaScriptFunction(
+    const std::string& name,
+    const std::vector<base::Value>& parameters,
+    int message_id,
+    bool reply_with_result) {
+  if (!IsMainFrame()) {
+    return false;
+  }
+
+  NSMutableArray* parameter_strings = [[NSMutableArray alloc] init];
+  //  std::string parameters_string;
+  for (const auto& value : parameters) {
+    std::string string_value;
+    base::JSONWriter::Write(value, &string_value);
+    [parameter_strings addObject:base::SysUTF8ToNSString(string_value)];
+  }
+
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb.%s(%@)", name.c_str(),
+                       [parameter_strings componentsJoinedByString:@","]];
+  GetWebState()->ExecuteJavaScript(base::SysNSStringToUTF16(script),
+                                   base::BindOnce(^(const base::Value* result) {
+                                     CompleteRequest(message_id, result);
+                                   }));
+
+  return true;
+}
+
+void WebFrameImpl::CompleteRequest(int message_id, const base::Value* result) {
   auto request = pending_requests_.find(message_id);
   if (request == pending_requests_.end()) {
     return;
   }
-  CancelRequestWithCallbacks(std::move(request->second));
+  CompleteRequest(std::move(request->second), result);
   pending_requests_.erase(request);
+}
+
+void WebFrameImpl::CompleteRequest(
+    std::unique_ptr<RequestCallbacks> request_callbacks,
+    const base::Value* result) {
+  request_callbacks->timeout_callback->Cancel();
+  std::move(request_callbacks->completion).Run(result);
+}
+
+void WebFrameImpl::CancelRequest(int message_id) {
+  CompleteRequest(message_id, /*result=*/nullptr);
 }
 
 void WebFrameImpl::CancelPendingRequests() {
   for (auto& it : pending_requests_) {
-    CancelRequestWithCallbacks(std::move(it.second));
+    CompleteRequest(std::move(it.second), /*result=*/nullptr);
   }
   pending_requests_.clear();
-}
-
-void WebFrameImpl::CancelRequestWithCallbacks(
-    std::unique_ptr<RequestCallbacks> request_callbacks) {
-  request_callbacks->timeout_callback->Cancel();
-  std::move(request_callbacks->completion).Run(nullptr);
 }
 
 bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
