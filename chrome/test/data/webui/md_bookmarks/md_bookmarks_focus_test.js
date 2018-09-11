@@ -20,6 +20,7 @@ MaterialBookmarksFocusTest.prototype = {
   browsePreload: 'chrome://bookmarks',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../settings/test_util.js',
     'test_command_manager.js',
     'test_store.js',
     'test_util.js',
@@ -427,14 +428,6 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     let commandManager;
     let dialogFocusManager;
 
-    function waitForClose(el) {
-      return new Promise(function(resolve) {
-        listenOnce(el, 'close', function(e) {
-          resolve();
-        });
-      });
-    }
-
     function keydown(el, key) {
       MockInteractions.keyDownOn(el, '', '', key);
     }
@@ -485,9 +478,14 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       keydown(dropdown, 'Escape');
       assertFalse(dropdown.open);
 
-      return waitForClose(dropdown).then(() => {
-        assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-      });
+      return Promise
+          .all([
+            test_util.eventToPromise('close', dropdown),
+            test_util.eventToPromise('focus', focusedItem),
+          ])
+          .then(() => {
+            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+          });
     });
 
     test('restores focus after stacked dialogs', function() {
@@ -503,13 +501,13 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       const editDialog = commandManager.$.editDialog.get();
       editDialog.showEditDialog(store.data.nodes['2']);
 
-      return waitForClose(dropdown)
+      return test_util.eventToPromise('close', dropdown)
           .then(() => {
             editDialog.onCancelButtonTap_();
             assertNotEquals(
                 focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return waitForClose(editDialog);
+            return test_util.eventToPromise('close', editDialog);
           })
           .then(() => {
             assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -530,14 +528,14 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       focusedItem.focus();
       commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
 
-      return waitForClose(dropdown)
+      return test_util.eventToPromise('close', dropdown)
           .then(() => {
             assertTrue(dropdown.open);
             dropdown.close();
             assertNotEquals(
                 focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return waitForClose(dropdown);
+            return test_util.eventToPromise('close', dropdown);
           })
           .then(() => {
             assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());

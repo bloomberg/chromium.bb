@@ -57,6 +57,13 @@ suite('CrActionMenu', function() {
     MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
   }
 
+  test('close event bubbles', function() {
+    menu.showAt(dots);
+    const whenFired = test_util.eventToPromise('close', menu);
+    menu.close();
+    return whenFired;
+  });
+
   test('hidden or disabled items', function() {
     menu.showAt(dots);
     down();
