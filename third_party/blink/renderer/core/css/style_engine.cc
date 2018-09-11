@@ -1555,9 +1555,12 @@ void StyleEngine::RecalcStyle(StyleRecalcChange change) {
 void StyleEngine::RebuildLayoutTree() {
   DCHECK(GetDocument().documentElement());
   DCHECK(GetDocument().ChildNeedsReattachLayoutTree());
+  DCHECK(!InRebuildLayoutTree());
+  in_layout_tree_rebuild_ = true;
 
   WhitespaceAttacher whitespace_attacher;
   GetDocument().documentElement()->RebuildLayoutTree(whitespace_attacher);
+  in_layout_tree_rebuild_ = false;
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {
