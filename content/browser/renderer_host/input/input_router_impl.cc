@@ -335,15 +335,17 @@ void InputRouterImpl::SendTouchEventImmediately(
 void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                       InputEventAckSource ack_source,
                                       InputEventAckState ack_result) {
-  // Touchstart events sent to the renderer indicate a new touch sequence, but
-  // in some cases we may filter out sending the touchstart - catch those here.
-  if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
-      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-    touch_action_filter_.AppendToGestureSequenceForDebugging("T");
+  if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
     touch_action_filter_.IncreaseActiveTouches();
-    // Touch action must be auto when there is no consumer
-    touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
-    UpdateTouchAckTimeoutEnabled();
+    // Touchstart events sent to the renderer indicate a new touch sequence, but
+    // in some cases we may filter out sending the touchstart - catch those
+    // here.
+    if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+      touch_action_filter_.AppendToGestureSequenceForDebugging("T");
+      // Touch action must be auto when there is no consumer
+      touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
+      UpdateTouchAckTimeoutEnabled();
+    }
   }
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
@@ -527,8 +529,6 @@ void InputRouterImpl::TouchEventHandled(
     client_->DecrementInFlightEventCount(source);
   touch_event.latency.AddNewLatencyFrom(latency);
 
-  if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event))
-    touch_action_filter_.IncreaseActiveTouches();
   // The SetTouchAction IPC occurs on a different channel so always
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.

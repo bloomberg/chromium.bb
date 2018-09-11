@@ -426,24 +426,17 @@ class InputRouterImplTest : public testing::Test {
 
   void ActiveTouchSequenceCountTest(
       const base::Optional<cc::TouchAction>& touch_action,
-      bool ack_state_no_consumer_exists) {
+      InputEventAckState state) {
     PressTouchPoint(1, 1);
     base::Optional<ui::DidOverscrollParams> overscroll;
-    if (ack_state_no_consumer_exists) {
-      input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
-                                     InputEventAckSource::BROWSER,
-                                     INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    } else {
-      input_router_->TouchEventHandled(
-          TouchEventWithLatencyInfo(touch_event_), InputEventAckSource::BROWSER,
-          ui::LatencyInfo(), INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, overscroll,
-          touch_action);
-    }
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_), InputEventAckSource::BROWSER,
+        ui::LatencyInfo(), state, overscroll, touch_action);
     EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 1);
     ReleaseTouchPoint(0);
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
-                                   InputEventAckSource::BROWSER,
-                                   INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+                                   InputEventAckSource::BROWSER, state);
     EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 0);
   }
 
@@ -619,25 +612,29 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 // not ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithoutTouchAction) {
   base::Optional<cc::TouchAction> touch_action;
-  ActiveTouchSequenceCountTest(touch_action, false);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 }
 
 TEST_F(InputRouterImplTest,
        ActiveTouchSequenceCountWithoutTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action;
-  ActiveTouchSequenceCountTest(touch_action, true);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
 // Test that the active touch sequence count increment when the touch start is
 // ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchAction) {
   base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
-  ActiveTouchSequenceCountTest(touch_action, false);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
 }
 
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
-  ActiveTouchSequenceCountTest(touch_action, true);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
 // Tests that touch-events are sent properly.
