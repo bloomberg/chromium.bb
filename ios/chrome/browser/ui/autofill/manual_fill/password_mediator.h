@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_MEDIATOR_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_MEDIATOR_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include "base/memory/ref_counted.h"
 
@@ -21,7 +21,7 @@ class WebStateList;
 
 // Object in charge of getting the passwords relevant for the manual fill
 // passwords UI.
-@interface ManualFillPasswordMediator : NSObject
+@interface ManualFillPasswordMediator : NSObject<UISearchResultsUpdating>
 
 // The consumer for passwords updates. Setting it will trigger the consumer
 // methods with the current data.

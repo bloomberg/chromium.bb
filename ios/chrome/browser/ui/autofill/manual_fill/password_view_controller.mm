@@ -23,14 +23,28 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 };
 
 }  // namespace
+
+@interface PasswordViewController ()
+// Search controller if any.
+@property(nonatomic, strong) UISearchController* searchController;
+@end
+
 @implementation PasswordViewController
 
-- (instancetype)init {
-  return [super initWithTableViewStyle:UITableViewStylePlain
+@synthesize searchController = _searchController;
+
+- (instancetype)initWithSearchController:(UISearchController*)searchController {
+  self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  if (self) {
+    _searchController = searchController;
+  }
+  return self;
 }
 
 - (void)viewDidLoad {
+  // Super's |viewDidLoad| uses |styler.tableViewBackgroundColor| so it needs to
+  // be set before.
   self.styler.tableViewBackgroundColor = [UIColor whiteColor];
 
   [super viewDidLoad];
@@ -41,6 +55,15 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   self.tableView.estimatedRowHeight = 200;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
 
+  self.definesPresentationContext = YES;
+  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
+  if (@available(iOS 11, *)) {
+    self.navigationItem.searchController = self.searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  } else {
+    self.tableView.tableHeaderView = self.searchController.searchBar;
+  }
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;
@@ -86,44 +109,29 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   }
   BOOL doesSectionExist =
       [self.tableViewModel hasSectionForSectionIdentifier:sectionIdentifier];
-  // If there are no passed credentials, remove section if exist and return.
+  // If there are no passed credentials, remove section if exist.
   if (!items.count) {
     if (doesSectionExist) {
-      NSInteger tableViewSection =
-          [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
-      NSIndexSet* sectionIndexSet =
-          [NSIndexSet indexSetWithIndex:tableViewSection];
       [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-      [self.tableView deleteSections:sectionIndexSet
-                    withRowAnimation:UITableViewRowAnimationNone];
     }
-    return;
-  }
-
-  if (!doesSectionExist) {
-    if (sectionIdentifier == CredentialsSectionIdentifier) {
-      [self.tableViewModel
-          insertSectionWithIdentifier:CredentialsSectionIdentifier
-                              atIndex:0];
-    } else {
-      [self.tableViewModel addSectionWithIdentifier:sectionIdentifier];
-    }
-  }
-
-  for (TableViewItem* item in items) {
-    [self.tableViewModel addItem:item
-         toSectionWithIdentifier:sectionIdentifier];
-  }
-  NSInteger tableViewSection =
-      [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
-  NSIndexSet* sectionIndexSet = [NSIndexSet indexSetWithIndex:tableViewSection];
-  if (doesSectionExist) {
-    [self.tableView reloadSections:sectionIndexSet
-                  withRowAnimation:UITableViewRowAnimationNone];
   } else {
-    [self.tableView insertSections:sectionIndexSet
-                  withRowAnimation:UITableViewRowAnimationNone];
+    if (!doesSectionExist) {
+      if (sectionIdentifier == CredentialsSectionIdentifier) {
+        [self.tableViewModel
+            insertSectionWithIdentifier:CredentialsSectionIdentifier
+                                atIndex:0];
+      } else {
+        [self.tableViewModel addSectionWithIdentifier:sectionIdentifier];
+      }
+    }
+    [self.tableViewModel
+        deleteAllItemsFromSectionWithIdentifier:sectionIdentifier];
+    for (TableViewItem* item in items) {
+      [self.tableViewModel addItem:item
+           toSectionWithIdentifier:sectionIdentifier];
+    }
   }
+  [self.tableView reloadData];
 }
 
 @end

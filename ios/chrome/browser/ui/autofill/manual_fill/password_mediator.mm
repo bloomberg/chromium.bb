@@ -96,6 +96,26 @@
   [self postCredentialsToConsumer];
 }
 
+#pragma mark - UISearchResultsUpdating
+
+- (void)updateSearchResultsForSearchController:
+    (UISearchController*)searchController {
+  NSString* searchText = searchController.searchBar.text;
+  if (!searchText.length) {
+    auto credentials = [self createItemsForCredentials:self.credentials];
+    [self.consumer presentCredentials:credentials];
+    return;
+  }
+
+  NSPredicate* predicate = [NSPredicate
+      predicateWithFormat:@"host CONTAINS[cd] %@ OR username CONTAINS[cd] %@",
+                          searchText, searchText];
+  NSArray* filteredCredentials =
+      [self.credentials filteredArrayUsingPredicate:predicate];
+  auto credentials = [self createItemsForCredentials:filteredCredentials];
+  [self.consumer presentCredentials:credentials];
+}
+
 #pragma mark - Private
 
 // Posts the credentials to the consumer. If filtered is |YES| it only post the
