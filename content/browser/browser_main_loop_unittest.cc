@@ -22,6 +22,7 @@ namespace content {
 TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   {
     base::TaskScheduler::Create("Browser");
+    BrowserThreadImpl::CreateTaskExecutor();
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
         switches::kSingleProcess);
@@ -41,6 +42,7 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
     BrowserThreadImpl::ResetGlobalsForTesting(
         static_cast<BrowserThread::ID>(id));
   }
+  BrowserThreadImpl::ResetTaskExecutorForTesting();
   base::TaskScheduler::GetInstance()->JoinForTesting();
   base::TaskScheduler::SetInstance(nullptr);
 }
