@@ -64,7 +64,7 @@ namespace {
 
 GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kContentBrowserTest))
+  if (command_line->HasSwitch(switches::kBrowserTest))
     return GURL();
   const base::CommandLine::StringVector& args = command_line->GetArgs();
 

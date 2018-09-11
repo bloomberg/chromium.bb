@@ -12,7 +12,6 @@
 
 namespace switches {
 
-extern const char kContentBrowserTest[];
 extern const char kContentShellDataPath[];
 extern const char kCrashDumpsDir[];
 extern const char kExposeInternalsForTesting[];

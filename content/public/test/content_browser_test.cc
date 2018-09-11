@@ -59,8 +59,6 @@ ContentBrowserTest::~ContentBrowserTest() {
 
 void ContentBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kContentBrowserTest);
-
   SetUpCommandLine(command_line);
 
 #if defined(OS_ANDROID)

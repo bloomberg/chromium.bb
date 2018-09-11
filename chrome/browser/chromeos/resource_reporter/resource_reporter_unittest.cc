@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/memory_pressure_monitor.h"
+#include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -112,31 +112,6 @@ class DummyTaskManager : public task_manager::TestTaskManager {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskManager);
 };
 
-class DummyMemoryPressureMonitor : public base::MemoryPressureMonitor {
- public:
-  DummyMemoryPressureMonitor()
-      : MemoryPressureMonitor(),
-        memory_pressure_level_(
-            MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE) {}
-  ~DummyMemoryPressureMonitor() override {}
-
-  void SetAndNotifyMemoryPressure(MemoryPressureLevel level) {
-    memory_pressure_level_ = level;
-    base::MemoryPressureListener::SimulatePressureNotification(level);
-  }
-
-  // base::CriticalMemoryPressureMonitor:
-  MemoryPressureLevel GetCurrentPressureLevel() override {
-    return memory_pressure_level_;
-  }
-  void SetDispatchCallback(const DispatchCallback& callback) override {}
-
- private:
-  MemoryPressureLevel memory_pressure_level_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyMemoryPressureMonitor);
-};
-
 }  // namespace
 
 class ResourceReporterTest : public testing::Test {
@@ -165,12 +140,12 @@ class ResourceReporterTest : public testing::Test {
     return ResourceReporter::GetInstance();
   }
 
-  DummyMemoryPressureMonitor* monitor() { return &monitor_; }
+  base::test::FakeMemoryPressureMonitor* monitor() { return &monitor_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  DummyMemoryPressureMonitor monitor_;
+  base::test::FakeMemoryPressureMonitor monitor_;
 
   DummyTaskManager task_manager_;
 

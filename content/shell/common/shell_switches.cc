@@ -10,9 +10,6 @@
 
 namespace switches {
 
-// Tells Content Shell that it's running as a content_browsertest.
-const char kContentBrowserTest[] = "browser-test";
-
 // Makes Content Shell use the given path for its data directory.
 const char kContentShellDataPath[] = "data-path";
 
