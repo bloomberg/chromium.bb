@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
@@ -71,6 +72,9 @@ class AdsPageLoadMetricsObserver
                             extra_request_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
 
  private:
   struct AdFrameData {
@@ -107,6 +111,15 @@ class AdsPageLoadMetricsObserver
   void ProcessLoadedResource(
       const page_load_metrics::ExtraRequestCompleteInfo& extra_request_info);
 
+  // Update all of the per-resource page counters given a new resource data
+  // update. Updates |page_resources_| to reflect the new state of the resource.
+  // Called once per ResourceDataUpdate.
+  void UpdateResource(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+
+  void RecordResourceHistogram(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+  void RecordPageResourceTotalHistograms();
   void RecordHistograms();
   void RecordHistogramsForType(int ad_type);
 
@@ -136,6 +149,18 @@ class AdsPageLoadMetricsObserver
   // request info (delay it) until the sub-frame commits.
   std::map<FrameTreeNodeId, page_load_metrics::ExtraRequestCompleteInfo>
       ongoing_navigation_resources_;
+
+  // Maps a request_id for a blink resource to the metadata for the resource
+  // load. Only contains resources that have not completed loading.
+  std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
+      page_resources_;
+
+  // Tallies for bytes and counts observed in resource data updates for the
+  // entire page.
+  size_t page_resource_bytes_ = 0u;
+  size_t page_ad_resource_bytes_ = 0u;
+  size_t page_main_frame_ad_resource_bytes_ = 0u;
+  uint32_t total_number_page_resources_ = 0;
 
   size_t page_bytes_ = 0u;
   size_t uncached_page_bytes_ = 0u;
