@@ -51,11 +51,8 @@ bool ProtocolUtils::ParseScripts(
 
     const auto& presentation = script_proto.presentation();
     script->handle.name = presentation.name();
-
-    if (presentation.has_precondition()) {
-      script->precondition =
-          ScriptPrecondition::FromProto(presentation.precondition());
-    }
+    script->precondition =
+        ScriptPrecondition::FromProto(presentation.precondition());
 
     if (script->handle.name.empty() || script->handle.path.empty() ||
         !script->precondition) {

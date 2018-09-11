@@ -27,7 +27,7 @@ message SupportsScriptResponseProto {
 // Supported script.
 message SupportedScriptProto {
   // This is the internal name of the script.
-  required string path = 1;
+  optional string path = 1;
 
   message PresentationProto {
     // Script name.
