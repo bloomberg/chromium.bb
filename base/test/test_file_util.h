@@ -39,6 +39,11 @@ bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
 // success.
 bool DieFileDie(const FilePath& file, bool recurse);
 
+// Synchronize all the dirty pages from the page cache to disk (on POSIX
+// systems). The Windows analogy for this operation is to 'Flush file buffers'.
+// Note: This is currently implemented as a no-op on Windows.
+void SyncPageCacheToDisk();
+
 // Clear a specific file from the system cache. After this call, trying
 // to access this file will result in a cold load from the hard drive.
 bool EvictFileFromSystemCache(const FilePath& file);
