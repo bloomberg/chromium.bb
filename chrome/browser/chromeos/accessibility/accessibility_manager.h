@@ -19,6 +19,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+#include "chrome/browser/chromeos/accessibility/switch_access_panel.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -257,9 +258,9 @@ class AccessibilityManager
   // touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
-  // Called by our widget observer when the ChromeVoxPanel is closing.
-  void OnChromeVoxPanelClosing();
+  // Called by our widget observer when the respective panel is closing.
   void OnChromeVoxPanelDestroying();
+  void OnSwitchAccessPanelDestroying();
 
   // Profile having the a11y context.
   Profile* profile() { return profile_; }
@@ -333,7 +334,9 @@ class AccessibilityManager
   void PostSwitchChromeVoxProfile();
 
   void PostUnloadSelectToSpeak();
+  void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
+
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
   void OnStickyKeysChanged();
@@ -410,6 +413,10 @@ class AccessibilityManager
   ChromeVoxPanel* chromevox_panel_;
   std::unique_ptr<AccessibilityPanelWidgetObserver>
       chromevox_panel_widget_observer_;
+
+  SwitchAccessPanel* switch_access_panel_;
+  std::unique_ptr<AccessibilityPanelWidgetObserver>
+      switch_access_panel_widget_observer_;
 
   std::string keyboard_listener_extension_id_;
   bool keyboard_listener_capture_;

@@ -3,17 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Alias for document.getElementById.
- *
- * @param  {string} id
- * @return {Element}
- */
-let $ = function(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-};
-
-/**
  * Class to manage the options page.
  *
  * @constructor
@@ -42,13 +31,13 @@ SwitchAccessOptions.prototype = {
    * @private
    */
   init_: function() {
-    $('enableAutoScan').checked =
+    document.getElementById('enableAutoScan').checked =
         this.switchAccess_.getBooleanPref('enableAutoScan');
-    $('autoScanTime').value =
+    document.getElementById('autoScanTime').value =
         this.switchAccess_.getNumberPref('autoScanTime') / 1000;
 
     for (let command of this.switchAccess_.getCommands()) {
-      $(command).value =
+      document.getElementById(command).value =
           String.fromCharCode(this.switchAccess_.getNumberPref(command));
     }
   },
@@ -127,14 +116,15 @@ SwitchAccessOptions.prototype = {
     for (let key of Object.keys(updatedPrefs)) {
       switch (key) {
         case 'enableAutoScan':
-          $(key).checked = updatedPrefs[key];
+          document.getElementById(key).checked = updatedPrefs[key];
           break;
         case 'autoScanTime':
-          $(key).value = updatedPrefs[key] / 1000;
+          document.getElementById(key).value = updatedPrefs[key] / 1000;
           break;
         default:
           if (this.switchAccess_.getCommands().includes(key))
-            $(key).value = String.fromCharCode(updatedPrefs[key]);
+            document.getElementById(key).value =
+                String.fromCharCode(updatedPrefs[key]);
       }
     }
   }

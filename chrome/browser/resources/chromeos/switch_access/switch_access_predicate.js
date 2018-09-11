@@ -84,6 +84,38 @@ SwitchAccessPredicate.isSubtreeLeaf = function(node, scope) {
 };
 
 /**
+ * Returns a Restrictions object for finding the Context Menu root.
+ * @return {!AutomationTreeWalkerRestriction}
+ */
+SwitchAccessPredicate.contextMenuDiscoveryRestrictions = function() {
+  return {
+    leaf: SwitchAccessPredicate.isNotContainer,
+    visit: SwitchAccessPredicate.isContextMenu
+  };
+};
+
+/**
+ * Returns true if |node| does not have a role of desktop, window, web view, or
+ * root web area.
+ * @param {!chrome.automation.AutomationNode} node
+ * @return {boolean}
+ */
+SwitchAccessPredicate.isNotContainer = function(node) {
+  return node.role !== RoleType.ROOT_WEB_AREA &&
+      node.role !== RoleType.WINDOW && node.role !== RoleType.DESKTOP &&
+      node.role !== RoleType.WEB_VIEW;
+};
+
+/**
+ * Returns true if |node| is the context menu.
+ * @param {!chrome.automation.AutomationNode} node
+ * @return {boolean}
+ */
+SwitchAccessPredicate.isContextMenu = function(node) {
+  return node.htmlAttributes.id === ContextMenuManager.MenuId;
+};
+
+/**
  * Returns true if |node| is a group, meaning that the node has more than one
  * interesting descendant, and that its interesting descendants exist in more
  * than one subtree of its immediate children.
