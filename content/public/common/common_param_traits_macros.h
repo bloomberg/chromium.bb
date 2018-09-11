@@ -239,7 +239,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(low_priority_iframes_threshold)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)
-  IPC_STRUCT_TRAITS_MEMBER(network_quality_estimator_web_holdback)
   IPC_STRUCT_TRAITS_MEMBER(lazy_frame_loading_distance_thresholds_px)
 IPC_STRUCT_TRAITS_END()
 
