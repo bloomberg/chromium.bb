@@ -73,22 +73,28 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
      * @param context The context used for building the popup.
      * @param navigationController The controller which takes care of page navigations.
      * @param isForward Whether to request forward navigation entries.
+     * @param anchorToBottom Whether the popup is anchored to the bottom of the screen.
      */
     public NavigationPopup(Profile profile, Context context,
-            NavigationController navigationController, boolean isForward) {
+            NavigationController navigationController, boolean isForward, boolean anchorToBottom) {
         super(context, null, android.R.attr.popupMenuStyle);
         mProfile = profile;
         mContext = context;
         mNavigationController = navigationController;
+
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
-
         mHistory.addEntry(new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL,
-                null, null, mContext.getResources().getString(R.string.show_full_history), null,
+                null, null, null, mContext.getResources().getString(R.string.show_full_history),
                 null, 0));
 
-        setBackgroundDrawable(
-                ApiCompatibilityUtils.getDrawable(mContext.getResources(), R.drawable.popup_bg));
+        setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(mContext.getResources(),
+                anchorToBottom ? R.drawable.popup_bg_bottom : R.drawable.popup_bg));
+        // By default ListPopupWindow uses the top & bottom padding of the background to determine
+        // the vertical offset applied to the window.  This causes the popup to be shifted up
+        // by the top padding, and thus we forcibly need to specify a vertical offset of 0 to
+        // prevent that.
+        if (anchorToBottom) setVerticalOffset(0);
 
         if (ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.LONG_PRESS_BACK_NEW_DESIGN)) {
@@ -96,6 +102,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         } else {
             mAdapter = new NavigationAdapter();
         }
+        if (anchorToBottom) mAdapter.reverseOrder();
 
         setModal(true);
         setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -134,14 +141,6 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
                 ((ListView) v).smoothScrollToPosition(mHistory.getEntryCount() - 1);
             }
         });
-    }
-
-    /**
-     * Reverses the history order for visual purposes only. This does not pull from the beginning of
-     * the navigation history, but only reverses the list that would have normally been retrieved.
-     */
-    public void reverseHistoryOrder() {
-        mAdapter.reverseOrder();
     }
 
     private void initialize() {

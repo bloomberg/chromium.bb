@@ -298,7 +298,7 @@ public class ToolbarTablet
         Tab tab = getToolbarDataProvider().getTab();
         if (tab == null || tab.getWebContents() == null) return;
         mNavigationPopup = new NavigationPopup(tab.getProfile(), getContext(),
-                tab.getWebContents().getNavigationController(), isForward);
+                tab.getWebContents().getNavigationController(), isForward, false);
 
         mNavigationPopup.setAnchorView(anchorView);
 

@@ -2070,9 +2070,8 @@ public class ChromeTabbedActivity
         Tab tab = getActivityTab();
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
 
-        mNavigationPopup = new NavigationPopup(
-                tab.getProfile(), this, tab.getWebContents().getNavigationController(), false);
-        mNavigationPopup.reverseHistoryOrder();
+        mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
+                tab.getWebContents().getNavigationController(), false, true);
         mNavigationPopup.setWidth(
                 getResources().getDimensionPixelSize(R.dimen.navigation_popup_width));
         mNavigationPopup.setAnchorView(findViewById(R.id.navigation_popup_anchor_stub));
