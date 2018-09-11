@@ -198,6 +198,8 @@ component("vr_common") {
   sources = [
     "base_graphics_delegate.cc",
     "base_graphics_delegate.h",
+    "base_scheduler_delegate.cc",
+    "base_scheduler_delegate.h",
     "browser_renderer.cc",
     "browser_renderer.h",
     "browser_renderer_browser_interface.h",
