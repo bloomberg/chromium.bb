@@ -162,7 +162,7 @@ class _MobileStartupStorySet(story_module.StorySet):
 @benchmark.Info(emails=['pasko@chromium.org',
                         'chrome-android-perf-status@chromium.org'])
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
-  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
+  SUPPORTED_PLATFORMS = [story_module.expectations.ANDROID_NOT_WEBVIEW]
 
   # Set |pageset_repeat| to 1 to control the amount of iterations from the
   # stories. This would avoid setting per-story pageset_repeat at bisect time.
