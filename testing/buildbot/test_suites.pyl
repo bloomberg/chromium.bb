@@ -2709,7 +2709,6 @@
 
   'mojo_android_gtests': [
     'network_service_android_gtests',
-    'viz_gtests',
   ],
 
   'mojo_windows_gtests': [
