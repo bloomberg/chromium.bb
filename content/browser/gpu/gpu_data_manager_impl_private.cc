@@ -830,9 +830,7 @@ int64_t GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
 }
 
 bool GpuDataManagerImplPrivate::NeedsCompleteGpuInfoCollection() const {
-#if defined(OS_MACOSX)
-  return gpu_info_.gl_vendor.empty();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   return (gpu_info_.dx_diagnostics.values.empty() &&
           gpu_info_.dx_diagnostics.children.empty());
 #else
