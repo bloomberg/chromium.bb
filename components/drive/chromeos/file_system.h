@@ -146,7 +146,7 @@ class FileSystem : public FileSystemInterface,
   void ReadDirectory(const base::FilePath& directory_path,
                      ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
-  void GetAvailableSpace(const GetAvailableSpaceCallback& callback) override;
+  void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
   void GetShareUrl(const base::FilePath& file_path,
                    const GURL& embed_origin,
                    const GetShareUrlCallback& callback) override;
@@ -230,7 +230,7 @@ class FileSystem : public FileSystemInterface,
 
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
-      const GetAvailableSpaceCallback& callback,
+      GetAvailableSpaceCallback callback,
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
 

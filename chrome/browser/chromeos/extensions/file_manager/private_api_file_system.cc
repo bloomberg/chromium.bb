@@ -472,7 +472,7 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
       return true;
     }
 
-    file_system->GetAvailableSpace(base::Bind(
+    file_system->GetAvailableSpace(base::BindOnce(
         &FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace,
         this));
   } else if (volume->type() == file_manager::VOLUME_TYPE_MTP) {

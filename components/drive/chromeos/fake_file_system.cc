@@ -204,8 +204,7 @@ void FakeFileSystem::SearchByHashes(const std::set<std::string>& hashes,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void FakeFileSystem::GetAvailableSpace(
-    const GetAvailableSpaceCallback& callback) {
+void FakeFileSystem::GetAvailableSpace(GetAvailableSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

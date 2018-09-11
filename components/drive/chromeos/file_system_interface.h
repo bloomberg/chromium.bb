@@ -134,9 +134,9 @@ typedef base::OnceCallback<void(FileError error,
     OpenFileCallback;
 
 // Used to get available space for the account from Drive.
-typedef base::Callback<void(FileError error,
-                            int64_t bytes_total,
-                            int64_t bytes_used)> GetAvailableSpaceCallback;
+typedef base::OnceCallback<
+    void(FileError error, int64_t bytes_total, int64_t bytes_used)>
+    GetAvailableSpaceCallback;
 
 // Used to get the url to the sharing dialog.
 typedef base::Callback<void(FileError error,
@@ -435,7 +435,7 @@ class FileSystemInterface {
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
-  virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
+  virtual void GetAvailableSpace(GetAvailableSpaceCallback callback) = 0;
 
   // Fetches the url to the sharing dialog to be embedded in |embed_origin|,
   // for the specified file or directory. |callback| must not be null.
