@@ -720,12 +720,15 @@ AccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
   // Otherwise, return the latest cached AccountInfo of the user's primary
   // account, which is empty if the user has disabled sync.
   // In both cases, the AccountInfo will be empty if the user is not signed in.
-  return ShouldUseActiveSignedInAccount()
+  return ShouldUseActiveSignedInAccount() && sync_service_
              ? sync_service_->GetAuthenticatedAccountInfo()
              : identity_manager_->GetPrimaryAccountInfo();
 }
 
 bool PersonalDataManager::IsSyncFeatureEnabled() const {
+  if (!sync_service_)
+    return false;
+
   return !sync_service_->GetAuthenticatedAccountInfo().IsEmpty() &&
          !database_helper_->IsUsingAccountStorageForServerCards();
 }
