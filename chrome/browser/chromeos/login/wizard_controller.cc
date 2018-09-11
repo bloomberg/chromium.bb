@@ -251,6 +251,15 @@ bool IsBootstrappingMaster() {
       chromeos::switches::kOobeBootstrappingMaster);
 }
 
+bool IsPublicSessionOrEphemeralLogin() {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  return user_manager->IsLoggedInAsPublicAccount() ||
+         (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
+          user_manager->GetActiveUser()->GetType() !=
+              user_manager::USER_TYPE_REGULAR);
+}
+
 bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   if (!network || !network->IsConnectedState())
     return false;
@@ -581,14 +590,9 @@ void WizardController::ShowPreviousScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  // Skip user image selection for public sessions and ephemeral non-regual user
-  // logins.
-  if (user_manager->IsLoggedInAsPublicAccount() ||
-      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-       user_manager->GetActiveUser()->GetType() !=
-           user_manager::USER_TYPE_REGULAR)) {
+  // Skip user image selection for public sessions and ephemeral non-regular
+  // user logins.
+  if (IsPublicSessionOrEphemeralLogin()) {
     OnUserImageSkipped();
     return;
   }
@@ -679,6 +683,13 @@ void WizardController::ShowSyncConsentScreen() {
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
+  // Skip the screen for public sessions and non-regular ephemeral users.
+  // TODO(agawronska): Test that there are no wizard screens shown every time
+  // Public Session launches.
+  if (IsPublicSessionOrEphemeralLogin()) {
+    OnFingerprintSetupFinished();
+    return;
+  }
   VLOG(1) << "Showing Fingerprint Setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
@@ -686,12 +697,7 @@ void WizardController::ShowFingerprintSetupScreen() {
 
 void WizardController::ShowMarketingOptInScreen() {
   // Skip the screen for public sessions and non-regular ephemeral users.
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  if (user_manager->IsLoggedInAsPublicAccount() ||
-      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-       user_manager->GetActiveUser()->GetType() !=
-           user_manager::USER_TYPE_REGULAR)) {
+  if (IsPublicSessionOrEphemeralLogin()) {
     OnMarketingOptInFinished();
     return;
   }
