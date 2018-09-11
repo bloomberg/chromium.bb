@@ -2932,8 +2932,11 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // how many bits to spend on it.
   decay_accumulator = 1.0;
   boost_score = 0.0;
-  const double kf_max_boost = AOMMIN(
-      AOMMAX(rc->frames_to_key * 2.0, KF_MIN_FRAME_BOOST), KF_MAX_FRAME_BOOST);
+  const double kf_max_boost =
+      cpi->oxcf.rc_mode == AOM_Q
+          ? AOMMIN(AOMMAX(rc->frames_to_key * 2.0, KF_MIN_FRAME_BOOST),
+                   KF_MAX_FRAME_BOOST)
+          : KF_MAX_FRAME_BOOST;
   for (i = 0; i < (rc->frames_to_key - 1); ++i) {
     if (EOF == input_stats(twopass, &next_frame)) break;
 
