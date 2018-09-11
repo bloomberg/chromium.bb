@@ -321,6 +321,7 @@ class CORE_EXPORT StyleEngine final
 
   void RecalcStyle(StyleRecalcChange change);
   void RebuildLayoutTree();
+  bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -448,6 +449,7 @@ class CORE_EXPORT StyleEngine final
 
   bool uses_rem_units_ = false;
   bool ignore_pending_stylesheets_ = false;
+  bool in_layout_tree_rebuild_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;
