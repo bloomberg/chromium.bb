@@ -929,38 +929,6 @@
             ]
         }
     ],
-    "BrowserScheduler": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "//1": "Enable on-by-default redirections with default",
-                    "//2": "client-side init params (ref.",
-                    "//3": "GetDefaultTaskSchedulerInitParams() in",
-                    "//4": "browser_main_loop.cc).",
-                    "name": "RedirectWithDefaultInitParams"
-                },
-                {
-                    "name": "EnableViaFlag",
-                    "forcing_flag": "enable-browser-task-scheduler",
-                    "params": {
-                        "RedirectHistoryService": "true"
-                    }
-                },
-                {
-                    "name": "DisableViaFlag",
-                    "forcing_flag": "disable-browser-task-scheduler"
-                }
-            ]
-        }
-    ],
     "BundledConnectionHelp": [
         {
             "platforms": [
