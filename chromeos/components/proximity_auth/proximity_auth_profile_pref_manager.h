@@ -79,20 +79,20 @@ class ProximityAuthProfilePrefManager
 
   // Contains perferences that outlive the lifetime of this object and across
   // process restarts. Not owned and must outlive this instance.
-  PrefService* pref_service_;
+  PrefService* pref_service_ = nullptr;
 
   // Listens to pref changes so they can be synced to the local state.
   PrefChangeRegistrar registrar_;
 
   // The local state to which to sync the profile prefs.
-  PrefService* local_state_;
+  PrefService* local_state_ = nullptr;
 
   // The account id of the current profile.
   AccountId account_id_;
 
   // Used to determine the FeatureState of Smart Lock. See |feature_state_|.
   chromeos::multidevice_setup::MultiDeviceSetupClient*
-      multidevice_setup_client_;
+      multidevice_setup_client_ = nullptr;
 
   // Caches feature state of Smart Lock. Populated by using
   // |multidevice_setup_client_|.
