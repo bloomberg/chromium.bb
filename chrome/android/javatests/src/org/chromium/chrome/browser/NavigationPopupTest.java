@@ -7,6 +7,9 @@ package org.chromium.chrome.browser;
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +22,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -29,7 +33,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for the navigation popup.
@@ -231,19 +235,9 @@ public class NavigationPopupTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    public void testFaviconFetching() {
+    public void testFaviconFetching() throws ExecutionException {
         final TestNavigationController controller = new TestNavigationController();
-        final AtomicReference<NavigationPopup> popupReference = new AtomicReference<>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            NavigationPopup popup = new NavigationPopup(
-                    mProfile, mActivityTestRule.getActivity(), controller, true);
-            popup.setWidth(300);
-            popup.setHeight(300);
-            popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
-
-            popup.show();
-            popupReference.set(popup);
-        });
+        final NavigationPopup popup = showPopup(controller);
 
         CriteriaHelper.pollUiThread(new Criteria("All favicons did not get updated.") {
             @Override
@@ -258,32 +252,56 @@ public class NavigationPopupTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> popupReference.get().dismiss());
+        ThreadUtils.runOnUiThreadBlocking(() -> popup.dismiss());
     }
 
     @Test
     @SmallTest
     @Feature({"Navigation"})
-    public void testItemSelection() {
+    public void testItemSelection() throws ExecutionException {
         final TestNavigationController controller = new TestNavigationController();
-        final AtomicReference<NavigationPopup> popupReference = new AtomicReference<>();
+        final NavigationPopup popup = showPopup(controller);
+
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> popup.performItemClick(1));
+
+        Assert.assertFalse("Popup did not hide as expected.", popup.isShowing());
+        Assert.assertEquals(
+                "Popup attempted to navigate to the wrong index", 5, controller.mNavigatedIndex);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Navigation"})
+    public void testShowAllHistory() throws ExecutionException {
+        final TestNavigationController controller = new TestNavigationController();
+        final NavigationPopup popup = showPopup(controller);
+
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            ListView list = popup.getListView();
+            View view = list.getAdapter().getView(list.getAdapter().getCount() - 1, null, list);
+            TextView text = null;
+            if (view instanceof TextView) {
+                text = (TextView) view;
+            } else {
+                text = (TextView) view.findViewById(R.id.entry_title);
+            }
+            Assert.assertNotNull(text);
+            Assert.assertEquals(text.getResources().getString(R.string.show_full_history),
+                    text.getText().toString());
+        });
+    }
+
+    private NavigationPopup showPopup(NavigationController controller) throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationPopup popup = new NavigationPopup(
-                    mProfile, mActivityTestRule.getActivity(), controller, true);
+                    mProfile, mActivityTestRule.getActivity(), controller, true, false);
             popup.setWidth(300);
             popup.setHeight(300);
             popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
 
             popup.show();
-            popupReference.set(popup);
+            return popup;
         });
-
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> popupReference.get().performItemClick(1));
-
-        Assert.assertFalse("Popup did not hide as expected.", popupReference.get().isShowing());
-        Assert.assertEquals(
-                "Popup attempted to navigate to the wrong index", 5, controller.mNavigatedIndex);
     }
 
 }
