@@ -19,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -35,6 +36,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/omaha_xml_writer.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "libxml/xmlwriter.h"
 #include "net/base/backoff_entry.h"
@@ -302,7 +304,7 @@ void OmahaService::Start(net::URLRequestContextGetter* request_context_getter,
   DCHECK(!result->request_context_getter_);
   result->request_context_getter_ = request_context_getter;
   result->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::Bind(&OmahaService::SendOrScheduleNextPing,
                                       base::Unretained(result)));
 }
@@ -386,8 +388,8 @@ void OmahaService::Initialize() {
 // static
 void OmahaService::GetDebugInformation(
     const base::Callback<void(base::DictionaryValue*)> callback) {
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&OmahaService::GetDebugInformationOnIOThread,
                  base::Unretained(GetInstance()), callback));
 }
@@ -630,8 +632,8 @@ void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   // Send notification for updates if needed.
   UpgradeRecommendedDetails* details = [delegate upgradeRecommendedDetails];
   if (details) {
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::UI},
         base::Bind(upgrade_recommended_callback_, *details));
   }
 }
@@ -661,7 +663,7 @@ void OmahaService::GetDebugInformationOnIOThread(
                         (timer_.desired_run_time() - base::TimeTicks::Now())));
 
   // Sending the value to the callback.
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                            base::Bind(callback, base::Owned(result.release())));
 }
 

@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "net/base/filename_util.h"
@@ -107,11 +109,11 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
                     task:(NSURLSessionTask*)task
     didCompleteWithError:(nullable NSError*)error {
   __weak CRWURLSessionDelegate* weakSelf = self;
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                        CRWURLSessionDelegate* strongSelf = weakSelf;
-                        if (strongSelf.propertiesBlock)
-                          strongSelf.propertiesBlock(task, error);
-                      }));
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                             CRWURLSessionDelegate* strongSelf = weakSelf;
+                             if (strongSelf.propertiesBlock)
+                               strongSelf.propertiesBlock(task, error);
+                           }));
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -123,25 +125,25 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   using Bytes = const void* _Nonnull;
   [data enumerateByteRangesUsingBlock:^(Bytes bytes, NSRange range, BOOL*) {
     auto buffer = GetBuffer(bytes, range.length);
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                          CRWURLSessionDelegate* strongSelf = weakSelf;
-                          if (!strongSelf.dataBlock) {
-                            dispatch_semaphore_signal(semaphore);
-                            return;
-                          }
-                          strongSelf.dataBlock(std::move(buffer), ^{
-                            // Data was written to disk, unblock queue to read
-                            // the next chunk of downloaded data.
-                            dispatch_semaphore_signal(semaphore);
-                          });
-                        }));
+    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                               CRWURLSessionDelegate* strongSelf = weakSelf;
+                               if (!strongSelf.dataBlock) {
+                                 dispatch_semaphore_signal(semaphore);
+                                 return;
+                               }
+                               strongSelf.dataBlock(std::move(buffer), ^{
+                                 // Data was written to disk, unblock queue to
+                                 // read the next chunk of downloaded data.
+                                 dispatch_semaphore_signal(semaphore);
+                               });
+                             }));
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
   }];
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                        CRWURLSessionDelegate* strongSelf = weakSelf;
-                        if (strongSelf.propertiesBlock)
-                          weakSelf.propertiesBlock(task, nil);
-                      }));
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                             CRWURLSessionDelegate* strongSelf = weakSelf;
+                             if (strongSelf.propertiesBlock)
+                               weakSelf.propertiesBlock(task, nil);
+                           }));
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -381,9 +383,9 @@ void DownloadTaskImpl::GetCookies(
   if (@available(iOS 11, *)) {
     GetWKCookies(callback);
   } else {
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                          callback.Run([NSArray array]);
-                        }));
+    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                               callback.Run([NSArray array]);
+                             }));
   }
 }
 

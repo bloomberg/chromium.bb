@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/task/task_executor.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_task_traits.h"
@@ -47,14 +48,15 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
-    return WebThread::PostDelayedTask(id_, from_here, std::move(task), delay);
+    return base::PostDelayedTaskWithTraits(from_here, {id_}, std::move(task),
+                                           delay);
   }
 
   bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
-    return WebThread::PostNonNestableDelayedTask(id_, from_here,
-                                                 std::move(task), delay);
+    return base::PostDelayedTaskWithTraits(from_here, {id_, NonNestable()},
+                                           std::move(task), delay);
   }
 
   bool RunsTasksInCurrentSequence() const override {

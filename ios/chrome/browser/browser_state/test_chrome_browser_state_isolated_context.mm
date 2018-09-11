@@ -5,7 +5,9 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_isolated_context.h"
 
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -22,7 +24,8 @@ TestChromeBrowserStateWithIsolatedContext::
           RefcountedTestingFactories()),
       main_context_called_(false),
       request_context_(new net::TestURLRequestContextGetter(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::IO))) {}
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}))) {
+}
 
 TestChromeBrowserStateWithIsolatedContext::
     ~TestChromeBrowserStateWithIsolatedContext() {}

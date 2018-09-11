@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -106,8 +107,8 @@ const int kNoActiveCopy = 0;
   });
 
   // Delays launching alert by |kAlertDelayInMs|.
-  web::WebThread::PostDelayedTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         // Checks that the copy has not finished yet.
         if (callbackID == weakSelf.activeID) {
           [weakSelf.alertCoordinator start];

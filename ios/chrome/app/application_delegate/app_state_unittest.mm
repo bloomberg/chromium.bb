@@ -11,6 +11,7 @@
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_block.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state_testing.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
@@ -47,6 +48,7 @@
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -323,7 +325,7 @@ class AppStateWithThreadTest : public PlatformTest {
     BOOL created = NO;
     base::Lock* lock = new base::Lock;
 
-    web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                              base::Bind(&createTracker, &created, lock));
 
     CFTimeInterval start = CACurrentMediaTime();

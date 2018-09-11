@@ -14,9 +14,11 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -69,7 +71,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToThread(
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
   }
 }
 

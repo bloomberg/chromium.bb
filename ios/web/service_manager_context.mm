@@ -17,10 +17,12 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "ios/web/grit/ios_web_resources.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/service_manager_connection_impl.h"
 #include "services/catalog/manifest_provider.h"
@@ -98,18 +100,17 @@ class ServiceManagerContext::InProcessServiceManagerContext
   void Start(
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
       std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
-    WebThread::GetTaskRunnerForThread(WebThread::IO)
-        ->PostTask(FROM_HERE,
-                   base::Bind(&InProcessServiceManagerContext::StartOnIOThread,
-                              this, base::Passed(&manifest_provider),
-                              base::Passed(&packaged_services_service_info)));
+    base::PostTaskWithTraits(
+        FROM_HERE, {WebThread::IO},
+        base::BindOnce(&InProcessServiceManagerContext::StartOnIOThread, this,
+                       base::Passed(&manifest_provider),
+                       base::Passed(&packaged_services_service_info)));
   }
 
   void ShutDown() {
-    WebThread::GetTaskRunnerForThread(WebThread::IO)
-        ->PostTask(
-            FROM_HERE,
-            base::Bind(&InProcessServiceManagerContext::ShutDownOnIOThread,
+    base::PostTaskWithTraits(
+        FROM_HERE, {WebThread::IO},
+        base::BindOnce(&InProcessServiceManagerContext::ShutDownOnIOThread,
                        this));
   }
 
@@ -171,12 +172,12 @@ ServiceManagerContext::ServiceManagerContext() {
 
   packaged_services_connection_ = ServiceManagerConnection::Create(
       std::move(packaged_services_request),
-      WebThread::GetTaskRunnerForThread(WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}));
 
   service_manager::mojom::ServicePtr root_browser_service;
   ServiceManagerConnection::Set(ServiceManagerConnection::Create(
       mojo::MakeRequest(&root_browser_service),
-      WebThread::GetTaskRunnerForThread(WebThread::IO)));
+      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO})));
   auto* browser_connection = ServiceManagerConnection::Get();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;

@@ -7,11 +7,13 @@
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/referrer_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -130,8 +132,8 @@ void ImageFetchTabHelper::GetImageDataByJs(const GURL& url,
   DCHECK_EQ(js_callbacks_.count(call_id_), 0UL);
   js_callbacks_.insert({call_id_, std::move(callback)});
 
-  web::WebThread::PostDelayedTask(
-      web::WebThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
       base::BindRepeating(&ImageFetchTabHelper::OnJsTimeout,
                           weak_ptr_factory_.GetWeakPtr(), call_id_),
       timeout);

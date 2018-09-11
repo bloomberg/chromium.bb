@@ -13,11 +13,13 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
+#include "base/task/post_task.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/network_context_owner.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -94,7 +96,7 @@ class BrowserStateServiceManagerConnectionHolder
       service_manager::mojom::ServiceRequest request)
       : service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            WebThread::GetTaskRunnerForThread(WebThread::IO))) {}
+            base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}))) {}
   ~BrowserStateServiceManagerConnectionHolder() override {}
 
   ServiceManagerConnection* service_manager_connection() {

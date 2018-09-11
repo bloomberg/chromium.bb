@@ -44,6 +44,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_layer.h"
@@ -208,7 +209,7 @@ void IOSChromeMainParts::PostDestroyThreads() {
 // This will be called after the command-line has been mutated by about:flags
 void IOSChromeMainParts::SetupFieldTrials() {
   base::SetRecordActionTaskRunner(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.

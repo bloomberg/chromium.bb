@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
@@ -127,7 +128,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
                              _certPolicyCache->AllowCertForHost(
                                  cert.get(), base::SysNSStringToUTF8(host),
                                  status);
@@ -164,8 +165,8 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                      completionHandler:(web::PolicyDecisionHandler)handler {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(handler);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
         // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:| can
         // only be called on IO thread.
         net::CertStatus certStatus =
@@ -177,7 +178,7 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                                        serverTrust:trust.get()
                                               host:host];
 
-        web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                  base::BindOnce(^{
                                    handler(policy, certStatus);
                                  }));

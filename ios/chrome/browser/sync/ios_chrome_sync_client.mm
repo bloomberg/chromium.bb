@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -71,6 +72,7 @@
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/device_form_factor.h"
 
@@ -182,8 +184,9 @@ void IOSChromeSyncClient::Initialize() {
         this, ::GetChannel(), ::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         prefs::kSavingBrowserHistoryDisabled,
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), db_thread_,
-        profile_web_data_service_, account_web_data_service_, password_store_,
+        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+        db_thread_, profile_web_data_service_, account_web_data_service_,
+        password_store_,
         ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
   }
 }
@@ -393,7 +396,7 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
       return nullptr;
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_HISTORY: {
@@ -402,7 +405,7 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
         return nullptr;
       return new browser_sync::HistoryModelWorker(
           history_service->AsWeakPtr(),
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
     }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_)

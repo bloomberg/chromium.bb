@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -36,6 +37,7 @@
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -55,8 +57,8 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
       base::Bind(&UpdateNetworkTimeOnUIThread, network_time, resolution,
                  latency, base::TimeTicks::Now()));
 }

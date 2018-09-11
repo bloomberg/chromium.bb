@@ -4,9 +4,11 @@
 
 #include "ios/chrome/browser/net/ios_chrome_http_user_agent_settings.h"
 
+#include "base/task/post_task.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_util.h"
 
@@ -22,7 +24,7 @@ IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);
   pref_accept_language_.MoveToThread(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 }
 
 IOSChromeHttpUserAgentSettings::~IOSChromeHttpUserAgentSettings() {

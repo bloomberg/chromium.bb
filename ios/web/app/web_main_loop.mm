@@ -17,6 +17,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
+#include "base/task/post_task.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_restrictions.h"
@@ -24,6 +25,7 @@
 #include "ios/web/public/app/web_main_parts.h"
 #include "ios/web/public/global_state/ios_global_state.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/service_manager_context.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
@@ -158,8 +160,8 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
-  WebThread::PostTask(
-      WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {WebThread::IO},
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 

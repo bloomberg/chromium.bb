@@ -19,9 +19,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/shared_resources_data_source_ios.h"
 #include "ios/web/webui/url_data_source_ios_impl.h"
@@ -393,9 +395,10 @@ void GetMimeTypeOnUI(URLDataSourceIOSImpl* source,
                      const base::WeakPtr<URLRequestChromeJob>& job) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
   std::string mime_type = source->source()->GetMimeType(path);
-  WebThread::PostTask(WebThread::IO, FROM_HERE,
-                      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job,
-                                 base::RetainedRef(source), mime_type));
+  base::PostTaskWithTraits(
+      FROM_HERE, {WebThread::IO},
+      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job,
+                 base::RetainedRef(source), mime_type));
 }
 
 }  // namespace
@@ -512,7 +515,7 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   // message loop before request for data. And correspondingly their
   // replies are put on the IO thread in the same order.
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI});
   target_runner->PostTask(
       FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
                             job->weak_factory_.GetWeakPtr()));
