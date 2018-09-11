@@ -53,6 +53,7 @@ template("js_library") {
                              "externs_list",
                              "extra_sources",
                              "extra_deps",
+                             "visibility",
                            ])
     output_file = "$target_gen_dir/$target_name.js_library"
     outputs = [

@@ -4,6 +4,8 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+visibility = [ "//ui/file_manager/file_manager/foreground/*" ]
+
 js_type_check("closure_compile") {
   deps = [
     ":actions_submenu",
@@ -261,13 +263,17 @@ js_library("file_tap_handler") {
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_alert_dialog") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_confirm_dialog") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
@@ -319,6 +325,9 @@ js_library("multi_profile_share_dialog") {
 }
 
 js_library("progress_center_panel") {
+  # The progress_center on the background page maintains a list of panels.
+  visibility += [ "//ui/file_manager/file_manager/background/*" ]
+
   deps = [
     "..:progress_center_item_group",
     "../../../common/js:progress_center_common",
@@ -349,7 +358,9 @@ js_library("search_box") {
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("share_dialog") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     ":file_manager_dialog_base",
     "..:share_client",
