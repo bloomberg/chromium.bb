@@ -700,11 +700,11 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  // Run the message loop. An additional notification will be received when
-  // Shill updates the enabled technologies. The state should remain AVAILABLE.
+  // Run the message loop. No additional notification should be received when
+  // Shill updates the enabled technologies since the state remains AVAILABLE.
   test_observer_->reset_change_counts();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(0u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
