@@ -212,7 +212,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   if (!this.document_.querySelector('link[drive-welcome-style]')) {
     var style = this.document_.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'foreground/css/drive_welcome.css';
+    style.href = constants.DRIVE_WELCOME_CSS;
     style.setAttribute('drive-welcome-style', '');
     this.document_.head.appendChild(style);
   }

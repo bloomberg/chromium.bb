@@ -18,6 +18,7 @@ js_type_check("closure_compile_module") {
     ":closure_compile_externs",
     ":column_visibility_controller",
     ":constants",
+    ":crostini",
     ":dialog_action_controller",
     ":dialog_type",
     ":directory_contents",
@@ -157,6 +158,12 @@ js_library("dialog_action_controller") {
     "metadata:metadata_model",
     "ui:dialog_footer",
     "//ui/webui/resources/js/cr/ui:command",
+  ]
+}
+
+js_library("crostini") {
+  deps = [
+    ":volume_manager_wrapper",
   ]
 }
 
@@ -304,6 +311,7 @@ js_library("file_selection") {
 
 js_library("file_tasks") {
   deps = [
+    ":crostini",
     ":directory_model",
     ":task_history",
     ":volume_manager_wrapper",

@@ -188,7 +188,7 @@ FileTasks.create = function(
       // a dialog with an error message, similar to when attempting to run
       // Crostini tasks with non-Crostini entries.
       if (entries.length !== 1 ||
-          !FileTasks.isCrostiniEntry_(entries[0], volumeManager)) {
+          !Crostini.isCrostiniEntry(entries[0], volumeManager)) {
         taskItems = taskItems.filter(function(item) {
           var taskParts = item.taskId.split('|');
           var appId = taskParts[0];
@@ -449,23 +449,12 @@ FileTasks.isCrostiniTask_ = function(taskId) {
 };
 
 /**
- * @param {!Entry} entry
- * @param {!VolumeManagerWrapper} volumeManager
- * @return {boolean} True if the entry is from crostini.
- * @private
- */
-FileTasks.isCrostiniEntry_ = function(entry, volumeManager) {
-  return volumeManager.getLocationInfo(entry).rootType ===
-      VolumeManagerCommon.RootType.CROSTINI;
-};
-
-/**
  * @return {boolean} True if all entries are crostini.
  * @private
  */
 FileTasks.prototype.allCrostiniEntries_ = function() {
   return this.entries_.every(
-      entry => FileTasks.isCrostiniEntry_(entry, this.volumeManager_));
+      entry => Crostini.isCrostiniEntry(entry, this.volumeManager_));
 };
 
 /**

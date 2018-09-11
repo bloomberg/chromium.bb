@@ -9,6 +9,7 @@ var test = test || {};
 
 // Update paths for testing.
 constants.FILES_QUICK_VIEW_HTML = 'test/gen/elements/files_quick_view.html';
+constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
 test.DATA = {
