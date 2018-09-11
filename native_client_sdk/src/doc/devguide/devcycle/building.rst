@@ -32,7 +32,7 @@ embedded in web pages and execute them as part of a web application.
 
 As explained in the Technical Overview, PNaCl modules are
 operating-system-independent **and** processor-independent. The same **pexe**
-will run on Windows, Mac OS X, Linux, and ChromeOS and it will run on x86-32,
+will run on Windows, macOS, Linux, and Chrome OS and it will run on x86-32,
 x86-64, ARM and MIPS processors.
 
 Native Client also supports architecture-specific **nexe** files.

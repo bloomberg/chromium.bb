@@ -9,7 +9,7 @@ applicable.
 
 Requirements:
   * An x86 (sorry no arm) Desktop / Laptop
-    Windows, Mac, Linux, or ChromeOS browser
+    Windows, macOS, Linux, or Chrome OS browser
     |cpp_check|
   * A fast broadband connection (500MB download)
   * Can read and write C++

@@ -75,9 +75,9 @@ Make
 Platforms
 ---------
 
-Native Client supports several operating systems, including Windows, Linux, OSX,
-and ChromeOS. It supports several architectures including on x86-32, x86-64,
-ARM, and MIPS.
+Native Client supports several operating systems, including Windows, Linux,
+macOS, and Chrome OS. It supports several architectures including on x86-32,
+x86-64, ARM, and MIPS.
 
 .. _versioning:
 

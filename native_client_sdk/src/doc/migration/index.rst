@@ -16,7 +16,7 @@ web apps and that usage of PNaCl is sufficiently low to warrant deprecation.
 We also recently announced the deprecation Q1 2018 of
 `Chrome Apps
 <https://blog.chromium.org/2016/08/from-chrome-apps-to-web.html>`_
-outside of ChromeOS.
+outside of Chrome OS.
 
 
 Toolchain Migration
