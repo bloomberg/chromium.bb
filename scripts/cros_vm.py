@@ -9,9 +9,11 @@ from __future__ import print_function
 
 import argparse
 import distutils.version
+import errno
 import multiprocessing
 import os
 import re
+import socket
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
@@ -258,6 +260,31 @@ class VM(object):
       raise VMError('VM image does not exist: %s' % self.image_path)
     logging.debug('VM image path: %s', self.image_path)
 
+  def _WaitForSSHPort(self):
+    """Wait for SSH port to become available."""
+    class _SSHPortInUseError(Exception):
+      """Exception for _CheckSSHPortBusy to throw."""
+
+    def _CheckSSHPortBusy(ssh_port):
+      """Check if the SSH port is in use."""
+      sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      try:
+        sock.bind((remote_access.LOCALHOST_IP, ssh_port))
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          logging.info('SSH port %d in use...', self.ssh_port)
+          raise _SSHPortInUseError()
+      sock.close()
+
+    try:
+      retry_util.RetryException(
+          exception=_SSHPortInUseError,
+          max_retry=7,
+          functor=lambda: _CheckSSHPortBusy(self.ssh_port),
+          sleep=1)
+    except _SSHPortInUseError:
+      raise VMError('SSH port %d in use' % self.ssh_port)
+
   def Run(self):
     """Performs an action, one of start, stop, or run a command in the VM."""
     if not self.start and not self.stop and not self.cmd:
@@ -276,6 +303,7 @@ class VM(object):
     """Start the VM."""
 
     self.Stop()
+    self._WaitForSSHPort()
 
     logging.debug('Start VM')
     self._SetQemuPath()
@@ -305,8 +333,8 @@ class VM(object):
         # Append 'check' to warn if the requested CPU is not fully supported.
         '-cpu', self.qemu_cpu + ',check',
         '-device', 'virtio-net,netdev=eth0',
-        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:127.0.0.1:%d-:22'
-        % self.ssh_port,
+        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:22'
+        % (remote_access.LOCALHOST_IP, self.ssh_port),
         '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=%s'
         % (self.image_path, self.image_format),
     ]
@@ -382,7 +410,7 @@ class VM(object):
       try:
         retry_util.RetryException(
             exception=_TooFewPidsException,
-            max_retry=20,
+            max_retry=5,
             functor=lambda: _GetRunningPids(exe, numpids),
             sleep=2)
       except _TooFewPidsException:
