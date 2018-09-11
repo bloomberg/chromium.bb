@@ -305,7 +305,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     BitstreamBuffer buffer;
 
     // |memory| may be null if buffer has no data.
-    std::unique_ptr<WritableUnalignedMapping> memory;
+    std::unique_ptr<UnalignedSharedMemory> memory;
   };
 
   // Encoded bitstream buffers to be passed to media codec, queued until an

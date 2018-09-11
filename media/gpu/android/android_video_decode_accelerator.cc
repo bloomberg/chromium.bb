@@ -247,10 +247,8 @@ AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
     const BitstreamBuffer& bitstream_buffer)
     : buffer(bitstream_buffer) {
   if (buffer.id() != -1) {
-    memory.reset(new WritableUnalignedMapping(buffer.handle(), buffer.size(),
-                                              buffer.offset()));
-    // The handle is no longer needed and can be closed.
-    bitstream_buffer.handle().Close();
+    memory.reset(
+        new UnalignedSharedMemory(buffer.handle(), buffer.size(), true));
   }
 }
 
@@ -648,15 +646,16 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     return true;
   }
 
-  std::unique_ptr<WritableUnalignedMapping> shm;
+  std::unique_ptr<UnalignedSharedMemory> shm;
 
   if (pending_input_buf_index_ == -1) {
     // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
     // from MediaCodec, filled with data and bitstream_buffer.handle() is
     // closed.
     shm = std::move(pending_bitstream_records_.front().memory);
+    auto* buffer = &pending_bitstream_records_.front().buffer;
 
-    if (!shm->IsValid()) {
+    if (!shm->MapAt(buffer->offset(), buffer->size())) {
       NOTIFY_ERROR(UNREADABLE_INPUT, "UnalignedSharedMemory::Map() failed");
       return false;
     }

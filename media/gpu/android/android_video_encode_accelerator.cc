@@ -424,12 +424,11 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
 
   BitstreamBuffer bitstream_buffer = available_bitstream_buffers_.back();
   available_bitstream_buffers_.pop_back();
-  auto shm = std::make_unique<WritableUnalignedMapping>(
-      bitstream_buffer.handle(), bitstream_buffer.size(),
-      bitstream_buffer.offset());
-  // The handle is no longer needed and should be closed.
-  bitstream_buffer.handle().Close();
-  RETURN_ON_FAILURE(shm->IsValid(), "Failed to map SHM", kPlatformFailureError);
+  auto shm = std::make_unique<UnalignedSharedMemory>(
+      bitstream_buffer.handle(), bitstream_buffer.size(), false);
+  RETURN_ON_FAILURE(
+      shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size()),
+      "Failed to map SHM", kPlatformFailureError);
   RETURN_ON_FAILURE(
       size <= bitstream_buffer.size(),
       "Encoded buffer too large: " << size << ">" << bitstream_buffer.size(),
