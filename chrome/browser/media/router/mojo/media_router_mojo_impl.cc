@@ -248,6 +248,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
                                       base::TimeDelta timeout,
                                       bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(callback);
   const MediaSink* sink = GetSinkById(sink_id);
   if (!sink) {
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
