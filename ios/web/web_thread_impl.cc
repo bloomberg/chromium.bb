@@ -159,8 +159,9 @@ class WebThreadTaskExecutor : public base::TaskExecutor {
                                  const base::TaskTraits& traits,
                                  base::OnceClosure task,
                                  base::TimeDelta delay) override {
-    return PostTaskHelper(GetWebThreadIdentifier(traits), from_here,
-                          std::move(task), delay, true);
+    return PostTaskHelper(
+        GetWebThreadIdentifier(traits), from_here, std::move(task), delay,
+        traits.GetExtension<WebTaskTraitsExtension>().nestable());
   }
 
   scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(

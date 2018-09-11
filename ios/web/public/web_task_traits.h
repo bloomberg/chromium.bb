@@ -11,6 +11,15 @@
 
 namespace web {
 
+// Tasks with this trait will not be executed inside a nested RunLoop.
+//
+// Note: This should rarely be required. Drivers of nested loops should instead
+// make sure to be reentrant when allowing nested application tasks (also rare).
+//
+// TODO(crbug.com/876272): Investigate removing this trait -- and any logic for
+// deferred tasks in MessageLoop.
+struct NonNestable {};
+
 // TaskTraits for running tasks on a WebThread.
 //
 // These traits enable the use of the //base/task/post_task.h APIs to post tasks
@@ -33,6 +42,7 @@ class WebTaskTraitsExtension {
 
   struct ValidTrait {
     ValidTrait(WebThread::ID) {}
+    ValidTrait(NonNestable) {}
   };
 
   template <
@@ -42,25 +52,37 @@ class WebTaskTraitsExtension {
   constexpr WebTaskTraitsExtension(ArgTypes... args)
       : web_thread_(base::trait_helpers::GetValueFromArgList(
             base::trait_helpers::RequiredEnumArgGetter<WebThread::ID>(),
+            args...)),
+        nestable_(!base::trait_helpers::GetValueFromArgList(
+            base::trait_helpers::BooleanArgGetter<NonNestable>(),
             args...)) {}
 
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
-    static_assert(4 == sizeof(WebTaskTraitsExtension),
+    static_assert(8 == sizeof(WebTaskTraitsExtension),
                   "Update Serialize() and Parse() when changing "
                   "WebTaskTraitsExtension");
-    return {kExtensionId, {static_cast<uint8_t>(web_thread_)}};
+    return {
+        kExtensionId,
+        {static_cast<uint8_t>(web_thread_), static_cast<uint8_t>(nestable_)}};
   }
 
   static const WebTaskTraitsExtension Parse(
       const base::TaskTraitsExtensionStorage& extension) {
-    return WebTaskTraitsExtension(
-        static_cast<WebThread::ID>(extension.data[0]));
+    return WebTaskTraitsExtension(static_cast<WebThread::ID>(extension.data[0]),
+                                  static_cast<bool>(extension.data[1]));
   }
 
   constexpr WebThread::ID web_thread() const { return web_thread_; }
 
+  // Returns true if tasks with these traits may run in a nested RunLoop.
+  constexpr bool nestable() const { return nestable_; }
+
  private:
+  WebTaskTraitsExtension(WebThread::ID web_thread, bool nestable)
+      : web_thread_(web_thread), nestable_(nestable) {}
+
   WebThread::ID web_thread_;
+  bool nestable_;
 };
 
 template <class... ArgTypes,
