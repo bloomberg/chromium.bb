@@ -1134,7 +1134,7 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 #if defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_) {
-    key_ = DomKey::FromCharacter(native_event.wParam);
+    key_ = DomKey::FromCharacter(static_cast<int32_t>(native_event.wParam));
     set_flags(PlatformKeyMap::ReplaceControlAndAltWithAltGraph(flags()));
   } else {
     int adjusted_flags = flags();
