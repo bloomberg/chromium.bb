@@ -90,8 +90,6 @@
 -DemoSetupTest.OnlineSetupFlowSuccess
 -DemoSetupTest.ShowOfflineSetupOptionOnNetworkList
 -EulaTest.LoadOffline
--MultiDeviceSetupBrowserTest.Integration
--MultiDeviceSetupBrowserTest.StartSetupPage
 -OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDownloads
 -OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDownloads_GuestMode
 -OpenAudioFiles/FilesAppBrowserTest.Test/audioOpenDrive
@@ -296,8 +294,7 @@ MediaRouterElementsBrowserTest.MediaRouterHeader
 Mock4JSWebUITest.*
 Mock4JSWebUITest.*
 Mock4JSWebUITestFails.*
-MultiDeviceSetupBrowserTest.Integration
-MultiDeviceSetupBrowserTest.SetupSucceededPage
+MultiDeviceSetupBrowserTest.*
 MultiProfileDriveFileSystemExtensionApiTest.*
 MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
