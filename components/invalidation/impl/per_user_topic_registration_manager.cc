@@ -39,9 +39,9 @@ const char kFCMOAuthScope[] =
     "https://www.googleapis.com/auth/firebase.messaging";
 
 using SubscriptionFinishedCallback =
-    base::OnceCallback<void(Topic id,
-                            const Status& code,
-                            const std::string& private_topic_name,
+    base::OnceCallback<void(Topic topic,
+                            Status code,
+                            std::string private_topic_name,
                             PerUserTopicRegistrationRequest::RequestType type)>;
 
 static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
@@ -110,7 +110,8 @@ PerUserTopicRegistrationManager::RegistrationEntry::~RegistrationEntry() {}
 void PerUserTopicRegistrationManager::RegistrationEntry::RegistrationFinished(
     const Status& code,
     const std::string& topic_name) {
-  std::move(completion_callback).Run(id, code, topic_name, type);
+  if (completion_callback)
+    std::move(completion_callback).Run(id, code, topic_name, type);
 }
 
 PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
@@ -139,9 +140,9 @@ void PerUserTopicRegistrationManager::Init() {
         !private_topic_name.empty()) {
       topic_to_private_topic_[topic] = private_topic_name;
       continue;
-      }
+    }
     // Remove saved pref.
-      keys_to_remove.push_back(topic);
+    keys_to_remove.push_back(topic);
   }
 
   // Delete prefs, which weren't decoded successfully.
@@ -153,35 +154,35 @@ void PerUserTopicRegistrationManager::Init() {
 }
 
 void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
-    const TopicSet& ids,
+    const TopicSet& topics,
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_ = instance_id_token;
   // TODO(melandory): On change of token registrations
   // should be re-requested.
-  for (const auto& id : ids) {
+  for (const auto& topic : topics) {
     // If id isn't registered, schedule the registration.
-    if (topic_to_private_topic_.find(id) == topic_to_private_topic_.end()) {
-      registration_statuses_[id] = std::make_unique<RegistrationEntry>(
-          id,
+    if (topic_to_private_topic_.find(topic) == topic_to_private_topic_.end()) {
+      registration_statuses_[topic] = std::make_unique<RegistrationEntry>(
+          topic,
           base::BindOnce(
-              &PerUserTopicRegistrationManager::RegistrationFinishedForId,
+              &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::SUBSCRIBE);
     }
   }
 
-  // There is registered id, which need to be unregistered.
+  // There is registered topic, which need to be unregistered.
   // Schedule unregistration and immediately remove from
   // |topic_to_private_topic_|
   for (auto it = topic_to_private_topic_.begin();
        it != topic_to_private_topic_.end();) {
-    auto id = it->first;
-    if (ids.find(id) == ids.end()) {
-      registration_statuses_[id] = std::make_unique<RegistrationEntry>(
-          id,
+    auto topic = it->first;
+    if (topics.find(topic) == topics.end()) {
+      registration_statuses_[topic] = std::make_unique<RegistrationEntry>(
+          topic,
           base::BindOnce(
-              &PerUserTopicRegistrationManager::RegistrationFinishedForId,
+              &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::UNSUBSCRIBE);
       it = topic_to_private_topic_.erase(it);
@@ -223,28 +224,28 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
       parse_json_, url_loader_factory_);
 }
 
-void PerUserTopicRegistrationManager::RegistrationFinishedForId(
-    Topic id,
-    const Status& code,
-    const std::string& private_topic_name,
+void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
+    Topic topic,
+    Status code,
+    std::string private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
   if (code.IsSuccess()) {
-    auto it = registration_statuses_.find(id);
+    auto it = registration_statuses_.find(topic);
     registration_statuses_.erase(it);
     DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
     switch (type) {
       case PerUserTopicRegistrationRequest::SUBSCRIBE: {
-        update->SetKey(id, base::Value(private_topic_name));
-        topic_to_private_topic_[id] = private_topic_name;
+        update->SetKey(topic, base::Value(private_topic_name));
+        topic_to_private_topic_[topic] = private_topic_name;
         break;
       }
       case PerUserTopicRegistrationRequest::UNSUBSCRIBE: {
-        update->RemoveKey(id);
+        update->RemoveKey(topic);
         break;
       }
     }
-
     local_state_->CommitPendingWrite();
+    return;
   }
   // TODO(melandory): reschedule subscription or unsubscription attempt
   // in case of failure.

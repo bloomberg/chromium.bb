@@ -35,13 +35,17 @@ void FCMSyncNetworkChannel::NotifyChannelStateChange(
     observer.OnFCMSyncNetworkChannelStateChanged(invalidator_state);
 }
 
-bool FCMSyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {
+bool FCMSyncNetworkChannel::DeliverIncomingMessage(
+    const std::string& payload,
+    const std::string& private_topic,
+    const std::string& public_topic,
+    const std::string& version) {
   if (!incoming_receiver_) {
     DLOG(ERROR) << "No receiver for incoming notification";
     return false;
   }
   received_messages_count_++;
-  incoming_receiver_.Run(message);
+  incoming_receiver_.Run(payload, private_topic, public_topic, version);
   return true;
 }
 

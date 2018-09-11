@@ -23,7 +23,9 @@ namespace {
 
 const char kInvalidationsAppId[] = "com.google.chrome.fcm.invalidations";
 const char kInvalidationGCMSenderId[] = "8181035976";
-const char kContentKey[] = "data";
+const char kPayloadKey[] = "payload";
+const char kPublicTopic[] = "external_name";
+const char kVersionKey[] = "version";
 
 // OAuth2 Scope passed to getToken to obtain GCM registration tokens.
 // Must match Java GoogleCloudMessaging.INSTANCE_ID_SCOPE.
@@ -31,6 +33,15 @@ const char kGCMScope[] = "GCM";
 
 // Lower bound time between two token validations when listening.
 const int kTokenValidationPeriodMinutesDefault = 60 * 24;
+
+std::string GetValueFromMessage(const gcm::IncomingMessage& message,
+                                const std::string& key) {
+  std::string value;
+  auto it = message.data.find(key);
+  if (it != message.data.end())
+    value = it->second;
+  return value;
+}
 
 }  // namespace
 
@@ -144,21 +155,25 @@ void FCMNetworkHandler::OnStoreReset() {}
 void FCMNetworkHandler::OnMessage(const std::string& app_id,
                                   const gcm::IncomingMessage& message) {
   DCHECK_EQ(app_id, kInvalidationsAppId);
-  std::string content;
-  auto it = message.data.find(kContentKey);
-  if (it != message.data.end())
-    content = it->second;
-  if (content.empty()) {
+  std::string payload = GetValueFromMessage(message, kPayloadKey);
+  std::string version = GetValueFromMessage(message, kVersionKey);
+
+  // Version must always be there.
+  if (version.empty())
     return;
-  }
+
+  std::string public_topic = GetValueFromMessage(message, kPublicTopic);
+
+  // Public topic must always be there.
+  if (public_topic.empty())
+    return;
 
   // TODO(melandory): check if content is empty and report.
-  // TODO(melandory): decode base64 and report in case it is invalid.
-  // TODO(melandory): parse proto and record histogram in case of invalid proto.
   // TODO(melandory): report histogram in case of success.
 
+  std::string private_topic = message.sender_id;
   UpdateGcmChannelState(true);
-  DeliverIncomingMessage(content);
+  DeliverIncomingMessage(payload, private_topic, public_topic, version);
 }
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {

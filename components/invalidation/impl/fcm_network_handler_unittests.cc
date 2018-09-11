@@ -31,7 +31,11 @@ namespace syncer {
 namespace {
 
 const char kInvalidationsAppId[] = "com.google.chrome.fcm.invalidations";
-using DataCallback = base::RepeatingCallback<void(const std::string& message)>;
+using TokenCallback = base::RepeatingCallback<void(const std::string& message)>;
+using MessageCallback = base::RepeatingCallback<void(const std::string&,
+                                                     const std::string&,
+                                                     const std::string&,
+                                                     const std::string&)>;
 
 base::Time GetDummyNow() {
   base::Time out_time;
@@ -142,17 +146,39 @@ class MockInstanceIDDriver : public InstanceIDDriver {
   DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
 };
 
-class MockOnDataCallback {
+class MockOnTokenCallback {
  public:
   // Workaround for gMock's lack of support for movable-only arguments.
   void WrappedRun(const std::string& token) { Run(token); }
 
-  DataCallback Get() {
-    return base::BindRepeating(&MockOnDataCallback::WrappedRun,
+  TokenCallback Get() {
+    return base::BindRepeating(&MockOnTokenCallback::WrappedRun,
                                base::Unretained(this));
   }
 
   MOCK_METHOD1(Run, void(const std::string&));
+};
+
+class MockOnMessageCallback {
+ public:
+  // Workaround for gMock's lack of support for movable-only arguments.
+  void WrappedRun(const std::string& payload,
+                  const std::string& private_topic_name,
+                  const std::string& public_topic_name,
+                  const std::string& version) {
+    Run(payload, private_topic_name, public_topic_name, version);
+  }
+
+  MessageCallback Get() {
+    return base::BindRepeating(&MockOnMessageCallback::WrappedRun,
+                               base::Unretained(this));
+  }
+
+  MOCK_METHOD4(Run,
+               void(const std::string&,
+                    const std::string&,
+                    const std::string&,
+                    const std::string&));
 };
 
 ACTION_TEMPLATE(InvokeCallbackArgument,
@@ -216,7 +242,7 @@ class FCMNetworkHandlerTest : public testing::Test {
 TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceRecieved) {
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
 
-  MockOnDataCallback mock_on_token_callback;
+  MockOnTokenCallback mock_on_token_callback;
   handler->SetTokenReceiver(mock_on_token_callback.Get());
 
   // Check that the handler gets the token through GetToken.
@@ -230,7 +256,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceRecieved) {
 TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceSubscribed) {
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
 
-  MockOnDataCallback mock_on_token_callback;
+  MockOnTokenCallback mock_on_token_callback;
 
   // Check that the handler gets the token through GetToken.
   EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
@@ -244,10 +270,10 @@ TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceSubscribed) {
 }
 
 TEST_F(FCMNetworkHandlerTest, ShouldNotInvokeMessageCallbackOnEmptyMessage) {
-  MockOnDataCallback mock_on_message_callback;
+  MockOnMessageCallback mock_on_message_callback;
 
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
-  EXPECT_CALL(mock_on_message_callback, Run(_)).Times(0);
+  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
   handler->SetMessageReceiver(mock_on_message_callback.Get());
   EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
       .WillOnce(
@@ -258,7 +284,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldNotInvokeMessageCallbackOnEmptyMessage) {
 }
 
 TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
-  MockOnDataCallback mock_on_message_callback;
+  MockOnMessageCallback mock_on_message_callback;
   gcm::IncomingMessage message;
   message.data["data"] = "test";
 
@@ -267,14 +293,14 @@ TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
       .WillOnce(
           InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
   handler->StartListening();
-  EXPECT_CALL(mock_on_message_callback, Run("test")).Times(0);
+  EXPECT_CALL(mock_on_message_callback, Run("test", _, _, _)).Times(0);
   handler->SetMessageReceiver(mock_on_message_callback.Get());
   handler->OnMessage(kInvalidationsAppId, gcm::IncomingMessage());
 }
 
 TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
   // Setting up network handler.
-  MockOnDataCallback mock_on_token_callback;
+  MockOnTokenCallback mock_on_token_callback;
   auto handler = MakeHandler();
   auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
   handler->SetTokenReceiver(mock_on_token_callback.Get());
@@ -305,7 +331,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
 
 TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
   // Setting up network handler.
-  MockOnDataCallback mock_on_token_callback;
+  MockOnTokenCallback mock_on_token_callback;
   auto handler = MakeHandler();
   auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
   handler->SetTokenReceiver(mock_on_token_callback.Get());
@@ -336,7 +362,7 @@ TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
 TEST_F(FCMNetworkHandlerTest,
        ShouldScheduleTokenValidationAndDoNotActOnSameToken) {
   // Setting up network handler.
-  MockOnDataCallback mock_on_token_callback;
+  MockOnTokenCallback mock_on_token_callback;
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
   auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
   handler->SetTokenReceiver(mock_on_token_callback.Get());

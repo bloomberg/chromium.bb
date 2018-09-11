@@ -10,7 +10,10 @@
 namespace syncer {
 
 using MessageCallback =
-    base::RepeatingCallback<void(const std::string& message)>;
+    base::RepeatingCallback<void(const std::string& payload,
+                                 const std::string& private_topic,
+                                 const std::string& public_topic,
+                                 const std::string& version)>;
 using TokenCallback = base::RepeatingCallback<void(const std::string& message)>;
 
 /*
