@@ -1225,8 +1225,8 @@
     },
     {
       "id": 126,
-      "description": "Don't allow ES3 on Mac core profile < 4.1",
-      "cr_bugs": [295792],
+      "description": "Disallow use of OpenGL on Mac with core profile < 4.1",
+      "cr_bugs": [295792, 875891],
       "os": {
         "type": "macosx"
       },
@@ -1235,7 +1235,7 @@
         "value": "4.1"
       },
       "features": [
-        "accelerated_webgl2"
+        "all"
       ]
     },
     {
