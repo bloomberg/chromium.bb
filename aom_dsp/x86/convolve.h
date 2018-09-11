@@ -43,14 +43,14 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
         w -= 16;                                                             \
       }                                                                      \
       while (w >= 8) {                                                       \
-        aom_filter_block1d8_##dir##8_##avg##opt(src_start, src_stride, dst,  \
+        aom_filter_block1d8_##dir##4_##avg##opt(src_start, src_stride, dst,  \
                                                 dst_stride, h, filter);      \
         src += 8;                                                            \
         dst += 8;                                                            \
         w -= 8;                                                              \
       }                                                                      \
       while (w >= 4) {                                                       \
-        aom_filter_block1d4_##dir##8_##avg##opt(src_start, src_stride, dst,  \
+        aom_filter_block1d4_##dir##4_##avg##opt(src_start, src_stride, dst,  \
                                                 dst_stride, h, filter);      \
         src += 4;                                                            \
         dst += 4;                                                            \

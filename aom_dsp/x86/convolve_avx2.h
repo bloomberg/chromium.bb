@@ -29,6 +29,11 @@ DECLARE_ALIGNED(32, static const uint8_t, filt_d4_global_avx2[]) = {
   7, 8, 9, 10, 4, 5, 6, 7, 5, 6, 7, 8, 6, 7, 8, 9, 7, 8, 9, 10,
 };
 
+DECLARE_ALIGNED(32, static const uint8_t, filt4_d4_global_avx2[]) = {
+  2, 3, 4, 5, 3, 4, 5, 6, 4, 5, 6, 7, 5, 6, 7, 8,
+  2, 3, 4, 5, 3, 4, 5, 6, 4, 5, 6, 7, 5, 6, 7, 8,
+};
+
 static INLINE void prepare_coeffs_lowbd(
     const InterpFilterParams *const filter_params, const int subpel_q4,
     __m256i *const coeffs /* [4] */) {
