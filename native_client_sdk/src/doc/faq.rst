@@ -43,7 +43,7 @@ Why did Google build Native Client?
 * **Portability:** Native Client and Portable Native Client applications
   can execute on:
 
-  * The Windows, Mac, Linux or ChromeOS operating systems.
+  * The Windows, macOS, Linux or Chrome OS operating systems.
   * Processors with the x86-32, x86-64, or ARM instruction set
     architectures. Native Client also has experimental support for MIPS.
 
@@ -163,16 +163,16 @@ Development Environments and Tools
 What development environment and development operating system do you recommend?
 -------------------------------------------------------------------------------
 
-You can develop on Windows, Mac, or Linux, and the resulting Native Client or
+You can develop on Windows, macOS, or Linux, and the resulting Native Client or
 Portable Native Client application will run inside the Google Chrome browser on
-all those platforms as well as ChromeOS. You can also develop on ChromeOS with
+all those platforms as well as Chrome OS. You can also develop on Chrome OS with
 Crouton_ or our `experimental development environment which runs within NaCl`_,
 and we're working on self-hosting a full development environment on Portable
 Native Client.
 
 Any editor+shell combination should work as well as IDEs like Eclipse,
 Visual Studio with the :doc:`Native Client Add-In
-<devguide/devcycle/vs-addin>` on Windows, or Xcode on Mac OSX.
+<devguide/devcycle/vs-addin>` on Windows, or Xcode on macOS.
 
 I'm not familiar with native development tools, can I still use the Native Client SDK?
 --------------------------------------------------------------------------------------
@@ -538,7 +538,7 @@ My ``.pexe`` isn't loading, help!
   Client. Find your version of chrome by opening ``about:chrome``, and `update
   Chrome <http://www.google.com/chrome/>`_ if you are on an older version. If
   you're already using a recent version, open ``about:components`` and "Check
-  for update" for PNaCl. Note that on ChromeOS PNaCl is always up to date,
+  for update" for PNaCl. Note that on Chrome OS PNaCl is always up to date,
   whereas on other operating systems it updates shortly after Chrome updates.
 * A PNaCl ``.pexe`` must be compiled with pepper_31 SDK or higher. :ref:`Update
   your bundles <updating-bundles>` and make sure you're using a version of
