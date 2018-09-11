@@ -610,10 +610,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
           render_frame_metadata_observer_client_request,
       mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer);
 
-  const viz::CompositorFrameMetadata& last_frame_metadata() {
-    return last_frame_metadata_;
-  }
-
   RenderFrameMetadataProviderImpl* render_frame_metadata_provider() {
     return &render_frame_metadata_provider_;
   }
@@ -1131,17 +1127,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // we have a view. This is only used if |enable_viz_| is true.
   base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
 
-  viz::CompositorFrameMetadata last_frame_metadata_;
-
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
-
-  // If a CompositorFrame is submitted that references SharedBitmaps that don't
-  // exist yet, we keep it here until they are available.
-  struct {
-    viz::LocalSurfaceId local_surface_id;
-    viz::CompositorFrame frame;
-    base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  } saved_frame_;
 
   bool enable_surface_synchronization_ = false;
   bool enable_viz_ = false;

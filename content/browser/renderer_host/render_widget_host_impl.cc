@@ -2857,11 +2857,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   last_received_content_source_id_ = frame.metadata.content_source_id;
 
-  // |has_damage| is not transmitted.
-  frame.metadata.begin_frame_ack.has_damage = true;
-
-  last_frame_metadata_ = frame.metadata.Clone();
-
   if (enable_surface_synchronization_) {
     if (view_) {
       // If Surface Synchronization is on, then |new_content_rendering_timeout_|
