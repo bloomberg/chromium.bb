@@ -322,11 +322,11 @@ TEST_F(LifecycleTest, PackagedApp_CrashCrashesOtherProvidedApp) {
   EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageAppNameB));
   EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageName));
   size_t instance_count = instances()->GetNewInstanceCount();
-  EXPECT_EQ(3u, instance_count);
+  ASSERT_EQ(3u, instance_count);
 
   base::RunLoop loop;
-  base::RepeatingClosure quit_on_last =
-      base::BarrierClosure(instance_count, loop.QuitClosure());
+  base::RepeatingClosure quit_on_last = base::BarrierClosure(
+      static_cast<int>(instance_count), loop.QuitClosure());
   lifecycle_a.set_connection_error_handler(quit_on_last);
   lifecycle_b.set_connection_error_handler(quit_on_last);
   lifecycle_package.set_connection_error_handler(quit_on_last);
@@ -358,11 +358,11 @@ TEST_F(LifecycleTest, PackagedApp_GracefulQuitPackageQuitsAll) {
   EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageAppNameB));
   EXPECT_TRUE(instances()->HasInstanceForName(kTestPackageName));
   size_t instance_count = instances()->GetNewInstanceCount();
-  EXPECT_EQ(3u, instance_count);
+  ASSERT_EQ(3u, instance_count);
 
   base::RunLoop loop;
-  base::RepeatingClosure quit_on_last =
-      base::BarrierClosure(instance_count, loop.QuitClosure());
+  base::RepeatingClosure quit_on_last = base::BarrierClosure(
+      static_cast<int>(instance_count), loop.QuitClosure());
   lifecycle_a.set_connection_error_handler(quit_on_last);
   lifecycle_b.set_connection_error_handler(quit_on_last);
   lifecycle_package.set_connection_error_handler(quit_on_last);
