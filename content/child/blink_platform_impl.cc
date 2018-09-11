@@ -405,6 +405,8 @@ std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateWebAudioThread() {
 }
 
 blink::WebThread* BlinkPlatformImpl::CurrentThread() {
+  // TODO(yutak): This only works on non-main threads. We can support
+  // the main thread here as well.
   return static_cast<blink::WebThread*>(current_thread_slot_.Get());
 }
 
