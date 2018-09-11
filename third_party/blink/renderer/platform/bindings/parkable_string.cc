@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
@@ -16,6 +17,22 @@ namespace {
 void RecordParkingAction(ParkableStringImpl::ParkingAction action) {
   UMA_HISTOGRAM_ENUMERATION("Memory.MovableStringParkingAction", action);
 }
+
+#if defined(ADDRESS_SANITIZER)
+void AsanPoisonString(const String& string) {
+  const void* start = string.Is8Bit()
+                          ? static_cast<const void*>(string.Characters8())
+                          : static_cast<const void*>(string.Characters16());
+  ASAN_POISON_MEMORY_REGION(start, string.CharactersSizeInBytes());
+}
+
+void AsanUnpoisonString(const String& string) {
+  const void* start = string.Is8Bit()
+                          ? static_cast<const void*>(string.Characters8())
+                          : static_cast<const void*>(string.Characters16());
+  ASAN_UNPOISON_MEMORY_REGION(start, string.CharactersSizeInBytes());
+}
+#endif  // defined(ADDRESS_SANITIZER)
 
 }  // namespace
 
@@ -36,6 +53,9 @@ ParkableStringImpl::ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
 
 ParkableStringImpl::~ParkableStringImpl() {
   AssertOnValidThread();
+#if defined(ADDRESS_SANITIZER)
+  AsanUnpoisonString(string_);
+#endif
   if (is_parkable_)
     ParkableStringManager::Instance().Remove(string_.Impl());
 }
@@ -49,6 +69,19 @@ void ParkableStringImpl::Unlock() {
   MutexLocker locker(mutex_);
   DCHECK_GT(lock_depth_, 0);
   lock_depth_ -= 1;
+
+#if defined(ADDRESS_SANITIZER)
+  // There are no external references to the data, nobody should touch the data.
+  //
+  // Note: Only poison the memory if this is on the owning thread, as this is
+  // otherwise racy. Indeed |Unlock()| may be called on any thread, and
+  // the owning thread may concurrently call |ToString()|. It is then allowed
+  // to use the string until the end of the current owning thread task.
+  if (lock_depth_ == 0 && is_parkable_ && string_.Impl()->HasOneRef() &&
+      owning_thread_ == CurrentThread()) {
+    AsanPoisonString(string_);
+  }
+#endif  // defined(ADDRESS_SANITIZER)
 }
 
 bool ParkableStringImpl::Is8Bit() const {
@@ -64,6 +97,10 @@ bool ParkableStringImpl::IsNull() const {
 const String& ParkableStringImpl::ToString() {
   AssertOnValidThread();
   MutexLocker locker(mutex_);
+#if defined(ADDRESS_SANITIZER)
+  AsanUnpoisonString(string_);
+#endif
+
   Unpark();
   return string_;
 }
@@ -83,6 +120,9 @@ bool ParkableStringImpl::Park() {
 
   // Cannot park strings with several references.
   if (string_.Impl()->HasOneRef()) {
+#if defined(ADDRESS_SANITIZER)
+    AsanPoisonString(string_);
+#endif
     RecordParkingAction(ParkingAction::kParkedInBackground);
     is_parked_ = true;
   }
