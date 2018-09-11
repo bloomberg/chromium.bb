@@ -228,6 +228,7 @@ crostini.testSharePathCrostiniSuccess = (done) => {
 };
 
 // Verify right-click menu with 'Share with Linux' is not shown for:
+// * Files (not directory)
 // * Root Downloads folder
 // * Any folder outside of downloads (e.g. crostini or drive)
 crostini.testSharePathNotShown = (done) => {
@@ -239,6 +240,15 @@ crostini.testSharePathNotShown = (done) => {
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
 
   test.setupAndWaitUntilReady()
+      .then(() => {
+        // Right-click 'hello.txt' file.
+        // Check 'Share with Linux' is not shown in menu.
+        test.selectFile('hello.txt');
+        assertTrue(
+            test.fakeMouseRightClick('#file-list li[selected]'),
+            'right-click hello.txt');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
       .then(() => {
         // Select 'My files' in directory tree to show Downloads in file list.
         assertTrue(test.fakeMouseClick(myFiles), 'click My files');

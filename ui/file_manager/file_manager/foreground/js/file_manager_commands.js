@@ -1656,12 +1656,16 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     const entry = CommandUtil.getCommandEntry(event.target);
     if (entry && entry.isDirectory) {
+      const dir = /** @type {!DirectoryEntry} */ (entry);
       chrome.fileManagerPrivate.sharePathWithCrostiniContainer(
-          /** @type {!DirectoryEntry} */ (entry), () => {
-            if (chrome.runtime.lastError)
+          dir, () => {
+            if (chrome.runtime.lastError) {
               console.error(
                   'Error sharing with linux: ' +
                   chrome.runtime.lastError.message);
+            } else {
+              Crostini.addSharedPath(dir, assert(fileManager.volumeManager));
+            }
           });
     }
   },
@@ -1670,10 +1674,11 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    // Must be single directory subfolder of Downloads.
+    // Must be single directory subfolder of Downloads not already shared.
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = CommandHandler.IS_CROSTINI_FILES_ENABLED_ &&
         entries.length === 1 && entries[0].isDirectory &&
+        !Crostini.isPathShared(entries[0], assert(fileManager.volumeManager)) &&
         entries[0].fullPath !== '/' &&
         fileManager.volumeManager.getLocationInfo(entries[0]).rootType ===
             VolumeManagerCommon.RootType.DOWNLOADS;

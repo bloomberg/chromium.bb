@@ -217,3 +217,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("common/js/util_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("foreground/js/crostini_unittest.html")));
+}
