@@ -501,8 +501,6 @@ class AndroidFilesTestVolume : public LocalTestVolume {
   AndroidFilesTestVolume() : LocalTestVolume("AndroidFiles") {}
   ~AndroidFilesTestVolume() override = default;
 
-  bool Initialize(Profile* profile) { return CreateRootDirectory(profile); }
-
   bool Mount(Profile* profile) override {
     return CreateRootDirectory(profile) &&
            VolumeManager::Get(profile)->RegisterAndroidFilesDirectoryForTesting(
@@ -1269,9 +1267,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           }
           break;
         case AddEntriesMessage::ANDROID_FILES_VOLUME:
-          CHECK(android_files_volume_);
-          ASSERT_TRUE(android_files_volume_->Initialize(profile()));
-          android_files_volume_->CreateEntry(*message.entries[i]);
+          if (android_files_volume_) {
+            android_files_volume_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no Android files volume.";
+          }
           break;
       }
     }
