@@ -37,8 +37,7 @@ Widget* ViewAccessibilityUtils::GetFocusedChildWidgetForAccessibility(
 // static
 bool ViewAccessibilityUtils::IsFocusedChildWidget(Widget* widget,
                                                   const View* focused_view) {
-  return widget->widget_delegate()->GetModalType() == ui::MODAL_TYPE_CHILD &&
-         widget->IsVisible() &&
+  return widget->IsVisible() &&
          widget->GetContentsView()->Contains(focused_view);
 };
 
