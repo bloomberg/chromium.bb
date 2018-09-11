@@ -72,7 +72,9 @@ TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
       split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()),
       weak_ptr_factory_(this) {}
 
-TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() = default;
+TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
+  Shell::Get()->UpdateShelfVisibility();
+}
 
 void TabletModeWindowDragDelegate::StartWindowDrag(
     aura::Window* dragged_window,
@@ -82,7 +84,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
 
   PrepareForDraggedWindow(location_in_screen);
 
-  // Update the shelf's visibility.
+  // Update the shelf's visibility to keep shelf visible during drag.
   RootWindowController::ForWindow(dragged_window_)
       ->GetShelfLayoutManager()
       ->UpdateVisibilityState();
