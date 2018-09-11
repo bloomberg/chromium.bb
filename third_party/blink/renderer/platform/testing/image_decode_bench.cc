@@ -124,12 +124,8 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
     }
   }
 
-  // Create a web platform. blink::Platform can't be used directly because it
-  // has a protected constructor.
-
-  class WebPlatform : public Platform {};
-  std::unique_ptr<WebPlatform> platform(new WebPlatform());
-  Platform::Initialize(platform.get(), platform->CurrentThread());
+  std::unique_ptr<Platform> platform = std::make_unique<Platform>();
+  Platform::CreateMainThreadAndInitialize(platform.get());
 
   // Read entire file content into |data| (a contiguous block of memory) then
   // decode it to verify the image and record its ImageMeta data.
