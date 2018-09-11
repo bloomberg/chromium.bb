@@ -54,6 +54,11 @@ class PreviewsOptimizationGuide
   virtual bool IsWhitelisted(const net::URLRequest& request,
                              PreviewsType type) const;
 
+  // Returns whether |type| is blacklisted for |request|.
+  // Virtual so it can be mocked in tests.
+  virtual bool IsBlacklisted(const net::URLRequest& request,
+                             PreviewsType type) const;
+
   // Returns whether |request| may have associated optimization hints
   // (specifically, PageHints). If so, but the hints are not available
   // synchronously, this method will request that they be loaded (from disk or

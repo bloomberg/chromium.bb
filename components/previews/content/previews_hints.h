@@ -14,6 +14,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache.h"
 #include "components/previews/content/previews_hints.h"
+#include "components/previews/core/host_filter.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/url_matcher/url_matcher.h"
 
@@ -35,6 +36,9 @@ class PreviewsHints {
       const optimization_guide::proto::Configuration& config,
       const optimization_guide::ComponentInfo& info);
 
+  static std::unique_ptr<PreviewsHints> CreateForTesting(
+      std::unique_ptr<HostFilter> lite_page_redirect_blacklist);
+
   // Returns the matching PageHint for |document_url| if found in |hint|.
   // TODO(dougarnett): Consider moving to some hint_util file.
   static const optimization_guide::proto::PageHint* FindPageHint(
@@ -51,6 +55,9 @@ class PreviewsHints {
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
                      int* out_inflation_percent);
+
+  // Whether the URL is blacklisted for the given previews type.
+  bool IsBlacklisted(const GURL& url, PreviewsType type);
 
   // Returns whether |url| may have PageHints and triggers asynchronous load
   // of such hints are not currently available synchronously. |callback| is
@@ -75,6 +82,9 @@ class PreviewsHints {
       whitelist_;
 
   std::vector<optimization_guide::proto::Hint> initial_hints_;
+
+  // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
+  std::unique_ptr<HostFilter> lite_page_redirect_blacklist_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

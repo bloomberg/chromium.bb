@@ -10,6 +10,19 @@
 
 namespace previews {
 
+class TestHostFilter : public previews::HostFilter {
+ public:
+  explicit TestHostFilter(std::string single_host_match)
+      : HostFilter(nullptr), single_host_match_(single_host_match) {}
+
+  bool ContainsHostSuffix(const GURL& url) const override {
+    return single_host_match_ == url.host();
+  }
+
+ private:
+  std::string single_host_match_;
+};
+
 // NOTE: most of the PreviewsHints tests are still included in the tests for
 // PreviewsOptimizationGuide.
 
@@ -58,6 +71,19 @@ TEST(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
 
   EXPECT_EQ(page_hint3, PreviewsHints::FindPageHint(
                             GURL("https://www.foo.org/bar/three.jpg"), hint1));
+}
+
+TEST(PreviewsHintsTest, IsBlacklisted) {
+  std::unique_ptr<PreviewsHints> previews_hints =
+      PreviewsHints::CreateForTesting(
+          std::make_unique<TestHostFilter>("black.com"));
+
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                             PreviewsType::LOFI));
+  EXPECT_TRUE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                            PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://nonblack.com"),
+                                             PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 }  // namespace previews

@@ -50,6 +50,15 @@ bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
   return true;
 }
 
+bool PreviewsOptimizationGuide::IsBlacklisted(const net::URLRequest& request,
+                                              PreviewsType type) const {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (!hints_)
+    return false;
+
+  return hints_->IsBlacklisted(request.url(), type);
+}
+
 void PreviewsOptimizationGuide::OnLoadedHint(
     ResourceLoadingHintsCallback callback,
     const GURL& document_url,
