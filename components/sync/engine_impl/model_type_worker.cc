@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -22,6 +23,15 @@
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
+
+namespace {
+
+bool ContainsDuplicate(std::vector<std::string> values) {
+  std::sort(values.begin(), values.end());
+  return std::adjacent_find(values.begin(), values.end()) != values.end();
+}
+
+}  // namespace
 
 namespace syncer {
 
@@ -123,6 +133,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
   counters->num_updates_received += applicable_updates.size();
 
+  std::vector<std::string> client_tag_hashes;
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
@@ -134,6 +145,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
                                        &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(response_data);
+        if (!response_data.entity->client_tag_hash.empty()) {
+          client_tag_hashes.push_back(response_data.entity->client_tag_hash);
+        }
         break;
       case DECRYPTION_PENDING:
         entries_pending_decryption_[update_entity->id_string()] = response_data;
@@ -143,6 +157,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         break;
     }
   }
+  std::string suffix = ModelTypeToHistogramSuffix(type_);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse." + suffix,
+      ContainsDuplicate(std::move(client_tag_hashes)));
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
@@ -235,6 +253,18 @@ void ModelTypeWorker::ApplyPendingUpdates() {
                                  pending_updates_.size());
 
   DCHECK(entries_pending_decryption_.empty());
+
+  // Check for duplicate client tag hashes.
+  std::vector<std::string> client_tag_hashes;
+  for (const UpdateResponseData& update : pending_updates_) {
+    if (!update.entity->client_tag_hash.empty()) {
+      client_tag_hashes.push_back(update.entity->client_tag_hash);
+    }
+  }
+  std::string suffix = ModelTypeToHistogramSuffix(type_);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates." + suffix,
+      ContainsDuplicate(std::move(client_tag_hashes)));
 
   model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
