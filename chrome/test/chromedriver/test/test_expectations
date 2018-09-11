@@ -75,6 +75,11 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
+
+    # Tests require multiple sessions, not supported on Android'
+    'CorrectEventFiringTest.testShouldFireFocusEventInNonTopmostWindow',
+    'PerformanceLoggingTest.testLogsSingleHttpCommand',
+
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
     'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
 
@@ -171,13 +176,14 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
+    'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
     'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
-    'CorrectEventFiringTest.testShouldFireFocusEventInNonTopmostWindow',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromium'] = (
