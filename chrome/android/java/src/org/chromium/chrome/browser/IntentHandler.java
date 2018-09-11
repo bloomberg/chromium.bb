@@ -950,21 +950,6 @@ public class IntentHandler {
         return false;
     }
 
-    /**
-     * @param intent An Intent to be checked.
-     * @param packageName The app where the intent is expected to originate from
-     * @return Whether the intent originates from the first-party app with the given package name.
-     */
-    public static boolean isIntentFromTrustedApp(Intent intent, String packageName) {
-        if (intent == null) return false;
-
-        PendingIntent token = fetchAuthenticationTokenFromIntent(intent);
-        if (token == null) return false;
-
-        return isIntentChromeOrFirstParty(intent)
-                && ApiCompatibilityUtils.getCreatorPackage(token).equals(packageName);
-    }
-
     @VisibleForTesting
     boolean isIntentUserVisible() {
         // Only process Intents if the screen is on and the device is unlocked;
