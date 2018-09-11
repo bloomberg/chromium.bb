@@ -29,8 +29,8 @@ struct BackgroundFetchSettledFetch {
   FetchAPIResponse? response;
 };
 
-enum BackgroundFetchState {
-  PENDING,
+enum BackgroundFetchResult {
+  UNSET,
   FAILURE,
   SUCCESS
 };
@@ -83,7 +83,7 @@ struct BackgroundFetchRegistration {
   uint64 uploaded;
   uint64 download_total;
   uint64 downloaded;
-  BackgroundFetchState state;
+  BackgroundFetchResult result;
   BackgroundFetchFailureReason failure_reason;
 };
 

@@ -64,9 +64,9 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchRegistration& registration) {
     return registration.downloaded;
   }
-  static blink::mojom::BackgroundFetchState state(
+  static blink::mojom::BackgroundFetchResult result(
       const content::BackgroundFetchRegistration& registration) {
-    return registration.state;
+    return registration.result;
   }
   static blink::mojom::BackgroundFetchFailureReason failure_reason(
       const content::BackgroundFetchRegistration& registration) {

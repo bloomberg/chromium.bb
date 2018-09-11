@@ -435,7 +435,7 @@ interface BackgroundFetchRegistration : EventTarget
     getter failureReason
     getter id
     getter onprogress
-    getter state
+    getter result
     getter uploadTotal
     getter uploaded
     method abort

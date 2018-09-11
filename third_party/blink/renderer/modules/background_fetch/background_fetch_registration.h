@@ -39,7 +39,7 @@ class BackgroundFetchRegistration final
       unsigned long long uploaded,
       unsigned long long download_total,
       unsigned long long downloaded,
-      mojom::BackgroundFetchState state,
+      mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason);
 
   BackgroundFetchRegistration(
@@ -77,7 +77,7 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded() const;
   unsigned long long downloadTotal() const;
   unsigned long long downloaded() const;
-  const String state() const;
+  const String result() const;
   const String failureReason() const;
 
   const String& unique_id() const { return unique_id_; }
@@ -122,7 +122,7 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded_;
   unsigned long long download_total_;
   unsigned long long downloaded_;
-  mojom::BackgroundFetchState state_;
+  mojom::BackgroundFetchResult result_;
   mojom::BackgroundFetchFailureReason failure_reason_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>

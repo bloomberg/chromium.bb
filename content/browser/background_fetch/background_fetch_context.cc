@@ -429,13 +429,13 @@ void BackgroundFetchContext::DidMarkForDeletion(
     controllers_iter->second->Abort(reason_to_abort);
   }
   auto registration = controllers_iter->second->NewRegistration(
-      blink::mojom::BackgroundFetchState::FAILURE);
+      blink::mojom::BackgroundFetchResult::FAILURE);
 
   switch (reason_to_abort) {
     case FailureReason::CANCELLED_BY_DEVELOPER:
     case FailureReason::CANCELLED_FROM_UI:
       CleanupRegistration(registration_id, {},
-                          blink::mojom::BackgroundFetchState::FAILURE);
+                          blink::mojom::BackgroundFetchResult::FAILURE);
       event_dispatcher_.DispatchBackgroundFetchAbortEvent(
           registration_id, std::move(registration), base::DoNothing());
       return;
@@ -471,7 +471,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     CleanupRegistration(registration_id, {} /* fetches */,
-                        blink::mojom::BackgroundFetchState::FAILURE,
+                        blink::mojom::BackgroundFetchResult::FAILURE,
                         true /* preserve_info_to_dispatch_click_event */);
     return;
   }
@@ -488,7 +488,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   // registration have completed successfully. In all other cases, the
   // `backgroundfetchfail` event will be invoked instead.
   if (background_fetch_succeeded) {
-    registration->state = blink::mojom::BackgroundFetchState::SUCCESS;
+    registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
         registration_id, std::move(registration),
         base::BindOnce(
@@ -498,10 +498,10 @@ void BackgroundFetchContext::DidGetSettledFetches(
             // |blob_data_handles| to the callback to keep them alive
             // until the waitUntil event is resolved.
             std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchState::SUCCESS,
+            blink::mojom::BackgroundFetchResult::SUCCESS,
             true /* preserve_info_to_dispatch_click_event */));
   } else {
-    registration->state = blink::mojom::BackgroundFetchState::FAILURE;
+    registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(registration),
         base::BindOnce(
@@ -511,7 +511,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
             // |blob_data_handles| to the callback to keep them alive
             // until the waitUntil event is resolved.
             std::move(blob_data_handles),
-            blink::mojom::BackgroundFetchState::FAILURE,
+            blink::mojom::BackgroundFetchResult::FAILURE,
             true /* preserve_info_to_dispatch_click_event */));
   }
 }
@@ -519,7 +519,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
 void BackgroundFetchContext::CleanupRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<std::unique_ptr<storage::BlobDataHandle>>& blob_handles,
-    blink::mojom::BackgroundFetchState background_fetch_state,
+    blink::mojom::BackgroundFetchResult background_fetch_result,
     bool preserve_info_to_dispatch_click_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -534,7 +534,7 @@ void BackgroundFetchContext::CleanupRegistration(
   if (preserve_info_to_dispatch_click_event) {
     completed_fetches_[registration_id.unique_id()] = std::make_pair(
         registration_id,
-        controllers_iter->second->NewRegistration(background_fetch_state));
+        controllers_iter->second->NewRegistration(background_fetch_result));
   }
   job_controllers_.erase(registration_id.unique_id());
 
@@ -568,9 +568,9 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
   if (controllers_iter == job_controllers_.end())
     return;
   // TODO(crbug.com/873630): Implement a background fetch state manager to
-  // keep track of states, and stop hard-coding it here.
+  // keep track of states, and stop hard-coding result here.
   auto registration = controllers_iter->second->NewRegistration(
-      blink::mojom::BackgroundFetchState::PENDING);
+      blink::mojom::BackgroundFetchResult::UNSET);
   event_dispatcher_.DispatchBackgroundFetchClickEvent(
       controllers_iter->second->registration_id(), std::move(registration),
       base::DoNothing());
