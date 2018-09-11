@@ -37,6 +37,12 @@ _OS_NEGATIVE_FILTER['linux'] = [
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
     'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
+
+    # https://crbug.com/868599
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'WindowTest.testCanMaximizeTheWindow',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
