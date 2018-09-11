@@ -298,7 +298,7 @@ public class SnackbarView {
     /**
      * @return The parent {@link ViewGroup} that {@link #mContainerView} will be added to.
      */
-    private ViewGroup findParentView(Activity activity) {
+    protected ViewGroup findParentView(Activity activity) {
         if (activity instanceof ChromeActivity) {
             return (ViewGroup) activity.findViewById(R.id.bottom_container);
         } else {
