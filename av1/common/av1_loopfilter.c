@@ -1320,6 +1320,7 @@ static void filter_selectively_horiz(uint8_t *s, int pitch, int plane,
     const loop_filter_thresh *lfi = lfi_n->lfthr + *lfl;
     // Next block's thresholds.
     const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + step);
+    (void)lfin;
 
     count = 1;
     if (mask & 1) {
@@ -1396,6 +1397,7 @@ static void highbd_filter_selectively_horiz(
     const loop_filter_thresh *lfi = lfi_n->lfthr + *lfl;
     // Next block's thresholds.
     const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + step);
+    (void)lfin;
 
     count = 1;
     if (mask & 1) {

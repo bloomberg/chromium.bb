@@ -5493,7 +5493,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   const int num_planes = av1_num_planes(cm);
 #if LOOP_FILTER_BITMASK
   av1_loop_filter_frame_init(cm, 0, num_planes);
-  av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
 #endif
 
   if (pbi->max_threads > 1 && !(cm->large_scale_tile && !pbi->ext_tile_debug) &&
@@ -5580,6 +5579,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       }
     }
   }
+#if LOOP_FILTER_BITMASK
+  av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
+#endif
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
