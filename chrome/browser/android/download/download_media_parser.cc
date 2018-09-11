@@ -10,7 +10,15 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/android/download/local_media_data_source_factory.h"
+#include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
 #include "content/public/common/service_manager_connection.h"
+#include "media/base/overlay_info.h"
+#include "media/mojo/clients/mojo_video_decoder.h"
+#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/services/media_interface_provider.h"
+#include "media/video/gpu_video_accelerator_factories.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -20,6 +28,12 @@ bool IsSupportedMediaMimeType(const std::string& mime_type) {
                           base::CompareCase::INSENSITIVE_ASCII) ||
          base::StartsWith(mime_type, "video/",
                           base::CompareCase::INSENSITIVE_ASCII);
+}
+
+void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
+                          const media::ProvideOverlayInfoCB& overlay_info_cb) {
+  // No android overlay associated with video thumbnail.
+  overlay_info_cb.Run(media::OverlayInfo());
 }
 
 }  // namespace
@@ -34,6 +48,7 @@ DownloadMediaParser::DownloadMediaParser(int64_t size,
       parse_complete_cb_(std::move(parse_complete_cb)),
       file_task_runner_(
           base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})),
+      decode_done_(false),
       weak_factory_(this) {}
 
 DownloadMediaParser::~DownloadMediaParser() = default;
@@ -64,8 +79,7 @@ void DownloadMediaParser::OnMediaParserCreated() {
 }
 
 void DownloadMediaParser::OnConnectionError() {
-  if (parse_complete_cb_)
-    std::move(parse_complete_cb_).Run(false);
+  OnError();
 }
 
 void DownloadMediaParser::OnMediaMetadataParsed(
@@ -73,7 +87,7 @@ void DownloadMediaParser::OnMediaMetadataParsed(
     chrome::mojom::MediaMetadataPtr metadata,
     const std::vector<metadata::AttachedImage>& attached_images) {
   if (!parse_success) {
-    std::move(parse_complete_cb_).Run(false);
+    OnError();
     return;
   }
   metadata_ = std::move(metadata);
@@ -126,8 +140,106 @@ void DownloadMediaParser::OnEncodedVideoFrameRetrieved(
   encoded_data_ = data;
   config_ = config;
 
-  // TODO(xingliu): Decode the video frame with MojoVideoDecoder.
+  content::CreateGpuVideoAcceleratorFactories(base::BindRepeating(
+      &DownloadMediaParser::OnGpuVideoAcceleratorFactoriesReady,
+      weak_factory_.GetWeakPtr()));
+}
+
+void DownloadMediaParser::OnGpuVideoAcceleratorFactoriesReady(
+    std::unique_ptr<media::GpuVideoAcceleratorFactories> factories) {
+  gpu_factories_ = std::move(factories);
+  DecodeVideoFrame();
+}
+
+void DownloadMediaParser::DecodeVideoFrame() {
+  media::mojom::VideoDecoderPtr video_decoder_ptr;
+  GetMediaInterfaceFactory()->CreateVideoDecoder(
+      mojo::MakeRequest(&video_decoder_ptr));
+
+  // Build and config the decoder.
+  DCHECK(gpu_factories_);
+  decoder_ = std::make_unique<media::MojoVideoDecoder>(
+      base::ThreadTaskRunnerHandle::Get(), gpu_factories_.get(), this,
+      std::move(video_decoder_ptr), base::BindRepeating(&OnRequestOverlayInfo),
+      gfx::ColorSpace());
+
+  decoder_->Initialize(
+      config_, false, nullptr,
+      base::BindRepeating(&DownloadMediaParser::OnVideoDecoderInitialized,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&DownloadMediaParser::OnVideoFrameDecoded,
+                          weak_factory_.GetWeakPtr()),
+      base::RepeatingClosure());
+}
+
+void DownloadMediaParser::OnVideoDecoderInitialized(bool success) {
+  if (!success) {
+    OnError();
+    return;
+  }
+
+  // Build the video buffer to decode.
+  auto buffer =
+      media::DecoderBuffer::CopyFrom(&encoded_data_[0], encoded_data_.size());
+  encoded_data_.clear();
+
+  // Decode one frame buffer, followed by eos buffer.
+  DCHECK_GE(decoder_->GetMaxDecodeRequests(), 2);
+  decoder_->Decode(
+      buffer, base::BindRepeating(&DownloadMediaParser::OnVideoBufferDecoded,
+                                  weak_factory_.GetWeakPtr()));
+  decoder_->Decode(media::DecoderBuffer::CreateEOSBuffer(),
+                   base::BindRepeating(&DownloadMediaParser::OnEosBufferDecoded,
+                                       weak_factory_.GetWeakPtr()));
+}
+
+void DownloadMediaParser::OnVideoBufferDecoded(media::DecodeStatus status) {
+  if (status != media::DecodeStatus::OK)
+    OnError();
+}
+
+void DownloadMediaParser::OnEosBufferDecoded(media::DecodeStatus status) {
+  if (status != media::DecodeStatus::OK)
+    OnError();
+
+  // Fails if no decoded video frame is generated when eos arrives.
+  if (!decode_done_)
+    OnError();
+}
+
+void DownloadMediaParser::OnVideoFrameDecoded(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(frame);
+  DCHECK(frame->HasTextures());
+  decode_done_ = true;
+
+  // TODO(xingliu): render the |frame| in the browser process, with cc or skia
+  // or gl. The |frame| is associated with a native texture in GPU process.
   NotifyComplete();
+}
+
+media::mojom::InterfaceFactory*
+DownloadMediaParser::GetMediaInterfaceFactory() {
+  if (!media_interface_factory_) {
+    service_manager::mojom::InterfaceProviderPtr interfaces;
+    media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
+        mojo::MakeRequest(&interfaces));
+    media::mojom::MediaServicePtr media_service;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(media::mojom::kMediaServiceName, &media_service);
+    media_service->CreateInterfaceFactory(
+        MakeRequest(&media_interface_factory_), std::move(interfaces));
+    media_interface_factory_.set_connection_error_handler(
+        base::BindOnce(&DownloadMediaParser::OnDecoderConnectionError,
+                       base::Unretained(this)));
+  }
+
+  return media_interface_factory_.get();
+}
+
+void DownloadMediaParser::OnDecoderConnectionError() {
+  OnError();
 }
 
 void DownloadMediaParser::OnMediaDataReady(

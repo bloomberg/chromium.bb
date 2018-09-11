@@ -18,14 +18,19 @@
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
+#include "media/base/media_log.h"
+#include "media/mojo/interfaces/interface_factory.mojom.h"
 
 namespace media {
+class GpuVideoAcceleratorFactories;
+class MediaInterfaceProvider;
+class MojoVideoDecoder;
 class VideoDecoderConfig;
 }  // namespace media
 
 // Local media files parser is used to process local media files. This object
 // lives on main thread in browser process.
-class DownloadMediaParser : public MediaParserProvider {
+class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
  public:
   using ParseCompleteCB = base::OnceCallback<void(bool)>;
 
@@ -58,6 +63,18 @@ class DownloadMediaParser : public MediaParserProvider {
                                     const std::vector<uint8_t>& data,
                                     const media::VideoDecoderConfig& config);
 
+  // Decodes the video frame.
+  void OnGpuVideoAcceleratorFactoriesReady(
+      std::unique_ptr<media::GpuVideoAcceleratorFactories>);
+  void DecodeVideoFrame();
+  void OnVideoDecoderInitialized(bool success);
+  void OnVideoBufferDecoded(media::DecodeStatus status);
+  void OnEosBufferDecoded(media::DecodeStatus status);
+  void OnVideoFrameDecoded(
+      const scoped_refptr<media::VideoFrame>& decoded_frame);
+  media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
+  void OnDecoderConnectionError();
+
   // Overlays media data source read operation. Gradually read data from media
   // file.
   void OnMediaDataReady(chrome::mojom::MediaDataSource::ReadCallback callback,
@@ -83,7 +100,14 @@ class DownloadMediaParser : public MediaParserProvider {
   // This data can be large for high resolution video, should be std::move or
   // cleared whenever possible.
   std::vector<uint8_t> encoded_data_;
+
+  // Objects used to decode the video into media::VideoFrame.
   media::VideoDecoderConfig config_;
+  std::unique_ptr<media::MojoVideoDecoder> decoder_;
+  media::mojom::InterfaceFactoryPtr media_interface_factory_;
+  std::unique_ptr<media::MediaInterfaceProvider> media_interface_provider_;
+  std::unique_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  bool decode_done_;
 
   base::WeakPtrFactory<DownloadMediaParser> weak_factory_;
 

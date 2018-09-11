@@ -21,6 +21,8 @@ jumbo_source_set("clients") {
 
     "//media/test/*",
 
+    "//chrome/browser:*",
+
     "//content/gpu:*",
 
     # TODO(liberato): can we avoid this?

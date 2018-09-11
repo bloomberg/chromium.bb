@@ -1084,6 +1084,8 @@ jumbo_source_set("browser") {
     "manifest/manifest_icon_downloader.cc",
     "manifest/manifest_manager_host.cc",
     "manifest/manifest_manager_host.h",
+    "media/android/browser_gpu_video_accelerator_factories.cc",
+    "media/android/browser_gpu_video_accelerator_factories.h",
     "media/android/browser_media_player_manager.cc",
     "media/android/browser_media_player_manager.h",
     "media/android/media_player_renderer.cc",
