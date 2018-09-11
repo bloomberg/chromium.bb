@@ -34,8 +34,8 @@ function conditionHolds(condition, error_message = 'Condition is not true anymor
   const MAX_FRAME = 100;
   return new Promise((resolve, reject) => {
     function tick(frames) {
-      // We requestAnimationFrame either for 200 frames or until condition is
-      // met.
+      // We requestAnimationFrame either for 100 frames or until condition is
+      // violated.
       if (frames >= MAX_FRAME)
         resolve();
       else if (!condition())
@@ -307,6 +307,29 @@ function touchTapOn(xPosition, yPosition) {
     } else {
       reject();
     }
+  });
+}
+
+function doubleTapAt(xPosition, yPosition) {
+  // This comes from config constants in gesture_detector.cc.
+  const DOUBLE_TAP_MINIMUM_DURATION_S = 0.04;
+
+  return new Promise(function(resolve, reject) {
+    if (!window.chrome || !chrome.gpuBenchmarking) {
+      reject("chrome.gpuBenchmarking not found.");
+      return;
+    }
+
+    chrome.gpuBenchmarking.pointerActionSequence( [{
+      source: 'touch',
+      actions: [
+        { name: 'pointerDown', x: xPosition, y: yPosition },
+        { name: 'pointerUp' },
+        { name: 'pause', duration: DOUBLE_TAP_MINIMUM_DURATION_S },
+        { name: 'pointerDown', x: xPosition, y: yPosition },
+        { name: 'pointerUp' }
+      ]
+    }], resolve);
   });
 }
 

@@ -179,6 +179,7 @@ class EVENTS_EXPORT Event {
       case ET_GESTURE_DOUBLE_TAP:
       case ET_GESTURE_TAP_CANCEL:
       case ET_GESTURE_TAP_DOWN:
+      case ET_GESTURE_TAP_UNCONFIRMED:
       case ET_GESTURE_BEGIN:
       case ET_GESTURE_END:
       case ET_GESTURE_TWO_FINGER_TAP:
