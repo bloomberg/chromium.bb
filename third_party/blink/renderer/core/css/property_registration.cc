@@ -22,16 +22,6 @@
 
 namespace blink {
 
-PropertyRegistration* PropertyRegistration::Create(
-    const AtomicString& name,
-    const CSSSyntaxDescriptor& syntax,
-    bool inherits,
-    const CSSValue* initial,
-    scoped_refptr<CSSVariableData> initial_variable_data) {
-  return new PropertyRegistration(name, syntax, inherits, initial,
-                                  initial_variable_data);
-}
-
 const PropertyRegistration* PropertyRegistration::From(
     const ExecutionContext* execution_context,
     const AtomicString& property_name) {
@@ -56,7 +46,9 @@ PropertyRegistration::PropertyRegistration(
           CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
               name,
               syntax,
-              *this)) {}
+              *this)) {
+  DCHECK(RuntimeEnabledFeatures::CSSVariables2Enabled());
+}
 
 static bool ComputationallyIndependent(const CSSValue& value) {
   DCHECK(!value.IsCSSWideKeyword());
