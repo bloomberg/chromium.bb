@@ -143,6 +143,8 @@ webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
       return webapk::WebApk::ORIENTATION_DIFFERS;
     case WebApkUpdateReason::DISPLAY_MODE_DIFFERS:
       return webapk::WebApk::DISPLAY_MODE_DIFFERS;
+    case WebApkUpdateReason::WEB_SHARE_TARGET_DIFFERS:
+      return webapk::WebApk::WEB_SHARE_TARGET_DIFFERS;
   }
 }
 

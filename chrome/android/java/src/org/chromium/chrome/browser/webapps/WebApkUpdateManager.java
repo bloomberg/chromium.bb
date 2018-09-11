@@ -328,6 +328,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             return WebApkUpdateReason.ORIENTATION_DIFFERS;
         } else if (oldInfo.displayMode() != fetchedInfo.displayMode()) {
             return WebApkUpdateReason.DISPLAY_MODE_DIFFERS;
+        } else if (!TextUtils.equals(
+                           oldInfo.serializedShareTarget(), fetchedInfo.serializedShareTarget())) {
+            return WebApkUpdateReason.WEB_SHARE_TARGET_DIFFERS;
         }
         return WebApkUpdateReason.NONE;
     }
