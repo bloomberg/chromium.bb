@@ -493,6 +493,7 @@ const int styleCount = 2;
   constraint.active = YES;
   if (IsUIRefreshPhase1Enabled()) {
     button.configuration = self.toolbarConfiguration;
+    button.exclusiveTouch = YES;
   }
 }
 
