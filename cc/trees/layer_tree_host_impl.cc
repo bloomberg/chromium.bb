@@ -2505,6 +2505,14 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
     outer_clip_node->clip.set_height(
         OuterViewportScrollNode()->container_bounds.height() +
         outer_bounds_delta.y());
+
+    // Expand all clips between the outer viewport and the inner viewport.
+    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
+    while (outer_ancestor && outer_ancestor != inner_clip_node) {
+      outer_ancestor->clip.Union(outer_clip_node->clip);
+      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
+    }
+
     anchor.ResetViewportToAnchoredPosition();
   }
 
