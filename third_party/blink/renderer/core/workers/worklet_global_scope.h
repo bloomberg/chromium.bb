@@ -94,6 +94,8 @@ class CORE_EXPORT WorkletGlobalScope
 
   void Trace(blink::Visitor*) override;
 
+  HttpsState GetHttpsState() const override { return https_state_; }
+
  protected:
   // Partial implementation of the "set up a worklet environment settings
   // object" algorithm:
@@ -122,6 +124,8 @@ class CORE_EXPORT WorkletGlobalScope
   const bool document_secure_context_;
 
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
+
+  const HttpsState https_state_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

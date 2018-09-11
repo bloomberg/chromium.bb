@@ -34,6 +34,11 @@ const String FetchClientSettingsObjectImpl::GetOutgoingReferrer() const {
   return execution_context_->OutgoingReferrer();
 }
 
+HttpsState FetchClientSettingsObjectImpl::GetHttpsState() const {
+  DCHECK(execution_context_->IsContextThread());
+  return execution_context_->GetHttpsState();
+}
+
 void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   FetchClientSettingsObject::Trace(visitor);

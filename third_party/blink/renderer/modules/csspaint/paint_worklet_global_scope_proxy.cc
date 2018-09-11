@@ -45,8 +45,8 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       document->Url(), ScriptType::kModule, document->UserAgent(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-      document->IsSecureContext(), worker_clients, document->AddressSpace(),
-      OriginTrialContext::GetTokens(document).get(),
+      document->IsSecureContext(), document->GetHttpsState(), worker_clients,
+      document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map);
   global_scope_ = PaintWorkletGlobalScope::Create(

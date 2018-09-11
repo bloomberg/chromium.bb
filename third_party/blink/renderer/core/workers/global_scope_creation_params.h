@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
+#include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -44,6 +45,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
+      HttpsState starter_https_state,
       WorkerClients*,
       mojom::IPAddressSpace,
       const Vector<String>* origin_trial_tokens,
@@ -108,6 +110,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // inherited from the document, so also consider the context of the document.
   // The value should be supplied as the result of Document.IsSecureContext().
   bool starter_secure_context;
+
+  HttpsState starter_https_state;
 
   // This object is created and initialized on the thread creating
   // a new worker context, but ownership of it and this
