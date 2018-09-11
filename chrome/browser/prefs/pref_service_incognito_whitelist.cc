@@ -189,43 +189,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // chrome/common/pref_names.h
     prefs::kImportantSitesDialogHistory, prefs::kSiteEngagementLastUpdateTime,
 
-#if defined(OS_CHROMEOS)
-    prefs::kApplicationLocaleBackup, prefs::kApplicationLocaleAccepted,
-    prefs::kOwnerLocale, prefs::kAllowedUILocales,
-    prefs::kEnableTouchpadThreeFingerClick, prefs::kNaturalScroll,
-    prefs::kPrimaryMouseButtonRight, prefs::kMouseReverseScroll,
-    prefs::kMouseSensitivity, prefs::kTouchpadSensitivity,
-    prefs::kUse24HourClock, prefs::kLabsAdvancedFilesystemEnabled,
-    prefs::kLabsMediaplayerEnabled, prefs::kShow3gPromoNotification,
-    prefs::kDataSaverPromptsShown, prefs::kChromeOSReleaseNotesVersion,
-    prefs::kNoteTakingAppId, prefs::kNoteTakingAppEnabledOnLockScreen,
-    prefs::kNoteTakingAppsLockScreenWhitelist,
-    prefs::kNoteTakingAppsLockScreenToastShown,
-    prefs::kRestoreLastLockScreenNote, prefs::kSessionUserActivitySeen,
-    prefs::kSessionStartTime, prefs::kSessionLengthLimit,
-    prefs::kSessionWaitForInitialUserActivity, prefs::kLastSessionType,
-    prefs::kLastSessionLength, prefs::kTermsOfServiceURL,
-    prefs::kAttestationEnabled, prefs::kAttestationExtensionWhitelist,
-    prefs::kSAMLOfflineSigninTimeLimit, prefs::kSAMLLastGAIASignInTime,
-    prefs::kFileSystemProviderMounted, prefs::kTouchVirtualKeyboardEnabled,
-    prefs::kWakeOnWifiDarkConnect,
-    prefs::kCaptivePortalAuthenticationIgnoresProxy, prefs::kPlatformKeys,
-    prefs::kUnifiedDesktopEnabledByDefault,
-    prefs::kHatsLastInteractionTimestamp, prefs::kHatsSurveyCycleEndTimestamp,
-    prefs::kHatsDeviceIsSelected, prefs::kQuickUnlockPinSecret,
-    prefs::kQuickUnlockFingerprintRecord, prefs::kEolStatus,
-    prefs::kEolNotificationDismissed, prefs::kPinUnlockFeatureNotificationShown,
-    prefs::kFingerprintUnlockFeatureNotificationShown,
-    prefs::kQuickUnlockModeWhitelist, prefs::kQuickUnlockTimeout,
-    prefs::kPinUnlockMinimumLength, prefs::kPinUnlockMaximumLength,
-    prefs::kPinUnlockWeakPinsAllowed, prefs::kCastReceiverEnabled,
-    prefs::kMinimumAllowedChromeVersion, prefs::kShowSyncSettingsOnSessionStart,
-    prefs::kTextToSpeechLangToVoiceName, prefs::kTextToSpeechRate,
-    prefs::kTextToSpeechPitch, prefs::kTextToSpeechVolume,
-    prefs::kFirstScreenStartTime, prefs::kCurrentScreenStartTime,
-    prefs::kScreenTimeMinutesUsed, prefs::kUsageTimeLimit,
-    prefs::kScreenTimeLastState, prefs::kEnableSyncConsent,
-#endif  // defined(OS_CHROMEOS)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     prefs::kUsesSystemTheme,
 #endif
@@ -356,29 +319,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kAudioCaptureAllowed, prefs::kAudioCaptureAllowedUrls,
     prefs::kVideoCaptureAllowed, prefs::kVideoCaptureAllowedUrls,
 
-#if defined(OS_CHROMEOS)
-    prefs::kDeviceSettingsCache, prefs::kHardwareKeyboardLayout,
-    prefs::kCarrierDealPromoShown, prefs::kDeviceActivityTimes,
-    prefs::kUserActivityTimes, prefs::kExternalStorageDisabled,
-    prefs::kExternalStorageReadOnly, prefs::kOwnerPrimaryMouseButtonRight,
-    prefs::kUptimeLimit, prefs::kRebootAfterUpdate,
-    prefs::kDeviceRobotAnyApiRefreshToken, prefs::kDeviceDMToken,
-    prefs::kTimesHIDDialogShown, prefs::kUsersLastInputMethod,
-    prefs::kEchoCheckedOffers, prefs::kCachedMultiProfileUserBehavior,
-    prefs::kInitialLocale, prefs::kServerBackedDeviceState,
-    prefs::kCustomizationDefaultWallpaperURL, prefs::kLogoutStartedLast,
-    prefs::kIsBootstrappingSlave, prefs::kNetworkThrottlingEnabled,
-    prefs::kPowerMetricsDailySample, prefs::kPowerMetricsIdleScreenDimCount,
-    prefs::kPowerMetricsIdleScreenOffCount,
-    prefs::kPowerMetricsIdleSuspendCount,
-    prefs::kPowerMetricsLidClosedSuspendCount, prefs::kReportingUsers,
-    prefs::kRemoveUsersRemoteCommand, prefs::kCameraMediaConsolidated,
-#endif  // defined(OS_CHROMEOS)
-
     prefs::kClearPluginLSODataEnabled, prefs::kPepperFlashSettingsEnabled,
     prefs::kDiskCacheDir, prefs::kDiskCacheSize, prefs::kMediaCacheSize,
-
-    prefs::kChromeOsReleaseChannel,
 
     prefs::kPerformanceTracingEnabled,
 
@@ -435,16 +377,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kMediaGalleriesUniqueId, prefs::kMediaGalleriesRememberedGalleries,
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-    prefs::kShelfChromeIconIndex, prefs::kPinnedLauncherApps,
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_WIN)
     prefs::kNetworkProfileWarningsLeft, prefs::kNetworkProfileLastWarningTime,
-#endif
-
-#if defined(OS_CHROMEOS)
-    prefs::kRLZBrand, prefs::kRLZDisabled,
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
