@@ -55,6 +55,9 @@ bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
 // response of the option.
 bool OfferStoreUnmaskedCards();
 
+// Returns whether the account of the active signed-in user should be used.
+bool ShouldUseActiveSignedInAccount();
+
 #if !defined(OS_ANDROID)
 enum class ForcedPopupLayoutState {
   kDefault,       // No popup layout forced by experiment.

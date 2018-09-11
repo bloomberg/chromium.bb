@@ -35,6 +35,53 @@ const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
 const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
 #endif  // !defined(OS_ANDROID)
 
+bool IsCreditCardUploadEnabled(const PrefService* pref_service,
+                               const syncer::SyncService* sync_service,
+                               const std::string& user_email) {
+  // Check Autofill sync setting.
+  if (!(sync_service && sync_service->CanSyncStart() &&
+        sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
+    return false;
+  }
+
+  // Check if the upload to Google state is active.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsInteractionsOnAuthError) &&
+      syncer::GetUploadToGoogleState(sync_service,
+                                     syncer::ModelType::AUTOFILL_WALLET_DATA) !=
+          syncer::UploadState::ACTIVE) {
+    return false;
+  }
+
+  // Also don't offer upload for users that have a secondary sync passphrase.
+  // Users who have enabled a passphrase have chosen to not make their sync
+  // information accessible to Google. Since upload makes credit card data
+  // available to other Google systems, disable it for passphrase users.
+  if (sync_service->IsUsingSecondaryPassphrase())
+    return false;
+
+  // Check Payments integration user setting.
+  if (!prefs::IsPaymentsIntegrationEnabled(pref_service))
+    return false;
+
+  // Check that the user is logged into a supported domain.
+  if (user_email.empty())
+    return false;
+
+  std::string domain = gaia::ExtractDomainName(user_email);
+  // If the "allow all email domains" flag is off, restrict credit card upload
+  // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
+  // domains.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillUpstreamAllowAllEmailDomains) &&
+      !(domain == "googlemail.com" || domain == "gmail.com" ||
+        domain == "google.com" || domain == "chromium.org")) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+}
+
 bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
@@ -99,50 +146,13 @@ bool OfferStoreUnmaskedCards() {
 #endif
 }
 
-bool IsCreditCardUploadEnabled(const PrefService* pref_service,
-                               const syncer::SyncService* sync_service,
-                               const std::string& user_email) {
-  // Check Autofill sync setting.
-  if (!(sync_service && sync_service->CanSyncStart() &&
-        sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
-    return false;
-  }
-
-  // Check if the upload to Google state is active.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnablePaymentsInteractionsOnAuthError) &&
-      syncer::GetUploadToGoogleState(sync_service,
-                                     syncer::ModelType::AUTOFILL_WALLET_DATA) !=
-          syncer::UploadState::ACTIVE) {
-    return false;
-  }
-
-  // Also don't offer upload for users that have a secondary sync passphrase.
-  // Users who have enabled a passphrase have chosen to not make their sync
-  // information accessible to Google. Since upload makes credit card data
-  // available to other Google systems, disable it for passphrase users.
-  if (sync_service->IsUsingSecondaryPassphrase())
-    return false;
-
-  // Check Payments integration user setting.
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service))
-    return false;
-
-  // Check that the user is logged into a supported domain.
-  if (user_email.empty())
-    return false;
-  std::string domain = gaia::ExtractDomainName(user_email);
-  // If the "allow all email domains" flag is off, restrict credit card upload
-  // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
-  // domains.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamAllowAllEmailDomains) &&
-      !(domain == "googlemail.com" || domain == "gmail.com" ||
-        domain == "google.com" || domain == "chromium.org")) {
-    return false;
-  }
-
-  return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+bool ShouldUseActiveSignedInAccount() {
+  // If butter is enabled or the feature to get the Payment Identity from Sync
+  // is enabled, the account of the active signed-in user should be used.
+  return base::FeatureList::IsEnabled(
+             features::kAutofillEnableAccountWalletStorage) ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillGetPaymentsIdentityFromSync);
 }
 
 #if !defined(OS_ANDROID)
