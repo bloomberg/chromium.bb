@@ -1726,6 +1726,14 @@ EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
 //   }
 EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 
+// Session declared a QUIC packet lost.
+//   {
+//     "transmission_type": <The quic::TransmissionType of the packet>,
+//     "packet_number": <The packet's full 64-bit number as a base-10 string>,
+//     "detection_time": <The time at which the packet was declared lost>
+//   }
+EVENT_TYPE(QUIC_SESSION_PACKET_LOST)
+
 // Session received a QUIC packet with a sequence number that had previously
 // been received.
 //   {

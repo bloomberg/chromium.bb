@@ -50,6 +50,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
+  void OnPacketLoss(quic::QuicPacketNumber lost_packet_number,
+                    quic::TransmissionType transmission_type,
+                    quic::QuicTime detection_time) override;
   void OnPingSent() override;
   void OnPacketReceived(const quic::QuicSocketAddress& self_address,
                         const quic::QuicSocketAddress& peer_address,
