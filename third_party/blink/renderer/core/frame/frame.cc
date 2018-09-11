@@ -62,7 +62,7 @@ using namespace HTMLNames;
 Frame::~Frame() {
   InstanceCounters::DecrementCounter(InstanceCounters::kFrameCounter);
   DCHECK(!owner_);
-  DCHECK_EQ(lifecycle_.GetState(), FrameLifecycle::kDetached);
+  DCHECK(IsDetached());
 }
 
 void Frame::Trace(blink::Visitor* visitor) {
@@ -76,10 +76,17 @@ void Frame::Trace(blink::Visitor* visitor) {
 
 void Frame::Detach(FrameDetachType type) {
   DCHECK(client_);
+  // Detach() can be re-entered, so this can't simply DCHECK(IsAttached()).
+  DCHECK(!IsDetached());
+  lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
+
+  DetachImpl(type);
+  // Due to re-entrancy, |this| could have completed detaching already.
+  DCHECK(IsDetached() == !client_);
+  if (IsDetached())
+    return;
+
   detach_stack_ = base::debug::StackTrace();
-  // By the time this method is called, the subclasses should have already
-  // advanced to the Detaching state.
-  DCHECK_EQ(lifecycle_.GetState(), FrameLifecycle::kDetaching);
   client_->SetOpener(nullptr);
   // After this, we must no longer talk to the client since this clears
   // its owning reference back to our owning LocalFrame.

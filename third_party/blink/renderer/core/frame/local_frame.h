@@ -129,7 +129,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
                           bool replace_current_item,
                           UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&) override;
-  void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);
@@ -378,6 +377,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   friend class FrameNavigationDisabler;
 
   LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
+
+  // Frame protected overrides:
+  void DetachImpl(FrameDetachType) override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.

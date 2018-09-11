@@ -34,7 +34,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                           bool replace_current_item,
                           UserGestureStatus) override;
   void Navigate(const FrameLoadRequest& passed_request) override;
-  void Detach(FrameDetachType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;
   void CheckCompleted() override;
@@ -64,6 +63,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
  private:
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
+
+  // Frame protected overrides:
+  void DetachImpl(FrameDetachType) override;
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.

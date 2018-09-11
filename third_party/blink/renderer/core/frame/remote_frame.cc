@@ -84,9 +84,7 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
                      frame_request.GetBlobURLToken());
 }
 
-void RemoteFrame::Detach(FrameDetachType type) {
-  lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
-
+void RemoteFrame::DetachImpl(FrameDetachType type) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DetachChildren();
   if (!Client())
@@ -106,7 +104,6 @@ void RemoteFrame::Detach(FrameDetachType type) {
   ToRemoteDOMWindow(dom_window_)->FrameDetached();
   if (cc_layer_)
     SetCcLayer(nullptr, false);
-  Frame::Detach(type);
 }
 
 bool RemoteFrame::PrepareForCommit() {

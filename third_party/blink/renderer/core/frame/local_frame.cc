@@ -283,16 +283,12 @@ void LocalFrame::Navigate(const FrameLoadRequest& request) {
   loader_.StartNavigation(request);
 }
 
-void LocalFrame::Detach(FrameDetachType type) {
+void LocalFrame::DetachImpl(FrameDetachType type) {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // BEGIN RE-ENTRANCY SAFE BLOCK
   // Starting here, the code must be safe against re-entrancy. Dispatching
   // events, et cetera can run Javascript, which can reenter Detach().
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  // Detach() can be re-entered, this can't simply DCHECK(IsAttached()).
-  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
-  lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 
   if (IsLocalRoot()) {
     performance_monitor_->Shutdown();
@@ -353,7 +349,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   // re-entered, then check for a non-null Client() above should have already
   // returned.
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
+  DCHECK(!IsDetached());
 
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!view_->IsAttached());
@@ -378,7 +374,6 @@ void LocalFrame::Detach(FrameDetachType type) {
   supplements_.clear();
   frame_scheduler_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
-  Frame::Detach(type);
 }
 
 bool LocalFrame::PrepareForCommit() {
@@ -1353,7 +1348,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
 bool LocalFrame::IsProvisional() const {
   // Calling this after the frame is marked as completely detached is a bug, as
   // this state can no longer be accurately calculated.
-  CHECK_NE(FrameLifecycle::kDetached, lifecycle_.GetState());
+  CHECK(!IsDetached());
 
   if (IsMainFrame()) {
     return GetPage()->MainFrame() != this;
