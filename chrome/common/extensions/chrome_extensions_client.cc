@@ -88,8 +88,6 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
 void ChromeExtensionsClient::Initialize() {
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ChromeExtensionsClientInitTime");
-
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs
   // the ability to script webui pages. This is temporary and is not
