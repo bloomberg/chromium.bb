@@ -4,7 +4,6 @@
 
 #include "chrome/browser/notifications/win/notification_image_retainer.h"
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/path_service.h"
