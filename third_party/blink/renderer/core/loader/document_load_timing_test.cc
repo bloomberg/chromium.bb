@@ -56,4 +56,40 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
       -navigation_start_delta, .001);
 }
 
+TEST_F(DocumentLoadTimingTest, ensureRedirectEndExcludesNextFetch) {
+  // Regression test for https://crbug.com/823254.
+
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
+
+  base::TimeTicks origin;
+  auto t1 = base::TimeDelta::FromSeconds(5);
+  auto t2 = base::TimeDelta::FromSeconds(10);
+
+  // Start a navigation to |url_that_redirects|.
+  timing.SetNavigationStart(origin);
+
+  // Simulate a redirect taking |t1| seconds.
+  timing.SetRedirectStart(origin);
+  origin += t1;
+  timing.SetRedirectEnd(origin);
+
+  // Start fetching |url_that_loads|.
+  timing.SetFetchStart(origin);
+
+  // Track the redirection.
+  KURL url_that_redirects("some_url");
+  KURL url_that_loads("some_other_url");
+  timing.AddRedirect(url_that_redirects, url_that_loads);
+
+  // Simulate |t2| seconds elapsing between fetchStart and responseEnd.
+  origin += t2;
+  timing.SetResponseEnd(origin);
+
+  // The bug was causing |redirectEnd| - |redirectStart| ~= |t1| + |t2| when it
+  // should be just |t1|.
+  double redirect_time_ms =
+      (timing.RedirectEnd() - timing.RedirectStart()).InMillisecondsF();
+  EXPECT_NEAR(redirect_time_ms, t1.InMillisecondsF(), 1.0);
+}
 }  // namespace blink
