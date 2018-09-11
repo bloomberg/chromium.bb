@@ -61,12 +61,12 @@ class CondVar {
 };
 
 class AtomicPointer {
- private:
-  typedef base::subtle::AtomicWord Rep;
-  Rep rep_;
  public:
-  AtomicPointer() { }
+  AtomicPointer() = default;
+  ~AtomicPointer() = default;
+
   explicit AtomicPointer(void* p) : rep_(reinterpret_cast<Rep>(p)) {}
+
   inline void* Acquire_Load() const {
     return reinterpret_cast<void*>(base::subtle::Acquire_Load(&rep_));
   }
@@ -79,6 +79,10 @@ class AtomicPointer {
   inline void NoBarrier_Store(void* v) {
     base::subtle::NoBarrier_Store(&rep_, reinterpret_cast<Rep>(v));
   }
+
+ private:
+  using Rep = base::subtle::AtomicWord;
+  Rep rep_;
 };
 
 // Implementation of OnceType and InitOnce() pair, this is equivalent to

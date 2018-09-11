@@ -14,11 +14,9 @@
 namespace leveldb {
 namespace port {
 
-Mutex::Mutex() {
-}
+Mutex::Mutex() = default;
 
-Mutex::~Mutex() {
-}
+Mutex::~Mutex() = default;
 
 void Mutex::Lock() {
   mu_.Acquire();
@@ -36,7 +34,7 @@ CondVar::CondVar(Mutex* mu)
     : cv_(&mu->mu_) {
 }
 
-CondVar::~CondVar() { }
+CondVar::~CondVar() = default;
 
 void CondVar::Wait() {
   cv_.Wait();
