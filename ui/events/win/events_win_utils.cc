@@ -254,7 +254,7 @@ gfx::Point EventLocationFromMSG(const MSG& native_event) {
     // Note: Wheel events are considered client, but their position is in screen
     //       coordinates.
     // Client message. The position is contained in the LPARAM.
-    return gfx::Point(native_event.lParam);
+    return gfx::Point(static_cast<DWORD>(native_event.lParam));
   } else {
     DCHECK(IsNonClientMouseEvent(native_event) ||
            IsMouseWheelEvent(native_event) || IsScrollEvent(native_event));

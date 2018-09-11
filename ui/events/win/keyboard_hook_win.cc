@@ -114,7 +114,7 @@ LRESULT CALLBACK KeyboardHookWin::ProcessKeyEvent(int code,
       KeycodeConverter::NativeKeycodeToDomCode(ll_hooks->scanCode);
   if (!IsOSReservedKey(ll_hooks->vkCode) &&
       instance_->ShouldCaptureKeyEvent(dom_code)) {
-    MSG msg = {nullptr, w_param, ll_hooks->vkCode,
+    MSG msg = {nullptr, static_cast<UINT>(w_param), ll_hooks->vkCode,
                (ll_hooks->scanCode << 16) | (ll_hooks->flags & 0xFFFF),
                ll_hooks->time};
     KeyEvent key_event = KeyEventFromMSG(msg);

@@ -670,7 +670,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   MSG native_event =
       { NULL, (is_press ? key_press : WM_KEYUP), key_code, 0 };
   native_event.time =
-      (ui::EventTimeForNow() - base::TimeTicks()).InMicroseconds();
+      (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
   ui::KeyEvent keyev(native_event, flags);
 #elif defined(USE_X11)
   ui::ScopedXI2Event xevent;
