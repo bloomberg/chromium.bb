@@ -54,9 +54,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
         mProtectedContentMenuAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
-        String category = "";
         if (getArguments() != null) {
-            category = getArguments().getString(SingleCategoryPreferences.EXTRA_CATEGORY, "");
+            String category =
+                    getArguments().getString(SingleCategoryPreferences.EXTRA_CATEGORY, "");
             if (MEDIA_KEY.equals(category)) {
                 mMediaSubMenu = true;
                 getActivity().setTitle(findPreference(MEDIA_KEY).getTitle().toString());
@@ -191,9 +191,15 @@ public class SiteSettingsPreferences extends PreferenceFragment
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             p.setOnPreferenceClickListener(this);
 
-            // Disable autoplay preference if Data Saver is ON.
-            if (SiteSettingsCategory.Type.AUTOPLAY == prefCategory
+            if ((SiteSettingsCategory.Type.CAMERA == prefCategory
+                        || SiteSettingsCategory.Type.MICROPHONE == prefCategory)
+                    && SiteSettingsCategory.createFromType(prefCategory)
+                               .showPermissionBlockedMessage(getActivity())) {
+                // Show 'disabled' message when permission is not granted in Android.
+                p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
+            } else if (SiteSettingsCategory.Type.AUTOPLAY == prefCategory
                     && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+                // Disable autoplay preference if Data Saver is ON.
                 p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
                 p.setEnabled(false);
             } else if (SiteSettingsCategory.Type.COOKIES == prefCategory && checked
