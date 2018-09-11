@@ -15,7 +15,9 @@
 
 typedef void (*FunctionPtr)();
 
+#ifndef LIB_NAME
 #define LIB_NAME "libcrazy_linker_tests_libfoo.so"
+#endif
 
 int main() {
   crazy_context_t* context = crazy_context_create();
