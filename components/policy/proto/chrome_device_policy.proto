@@ -1072,6 +1072,12 @@ message SamlLoginAuthenticationTypeProto {
   optional Type saml_login_authentication_type = 1 [default = TYPE_DEFAULT];
 }
 
+// Setting that controls whether unaffiliated users are allowed to run Crostini
+// (true by default)
+message DeviceUnaffiliatedCrostiniAllowedProto {
+  optional bool device_unaffiliated_crostini_allowed = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1162,4 +1168,6 @@ message ChromeDeviceSettingsProto {
   optional DeviceMachinePasswordChangeRateProto
       device_machine_password_change_rate = 70;
   optional SamlLoginAuthenticationTypeProto saml_login_authentication_type = 71;
+  optional DeviceUnaffiliatedCrostiniAllowedProto
+      device_unaffiliated_crostini_allowed = 72;
 }

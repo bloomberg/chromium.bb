@@ -12,6 +12,7 @@ namespace prefs {
 
 extern const char kCrostiniEnabled[];
 extern const char kCrostiniRegistry[];
+extern const char kUserCrostiniAllowedByPolicy[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

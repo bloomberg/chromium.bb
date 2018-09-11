@@ -3832,6 +3832,24 @@
     ]
   },
 
+  "CrostiniAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CrostiniAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.user_allowed_by_policy" }
+    ]
+  },
+
+  "DeviceUnaffiliatedCrostiniAllowed": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "device_unaffiliated_crostini_allowed": false
+    },
+    "pref_mappings": [
+      { "pref": "cros.device.unaffiliated_crostini_allowed"}
+    ]
+  },
+
   "DeviceSamlLoginAuthenticationType": {
   },
 

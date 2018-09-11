@@ -105,4 +105,8 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 
+// Whether running Crostini is allowed for unaffiliated users per enterprise
+// policy.
+bool IsUnaffiliatedCrostiniAllowedByPolicy();
+
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_

@@ -13,10 +13,14 @@ namespace prefs {
 // Crostini (Called "Linux Apps" in UI).
 const char kCrostiniEnabled[] = "crostini.enabled";
 const char kCrostiniRegistry[] = "crostini.registry";
+// A boolean preference representing a user level enterprise policy to enable
+// Crostini use.
+const char kUserCrostiniAllowedByPolicy[] = "crostini.user_allowed_by_policy";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kCrostiniEnabled, false);
   registry->RegisterDictionaryPref(kCrostiniRegistry);
+  registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);
 }
 
 }  // namespace prefs

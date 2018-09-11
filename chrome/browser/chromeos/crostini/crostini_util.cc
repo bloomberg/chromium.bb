@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
@@ -367,4 +368,15 @@ base::Optional<std::string> CrostiniAppIdFromAppName(
     return base::nullopt;
   }
   return app_name.substr(strlen(kCrostiniAppNamePrefix));
+}
+
+bool IsUnaffiliatedCrostiniAllowedByPolicy() {
+  bool unaffiliated_crostini_allowed;
+  if (chromeos::CrosSettings::Get()->GetBoolean(
+          chromeos::kDeviceUnaffiliatedCrostiniAllowed,
+          &unaffiliated_crostini_allowed)) {
+    return unaffiliated_crostini_allowed;
+  }
+  // If device policy is not set, allow Crostini.
+  return true;
 }
