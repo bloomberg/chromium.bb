@@ -473,7 +473,7 @@ typedef struct SPEED_FEATURES {
 
   // If true, sub-pixel search uses the exact convolve function used for final
   // encoding and decoding; otherwise, it uses bilinear interpolation.
-  int use_accurate_subpel_search;
+  SUBPEL_SEARCH_TYPE use_accurate_subpel_search;
 
   // Whether to compute distortion in the image domain (slower but
   // more accurate), or in the transform domain (faster but less acurate).

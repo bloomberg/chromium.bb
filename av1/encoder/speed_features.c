@@ -221,7 +221,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
-    sf->use_accurate_subpel_search = 1;
+    sf->use_accurate_subpel_search = USE_4_TAPS;
     sf->reuse_inter_intra_mode = 1;
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
@@ -263,7 +263,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
     sf->use_transform_domain_distortion = 1;
-    sf->use_accurate_subpel_search = 0;
+    sf->use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
@@ -433,7 +433,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->mode_search_skip_flags = 0;
   sf->disable_filter_search_var_thresh = 0;
   sf->allow_partition_search_skip = 0;
-  sf->use_accurate_subpel_search = 2;
+  sf->use_accurate_subpel_search = USE_8_TAPS;
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->drop_ref = 0;

@@ -571,11 +571,10 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
     }
   }
 
-  const InterpFilterParams *filter =
-      (subpel_search == 1)
-          ? av1_get_4tap_interp_filter_params(EIGHTTAP_REGULAR)
-          : av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, 8);
-  int filter_taps = (subpel_search == 1) ? 4 : SUBPEL_TAPS;
+  const InterpFilterParams *filter = av1_get_filter(subpel_search);
+  // (TODO:yunqing) 2-tap case uses 4-tap functions since there is no SIMD for
+  // 2-tap yet.
+  int filter_taps = (subpel_search <= USE_4_TAPS) ? 4 : SUBPEL_TAPS;
 
   if (!subpel_x_q3 && !subpel_y_q3) {
     if (width >= 16) {
@@ -638,15 +637,16 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
     const int16_t *const kernel_y =
         av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
     const uint8_t *ref_start = ref - ref_stride * ((filter_taps >> 1) - 1);
-    uint8_t *temp_start_horiz =
-        (subpel_search == 1) ? temp + (filter_taps >> 1) * MAX_SB_SIZE : temp;
+    uint8_t *temp_start_horiz = (subpel_search <= USE_4_TAPS)
+                                    ? temp + (filter_taps >> 1) * MAX_SB_SIZE
+                                    : temp;
     uint8_t *temp_start_vert = temp + MAX_SB_SIZE * ((filter->taps >> 1) - 1);
     int intermediate_height =
         (((height - 1) * 8 + subpel_y_q3) >> 3) + filter_taps;
     assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
     // TODO(Deepa): Remove the memset below when we have
     // 4 tap simd for sse2 and ssse3.
-    if (subpel_search == 1) {
+    if (subpel_search <= USE_4_TAPS) {
       memset(temp_start_vert - 3 * MAX_SB_SIZE, 0, width);
       memset(temp_start_vert - 2 * MAX_SB_SIZE, 0, width);
       memset(temp_start_vert + (height + 2) * MAX_SB_SIZE, 0, width);
