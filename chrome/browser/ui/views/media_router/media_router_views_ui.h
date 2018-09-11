@@ -29,7 +29,6 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
 
   // MediaRouterUIBase:
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const override;
-  void Close() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, NotifyObserver);
