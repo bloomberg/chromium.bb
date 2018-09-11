@@ -209,8 +209,10 @@ class GTestTest(RemoteTest):
     vm_test_script_contents += [
         # We run tests as chronos, but need to be root to rm the files. So pass
         # in the public plaintext root password to sudo via stdin.
-        'echo "test0000" | sudo -S find /var/spool/crash/ -type f -delete',
-        'echo "test0000" | sudo -S find /var/log/chrome/ -type f -delete',
+        'echo "test0000" | '
+        'sudo -S find /var/spool/crash/ -type f -print -delete',
+        'echo "test0000" | '
+        'sudo -S find /var/log/chrome/ -type f -print -delete',
         # Make sure the exit code is that of the test, and not the post-test
         # cleanup.
         'exit $test_retcode',
