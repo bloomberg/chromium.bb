@@ -30,6 +30,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -915,12 +916,12 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
 
   // Instantiate a new tracker and validate that it has only one account, and
   // it is the correct non dotted one.
-    ResetAccountTrackerNetworkDisabled();
+  ResetAccountTrackerNetworkDisabled();
 
-    EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
-    infos = account_tracker()->GetAccounts();
-    ASSERT_EQ(1u, infos.size());
-    EXPECT_EQ(AccountKeyToEmail(kAccountKeyFooBar), infos[0].email);
+  EXPECT_TRUE(account_fetcher()->IsAllUserInfoFetched());
+  infos = account_tracker()->GetAccounts();
+  ASSERT_EQ(1u, infos.size());
+  EXPECT_EQ(AccountKeyToEmail(kAccountKeyFooBar), infos[0].email);
 }
 
 TEST_F(AccountTrackerServiceTest, NoDeprecatedServiceFlags) {
@@ -1323,3 +1324,70 @@ TEST_F(AccountTrackerServiceTest, AdvancedProtectionAccountBasic) {
 }
 
 #endif
+
+TEST_F(AccountTrackerServiceTest, CountOfLoadedAccounts_NoAccount) {
+  base::HistogramTester tester;
+  ResetAccountTracker();
+
+  EXPECT_THAT(
+      tester.GetAllSamples("Signin.AccountTracker.CountOfLoadedAccounts"),
+      testing::ElementsAre(base::Bucket(0, 1)));
+}
+
+TEST_F(AccountTrackerServiceTest, CountOfLoadedAccounts_TwoAccounts) {
+  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
+  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
+  const std::string email_beta = AccountKeyToEmail(kAccountKeyBeta);
+  const std::string gaia_beta = AccountKeyToGaiaId(kAccountKeyBeta);
+
+  ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("account_id", email_alpha);
+  dict->SetString("email", email_alpha);
+  dict->SetString("gaia", gaia_alpha);
+  update->Append(std::move(dict));
+
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", email_beta);
+  dict->SetString("email", email_beta);
+  dict->SetString("gaia", gaia_beta);
+  update->Append(std::move(dict));
+
+  base::HistogramTester tester;
+  ResetAccountTracker();
+
+  EXPECT_THAT(
+      tester.GetAllSamples("Signin.AccountTracker.CountOfLoadedAccounts"),
+      testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+TEST_F(AccountTrackerServiceTest, CountOfLoadedAccounts_TwoAccountsOneInvalid) {
+  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
+  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
+  const std::string email_foobar = AccountKeyToEmail(kAccountKeyFooDotBar);
+  const std::string gaia_foobar = AccountKeyToGaiaId(kAccountKeyFooDotBar);
+
+  ListPrefUpdate update(prefs(), AccountTrackerService::kAccountInfoPref);
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("account_id", email_alpha);
+  dict->SetString("email", email_alpha);
+  dict->SetString("gaia", gaia_alpha);
+  update->Append(std::move(dict));
+
+  // This account is invalid because the account_id is a non-canonicalized
+  // version of the email.
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", email_foobar);
+  dict->SetString("email", email_foobar);
+  dict->SetString("gaia", gaia_foobar);
+  update->Append(std::move(dict));
+
+  base::HistogramTester tester;
+  ResetAccountTracker();
+
+  EXPECT_THAT(
+      tester.GetAllSamples("Signin.AccountTracker.CountOfLoadedAccounts"),
+      testing::ElementsAre(base::Bucket(1, 1)));
+}
