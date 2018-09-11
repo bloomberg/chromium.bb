@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <string>
 
@@ -77,6 +78,11 @@ bool DieFileDie(const FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
   return DeleteFile(file, recurse);
+}
+
+void SyncPageCacheToDisk() {
+  // On Linux (and Android) the sync(2) call waits for I/O completions.
+  sync();
 }
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
