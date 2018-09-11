@@ -16,6 +16,7 @@ class Event;
 
 namespace chromecast {
 
+class CastTouchActivityObserver;
 class CastGestureHandler;
 
 // Chromecast's window-manager interface.
@@ -71,6 +72,18 @@ class CastWindowManager {
 
   // Enable/Disable color inversion.
   virtual void SetColorInversion(bool enable) = 0;
+
+  // Enable/disable the handling of all touch events.
+  virtual void SetTouchInputDisabled(bool disabled) = 0;
+
+  // Add an observer for when input events occur while touch input is disabled.
+  virtual void AddTouchActivityObserver(
+      CastTouchActivityObserver* observer) = 0;
+
+  // Remove an observer for when input events occur while touch input is
+  // disabled.
+  virtual void RemoveTouchActivityObserver(
+      CastTouchActivityObserver* observer) = 0;
 };
 
 }  // namespace chromecast
