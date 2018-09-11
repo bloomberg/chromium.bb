@@ -53,6 +53,20 @@ Polymer({
      * @private
      */
     step_: {type: Number, value: settings.FingerprintSetupStep.LOCATE_SCANNER},
+
+    /**
+     * The percentage of completion that has been received during setup.
+     * This is used to approximate the progress of the setup.
+     * The value within [0, 100] represents the percent of enrollment
+     * completion.
+     * @type {number}
+     * @private
+     */
+    percentComplete_: {
+      type: Number,
+      value: 0,
+      observer: 'onProgressChanged_',
+    },
   },
 
   /**
@@ -65,15 +79,6 @@ Polymer({
 
   /** @private {?settings.FingerprintBrowserProxy}*/
   browserProxy_: null,
-
-  /**
-   * The percentage of completion that has been received during setup.
-   * This is used to approximate the progress of the setup.
-   * The value within [0, 100] represents the percent of enrollment completion.
-   * @type {number}
-   * @private
-   */
-  percentComplete_: 0,
 
   /** @override */
   attached: function() {
@@ -117,7 +122,6 @@ Polymer({
   reset_: function() {
     this.step_ = settings.FingerprintSetupStep.LOCATE_SCANNER;
     this.percentComplete_ = 0;
-    this.$.arc.reset();
     this.clearSensorMessageTimeout_();
   },
 
@@ -141,28 +145,19 @@ Polymer({
       case settings.FingerprintSetupStep.LOCATE_SCANNER:
         this.$.arc.reset();
         this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
-        this.percentComplete_ = 0;
+        this.percentComplete_ = scan.percentComplete;
+        this.setProblem_(scan.result);
         break;
       case settings.FingerprintSetupStep.MOVE_FINGER:
         if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
-          this.$.arc.setProgress(
-              this.percentComplete_, 100 /*currPercentComplete*/,
-              true /*isComplete*/);
           this.clearSensorMessageTimeout_();
           this.fire('add-fingerprint');
         } else {
           this.setProblem_(scan.result);
-          if (scan.result == settings.FingerprintResultType.SUCCESS) {
-            if (scan.percentComplete > this.percentComplete_) {
-              this.$.arc.setProgress(
-                  this.percentComplete_, scan.percentComplete,
-                  false /*isComplete*/);
-              this.percentComplete_ = scan.percentComplete;
-            }
-          }
         }
+        this.percentComplete_ = scan.percentComplete;
         break;
       case settings.FingerprintSetupStep.READY:
         break;
@@ -285,6 +280,20 @@ Polymer({
   showArc_: function() {
     return this.step_ == settings.FingerprintSetupStep.MOVE_FINGER ||
         this.step_ == settings.FingerprintSetupStep.READY;
+  },
+
+  /**
+   * Observer for percentComplete_.
+   * @private
+   */
+  onProgressChanged_: function(newValue, oldValue) {
+    // Start a new enrollment, so reset all enrollment related states.
+    if (newValue === 0) {
+      this.$.arc.reset();
+      return;
+    }
+
+    this.$.arc.setProgress(oldValue, newValue, newValue === 100);
   },
 });
 })();
