@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
 
@@ -128,6 +129,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   FormSaver* form_saver() { return form_saver_.get(); }
 
 #endif
+
+  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
+  // removed.
+  scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder() {
+    return metrics_recorder_;
+  }
 
  protected:
   // FormFetcher::Consumer:
