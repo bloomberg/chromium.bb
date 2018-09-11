@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_vector.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -30,6 +31,8 @@ class CORE_EXPORT NGExclusionSpace {
  public:
   NGExclusionSpace();
   NGExclusionSpace(const NGExclusionSpace&);
+  NGExclusionSpace(NGExclusionSpace&&) noexcept;
+  NGExclusionSpace& operator=(const NGExclusionSpace&);
   ~NGExclusionSpace(){};
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
@@ -143,6 +146,26 @@ class CORE_EXPORT NGExclusionSpace {
               base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))),
           has_shape_exclusions(other.has_shape_exclusions) {}
 
+    NGShelf(NGShelf&& other) noexcept
+        : block_offset(other.block_offset),
+          line_left(other.line_left),
+          line_right(other.line_right),
+          line_left_edges(std::move(other.line_left_edges)),
+          line_right_edges(std::move(other.line_right_edges)),
+          shape_exclusions(std::move(other.shape_exclusions)),
+          has_shape_exclusions(other.has_shape_exclusions) {}
+
+    NGShelf& operator=(NGShelf&& other) noexcept {
+      block_offset = other.block_offset;
+      line_left = other.line_left;
+      line_right = other.line_right;
+      line_left_edges = std::move(other.line_left_edges);
+      line_right_edges = std::move(other.line_right_edges);
+      shape_exclusions = std::move(other.shape_exclusions);
+      has_shape_exclusions = other.has_shape_exclusions;
+      return *this;
+    }
+
     LayoutUnit block_offset;
     LayoutUnit line_left;
     LayoutUnit line_right;
@@ -192,6 +215,12 @@ class CORE_EXPORT NGExclusionSpace {
   // derived_geometry_ data-structure.
   struct DerivedGeometry {
     DerivedGeometry();
+    DerivedGeometry(DerivedGeometry&& o) noexcept
+        : shelves_(std::move(o.shelves_)),
+          opportunities_(std::move(o.opportunities_)),
+          last_float_block_start_(o.last_float_block_start_),
+          left_float_clear_offset_(o.left_float_clear_offset_),
+          right_float_clear_offset_(o.right_float_clear_offset_) {}
 
     void Add(const NGExclusion& exclusion);
 
