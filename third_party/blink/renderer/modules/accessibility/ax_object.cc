@@ -1290,8 +1290,7 @@ bool AXObject::AncestorExposesActiveDescendant() const {
   if (!parent)
     return false;
 
-  if (parent->SupportsARIAActiveDescendant() &&
-      parent->GetAOMPropertyOrARIAAttribute(
+  if (parent->GetAOMPropertyOrARIAAttribute(
           AOMRelationProperty::kActiveDescendant)) {
     return true;
   }
@@ -1732,34 +1731,6 @@ bool AXObject::AriaPressedIsPresent() const {
 bool AXObject::AriaCheckedIsPresent() const {
   AtomicString result;
   return HasAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked, result);
-}
-
-bool AXObject::SupportsARIAActiveDescendant() const {
-  // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes,
-  // ARIA groups and ARIA application should be able to expose an active descendant.
-  // Implicitly, <input> and <textarea> elements should also have this ability.
-  switch (RoleValue()) {
-    case kComboBoxGroupingRole:
-    case kComboBoxMenuButtonRole:
-    case kGridRole:
-    case kGroupRole:
-    case kListBoxRole:
-    case kMenuRole:
-    case kMenuBarRole:
-    case kRadioGroupRole:
-    case kRowRole:
-    case kSearchBoxRole:
-    case kTabListRole:
-    case kTextFieldRole:
-    case kTextFieldWithComboBoxRole:
-    case kToolbarRole:
-    case kTreeRole:
-    case kTreeGridRole:
-    case kApplicationRole:
-      return true;
-    default:
-      return false;
-  }
 }
 
 bool AXObject::SupportsARIAExpanded() const {
