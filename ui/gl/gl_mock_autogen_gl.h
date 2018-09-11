@@ -872,6 +872,7 @@ MOCK_METHOD2(MatrixLoadfEXT, void(GLenum matrixMode, const GLfloat* m));
 MOCK_METHOD1(MatrixLoadIdentityEXT, void(GLenum matrixMode));
 MOCK_METHOD1(MemoryBarrierByRegion, void(GLbitfield barriers));
 MOCK_METHOD1(MemoryBarrierEXT, void(GLbitfield barriers));
+MOCK_METHOD1(MinSampleShading, void(GLfloat value));
 MOCK_METHOD4(
     ObjectLabel,
     void(GLenum identifier, GLuint name, GLsizei length, const char* label));

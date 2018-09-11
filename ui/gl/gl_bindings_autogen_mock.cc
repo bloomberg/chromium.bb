@@ -2959,6 +2959,11 @@ MockGLInterface::Mock_glMemoryBarrierEXT(GLbitfield barriers) {
   interface_->MemoryBarrierEXT(barriers);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glMinSampleShading(GLfloat value) {
+  MakeGlMockFunctionUnique("glMinSampleShading");
+  interface_->MinSampleShading(value);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glObjectLabel(GLenum identifier,
                                                          GLuint name,
                                                          GLsizei length,
@@ -5652,6 +5657,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
         Mock_glMemoryBarrierByRegion);
   if (strcmp(name, "glMemoryBarrierEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrierEXT);
+  if (strcmp(name, "glMinSampleShading") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMinSampleShading);
   if (strcmp(name, "glObjectLabel") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectLabel);
   if (strcmp(name, "glObjectLabelKHR") == 0)

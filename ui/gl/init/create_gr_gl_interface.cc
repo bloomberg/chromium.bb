@@ -60,19 +60,19 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // Depending on the advertised version and extensions, skia checks for
   // existence of entrypoints. However some of those we don't yet handle in
   // gl_bindings, so we need to fake the version to the maximum fully supported
-  // by the bindings (GL 3.2 or ES 3.0), and blacklist extensions that skia
+  // by the bindings (GL 4.1 or ES 3.0), and blacklist extensions that skia
   // handles but bindings don't.
   // TODO(piman): add bindings for missing entrypoints.
   GrGLFunction<GrGLGetStringProc> get_string;
   const bool apply_version_override = use_version_es2 ||
-                                      version_info.IsAtLeastGL(3, 3) ||
+                                      version_info.IsAtLeastGL(4, 2) ||
                                       version_info.IsAtLeastGLES(3, 1);
   if (apply_version_override) {
     const char* fake_version = nullptr;
     if (use_version_es2) {
       fake_version = "OpenGL ES 2.0";
     } else {
-      fake_version = version_info.is_es ? "OpenGL ES 3.0" : "3.2";
+      fake_version = version_info.is_es ? "OpenGL ES 3.0" : "4.1";
     }
     get_string = [fake_version](GLenum name) {
       return GetStringHook(fake_version, name);
@@ -144,8 +144,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fDrawElementsInstanced = gl->glDrawElementsInstancedANGLEFn;
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1
-  // functions->fDrawArraysIndirect = gl->glDrawArraysIndirectFn;
-  // functions->fDrawElementsIndirect = gl->glDrawElementsIndirectFn;
+  functions->fDrawArraysIndirect = gl->glDrawArraysIndirectFn;
+  functions->fDrawElementsIndirect = gl->glDrawElementsIndirectFn;
 
   functions->fDrawRangeElements = gl->glDrawRangeElementsFn;
   functions->fEnable = gl->glEnableFn;
@@ -488,7 +488,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // functions->fDestroyImage = nullptr;
 
   // GL 4.0 or GL_ARB_sample_shading or ES+GL_OES_sample_shading
-  // functions->fMinSampleShading = gl->glMinSampleShadingFn;
+  functions->fMinSampleShading = gl->glMinSampleShadingFn;
 
   functions->fFenceSync = gl->glFenceSyncFn;
   functions->fIsSync = gl->glIsSyncFn;

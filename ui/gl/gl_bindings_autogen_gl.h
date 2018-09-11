@@ -1025,6 +1025,7 @@ typedef void(GL_BINDING_CALL* glMatrixLoadfEXTProc)(GLenum matrixMode,
 typedef void(GL_BINDING_CALL* glMatrixLoadIdentityEXTProc)(GLenum matrixMode);
 typedef void(GL_BINDING_CALL* glMemoryBarrierByRegionProc)(GLbitfield barriers);
 typedef void(GL_BINDING_CALL* glMemoryBarrierEXTProc)(GLbitfield barriers);
+typedef void(GL_BINDING_CALL* glMinSampleShadingProc)(GLfloat value);
 typedef void(GL_BINDING_CALL* glObjectLabelProc)(GLenum identifier,
                                                  GLuint name,
                                                  GLsizei length,
@@ -2117,6 +2118,7 @@ struct ProcsGL {
   glMatrixLoadIdentityEXTProc glMatrixLoadIdentityEXTFn;
   glMemoryBarrierByRegionProc glMemoryBarrierByRegionFn;
   glMemoryBarrierEXTProc glMemoryBarrierEXTFn;
+  glMinSampleShadingProc glMinSampleShadingFn;
   glObjectLabelProc glObjectLabelFn;
   glObjectPtrLabelProc glObjectPtrLabelFn;
   glPathCommandsNVProc glPathCommandsNVFn;
@@ -3194,6 +3196,7 @@ class GL_EXPORT GLApi {
   virtual void glMatrixLoadIdentityEXTFn(GLenum matrixMode) = 0;
   virtual void glMemoryBarrierByRegionFn(GLbitfield barriers) = 0;
   virtual void glMemoryBarrierEXTFn(GLbitfield barriers) = 0;
+  virtual void glMinSampleShadingFn(GLfloat value) = 0;
   virtual void glObjectLabelFn(GLenum identifier,
                                GLuint name,
                                GLsizei length,
@@ -4269,6 +4272,7 @@ class GL_EXPORT GLApi {
 #define glMemoryBarrierByRegion \
   ::gl::g_current_gl_context->glMemoryBarrierByRegionFn
 #define glMemoryBarrierEXT ::gl::g_current_gl_context->glMemoryBarrierEXTFn
+#define glMinSampleShading ::gl::g_current_gl_context->glMinSampleShadingFn
 #define glObjectLabel ::gl::g_current_gl_context->glObjectLabelFn
 #define glObjectPtrLabel ::gl::g_current_gl_context->glObjectPtrLabelFn
 #define glPathCommandsNV ::gl::g_current_gl_context->glPathCommandsNVFn
