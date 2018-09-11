@@ -15,6 +15,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -88,15 +89,23 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
   LogHostScanBatchMetric();
 }
 
-void HostScanSchedulerImpl::ScheduleScan() {
+void HostScanSchedulerImpl::AttemptScanIfOffline() {
+  const chromeos::NetworkState* first_network =
+      network_state_handler_->FirstNetworkByType(
+          chromeos::NetworkTypePattern::Default());
+  if (IsOnlineOrHasActiveTetherConnection(first_network)) {
+    PA_LOG(INFO) << "Skipping scan attempt because the device is already "
+                    "connected to a network.";
+    return;
+  }
+
   AttemptScan();
 }
 
 void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
   // If there is an active (i.e., connecting or connected) network, there is no
   // need to schedule a scan.
-  if ((network && network->IsConnectingOrConnected()) ||
-      IsTetherNetworkConnectingOrConnected()) {
+  if (IsOnlineOrHasActiveTetherConnection(network)) {
     return;
   }
 
@@ -109,8 +118,9 @@ void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void HostScanSchedulerImpl::ScanRequested() {
-  AttemptScan();
+void HostScanSchedulerImpl::ScanRequested(const NetworkTypePattern& type) {
+  if (NetworkTypePattern::Tether().MatchesPattern(type))
+    AttemptScan();
 }
 
 void HostScanSchedulerImpl::ScanFinished() {
@@ -142,14 +152,15 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
   if (!was_screen_locked)
     return;
 
-  // If the device was just unlocked, start a scan.
+  // If the device was just unlocked, start a scan if not already connected to a
+  // network.
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    AttemptScan();
+    AttemptScanIfOffline();
   } else {
     delay_scan_after_unlock_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
-        base::BindRepeating(&HostScanSchedulerImpl::AttemptScan,
+        base::BindRepeating(&HostScanSchedulerImpl::AttemptScanIfOffline,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -200,6 +211,12 @@ bool HostScanSchedulerImpl::IsTetherNetworkConnectingOrConnected() {
              NetworkTypePattern::Tether()) ||
          network_state_handler_->ConnectedNetworkByType(
              NetworkTypePattern::Tether());
+}
+
+bool HostScanSchedulerImpl::IsOnlineOrHasActiveTetherConnection(
+    const NetworkState* default_network) {
+  return (default_network && default_network->IsConnectingOrConnected()) ||
+         IsTetherNetworkConnectingOrConnected();
 }
 
 void HostScanSchedulerImpl::LogHostScanBatchMetric() {

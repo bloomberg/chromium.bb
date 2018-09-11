@@ -32,7 +32,8 @@ void NetworkStateHandlerObserver::DevicePropertiesUpdated(
     const chromeos::DeviceState* device) {
 }
 
-void NetworkStateHandlerObserver::ScanRequested() {}
+void NetworkStateHandlerObserver::ScanRequested(
+    const NetworkTypePattern& type) {}
 
 void NetworkStateHandlerObserver::ScanCompleted(const DeviceState* device) {
 }

@@ -28,6 +28,7 @@ class SessionManager;
 namespace chromeos {
 
 class NetworkStateHandler;
+class NetworkTypePattern;
 
 namespace tether {
 
@@ -47,12 +48,12 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   ~HostScanSchedulerImpl() override;
 
   // HostScanScheduler:
-  void ScheduleScan() override;
+  void AttemptScanIfOffline() override;
 
  protected:
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const NetworkState* network) override;
-  void ScanRequested() override;
+  void ScanRequested(const NetworkTypePattern& type) override;
 
   // HostScanner::Observer:
   void ScanFinished() override;
@@ -65,6 +66,7 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   void AttemptScan();
   bool IsTetherNetworkConnectingOrConnected();
+  bool IsOnlineOrHasActiveTetherConnection(const NetworkState* default_network);
   void LogHostScanBatchMetric();
 
   void SetTestDoubles(
