@@ -442,11 +442,6 @@ const char kEnableAutoplayUnifiedSoundSettingsName[] =
 const char kEnableAutoplayUnifiedSoundSettingsDescription[] =
     "If enabled, shows the new unified autoplay sound settings UI.";
 
-const char kEnableBreakingNewsPushName[] = "Breaking News Push";
-const char kEnableBreakingNewsPushDescription[] =
-    "Listen for breaking news content suggestions (e.g. for New Tab Page) "
-    "through Google Cloud Messaging.";
-
 const char kEnableBrotliName[] = "Brotli Content-Encoding.";
 const char kEnableBrotliDescription[] =
     "Enable Brotli Content-Encoding support.";

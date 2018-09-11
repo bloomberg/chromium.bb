@@ -299,9 +299,6 @@ extern const char kEnableAutoplayIgnoreWebAudioDescription[];
 extern const char kEnableAutoplayUnifiedSoundSettingsName[];
 extern const char kEnableAutoplayUnifiedSoundSettingsDescription[];
 
-extern const char kEnableBreakingNewsPushName[];
-extern const char kEnableBreakingNewsPushDescription[];
-
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
