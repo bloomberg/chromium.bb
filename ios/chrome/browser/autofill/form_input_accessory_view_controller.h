@@ -18,6 +18,10 @@ extern CGFloat const kInputAccessoryHeight;
 // accessory view elements.
 @interface FormInputAccessoryViewController
     : NSObject<FormInputAccessoryConsumer>
+
+// Presents a view above the keyboard.
+- (void)presentView:(UIView*)view;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_CONTROLLER_H_

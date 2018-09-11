@@ -151,6 +151,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/autofill",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/browser/web:web_internal",
