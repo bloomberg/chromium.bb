@@ -77,6 +77,11 @@ void ExcludeCardFromEventHandling(gfx::NativeView card_native_view) {
   if (!card_native_view)
     return;
 
+  if (!card_native_view->parent()) {
+    LOG(ERROR) << "Card is not attached to the app list view.";
+    return;
+  }
+
   // |card_native_view| is brought into View's hierarchy via a NativeViewHost.
   // The window hierarchy looks like this:
   //   widget window -> clipping window -> content_native_view

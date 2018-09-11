@@ -1416,7 +1416,7 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
       }
       break;
     case AppListViewState::CLOSED:
-      NOTREACHED();
+      // We clean search on app list close.
       break;
   }
 }
