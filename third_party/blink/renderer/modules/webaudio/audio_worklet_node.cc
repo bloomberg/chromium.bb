@@ -47,12 +47,15 @@ AudioWorkletHandler::AudioWorkletHandler(
     AddInput();
   }
 
-  // If |options.outputChannelCount| unspecified, all outputs are mono.
+  if (options.hasOutputChannelCount()) {
+    is_output_channel_count_given_ = true;
+  }
+
   for (unsigned i = 0; i < options.numberOfOutputs(); ++i) {
-    unsigned long channel_count = options.hasOutputChannelCount()
+    // If |options.outputChannelCount| unspecified, all outputs are mono.
+    AddOutput(is_output_channel_count_given_
         ? options.outputChannelCount()[i]
-        : 1;
-    AddOutput(channel_count);
+        : 1);
   }
 
   if (Context()->GetExecutionContext()) {
@@ -132,9 +135,11 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   Context()->AssertGraphOwner();
   DCHECK(input);
 
-  // Dynamic channel count only works when the node has 1 input and 1 output.
-  // Otherwise the channel count(s) should not be dynamically changed.
-  if (NumberOfInputs() == 1 && NumberOfOutputs() == 1) {
+  // Dynamic channel count only works when the node has 1 input, 1 output and
+  // |outputChannelCount| is not given. Otherwise the channel count(s) should
+  // not be dynamically changed.
+  if (NumberOfInputs() == 1 && NumberOfOutputs() == 1 &&
+      !is_output_channel_count_given_) {
     DCHECK_EQ(input, &this->Input(0));
     unsigned number_of_input_channels = Input(0).NumberOfChannels();
     if (number_of_input_channels != Output(0).NumberOfChannels()) {
