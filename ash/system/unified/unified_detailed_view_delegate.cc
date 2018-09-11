@@ -149,11 +149,12 @@ void UnifiedDetailedViewDelegate::ShowStickyHeaderSeparator(
     views::View* view,
     bool show_separator) {
   if (show_separator) {
+    const int separator_width = ash::TrayConstants::separator_width();
     view->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
                                       kUnifiedMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
+                    kMenuSeparatorVerticalPadding - separator_width, 0)));
   } else {
     view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kMenuSeparatorVerticalPadding, 0)));

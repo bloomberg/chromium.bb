@@ -299,10 +299,11 @@ class ActiveUserBorder : public views::Border {
 
   // views::Border:
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    const int separator_width = TrayConstants::separator_width();
     canvas->FillRect(
         gfx::Rect(
-            0, view.height() - kMenuSeparatorVerticalPadding - kSeparatorWidth,
-            view.width(), kSeparatorWidth),
+            0, view.height() - kMenuSeparatorVerticalPadding - separator_width,
+            view.width(), separator_width),
         kMenuSeparatorColor);
   }
 
@@ -449,13 +450,14 @@ void UserView::ToggleUserDropdownWidget(bool toggled_by_key_event) {
       Shell::Get()->session_controller();
   const AddUserSessionPolicy add_user_policy =
       session_controller->GetAddUserPolicy();
+  const int separator_width = TrayConstants::separator_width();
   add_user_enabled_ = add_user_policy == AddUserSessionPolicy::ALLOWED;
 
   // Position the widget on top of the user card view (which is still in the
   // system menu). The top half of the widget will be transparent to allow
   // the active user to show through.
   gfx::Rect bounds = user_card_container_->GetBoundsInScreen();
-  bounds.set_width(bounds.width() + kSeparatorWidth);
+  bounds.set_width(bounds.width() + separator_width);
   int row_height = bounds.height();
 
   UserDropdownWidgetContents* container =
@@ -464,18 +466,18 @@ void UserView::ToggleUserDropdownWidget(bool toggled_by_key_event) {
   views::View* add_user_view = CreateAddUserView(add_user_policy);
   const SkColor bg_color = add_user_view->background()->get_color();
   container->SetBorder(views::CreatePaddedBorder(
-      views::CreateSolidSidedBorder(0, 0, 0, kSeparatorWidth, bg_color),
+      views::CreateSolidSidedBorder(0, 0, 0, separator_width, bg_color),
       gfx::Insets(row_height, 0, 0, 0)));
 
   // Create the contents aside from the empty window through which the active
   // user is seen.
   views::View* user_dropdown_padding = new views::View();
   user_dropdown_padding->SetBorder(views::CreateSolidSidedBorder(
-      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0, bg_color));
+      kMenuSeparatorVerticalPadding - separator_width, 0, 0, 0, bg_color));
   user_dropdown_padding->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   views::Separator* separator = new views::Separator();
-  separator->SetPreferredHeight(kSeparatorWidth);
+  separator->SetPreferredHeight(separator_width);
   separator->SetColor(
       color_utils::GetResultingPaintColor(kMenuSeparatorColor, bg_color));
   const int separator_horizontal_padding =

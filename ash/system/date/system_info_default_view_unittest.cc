@@ -28,21 +28,23 @@ TEST_F(SystemInfoDefaultViewTest, PreferredWidthSmallerThanButtonWidth) {
   EXPECT_LT(kPreferredWidth, kMenuButtonSize);
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
-  EXPECT_EQ(effective_width,
-            kMenuButtonSize + kSeparatorWidth + kMenuButtonSize);
+  EXPECT_EQ(
+      effective_width,
+      kMenuButtonSize + TrayConstants::separator_width() + kMenuButtonSize);
 }
 
 TEST_F(SystemInfoDefaultViewTest, PreferredWidthGreaterThanOneButtonWidth) {
   const int kPreferredWidth = kMenuButtonSize + 1;
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
-  EXPECT_EQ(effective_width,
-            kMenuButtonSize + kSeparatorWidth + kMenuButtonSize);
+  EXPECT_EQ(
+      effective_width,
+      kMenuButtonSize + TrayConstants::separator_width() + kMenuButtonSize);
 }
 
 TEST_F(SystemInfoDefaultViewTest, PreferredWidthEqualToTwoButtonWidths) {
   const int kPreferredWidth =
-      kMenuButtonSize + kSeparatorWidth + kMenuButtonSize;
+      kMenuButtonSize + TrayConstants::separator_width() + kMenuButtonSize;
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
   EXPECT_EQ(effective_width, kPreferredWidth);
@@ -50,16 +52,19 @@ TEST_F(SystemInfoDefaultViewTest, PreferredWidthEqualToTwoButtonWidths) {
 
 TEST_F(SystemInfoDefaultViewTest, PreferredWidthGreaterThanTwoButtonWidths) {
   const int kPreferredWidth =
-      kMenuButtonSize + (kSeparatorWidth + kMenuButtonSize) + 1;
+      kMenuButtonSize + (TrayConstants::separator_width() + kMenuButtonSize) +
+      1;
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
   EXPECT_EQ(effective_width,
-            kMenuButtonSize + (kSeparatorWidth + kMenuButtonSize) * 2);
+            kMenuButtonSize +
+                (TrayConstants::separator_width() + kMenuButtonSize) * 2);
 }
 
 TEST_F(SystemInfoDefaultViewTest, PreferredWidthEqualToThreeButtonWidths) {
   const int kPreferredWidth =
-      kMenuButtonSize + (kSeparatorWidth + kMenuButtonSize) * 2;
+      kMenuButtonSize +
+      (TrayConstants::separator_width() + kMenuButtonSize) * 2;
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
   EXPECT_EQ(effective_width, kPreferredWidth);
@@ -67,11 +72,13 @@ TEST_F(SystemInfoDefaultViewTest, PreferredWidthEqualToThreeButtonWidths) {
 
 TEST_F(SystemInfoDefaultViewTest, PreferredWidthGreaterThanThreeButtonWidths) {
   const int kPreferredWidth =
-      kMenuButtonSize + (kSeparatorWidth + kMenuButtonSize) * 2 + 1;
+      kMenuButtonSize +
+      (TrayConstants::separator_width() + kMenuButtonSize) * 2 + 1;
   const int effective_width = CalculateDateViewWidth(kPreferredWidth);
 
   EXPECT_EQ(effective_width,
-            kMenuButtonSize + (kSeparatorWidth + kMenuButtonSize) * 2);
+            kMenuButtonSize +
+                (TrayConstants::separator_width() + kMenuButtonSize) * 2);
 }
 
 }  // namespace ash

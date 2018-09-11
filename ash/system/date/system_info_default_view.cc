@@ -81,7 +81,8 @@ void SystemInfoDefaultView::Layout() {
 }
 
 int SystemInfoDefaultView::CalculateDateViewWidth(int preferred_width) {
-  const float snap_to_width = kSeparatorWidth + kMenuButtonSize;
+  const float snap_to_width =
+      TrayConstants::separator_width() + kMenuButtonSize;
   int num_extra_tile_widths = 0;
   if (preferred_width > kMenuButtonSize) {
     const float extra_width = preferred_width - kMenuButtonSize;

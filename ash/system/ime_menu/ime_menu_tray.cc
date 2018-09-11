@@ -126,10 +126,11 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
 class ImeTitleView : public views::View, public views::ButtonListener {
  public:
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
+    const int separator_width = TrayConstants::separator_width();
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
                                       kMenuSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
+        gfx::Insets(kMenuSeparatorVerticalPadding - separator_width, 0)));
     auto box_layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
@@ -221,12 +222,13 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   void Init(bool show_emoji, bool show_handwriting, bool show_voice) {
     auto box_layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    const int separator_width = TrayConstants::separator_width();
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(kSeparatorWidth, 0, 0, 0,
+        views::CreateSolidSidedBorder(separator_width, 0, 0, 0,
                                       kMenuSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth,
+        gfx::Insets(kMenuSeparatorVerticalPadding - separator_width,
                     kMenuExtraMarginFromLeftEdge)));
 
     const int right_border = 1;

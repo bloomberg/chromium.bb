@@ -68,7 +68,8 @@ void TrayContainer::UpdateLayout() {
       is_horizontal ? views::BoxLayout::kHorizontal
                     : views::BoxLayout::kVertical;
 
-  const int hit_region_with_separator = kHitRegionPadding + kSeparatorWidth;
+  const int hit_region_with_separator =
+      kHitRegionPadding + TrayConstants::separator_width();
   gfx::Insets insets(
       is_horizontal
           ? gfx::Insets(0, kHitRegionPadding, 0, hit_region_with_separator)
