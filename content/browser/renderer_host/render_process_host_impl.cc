@@ -577,6 +577,15 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
             RenderProcessHostImpl::GetMaxRendererProcessCount())
       return;
 
+    // Don't create a spare renderer when the system is under load.  This is
+    // currently approximated by only looking at the memory pressure.  See also
+    // https://crbug.com/852905.
+    auto* memory_monitor = base::MemoryPressureMonitor::Get();
+    if (memory_monitor &&
+        memory_monitor->GetCurrentPressureLevel() >=
+            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE)
+      return;
+
     spare_render_process_host_ = RenderProcessHostImpl::CreateRenderProcessHost(
         browser_context, nullptr /* storage_partition_impl */,
         nullptr /* site_instance */, false /* is_for_guests_only */);
