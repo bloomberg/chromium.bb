@@ -2595,6 +2595,9 @@ TEST_F(PasswordManagerTest, ProcessingNormalFormSubmission) {
       EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
     }
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+    // Multiple calls of OnPasswordFormsRendered should be handled gracefully.
+    manager()->OnPasswordFormsRendered(&driver_, observed, true);
   }
 }
 
