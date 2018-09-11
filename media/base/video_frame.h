@@ -250,8 +250,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // mapped via mmap() for CPU access.
   // Returns NULL on failure.
   static scoped_refptr<VideoFrame> WrapExternalDmabufs(
-      VideoPixelFormat format,
-      const gfx::Size& coded_size,
+      const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       std::vector<base::ScopedFD> dmabuf_fds,
@@ -367,8 +366,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   int stride(size_t plane) const {
     DCHECK(IsValidPlane(plane, format()));
-    DCHECK_LT(plane, layout_.num_strides());
-    return layout_.strides()[plane];
+    DCHECK_LT(plane, layout_.num_planes());
+    return layout_.planes()[plane].stride;
   }
 
   // Returns the number of bytes per row and number of rows for a given plane.

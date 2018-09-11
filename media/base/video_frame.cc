@@ -382,13 +382,14 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
 #if defined(OS_LINUX)
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
-    VideoPixelFormat format,
-    const gfx::Size& coded_size,
+    const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     std::vector<base::ScopedFD> dmabuf_fds,
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_DMABUFS;
+  const VideoPixelFormat format = layout.format();
+  const gfx::Size& coded_size = layout.coded_size();
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
     DLOG(ERROR) << __func__ << " Invalid config."
                 << ConfigToString(format, storage, coded_size, visible_rect,
@@ -403,8 +404,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
   }
 
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
-  scoped_refptr<VideoFrame> frame = new VideoFrame(
-      format, storage, coded_size, visible_rect, natural_size, timestamp);
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(layout, storage, visible_rect, natural_size, timestamp);
   if (!frame) {
     DLOG(ERROR) << __func__ << " Couldn't create VideoFrame instance.";
     return nullptr;
