@@ -44,7 +44,7 @@ public class TopSnackbarManager
 
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.STOPPED) {
+        if (newState == ActivityState.PAUSED || newState == ActivityState.STOPPED) {
             dismissSnackbar(false);
         }
     }
@@ -70,10 +70,10 @@ public class TopSnackbarManager
      * Shows a snackbar at the top of the given activity.
      */
     public void show(Snackbar snackbar, Activity activity) {
-        if (mSnackbar != null
-                || ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED) {
-            return;
-        }
+        if (mSnackbar != null) return;
+        @ActivityState
+        int state = ApplicationStatus.getStateForActivity(activity);
+        if (state != ActivityState.STARTED && state != ActivityState.RESUMED) return;
 
         mActivity = activity;
         mSnackbar = snackbar;
