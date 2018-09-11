@@ -185,12 +185,14 @@ void MediaPipelineBackendManager::RemoveAllowVolumeFeedbackObserver(
 void MediaPipelineBackendManager::AddExtraPlayingStream(
     bool sfx,
     const AudioContentType type) {
+  MAKE_SURE_MEDIA_THREAD(AddExtraPlayingStream, sfx, type);
   UpdatePlayingAudioCount(sfx, type, 1);
 }
 
 void MediaPipelineBackendManager::RemoveExtraPlayingStream(
     bool sfx,
     const AudioContentType type) {
+  MAKE_SURE_MEDIA_THREAD(RemoveExtraPlayingStream, sfx, type);
   UpdatePlayingAudioCount(sfx, type, -1);
 }
 
