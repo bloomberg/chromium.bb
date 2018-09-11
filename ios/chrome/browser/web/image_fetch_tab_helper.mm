@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 
 #include "base/base64.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -23,11 +24,16 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(ImageFetchTabHelper);
 
+const char kUmaGetImageDataByJsResult[] =
+    "ContextMenu.iOS.GetImageDataByJsResult";
+
 namespace {
 // Command prefix for injected JavaScript.
 const char kCommandPrefix[] = "imageFetch";
 // Key for image_fetcher
 const char kImageFetcherKeyName[] = "0";
+// Timeout for GetImageDataByJs in milliseconds.
+const int kGetImageDataByJsTimeout = 300;
 
 // Wrapper class for image_fetcher::IOSImageDataFetcherWrapper. ImageFetcher is
 // attached to web::BrowserState instead of web::WebState, because if a user
@@ -101,7 +107,7 @@ void ImageFetchTabHelper::GetImageData(const GURL& url,
   // |this| is captured into the callback of GetImageDataByJs, which will always
   // be invoked before the |this| is destroyed, so it's safe.
   GetImageDataByJs(
-      url, base::TimeDelta::FromMilliseconds(300),
+      url, base::TimeDelta::FromMilliseconds(kGetImageDataByJsTimeout),
       base::BindOnce(&ImageFetchTabHelper::JsCallbackOfGetImageData,
                      base::Unretained(this), url, referrer, callback));
 }
@@ -145,12 +151,18 @@ void ImageFetchTabHelper::GetImageDataByJs(const GURL& url,
   web_state_->ExecuteJavaScript(base::UTF8ToUTF16(js));
 }
 
+void ImageFetchTabHelper::RecordGetImageDataByJsResult(
+    ContextMenuGetImageDataByJsResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kUmaGetImageDataByJsResult, result);
+}
+
 // The expected message from JavaScript has format:
 //
 // For success:
 //   {'command': 'image.getImageData',
 //    'id': id_sent_to_gCrWeb_image_getImageData,
-//    'data': image_data_in_base64}
+//    'data': image_data_in_base64,
+//    'from': 'canvas' or 'xhr'}
 //
 // For failure:
 //   {'command': 'image.getImageData',
@@ -172,8 +184,19 @@ bool ImageFetchTabHelper::OnJsMessage(const base::DictionaryValue& message) {
   if (data && data->is_string() && !data->GetString().empty() &&
       base::Base64Decode(data->GetString(), &decoded_data)) {
     std::move(callback).Run(&decoded_data);
+    const base::Value* from = message.FindKey("from");
+    if (from && from->is_string() &&
+        (from->GetString() == "canvas" || from->GetString() == "xhr")) {
+      RecordGetImageDataByJsResult(
+          (from->GetString() == "canvas")
+              ? ContextMenuGetImageDataByJsResult::kCanvasSucceed
+              : ContextMenuGetImageDataByJsResult::kXMLHttpRequestSucceed);
+    } else {
+      return false;
+    }
   } else {
     std::move(callback).Run(nullptr);
+    RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult::kFail);
   }
   return true;
 }
@@ -183,5 +206,6 @@ void ImageFetchTabHelper::OnJsTimeout(int call_id) {
     JsCallback callback = std::move(js_callbacks_[call_id]);
     js_callbacks_.erase(call_id);
     std::move(callback).Run(nullptr);
+    RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult::kTimeout);
   }
 }

@@ -7688,6 +7688,13 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="ContextMenuIOSGetImageDataByJsResult">
+  <int value="0" label="Canvas succeed"/>
+  <int value="1" label="XMLHttpRequest succeed"/>
+  <int value="2" label="Fail"/>
+  <int value="3" label="Timeout"/>
+</enum>
+
 <enum name="ContextMenuOption">
   <summary>The item selected from a context menu</summary>
   <int value="0" label="Open in new tab"/>
