@@ -461,7 +461,8 @@ public class FindTest {
     private void waitForIME(final boolean imePresent) {
         // Wait for IME to appear.
         CriteriaHelper.pollUiThread(Criteria.equals(imePresent,
-                () -> org.chromium.ui.UiUtils.isKeyboardShowing(
-                        mActivityTestRule.getActivity(), getFindQueryText())));
+                ()
+                        -> mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                                mActivityTestRule.getActivity(), getFindQueryText())));
     }
 }

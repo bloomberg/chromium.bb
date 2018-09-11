@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
-import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
@@ -159,7 +158,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                UiUtils.showKeyboard(mUrlBar);
+                getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
             }
         });
     }

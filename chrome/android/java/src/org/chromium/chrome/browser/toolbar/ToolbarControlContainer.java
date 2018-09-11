@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
 import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.AsyncViewStub;
-import org.chromium.ui.UiUtils;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 import org.chromium.ui.widget.OptimizedFrameLayout;
@@ -305,7 +305,9 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
         public boolean shouldRecognizeSwipe(MotionEvent e1, MotionEvent e2) {
             if (isOnTabStrip(e1)) return false;
             if (mToolbar.shouldIgnoreSwipeGesture()) return false;
-            if (UiUtils.isKeyboardShowing(getContext(), ToolbarControlContainer.this)) return false;
+            if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
+                        getContext(), ToolbarControlContainer.this))
+                return false;
             return true;
         }
     }

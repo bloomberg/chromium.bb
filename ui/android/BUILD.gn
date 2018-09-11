@@ -233,6 +233,7 @@ java_group("ui_java") {
 android_library("ui_utils_java") {
   java_files = [
     "java/src/org/chromium/ui/ContactsPickerListener.java",
+    "java/src/org/chromium/ui/KeyboardVisibilityDelegate.java",
     "java/src/org/chromium/ui/PhotoPickerListener.java",
     "java/src/org/chromium/ui/UiUtils.java",
   ]

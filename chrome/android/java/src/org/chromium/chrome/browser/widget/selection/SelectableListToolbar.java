@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-import org.chromium.ui.UiUtils;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.List;
 
@@ -153,7 +153,7 @@ public class SelectableListToolbar<E>
     public void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-        UiUtils.hideKeyboard(mSearchEditText);
+        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
         VrModuleProvider.unregisterVrModeObserver(this);
     }
 
@@ -447,7 +447,7 @@ public class SelectableListToolbar<E>
         showSearchViewInternal();
 
         mSearchEditText.requestFocus();
-        UiUtils.showKeyboard(mSearchEditText);
+        KeyboardVisibilityDelegate.getInstance().showKeyboard(mSearchEditText);
         setTitle(null);
     }
 
@@ -471,7 +471,7 @@ public class SelectableListToolbar<E>
 
         mIsSearching = false;
         mSearchEditText.setText("");
-        UiUtils.hideKeyboard(mSearchEditText);
+        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
         showNormalView();
 
         mSearchDelegate.onEndSearch();
@@ -491,7 +491,7 @@ public class SelectableListToolbar<E>
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            UiUtils.hideKeyboard(v);
+            KeyboardVisibilityDelegate.getInstance().hideKeyboard(v);
         }
         return false;
     }
@@ -620,7 +620,7 @@ public class SelectableListToolbar<E>
 
         switchToNumberRollView(selectedItems, wasSelectionEnabled);
 
-        if (mIsSearching) UiUtils.hideKeyboard(mSearchEditText);
+        if (mIsSearching) KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
 
         updateDisplayStyleIfNecessary();
     }

@@ -307,7 +307,7 @@ public class TabsTest {
             public boolean isSatisfied() {
                 updateFailureReason("expected keyboard show: " + show);
                 return show
-                        == org.chromium.ui.UiUtils.isKeyboardShowing(
+                        == mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                                    mActivityTestRule.getActivity(),
                                    mActivityTestRule.getActivity().getTabsView());
             }
@@ -1696,7 +1696,8 @@ public class TabsTest {
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
         Assert.assertFalse("Keyboard somehow got shown",
-                org.chromium.ui.UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(), urlBar));
+                mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                        mActivityTestRule.getActivity(), urlBar));
 
         ThreadUtils.runOnUiThread(() -> {
             edgeSwipeHandler.swipeStarted(ScrollDirection.RIGHT, 0, 0);
@@ -1716,7 +1717,7 @@ public class TabsTest {
 
         ThreadUtils.runOnUiThread(() -> {
             Assert.assertFalse("Keyboard should be hidden while swiping",
-                    org.chromium.ui.UiUtils.isKeyboardShowing(
+                    mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
                             mActivityTestRule.getActivity(), urlBar));
             edgeSwipeHandler.swipeFinished();
         });
@@ -1731,7 +1732,8 @@ public class TabsTest {
                 });
 
         Assert.assertFalse("Keyboard should not be shown",
-                org.chromium.ui.UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(), urlBar));
+                mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                        mActivityTestRule.getActivity(), urlBar));
     }
 
     /**
