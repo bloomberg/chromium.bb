@@ -78,10 +78,11 @@ class CAPTURE_EXPORT StreamBufferManager final
       std::unique_ptr<StreamCaptureInterface> capture_interface,
       CameraDeviceContext* device_context,
       std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
-      base::RepeatingCallback<mojom::BlobPtr(
-          const uint8_t* buffer,
-          const uint32_t bytesused,
-          const VideoCaptureFormat& capture_format)> blobify_callback,
+      base::RepeatingCallback<
+          mojom::BlobPtr(const uint8_t* buffer,
+                         const uint32_t bytesused,
+                         const VideoCaptureFormat& capture_format,
+                         int screen_rotation)> blobify_callback,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
 
   ~StreamBufferManager() override;
@@ -199,7 +200,8 @@ class CAPTURE_EXPORT StreamBufferManager final
   base::RepeatingCallback<mojom::BlobPtr(
       const uint8_t* buffer,
       const uint32_t bytesused,
-      const VideoCaptureFormat& capture_format)>
+      const VideoCaptureFormat& capture_format,
+      int screen_rotation)>
       blobify_callback_;
 
   // Where all the Mojo IPC calls takes place.
