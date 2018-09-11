@@ -103,7 +103,7 @@
 -WebViewScrollBubbling/WebViewGuestScrollTest.TestGuestWheelScrollsBubble/*
 
 # FATAL:hit_test_region_observer.cc(164)] Check failed: frame_sink_id.is_valid().
--WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
+-ChromeMimeHandlerViewBrowserPluginTest.TouchFocusesBrowserPluginInEmbedder
 
 # Picture-in-Picture does not work with mash because VideoSurfaceLayer is
 # disabled.
