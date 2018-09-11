@@ -15,7 +15,6 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
--CrSettingsAllSitesTest.All
 -CrSettingsLanguagesPageTest.InputMethods
 -CrSettingsMainPageTest.MainPage
 -CrSettingsMenuTest.SettingsMenu

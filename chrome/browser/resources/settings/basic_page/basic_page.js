@@ -290,9 +290,19 @@ Polymer({
    */
   advancedToggleExpandedChanged_: function() {
     if (this.advancedToggleExpanded) {
-      this.async(() => {
-        this.$$('#advancedPageTemplate').get();
-      });
+      // In Polymer2, async() does not wait long enough for layout to complete.
+      // Polymer.RenderStatus.beforeNextRender() must be used instead.
+      // TODO (rbpotter): Remove conditional when migration to Polymer 2 is
+      // completed.
+      if (Polymer.DomIf) {
+        Polymer.RenderStatus.beforeNextRender(this, () => {
+          this.$$('#advancedPageTemplate').get();
+        });
+      } else {
+        this.async(() => {
+          this.$$('#advancedPageTemplate').get();
+        });
+      }
     }
   },
 
