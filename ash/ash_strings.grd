@@ -238,8 +238,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_EXIT_PUBLIC" desc="The label used for the button in the status tray to terminate a public account session. If the label is long, indicate where it may be broken into two lines by inserting \n instead of a whitespace.">
         Exit session
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a public account session.">
-        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a public session managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a managed session.">
+        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a managed session managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
@@ -1495,7 +1495,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
         Your internet session will be cleared when you sign out. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
       </message>
-      <message name="IDS_ASH_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT" desc="Link in public session pod that shows a section which allows the user to change the UI language and keyboard layout.">
+      <message name="IDS_ASH_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT" desc="Link in managed session pod that shows a section which allows the user to change the UI language and keyboard layout.">
         Choose language and keyboard
       </message>
       <message name="IDS_ASH_LOGIN_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
