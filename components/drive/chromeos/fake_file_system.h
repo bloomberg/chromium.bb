@@ -110,7 +110,7 @@ class FakeFileSystem : public FileSystemInterface {
                       SearchMetadataCallback callback) override;
   void SearchByHashes(const std::set<std::string>& hashes,
                       SearchByHashesCallback callback) override;
-  void GetAvailableSpace(const GetAvailableSpaceCallback& callback) override;
+  void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
   void GetShareUrl(const base::FilePath& file_path,
                    const GURL& embed_origin,
                    const GetShareUrlCallback& callback) override;

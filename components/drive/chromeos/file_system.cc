@@ -736,19 +736,17 @@ void FileSystem::ReadDirectory(
       directory_path, std::move(entries_callback), completion_callback);
 }
 
-void FileSystem::GetAvailableSpace(
-    const GetAvailableSpaceCallback& callback) {
+void FileSystem::GetAvailableSpace(GetAvailableSpaceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  about_resource_loader_->GetAboutResource(
-      base::Bind(&FileSystem::OnGetAboutResource,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  about_resource_loader_->GetAboutResource(base::Bind(
+      &FileSystem::OnGetAboutResource, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(std::move(callback))));
 }
 
 void FileSystem::OnGetAboutResource(
-    const GetAvailableSpaceCallback& callback,
+    GetAvailableSpaceCallback callback,
     google_apis::DriveApiErrorCode status,
     std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -756,13 +754,13 @@ void FileSystem::OnGetAboutResource(
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, -1, -1);
+    std::move(callback).Run(error, -1, -1);
     return;
   }
   DCHECK(about_resource);
 
-  callback.Run(FILE_ERROR_OK, about_resource->quota_bytes_total(),
-               about_resource->quota_bytes_used_aggregate());
+  std::move(callback).Run(FILE_ERROR_OK, about_resource->quota_bytes_total(),
+                          about_resource->quota_bytes_used_aggregate());
 }
 
 void FileSystem::GetShareUrl(const base::FilePath& file_path,
