@@ -173,8 +173,10 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  if (registry_service && registry_service->IsCrostiniShelfAppId(id))
-    return registry_service->GetRegistration(id).has_value();
+  if (registry_service && registry_service->IsCrostiniShelfAppId(id)) {
+    return IsCrostiniUIAllowedForProfile(profile_) &&
+           registry_service->GetRegistration(id).has_value();
+  }
 
   if (app_list::IsInternalApp(id))
     return true;
