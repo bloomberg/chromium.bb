@@ -400,7 +400,7 @@ void CameraDeviceDelegate::Initialize() {
       std::move(callback_ops_request),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
       device_context_, std::make_unique<CameraBufferFactory>(),
-      base::BindRepeating(&Blobify), ipc_task_runner_);
+      base::BindRepeating(&RotateAndBlobify), ipc_task_runner_);
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, stream_buffer_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(

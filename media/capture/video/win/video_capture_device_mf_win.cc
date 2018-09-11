@@ -77,7 +77,7 @@ class MFPhotoCallback final
       DWORD max_length = 0;
       DWORD length = 0;
       buffer->Lock(&data, &max_length, &length);
-      mojom::BlobPtr blob = Blobify(data, length, format_);
+      mojom::BlobPtr blob = RotateAndBlobify(data, length, format_, 0);
       buffer->Unlock();
       if (blob) {
         std::move(callback_).Run(std::move(blob));
@@ -996,8 +996,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
         std::move(video_stream_take_photo_callbacks_.front());
     video_stream_take_photo_callbacks_.pop();
 
-    mojom::BlobPtr blob =
-        Blobify(data, length, selected_video_capability_->supported_format);
+    mojom::BlobPtr blob = RotateAndBlobify(
+        data, length, selected_video_capability_->supported_format, 0);
     if (!blob) {
       LogWindowsImageCaptureOutcome(
           VideoCaptureWinBackend::kMediaFoundation,
