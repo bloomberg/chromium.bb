@@ -52,7 +52,11 @@ class ASH_EXPORT ShellObserver {
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() {}
 
-  // Called when the split view mode is about to be started (before the window
+  // Called after the animations that happen when overview mode is ended are
+  // complete.
+  virtual void OnOverviewModeEndingAnimationComplete() {}
+
+  // Called when the split view mode is about to be started before the window
   // gets snapped and activated).
   virtual void OnSplitViewModeStarting() {}
 

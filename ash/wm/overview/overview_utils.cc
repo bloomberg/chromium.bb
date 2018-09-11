@@ -162,10 +162,8 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
   // window selector controller which has longer lifetime so that animations can
   // continue even after the overview mode is shut down.
   views::Widget* widget_ptr = widget.get();
-  std::unique_ptr<CleanupAnimationObserver> observer(
-      new CleanupAnimationObserver(std::move(widget)));
+  auto observer = std::make_unique<CleanupAnimationObserver>(std::move(widget));
   animation_settings.AddObserver(observer.get());
-
   controller->AddDelayedAnimationObserver(std::move(observer));
   widget_ptr->SetOpacity(0.f);
   if (slide) {
