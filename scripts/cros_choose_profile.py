@@ -251,9 +251,7 @@ def GetParser():
   parser.add_argument('-b', '--board',
                       default=os.environ.get('DEFAULT_BOARD'),
                       help='The name of the board to set up.')
-  # TODO(saklein): Remove the --board_root option after setup_board has been
-  # updated.
-  parser.add_argument('-r', '--board-root', '--board_root',
+  parser.add_argument('-r', '--board-root',
                       type='path',
                       help='Board root where the profile should be created.')
   parser.add_argument('-p', '--profile',
