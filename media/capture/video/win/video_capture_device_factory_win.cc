@@ -521,7 +521,9 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
   operation->GetResults(devices.GetAddressOf());
 
   unsigned int count = 0;
-  devices->get_Size(&count);
+  if (devices) {
+    devices->get_Size(&count);
+  }
 
   for (unsigned int j = 0; j < count; ++j) {
     ComPtr<ABI::Windows::Devices::Enumeration::IDeviceInformation> device_info;
