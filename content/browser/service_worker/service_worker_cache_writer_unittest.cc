@@ -905,18 +905,24 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_SyncWriteData) {
   // data.
   const std::vector<std::string> data_from_net{"abxx"};
 
-  // We don't need |data_to_copy| or |data_expected| here because the
-  // cache writer doesn't copy from the storage or write to the storage
-  // when |pause_when_not_identical| option is enabled.
+  // We don't need |data_to_copy| because the network data and the cached data
+  // have no common blocks.
+
+  // The written data should be the same as |data_from_net|.
+  const std::vector<std::string> data_expected{"abxx"};
 
   size_t bytes_cached = 0;
   size_t bytes_from_net = 0;
+  size_t bytes_expected = 0;
 
   for (const auto& data : data_from_cache)
     bytes_cached += data.size();
 
   for (const auto& data : data_from_net)
     bytes_from_net += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
 
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* compare_reader = ExpectReader();
@@ -925,6 +931,12 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_SyncWriteData) {
   compare_reader->ExpectReadInfoOk(bytes_cached, false);
   for (const auto& data : data_from_cache)
     compare_reader->ExpectReadDataOk(data, false);
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, false);
+
+  writer->ExpectWriteInfoOk(bytes_expected, false);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), false);
 
   Initialize(true /* pause_when_not_identical */);
 
@@ -938,12 +950,19 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_SyncWriteData) {
   error = WriteData(data_from_net[0]);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
   EXPECT_FALSE(write_complete_);
-  EXPECT_TRUE(cache_writer_->data_not_identical());
+  EXPECT_EQ(0U, cache_writer_->bytes_written());
+
+  // Resume |cache_writer_| with a callback. The passed callback shouldn't be
+  // called because this is a synchronous write. This time, the result should be
+  // net::OK and the expected data should be written to the storage.
+  error =
+      cache_writer_->Resume(base::BindOnce([](net::Error) { NOTREACHED(); }));
+  EXPECT_EQ(net::OK, error);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
 
   EXPECT_TRUE(writer->AllExpectedWritesDone());
   EXPECT_TRUE(compare_reader->AllExpectedReadsDone());
   EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
-  EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
 // Tests behavior when |pause_when_not_identical| is enabled and cache writer
@@ -956,18 +975,24 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
   // data.
   const std::vector<std::string> data_from_net{"abxx"};
 
-  // We don't need |data_to_copy| or |data_expected| here because the
-  // cache writer doesn't copy from the storage or write to the storage
-  // when |pause_when_not_identical| option is enabled.
+  // We don't need |data_to_copy| because the network data and the cached data
+  // have no common blocks.
+
+  // The written data should be the same as |data_from_net|.
+  const std::vector<std::string> data_expected{"abxx"};
 
   size_t bytes_cached = 0;
   size_t bytes_from_net = 0;
+  size_t bytes_expected = 0;
 
   for (const auto& data : data_from_cache)
     bytes_cached += data.size();
 
   for (const auto& data : data_from_net)
     bytes_from_net += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
 
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* compare_reader = ExpectReader();
@@ -976,6 +1001,12 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
   compare_reader->ExpectReadInfoOk(bytes_cached, true);
   for (const auto& data : data_from_cache)
     compare_reader->ExpectReadDataOk(data, true);
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, true);
+
+  writer->ExpectWriteInfoOk(bytes_expected, true);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), true);
 
   Initialize(true /* pause_when_not_identical */);
 
@@ -993,7 +1024,6 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
   error = WriteData(data_from_net[0]);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
   EXPECT_FALSE(write_complete_);
-  EXPECT_FALSE(cache_writer_->data_not_identical());
 
   // When |compare_reader| succeeds in reading the stored data, |cache_writer_|
   // then proceeds to the comparison phase.
@@ -1003,12 +1033,36 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
   compare_reader->CompletePendingRead();
   EXPECT_TRUE(write_complete_);
   EXPECT_EQ(net::ERR_IO_PENDING, last_error_);
-  EXPECT_TRUE(cache_writer_->data_not_identical());
+  EXPECT_EQ(0U, cache_writer_->bytes_written());
+
+  // Resume |cache_writer_| with a callback which updates |write_complete_| and
+  // |last_error_| when it's called.
+  // |copy_reader| does an asynchronous read here.
+  write_complete_ = false;
+  error = cache_writer_->Resume(CreateWriteCallback());
+  EXPECT_EQ(net::ERR_IO_PENDING, error);
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of the header. Since there's nothing to copy
+  // from the storage, |copy_reader| should finish all its jobs here.
+  copy_reader->CompletePendingRead();
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+
+  // Complete the asynchronous write of the header. This doesn't finish all the
+  // write to the storage, so the callback isn't called yet.
+  writer->CompletePendingWrite();
+  EXPECT_FALSE(write_complete_);
+  EXPECT_EQ(net::ERR_IO_PENDING, last_error_);
+
+  // Complete the asynchronous write of the body. This completes all the work of
+  // |cache_writer|, so the callback is triggered.
+  writer->CompletePendingWrite();
+  EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::OK, last_error_);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
 
   EXPECT_TRUE(writer->AllExpectedWritesDone());
   EXPECT_TRUE(compare_reader->AllExpectedReadsDone());
-  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
-  EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
 }  // namespace
