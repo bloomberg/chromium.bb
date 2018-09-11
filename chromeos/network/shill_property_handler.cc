@@ -430,13 +430,20 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
 void ShillPropertyHandler::UpdateAvailableTechnologies(
     const base::ListValue& technologies) {
   NET_LOG(EVENT) << "AvailableTechnologies:" << technologies;
-  available_technologies_.clear();
-  for (base::ListValue::const_iterator iter = technologies.begin();
-       iter != technologies.end(); ++iter) {
-    std::string technology;
-    iter->GetAsString(&technology);
-    DCHECK(!technology.empty());
-    available_technologies_.insert(technology);
+  std::set<std::string> new_available_technologies;
+  for (const base::Value& technology : technologies.GetList())
+    new_available_technologies.insert(technology.GetString());
+  if (new_available_technologies == available_technologies_)
+    return;
+  available_technologies_.swap(new_available_technologies);
+  // If any entries in |enabling_technologies_| are no longer available,
+  // remove them from the enabling list.
+  for (auto iter = enabling_technologies_.begin();
+       iter != enabling_technologies_.end();) {
+    if (!available_technologies_.count(*iter))
+      iter = enabling_technologies_.erase(iter);
+    else
+      ++iter;
   }
   listener_->TechnologyListChanged();
 }
@@ -444,14 +451,20 @@ void ShillPropertyHandler::UpdateAvailableTechnologies(
 void ShillPropertyHandler::UpdateEnabledTechnologies(
     const base::ListValue& technologies) {
   NET_LOG(EVENT) << "EnabledTechnologies:" << technologies;
-  enabled_technologies_.clear();
-  for (base::ListValue::const_iterator iter = technologies.begin();
-       iter != technologies.end(); ++iter) {
-    std::string technology;
-    iter->GetAsString(&technology);
-    DCHECK(!technology.empty());
-    enabled_technologies_.insert(technology);
-    enabling_technologies_.erase(technology);
+  std::set<std::string> new_enabled_technologies;
+  for (const base::Value& technology : technologies.GetList())
+    new_enabled_technologies.insert(technology.GetString());
+  if (new_enabled_technologies == enabled_technologies_)
+    return;
+  enabled_technologies_.swap(new_enabled_technologies);
+  // If any entries in |enabling_technologies_| are enabled, remove them from
+  // the enabling list.
+  for (auto iter = enabling_technologies_.begin();
+       iter != enabling_technologies_.end();) {
+    if (enabled_technologies_.count(*iter))
+      iter = enabling_technologies_.erase(iter);
+    else
+      ++iter;
   }
   listener_->TechnologyListChanged();
 }
@@ -459,14 +472,12 @@ void ShillPropertyHandler::UpdateEnabledTechnologies(
 void ShillPropertyHandler::UpdateUninitializedTechnologies(
     const base::ListValue& technologies) {
   NET_LOG(EVENT) << "UninitializedTechnologies:" << technologies;
-  uninitialized_technologies_.clear();
-  for (base::ListValue::const_iterator iter = technologies.begin();
-       iter != technologies.end(); ++iter) {
-    std::string technology;
-    iter->GetAsString(&technology);
-    DCHECK(!technology.empty());
-    uninitialized_technologies_.insert(technology);
-  }
+  std::set<std::string> new_uninitialized_technologies;
+  for (const base::Value& technology : technologies.GetList())
+    new_uninitialized_technologies.insert(technology.GetString());
+  if (new_uninitialized_technologies == uninitialized_technologies_)
+    return;
+  uninitialized_technologies_.swap(new_uninitialized_technologies);
   listener_->TechnologyListChanged();
 }
 
