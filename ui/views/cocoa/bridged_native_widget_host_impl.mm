@@ -41,7 +41,7 @@ bool PositionWindowInScreenCoordinates(Widget* widget,
   return widget && widget->is_top_level();
 }
 
-std::map<uint64_t, BridgedNativeWidgetHostImpl*>& GetIdMap() {
+std::map<uint64_t, BridgedNativeWidgetHostImpl*>& GetIdToWidgetHostImplMap() {
   static base::NoDestructor<std::map<uint64_t, BridgedNativeWidgetHostImpl*>>
       id_map;
   return *id_map;
@@ -54,8 +54,8 @@ uint64_t g_last_bridged_native_widget_id = 0;
 // static
 BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
     uint64_t bridged_native_widget_id) {
-  auto found = GetIdMap().find(bridged_native_widget_id);
-  if (found == GetIdMap().end())
+  auto found = GetIdToWidgetHostImplMap().find(bridged_native_widget_id);
+  if (found == GetIdToWidgetHostImplMap().end())
     return nullptr;
   return found->second;
 }
@@ -65,17 +65,18 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     : id_(++g_last_bridged_native_widget_id),
       native_widget_mac_(parent),
       bridge_impl_(new BridgedNativeWidgetImpl(id_, this, this, parent)) {
-  DCHECK(GetIdMap().find(id_) == GetIdMap().end());
-  GetIdMap().insert(std::make_pair(id_, this));
+  DCHECK(GetIdToWidgetHostImplMap().find(id_) ==
+         GetIdToWidgetHostImplMap().end());
+  GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
   DCHECK(parent);
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
-  auto found = GetIdMap().find(id_);
-  DCHECK(found != GetIdMap().end());
+  auto found = GetIdToWidgetHostImplMap().find(id_);
+  DCHECK(found != GetIdToWidgetHostImplMap().end());
   DCHECK_EQ(found->second, this);
-  GetIdMap().erase(found);
+  GetIdToWidgetHostImplMap().erase(found);
 
   // Destroy the bridge first to prevent any calls back into this during
   // destruction.
