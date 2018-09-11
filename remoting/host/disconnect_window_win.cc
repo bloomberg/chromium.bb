@@ -78,7 +78,9 @@ class DisconnectWindowWin : public HostWindow {
   // Returns |control| rectangle in the dialog coordinates.
   bool GetControlRect(HWND control, RECT* rect);
 
-  // Trys to position the dialog window above the taskbar.
+  // Positions the dialog window based on the current auto-hide state.
+  // If auto-hide is enabled, the window is displayed near the center of the
+  // display, otherwise it is displayed just above the taskbar.
   void SetDialogPosition();
 
   // Applies localization string and resizes the dialog.
@@ -345,6 +347,9 @@ void DisconnectWindowWin::ShowDialog() {
   if (!was_auto_hidden_)
     return;
 
+  // Make sure the dialog is fully visible when it is reshown.
+  SetDialogPosition();
+
   if (!AnimateWindow(hwnd_, kAnimationDurationMs, AW_BLEND)) {
     PLOG(ERROR) << "AnimateWindow() failed to show dialog: ";
     ShowWindow(hwnd_, SW_SHOW);
@@ -354,9 +359,6 @@ void DisconnectWindowWin::ShowDialog() {
       client_session_control_->DisconnectSession(protocol::OK);
   }
   was_auto_hidden_ = false;
-
-  // Make sure the dialog is fully visible when it is reshown.
-  SetDialogPosition();
 }
 
 void DisconnectWindowWin::HideDialog() {
@@ -416,15 +418,27 @@ void DisconnectWindowWin::SetDialogPosition() {
   HMONITOR monitor = MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
   MONITORINFO monitor_info = {sizeof(monitor_info)};
   RECT window_rect;
-  if (GetMonitorInfo(monitor, &monitor_info) &&
-      GetWindowRect(hwnd_, &window_rect)) {
-    int window_width = window_rect.right - window_rect.left;
-    int window_height = window_rect.bottom - window_rect.top;
-    int top = monitor_info.rcWork.bottom - window_height;
-    int left = (monitor_info.rcWork.right + monitor_info.rcWork.left -
-        window_width) / 2;
-    SetWindowPos(hwnd_, nullptr, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+  if (!GetMonitorInfo(monitor, &monitor_info) ||
+      !GetWindowRect(hwnd_, &window_rect)) {
+    return;
   }
+
+  int window_width = window_rect.right - window_rect.left;
+  int window_height = window_rect.bottom - window_rect.top;
+
+  // Default settings will display the window above the taskbar and centered
+  // along the x axis.
+  int top = monitor_info.rcWork.bottom - window_height;
+  int left =
+      (monitor_info.rcWork.right + monitor_info.rcWork.left - window_width) / 2;
+
+  // Adjust the top value if the window is in auto-hide mode.  We adjust the
+  // position to make the dialog a bit more obtrusive so that a local user will
+  // notice it before it auto-hides.
+  if (local_input_monitor_)
+    top = top * 0.7;
+
+  SetWindowPos(hwnd_, nullptr, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 }
 
 bool DisconnectWindowWin::SetStrings() {
