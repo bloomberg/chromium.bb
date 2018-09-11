@@ -483,9 +483,6 @@
         # Always fails.
         '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
         '--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse',
-        # Disable GPU compositing, telemetry_unittests runs on VMs.
-        # https://crbug.com/871955
-        '--extra-browser-args=--disable-gpu',
       ],
       'swarming': {
         'hard_timeout': 1200,
