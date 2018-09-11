@@ -802,7 +802,7 @@ deps = {
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'd7ed8e2f3f35ce9a3aafdfdc48745ceab66e7229',
 
   'src/third_party/libaom/source/libaom': {
-    'url': Var('aomedia_git') + '/aom.git' + '@' +  '75b9859caeeb9004374ee0547c062a1ed4979652',
+    'url': Var('aomedia_git') + '/aom.git' + '@' +  '7d447f5b0021abd363dd64912c59196393e9b159',
     'condition': 'checkout_libaom',
   },
 
