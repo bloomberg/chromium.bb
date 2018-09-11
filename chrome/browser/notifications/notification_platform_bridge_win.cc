@@ -875,7 +875,10 @@ std::string NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
 
 // static
 bool NotificationPlatformBridgeWin::NativeNotificationEnabled() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN10_RS1 &&
+  // Windows 10 native notification seems to have memory leak issues on OS
+  // builds older than 17134 (i.e., VERSION_WIN10_RS4). This seems to be a
+  // Windows issue which has been fixed in 17134.
+  return base::win::GetVersion() >= base::win::VERSION_WIN10_RS4 &&
          base::FeatureList::IsEnabled(features::kNativeNotifications);
 }
 
