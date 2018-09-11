@@ -204,6 +204,14 @@ class RootInlineBox : public InlineFlowBox {
     return InlineFlowBox::LogicalBottomLayoutOverflow(LineBottom());
   }
 
+  typedef void (*CustomInlineBoxRangeReverse)(
+      Vector<InlineBox*>::iterator first,
+      Vector<InlineBox*>::iterator last);
+  void CollectLeafBoxesInLogicalOrder(
+      Vector<InlineBox*>&,
+      CustomInlineBoxRangeReverse custom_reverse_implementation =
+          nullptr) const;
+
   const InlineBox* GetLogicalStartNonPseudoBox() const;
   const InlineBox* GetLogicalEndNonPseudoBox() const;
 
