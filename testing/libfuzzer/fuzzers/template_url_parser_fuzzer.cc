@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
@@ -16,7 +17,7 @@
 
 class PseudoRandomFilter : public TemplateURLParser::ParameterFilter {
  public:
-  PseudoRandomFilter(uint32_t seed) : generator_(seed), pool_(0, 1) {}
+  explicit PseudoRandomFilter(uint32_t seed) : generator_(seed), pool_(0, 1) {}
   ~PseudoRandomFilter() override = default;
 
   bool KeepParameter(const std::string&, const std::string&) override {
@@ -36,6 +37,7 @@ base::AtExitManager at_exit_manager;  // used by ICU integration
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   CHECK(base::i18n::InitializeICU());
+  CHECK(base::CommandLine::Init(*argc, *argv));
   return 0;
 }
 
