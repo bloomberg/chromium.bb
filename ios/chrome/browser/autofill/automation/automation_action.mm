@@ -6,9 +6,15 @@
 
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 
+#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
@@ -48,7 +54,7 @@ using web::test::ElementSelector;
 //    "selector": "//*[@id=\"add-to-cart-button\"]",
 //    "context": [],
 //    "type": "click"
-//  },
+//  }
 @interface AutomationActionClick : AutomationAction
 @end
 
@@ -59,8 +65,20 @@ using web::test::ElementSelector;
 //   "type": "waitFor",
 //   "assertions": ["return document.querySelector().style.display ===
 //   'none';"]
-// },
+// }
 @interface AutomationActionWaitFor : AutomationAction
+@end
+
+// An action that performs autofill on a form by selecting an element
+// that is part of an autofillable form, then tapping the relevant
+// autofill suggestion. We assume this action has a format resembling:
+// {
+//   "selectorType": "xpath",
+//   "selector": "//*[@data-tl-id=\"COAC2ShpAddrFirstName\"]",
+//   "context": [],
+//   "type": "autofill"
+// }
+@interface AutomationActionAutofill : AutomationAction
 @end
 
 @implementation AutomationAction
@@ -82,6 +100,7 @@ using web::test::ElementSelector;
   static NSDictionary* classForType = @{
     @"click" : [AutomationActionClick class],
     @"waitFor" : [AutomationActionWaitFor class],
+    @"autofill" : [AutomationActionAutofill class],
     // More to come.
   };
 
@@ -105,19 +124,9 @@ using web::test::ElementSelector;
   return actionDictionary_;
 }
 
-@end
-
-@implementation AutomationActionClick
-
-- (void)execute {
-  const base::Value* xpathValue(self.actionDictionary->FindKeyOfType(
-      "selector", base::Value::Type::STRING));
-  GREYAssert(xpathValue, @"Selector is missing in action.");
-
-  const std::string xpath(xpathValue->GetString());
-  GREYAssert(!xpath.empty(), @"selector is an empty value.");
-
-  auto selector(ElementSelector::ElementSelectorXPath(xpath));
+// A shared flow across many actions, this waits for the target element to be
+// visible, scrolls it into view, then taps on it.
+- (void)tapOnTarget:(web::test::ElementSelector)selector {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
 
   // Wait for the element to be visible on the page.
@@ -128,6 +137,30 @@ using web::test::ElementSelector;
   // Tap on the element.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:web::WebViewTapElement(web_state, selector)];
+}
+
+// Creates a selector targeting the element specified in the action.
+- (web::test::ElementSelector)selectorForTarget {
+  const base::Value* xpathValue(self.actionDictionary->FindKeyOfType(
+      "selector", base::Value::Type::STRING));
+  GREYAssert(xpathValue, @"Selector is missing in action.");
+
+  const std::string xpath(xpathValue->GetString());
+  GREYAssert(!xpath.empty(), @"selector is an empty value.");
+
+  // Creates a selector from the action dictionary.
+  web::test::ElementSelector selector(
+      ElementSelector::ElementSelectorXPath(xpath));
+  return selector;
+}
+
+@end
+
+@implementation AutomationActionClick
+
+- (void)execute {
+  web::test::ElementSelector selector = [self selectorForTarget];
+  [self tapOnTarget:selector];
 }
 
 @end
@@ -184,6 +217,51 @@ using web::test::ElementSelector;
     }
   }
   return nil;
+}
+
+@end
+
+@implementation AutomationActionAutofill
+
+static const char PROFILE_NAME_FULL[] = "Yuki Nagato";
+static const char PROFILE_HOME_LINE1[] = "1600 Amphitheatre Parkway";
+static const char PROFILE_HOME_CITY[] = "Mountain View";
+static const char PROFILE_HOME_STATE[] = "CA";
+static const char PROFILE_HOME_ZIP[] = "94043";
+
+// Loads the predefined autofill profile into the personal data manager, so that
+// autofill actions will be suggested when tapping on an autofillable form.
+- (void)prepareAutofillProfileWithWebState:(web::WebState*)web_state {
+  autofill::AutofillManager* autofill_manager =
+      autofill::AutofillDriverIOS::FromWebState(web_state)->autofill_manager();
+  autofill::PersonalDataManager* personal_data_manager =
+      autofill_manager->client()->GetPersonalDataManager();
+  autofill::AutofillProfile profile(base::GenerateGUID(),
+                                    "https://www.example.com/");
+  profile.SetRawInfo(autofill::NAME_FULL, base::UTF8ToUTF16(PROFILE_NAME_FULL));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1,
+                     base::UTF8ToUTF16(PROFILE_HOME_LINE1));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_CITY,
+                     base::UTF8ToUTF16(PROFILE_HOME_CITY));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_STATE,
+                     base::UTF8ToUTF16(PROFILE_HOME_STATE));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP,
+                     base::UTF8ToUTF16(PROFILE_HOME_ZIP));
+  personal_data_manager->SaveImportedProfile(profile);
+}
+
+- (void)execute {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  [self prepareAutofillProfileWithWebState:web_state];
+
+  web::test::ElementSelector selector = [self selectorForTarget];
+  [self tapOnTarget:selector];
+
+  // Tap on the autofill suggestion to perform the actual autofill.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kFormSuggestionLabelAccessibilityIdentifier)]
+      performAction:grey_tap()];
 }
 
 @end

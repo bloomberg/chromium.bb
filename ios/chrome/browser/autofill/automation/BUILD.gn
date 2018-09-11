@@ -14,8 +14,11 @@ source_set("eg_tests") {
 
   deps = [
     "//base",
+    "//components/autofill/core/browser:browser",
+    "//components/autofill/ios/browser:browser",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/autofill:autofill",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/infobars:test_support",
