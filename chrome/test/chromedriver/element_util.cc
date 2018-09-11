@@ -662,18 +662,8 @@ Status ScrollElementRegionIntoView(
       "  return document.evaluate(xpath, document, null,"
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "}";
-  bool needs_special_oopif_handling =
-      !session->chrome->GetBrowserInfo()->is_android &&
-      session->chrome->GetBrowserInfo()->major_version <= 65;
-  bool has_saved_region_offset = false;
-  WebPoint saved_region_offset;
   for (std::list<FrameInfo>::reverse_iterator rit = session->frames.rbegin();
        rit != session->frames.rend(); ++rit) {
-    if (needs_special_oopif_handling && !has_saved_region_offset &&
-        web_view->IsOOPIF(rit->frame_id)) {
-      saved_region_offset = region_offset;
-      has_saved_region_offset = true;
-    }
     base::ListValue args;
     args.AppendString(
         base::StringPrintf("//*[@cd_frame_id_ = '%s']",
@@ -707,8 +697,6 @@ Status ScrollElementRegionIntoView(
     if (status.IsError())
       return status;
   }
-  if (has_saved_region_offset)
-    region_offset = saved_region_offset;
   *location = region_offset;
   return Status(kOk);
 }
