@@ -35,15 +35,24 @@ h2 {
     margin-top: 21px;
 }
 
+hr {
+  border-bottom: 0;
+  border-top: 1px solid #ddd;
+  margin: 0;
+}
+
 .container {
     margin-left: auto;
     margin-right: auto;
-    width: 646px;
+    width: 688px;
+}
+
+.option-group {
+    border: 1px solid #ddd;
 }
 
 .option {
     background-color: #fff;
-    border: 1px solid #ddd;
     font-size: 13px;
     min-height: 60px;
     padding: 0 20px;
@@ -52,11 +61,12 @@ h2 {
 }
 
 .sub-option {
+    background-color: #fff;
     font-size: 13px;
     max-height: 60px;
     opacity: 1;
     overflow: hidden;
-    padding: 0 24px;
+    padding: 0 20px 0 44px;
     transition: max-height 150ms ease-in;
     vertical-align: middle;
     width: 622px;
@@ -69,7 +79,7 @@ h2 {
     transition: max-height 150ms ease-out;
 }
 
-.option input[type='checkbox'] {
+.option-group input[type='checkbox'] {
     -webkit-appearance: none;
     background-color: #fff;
     background-image: url(unchecked.png);
@@ -82,11 +92,11 @@ h2 {
     width: 40px;
 }
 
-.option input[type='checkbox']:checked {
+.option-group input[type='checkbox']:checked {
     background-image: url(checked.png);
 }
 
-.option select {
+.option-group select {
     background-color: #fff;
     border-color: #ddd;
     border-width: 0 0 1px 0;
