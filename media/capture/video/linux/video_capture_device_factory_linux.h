@@ -64,6 +64,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
       VideoCaptureFormats* supported_formats) override;
 
  private:
+  // Simple wrapper to do HANDLE_EINTR(v4l2_->ioctl(fd, ...)).
+  int DoIoctl(int fd, int request, void* argp);
+
   bool HasUsableFormats(int fd, uint32_t capabilities);
   std::vector<float> GetFrameRateList(int fd,
                                       uint32_t fourcc,
