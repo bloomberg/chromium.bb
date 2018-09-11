@@ -191,15 +191,24 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
   }
 }
 
-// Tests that an invalid range does not crash the controller.
-IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, InvalidRange) {
+// Tests that a range outside of the text bounds will set the selection range
+// to empty.
+IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
+                       RangeOutOfTextBounds) {
   FocusTextfield();
   [touch_bar_controller_ setText:@""];
   [touch_bar_controller_ setSelectionRange:gfx::Range()];
 
   [touch_bar_controller_
       updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
-                    range:gfx::Range::InvalidRange()
+                    range:gfx::Range(4, 5)
+                   offset:0];
+  EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
+  EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+
+  [touch_bar_controller_
+      updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
+                    range:gfx::Range(2, 5)
                    offset:0];
   EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
   EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);

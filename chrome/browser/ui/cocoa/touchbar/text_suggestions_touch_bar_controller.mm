@@ -173,19 +173,27 @@ class WebContentsTextObserver : public content::WebContentsObserver {
       return;
     }
 
-    if (!range.IsValid()) {
-      [self updateTextSelection:base::string16() range:gfx::Range() offset:0];
+    // TODO(crbug.com/880642): It's possible for a range out of the text bounds
+    // to be passed in. Investigate this.
+    if (range.start() - offset > text.length() ||
+        range.end() - offset > text.length()) {
+      text_.reset([[NSString alloc] init]);
+      selectionRange_ = NSMakeRange(0, 0);
+      editingWordRange_ = NSMakeRange(0, 0);
+      offsetEditingWordRange_ = NSMakeRange(0, 0);
       return;
     }
 
     text_.reset([base::SysUTF16ToNSString(text) retain]);
-    selectionRange_ =
-        NSMakeRange(range.start() - offset, range.end() - range.start());
+    selectionRange_ = range.ToNSRange();
+    selectionRange_.location -= offset;
+
     editingWordRange_ =
         [self editingWordRangeFromText:text
                         cursorPosition:selectionRange_.location];
-    offsetEditingWordRange_ = NSMakeRange(editingWordRange_.location + offset,
-                                          editingWordRange_.length);
+
+    offsetEditingWordRange_ = editingWordRange_;
+    offsetEditingWordRange_.location += offset;
     [self requestSuggestions];
   }
 }
