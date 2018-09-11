@@ -63,6 +63,7 @@
     self.mediator->ScrollToTop();
     return YES;
   } else {
+    self.mediator->AnimateModelReset();
     return NO;
   }
 }
