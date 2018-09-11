@@ -205,7 +205,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
     // capabilities at the same time are memory-to-memory and are skipped, see
     // http://crbug.com/139356.
     v4l2_capability cap;
-    if ((HANDLE_EINTR(v4l2_->ioctl(fd.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
+    if ((DoIoctl(fd.get(), VIDIOC_QUERYCAP, &cap) == 0) &&
         (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) &&
         HasUsableFormats(fd.get(), cap.capabilities)) {
@@ -250,6 +250,10 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
   GetSupportedFormatsForV4L2BufferType(fd.get(), supported_formats);
 }
 
+int VideoCaptureDeviceFactoryLinux::DoIoctl(int fd, int request, void* argp) {
+  return HANDLE_EINTR(v4l2_->ioctl(fd, request, argp));
+}
+
 bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,
                                                       uint32_t capabilities) {
   if (!(capabilities & V4L2_CAP_VIDEO_CAPTURE))
@@ -259,8 +263,7 @@ bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
   v4l2_fmtdesc fmtdesc = {};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
-       ++fmtdesc.index) {
+  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
     if (base::ContainsValue(usable_fourccs, fmtdesc.pixelformat))
       return true;
   }
@@ -280,8 +283,7 @@ std::vector<float> VideoCaptureDeviceFactoryLinux::GetFrameRateList(
   frame_interval.pixel_format = fourcc;
   frame_interval.width = width;
   frame_interval.height = height;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS,
-                                   &frame_interval)) == 0;
+  for (; DoIoctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0;
        ++frame_interval.index) {
     if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
       if (frame_interval.discrete.numerator != 0) {
@@ -308,8 +310,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
     VideoCaptureFormats* supported_formats) {
   v4l2_fmtdesc v4l2_format = {};
   v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FMT, &v4l2_format)) == 0;
-       ++v4l2_format.index) {
+  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &v4l2_format) == 0; ++v4l2_format.index) {
     VideoCaptureFormat supported_format;
     supported_format.pixel_format =
         VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
@@ -320,8 +321,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
 
     v4l2_frmsizeenum frame_size = {};
     frame_size.pixel_format = v4l2_format.pixelformat;
-    for (; HANDLE_EINTR(
-               v4l2_->ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size)) == 0;
+    for (; DoIoctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0;
          ++frame_size.index) {
       if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
         supported_format.frame_size.SetSize(frame_size.discrete.width,
