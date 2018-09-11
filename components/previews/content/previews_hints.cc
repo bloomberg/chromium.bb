@@ -238,6 +238,15 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
 }
 
 // static
+std::unique_ptr<PreviewsHints> PreviewsHints::CreateForTesting(
+    std::unique_ptr<HostFilter> lite_page_redirect_blacklist) {
+  std::unique_ptr<PreviewsHints> previews_hints(new PreviewsHints());
+  previews_hints->lite_page_redirect_blacklist_ =
+      std::move(lite_page_redirect_blacklist);
+  return previews_hints;
+}
+
+// static
 const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
     const GURL& document_url,
     const optimization_guide::proto::Hint& hint) {
@@ -323,6 +332,22 @@ bool PreviewsHints::IsWhitelisted(const GURL& url,
       *out_inflation_percent = optimization.inflation_percent();
       return true;
     }
+  }
+
+  return false;
+}
+
+bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!url.has_host())
+    return false;
+
+  // Check large scale blacklists received from the server.
+  // (At some point, we may have blacklisting to check in HintCache as well.)
+  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (lite_page_redirect_blacklist_)
+      return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
   }
 
   return false;

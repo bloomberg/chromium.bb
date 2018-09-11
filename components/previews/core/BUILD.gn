@@ -6,6 +6,8 @@ static_library("core") {
   sources = [
     "bloom_filter.cc",
     "bloom_filter.h",
+    "host_filter.cc",
+    "host_filter.h",
     "previews_black_list.cc",
     "previews_black_list.h",
     "previews_decider.h",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bloom_filter_unittest.cc",
+    "host_filter_unittest.cc",
     "previews_black_list_unittest.cc",
     "previews_experiments_unittest.cc",
     "previews_logger_unittest.cc",
