@@ -8417,6 +8417,12 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       rd_stats->rate += x->skip_cost[skip_ctx][1];
       mbmi->skip = 0;
       // here mbmi->skip temporarily plays a role as what this_skip2 does
+
+      int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      if (tmprd > ref_best_rd) {
+        mbmi->ref_frame[1] = ref_frame_1;
+        return 0;
+      }
     } else if (!xd->lossless[mbmi->segment_id] &&
                (RDCOST(x->rdmult,
                        rd_stats_y->rate + rd_stats_uv->rate +
@@ -8445,6 +8451,11 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
     rd_stats->skip = 1;
+    int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+    if (tmprd > ref_best_rd) {
+      mbmi->ref_frame[1] = ref_frame_1;
+      return 0;
+    }
   }
   return 1;
 }
