@@ -32,25 +32,27 @@ public class CastSessionController {
 
     private CastSession mCastSession;
     private final CafBaseMediaRouteProvider mProvider;
-    private MediaSink mSink;
-    private MediaSource mSource;
     private List<String> mNamespaces = new ArrayList<String>();
     private final CastListener mCastListener;
     private final MediaRouter.Callback mMediaRouterCallbackForSessionLaunch;
+    private CreateRouteRequestInfo mRouteCreationInfo;
+    private final CafNotificationController mNotificationController;
+    private final RemoteMediaClient.Callback mRemoteMediaClientCallback;
 
     public CastSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
         mCastListener = new CastListener();
         mMediaRouterCallbackForSessionLaunch = new MediaRouterCallbackForSessionLaunch();
+        mNotificationController = new CafNotificationController(this);
+        mRemoteMediaClientCallback = new RemoteMediaClientCallback();
     }
 
     public void requestSessionLaunch() {
-        CreateRouteRequestInfo request = mProvider.getPendingCreateRouteRequestInfo();
-        mSource = request.source;
-        mSink = request.sink;
-        CastUtils.getCastContext().setReceiverApplicationId(request.source.getApplicationId());
+        mRouteCreationInfo = mProvider.getPendingCreateRouteRequestInfo();
+        CastUtils.getCastContext().setReceiverApplicationId(
+                mRouteCreationInfo.source.getApplicationId());
 
-        if (request.routeInfo.isSelected()) {
+        if (mRouteCreationInfo.routeInfo.isSelected()) {
             // If a route has just been selected, CAF might not be ready yet before setting the app
             // ID. So unselect and select the route will let CAF be aware that the route has been
             // selected thus it can start the session.
@@ -59,19 +61,24 @@ public class CastSessionController {
             // short time, the selection might be ignored by MediaRouter, so put the reselection in
             // a callback.
             mProvider.getAndroidMediaRouter().addCallback(
-                    mSource.buildRouteSelector(), mMediaRouterCallbackForSessionLaunch);
+                    mRouteCreationInfo.source.buildRouteSelector(),
+                    mMediaRouterCallbackForSessionLaunch);
             mProvider.getAndroidMediaRouter().unselect(MediaRouter.UNSELECT_REASON_UNKNOWN);
         } else {
-            request.routeInfo.select();
+            mRouteCreationInfo.routeInfo.select();
         }
     }
 
     public MediaSource getSource() {
-        return mSource;
+        return (mRouteCreationInfo != null) ? mRouteCreationInfo.source : null;
     }
 
     public MediaSink getSink() {
-        return mSink;
+        return (mRouteCreationInfo != null) ? mRouteCreationInfo.sink : null;
+    }
+
+    public CreateRouteRequestInfo getRouteCreationInfo() {
+        return mRouteCreationInfo;
     }
 
     public CastSession getSession() {
@@ -80,6 +87,10 @@ public class CastSessionController {
 
     public RemoteMediaClient getRemoteMediaClient() {
         return mCastSession.getRemoteMediaClient();
+    }
+
+    public CafNotificationController getNotificationController() {
+        return mNotificationController;
     }
 
     public void endSession() {
@@ -125,6 +136,7 @@ public class CastSessionController {
     public void attachToCastSession(CastSession session) {
         mCastSession = session;
         mCastSession.addCastListener(mCastListener);
+        getRemoteMediaClient().registerCallback(mRemoteMediaClientCallback);
         updateNamespaces();
     }
 
@@ -133,7 +145,12 @@ public class CastSessionController {
 
         mNamespaces.clear();
         mCastSession.removeCastListener(mCastListener);
+        getRemoteMediaClient().unregisterCallback(mRemoteMediaClientCallback);
         mCastSession = null;
+    }
+
+    public void onSessionEnded() {
+        mRouteCreationInfo = null;
     }
 
     private class CastListener extends Cast.Listener {
@@ -224,6 +241,18 @@ public class CastSessionController {
                 mProvider.getAndroidMediaRouter().removeCallback(
                         mMediaRouterCallbackForSessionLaunch);
             }
+        }
+    }
+
+    private class RemoteMediaClientCallback extends RemoteMediaClient.Callback {
+        @Override
+        public void onStatusUpdated() {
+            mNotificationController.onStatusUpdated();
+        }
+
+        @Override
+        public void onMetadataUpdated() {
+            mNotificationController.onMetadataUpdated();
         }
     }
 }
