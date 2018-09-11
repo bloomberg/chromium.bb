@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/fido/ble/fido_ble_uuids.h"
 
 namespace device {
 
@@ -25,6 +27,13 @@ FidoBleDiscoveryBase::~FidoBleDiscoveryBase() {
     adapter_->RemoveObserver(this);
 
   // Destroying |discovery_session_| will best-effort-stop discovering.
+}
+
+// static
+const BluetoothUUID& FidoBleDiscoveryBase::CableAdvertisementUUID() {
+  static const base::NoDestructor<BluetoothUUID> service_uuid(
+      kCableAdvertisementUUID128);
+  return *service_uuid;
 }
 
 void FidoBleDiscoveryBase::OnStartDiscoverySessionWithFilter(
@@ -47,6 +56,12 @@ void FidoBleDiscoveryBase::OnStartDiscoverySessionError() {
 void FidoBleDiscoveryBase::SetDiscoverySession(
     std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
   discovery_session_ = std::move(discovery_session);
+}
+
+bool FidoBleDiscoveryBase::IsCableDevice(const BluetoothDevice* device) const {
+  const auto& uuid = CableAdvertisementUUID();
+  return base::ContainsKey(device->GetServiceData(), uuid) ||
+         base::ContainsKey(device->GetUUIDs(), uuid);
 }
 
 void FidoBleDiscoveryBase::OnGetAdapter(

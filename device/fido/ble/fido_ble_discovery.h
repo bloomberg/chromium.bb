@@ -6,6 +6,8 @@
 #define DEVICE_FIDO_BLE_FIDO_BLE_DISCOVERY_H_
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -37,6 +39,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscovery
                      BluetoothDevice* device) override;
   void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
 
+  // Returns true if |device| is a Cable device. If so, add address of |device|
+  // to |blacklisted_cable_device_addresses_|.
+  bool CheckForExcludedDeviceAndCacheAddress(const BluetoothDevice* device);
+
+  std::set<std::string> excluded_cable_device_addresses_;
   base::WeakPtrFactory<FidoBleDiscovery> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoBleDiscovery);

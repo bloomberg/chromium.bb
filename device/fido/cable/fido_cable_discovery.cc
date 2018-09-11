@@ -27,22 +27,6 @@ namespace device {
 
 namespace {
 
-const BluetoothUUID& CableAdvertisementUUID128() {
-  static const BluetoothUUID service_uuid(kCableAdvertisementUUID128);
-  return service_uuid;
-}
-
-const BluetoothUUID& CableAdvertisementUUID16() {
-  static const BluetoothUUID service_uuid(kCableAdvertisementUUID16);
-  return service_uuid;
-}
-
-bool IsCableDevice(const BluetoothDevice* device) {
-  return base::ContainsKey(device->GetServiceData(),
-                           CableAdvertisementUUID128()) ||
-         base::ContainsKey(device->GetUUIDs(), CableAdvertisementUUID16());
-}
-
 // Construct advertisement data with different formats depending on client's
 // operating system. Ideally, we advertise EIDs as part of Service Data, but
 // this isn't available on all platforms. On Windows we use Manufacturer Data
@@ -364,7 +348,7 @@ const CableDiscoveryData*
 FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceData(
     const BluetoothDevice* device) const {
   const auto* service_data =
-      device->GetServiceDataForUUID(CableAdvertisementUUID128());
+      device->GetServiceDataForUUID(CableAdvertisementUUID());
   if (!service_data) {
     return nullptr;
   }
@@ -397,10 +381,9 @@ FidoCableDiscovery::GetFoundCableDiscoveryDataFromServiceUUIDs(
     const BluetoothDevice* device) const {
   const auto service_uuids = device->GetUUIDs();
   for (const auto& uuid : service_uuids) {
-    if (uuid == CableAdvertisementUUID128() ||
-        uuid == CableAdvertisementUUID16()) {
+    if (uuid == CableAdvertisementUUID())
       continue;
-    }
+
     auto discovery_data_iterator = std::find_if(
         discovery_data_.begin(), discovery_data_.end(),
         [&uuid](const auto& data) {
