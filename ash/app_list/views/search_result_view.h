@@ -131,7 +131,6 @@ class APP_LIST_EXPORT SearchResultView
   AppListViewDelegate* view_delegate_;
 
   views::ImageView* icon_;        // Owned by views hierarchy.
-  views::ImageView* badge_icon_;  // Owned by views hierarchy.
   std::unique_ptr<gfx::RenderText> title_text_;
   std::unique_ptr<gfx::RenderText> details_text_;
   SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.
