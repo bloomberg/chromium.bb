@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -79,28 +78,6 @@ NativeWidgetMac::~NativeWidgetMac() {
     delete delegate_;
   else
     CloseNow();
-}
-
-// static
-BridgedNativeWidgetImpl* NativeWidgetMac::GetBridgeImplForNativeWindow(
-    gfx::NativeWindow window) {
-  if (NativeWidgetMacNSWindow* widget_window =
-          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
-    return BridgedNativeWidgetImpl::GetFromId(
-        [widget_window bridgedNativeWidgetId]);
-  }
-  return nullptr;  // Not created by NativeWidgetMac.
-}
-
-// static
-BridgedNativeWidgetHostImpl* NativeWidgetMac::GetBridgeHostImplForNativeWindow(
-    gfx::NativeWindow window) {
-  if (NativeWidgetMacNSWindow* widget_window =
-          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
-    return BridgedNativeWidgetHostImpl::GetFromId(
-        [widget_window bridgedNativeWidgetId]);
-  }
-  return nullptr;  // Not created by NativeWidgetMac.
 }
 
 void NativeWidgetMac::WindowDestroying() {
@@ -694,7 +671,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow window) {
   if (BridgedNativeWidgetHostImpl* bridge_host_impl =
-          NativeWidgetMac::GetBridgeHostImplForNativeWindow(window)) {
+          BridgedNativeWidgetHostImpl::GetFromNativeWindow(window)) {
     return bridge_host_impl->native_widget_mac();
   }
   return nullptr;  // Not created by NativeWidgetMac.
@@ -704,7 +681,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   BridgedNativeWidgetHostImpl* bridge_host =
-      NativeWidgetMac::GetBridgeHostImplForNativeWindow([native_view window]);
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
   if (!bridge_host)
     return nullptr;
 
@@ -721,7 +698,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
 void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
   BridgedNativeWidgetHostImpl* bridge_host =
-      NativeWidgetMac::GetBridgeHostImplForNativeWindow([native_view window]);
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([native_view window]);
   if (!bridge_host) {
     // The NSWindow is not itself a views::Widget, but it may have children that
     // are. Support returning Widgets that are parented to the NSWindow, except:
@@ -770,7 +747,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* owned) {
   BridgedNativeWidgetImpl* bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([native_view window]);
+      BridgedNativeWidgetImpl::GetFromNativeWindow([native_view window]);
   if (!bridge) {
     GetAllChildWidgets(native_view, owned);
     return;
@@ -791,9 +768,9 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   }
 
   BridgedNativeWidgetImpl* bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([native_view window]);
+      BridgedNativeWidgetImpl::GetFromNativeWindow([native_view window]);
   BridgedNativeWidgetImpl* parent_bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([new_parent window]);
+      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
   DCHECK(bridge);
   if (Widget::GetWidgetForNativeView(native_view)->is_top_level() &&
       bridge->parent() == parent_bridge)

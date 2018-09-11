@@ -4,6 +4,7 @@
 
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
+#include "base/mac/foundation_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -12,6 +13,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
+#include "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -52,6 +54,16 @@ uint64_t g_last_bridged_native_widget_id = 0;
 }  // namespace
 
 // static
+BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+    gfx::NativeWindow window) {
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return GetFromId([widget_window bridgedNativeWidgetId]);
+  }
+  return nullptr;  // Not created by NativeWidgetMac.
+}
+
+// static
 BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
     uint64_t bridged_native_widget_id) {
   auto found = GetIdToWidgetHostImplMap().find(bridged_native_widget_id);
@@ -64,9 +76,10 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
     : id_(++g_last_bridged_native_widget_id),
       native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidgetImpl(id_, this, this, parent)) {
+      bridge_impl_(new BridgedNativeWidgetImpl(id_, this, this)) {
   DCHECK(GetIdToWidgetHostImplMap().find(id_) ==
          GetIdToWidgetHostImplMap().end());
+  GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
   GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
   DCHECK(parent);
 }
@@ -108,6 +121,8 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
         native_widget_mac_->GetWidget()->widget_delegate()->GetModalType();
     bridge_params->is_translucent =
         params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+    bridge_params->widget_is_top_level =
+        native_widget_mac_->GetWidget()->is_top_level();
 
     // OSX likes to put shadows on most things. However, frameless windows (with
     // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.

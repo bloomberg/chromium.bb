@@ -97,7 +97,7 @@ namespace test {
 class BridgedNativeWidgetTestApi {
  public:
   explicit BridgedNativeWidgetTestApi(NSWindow* window) {
-    bridge_ = NativeWidgetMac::GetBridgeImplForNativeWindow(window);
+    bridge_ = BridgedNativeWidgetImpl::GetFromNativeWindow(window);
   }
 
   // Simulate a frame swap from the compositor.
@@ -758,7 +758,7 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
 
   // To verify the parent, we need to use NativeWidgetMac APIs.
   BridgedNativeWidgetImpl* bridged_native_widget =
-      NativeWidgetMac::GetBridgeImplForNativeWindow(child->GetNativeWindow());
+      BridgedNativeWidgetImpl::GetFromNativeWindow(child->GetNativeWindow());
   EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
 
   const gfx::Rect child_bounds(50, 50, 200, 100);
@@ -1547,7 +1547,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   Widget* dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
   BridgedNativeWidgetImpl* bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow(dialog->GetNativeWindow());
+      BridgedNativeWidgetImpl::GetFromNativeWindow(dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
@@ -1560,7 +1560,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
   bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow(dialog->GetNativeWindow());
+      BridgedNativeWidgetImpl::GetFromNativeWindow(dialog->GetNativeWindow());
 
   EXPECT_EQ(bridge->parent()->GetNSWindow(), parent);
   Widget::ReparentNativeView(dialog->GetNativeView(), [parent contentView]);
@@ -2107,7 +2107,7 @@ class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
     NativeWidgetMacTest::SetUp();
 
     widget_ = CreateTopLevelPlatformWidget();
-    bridge_ = NativeWidgetMac::GetBridgeImplForNativeWindow(
+    bridge_ = BridgedNativeWidgetImpl::GetFromNativeWindow(
         widget_->GetNativeWindow());
     fake_full_keyboard_access_ =
         ui::test::ScopedFakeFullKeyboardAccess::GetInstance();

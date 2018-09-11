@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/views/cocoa/bridged_native_widget.h"
-#include "ui/views/widget/native_widget_mac.h"
 
 @implementation FullscreenToolbarControllerViews
 
@@ -28,7 +27,7 @@
 
 - (BOOL)isFullscreenTransitionInProgress {
   views::BridgedNativeWidgetImpl* bridge_widget =
-      views::NativeWidgetMac::GetBridgeImplForNativeWindow([self window]);
+      views::BridgedNativeWidgetImpl::GetFromNativeWindow([self window]);
   return bridge_widget->in_fullscreen_transition();
 }
 
@@ -36,7 +35,7 @@
   NSWindow* ns_window = browserView_->GetNativeWindow();
   if (!ns_view_) {
     ns_view_.reset(
-        [views::NativeWidgetMac::GetBridgeImplForNativeWindow(ns_window)
+        [views::BridgedNativeWidgetImpl::GetFromNativeWindow(ns_window)
                 ->ns_view() retain]);
   }
   return ns_window;

@@ -34,8 +34,6 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
-#include "ui/views/widget/native_widget_mac.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 using views_bridge_mac::mojom::WindowVisibilityState;
@@ -233,6 +231,16 @@ gfx::Size BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
 }
 
 // static
+BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromNativeWindow(
+    gfx::NativeWindow window) {
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return GetFromId([widget_window bridgedNativeWidgetId]);
+  }
+  return nullptr;  // Not created by NativeWidgetMac.
+}
+
+// static
 BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
     uint64_t bridged_native_widget_id) {
   auto found = GetIdToWidgetImplMap().find(bridged_native_widget_id);
@@ -244,15 +252,10 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
     uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
-    BridgedNativeWidgetHostHelper* host_helper,
-    NativeWidgetMac* parent)
-    : id_(bridged_native_widget_id),
-      host_(host),
-      host_helper_(host_helper),
-      native_widget_mac_(parent) {
+    BridgedNativeWidgetHostHelper* host_helper)
+    : id_(bridged_native_widget_id), host_(host), host_helper_(host_helper) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
-  DCHECK(parent);
 }
 
 BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
@@ -287,7 +290,7 @@ void BridgedNativeWidgetImpl::SetWindow(
 
 void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
   BridgedNativeWidgetImpl* bridged_native_widget_parent =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([new_parent window]);
+      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
   // Remove from the old parent.
   if (parent_) {
     parent_->RemoveChildWindow(this);
@@ -323,6 +326,7 @@ void BridgedNativeWidgetImpl::InitWindow(
     views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr params) {
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
+  widget_is_top_level_ = params->widget_is_top_level;
 
   // Register for application hide notifications so that visibility can be
   // properly tracked. This is not done in the delegate so that the lifetime is
@@ -902,7 +906,7 @@ void BridgedNativeWidgetImpl::ReparentNativeView(NSView* native_view,
   DCHECK(window_ && ![window_ isSheet]);
 
   BridgedNativeWidgetImpl* parent_bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([new_parent window]);
+      BridgedNativeWidgetImpl::GetFromNativeWindow([new_parent window]);
   if (native_view == bridged_view_.get() && parent_bridge != parent_) {
     SetParent(new_parent);
 
@@ -913,8 +917,7 @@ void BridgedNativeWidgetImpl::ReparentNativeView(NSView* native_view,
     [[new_parent window] addChildWindow:window_ ordered:NSWindowAbove];
   }
 
-  if (!native_widget_mac_->GetWidget()->is_top_level() ||
-      native_view != bridged_view_.get()) {
+  if (!widget_is_top_level_ || native_view != bridged_view_.get()) {
     // Make native_view be a child of new_parent by adding it as a subview.
     // The window_ must remain visible because it controls the bounds and
     // visibility of the ui::Layer. So just hide it by setting alpha value to
