@@ -38,15 +38,11 @@ class TextSuggestionsTouchBarControllerTest : public CocoaTest {
 // Tests that the NSCandidateListTouchBarItem collapses properly.
 TEST_F(TextSuggestionsTouchBarControllerTest, CollapsedCandidateList) {
   if (@available(macOS 10.12.2, *)) {
-    base::scoped_nsobject<NSCandidateListTouchBarItem> item;
-
     [controller_ setSelectionRange:gfx::Range()];
-    item.reset([controller_ createCandidateListItem]);
-    EXPECT_FALSE([item isCollapsed]);
+    EXPECT_FALSE([[controller_ makeCandidateListItem] isCollapsed]);
 
     [controller_ setSelectionRange:gfx::Range(0, 1)];
-    item.reset([controller_ createCandidateListItem]);
-    EXPECT_TRUE([item isCollapsed]);
+    EXPECT_TRUE([[controller_ makeCandidateListItem] isCollapsed]);
   }
 }
 

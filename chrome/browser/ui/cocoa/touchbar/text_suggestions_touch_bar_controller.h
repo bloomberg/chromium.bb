@@ -37,7 +37,7 @@ class Range;
 
 // Creates a NSCandidateListTouchBarItem that contains text suggestions
 // based on the current text selection.
-- (NSCandidateListTouchBarItem*)createCandidateListItem
+- (NSCandidateListTouchBarItem*)makeCandidateListItem
     API_AVAILABLE(macos(10.12.2));
 
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
