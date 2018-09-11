@@ -103,7 +103,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                const base::DictionaryValue& value,
                                const GURL& url,
                                bool user_is_interacting,
-                               bool is_main_frame);
+                               bool is_main_frame,
+                               web::WebFrame* sender_frame);
 
   void SetIsLoading(bool is_loading);
 

@@ -57,7 +57,8 @@ class FormActivityTabHelper
   bool OnFormCommand(const base::DictionaryValue& message,
                      const GURL& url,
                      bool has_user_gesture,
-                     bool form_in_main_frame);
+                     bool form_in_main_frame,
+                     web::WebFrame* sender_frame);
 
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.

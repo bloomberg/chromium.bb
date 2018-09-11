@@ -216,7 +216,8 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
                                      const base::DictionaryValue& command_json,
                                      const GURL& page_url,
                                      bool interacting,
-                                     bool is_main_frame) {
+                                     bool is_main_frame,
+                                     WebFrame* sender_frame) {
   auto* command = command_json.FindKey("command");
   if (!command || !command->is_string() || !command_json.HasKey("messageId")) {
     NOTREACHED();

@@ -36,6 +36,8 @@ class FormActivityObserver {
   // |has_user_gesture| is true if the user interacted with the page.
   // |form_in_main_frame| is true if the submitted form is hosted in the main
   // frame.
+  // TODO(crbug.com/881811): remove |form_in_main_frame| once frame messaging is
+  // fully enabled.
   virtual void DocumentSubmitted(web::WebState* web_state,
                                  const std::string& form_name,
                                  bool has_user_gesture,

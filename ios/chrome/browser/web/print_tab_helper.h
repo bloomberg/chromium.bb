@@ -38,7 +38,8 @@ class PrintTabHelper : public web::WebStateObserver,
                       const base::DictionaryValue& command,
                       const GURL& page_url,
                       bool user_initiated,
-                      bool is_main_frame);
+                      bool is_main_frame,
+                      web::WebFrame* sender_frame);
 
   __weak id<WebStatePrinter> printer_;
 

@@ -64,7 +64,8 @@ void FormActivityTabHelper::RemoveObserver(FormActivityObserver* observer) {
 bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
                                           const GURL& url,
                                           bool has_user_gesture,
-                                          bool form_in_main_frame) {
+                                          bool form_in_main_frame,
+                                          web::WebFrame* sender_frame) {
   std::string command;
   if (!message.GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";

@@ -87,7 +87,8 @@ class TranslateController : public web::WebStateObserver {
   bool OnJavascriptCommandReceived(const base::DictionaryValue& command,
                                    const GURL& url,
                                    bool interacting,
-                                   bool is_main_frame);
+                                   bool is_main_frame,
+                                   web::WebFrame* sender_frame);
   // Methods to handle specific JavaScript commands.
   // Return false if the command is invalid.
   bool OnTranslateReady(const base::DictionaryValue& command);

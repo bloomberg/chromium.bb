@@ -117,7 +117,8 @@ TEST_P(WebStateTest, OverridingWebKitObject) {
   __block bool message_received = false;
   const web::WebState::ScriptCommandCallback callback =
       base::BindRepeating(^bool(const base::DictionaryValue&, const GURL&,
-                                /*interacted*/ bool, /*is_main_frame*/ bool) {
+                                /*interacted*/ bool, /*is_main_frame*/ bool,
+                                /*sender_frame*/ web::WebFrame*) {
         message_received = true;
         return true;
       });
@@ -209,9 +210,9 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
-                                bool user_interacted, bool is_main_frame) {
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
+      ^bool(const base::DictionaryValue& value, const GURL&,
+            bool user_interacted, bool is_main_frame, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = is_main_frame;
         message_value = value.Clone();
@@ -245,9 +246,9 @@ TEST_P(WebStateTest, DISABLED_MessageFromIFrame) {
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
-                                bool user_interacted, bool is_main_frame) {
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
+      ^bool(const base::DictionaryValue& value, const GURL&,
+            bool user_interacted, bool is_main_frame, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = is_main_frame;
         message_value = value.Clone();

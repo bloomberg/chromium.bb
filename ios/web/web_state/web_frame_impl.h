@@ -117,7 +117,8 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
                          const base::DictionaryValue& command,
                          const GURL& page_url,
                          bool interacting,
-                         bool is_main_frame);
+                         bool is_main_frame,
+                         WebFrame* sender_frame);
 
   // The JavaScript requests awating a reply.
   std::map<uint32_t, std::unique_ptr<struct RequestCallbacks>>
