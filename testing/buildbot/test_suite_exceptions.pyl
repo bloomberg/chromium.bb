@@ -723,11 +723,7 @@
       },
     },
   },
-  'mash_browser_tests': {
-    'remove_from': [
-      # Not needed on chromium.fyi because suite is on main waterfall.
-      'Mojo ChromiumOS',
-    ],
+  'single_process_mash_browser_tests': {
     'modifications': {
       # chromium.chromiumos
       'linux-chromeos-dbg': {
