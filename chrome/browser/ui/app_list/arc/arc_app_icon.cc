@@ -135,16 +135,8 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
     // Store that is adapted according Chrome style.
     const int resource_size_in_px =
         static_cast<int>(resource_size_in_dip_ * scale + 0.5);
-    if (resource_size_in_px <= 32)
-      resource_id = IDR_ARC_SUPPORT_ICON_32;
-    else if (resource_size_in_px <= 48)
-      resource_id = IDR_ARC_SUPPORT_ICON_48;
-    else if (resource_size_in_px <= 64)
-      resource_id = IDR_ARC_SUPPORT_ICON_64;
-    else if (resource_size_in_px <= 96)
-      resource_id = IDR_ARC_SUPPORT_ICON_96;
-    else
-      resource_id = IDR_ARC_SUPPORT_ICON_128;
+    resource_id = resource_size_in_px <= 32 ? IDR_ARC_SUPPORT_ICON_32
+                                            : IDR_ARC_SUPPORT_ICON_192;
   } else {
     if (host_)
       host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));

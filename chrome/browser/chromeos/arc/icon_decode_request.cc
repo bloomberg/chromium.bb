@@ -58,8 +58,11 @@ gfx::ImageSkiaRep IconSource::GetImageForScale(float scale) {
   // ARC icon.
   const gfx::ImageSkia* icon_to_scale;
   if (decoded_icon_.isNull()) {
-    int resource_id =
-        scale >= 1.5f ? IDR_ARC_SUPPORT_ICON_96 : IDR_ARC_SUPPORT_ICON_48;
+    const int resource_size_in_px =
+        static_cast<int>(resource_size_in_dip_ * scale + 0.5);
+    const int resource_id = resource_size_in_px <= 32
+                                ? IDR_ARC_SUPPORT_ICON_32
+                                : IDR_ARC_SUPPORT_ICON_192;
     icon_to_scale =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   } else {
