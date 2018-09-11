@@ -546,6 +546,15 @@ void ToolbarActionsBar::ShowToolbarActionBubble(
   } else if (bubble->ShouldShow()) {
     // We check ShouldShow() above since we show the bubble asynchronously, and
     // it might no longer have been valid.
+
+    // If needed, close the overflow menu before showing the bubble.
+    ToolbarActionViewController* controller =
+        GetActionForId(bubble->GetAnchorActionId());
+    bool close_overflow_menu =
+        controller && !IsActionVisibleOnMainBar(controller);
+    if (close_overflow_menu)
+      delegate_->CloseOverflowMenuIfOpen();
+
     is_showing_bubble_ = true;
     delegate_->ShowToolbarActionBubble(std::move(bubble));
   }
