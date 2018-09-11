@@ -25,8 +25,10 @@ class BackgroundFetchManagerTest : public testing::Test {
   Vector<WebServiceWorkerRequest> CreateWebRequestVector(
       V8TestingScope& scope,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests) {
+    bool has_requests_with_body;
     return BackgroundFetchManager::CreateWebRequestVector(
-        scope.GetScriptState(), requests, scope.GetExceptionState());
+        scope.GetScriptState(), requests, scope.GetExceptionState(),
+        &has_requests_with_body);
   }
 };
 

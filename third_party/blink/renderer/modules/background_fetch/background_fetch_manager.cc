@@ -170,10 +170,24 @@ ScriptPromise BackgroundFetchManager::fetch(
                                           "the ServiceWorkerRegistration."));
   }
 
-  Vector<WebServiceWorkerRequest> web_requests =
-      CreateWebRequestVector(script_state, requests, exception_state);
+  bool has_requests_with_body;
+  Vector<WebServiceWorkerRequest> web_requests = CreateWebRequestVector(
+      script_state, requests, exception_state, &has_requests_with_body);
   if (exception_state.HadException())
     return ScriptPromise();
+
+  // Record whether any requests had a body. If there were, reject the promise.
+  UMA_HISTOGRAM_BOOLEAN("BackgroundFetch.HasRequestsWithBody",
+                        has_requests_with_body);
+
+  // TODO(crbug.com/789854): Stop bailing here once we support uploads.
+  if (has_requests_with_body) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "Requests with a body are not yet supported. "
+                          "For updates check http://crbug.com/774054"));
+  }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
@@ -383,8 +397,12 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
 Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
     ScriptState* script_state,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state,
+    bool* has_requests_with_body) {
+  DCHECK(has_requests_with_body);
+
   Vector<WebServiceWorkerRequest> web_requests;
+  *has_requests_with_body = false;
 
   if (requests.IsRequestOrUSVStringSequence()) {
     HeapVector<RequestOrUSVString> request_vector =
@@ -415,16 +433,21 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
       }
 
       DCHECK(request);
+      *has_requests_with_body |= request->HasBody();
       // TODO(crbug.com/774054): Set blob data handle when adding support for
       // requests with body.
       request->PopulateWebServiceWorkerRequest(web_requests[i]);
     }
   } else if (requests.IsRequest()) {
-    DCHECK(requests.GetAsRequest());
+    auto* request = requests.GetAsRequest();
+    DCHECK(request);
+
     // TODO(crbug.com/774054): Set blob data handle when adding support for
     // requests with body.
+
+    *has_requests_with_body = request->HasBody();
     web_requests.resize(1);
-    requests.GetAsRequest()->PopulateWebServiceWorkerRequest(web_requests[0]);
+    request->PopulateWebServiceWorkerRequest(web_requests[0]);
   } else if (requests.IsUSVString()) {
     Request* request = Request::Create(script_state, requests.GetAsUSVString(),
                                        exception_state);
@@ -432,6 +455,7 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
       return Vector<WebServiceWorkerRequest>();
 
     DCHECK(request);
+    *has_requests_with_body = request->HasBody();
     web_requests.resize(1);
     request->PopulateWebServiceWorkerRequest(web_requests[0]);
   } else {
