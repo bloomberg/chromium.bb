@@ -179,16 +179,19 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   if (!exclusive_access_context->IsFullscreen())
     return;
 
-  if (IsFullscreenCausedByTab()) {
+  bool is_fullscreen_caused_by_tab = IsFullscreenCausedByTab();
+  if (is_fullscreen_caused_by_tab) {
     // Tab Fullscreen -> Normal.
     ToggleFullscreenModeInternal(TAB);
-    return;
   }
 
-  // Tab Fullscreen -> Browser Fullscreen.
-  if (state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN)
-    exclusive_access_context->UpdateUIForTabFullscreen(
-        ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
+  // Exiting tab fullscreen to either non-fullscreen mode or browser fullscreen
+  // mode requires updating Top UI.
+  exclusive_access_context->UpdateUIForTabFullscreen(
+      ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
+
+  if (is_fullscreen_caused_by_tab)
+    return;
 
   // If currently there is a tab in "tab fullscreen" mode and fullscreen
   // was not caused by it (i.e., previously it was in "browser fullscreen"
