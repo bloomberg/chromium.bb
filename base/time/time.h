@@ -341,13 +341,15 @@ class TimeBase {
   // Warning: Be careful when writing code that performs math on time values,
   // since it's possible to produce a valid "zero" result that should not be
   // interpreted as a "null" value.
-  bool is_null() const {
-    return us_ == 0;
-  }
+  constexpr bool is_null() const { return us_ == 0; }
 
   // Returns true if this object represents the maximum/minimum time.
-  bool is_max() const { return us_ == std::numeric_limits<int64_t>::max(); }
-  bool is_min() const { return us_ == std::numeric_limits<int64_t>::min(); }
+  constexpr bool is_max() const {
+    return us_ == std::numeric_limits<int64_t>::max();
+  }
+  constexpr bool is_min() const {
+    return us_ == std::numeric_limits<int64_t>::min();
+  }
 
   // Returns the maximum/minimum times, which should be greater/less than than
   // any reasonable time with which we might compare it.
@@ -373,7 +375,9 @@ class TimeBase {
   //
   // Warning: While the Time subclass has a fixed origin point, the origin for
   // the other subclasses can vary each time the application is restarted.
-  TimeDelta since_origin() const { return TimeDelta::FromMicroseconds(us_); }
+  constexpr TimeDelta since_origin() const {
+    return TimeDelta::FromMicroseconds(us_);
+  }
 
   TimeClass& operator=(TimeClass other) {
     us_ = other.us_;
