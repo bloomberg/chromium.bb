@@ -2603,17 +2603,16 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
 void RenderFrameImpl::DidFailProvisionalLoadInternal(
     const WebURLError& error,
     blink::WebHistoryCommitType commit_type,
-    const base::Optional<std::string>& error_page_content) {
+    const base::Optional<std::string>& error_page_content,
+    std::unique_ptr<blink::WebNavigationParams> navigation_params,
+    std::unique_ptr<blink::WebDocumentLoader::ExtraData> document_state) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   // Note: It is important this notification occur before DidStopLoading so the
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
-  for (auto& observer : render_view_->observers())
-    observer.DidFailProvisionalLoad(frame_, error);
-  for (auto& observer : observers_)
-    observer.DidFailProvisionalLoad(error);
+  NotifyObserversOfFailedProvisionalLoad(error);
 
   WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
   if (!document_loader)
@@ -2646,26 +2645,8 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
         navigation_state->common_params(), navigation_state->request_params(),
         base::TimeTicks(),  // not used for failed navigation.
         CommitNavigationCallback()));
-  }
-
-  // The |pending_navigation_params_| are reset in DidCreateDocumentLoader.
-  // We might not have |pending_navigation_params_| here, if failing after
-  // creating the DocumentLoader. This can happen if there's no byte in the
-  // response and the network connection gets closed. In that case, the
-  // provisional load does not commit and we get a DidFailProvisionalLoad.
-  std::unique_ptr<DocumentState> document_state;
-  std::unique_ptr<blink::WebNavigationParams> navigation_params;
-  if (pending_navigation_params_) {
     document_state = BuildDocumentStateFromPending(
         pending_navigation_params_.get(), nullptr);
-    // We might come here after we've already created
-    // ServiceWorkerNetworkProvider in CommitNavigation, and if that's the case
-    // we shouldn't reuse the same request_params (which confuses the
-    // ServiceWorker backend due to double-creation for the same provider_id).
-    // Code below will result in creating a SWNetworkProvider with an invalid
-    // ID but it should be fine as it's only used for showing an error page.
-    // TODO(ahemery): We should probably move the existing one down
-    // into the failed page instead of recreating a new one.
     navigation_params = BuildNavigationParams(
         pending_navigation_params_->common_params,
         pending_navigation_params_->request_params,
@@ -2673,9 +2654,22 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
             nullptr /* request_params */,
             nullptr /* controller_service_worker_info */));
   }
+
+  DCHECK(!pending_navigation_params_ || document_state)
+      << "We should never have pending_navigation_params_ if we "
+         "are not coming from CommitFailedNavigation.";
+
   LoadNavigationErrorPage(failed_request, error, replace, nullptr,
                           error_page_content, std::move(navigation_params),
                           std::move(document_state));
+}
+
+void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
+    const blink::WebURLError& error) {
+  for (auto& observer : render_view_->observers())
+    observer.DidFailProvisionalLoad(frame_, error);
+  for (auto& observer : observers_)
+    observer.DidFailProvisionalLoad(error);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
@@ -3271,11 +3265,6 @@ void RenderFrameImpl::CommitFailedNavigation(
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
                            base::nullopt /* subresource_overrides */);
 
-  pending_navigation_params_.reset(new PendingNavigationParams(
-      common_params, request_params,
-      base::TimeTicks(),  // Not used for failed navigation.
-      std::move(callback)));
-
   // Send the provisional load failure.
   WebURLError error(
       error_code, 0,
@@ -3289,8 +3278,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
-    std::move(pending_navigation_params_->commit_callback_)
-        .Run(blink::mojom::CommitResult::Aborted);
+    std::move(callback).Run(blink::mojom::CommitResult::Aborted);
     pending_navigation_params_.reset();
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
@@ -3309,10 +3297,11 @@ void RenderFrameImpl::CommitFailedNavigation(
       // either, as the frame has already been populated with something
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
-      std::move(pending_navigation_params_->commit_callback_)
-          .Run(blink::mojom::CommitResult::Aborted);
+      std::move(callback).Run(blink::mojom::CommitResult::Aborted);
       pending_navigation_params_.reset();
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    } else {
+      std::move(callback).Run(blink::mojom::CommitResult::Ok);
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3343,38 +3332,43 @@ void RenderFrameImpl::CommitFailedNavigation(
   // otherwise it will result in a use-after-free bug.
   base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
 
+  pending_navigation_params_.reset(new PendingNavigationParams(
+      common_params, request_params,
+      base::TimeTicks(),  // Not used for failed navigation.
+      std::move(callback)));
+  std::unique_ptr<blink::WebNavigationParams> navigation_params =
+      BuildNavigationParams(common_params, request_params,
+                            BuildServiceWorkerNetworkProviderForNavigation(
+                                &request_params, nullptr));
+  std::unique_ptr<DocumentState> navigation_data(
+      BuildDocumentStateFromPending(pending_navigation_params_.get(), nullptr));
+
   // For renderer initiated navigations, we send out a didFailProvisionalLoad()
   // notification.
   bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
   if (request_params.nav_entry_id == 0) {
     blink::WebHistoryCommitType commit_type =
         replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit;
-    if (error_page_content.has_value()) {
-      DidFailProvisionalLoadInternal(error, commit_type, error_page_content);
+
+    // Note: had_provisional_document_loader can be false in cases such as cross
+    // process failures, e.g. error pages.
+    if (had_provisional_document_loader) {
+      DidFailProvisionalLoadInternal(error, commit_type, error_page_content,
+                                     std::move(navigation_params),
+                                     std::move(navigation_data));
     } else {
-      // TODO(https://crbug.com/778824): We only have this branch because a
-      // layout test expects DidFailProvisionalLoad() to be called directly,
-      // rather than DidFailProvisionalLoadInternal(). Once the bug is fixed, we
-      // should be able to call DidFailProvisionalLoadInternal() in all cases.
-      DidFailProvisionalLoad(error, commit_type);
+      NotifyObserversOfFailedProvisionalLoad(error);
     }
     if (!weak_this)
       return;
   }
 
-  // If we didn't call DidFailProvisionalLoad or there wasn't a
-  // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
-  // do it now.
+  // If we didn't call DidFailProvisionalLoad above, LoadNavigationErrorPage
+  // wasn't called, so do it now.
   if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
-    std::unique_ptr<blink::WebNavigationParams> navigation_params =
-        BuildNavigationParams(common_params, request_params,
-                              BuildServiceWorkerNetworkProviderForNavigation(
-                                  &request_params, nullptr));
-    std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromPending(
-        pending_navigation_params_.get(), nullptr));
     LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
                             error_page_content, std::move(navigation_params),
-                            std::move(document_state));
+                            std::move(navigation_data));
     if (!weak_this)
       return;
   }
@@ -4197,7 +4191,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 void RenderFrameImpl::DidFailProvisionalLoad(
     const WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
-  DidFailProvisionalLoadInternal(error, commit_type, base::nullopt);
+  DidFailProvisionalLoadInternal(error, commit_type, base::nullopt, nullptr,
+                                 nullptr);
 }
 
 void RenderFrameImpl::DidCommitProvisionalLoad(
