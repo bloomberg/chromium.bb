@@ -82,8 +82,6 @@ void AssistantFooterView::InitLayout() {
   const bool setup_completed =
       Shell::Get()->voice_interaction_controller()->setup_completed();
 
-  LOG(ERROR) << "eyor: setup_completed: " << setup_completed;
-
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(assistant_controller_);
   suggestion_container_->set_can_process_events_within_subtree(setup_completed);
@@ -115,8 +113,6 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
   using assistant::util::CreateOpacityElement;
   using assistant::util::StartLayerAnimationSequence;
 
-  LOG(ERROR) << "eyor: completed: " << completed;
-
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
       completed ? static_cast<views::View*>(opt_in_view_)
@@ -134,6 +130,7 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
   StartLayerAnimationSequence(hide_view->layer()->GetAnimator(),
                               CreateLayerAnimationSequence(CreateOpacityElement(
                                   0.f, kAnimationFadeOutDuration)),
+                              // Observe the animation.
                               animation_observer_.get());
 
   // Show the view for the next consent state by fading to 100% opacity with
