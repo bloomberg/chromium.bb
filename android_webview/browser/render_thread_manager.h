@@ -90,6 +90,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void ResetRequestInvokeGLCallback();
   void ClientRequestInvokeGLOnUI();
   void UpdateParentDrawConstraintsOnUI();
+  void ReturnedResourceAvailableOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);
 
@@ -115,6 +116,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ChildFrameQueue child_frames_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
+  bool returned_resource_available_pending_ = false;
   ReturnedResourcesMap returned_resources_map_;
   base::RepeatingClosure request_draw_gl_closure_;
 
