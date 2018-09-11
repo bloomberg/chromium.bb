@@ -5139,3 +5139,7 @@ crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 
 # Sheriff 2018-09-10
 crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]
+
+crbug.com/882689 http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
+crbug.com/882689 virtual/outofblink-cors/http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
+crbug.com/882689 virtual/outofblink-cors-ns/http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Pass Failure ]
