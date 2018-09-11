@@ -3097,8 +3097,21 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
       DCHECK(rv);
       const int32_t current_output_scale =
           std::round(display_info.zoom_factor() * 1000.f);
-      for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
-        int32_t output_scale = std::round(zoom_factor * 1000.0);
+      std::vector<float> zoom_factors =
+          display::GetDisplayZoomFactors(active_mode);
+
+      // Ensure that the current zoom factor is a part of the list.
+      auto it = std::find_if(
+          zoom_factors.begin(), zoom_factors.end(),
+          [&display_info](float zoom_factor) -> bool {
+            return std::abs(display_info.zoom_factor() - zoom_factor) <=
+                   std::numeric_limits<float>::epsilon();
+          });
+      if (it == zoom_factors.end())
+        zoom_factors.push_back(display_info.zoom_factor());
+
+      for (float zoom_factor : zoom_factors) {
+        int32_t output_scale = std::round(zoom_factor * 1000.f);
         uint32_t flags = 0;
         if (output_scale == 1000)
           flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
@@ -3108,7 +3121,7 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
         // TODO(malaykeshav): This can be removed in the future when client
         // has been updated.
         if (wl_resource_get_version(resource_) < 6)
-          output_scale = std::round(1000.0 / zoom_factor);
+          output_scale = std::round(1000.f / zoom_factor);
 
         zaura_output_send_scale(resource_, flags, output_scale);
       }
