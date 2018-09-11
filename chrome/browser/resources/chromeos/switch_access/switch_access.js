@@ -71,6 +71,15 @@ SwitchAccess.prototype = {
   },
 
   /**
+   * Jump to the context menu.
+   * @override
+   */
+  enterContextMenu: function() {
+    if (this.automationManager_)
+      this.automationManager_.enterContextMenu();
+  },
+
+  /**
    * Move to the next interesting node.
    * @override
    */

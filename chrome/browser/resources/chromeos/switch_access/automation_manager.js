@@ -41,6 +41,11 @@ function AutomationManager(desktop) {
   this.scopeStack_ = [];
 
   /**
+   * Handles communication with and navigation within the context menu.
+   */
+  this.contextMenuManager_ = new ContextMenuManager(this, desktop);
+
+  /**
    * Keeps track of when we're visiting the current scope as an actionable node.
    * @private {boolean}
    */
@@ -195,6 +200,11 @@ AutomationManager.prototype = {
    * next node, |this.node_| will be set equal to |this.scope_| to loop again.
    */
   moveForward: function() {
+    if (this.contextMenuManager_.inContextMenu) {
+      this.contextMenuManager_.moveForward();
+      return;
+    }
+
     // If node is invalid, set node to last valid scope.
     this.startAtValidNode_();
 
@@ -226,6 +236,11 @@ AutomationManager.prototype = {
    * SwitchAccess scope tree to loop again.
    */
   moveBackward: function() {
+    if (this.contextMenuManager_.inContextMenu) {
+      this.contextMenuManager_.moveBackward();
+      return;
+    }
+
     // If node is invalid, set node to last valid scope.
     this.startAtValidNode_();
 
@@ -277,14 +292,34 @@ AutomationManager.prototype = {
   },
 
   /**
-   * Select the currently highlighted node. If the node is the current scope,
-   * go back to the previous scope (i.e., create a new tree walker rooted at
-   * the previous scope). If the node is a group other than the current scope,
-   * create a new tree walker for the new subtree the user is scanning through.
-   * Otherwise, meaning the node is interesting, perform the default action on
-   * it.
+   * Open the context menu for the currently highlighted node.
+   */
+  enterContextMenu: function() {
+    // If we're currently visiting the context menu, this command should select
+    // the highlighted element.
+    if (this.contextMenuManager_.inContextMenu) {
+      this.contextMenuManager_.selectCurrentNode();
+      return;
+    }
+    // TODO(crbug/881080): determine relevant actions programmatically.
+    let actions =
+        [ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS];
+
+    this.contextMenuManager_.enter(actions);
+  },
+
+  /**
+   * Perform the default action for the currently highlighted node. If the node
+   * is the current scope, go back to the previous scope. If the node is a group
+   * other than the current scope, go into that scope. If the node is
+   * interesting, perform the default action on it.
    */
   selectCurrentNode: function() {
+    if (this.contextMenuManager_.inContextMenu) {
+      this.contextMenuManager_.selectCurrentNode();
+      return;
+    }
+
     if (!this.node_.role)
       return;
 

@@ -122,6 +122,14 @@ BrailleController* GetBrailleController() {
   return BrailleController::GetInstance();
 }
 
+void EnableChromeVoxAfterSwitchAccessMetric(bool val) {
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosChromeVoxAfterSwitchAccess", val);
+}
+
+void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccessAfterChromeVox", val);
+}
+
 }  // namespace
 
 class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
@@ -390,6 +398,15 @@ void AccessibilityManager::EnableSpokenFeedback(bool enabled) {
   if (!profile_)
     return;
 
+  if (enabled) {
+    if (IsSwitchAccessEnabled()) {
+      SetSwitchAccessEnabled(false);
+      EnableChromeVoxAfterSwitchAccessMetric(true);
+    } else {
+      EnableChromeVoxAfterSwitchAccessMetric(false);
+    }
+  }
+
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
                            enabled);
@@ -402,6 +419,17 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  if (enabled) {
+    if (IsSwitchAccessEnabled()) {
+      LOG(ERROR) << "Switch Access and ChromeVox is not supported.";
+      LOG(WARNING) << "Disabling Switch Access.";
+      SetSwitchAccessEnabled(false);
+      EnableChromeVoxAfterSwitchAccessMetric(true);
+    } else {
+      EnableChromeVoxAfterSwitchAccessMetric(false);
+    }
+  }
 
   user_manager::known_user::SetBooleanPref(
       multi_user_util::GetAccountIdFromProfile(profile_),
@@ -788,6 +816,15 @@ void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
   if (!profile_)
     return;
 
+  if (enabled) {
+    if (IsSpokenFeedbackEnabled()) {
+      LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";
+      EnableSwitchAccessAfterChromeVoxMetric(true);
+      return;
+    }
+    EnableSwitchAccessAfterChromeVoxMetric(false);
+  }
+
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(ash::prefs::kAccessibilitySwitchAccessEnabled,
                            enabled);
@@ -817,12 +854,25 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
     return;
   }
 
+  if (enabled) {
+    if (IsSpokenFeedbackEnabled()) {
+      LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";
+      SetSwitchAccessEnabled(false);
+      EnableSwitchAccessAfterChromeVoxMetric(true);
+      return;
+    }
+    EnableSwitchAccessAfterChromeVoxMetric(false);
+  }
+
   if (switch_access_enabled_ == enabled)
     return;
   switch_access_enabled_ = enabled;
 
   if (enabled) {
-    switch_access_loader_->Load(profile_, base::Closure() /* done_cb */);
+    switch_access_loader_->Load(
+        profile_,
+        base::BindRepeating(&AccessibilityManager::PostLoadSwitchAccess,
+                            weak_ptr_factory_.GetWeakPtr()));
     switch_access_event_handler_.reset(
         new chromeos::SwitchAccessEventHandler());
   } else {
@@ -1300,12 +1350,34 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
   TtsController::GetInstance()->Stop();
 }
 
+void AccessibilityManager::PostLoadSwitchAccess() {
+  if (!switch_access_panel_) {
+    switch_access_panel_ = new SwitchAccessPanel(profile_);
+    switch_access_panel_widget_observer_.reset(
+        new AccessibilityPanelWidgetObserver(
+            switch_access_panel_->GetWidget(),
+            base::BindOnce(&AccessibilityManager::OnSwitchAccessPanelDestroying,
+                           base::Unretained(this))));
+  }
+}
+
 void AccessibilityManager::PostUnloadSwitchAccess() {
   // Do any teardown work needed immediately after SwitchAccess actually
   // unloads.
 
   // Clear the accessibility focus ring.
   HideFocusRing(extension_misc::kSwitchAccessExtensionId);
+
+  // Close the context menu
+  if (switch_access_panel_) {
+    switch_access_panel_->Close();
+    switch_access_panel_ = nullptr;
+  }
+}
+
+void AccessibilityManager::OnSwitchAccessPanelDestroying() {
+  switch_access_panel_widget_observer_.reset(nullptr);
+  switch_access_panel_ = nullptr;
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(

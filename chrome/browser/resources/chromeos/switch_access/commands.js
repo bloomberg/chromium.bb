@@ -73,11 +73,7 @@ Commands.prototype = {
       },
       'select': {
         'defaultKeyCode': 51, /* '3' key */
-        'binding': this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
-      },
-      'options': {
-        'defaultKeyCode': 52, /* '4' key */
-        'binding': this.switchAccess_.showOptionsPage.bind(this.switchAccess_)
+        'binding': this.switchAccess_.enterContextMenu.bind(this.switchAccess_)
       }
     };
   }

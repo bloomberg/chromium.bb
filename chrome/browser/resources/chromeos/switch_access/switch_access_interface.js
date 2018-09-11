@@ -11,6 +11,11 @@ function SwitchAccessInterface() {}
 
 SwitchAccessInterface.prototype = {
   /**
+   * Jump to the context menu.
+   */
+  enterContextMenu: function() {},
+
+  /**
    * Move to the next interesting node.
    */
   moveForward: function() {},
