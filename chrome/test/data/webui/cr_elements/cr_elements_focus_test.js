@@ -29,6 +29,7 @@ CrElementsActionMenuTest.prototype = {
       'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html',
 
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'cr_action_menu_test.js',
   ]),
 };

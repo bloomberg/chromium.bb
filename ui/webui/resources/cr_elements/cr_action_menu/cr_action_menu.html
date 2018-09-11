@@ -60,7 +60,7 @@
         outline: none;
       }
     </style>
-    <dialog id="dialog" tabindex="0">
+    <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_">
       <div class="item-wrapper" tabindex="-1" role="menu">
         <slot name="item" id="contentNode"></slot>
       </div>

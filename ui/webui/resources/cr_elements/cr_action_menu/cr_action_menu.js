@@ -197,6 +197,24 @@ Polymer({
    * @param {!Event} e
    * @private
    */
+  onNativeDialogClose_: function(e) {
+    // Ignore any 'close' events not fired directly by the <dialog> element.
+    if (e.target !== this.$.dialog)
+      return;
+
+    // TODO(dpapad): This is necessary to make the code work both for Polymer 1
+    // and Polymer 2. Remove once migration to Polymer 2 is completed.
+    e.stopPropagation();
+
+    // Catch and re-fire the 'close' event such that it bubbles across Shadow
+    // DOM v1.
+    this.fire('close');
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
   onTap_: function(e) {
     if (e.target == this) {
       this.close();

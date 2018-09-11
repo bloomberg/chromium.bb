@@ -16,7 +16,3 @@ MaterialHistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.FocusSearchBox
 PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady
 SettingsUIBrowserTest.All
-
-# TODO(dpapad): The following tests are failing with optimize_webui=true. Fix
-# them and move them to the list above.
--MaterialBookmarksFocusTest.All
