@@ -2485,25 +2485,28 @@ registerLoadRequestForURL:(const GURL&)requestURL
       web::WebFramesManagerImpl::FromWebState([self webState]);
 
   std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
-  std::string encodedFrameKeyString =
-      base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
-  NSNumber* lastSentMessageID = message.body[@"crwFrameLastReceivedMessageId"];
   if (!framesManager->GetFrameWithId(frameID)) {
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
 
     std::string decodedFrameKeyString;
+    std::string encodedFrameKeyString =
+        base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
     base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
     std::unique_ptr<crypto::SymmetricKey> frameKey =
         crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
                                      decodedFrameKeyString);
     if (frameKey) {
-      int initialMessageID = lastSentMessageID.intValue == INT_MAX
-                                 ? 0
-                                 : lastSentMessageID.intValue + 1;
       auto newFrame = std::make_unique<web::WebFrameImpl>(
-          frameID, std::move(frameKey), initialMessageID,
-          message.frameInfo.mainFrame, messageFrameOrigin, self.webState);
+          frameID, message.frameInfo.mainFrame, messageFrameOrigin,
+          self.webState);
+      newFrame->SetEncryptionKey(std::move(frameKey));
+
+      NSNumber* lastSentMessageID =
+          message.body[@"crwFrameLastReceivedMessageId"];
+      int nextMessageID = std::max(0, lastSentMessageID.intValue + 1);
+      newFrame->SetNextMessageId(nextMessageID);
+
       framesManager->AddFrame(std::move(newFrame));
       _webStateImpl->OnWebFrameAvailable(
           framesManager->GetFrameWithId(frameID));

@@ -27,13 +27,15 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   // of the next message sent to the frame with the |CallJavaScriptFunction|
   // API.
   WebFrameImpl(const std::string& frame_id,
-               std::unique_ptr<crypto::SymmetricKey> frame_key,
-               int initial_message_id,
                bool is_main_frame,
                GURL security_origin,
                web::WebState* web_state);
   ~WebFrameImpl() override;
 
+  // Sets the value to use for the next message ID.
+  void SetNextMessageId(int message_id);
+  // Sets the key to use for message encryption.
+  void SetEncryptionKey(std::unique_ptr<crypto::SymmetricKey> frame_key);
   // The associated web state.
   WebState* GetWebState();
 
@@ -79,6 +81,27 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
     std::unique_ptr<TimeoutCallback> timeout_callback;
   };
 
+  // Calls the JavaScript function |name| in the web state (main frame). If
+  // |reply_with_result| is true, the return value of executing the function
+  // will be sent back to the receiver. This function is only used if the
+  // receiver does not have an encryption key. The JavaScript function is called
+  // directly and thus only works on the main frame. (Encryption is not required
+  // to securely communicate with the main frame because evaluating JavaScript
+  // on the WebState is already secure.)
+  bool ExecuteJavaScriptFunction(const std::string& name,
+                                 const std::vector<base::Value>& parameters,
+                                 int message_id,
+                                 bool reply_with_result);
+
+  // Runs the request associated with the message with id |message_id|. The
+  // completion callback, if any, associated with |message_id| will be called
+  // with |result|.
+  void CompleteRequest(int message_id, const base::Value* result);
+  // Calls the completion block of |request_callbacks| with |result| value and
+  // removes the callbacks from |pending_requests|.
+  void CompleteRequest(std::unique_ptr<RequestCallbacks> request_callbacks,
+                       const base::Value* result);
+
   // Cancels the request associated with the message with id |message_id|. The
   // completion callback, if any, associated with |message_id| will be called
   // with a null result value. Note that the JavaScript will still run to
@@ -87,10 +110,6 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   // Performs |CancelRequest| on all outstanding request callbacks in
   // |pending_requests_|.
   void CancelPendingRequests();
-  // Calls the completion block of |request_callbacks| with a null value to
-  // represent the request was cancelled.
-  void CancelRequestWithCallbacks(
-      std::unique_ptr<RequestCallbacks> request_callbacks);
 
   // Handles message from JavaScript with result of executing the function
   // specified in CallJavaScriptFunction.
