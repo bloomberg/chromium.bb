@@ -1278,10 +1278,11 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
   // without it.  A trailing dot shouldn't be able to bypass isolated origins:
   // if "https://foo.com" is an isolated origin, "https://foo.com." should
   // match it.
-  if (it == isolated_origins_.end() && site_url.host().back() == '.') {
+  if (it == isolated_origins_.end() && site_url.has_host() &&
+      site_url.host_piece().back() == '.') {
     GURL::Replacements replacements;
-    std::string host = site_url.host();
-    host.pop_back();
+    base::StringPiece host(site_url.host_piece());
+    host.remove_suffix(1);
     replacements.SetHostStr(host);
     it = isolated_origins_.find(site_url.ReplaceComponents(replacements));
   }
