@@ -73,7 +73,8 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
     did_log_requestDevice_ = true;
   }
 
-  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
+  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+                               ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropraite feature policy is in
     // place.
     return ScriptPromise::RejectWithDOMException(
