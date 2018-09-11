@@ -213,16 +213,26 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       display_mode_(kWebDisplayModeBrowser),
       can_have_scrollbars_(true),
       has_pending_layout_(false),
+      layout_scheduling_enabled_(true),
       in_synchronous_post_layout_(false),
+      layout_count_for_testing_(0),
+      lifecycle_update_count_for_testing_(0),
+      nested_layout_count_(0),
       post_layout_tasks_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                                this,
                                &LocalFrameView::PostLayoutTimerFired),
       update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &LocalFrameView::UpdatePluginsTimerFired),
+      first_layout_(true),
       base_background_color_(Color::kWhite),
+      last_zoom_factor_(1.0f),
       media_type_(MediaTypeNames::screen),
       safe_to_propagate_scroll_to_parent_(true),
+      visually_non_empty_character_count_(0),
+      visually_non_empty_pixel_count_(0),
+      is_visually_non_empty_(false),
+      fragment_anchor_(nullptr),
       sticky_position_object_count_(0),
       input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
@@ -231,7 +241,10 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       frame_timing_requests_dirty_(true),
       hidden_for_throttling_(false),
       subtree_throttled_(false),
-      lifecycle_updates_throttled_(false),
+      // The compositor throttles the main frame using deferred commits, we
+      // can't throttle it here or it seems the root compositor doesn't get
+      // setup properly.
+      lifecycle_updates_throttled_(!GetFrame().IsMainFrame()),
       current_update_lifecycle_phases_target_state_(
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
@@ -239,11 +252,18 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
+      tracked_object_paint_invalidations_(
+          base::WrapUnique(g_initial_track_all_paint_invalidations
+                               ? new Vector<ObjectPaintInvalidation>
+                               : nullptr)),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
       jank_tracker_(this) {
-  Init();
+  // Propagate the marginwidth/height and scrolling modes to the view.
+  if (frame_->Owner() &&
+      frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
+    SetCanHaveScrollbars(false);
 }
 
 LocalFrameView* LocalFrameView::Create(LocalFrame& frame) {
@@ -281,39 +301,6 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(visibility_observer_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
-}
-
-void LocalFrameView::Reset() {
-  // The compositor throttles the main frame using deferred commits, we can't
-  // throttle it here or it seems the root compositor doesn't get setup
-  // properly.
-  lifecycle_updates_throttled_ = !GetFrame().IsMainFrame();
-  has_pending_layout_ = false;
-  layout_scheduling_enabled_ = true;
-  in_synchronous_post_layout_ = false;
-  layout_count_for_testing_ = 0;
-  lifecycle_update_count_for_testing_ = 0;
-  nested_layout_count_ = 0;
-  post_layout_tasks_timer_.Stop();
-  update_plugins_timer_.Stop();
-  first_layout_ = true;
-  safe_to_propagate_scroll_to_parent_ = true;
-  last_viewport_size_ = IntSize();
-  last_zoom_factor_ = 1.0f;
-  tracked_object_paint_invalidations_ =
-      base::WrapUnique(g_initial_track_all_paint_invalidations
-                           ? new Vector<ObjectPaintInvalidation>
-                           : nullptr);
-  visually_non_empty_character_count_ = 0;
-  visually_non_empty_pixel_count_ = 0;
-  is_visually_non_empty_ = false;
-  main_thread_scrolling_reasons_ = 0;
-  layout_object_counter_.Reset();
-  ClearFragmentAnchor();
-  viewport_constrained_objects_.reset();
-  layout_subtree_root_list_.Clear();
-  orthogonal_writing_mode_root_list_.Clear();
-  ukm_time_aggregator_.reset();
 }
 
 template <typename Function>
@@ -356,17 +343,6 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
     if (LocalFrameView* child_view = ToLocalFrame(child)->View())
       child_view->ForAllNonThrottledLocalFrameViews(function);
   }
-}
-
-void LocalFrameView::Init() {
-  Reset();
-
-  size_ = LayoutSize();
-
-  // Propagate the marginwidth/height and scrolling modes to the view.
-  if (frame_->Owner() &&
-      frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
-    SetCanHaveScrollbars(false);
 }
 
 void LocalFrameView::SetupRenderThrottling() {
