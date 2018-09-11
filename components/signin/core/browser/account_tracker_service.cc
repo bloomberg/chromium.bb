@@ -577,6 +577,9 @@ void AccountTrackerService::LoadFromPrefs() {
   DCHECK(GetMigrationState() != MIGRATION_DONE || IsMigrationDone());
   UMA_HISTOGRAM_ENUMERATION("Signin.AccountTracker.GaiaIdMigrationState",
                             GetMigrationState(), NUM_MIGRATION_STATES);
+
+  UMA_HISTOGRAM_COUNTS_100("Signin.AccountTracker.CountOfLoadedAccounts",
+                           accounts_.size());
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {
