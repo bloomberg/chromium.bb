@@ -43,8 +43,11 @@ class CrosvmMetrics {
       int64_t cycle_cpu_time);
 
  private:
-  // Callback for resource metrics measurement and report.
+  // Callback to post MetricsCycle() to a blocking thread.
   void MetricsCycleCallback();
+
+  // Measures resource metrics and emit UMA histograms.
+  void MetricsCycle();
 
   // Collect the crosvm process data and system CPU usage data at the start of
   // the 10-minute cycle.
