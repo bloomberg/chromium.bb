@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_CARET_DISPLAY_ITEM_CLIENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -41,7 +42,7 @@ class GraphicsContext;
 class LayoutBlock;
 struct PaintInvalidatorContext;
 
-class CaretDisplayItemClient final : public DisplayItemClient {
+class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
  public:
   CaretDisplayItemClient();
   ~CaretDisplayItemClient() override;
