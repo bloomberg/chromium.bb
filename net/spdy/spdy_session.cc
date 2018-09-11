@@ -2277,9 +2277,6 @@ int SpdySession::DoWrite() {
 
   write_state_ = WRITE_STATE_DO_WRITE_COMPLETE;
 
-  // Explicitly store in a scoped_refptr<IOBuffer> to avoid problems
-  // with Socket implementations that don't store their IOBuffer
-  // argument in a scoped_refptr<IOBuffer> (see crbug.com/232345).
   scoped_refptr<IOBuffer> write_io_buffer =
       in_flight_write_->GetIOBufferForRemainingData();
   return connection_->socket()->Write(
