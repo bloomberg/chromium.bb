@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/base/decode_status.h"
@@ -92,13 +93,16 @@ VideoDecodeAccelerator::Capabilities GetCapabilities() {
 
 }  // namespace
 
-class VdaVideoDecoderTest : public testing::Test {
+// Parameterized by |decode_on_parent_thread|.
+class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
  public:
-  explicit VdaVideoDecoderTest() {
-    // TODO(sandersd): Use a separate thread for the GPU task runner.
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+  explicit VdaVideoDecoderTest() : gpu_thread_("GPU Thread") {
+    gpu_thread_.Start();
+    scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner =
         environment_.GetMainThreadTaskRunner();
-    cbh_ = base::MakeRefCounted<FakeCommandBufferHelper>(task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner =
+        gpu_thread_.task_runner();
+    cbh_ = base::MakeRefCounted<FakeCommandBufferHelper>(gpu_task_runner);
 
     // |owned_vda_| exists to delete |vda_| when |this| is destructed. Ownership
     // is passed to |vdavd_| by CreateVda(), but |vda_| remains to be used for
@@ -110,7 +114,8 @@ class VdaVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*vda_, Destroy());
 
     vdavd_.reset(new VdaVideoDecoder(
-        task_runner, task_runner, media_log_.Clone(), gfx::ColorSpace(),
+        parent_task_runner, gpu_task_runner, media_log_.Clone(),
+        gfx::ColorSpace(),
         base::BindOnce(&VdaVideoDecoderTest::CreatePictureBufferManager,
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
@@ -124,71 +129,138 @@ class VdaVideoDecoderTest : public testing::Test {
   ~VdaVideoDecoderTest() override {
     // Drop ownership of anything that may have an async destruction process,
     // then allow destruction to complete.
-    cbh_->StubLost();
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&FakeCommandBufferHelper::StubLost, cbh_));
     cbh_ = nullptr;
     owned_vda_ = nullptr;
     pbm_ = nullptr;
     vdavd_ = nullptr;
-    environment_.RunUntilIdle();
+    RunUntilIdle();
   }
 
  protected:
+  void RunUntilIdle() {
+    // FlushForTesting() only runs tasks that have already been posted.
+    // TODO(sandersd): Find a more reliable way to run all tasks.
+    gpu_thread_.FlushForTesting();
+    gpu_thread_.FlushForTesting();
+    environment_.RunUntilIdle();
+  }
+
   void InitializeWithConfig(const VideoDecoderConfig& config) {
     vdavd_->Initialize(config, false, nullptr, init_cb_.Get(), output_cb_.Get(),
                        waiting_cb_.Get());
   }
 
   void Initialize() {
+    EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
+    EXPECT_CALL(*vda_, TryToSetupDecodeOnSeparateThread(_, _))
+        .WillOnce(Return(GetParam()));
+    EXPECT_CALL(init_cb_, Run(true));
     InitializeWithConfig(VideoDecoderConfig(
         kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
         COLOR_SPACE_HD_REC709, VIDEO_ROTATION_0, gfx::Size(1920, 1088),
         gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
         Unencrypted()));
-
-    EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
-    EXPECT_CALL(init_cb_, Run(true));
-    environment_.RunUntilIdle();
+    RunUntilIdle();
   }
 
   int32_t ProvidePictureBuffer() {
     std::vector<PictureBuffer> picture_buffers;
-    client_->ProvidePictureBuffers(1, PIXEL_FORMAT_XRGB, 1,
-                                   gfx::Size(1920, 1088), GL_TEXTURE_2D);
     EXPECT_CALL(*vda_, AssignPictureBuffers(_))
         .WillOnce(SaveArg<0>(&picture_buffers));
-    environment_.RunUntilIdle();
-
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
+                       base::Unretained(client_), 1, PIXEL_FORMAT_XRGB, 1,
+                       gfx::Size(1920, 1088), GL_TEXTURE_2D));
+    RunUntilIdle();
     DCHECK_EQ(picture_buffers.size(), 1U);
     return picture_buffers[0].id();
   }
 
   int32_t Decode(base::TimeDelta timestamp) {
     int32_t bitstream_id = 0;
-    vdavd_->Decode(CreateDecoderBuffer(timestamp), decode_cb_.Get());
     EXPECT_CALL(*vda_, Decode(_, _)).WillOnce(SaveArg<1>(&bitstream_id));
-    environment_.RunUntilIdle();
+    vdavd_->Decode(CreateDecoderBuffer(timestamp), decode_cb_.Get());
+    RunUntilIdle();
     return bitstream_id;
   }
 
   void NotifyEndOfBitstreamBuffer(int32_t bitstream_id) {
-    // Expectation must go before the call because NotifyEndOfBitstreamBuffer()
-    // implements the same-thread optimization.
     EXPECT_CALL(decode_cb_, Run(DecodeStatus::OK));
-    client_->NotifyEndOfBitstreamBuffer(bitstream_id);
-    environment_.RunUntilIdle();
+    if (GetParam()) {
+      // TODO(sandersd): The VDA could notify on either thread. Test both.
+      client_->NotifyEndOfBitstreamBuffer(bitstream_id);
+    } else {
+      gpu_thread_.task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer,
+              base::Unretained(client_), bitstream_id));
+    }
+    RunUntilIdle();
   }
 
-  scoped_refptr<VideoFrame> PictureReady(int32_t bitstream_buffer_id,
-                                         int32_t picture_buffer_id) {
-    // Expectation must go before the call because PictureReady() implements the
-    // same-thread optimization.
+  scoped_refptr<VideoFrame> PictureReady(
+      int32_t bitstream_buffer_id,
+      int32_t picture_buffer_id,
+      gfx::Rect visible_rect = gfx::Rect(1920, 1080)) {
     scoped_refptr<VideoFrame> frame;
+    Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
+                    gfx::ColorSpace::CreateSRGB(), true);
     EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
-    client_->PictureReady(Picture(picture_buffer_id, bitstream_buffer_id,
-                                  gfx::Rect(1920, 1080),
-                                  gfx::ColorSpace::CreateSRGB(), true));
-    environment_.RunUntilIdle();
+    if (GetParam()) {
+      // TODO(sandersd): The first time a picture is output, VDAs will do so on
+      // the GPU thread (because GpuVideoDecodeAccelerator required that). Test
+      // both.
+      client_->PictureReady(picture);
+    } else {
+      gpu_thread_.task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&VideoDecodeAccelerator::Client::PictureReady,
+                         base::Unretained(client_), picture));
+    }
+    RunUntilIdle();
     return frame;
+  }
+
+  void DismissPictureBuffer(int32_t picture_buffer_id) {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoDecodeAccelerator::Client::DismissPictureBuffer,
+                       base::Unretained(client_), picture_buffer_id));
+    RunUntilIdle();
+  }
+
+  void NotifyFlushDone() {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoDecodeAccelerator::Client::NotifyFlushDone,
+                       base::Unretained(client_)));
+    RunUntilIdle();
+  }
+
+  void NotifyResetDone() {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoDecodeAccelerator::Client::NotifyResetDone,
+                       base::Unretained(client_)));
+    RunUntilIdle();
+  }
+
+  void NotifyError(VideoDecodeAccelerator::Error error) {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&VideoDecodeAccelerator::Client::NotifyError,
+                                  base::Unretained(client_), error));
+    RunUntilIdle();
+  }
+
+  void ReleaseSyncToken(gpu::SyncToken sync_token) {
+    gpu_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&FakeCommandBufferHelper::ReleaseSyncToken,
+                                  cbh_, sync_token));
+    RunUntilIdle();
   }
 
   // TODO(sandersd): This exact code is also used in
@@ -225,6 +297,7 @@ class VdaVideoDecoderTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment environment_;
+  base::Thread gpu_thread_;
 
   testing::NiceMock<MockMediaLog> media_log_;
   testing::StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb_;
@@ -247,79 +320,75 @@ class VdaVideoDecoderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VdaVideoDecoderTest);
 };
 
-TEST_F(VdaVideoDecoderTest, CreateAndDestroy) {}
+TEST_P(VdaVideoDecoderTest, CreateAndDestroy) {}
 
-TEST_F(VdaVideoDecoderTest, Initialize) {
+TEST_P(VdaVideoDecoderTest, Initialize) {
   Initialize();
 }
 
-TEST_F(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
+TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420, COLOR_SPACE_SD_REC601,
       VIDEO_ROTATION_0, gfx::Size(320, 240), gfx::Rect(320, 240),
       gfx::Size(320, 240), EmptyExtraData(), Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 }
 
-TEST_F(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
+TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
   InitializeWithConfig(VideoDecoderConfig(
       kCodecH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
       COLOR_SPACE_HD_REC709, VIDEO_ROTATION_0, gfx::Size(1920, 1088),
       gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
       Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 }
 
-TEST_F(VdaVideoDecoderTest, Initialize_RejectedByVda) {
+TEST_P(VdaVideoDecoderTest, Initialize_RejectedByVda) {
+  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(false));
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420, COLOR_SPACE_HD_REC709,
       VIDEO_ROTATION_0, gfx::Size(1920, 1088), gfx::Rect(1920, 1080),
       gfx::Size(1920, 1080), EmptyExtraData(), Unencrypted()));
-
-  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(false));
   EXPECT_CALL(init_cb_, Run(false));
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 }
 
-TEST_F(VdaVideoDecoderTest, ProvideAndDismissPictureBuffer) {
+TEST_P(VdaVideoDecoderTest, ProvideAndDismissPictureBuffer) {
   Initialize();
   int32_t id = ProvidePictureBuffer();
-  client_->DismissPictureBuffer(id);
-  environment_.RunUntilIdle();
+  DismissPictureBuffer(id);
 }
 
-TEST_F(VdaVideoDecoderTest, Decode) {
+TEST_P(VdaVideoDecoderTest, Decode) {
   Initialize();
   int32_t bitstream_id = Decode(base::TimeDelta());
   NotifyEndOfBitstreamBuffer(bitstream_id);
 }
 
-TEST_F(VdaVideoDecoderTest, Decode_Reset) {
+TEST_P(VdaVideoDecoderTest, Decode_Reset) {
   Initialize();
   Decode(base::TimeDelta());
 
-  vdavd_->Reset(reset_cb_.Get());
   EXPECT_CALL(*vda_, Reset());
-  environment_.RunUntilIdle();
+  vdavd_->Reset(reset_cb_.Get());
+  RunUntilIdle();
 
-  client_->NotifyResetDone();
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::ABORTED));
   EXPECT_CALL(reset_cb_, Run());
-  environment_.RunUntilIdle();
+  NotifyResetDone();
 }
 
-TEST_F(VdaVideoDecoderTest, Decode_NotifyError) {
+TEST_P(VdaVideoDecoderTest, Decode_NotifyError) {
   Initialize();
   Decode(base::TimeDelta());
 
-  client_->NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR));
-  environment_.RunUntilIdle();
+  NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
 }
 
-TEST_F(VdaVideoDecoderTest, Decode_OutputAndReuse) {
+TEST_P(VdaVideoDecoderTest, Decode_OutputAndReuse) {
   Initialize();
   int32_t bitstream_id = Decode(base::TimeDelta());
   NotifyEndOfBitstreamBuffer(bitstream_id);
@@ -330,44 +399,42 @@ TEST_F(VdaVideoDecoderTest, Decode_OutputAndReuse) {
   // Dropping the frame triggers reuse, which will wait on the SyncPoint.
   gpu::SyncToken sync_token = GenerateSyncToken(frame);
   frame = nullptr;
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 
   // But the VDA won't be notified until the SyncPoint wait completes.
   EXPECT_CALL(*vda_, ReusePictureBuffer(picture_buffer_id));
-  cbh_->ReleaseSyncToken(sync_token);
-  environment_.RunUntilIdle();
+  ReleaseSyncToken(sync_token);
 }
 
-TEST_F(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
+TEST_P(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
   Initialize();
   int32_t bitstream_id = Decode(base::TimeDelta());
   NotifyEndOfBitstreamBuffer(bitstream_id);
   int32_t picture_buffer_id = ProvidePictureBuffer();
   scoped_refptr<VideoFrame> frame =
       PictureReady(bitstream_id, picture_buffer_id);
-
-  client_->DismissPictureBuffer(picture_buffer_id);
-  environment_.RunUntilIdle();
+  DismissPictureBuffer(picture_buffer_id);
 
   // Dropping the frame still requires a SyncPoint to wait on.
   gpu::SyncToken sync_token = GenerateSyncToken(frame);
   frame = nullptr;
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 
   // But the VDA should not be notified when it completes.
-  cbh_->ReleaseSyncToken(sync_token);
-  environment_.RunUntilIdle();
+  ReleaseSyncToken(sync_token);
 }
 
-TEST_F(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
+TEST_P(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
   // Initialize with a config that has a 2:1 pixel aspect ratio.
+  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
+  EXPECT_CALL(*vda_, TryToSetupDecodeOnSeparateThread(_, _))
+      .WillOnce(Return(GetParam()));
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420, COLOR_SPACE_HD_REC709,
       VIDEO_ROTATION_0, gfx::Size(640, 480), gfx::Rect(640, 480),
       gfx::Size(1280, 480), EmptyExtraData(), Unencrypted()));
-  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
   EXPECT_CALL(init_cb_, Run(true));
-  environment_.RunUntilIdle();
+  RunUntilIdle();
 
   // Assign a picture buffer that has size 1920x1088.
   int32_t picture_buffer_id = ProvidePictureBuffer();
@@ -376,12 +443,8 @@ TEST_F(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
   int32_t bitstream_id = Decode(base::TimeDelta());
   NotifyEndOfBitstreamBuffer(bitstream_id);
 
-  scoped_refptr<VideoFrame> frame;
-  EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
-  client_->PictureReady(Picture(picture_buffer_id, bitstream_id,
-                                gfx::Rect(320, 240),
-                                gfx::ColorSpace::CreateSRGB(), true));
-  environment_.RunUntilIdle();
+  scoped_refptr<VideoFrame> frame =
+      PictureReady(bitstream_id, picture_buffer_id, gfx::Rect(320, 240));
 
   // The frame should have |natural_size| 640x240 (pixel aspect ratio
   // preserved).
@@ -391,15 +454,18 @@ TEST_F(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
   EXPECT_EQ(frame->visible_rect(), gfx::Rect(320, 240));
 }
 
-TEST_F(VdaVideoDecoderTest, Flush) {
+TEST_P(VdaVideoDecoderTest, Flush) {
   Initialize();
-  vdavd_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb_.Get());
   EXPECT_CALL(*vda_, Flush());
-  environment_.RunUntilIdle();
+  vdavd_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb_.Get());
+  RunUntilIdle();
 
-  client_->NotifyFlushDone();
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::OK));
-  environment_.RunUntilIdle();
+  NotifyFlushDone();
 }
+
+INSTANTIATE_TEST_CASE_P(VdaVideoDecoder,
+                        VdaVideoDecoderTest,
+                        ::testing::Values(false, true));
 
 }  // namespace media

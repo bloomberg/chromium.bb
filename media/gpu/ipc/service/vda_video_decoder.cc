@@ -318,11 +318,13 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
     return;
   }
 
-  // TODO(sandersd): TryToSetupDecodeOnSeparateThread().
   gpu_weak_vda_factory_.reset(
       new base::WeakPtrFactory<VideoDecodeAccelerator>(vda_.get()));
   gpu_weak_vda_ = gpu_weak_vda_factory_->GetWeakPtr();
+
   vda_initialized_ = true;
+  decode_on_parent_thread_ = vda_->TryToSetupDecodeOnSeparateThread(
+      parent_weak_this_, parent_task_runner_);
 
   parent_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(&VdaVideoDecoder::InitializeDone,
@@ -373,6 +375,11 @@ void VdaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   int32_t bitstream_buffer_id = NextID(&bitstream_buffer_id_);
   timestamps_.Put(bitstream_buffer_id, buffer->timestamp());
   decode_cbs_[bitstream_buffer_id] = decode_cb;
+
+  if (decode_on_parent_thread_) {
+    vda_->Decode(std::move(buffer), bitstream_buffer_id);
+    return;
+  }
 
   gpu_task_runner_->PostTask(
       FROM_HERE,
