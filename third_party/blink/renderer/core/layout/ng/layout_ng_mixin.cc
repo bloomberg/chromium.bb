@@ -139,6 +139,17 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
     }
   }
 
+  // If the scrollbar is on left, and the box is narrower than the scrollbar,
+  // the overflow is shifted to left by the amount the scrollbar overflows.
+  if (Base::ShouldPlaceVerticalScrollbarOnLeft()) {
+    LayoutUnit vertical_scrollbar_width =
+        LayoutUnit(Base::VerticalScrollbarWidth());
+    if (physical_fragment->Size().width < vertical_scrollbar_width) {
+      children_overflow.offset.left +=
+          physical_fragment->Size().width - vertical_scrollbar_width;
+    }
+  }
+
   // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
   LayoutRect children_flipped_overflow = children_overflow.ToLayoutFlippedRect(
       physical_fragment->Style(), physical_fragment->Size());
