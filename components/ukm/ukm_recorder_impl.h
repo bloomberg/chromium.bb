@@ -136,6 +136,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Indicates whether recording is enabled for extensions.
   bool extensions_enabled_ = false;
 
+  // Indicates whether recording continuity has been broken since last report.
+  bool recording_is_continuous_ = true;
+
   // Indicates if sampling has been enabled.
   bool sampling_enabled_ = true;
 
