@@ -872,27 +872,27 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-static ContainerNode* GetReattachParent(Node& node) {
-  if (node.IsPseudoElement())
-    return node.ParentOrShadowHostNode();
-  if (node.IsChildOfV1ShadowHost()) {
-    if (HTMLSlotElement* slot = node.AssignedSlot())
+ContainerNode* Node::GetReattachParent() const {
+  if (IsPseudoElement())
+    return ParentOrShadowHostNode();
+  if (IsChildOfV1ShadowHost()) {
+    if (HTMLSlotElement* slot = AssignedSlot())
       return slot;
   }
-  if (node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost()) {
-    if (ShadowRootWhereNodeCanBeDistributedForV0(node)) {
+  if (IsInV0ShadowTree() || IsChildOfV0ShadowHost()) {
+    if (ShadowRootWhereNodeCanBeDistributedForV0(*this)) {
       if (V0InsertionPoint* insertion_point =
-              const_cast<V0InsertionPoint*>(ResolveReprojection(&node))) {
+              const_cast<V0InsertionPoint*>(ResolveReprojection(this))) {
         return insertion_point;
       }
     }
   }
-  return node.ParentOrShadowHostNode();
+  return ParentOrShadowHostNode();
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
-  for (ContainerNode* p = GetReattachParent(*this);
-       p && !p->ChildNeedsReattachLayoutTree(); p = GetReattachParent(*p))
+  for (ContainerNode* p = GetReattachParent();
+       p && !p->ChildNeedsReattachLayoutTree(); p = p->GetReattachParent())
     p->SetChildNeedsReattachLayoutTree();
 }
 
