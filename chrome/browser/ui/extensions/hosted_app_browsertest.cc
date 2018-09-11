@@ -1003,7 +1003,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
 
-  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtension(), app_);
+  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtensionForTesting(),
+            app_);
 }
 
 // Tests that the manifest name of the current installable site is used in the
