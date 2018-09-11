@@ -373,7 +373,11 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
   }
 }
 
-VideoCaptureDeviceFactoryWin::~VideoCaptureDeviceFactoryWin() = default;
+VideoCaptureDeviceFactoryWin::~VideoCaptureDeviceFactoryWin() {
+  if (com_thread_.IsRunning()) {
+    com_thread_.Stop();
+  }
+}
 
 std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
     const Descriptor& device_descriptor) {
