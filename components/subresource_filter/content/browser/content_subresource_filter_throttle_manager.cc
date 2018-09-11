@@ -38,6 +38,7 @@ ContentSubresourceFilterThrottleManager::
         VerifiedRulesetDealer::Handle* dealer_handle,
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      binding_(web_contents, this),
       scoped_observer_(this),
       dealer_handle_(dealer_handle),
       client_(client),
@@ -170,7 +171,7 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
   // this navigation's activation state.
   if (filter) {
     base::OnceClosure disallowed_callback(base::BindOnce(
-        &ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad,
+        &ContentSubresourceFilterThrottleManager::MaybeShowNotification,
         weak_ptr_factory_.GetWeakPtr()));
     filter->set_first_disallowed_load_callback(std::move(disallowed_callback));
     activated_frame_hosts_[frame_host] = std::move(filter);
@@ -198,19 +199,7 @@ bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ContentSubresourceFilterThrottleManager,
-                                   message, render_frame_host)
-    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_FrameIsAdSubframe,
-                        OnFrameIsAdSubframe)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return true;
-
   IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterThrottleManager, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
-                        MaybeCallFirstDisallowedLoad)
     IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
                         OnDocumentLoadStatistics)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -360,7 +349,7 @@ ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
   return nullptr;
 }
 
-void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
+void ContentSubresourceFilterThrottleManager::MaybeShowNotification() {
   if (current_committed_load_has_notified_disallowed_load_)
     return;
 
@@ -404,6 +393,14 @@ void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
   ad_frames_.insert(render_frame_host);
   SubresourceFilterObserverManager::FromWebContents(web_contents())
       ->NotifyAdSubframeDetected(render_frame_host);
+}
+
+void ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource() {
+  MaybeShowNotification();
+}
+
+void ContentSubresourceFilterThrottleManager::FrameIsAdSubframe() {
+  OnFrameIsAdSubframe(binding_.GetCurrentTargetFrame());
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(

@@ -941,10 +941,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // Simulate the previous navigation sending an IPC that a load was disallowed.
   // This could happen e.g. for cross-process navigations, which have no
   // ordering guarantees.
-  throttle_manager()->OnMessageReceived(
-      SubresourceFilterHostMsg_DidDisallowFirstSubresource(
-          main_rfh()->GetRoutingID()),
-      main_rfh());
+  throttle_manager()->DidDisallowFirstSubresource();
   EXPECT_EQ(0, disallowed_notification_count());
 }
 
