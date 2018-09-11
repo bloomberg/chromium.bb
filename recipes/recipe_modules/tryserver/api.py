@@ -16,6 +16,10 @@ class TryserverApi(recipe_api.RecipeApi):
     self._gerrit_change = None  # self.m.buildbucket.common_pb2.GerritChange
     self._gerrit_change_repo_url = None
 
+    self._gerrit_info_initialized = False
+    self._gerrit_change_target_ref = None
+    self._gerrit_change_fetch_ref = None
+
   def initialize(self):
     changes = self.m.buildbucket.build.input.gerrit_changes
     if len(changes) == 1:
@@ -42,6 +46,71 @@ class TryserverApi(recipe_api.RecipeApi):
     Populated iff gerrit_change is populated.
     """
     return self._gerrit_change_repo_url
+
+  def _ensure_gerrit_change_info(self):
+    """Initializes extra info about gerrit_change, fetched from Gerrit server.
+
+    Initializes _gerrit_change_target_ref and _gerrit_change_fetch_ref.
+
+    May emit a step when called for the first time.
+    """
+    cl = self.gerrit_change
+    if not cl:  # pragma: no cover
+      return
+
+    if self._gerrit_info_initialized:
+      return
+
+    td = self._test_data if self._test_data.enabled else {}
+    mock_res = [{
+      'branch': td.get('gerrit_change_target_ref', 'master'),
+      'revisions': {
+        '184ebe53805e102605d11f6b143486d15c23a09c': {
+          '_number': str(cl.patchset),
+          'ref': 'refs/changes/%02d/%d/%d' % (
+              cl.change % 100, cl.change, cl.patchset),
+        },
+      },
+    }]
+    res = self.m.gerrit.get_changes(
+        host='https://' + cl.host,
+        query_params=[('change', cl.change)],
+        # This list must remain static/hardcoded.
+        # If you need extra info, either change it here (hardcoded) or
+        # fetch separetely.
+        o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
+        limit=1,
+        name='fetch current CL info',
+        step_test_data=lambda: self.m.json.test_api.output(mock_res))[0]
+
+    self._gerrit_change_target_ref = res['branch']
+    if not self._gerrit_change_target_ref.startswith('refs/'):
+      self._gerrit_change_target_ref = (
+          'refs/heads/' + self._gerrit_change_target_ref)
+
+    for rev in res['revisions'].itervalues():
+      if int(rev['_number']) == self.gerrit_change.patchset:
+        self._gerrit_change_fetch_ref = rev['ref']
+        break
+    self._gerrit_info_initialized = True
+
+  @property
+  def gerrit_change_fetch_ref(self):
+    """Returns gerrit patch ref, e.g. "refs/heads/45/12345/6, or None.
+
+    Populated iff gerrit_change is populated.
+    """
+    self._ensure_gerrit_change_info()
+    return self._gerrit_change_fetch_ref
+
+  @property
+  def gerrit_change_target_ref(self):
+    """Returns gerrit change destination ref, e.g. "refs/heads/master".
+
+    Populated iff gerrit_change is populated.
+    """
+    self._ensure_gerrit_change_info()
+    return self._gerrit_change_target_ref
 
   @property
   def is_tryserver(self):
@@ -178,6 +247,7 @@ class TryserverApi(recipe_api.RecipeApi):
     """
     if patch_text is None:
       if self.gerrit_change:
+        # TODO: reuse _ensure_gerrit_change_info.
         patch_text = self.m.gerrit.get_change_description(
             'https://%s' % self.gerrit_change.host,
             int(self.gerrit_change.change),

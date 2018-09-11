@@ -6,6 +6,7 @@ DEPS = [
   'bot_update',
   'gclient',
   'gerrit',
+  'tryserver',
   'recipe_engine/json',
   'recipe_engine/path',
   'recipe_engine/platform',
@@ -185,29 +186,20 @@ def GenTests(api):
       gerrit_project='v8/v8',
       patch_issue=338811,
       patch_set=3,
-  ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
-  )
+  ) + api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
   yield api.test('tryjob_gerrit_feature_branch') + api.properties.tryserver(
       buildername='feature_rel',
       repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='chromium/src',
       patch_issue=338811,
       patch_set=3,
-  ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
-  )
+  ) + api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
   yield api.test('tryjob_gerrit_branch_heads') + api.properties.tryserver(
       repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='chromium/src',
       patch_issue=338811,
       patch_set=3,
-  ) + api.step_data(
-      'gerrit get_patch_destination_branch',
-      api.gerrit.get_one_change_response_data(branch='refs/branch-heads/67'),
-  )
+  ) + api.tryserver.gerrit_change_target_ref('refs/branch-heads/67')
   yield api.test('tryjob_gerrit_webrtc') + api.properties.tryserver(
       repository='https://chromium.googlesource.com/chromium/src',
       gerrit_project='src',

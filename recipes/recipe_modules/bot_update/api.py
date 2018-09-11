@@ -9,15 +9,10 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, properties, patch_issue, patch_set, patch_ref,
-               patch_gerrit_url, deps_revision_overrides, fail_patch, *args,
+  def __init__(self, properties, deps_revision_overrides, fail_patch, *args,
                **kwargs):
     self._apply_patch_on_gclient = properties.get(
         'apply_patch_on_gclient', True)
-    self._issue = patch_issue
-    self._patchset = patch_set
-    self._gerrit_ref = patch_ref
-    self._gerrit = patch_gerrit_url
     self._deps_revision_overrides = deps_revision_overrides
     self._fail_patch = fail_patch
 
@@ -138,10 +133,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # How to find the patch, if any
     if patch:
-      if self.m.tryserver.gerrit_change_repo_url and self._gerrit_ref:
-        flags.append(
-            ['--patch_ref', '%s@%s' % (
-                self.m.tryserver.gerrit_change_repo_url, self._gerrit_ref)])
+      repo_url = self.m.tryserver.gerrit_change_repo_url
+      fetch_ref = self.m.tryserver.gerrit_change_fetch_ref
+      if repo_url and fetch_ref:
+        flags.append(['--patch_ref', '%s@%s' % (repo_url, fetch_ref)])
       if patch_refs:
         flags.extend(
             ['--patch_ref', patch_ref]
@@ -327,7 +322,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     """Returns the destination branch of a CL for the matching project
     if available or HEAD otherwise.
 
-    This is a noop if there's no Gerrit CL associated with the run.
+    If there's no Gerrit CL associated with the run, returns 'HEAD'.
     Otherwise this queries Gerrit for the correct destination branch, which
     might differ from master.
 
@@ -340,9 +335,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         A destination branch as understood by bot_update.py if available
         and if different from master, returns 'HEAD' otherwise.
     """
-    # Bail out if this is not a gerrit issue.
-    if (not self.m.tryserver.is_gerrit_issue or
-        not self._gerrit or not self._issue):
+    # Bail out if this is not a gerrit change.
+    if not self.m.tryserver.gerrit_change:
       return 'HEAD'
 
     # Ignore other project paths than the one belonging to the CL.
@@ -351,15 +345,17 @@ class BotUpdateApi(recipe_api.RecipeApi):
         (cfg.solutions[0].name, None))[0]:
       return 'HEAD'
 
-    # Query Gerrit to check if a CL's destination branch differs from master.
-    destination_branch = self.m.gerrit.get_change_destination_branch(
-        host=self._gerrit,
-        change=self._issue,
-        name='get_patch_destination_branch',
-    )
+    target_ref = self.m.tryserver.gerrit_change_target_ref
+    if target_ref == 'refs/heads/master':
+      return 'HEAD'
 
-    # Only use prefix if different from bot_update.py's default.
-    return destination_branch if destination_branch != 'master' else 'HEAD'
+    # TODO: Remove. Return ref, not branch.
+    ret = target_ref
+    prefix = 'refs/heads/'
+    if ret.startswith(prefix):
+      ret = ret[len(prefix):]
+
+    return ret
 
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'gerrit',
   'recipe_engine/buildbucket',
   'recipe_engine/json',
   'recipe_engine/raw_io',
@@ -32,6 +33,9 @@ def RunSteps(api):
   if api.tryserver.gerrit_change:
     assert (api.tryserver.gerrit_change_repo_url ==
             'https://chromium.googlesource.com/chromium/src')
+    assert api.tryserver.gerrit_change_fetch_ref == 'refs/changes/27/91827/1'
+    expected_target_ref = api.properties.get('target_ref', 'refs/heads/master')
+    assert api.tryserver.gerrit_change_target_ref == expected_target_ref
 
   if api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
@@ -81,8 +85,21 @@ def GenTests(api):
 
   yield (api.test('with_gerrit_patch') +
          api.buildbucket.try_build(
-            'chromium', 'linux',
-            git_repo='https://chromium.googlesource.com/chromium/src'))
+            'chromium',
+            'linux',
+            git_repo='https://chromium.googlesource.com/chromium/src',
+            change_number=91827,
+            patch_set=1))
+
+  yield (api.test('with_gerrit_patch_and_target_ref') +
+         api.buildbucket.try_build(
+            'chromium',
+            'linux',
+            git_repo='https://chromium.googlesource.com/chromium/src',
+            change_number=91827,
+            patch_set=1) +
+         api.properties(target_ref='refs/heads/experiment') +
+         api.tryserver.gerrit_change_target_ref('refs/heads/experiment'))
 
   yield (api.test('with_wrong_patch_new') + api.platform('win', 32) +
          api.properties(test_patch_root='sub\\project'))
