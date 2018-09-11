@@ -1073,6 +1073,12 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       }
     } else {
       active_best_quality = get_gf_active_quality(rc, q, bit_depth);
+#if REDUCE_LAST_ALT_BOOST
+      const int min_boost = get_gf_high_motion_quality(q, bit_depth);
+      const int boost = min_boost - active_best_quality;
+
+      active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
+#endif
 #if USE_SYMM_MULTI_LAYER
       if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
         int this_height = gf_group->pyramid_level[gf_group->index];
