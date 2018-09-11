@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -94,6 +95,8 @@ void InstanceIDImpl::GetToken(
     const GetTokenCallback& callback) {
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
+
+  UMA_HISTOGRAM_COUNTS_100("InstanceID.GetToken.OptionsCount", options.size());
 
   RunWhenReady(base::Bind(&InstanceIDImpl::DoGetToken,
                           weak_ptr_factory_.GetWeakPtr(), authorized_entity,

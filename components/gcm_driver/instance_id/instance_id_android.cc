@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "jni/InstanceIDBridge_jni.h"
@@ -94,6 +95,8 @@ void InstanceIDAndroid::GetToken(
     const std::map<std::string, std::string>& options,
     const GetTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  UMA_HISTOGRAM_COUNTS_100("InstanceID.GetToken.OptionsCount", options.size());
 
   int32_t request_id =
       get_token_callbacks_.Add(std::make_unique<GetTokenCallback>(callback));

@@ -50,11 +50,9 @@ const char* InstanceIDResultToError(instance_id::InstanceID::Result result) {
 
 }  // namespace
 
-InstanceIDApiFunction::InstanceIDApiFunction() {
-}
+InstanceIDApiFunction::InstanceIDApiFunction() = default;
 
-InstanceIDApiFunction::~InstanceIDApiFunction() {
-}
+InstanceIDApiFunction::~InstanceIDApiFunction() = default;
 
 ExtensionFunction::ResponseAction InstanceIDApiFunction::Run() {
   if (Profile::FromBrowserContext(browser_context())->IsOffTheRecord()) {
@@ -129,6 +127,9 @@ ExtensionFunction::ResponseAction InstanceIDGetTokenFunction::DoWork() {
   std::map<std::string, std::string> options;
   if (params->get_token_params.options.get())
     options = params->get_token_params.options->additional_properties;
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.InstanceID.GetToken.OptionsCount",
+                           options.size());
 
   GetInstanceID()->GetToken(
       params->get_token_params.authorized_entity,
