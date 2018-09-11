@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
@@ -206,7 +206,7 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -260,7 +260,7 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   GetModulator()->SetModuleRequests({"invalid"});
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
@@ -302,7 +302,7 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   KURL url;
   EXPECT_FALSE(url.IsValid());
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -339,7 +339,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
   URLTestHelpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   ModuleScriptLoader::Fetch(

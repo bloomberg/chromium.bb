@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -33,6 +32,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -192,7 +192,7 @@ void DedicatedWorker::Start() {
     // the worker thread as opposed to classic scripts that are fetched on the
     // main thread.
     auto* outside_settings_object =
-        new FetchClientSettingsObjectSnapshot(*GetExecutionContext());
+        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(script_request_url_), options_,
         script_request_url_, outside_settings_object, stack_id,
@@ -299,7 +299,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
         CreateGlobalScopeCreationParams(script_response_url);
     creation_params->referrer_policy = referrer_policy;
     auto* outside_settings_object =
-        new FetchClientSettingsObjectSnapshot(*GetExecutionContext());
+        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
     context_proxy_->StartWorkerGlobalScope(
         std::move(creation_params), options_, script_response_url,
         outside_settings_object, stack_id,

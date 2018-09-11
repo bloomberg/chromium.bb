@@ -1443,7 +1443,7 @@ FetchContext* FrameFetchContext::Detach() {
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ =
-        new FetchClientSettingsObjectSnapshot(*document_);
+        document_->CreateFetchClientSettingsObjectSnapshot();
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(

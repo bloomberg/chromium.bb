@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
-
-class ExecutionContext;
 
 // This class is needed to copy a FetchClientSettingsObjectSnapshot across
 // threads, because it has some members which cannot be transferred across
@@ -55,10 +53,9 @@ struct CrossThreadFetchClientSettingsObjectData {
 // This class should be used only for main worker (worklet) script loading. For
 // other resources, FetchClientSettingsObjectImpl should be used. See the class
 // level comments on that class.
-class CORE_EXPORT FetchClientSettingsObjectSnapshot final
+class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
     : public FetchClientSettingsObject {
  public:
-  explicit FetchClientSettingsObjectSnapshot(ExecutionContext&);
   explicit FetchClientSettingsObjectSnapshot(
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>);
   FetchClientSettingsObjectSnapshot(
@@ -94,4 +91,4 @@ class CORE_EXPORT FetchClientSettingsObjectSnapshot final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_SNAPSHOT_H_
