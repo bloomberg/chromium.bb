@@ -2639,6 +2639,8 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
       [is_fixed_container, resized_by_url_bar](GraphicsLayer* layer) {
         layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
         layer->SetIsResizedByBrowserControls(resized_by_url_bar);
+        // TODO(pdr): This prevents clipping and should not be needed, but
+        // CaptureScreenshotTest.CaptureScreenshotArea depends on this.
         if (resized_by_url_bar)
           layer->SetMasksToBounds(false);
       },
