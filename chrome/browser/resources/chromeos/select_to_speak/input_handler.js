@@ -60,6 +60,23 @@ let InputHandler = function(callbacks) {
   this.mouseEnd_ = {x: 0, y: 0};
 
   /**
+   * The timestamp at which clipboard data read was requested by the user
+   * doing a "read selection" keystroke on a Google Docs app. If a
+   * clipboard change event comes in within CLIPBOARD_READ_MAX_DELAY_MS,
+   * Select-to-Speak will read that text out loud.
+   * @private {Date}
+   */
+  this.lastReadClipboardDataTime_ = new Date(0);
+
+  /**
+   * The timestamp at which the last clipboard data clear was requested.
+   * Used to make sure we don't clear the clipboard on a user's request,
+   * but only after the clipboard was used to read selected text.
+   * @private {Date}
+   */
+  this.lastClearClipboardDataTime_ = new Date(0);
+
+  /**
    * Called when the mouse is moved or dragged and the user is in a
    * mode where select-to-speak is capturing mouse events (for example
    * holding down Search).
@@ -82,7 +99,7 @@ let InputHandler = function(callbacks) {
    * @private
    */
   this.onClipboardDataChanged_ = function() {
-    if (Date.now() - this.readClipboardDataTimeMs_ <
+    if (new Date() - this.lastReadClipboardDataTime_ <
         InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
       // The data has changed, and we are ready to read it.
       // Get it using a paste.
@@ -94,13 +111,13 @@ let InputHandler = function(callbacks) {
    * @private
    */
   this.onClipboardCopy_ = function(evt) {
-    if (Date.now() - this.clearClipboardDataTimeMs_ <
+    if (new Date() - this.lastClearClipboardDataTime_ <
         InputHandler.CLIPBOARD_CLEAR_MAX_DELAY_MS) {
       // onClipboardPaste has just completed reading the clipboard for speech.
       // This is used to clear the clipboard.
       evt.clipboardData.setData('text/plain', '');
       evt.preventDefault();
-      this.clearClipboardDataTimeMs_ = -1;
+      this.lastClearClipboardDataTime_ = new Date(0);
     }
   };
 
@@ -108,17 +125,17 @@ let InputHandler = function(callbacks) {
    * @private
    */
   this.onClipboardPaste_ = function(evt) {
-    if (Date.now() - this.readClipboardDataTimeMs_ <
+    if (new Date() - this.lastReadClipboardDataTime_ <
         InputHandler.CLIPBOARD_READ_MAX_DELAY_MS) {
       // Read the current clipboard data.
       evt.preventDefault();
       this.callbacks_.onTextReceived(evt.clipboardData.getData('text/plain'));
-      this.readClipboardDataTimeMs_ = -1;
+      this.lastReadClipboardDataTime_ = new Date(0);
       // Clear the clipboard data by copying nothing (the current document).
       // Do this in a timeout to avoid a recursive warning per
       // https://crbug.com/363288.
       setTimeout(() => {
-        this.clearClipboardDataTimeMs_ = Date.now();
+        this.lastClearClipboardDataTime_ = new Date();
         document.execCommand('copy');
       }, 0);
     }
@@ -163,6 +180,14 @@ InputHandler.prototype = {
     return RectUtils.rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
         this.mouseEnd_.y);
+  },
+
+  /**
+   * Sets the date at which we last wanted the clipboard data to be read.
+   * @public
+   */
+  onRequestReadClipboardData: function() {
+    this.lastReadClipboardDataTime_ = new Date();
   },
 
   /**

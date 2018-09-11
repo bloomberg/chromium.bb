@@ -88,15 +88,6 @@ let SelectToSpeak = function() {
   this.scrollToSpokenNode_ = false;
 
   /**
-   * The timestamp at which clipboard data read was requested by the user
-   * doing a "read selection" keystroke on a Google Docs app. If a
-   * clipboard change event comes in within CLIPBOARD_READ_MAX_DELAY_MS,
-   * Select-to-Speak will read that text out loud.
-   * @private {number}
-   */
-  this.readClipboardDataTimeMs_ = -1;
-
-  /**
    * The interval ID from a call to setInterval, which is set whenever
    * speech is in progress.
    * @private {number|undefined}
@@ -316,7 +307,7 @@ SelectToSpeak.prototype = {
           return;
         }
         let tab = tabs[0];
-        this.readClipboardDataTimeMs_ = Date.now();
+        this.inputHandler_.onRequestReadClipboardData();
         this.currentNode_ =
             new ParagraphUtils.NodeGroupItem(driveAppRootNode, 0, false);
         chrome.tabs.executeScript(tab.id, {
