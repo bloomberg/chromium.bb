@@ -2071,7 +2071,8 @@ public class ChromeTabbedActivity
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
 
         mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
-                tab.getWebContents().getNavigationController(), false, true);
+                tab.getWebContents().getNavigationController(),
+                NavigationPopup.Type.ANDROID_SYSTEM_BACK);
         mNavigationPopup.setWidth(
                 getResources().getDimensionPixelSize(R.dimen.navigation_popup_width));
         mNavigationPopup.setAnchorView(findViewById(R.id.navigation_popup_anchor_stub));

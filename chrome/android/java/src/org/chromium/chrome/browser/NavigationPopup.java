@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.DefaultFaviconHelper;
@@ -37,6 +39,8 @@ import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.base.LocalizationUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,12 +52,22 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private static final int MAXIMUM_HISTORY_ITEMS = 8;
     private static final int FULL_HISTORY_ENTRY_INDEX = -1;
 
+    /** Specifies the type of navigation popup being shown */
+    @IntDef({Type.ANDROID_SYSTEM_BACK, Type.TABLET_BACK, Type.TABLET_FORWARD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Type {
+        int ANDROID_SYSTEM_BACK = 0;
+        int TABLET_BACK = 1;
+        int TABLET_FORWARD = 2;
+    }
+
     private final Profile mProfile;
     private final Context mContext;
     private final NavigationController mNavigationController;
     private NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
     private final ListItemFactory mListItemFactory;
+    private final @Type int mType;
 
     private final int mFaviconSize;
 
@@ -72,15 +86,18 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
      * @param profile The profile used for fetching favicons.
      * @param context The context used for building the popup.
      * @param navigationController The controller which takes care of page navigations.
-     * @param isForward Whether to request forward navigation entries.
-     * @param anchorToBottom Whether the popup is anchored to the bottom of the screen.
+     * @param type The type of navigation popup being triggered.
      */
     public NavigationPopup(Profile profile, Context context,
-            NavigationController navigationController, boolean isForward, boolean anchorToBottom) {
+            NavigationController navigationController, @Type int type) {
         super(context, null, android.R.attr.popupMenuStyle);
         mProfile = profile;
         mContext = context;
         mNavigationController = navigationController;
+        mType = type;
+
+        boolean isForward = type == Type.TABLET_FORWARD;
+        boolean anchorToBottom = type == Type.ANDROID_SYSTEM_BACK;
 
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
@@ -114,9 +131,14 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         mListItemFactory = new ListItemFactory(context);
     }
 
+    private String buildComputedAction(String action) {
+        return (mType == Type.TABLET_FORWARD ? "ForwardMenu_" : "BackMenu_") + action;
+    }
+
     @Override
     public void show() {
         if (!mInitialized) initialize();
+        if (!isShowing()) RecordUserAction.record(buildComputedAction("Popup"));
         super.show();
         if (mAdapter.mInReverseOrder) scrollToBottom();
     }
@@ -185,10 +207,15 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         NavigationEntry entry = (NavigationEntry) parent.getItemAtPosition(position);
         if (entry.getIndex() == FULL_HISTORY_ENTRY_INDEX) {
+            RecordUserAction.record(buildComputedAction("ShowFullHistory"));
             assert mContext instanceof ChromeActivity;
             ChromeActivity activity = (ChromeActivity) mContext;
             HistoryManagerUtils.showHistoryManager(activity, activity.getActivityTab());
         } else {
+            int originalPosition =
+                    mAdapter.mInReverseOrder ? mAdapter.getCount() - position - 1 : position;
+            // 1-based index to keep in line with Desktop implementation.
+            RecordUserAction.record(buildComputedAction("HistoryClick" + (originalPosition + 1)));
             mNavigationController.goToNavigationIndex(entry.getIndex());
         }
 

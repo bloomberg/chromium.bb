@@ -293,8 +293,8 @@ public class NavigationPopupTest {
 
     private NavigationPopup showPopup(NavigationController controller) throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
-            NavigationPopup popup = new NavigationPopup(
-                    mProfile, mActivityTestRule.getActivity(), controller, true, false);
+            NavigationPopup popup = new NavigationPopup(mProfile, mActivityTestRule.getActivity(),
+                    controller, NavigationPopup.Type.TABLET_FORWARD);
             popup.setWidth(300);
             popup.setHeight(300);
             popup.setAnchorView(mActivityTestRule.getActivity().getActivityTab().getContentView());
