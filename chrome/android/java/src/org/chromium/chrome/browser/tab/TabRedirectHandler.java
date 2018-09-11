@@ -89,10 +89,10 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      * Replace {@link TabRedirectHandler} instance for the Tab with the new one.
      * @return Old {@link TabRedirectHandler} associated with the Tab. Could be {@code null}.
      */
-    public static TabRedirectHandler swapFor(Tab tab, TabRedirectHandler newHandler) {
+    public static TabRedirectHandler swapFor(Tab tab, @Nullable TabRedirectHandler newHandler) {
         UserDataHost host = tab.getUserDataHost();
         TabRedirectHandler oldHandler = host.getUserData(TabRedirectHandler.class);
-        host.setUserData(TabRedirectHandler.class, newHandler);
+        if (newHandler != null) host.setUserData(TabRedirectHandler.class, newHandler);
         return oldHandler;
     }
 
