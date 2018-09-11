@@ -379,6 +379,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and tap the search box.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Options available near the top of the screen</translation>
 <translation id="4062305924942672200">Legal information</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084712963632273211">From <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />delivered by Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -452,6 +453,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4616150815774728855">Open <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Use password</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
+<translation id="4660011489602794167">Show keyboard</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
 <translation id="4684427112815847243">Sync everything</translation>
@@ -609,7 +611,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5763514718066511291">Tap to copy the URL for this app</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5777170031995031090">Control how Google uses your browsing history to personalise Search, ads and other Google services.</translation>
-<translation id="5779929835642192302">Suggestions available</translation>
 <translation id="5793665092639000975">Using <ph name="SPACE_USED" /> of <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
@@ -801,7 +802,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7251326866581677552">Blocked from some sites</translation>
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
-<translation id="72867290065237936">Tap to toggle between password suggestions and keyboard</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>

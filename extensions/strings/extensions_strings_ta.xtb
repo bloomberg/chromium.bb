@@ -11,7 +11,7 @@
 <translation id="149347756975725155">நீட்டிப்புப் படவுரு '<ph name="ICON" />' ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="1803557475693955505">'<ph name="BACKGROUND_PAGE" />' என்ற பின்புலப் பக்கத்தை ஏற்ற முடியவில்லை.</translation>
 <translation id="2159915644201199628">இந்தப் படத்தை குறிநீக்க முடியவில்லை: '<ph name="IMAGE_NAME" />'</translation>
-<translation id="2350172092385603347">மொழிப்பெயர்ப்பு பயன்படுத்தப்பட்டது, ஆனால் default_locale அமைப்பில் குறிப்பிடப்படவில்லை.  </translation>
+<translation id="2350172092385603347">மொழிபெயர்ப்பு பயன்படுத்தப்பட்டது, ஆனால் மெனிபெஃஸ்ட்டில் default_locale குறிப்பிடப்படவில்லை.</translation>
 <translation id="2576842806987913196">இந்தப் பெயருடன் ஏற்கனவே ஒரு CRX கோப்பு உள்ளது.</translation>
 <translation id="2753617847762399167">முறையற்ற பாதை (சரியான அல்லது இதனுடன் தொடர்புடையவை '..'): '<ph name="IMAGE_PATH" />'</translation>
 <translation id="2785530881066938471">உள்ளடக்க ஸ்கிரிப்டுக்காக கோப்பு  '<ph name="RELATIVE_PATH" />' ஐ ஏற்ற முடியவில்லை. இது UTF-8 குறியாக்கத்தில் இல்லை.</translation>
@@ -55,17 +55,18 @@
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME" /></translation>
 <translation id="6840444547062817500">இந்த நீட்டிப்பு அடிக்கடி தன்னைத்தானே ஏற்றுகிறது.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> அனுப்பிய <ph name="PRODUCT_ID" /> தயாரிப்பை அறிய முடியவில்லை</translation>
-<translation id="7068383018033524534">தவறான மெனிஃபெஸ்ட் கோப்பு</translation>
+<translation id="7068383018033524534">தவறான மெனிஃபெஸ்ட் ஃபைல்</translation>
 <translation id="7217838517480956708">இந்தக் கணினியின் நிர்வாகிக்கு, <ph name="EXTENSION_NAME" /> ஐ நிறுவ வேண்டும். இதை அகற்றவோ மாற்றவோ முடியாது.</translation>
+<translation id="7612608473764576263">தனிப்பட்ட விசைக்கான உள்ளீட்டு மதிப்பானது சரியான வடிவமைப்பில் (PKCS#8-வடிவமைப்பில் PEM-என்கோடிங் செய்யப்பட்ட RSA விசை) இருக்க வேண்டும்.</translation>
 <translation id="7939686037314084444">இந்த நீட்டிப்பை முழுமையாக ஏற்ற முடியவில்லை. இதனால் நெட்வொர்க் கோரிக்கைகள் சரிவரப் புரிந்துகொள்ளப்படாமல் போகலாம்.</translation>
 <translation id="7972881773422714442">விருப்பங்கள்: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">முன்புறக் கேமரா</translation>
 <translation id="8047248493720652249">இந்த நீட்டிப்பு, பதிவிறக்கத்திற்கு "<ph name="ATTEMPTED_FILENAME" />" என்று பெயரிடுவதில் தோல்வி, ஏனெனில் மற்றொரு நீட்டிப்பு (<ph name="EXTENSION_NAME" />) வேறொரு கோப்புப்பெயரை "<ph name="ACTUAL_FILENAME" />" நிர்ணயித்து விட்டது.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> இன் <ph name="PRODUCT_NAME" /></translation>
-<translation id="8517576857589387417">மெனிஃபெஸ்ட் கோப்பைக் காணவில்லை அல்லது படிக்கமுடியாததாக இருக்கிறது</translation>
+<translation id="8517576857589387417">மெனிஃபெஸ்ட் ஃபைலைக் காணவில்லை அல்லது படிக்க முடியவில்லை</translation>
 <translation id="8636666366616799973">தொகுப்பு செல்லாதது. விவரங்கள்: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8761756413268424715">"<ph name="APP_NAME" />" பயன்பாடு உங்கள் சாதனங்களில் ஒன்றின் அணுகலைக் கோருகிறது:</translation>
 <translation id="8885905466771744233">குறிப்பிட்ட நீட்டிப்பிற்கான தனிப்பட்ட விசை ஏற்கனவே உள்ளது. அந்த விசையை மீண்டும் பயன்படுத்துக அல்லது அதை முதலில் நீக்குக.</translation>
-<translation id="907841381057066561">தொகுப்பாக்கலின்போது தற்காலிக ஜிப் கோப்பை உருவாக்குவதில் தோல்வியடைந்தது.</translation>
+<translation id="907841381057066561">தொகுப்பாக்கலின்போது தற்காலிக ஜிப் ஃபைலை உருவாக்குவதில் தோல்வியடைந்தது.</translation>
 <translation id="941543339607623937">செல்லாத தனிப்பட்ட விசை.</translation>
 </translationbundle>

@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> daripada <ph name="VENDOR_NAME" /> tidak diketahui</translation>
 <translation id="7068383018033524534">Fail manifes tidak sah</translation>
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
+<translation id="7612608473764576263">Nilai input untuk kunci persendirian mestilah dalam format yang sah (Kunci RSA terkod PEM format PKCS#8).</translation>
 <translation id="7939686037314084444">Sambungan gagal dimuatkan dengan betul. Sambungan itu mungkin tidak dapat memintas permintaan rangkaian.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Menghadap pengguna</translation>

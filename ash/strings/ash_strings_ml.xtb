@@ -160,7 +160,7 @@
 <translation id="3477079411857374384">കൺട്രോൾ-ഷിഫ്‌റ്റ്-സ്പേസ്</translation>
 <translation id="3510164367642747937">മൗസ് കഴ്‌സർ ഹൈലൈറ്റുചെയ്യുക</translation>
 <translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
-<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
+<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ഭാഷയിലേയ്‌ക്ക് തിരികെ മാറ്റുക (പുനരാരംഭിക്കേണ്ടതുണ്ട്)</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റുചെയ്‌തു.</translation>
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
@@ -186,7 +186,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="394485226368336402">ഓഡിയോ ക്രമീകരണം</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
-<translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
+<translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്തെ പിന്നിലെ പോർട്ട്)</translation>
 <translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ഒരു ആപ്പിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}other{# ആപ്പുകളിൽ നിന്നുള്ള അറിയിപ്പുകൾ ഓഫാണ്}}</translation>
 <translation id="4072264167173457037">ഇടത്തരം സിഗ്നൽ</translation>
@@ -241,7 +241,7 @@
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="523505283826916779">ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ</translation>
 <translation id="5313326810920013265">ബ്ലൂടൂത്ത് ക്രമീകരണങ്ങൾ</translation>
-<translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
+<translation id="5331975486040154427">USB-C ഉപകരണം (ഇടതുവശത്തെ പിന്നിലെ പോർട്ട്)</translation>
 <translation id="5379115545237091094">നിരവധി ശ്രമങ്ങൾ</translation>
 <translation id="5397578532367286026">ഈ ഉപയോക്താവിന്റെ ഉപയോഗവും ചരിത്രവും chrome.com-ൽ മാനേജർക്ക് (<ph name="MANAGER_EMAIL" />) അവലോകനം ചെയ്യാനാകും.</translation>
 <translation id="5430931332414098647">തൽക്ഷണ ടെതറിംഗ്</translation>
@@ -352,7 +352,7 @@
 <translation id="7068360136237591149">ഫയലുകൾ തുറക്കുക</translation>
 <translation id="7076293881109082629">സൈൻ ഇൻ ചെയ്യുന്നു</translation>
 <translation id="7092922358121866860">നൈറ്റ് ‌ലൈറ്റ് ക്രമീകരണം കാണിക്കുക</translation>
-<translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
+<translation id="7098389117866926363">USB-C ഉപകരണം (ഇടതുവശത്തെ പോർട്ട് പുറകിൽ)</translation>
 <translation id="7131634465328662194">നിങ്ങൾ സ്വമേധയാ സൈൻ ഔട്ടാകും.</translation>
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
@@ -457,7 +457,7 @@
 <translation id="8877788021141246043">ഒരു റിമൈൻഡർ സജ്ജീകരിക്കുക</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
-<translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
+<translation id="8938800817013097409">USB-C ഉപകരണം (വലതുവശത്തെ പോർട്ട് പുറകിൽ)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">ക്വിക്ക് ലോഞ്ച്</translation>
 <translation id="899350903320462459">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കാൻ, <ph name="LOGIN_ID" /> ആയി ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>

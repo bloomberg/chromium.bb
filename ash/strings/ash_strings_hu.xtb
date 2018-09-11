@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Kis teljesítményű töltőt csatlakoztatott. Az akkumulátor töltése nem megbízható.</translation>
 <translation id="2761704814324807722">Állapotterület, idő: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Újracsatlakozás a következőhöz: <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Válassza ki, hogy a webhelyek használhatják-e a helyszolgáltatásokat vagy az eszköz mikrofonját, kameráját vagy más funkcióit</translation>
 <translation id="2792498699870441125">Alt + Keresés</translation>
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2808012452536866044">Better Together – új telefonra váltott</translation>
@@ -195,6 +196,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4200057768455216496">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4217571870635786043">Diktálás</translation>
 <translation id="4261870227682513959">Az értesítési beállítások megjelenítése. Az értesítések ki vannak kapcsolva</translation>
+<translation id="4269883910223712419">Az eszköz rendszergazdája a következőket végezheti el:</translation>
 <translation id="4274921305979314545">Csatlakozás a Chromebookhoz telefonjával</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> aktiválása</translation>
@@ -222,6 +224,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4734965478015604180">Vízszintes</translation>
 <translation id="476166673298332917">Az eszköz rendszergazdája hozzáfér az összes tevékenységhez, mindennemű kommunikációhoz és a jelszavakhoz.</translation>
 <translation id="4776917500594043016">A(z) <ph name="USER_EMAIL_ADDRESS" /> fiókhoz tartozó jelszó</translation>
+<translation id="4778095205580009397">A Google Segéd nem áll rendelkezésre bemutató munkamenetben.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
 <translation id="4849058404725798627">Objektum kiemelése billentyűzetfókusszal</translation>
@@ -337,6 +340,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6751826523481687655">A teljesítménykövetés be van kapcsolva</translation>
 <translation id="6785414152754474415">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és töltődik.</translation>
 <translation id="6803622936009808957">A kijelzők tükrözése sikertelen, mivel nem található támogatott felbontás. Ehelyett kiterjesztett asztal módba váltott a rendszer.</translation>
+<translation id="6814658242098378692">Alkalmazások, bővítmények és témák kezelése</translation>
 <translation id="6820676911989879663">Tartson egy kis szünetet!</translation>
 <translation id="683971173229319003">Keresés+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
@@ -360,6 +364,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="726276584504105859">Húzza ide az osztott képernyő használatához</translation>
+<translation id="7303365578352795231">Válasz másik eszközön.</translation>
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
 <translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="7377169924702866686">A Caps Lock be van kapcsolva.</translation>
@@ -392,6 +397,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7842211907556571265">Csatlakozás a(z) <ph name="NETWORK_NAME" /> hálózathoz</translation>
 <translation id="7842569679327885685">Figyelem! Kísérleti funkció</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
+<translation id="7886169021410746335">Adatvédelmi beállítások módosítása</translation>
 <translation id="7886277072580235377">Kijelentkezés után az internetes munkamenet törlődik. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-mail küldése</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>

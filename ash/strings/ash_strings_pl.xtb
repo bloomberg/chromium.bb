@@ -31,7 +31,7 @@
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">Program uruchamiający</translation>
+<translation id="1510238584712386396">Menu z aplikacjami</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Pokaż ustawienia powiadomień. Jedna aplikacja ma wyłączone powiadomienia.}few{Pokaż ustawienia powiadomień. # aplikacje mają wyłączone powiadomienia.}many{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}other{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}}</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
 <translation id="1537254971476575106">Lupa pełnego ekranu</translation>
@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Wybierz, czy strony mogą korzystać z usług lokalizacyjnych oraz z mikrofonu, aparatu fotograficznego i innych funkcji urządzenia</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2808012452536866044">Telefon w Razem lepiej został zastąpiony</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Naciśnięto skrót lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
 <translation id="4261870227682513959">Pokaż ustawienia powiadomień. Powiadomienia są wyłączone.</translation>
+<translation id="4269883910223712419">Administrator tego urządzenia może:</translation>
 <translation id="4274921305979314545">Połącz Chromebooka z telefonem</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4292681942966152062">Włączam: <ph name="NETWORK_NAME" /></translation>
@@ -222,6 +224,7 @@
 <translation id="4734965478015604180">Orientacja pozioma</translation>
 <translation id="476166673298332917">Administrator tego urządzenia ma dostęp do wszystkiego, co robisz, w tym do haseł i komunikacji.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Asystent Google jest niedostępny w sesji demonstracyjnej.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">Śledzenie wydajności jest włączone</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
+<translation id="6814658242098378692">Zarządzaj aplikacjami, rozszerzeniami i motywami</translation>
 <translation id="6820676911989879663">Zrób sobie przerwę</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>
+<translation id="7303365578352795231">Odpowiem na innym urządzeniu.</translation>
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
 <translation id="735745346212279324">VPN odłączona</translation>
 <translation id="7377169924702866686">Caps Lock jest włączony.</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265">Łączę z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ostrzeżenie: funkcja eksperymentalna</translation>
 <translation id="7846634333498149051">Klawiatura</translation>
+<translation id="7886169021410746335">Dostosuj ustawienia prywatności</translation>
 <translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Wyślij e-maila</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>

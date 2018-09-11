@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Odaberite mogu li web-lokacije upotrebljavati usluge lokacije odnosno mikrofon, fotoaparat ili druge značajke uređaja</translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2808012452536866044">Better Together prebačen je na novi telefon</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Pritisnuli ste prečac za usidreno povećalo. Želite li ga uključiti?</translation>
 <translation id="4217571870635786043">Diktat</translation>
 <translation id="4261870227682513959">Prikaz postavki obavijesti. Obavijesti su isključene</translation>
+<translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
 <translation id="4274921305979314545">Povežite svoj Chromebook sa svojim telefonom</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4292681942966152062">Aktiviranje mreže <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Vodoravno</translation>
 <translation id="476166673298332917">Administrator ovog uređaja pristupio je cjelokupnoj aktivnosti, uključujući zaporke i komunikacije.</translation>
 <translation id="4776917500594043016">Zaporka za adresu <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google asistent nije dostupan u demosesiji.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="4849058404725798627">Istakni objekt fokusom na tipkovnici</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
+<translation id="6814658242098378692">Upravljanje aplikacijama, proširenjima i temama</translation>
 <translation id="6820676911989879663">Odmorite se!</translation>
 <translation id="683971173229319003">Pretraživanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>
+<translation id="7303365578352795231">Odgovaranje na drugom uređaju.</translation>
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7377169924702866686">Uključena je opcija Caps Lock.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Povezivanje s mrežom <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozorenje: eksperimentalna značajka</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
+<translation id="7886169021410746335">Prilagodba postavki privatnosti</translation>
 <translation id="7886277072580235377">Vaša će se internetska sesija izbrisati kada se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Pošalji e-poruku</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>

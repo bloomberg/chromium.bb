@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
 <translation id="2761704814324807722">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME" />፣ <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">ከ<ph name="NAME" /> ጋር ዳግም በማገናኘት ላይ</translation>
+<translation id="2790844815106384441">ድር ጣቢያዎች የአካባቢ አገልግሎቶችን ወይም የመሣሪያውን ማይክሮፎን፣ ካሜራ ወይም ሌሎች ባህሪያት መጠቀም ይችሉ እንደሆነ ይምረጡ</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2808012452536866044">አብሮ ሲሆን የተሻለ ወደ አዲስ ስልክ ተቀይሯል</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">የተተከለውን የማጉያ አቋራጭ ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
+<translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
 <translation id="4274921305979314545">የእርስዎን Chromebook ከእርስዎ ስልክ ጋር ያገናኙ</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" />ን በማግበር ላይ</translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">አግድማዊ</translation>
 <translation id="476166673298332917">የዚህ መሣሪያ አስተዳዳሪ የይለፍ ቃላት እና የተግባቦት ጨምሮ የሁሉንም እንቅስቃሴ መዳረሻ አለው።</translation>
 <translation id="4776917500594043016">የ<ph name="USER_EMAIL_ADDRESS" /> ይለፍ ቃል</translation>
+<translation id="4778095205580009397">የGoogle ረዳቱ በማሳያ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="4849058404725798627">ነገርየውን ከቁልፍ ሰሌዳ ትኩረት ጋር አድምቅ</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">የአፈጻጸም ክትትል በርቷል</translation>
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
 <translation id="6803622936009808957">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማሳየት አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል።</translation>
+<translation id="6814658242098378692">መተግበሪያዎችን፣ ቅጥያዎችን እና ገጽታዎችን ያቀናብሩ</translation>
 <translation id="6820676911989879663">እረፍት ይውሰዱ!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ን አግብር</translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="726276584504105859">የተከፈለ ማያ ገጽን ለመጠቀም ወደዚህ ይጎትቱ</translation>
+<translation id="7303365578352795231">በሌላ መሣሪያ ላይ ምላሽ በመስጠት ላይ።</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
 <translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
 <translation id="7377169924702866686">Caps Lock በርቷል።</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">ከ<ph name="NETWORK_NAME" /> ጋር በመገናኘት ላይ...</translation>
 <translation id="7842569679327885685">ማስጠንቀቂያ፦ የሙከራ ባህሪ</translation>
 <translation id="7846634333498149051">የቁልፍ ሰሌዳ</translation>
+<translation id="7886169021410746335">የግላዊነት ቅንብሮችን ያስተካክሉ</translation>
 <translation id="7886277072580235377">የእርስዎ የበይነመረብ ክፍለ-ጊዜ ዘግተው ሲወጡ ይጸዳል። <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ኢሜይል ላክ</translation>
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>

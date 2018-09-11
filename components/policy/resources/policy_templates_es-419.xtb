@@ -1062,7 +1062,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cada entrada de la lista contiene un diccionario que debe incluir el ID de extensión en el campo "extension-id" y su URL de actualización en el campo "update-url".</translation>
 <translation id="3874773863217952418">Habilitar "Presionar para buscar"</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
-<translation id="3879208481373875102">Configurar la lista de aplicaciones web instaladas de manera automática</translation>
+<translation id="3879208481373875102">Configura la lista de aplicaciones web instaladas de manera automática</translation>
 <translation id="388237772682176890">Esta política ya no está disponible en M53 y se quitó en M54 porque se quitó la compatibilidad con SPDY/3.1.
 
       Inhabilita el uso del protocolo SPDY en <ph name="PRODUCT_NAME" />.
@@ -1690,7 +1690,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si no se establece esta política, los comentarios por voz se inhabilitarán la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar los comentarios por voz en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
-<translation id="5879014913445067283">Controlar la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
+<translation id="5879014913445067283">Controla la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
 <translation id="5887414688706570295">Configura el prefijo TalkGadget que será utilizado por los hosts de acceso remoto y que evita que los usuarios lo cambien.
 
@@ -2745,7 +2745,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 
       Aquí, la "versión" puede ser una exacta, como "61.0.3163.120" o el prefijo de una versión, como "61.0"  </translation>
 <translation id="8544375438507658205">Procesador HTML predeterminado para <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8544465954173828789">Permitir que los mensajes SMS se sincronicen desde el teléfono con la Chromebook</translation>
+<translation id="8544465954173828789">Permite que los mensajes SMS se sincronicen desde el teléfono con la Chromebook</translation>
 <translation id="8549772397068118889">Advierte cuando se visitan sitios fuera de los paquetes de contenido.</translation>
 <translation id="8566842294717252664">Ocultar ícono de Web Store en la página Nueva pestaña y el Selector de aplicaciones</translation>
 <translation id="8586528890725660268">Especifica las impresoras que no puede utilizar el usuario.

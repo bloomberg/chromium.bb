@@ -570,6 +570,7 @@
 <translation id="1817310072033858383">Sediakan Smart Lock untuk <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="1817871734039893258">Pemulihan Fail Microsoft</translation>
 <translation id="1818007989243628752">Padam kata laluan untuk <ph name="USERNAME" /></translation>
+<translation id="1818913467757368489">Muat naik log sedang berlangsung.</translation>
 <translation id="1819721979226826163">Ketik Pemberitahuan apl &gt; Perkhidmatan Google Play.</translation>
 <translation id="1826516787628120939">Menyemak</translation>
 <translation id="1828378091493947763">Pemalam ini tidak disokong pada peranti ini</translation>
@@ -618,11 +619,13 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Buka skrin penuh</translation>
 <translation id="189358972401248634">Bahasa lain</translation>
+<translation id="1894591787927543791">Simpan kad untuk menggunakan Google Pay</translation>
 <translation id="1895658205118569222">Tutup</translation>
 <translation id="1895934970388272448">Anda mesti sahkan pendaftaran pada pencetak anda untuk melengkapkan proses ini - semaknya sekarang.</translation>
 <translation id="1897762215429052132">Sediakan sambungan rangkaian, bahasa, reka letak papan kekunci...</translation>
 <translation id="1901303067676059328">Pilih &amp;semua</translation>
 <translation id="1902576642799138955">Tempoh Masa Sah</translation>
+<translation id="1904518222538904133">1 daripada kad anda hanya boleh digunakan pada peranti ini</translation>
 <translation id="1905375423839394163">Nama peranti Chromebook</translation>
 <translation id="1905710495812624430">Melebihi had maksimum percubaan yang dibenarkan.</translation>
 <translation id="1909880997794698664">Adakah anda pasti mahu peranti ini menggunakan mod kios secara kekal?</translation>
@@ -659,6 +662,7 @@
 <translation id="1962969542251276847">Kunci Skrin</translation>
 <translation id="1963227389609234879">Buang Semua</translation>
 <translation id="1965624977906726414">Tidak mempunyai kebenaran khas.</translation>
+<translation id="1969654639948595766">Log teks WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">Mod video dimasukkan</translation>
 <translation id="197288927597451399">Simpan</translation>
 <translation id="1974043046396539880">Titik Pengedaran CRL</translation>
@@ -802,6 +806,7 @@
 <translation id="2190069059097339078">Pengutip Bukti Kelayakan WiFi</translation>
 <translation id="219008588003277019">Modul Klien Asli: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(kosong)</translation>
+<translation id="2191223688506386601">Satu perkara lagi</translation>
 <translation id="2192505247865591433">Daripada:</translation>
 <translation id="2193365732679659387">Tetapan percaya</translation>
 <translation id="2195729137168608510">Perlindungan E-mel</translation>
@@ -1025,6 +1030,7 @@
 <translation id="2534460670861217804">Proksi HTTP Selamat</translation>
 <translation id="253557089021624350">Kiraan pengekal</translation>
 <translation id="2538361623464451692">Penyegerakan dilumpuhkan</translation>
+<translation id="2539876824180063438">Gerakkan jari anda sedikit untuk menambahkan bahagian lain cap jari anda.</translation>
 <translation id="2541002089857695151">Optimumkan penghantaran skrin penuh?</translation>
 <translation id="2542049655219295786">Jadual Google</translation>
 <translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
@@ -1259,7 +1265,9 @@
 <translation id="287286579981869940">Tambahkan <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2874343608108773609">Log masuk ke Chrome untuk mendapatkan kata laluan pada semua peranti anda.</translation>
 <translation id="2875698561019555027">(Halaman ralat Chrome)</translation>
+<translation id="2876336351874743617">Jari 2</translation>
 <translation id="288042212351694283">Mengakses peranti Universal 2nd Factor anda</translation>
+<translation id="2881076733170862447">Apabila Anda Mengklik Sambungan</translation>
 <translation id="2881966438216424900">Terakhir diakses:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> akan dimulakan semula dan ditetapkan semula buat sementara waktu</translation>
 <translation id="2885378588091291677">Pengurus Tugas</translation>
@@ -1445,6 +1453,7 @@
 <translation id="3154429428035006212">Di luar talian selama lebih sebulan</translation>
 <translation id="3156531245809797194">Untuk menggunakan Chrome, sila log masuk</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
+<translation id="3158033540161634471">Sediakan cap jari anda</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (disokong perkakasan)</translation>
 <translation id="316125635462764134">Alih keluar apl</translation>
 <translation id="3161522574479303604">Semua bahasa</translation>
@@ -1517,6 +1526,8 @@
 <translation id="3292421191230118801">Sambung semula melihat tapak daripada mudah alih pada Chromebook anda</translation>
 <translation id="32939749466444286">Bekas Linux tidak dimulakan. Sila cuba lagi.</translation>
 <translation id="3294437725009624529">Tetamu</translation>
+<translation id="329703603001918157">Tidak dapat mengedit pintasan</translation>
+<translation id="3297951628821704004">Alih keluar akaun daripada peranti ini</translation>
 <translation id="329838636886466101">Baiki</translation>
 <translation id="3298789223962368867">URL tidak sah dimasukkan.</translation>
 <translation id="32991397311664836">Peranti:</translation>
@@ -1683,6 +1694,7 @@
 <translation id="3534879087479077042">Apakah itu pengguna diselia?</translation>
 <translation id="3538066758857505094">Ralat menyahpasang Linux. Sila cuba lagi.</translation>
 <translation id="354060433403403521">Penyesuai AC</translation>
+<translation id="354068948465830244">Sambungan ini boleh membaca dan mengubah data tapak</translation>
 <translation id="3541661933757219855">Taipkan Ctrl+Alt+/ atau Escape untuk bersembunyi</translation>
 <translation id="3543393733900874979">Kemas kini gagal (ralat: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">Tandatangan X9.62 ECDSA dengan SHA-512</translation>
@@ -1728,6 +1740,7 @@
 <translation id="3606712892509067288">Alih keluar daripada Lebih Baik Bersama</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Pratonton imej pengguna</translation>
+<translation id="3609446736023031597">Dapatkan kemas kini dan cadangan terbaharu di apl Gedung Play</translation>
 <translation id="3609785682760573515">Menyegerakkan...</translation>
 <translation id="3609895557594655134">Tambahkan VPN Android...</translation>
 <translation id="361106536627977100">Data Flash</translation>
@@ -1760,6 +1773,7 @@
 <translation id="3645372836428131288">Bergerak sedikit untuk menangkap bahagian lain cap jari.</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> dikesan</translation>
 <translation id="3649138363871392317">Foto telah diabadikan</translation>
+<translation id="3650845953328929506">Muat naik log belum selesai.</translation>
 <translation id="3650952250015018111">Benarkan "<ph name="APP_NAME" />" untuk mengakses:</translation>
 <translation id="3651488188562686558">Putuskan sambungan daripada Wi-Fi</translation>
 <translation id="3652817283076144888">Memulakan</translation>
@@ -1911,6 +1925,7 @@
 <translation id="3856800405688283469">Pilih zon waktu</translation>
 <translation id="3857228364945137633">Cuba Smart Lock untuk membuka kunci <ph name="DEVICE_TYPE" /> anda tanpa kata laluan semasa telefon ada berdekatan.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elir.</translation>
+<translation id="3857807444929313943">Angkat jari, kemudian sentuh lagi</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Penyegerakan dijeda</translation>
 <translation id="3860381078714302691">Selamat datang ke Hangout Meet</translation>
 <translation id="3861241522664181545">Halaman dijeda.</translation>
@@ -1929,6 +1944,7 @@
 <translation id="3873315167136380065">Untuk menghidupkan ciri ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /> untuk mengalih keluar ungkapan laluan penyegerakan anda</translation>
 <translation id="3878840326289104869">Menghasilkan pengguna diselia</translation>
 <translation id="3879748587602334249">Pengurus muat turun</translation>
+<translation id="3885455691202481064">Sentuh penderia dengan jari telunjuk anda. Penderia terletak di bahagian atas sebelah kiri Chromebook anda.</translation>
 <translation id="3888550877729210209">Mencatat nota dengan <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Tambahkan OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Baca dan tukar tetapan kebolehaksesan anda</translation>
@@ -1981,6 +1997,7 @@
 <translation id="3950820424414687140">Log masuk</translation>
 <translation id="3954354850384043518">Sedang berlangsung</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
+<translation id="3954953195017194676">Anda tiada log acara WebRTC yang dirakam baru-baru ini.</translation>
 <translation id="3955193568934677022">Benarkan tapak untuk memainkan kandungan yang dilindungi (disyorkan)</translation>
 <translation id="3956702100721821638">Tidak dapat menghubungi Google Play</translation>
 <translation id="3958088479270651626">Import penanda halaman dan tetapan</translation>
@@ -2326,8 +2343,10 @@
 <translation id="4555769855065597957">Bayang</translation>
 <translation id="4556110439722119938">Penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan disegerakkan ke Akaun Google supaya anda dapat menggunakannya pada semua peranti anda</translation>
 <translation id="4558426062282641716">Kebenaran autolancar diminta</translation>
+<translation id="4558491878126948419">Dapatkan petua <ph name="DEVICE_TYPE" /> dan kemas kini tentang produk Google serta kongsi maklum balas. Hentikan langganan pada bila-bila masa.</translation>
 <translation id="4559617833001311418">Tapak ini mengakses penderia gerakan atau cahaya anda.</translation>
 <translation id="4562155214028662640">Tambahkan Cap Jari</translation>
+<translation id="4563880231729913339">Jari 3</translation>
 <translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4567772783389002344">Tambah perkataan</translation>
 <translation id="4568213207643490790">Maaf, akaun Google tidak dibenarkan pada peranti ini.</translation>
@@ -2402,6 +2421,7 @@
 <translation id="4681930562518940301">Buka &amp;imej asal dalam tab baharu</translation>
 <translation id="4682551433947286597">Kertas dinding dipaparkan pada Skrin Log Masuk.</translation>
 <translation id="4684427112815847243">Segerakkan semua</translation>
+<translation id="4688036121858134881">ID log setempat: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">Buat pilihan tunjuk cara anda</translation>
 <translation id="4689421377817139245">Segerakkan penanda halaman ini ke iPhone anda</translation>
 <translation id="4690091457710545971">&lt;Empat fail dihasilkan oleh perisian tegar Wi-Fi Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Tiga fail yang pertama ialah fail perduaan yang mengandungi longgokan pendaftaran dan Intel menegaskan bahawa fail ini tidak mengandungi maklumat peribadi atau yang mengenal pasti peranti. Fail terakhir ialah surih pelaksanaan daripada perisian tegar Intel; fail ini telah dibersihkan supaya tidak mengandungi sebarang maklumat peribadi atau yang mengenal pasti peranti, tetapi terlalu besar untuk dipaparkan di sini. Fail ini dihasilkan sebagai tindak balas terhadap masalah Wi-Fi pada peranti anda baru-baru ini dan akan dikongsi dengan Intel untuk membantu dalam menyelesaikan masalah ini.&gt;</translation>
@@ -2651,6 +2671,7 @@
 <translation id="5050042263972837708">Nama kumpulan</translation>
 <translation id="5052499409147950210">Edit tapak</translation>
 <translation id="5053604404986157245">Kata laluan TPM yang dihasilkan secara rawak tidak tersedia. Perkara ini biasa berlaku selepas Powerwash.</translation>
+<translation id="5057110919553308744">Apabila anda mengklik sambungan</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Folder ini mengandungi penanda halaman. Adakah anda pasti mahu memadamnya?}other{Folder ini mengandungi # penanda halaman. Adakah anda pasti mahu memadamnya?}}</translation>
 <translation id="5061708541166515394">Kontras</translation>
 <translation id="5062930723426326933">Log masuk gagal, sila sambungkan ke internet dan cuba lagi.</translation>
@@ -3167,6 +3188,7 @@
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="580571955903695899">Aturkan semula mengikut Tajuk</translation>
 <translation id="5807290661599647102">Tetapkan Kunci Skrin</translation>
+<translation id="5811750797187914944">Selesai</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
 <translation id="5815645614496570556">Alamat X.400</translation>
 <translation id="5816434091619127343">Perubahan pencetak yang diminta akan menjadikan pencetak tidak boleh digunakan.</translation>
@@ -3204,6 +3226,7 @@
 <translation id="5855773610748894548">Oops, ralat modul selamat.</translation>
 <translation id="5856721540245522153">Dayakan ciri penyahpepijatan</translation>
 <translation id="5857090052475505287">Folder Baharu</translation>
+<translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">Meta Luaran</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5860209693144823476">Tab 3</translation>
@@ -3226,6 +3249,7 @@
 <translation id="5882919346125742463">Rangkaian Yang Diketahui</translation>
 <translation id="5884474295213649357">Tab ini disambungkan ke peranti USB.</translation>
 <translation id="5885324376209859881">Uruskan tetapan media...</translation>
+<translation id="5886009770935151472">Jari 1</translation>
 <translation id="5889282057229379085">Bilangan maksimum CA pengantara: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5895187275912066135">Dikeluarkan Pada</translation>
@@ -3310,6 +3334,7 @@
 <translation id="6025215716629925253">Pengesanan Susunan</translation>
 <translation id="6026047032548434446">Pasang Apl?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - Peranti USB disambungkan</translation>
+<translation id="6028117231645531007">Tambahkan cap jari</translation>
 <translation id="6029027682598229313">Pemasangan Linux selesai.</translation>
 <translation id="6029587122245504742">Paling perlahan</translation>
 <translation id="6032912588568283682">Sistem fail</translation>
@@ -3346,6 +3371,7 @@
 <translation id="6075907793831890935">Bertukar data dengan peranti yang bernama <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Sertakan tangkapan skrin ini</translation>
 <translation id="6077131872140550515">Alih keluar daripada pilihan</translation>
+<translation id="6077189836672154517">Petua dan kemas kini tentang <ph name="DEVICE_TYPE" /></translation>
 <translation id="6078323886959318429">Tambahkan pintasan</translation>
 <translation id="6078752646384677957">Sila periksa mikrofon dan tahap audio anda.</translation>
 <translation id="6080515710685820702">Menggunakan komputer yang dikongsi? Cuba buka tetingkap inkognito.</translation>
@@ -3603,6 +3629,7 @@
 <translation id="6456394469623773452">Halus</translation>
 <translation id="6456631036739229488">Telefon Smart Lock ditukar. Masukkan kata laluan anda untuk mengemas kini Smart Lock. Selepas ini, telefon anda akan membuka kunci <ph name="DEVICE_TYPE" />. Matikan Smart Lock dalam Tetapan.</translation>
 <translation id="645705751491738698">Terus menyekat JavaScript</translation>
+<translation id="6458701200018867744">Muat naik gagal (<ph name="WEBRTC_LOG_UPLOAD_TIME" />).</translation>
 <translation id="6459488832681039634">Use Selection for Find</translation>
 <translation id="6459799433792303855">Tetingkap aktif dialihkan ke paparan lain.</translation>
 <translation id="6460601847208524483">Cari Seterusnya</translation>
@@ -3783,6 +3810,7 @@
 <translation id="6725206449694821596">Protokol Cetakan Internet (IPP)</translation>
 <translation id="6727005317916125192">Anak tetingkap sebelumnya</translation>
 <translation id="6732801395666424405">Sijil tidak dimuatkan</translation>
+<translation id="6732900235521116609">Tidak dapat mengalih keluar pintasan</translation>
 <translation id="6735304988756581115">Tunjukkan kuki dan data tapak yang lain...</translation>
 <translation id="6736045498964449756">Alamak, kata laluan tidak sepadan!</translation>
 <translation id="6736243959894955139">Alamat</translation>
@@ -3866,6 +3894,7 @@
 <translation id="6860427144121307915">Buka dalam Tab</translation>
 <translation id="6862635236584086457">Semua fail yang disimpan di dalam folder ini disokong dalam talian secara automatik</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
+<translation id="6865708901122695652">Log acara WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Suhu warna</translation>
 <translation id="6870888490422746447">Pilih apl untuk berkongsi ke:</translation>
 <translation id="6871644448911473373">Pengulas OCSP: <ph name="LOCATION" /></translation>
@@ -3910,6 +3939,7 @@
 <translation id="694592694773692225">Ubah hala disekat pada halaman ini.</translation>
 <translation id="6949306908218145636">Tandakan Halaman Terbuka...</translation>
 <translation id="6950627417367801484">Pulihkan apl</translation>
+<translation id="6950943362443484797">Kami akan memasang apl itu untuk anda</translation>
 <translation id="6951153907720526401">Pengendali Pembayaran</translation>
 <translation id="6955446738988643816">Semak Pop Timbul</translation>
 <translation id="6957231940976260713">Nama perkhidmatan</translation>
@@ -3945,6 +3975,7 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="6998793565256476099">Daftar peranti untuk persidangan video</translation>
 <translation id="7000347579424117903">Termasuk Ctrl, Alt atau Search</translation>
+<translation id="700203306553508933">Simpan kad untuk menggunakan Google Pay</translation>
 <translation id="7002055706763150362">Untuk menyediakan Smart Lock untuk Chromebook, Google perlu memastikan ini ialah anda—taip kata laluan anda untuk bermula.</translation>
 <translation id="7002454948392136538">Pilih pengurus untuk pengguna yang diselia ini</translation>
 <translation id="7003339318920871147">Pangkalan data web</translation>
@@ -3993,6 +4024,7 @@
 <translation id="706626672220389329">Ralat melekapkan perkongsian. Perkongsian yang dinyatakan sudah dilekapkan.</translation>
 <translation id="7066944511817949584">Gagal untuk bersambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7067725467529581407">Jangan sekali-kali tunjukkan ini lagi.</translation>
+<translation id="7070484045139057854">Sambungan Ini Boleh Membaca dan Mengubah Data Tapak</translation>
 <translation id="7072010813301522126">Nama pintasan</translation>
 <translation id="707392107419594760">Pilih papan kekunci anda:</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 Dengan Penyulitan RSA</translation>
@@ -4269,6 +4301,7 @@
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Terlupa kata laluan lama anda?</translation>
 <translation id="7497215489070763236">Sijil CA pelayan</translation>
+<translation id="7497981768003291373">Anda tiada log teks WebRTC yang dirakam baru-baru ini.</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
 <translation id="7503191893372251637">Jenis Sijil Netscape</translation>
 <translation id="7503821294401948377">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan penyemak imbas.</translation>
@@ -4311,6 +4344,7 @@
 <translation id="7564847347806291057">Tamatkan proses</translation>
 <translation id="7566118625369982896">Urus pautan apl Play</translation>
 <translation id="7566723889363720618">F12</translation>
+<translation id="7567772679638539078">Letakkan jari anda</translation>
 <translation id="756809126120519699">Data Chrome dikosongkan</translation>
 <translation id="7568790562536448087">Mengemas kini</translation>
 <translation id="7571643774869182231">Storan tidak mencukupi untuk kemas kini</translation>
@@ -4473,6 +4507,7 @@
     <ph name="LINE_BREAK2" />
     Cuba kurangkan foto yang dipilih.</translation>
 <translation id="782590969421016895">Gunakan halaman semasa</translation>
+<translation id="7826346148677309647">Anda boleh menemui pelbagai lagi apl untuk peranti anda di Gedung Play.</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />Ciri Penyahpepijatan<ph name="END_H3" />
     <ph name="BR" />
     Anda boleh mendayakan ciri penyahpepijatan pada Peranti OS Chrome untuk memasang dan menguji kod tersuai pada peranti anda. Tindakan ini akan membolehkan anda untuk:<ph name="BR" />
@@ -4669,6 +4704,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8059417245945632445">&amp;Periksa peranti</translation>
 <translation id="8063235345342641131">Avatar hijau lalai</translation>
 <translation id="8064671687106936412">Kekunci:</translation>
+<translation id="8065485338434000013">Sesetengah kad anda hanya boleh digunakan pada peranti ini</translation>
 <translation id="806812017500012252">Aturkan semula mengikut tajuk</translation>
 <translation id="8068253693380742035">Sentuh untuk mengelog masuk</translation>
 <translation id="8069615408251337349">Cetakan Awan Google</translation>
@@ -4739,6 +4775,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8184318863960255706">Maklumat lanjut</translation>
 <translation id="8185331656081929126">Paparkan pemberitahuan apabila pencetak baharu dikesan pada rangkaian</translation>
 <translation id="8186609076106987817">Pelayan tidak dapat mencari fail.</translation>
+<translation id="8186639008852027301">Mainkan penunjuk audio semasa permulaan</translation>
 <translation id="8188120771410500975">&amp;Semak ejaan medan teks</translation>
 <translation id="8188389033983459049">Semak tetapan peranti anda dan hidupkannya untuk meneruskan</translation>
 <translation id="8190193592390505034">Disambungkan ke <ph name="PROVIDER_NAME" /></translation>
@@ -4746,6 +4783,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8191453843330043793">Pelerai Proksi V8</translation>
 <translation id="8193175696669055101">Model peranti</translation>
 <translation id="8195027750202970175">Saiz pada cakera</translation>
+<translation id="8198323535106903877">Kami akan memasang <ph name="NUMBER_OF_APPS" /> apl itu untuk anda</translation>
 <translation id="8199300056570174101">Sifat Rangkaian (Perkhidmatan) dan Peranti</translation>
 <translation id="8200772114523450471">Sambung semula</translation>
 <translation id="8202160505685531999">Sila masukkan semula kata laluan untuk mengemaskinikan profil <ph name="DEVICE_TYPE" /> anda.</translation>
@@ -5079,6 +5117,8 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8716931980467311658">Padamkan semua apl dan data Linux dalam folder fail Linux anda daripada <ph name="DEVICE_TYPE" /> ini?</translation>
 <translation id="8719653885894320876">Muat turun <ph name="PLUGIN_NAME" /> gagal</translation>
 <translation id="8723829621484579639">Subbingkai inkognito untuk: <ph name="PARENT_SITE" /></translation>
+<translation id="8724405322205516354">Apabila anda melihat ikon ini, gunakan cap jari anda untuk pengenalan atau untuk membenarkan pembelian.</translation>
+<translation id="8724409975248965964">Cap jari ditambahkan</translation>
 <translation id="8724859055372736596">&amp;Paparkan dalam Folder</translation>
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8725178340343806893">Kegemaran/Penanda halaman</translation>
@@ -5160,6 +5200,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="883911313571074303">Anotasikan imej</translation>
 <translation id="8844690305858050198">Selesai! Perisian berbahaya telah dialih keluar. Untuk menghidupkan semula sambungan, lawati &lt;a href="chrome://extensions"&gt;Sambungan.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">Dapatkan bantuan</translation>
+<translation id="8846132060409673887">Baca tentang pengeluar dan model komputer ini</translation>
 <translation id="8846141544112579928">Mencari papan kekunci...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">Pilih bahasa anda:</translation>
@@ -5373,6 +5414,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9161070040817969420">Subbingkai untuk: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Hantar data sistem. Pada masa ini peranti ini menghantar data diagnostik dan penggunaan peranti serta apl secara automatik kepada Google. Tetapan ini dikuatkuasakan oleh pemilik. Jika anda menghidupkan Aktiviti Web &amp; Apl tambahan, maklumat ini akan disimpan dengan akaun anda supaya anda dapat mengurus maklumat ini dalam Aktiviti Saya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Gambar dalam Gambar</translation>
+<translation id="9168436347345867845">Lakukan kemudian</translation>
 <translation id="9169496697824289689">Lihat pintasan papan kekunci</translation>
 <translation id="9169931577761441333">Tambahkan <ph name="APP_NAME" /> pada Skrin utama</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>

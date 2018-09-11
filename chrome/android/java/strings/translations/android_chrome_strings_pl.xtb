@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Dane przeglądania i aktywność związana z przeglądaniem, które są synchronizowane z Twoim kontem Google</translation>
 <translation id="116280672541001035">Użyto</translation>
 <translation id="1172593791219290334">Strona początkowa</translation>
+<translation id="1175310183703641346">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1197267115302279827">Przenieś zakładki</translation>
@@ -48,6 +49,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1326317727527857210">Aby korzystać z kart ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
+<translation id="1360432990279830238">Wylogować i wyłączyć synchronizację?</translation>
 <translation id="136248372334525878">Ładuj wstępnie strony, by szybciej się wczytywały i były dostępne do czytania w trybie offline</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
@@ -159,6 +161,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2131665479022868825">Zaoszczędzono <ph name="DATA" /></translation>
 <translation id="213279576345780926">Zamknięto <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Dodaj do ekranu głównego</translation>
+<translation id="2142289305367051020">Tu są Twoje ulubione strony</translation>
 <translation id="2146738493024040262">Otwórz aplikację błyskawiczną</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2154484045852737596">Edytowanie karty</translation>
@@ -350,6 +353,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3822502789641063741">Wyczyścić dane witryn?</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
+<translation id="3868004864571585162">Pliki cookie, licencje multimediów i dane witryn</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
 <translation id="3927692899758076493">Bezszeryfowa</translation>
@@ -375,6 +379,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 
 Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć. Aby doprecyzować wyszukiwanie, przesuń panel do samej góry i kliknij pole wyszukiwania.</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4060598801229743805">Opcje dostępne na górze ekranu</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="4084682180776658562">Dodaj do zakładek</translation>
 <translation id="4084712963632273211">Opublikowane na <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />wyświetlone przez Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -448,6 +453,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4616150815774728855">Otwórz <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Użyj hasła</translation>
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
+<translation id="4660011489602794167">Pokaż klawiaturę</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
@@ -605,7 +611,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5763514718066511291">Kliknij, by skopiować URL tej aplikacji</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5777170031995031090">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
-<translation id="5779929835642192302">Dostępne są sugestie</translation>
 <translation id="5793665092639000975">Zajmują <ph name="SPACE_USED" /> z <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
@@ -721,7 +726,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6656545060687952787">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK" />Zwiększ uprawnienia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6659594942844771486">Tab</translation>
-<translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z usługi przewidywania, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
+<translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z podpowiedzi, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
 <translation id="666731172850799929">Otwórz w <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
@@ -797,7 +802,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7251326866581677552">Blokowane na niektórych stronach</translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
-<translation id="72867290065237936">Kliknij, by przełączyć się między sugestiami haseł i klawiaturą</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
@@ -909,6 +913,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8109613176066109935">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, włącz synchronizację</translation>
 <translation id="8116925261070264013">Wyciszone</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
+<translation id="8156139159503939589">W jakich językach umiesz czytać?</translation>
 <translation id="8168435359814927499">Treści</translation>
 <translation id="8186512483418048923">Pozostałe pliki: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Pozostał dzień</translation>
@@ -921,6 +926,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8260126382462817229">Spróbuj zalogować się jeszcze raz</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8266862848225348053">Miejsce zapisywania pobranych plików</translation>
+<translation id="8274165955039650276">Zobacz pobrane</translation>
 <translation id="8283853025636624853">Synchronizowanie z kontem <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="8313455859591948645">Zmiana strony początkowej</translation>
@@ -937,6 +943,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8441146129660941386">Przewiń do tyłu</translation>
 <translation id="8445448999790540984">Nie można wyeksportować haseł</translation>
 <translation id="8447861592752582886">Cofnij zgodę na dostęp do urządzenia</translation>
+<translation id="8477071352266846533">Synchronizacja z kontem <ph name="SYNC_ACCOUNT_USER_NAME" /> wyłączona</translation>
 <translation id="8487700953926739672">Dostępny offline</translation>
 <translation id="8489271220582375723">Otwórz stronę historii</translation>
 <translation id="8493948351860045254">Zwolnij miejsce</translation>
@@ -976,6 +983,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8728487861892616501">Używając tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Politykę prywatności<ph name="END_LINK2" /> Chrome oraz <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="8748850008226585750">Treści ukryte</translation>
+<translation id="8751914237388039244">Wybierz obraz</translation>
 <translation id="8788968922598763114">Ponownie otwórz ostatnio zamknięte karty</translation>
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> otworzy się w Chrome. Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome, <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" /> i <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>

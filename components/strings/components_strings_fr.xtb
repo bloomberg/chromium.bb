@@ -723,7 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}}</translation>
 <translation id="5922853866070715753">Vous avez presque terminé !</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
-<translation id="5951495562196540101">Impossible d'enregistrer votre appareil avec un compte personnel (licence empaquetée disponible).</translation>
+<translation id="5951495562196540101">Impossible d'enregistrer votre appareil avec un compte personnel (licence associée disponible).</translation>
 <translation id="5967592137238574583">Modifier les coordonnées</translation>
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>

@@ -2214,7 +2214,7 @@ politikayı geçersiz kılamaz.
 
      Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME" /> ürünü bu tür günlükleri toplayamaz veya yükleyemez.
 
-      Bu günlükler, Chrome'daki sesli veya görüntülü çağrılarla ilgili, gönderilen ve alınan RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim ve ses ve video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi sorunların ayıklanmasında yararlı olacak teşhis bilgilerini içerir.
+      Bu günlükler, Chrome'daki sesli veya görüntülü çağrılarla ilgili, gönderilen ve alınan RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim ve ses ile video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi sorunların ayıklanmasında yararlı olacak teşhis bilgilerini içerir.
 
       Chrome'un gerçekleştirdiği bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi bir Google web hizmeti tarafından tetiklenebilir.
 

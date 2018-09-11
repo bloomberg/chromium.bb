@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1151972924205500581">Vyžaduje sa heslo</translation>
 <translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK" />kópii vo vyrovnávacej pamäti<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
+<translation id="1156303062776767266">Prezeráte si miestny alebo zdieľaný súbor</translation>
 <translation id="1158211211994409885">Hostiteľský web <ph name="HOST_NAME" /> neočakávane ukončil pripojenie.</translation>
 <translation id="1161325031994447685">Znovu sa pripojiť k sieti Wi‑Fi</translation>
 <translation id="1165039591588034296">Chyba</translation>
@@ -530,6 +531,7 @@
 <translation id="4592951414987517459">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou modernej šifrovacej súpravy.</translation>
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
 <translation id="4619615317237390068">Karty z iných zariadení</translation>
+<translation id="4646534391647090355">Prejsť do daného umiestnenia</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát obsahuje chyby. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="4690462567478992370">Nepoužívať neplatné certifikáty</translation>
@@ -576,6 +578,7 @@
 <translation id="4958444002117714549">Rozbaliť zoznam</translation>
 <translation id="4974590756084640048">Opätovne aktivovať upozornenia</translation>
 <translation id="4988217478422488391">Urýchľuje online platby</translation>
+<translation id="4989163558385430922">Zobraziť všetko</translation>
 <translation id="4989809363548539747">Tento doplnok nie je podporovaný</translation>
 <translation id="5002932099480077015">Ak túto možnosť povolíte, Chrome bude uchovávať kópiu vašej karty na tomto zariadení na účely rýchlejšieho dopĺňania formulárov.</translation>
 <translation id="5018422839182700155">Táto stránka sa nedá otvoriť</translation>
@@ -720,6 +723,7 @@
 <translation id="5922853866070715753">Takmer dokončené</translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5951495562196540101">Nemôžete sa zaregistrovať spotrebiteľským účtom (k dispozícii je licencia v balíčku).</translation>
+<translation id="5966151627327109289">Odhlási vás z väčšiny webov. Môžete stratiť prístup k chránenému obsahu z webu <ph name="SITE" /> a niektorých ďalších webov.</translation>
 <translation id="5967592137238574583">Úprava kontaktných informácií</translation>
 <translation id="5967867314010545767">Odstrániť z histórie</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
@@ -741,6 +745,7 @@
 <translation id="6071091556643036997">Tento typ pravidiel je neplatný.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Táto karta bude uložená do vášho účtu Google na zrýchlenie platieb v zariadeniach.}few{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}many{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}other{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}}</translation>
 <translation id="6080696365213338172">K obsahu ste pristúpili pomocou certifikátu, ktorý poskytol správca. Údaje, ktoré poskytnete doméne <ph name="DOMAIN" /> môžu byť zachytené správcom.</translation>
+<translation id="6096619198407627433">Odhlási vás z väčšiny webov, ale nie z účtu Google. Môžete stratiť prístup k chránenému obsahu z webu <ph name="SITE" /> a niektorých ďalších webov.</translation>
 <translation id="610911394827799129">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Žiadne}=1{1 heslo (synchronizované)}few{# heslá (synchronizované)}many{# hesla (synchronizované)}other{# hesiel (synchronizované)}}</translation>
 <translation id="6146055958333702838">Skontrolujte všetky káble a reštartujte všetky používané smerovače, modemy alebo iné sieťové zariadenia.</translation>
@@ -811,6 +816,7 @@
 <translation id="6710594484020273272">&lt;Zadajte hľadaný výraz&gt;</translation>
 <translation id="6711464428925977395">Vyskytol sa problém s proxy serverom alebo je adresa nesprávna.</translation>
 <translation id="674375294223700098">Neznáma chyba spôsobená certifikátom servera.</translation>
+<translation id="6744009308914054259">Zatiaľ čo čakáte na pripojenie, môžete prejsť do priečinka stiahnutých súborov a prečítať si články v režime offline.</translation>
 <translation id="6753269504797312559">Hodnota pravidla</translation>
 <translation id="6757797048963528358">Vaše zariadenie prešlo do režimu spánku.</translation>
 <translation id="6778737459546443941">Váš rodič to zatiaľ neschválil</translation>
@@ -907,6 +913,7 @@
 <translation id="7416351320495623771">Spravovať heslá…</translation>
 <translation id="7419106976560586862">Cesta profilu</translation>
 <translation id="7437289804838430631">Pridať kontaktné informácie</translation>
+<translation id="7440140511386898319">Prieskum v režime offline</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="7444046173054089907">Tento web je blokovaný</translation>
 <translation id="7445762425076701745">Identita servera, ku ktorému ste pripojení, sa nedá úplne overiť. Ste pripojení k serveru, ktorý používa názov platný iba v rámci vašej siete. Externá certifikačná autorita nemôže vlastníctvo názvu nijakým spôsobom overiť. Niektoré certifikačné autority však vydajú certifikát aj pre takéto názvy, a preto sa nedá zaručiť, že ste pripojení k požadovaným webovým stránkam a nie k stránkam útočníka.</translation>

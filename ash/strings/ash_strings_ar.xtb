@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">إعادة الاتصال بـ <ph name="NAME" /></translation>
+<translation id="2790844815106384441">اختيار ما إذا كان يمكن لمواقع الويب استخدام خدمات الموقع الجغرافي أو ميكروفون الجهاز أو الكاميرا أو ميزات أخرى</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
 <translation id="2805756323405976993">التطبيقات</translation>
 <translation id="2808012452536866044">‏تم ربط خدمة Better Together بهاتف جديد</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">لقد ضغطت على اختصار المُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="4217571870635786043">إملاء</translation>
 <translation id="4261870227682513959">عرض إعدادات الإشعارات. تم إيقاف الإشعارات</translation>
+<translation id="4269883910223712419">يمتلك مشرف هذا الجهاز القدرة على ما يلي:</translation>
 <translation id="4274921305979314545">‏ربط جهاز Chromebook بهاتفك</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4292681942966152062">جارٍ تفعيل <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">أفقي</translation>
 <translation id="476166673298332917">يمكن لمشرف هذا الجهاز الوصول إلى جميع الأنشطة، بما في ذلك كلمات المرور والاتصالات.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">‏لا يتوفَّر "مساعد Google" في جلسة تجريبية.</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
+<translation id="6814658242098378692">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">تفعيل <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
 <translation id="726276584504105859">السحب هنا لاستخدام وضع تقسيم الشاشة</translation>
+<translation id="7303365578352795231">جارٍ الرد على جهاز آخر.</translation>
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="735745346212279324">تم قطع اتصال الشبكة الافتراضية الخاصة</translation>
 <translation id="7377169924702866686">‏مفتاح Caps Lock في وضع التشغيل.</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265">جارٍ الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
+<translation id="7886169021410746335">ضبط إعدادات الخصوصية</translation>
 <translation id="7886277072580235377">سيتم محو جلسة الإنترنت عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">إرسال رسالة إلكترونية</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>

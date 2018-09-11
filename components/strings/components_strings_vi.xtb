@@ -579,7 +579,7 @@
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
 <translation id="4974590756084640048">Bật lại cảnh báo</translation>
-<translation id="4988217478422488391">Giúp bạn thanh toán trực tuyến nhanh hơn</translation>
+<translation id="4988217478422488391">Thanh toán trực tuyến nhanh hơn</translation>
 <translation id="4989809363548539747">Plugin này không được hỗ trợ</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
@@ -723,7 +723,7 @@
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
-<translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (giấy phép theo gói có sẵn).</translation>
+<translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>

@@ -3740,7 +3740,7 @@
 <translation id="6664237456442406323">‏לצערנו, המחשב שלך מוגדר עם זיהוי חומרה פגום. המצב הזה מונע ממערכת ההפעלה של Chrome להתקין את עדכוני האבטחה האחרונים, וייתכן שהמחשב שלך יהיה <ph name="BEGIN_BOLD" />חשוף להתקפות זדוניות<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">משהו השתבש בפתיחת הפרופיל שלך. צא ולאחר מכן היכנס מחדש.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
-<translation id="6674412557034343536">הפסקת הטיימר</translation>
+<translation id="6674412557034343536">stop timer</translation>
 <translation id="667517062706956822">‏האם תרצה ש-Google תתרגם דף זה מ<ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">התקן הצבעה מחובר</translation>
 <translation id="6678717876183468697">כתובת אתר של שאילתה</translation>
@@ -4989,7 +4989,7 @@
 <translation id="8620765578342452535">הגדרת חיבורי רשת</translation>
 <translation id="8624205858755890468">‏מאפשר ל-Assistant להציג לך פעולות, אפליקציות ופרטים קשורים.</translation>
 <translation id="862542460444371744">&amp;תוספים</translation>
-<translation id="8626219642120025691">הטיימר סיים</translation>
+<translation id="8626219642120025691">פעולת הטיימר הסתיימה</translation>
 <translation id="8627151598708688654">בחירת מקור</translation>
 <translation id="862727964348362408">מושעה</translation>
 <translation id="862750493060684461">‏מטמון של CSS</translation>

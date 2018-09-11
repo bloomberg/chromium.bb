@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Piliin kung makakagamit ang mga website ng mga serbisyo ng lokasyon o mikropono, camera, o iba pang feature ng device</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2808012452536866044">Nalipat ang Better Together sa isang bagong telepono</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Napindot mo ang shortcut para sa naka-dock na magnifier. Gusto mo ba itong i-on?</translation>
 <translation id="4217571870635786043">Pagdidikta</translation>
 <translation id="4261870227682513959">Ipakita ang mga setting ng notification. Naka-off ang mga notification</translation>
+<translation id="4269883910223712419">May kakayahan ang admin ng device na ito na:</translation>
 <translation id="4274921305979314545">Ikonekta ang iyong Chromebook sa telepono mo</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4292681942966152062">Ina-activate ang <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">May access ang administrator ng device na ito sa lahat ng aktibidad, kabilang ang mga password at komunikasyon.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Hindi available ang Google Assistant sa demo session.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
 <translation id="4849058404725798627">I-highlight ang bagay sa pamamagitan ng pag-focus ng keyboard</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Naka-on ang pag-trace ng performance</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
+<translation id="6814658242098378692">Pamahalaan ang mga app, extension, at tema</translation>
 <translation id="6820676911989879663">Magpahinga!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
+<translation id="7303365578352795231">Sinasagot sa ibang device.</translation>
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
 <translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="7377169924702866686">Naka-on ang Caps Lock.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Kumokonekta sa <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Babala: Pang-eskperimentong feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="7886169021410746335">Isaayos ang mga setting ng privacy</translation>
 <translation id="7886277072580235377">Maki-clear ang iyong session sa internet kapag nag-sign out ka. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Magpadala ng email</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>

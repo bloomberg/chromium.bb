@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="1151972924205500581">請輸入密碼</translation>
 <translation id="1152921474424827756">存取 <ph name="URL" /> 的<ph name="BEGIN_LINK" />頁庫存檔副本<ph name="END_LINK" /></translation>
+<translation id="1156303062776767266">目前顯示的是本機檔案或共用檔案</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外中斷連線。</translation>
 <translation id="1161325031994447685">重新連線至 Wi-Fi 網路</translation>
 <translation id="1165039591588034296">錯誤</translation>
@@ -534,6 +535,7 @@
 <translation id="4592951414987517459">您的 <ph name="DOMAIN" /> 連線使用新型加密套件進行加密。</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
+<translation id="4646534391647090355">立即前往下載中心</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="4690462567478992370">停止使用無效的憑證</translation>
@@ -580,6 +582,7 @@
 <translation id="4958444002117714549">展開清單</translation>
 <translation id="4974590756084640048">重新啟用警告功能</translation>
 <translation id="4988217478422488391">加快線上付款流程</translation>
+<translation id="4989163558385430922">查看全部</translation>
 <translation id="4989809363548539747">這是不支援的外掛程式</translation>
 <translation id="5002932099480077015">啟用後，Chrome 會將您的信用卡複本儲存在這個裝置上，以加快表單填寫速度。</translation>
 <translation id="5018422839182700155">無法開啟這個網頁</translation>
@@ -724,6 +727,7 @@
 <translation id="5922853866070715753">即將完成</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
+<translation id="5966151627327109289">你會從大多數網站登出，且可能無法再存取 <ph name="SITE" /> 和其他網站上的受保護內容。</translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
 <translation id="5967867314010545767">從記錄中移除</translation>
 <translation id="5975083100439434680">縮小</translation>
@@ -745,6 +749,7 @@
 <translation id="6071091556643036997">政策類型無效。</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{系統會將這張卡片儲存至你的 Google 帳戶，讓你在不同裝置上都能享受便捷的結帳體驗。}other{系統會將這些卡片儲存至你的 Google 帳戶，讓你在不同裝置上都能享受便捷的結帳體驗。}}</translation>
 <translation id="6080696365213338172">你使用了管理員提供的憑證存取內容，因此管理員可攔截你傳送至「<ph name="DOMAIN" />」的資料。</translation>
+<translation id="6096619198407627433">你會從大多數網站登出，但不會因此登出 Google 帳戶。你可能無法再存取 <ph name="SITE" /> 和其他網站上的受保護內容。</translation>
 <translation id="610911394827799129">你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{無}=1{1 組密碼 (保持同步)}other{# 組密碼 (保持同步)}}</translation>
 <translation id="6146055958333702838">檢查您的網路線是否穩固連接。重新啟動您可能正在使用的任何路由器、
@@ -816,6 +821,7 @@
 <translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
+<translation id="6744009308914054259">等待連線的同時，你可以前往「下載」頁面閱讀離線文章。</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的裝置已進入睡眠模式。</translation>
 <translation id="6778737459546443941">你的家長尚未核准這個網站</translation>
@@ -912,6 +918,7 @@
 <translation id="7416351320495623771">管理密碼…</translation>
 <translation id="7419106976560586862">設定檔路徑</translation>
 <translation id="7437289804838430631">新增聯絡資訊</translation>
+<translation id="7440140511386898319">探索可供離線檢視的內容</translation>
 <translation id="7441627299479586546">政策主體有誤</translation>
 <translation id="7444046173054089907">這個網站遭到封鎖</translation>
 <translation id="7445762425076701745">你所連線的伺服器身分無法完全驗證，該伺服器所使用的名稱僅在你的網路中有效，無法驗證外部憑證授權單位的擁有權。即使某些憑證授權單位會核發這些憑證，不過無法就此確保你所連上的網站是正確的，而不會遭到網路攻擊。</translation>

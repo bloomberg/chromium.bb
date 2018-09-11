@@ -157,7 +157,7 @@
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> என்பதே இப்போது புதிய ChromeVox மாற்றியாகும்.</translation>
 <translation id="2450814015951372393">செக் பாக்ஸ்</translation>
-<translation id="2462626033734746142">ரேடியோ பொத்தான் குழு</translation>
+<translation id="2462626033734746142">ரேடியோ பட்டன் குழு</translation>
 <translation id="2471138580042810658">தலைப்பு 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{உடுக்குறி}other{# உடுக்குறிகள்}}</translation>
 <translation id="249330843868392562">‘உரையிலிருந்து பேச்சு’ அமைப்புகளைத் திற</translation>
@@ -225,7 +225,7 @@
 <translation id="2999945368667127852">அடுத்த ஊடக விட்ஜெட் இல்லை.</translation>
 <translation id="3012414509011670858">முந்தைய பிரிவு இல்லை.</translation>
 <translation id="3014130421870723208">@ed 8dot</translation>
-<translation id="3030432017085518523">மெனு உருப்படி ரேடியோ பொத்தான்</translation>
+<translation id="3030432017085518523">மெனுவில் உள்ள ரேடியோ பட்டன்</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{தனி மேற்கோள் குறி}other{# தனி மேற்கோள் குறிகள்}}</translation>
 <translation id="3040901448410802366">செயல்நிலைக் காட்டி</translation>
 <translation id="3046838483509668188">ChromeVox விருப்பங்கள்</translation>
@@ -501,7 +501,7 @@
 <translation id="4986606102545753256"><ph name="NAME" />, சாளரம்</translation>
 <translation id="4993152509206108683">பேச்சு விகிதம் <ph name="PERCENT" /> சதவீதம்</translation>
 <translation id="4996716799442435517">பார்வை</translation>
-<translation id="4997282455736854877"><ph name="NAME" />, ரேடியோ பொத்தான் தேர்ந்தெடுக்கப்பட்டது</translation>
+<translation id="4997282455736854877"><ph name="NAME" />, ரேடியோ பட்டன் தேர்ந்தெடுக்கப்பட்டது</translation>
 <translation id="4997475792277222884">இணைப்பாக இல்லாத அடுத்த உருப்படி இல்லை.</translation>
 <translation id="5000760171916499057">வடிவங்கள் இல்லை.</translation>
 <translation id="5005670136041063723">மேலும் ஒத்த கூறுகள் இல்லை.</translation>
@@ -531,7 +531,7 @@
 <translation id="5189244881767082992">வரி</translation>
 <translation id="5203930734796605961">ஏற்கனவே ஒரு கட்டளைக்கு <ph name="KEY" /> ஒதுக்கப்பட்டுள்ளது.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> பட்டியல்.</translation>
-<translation id="520883772648104506">அடுத்த ரேடியோ பொத்தான் இல்லை.</translation>
+<translation id="520883772648104506">அடுத்த ரேடியோ பட்டன் இல்லை.</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5291783959063340370">பொருள்</translation>
@@ -569,7 +569,7 @@
 <translation id="5502713021410870035">செப்டம்பர்</translation>
 <translation id="5507663321906818013">பென்ச்மார்க்கைப் பிழைத்திருத்துதல்</translation>
 <translation id="5518443085409638729">உரையைத் திருத்தும்போது எழுத்துகளுக்கு இடையே இடஞ்சுட்டியை வை (Mac OS X போன்று).</translation>
-<translation id="552195134157544755">ரேடியோ பொத்தான்</translation>
+<translation id="552195134157544755">ரேடியோ பட்டன்</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">முந்தைய 5 ஆம் நிலை தலைப்பு இல்லை.</translation>
 <translation id="556042886152191864">பொத்தான்</translation>
@@ -580,7 +580,7 @@
 <translation id="5585044216466955529">உரையைத் திருத்து, மின்னஞ்சல் உள்ளீடு</translation>
 <translation id="5597170376237141345">அடுத்த செக்பாக்ஸ்</translation>
 <translation id="5597933780944041114">அடுத்த தலைப்பு இல்லை.</translation>
-<translation id="5598905979683743333"><ph name="NAME" />, ரேடியோ பொத்தான் தேர்ந்தெடுக்கப்படவில்லை</translation>
+<translation id="5598905979683743333"><ph name="NAME" />, ரேடியோ பட்டன் தேர்வு நீக்கப்பட்டது</translation>
 <translation id="5601172225407283979">இயல்பான செயலைச் செயல்படுத்து</translation>
 <translation id="5608798115546226984">தானே நிரப்புதல் இன்லைன்</translation>
 <translation id="561939826962581046">நேரம்</translation>
@@ -675,7 +675,7 @@
 <translation id="6378565991815958969">$1ஐ நகலெடு.</translation>
 <translation id="6385591741672306837">நெடுவரிசை</translation>
 <translation id="6387719785439924554">aside</translation>
-<translation id="6411426777058107714">முந்தைய ரேடியோ பொத்தான் இல்லை.</translation>
+<translation id="6411426777058107714">முந்தைய ரேடியோ பட்டன் இல்லை.</translation>
 <translation id="6414968628640960377">வேறுபட்ட முந்தைய உறுப்பு.</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{முக்காற்புள்ளி}other{# முக்காற்புள்ளிகள்}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, மெனு</translation>
@@ -764,7 +764,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="7240858705033280249">விவரங்களைக் காட்டு</translation>
 <translation id="7241683698754534149">நீண்ட விளக்கத்தைப் புதிய தாவலில் திறக்கவும்</translation>
 <translation id="7248671827512403053">பயன்பாடு</translation>
-<translation id="725969808843520477">அடுத்த ரேடியோ பொத்தான்</translation>
+<translation id="725969808843520477">அடுத்த ரேடியோ பட்டன்</translation>
 <translation id="7261612856573623172">சாதனத்தின் இயல்பு ‘உரையிலிருந்து பேச்சுக்கான' குரல்</translation>
 <translation id="7269119382257320590">நிறுத்தற்குறி இல்லை</translation>
 <translation id="7273174640290488576">வெற்று</translation>
@@ -816,7 +816,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">உரையைத் திருத்து, URL உள்ளீடு</translation>
 <translation id="7685589220304187312">tlbar</translation>
-<translation id="7693840228159394336">முந்தைய ரேடியோ பொத்தான்</translation>
+<translation id="7693840228159394336">முந்தைய ரேடியோ பட்டன்</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7712273827621319827">அடிக்கோட்டு உரையின் தொடக்கம்</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, கடவுச்சொல் உரைப் பெட்டி</translation>

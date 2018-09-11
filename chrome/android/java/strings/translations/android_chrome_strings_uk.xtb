@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Дані веб-перегляду й історія активності, синхронізовані з обліковим записом Google</translation>
 <translation id="116280672541001035">Використано</translation>
 <translation id="1172593791219290334">Стартова сторінка</translation>
+<translation id="1175310183703641346">Закладки, історія, паролі тощо більше не синхронізуватимуться з обліковим записом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1197267115302279827">Перемістити закладки</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1332501820983677155">Комбінації клавіш для функцій Google Chrome</translation>
+<translation id="1360432990279830238">Вийти й вимкнути синхронізацію?</translation>
 <translation id="136248372334525878">Попередньо завантажує сторінки, щоб швидше завантажувати та переглядати їх у режимі офлайн</translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> додано</translation>
 <translation id="1373696734384179344">Недостатньо пам’яті, щоб завантажити вибраний вміст.</translation>
@@ -159,6 +161,7 @@
 <translation id="2131665479022868825">Заощаджено <ph name="DATA" /></translation>
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
 <translation id="2139186145475833000">Додати на головний екран</translation>
+<translation id="2142289305367051020">Ваші улюблені сторінки доступні тут</translation>
 <translation id="2146738493024040262">Відкрити додаток із миттєвим запуском</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2154484045852737596">Редагувати картку</translation>
@@ -249,7 +252,7 @@
 <translation id="2900528713135656174">Створити подію</translation>
 <translation id="2902702728133930130">Не вдалося запустити Chrome через неочікувану помилку.</translation>
 <translation id="290376772003165898">Ця сторінка відображається не такою мовою: <ph name="LANGUAGE" />?</translation>
-<translation id="2910701580606108292">Запитувати, перш ніж дозволити сайтам відтворювати захищений вміст</translation>
+<translation id="2910701580606108292">Запитувати, перш ніж дозволяти сайтам відтворювати захищений вміст</translation>
 <translation id="2913331724188855103">Дозволити сайтам зберігати та розпізнавати дані файлів cookie (рекомендується)</translation>
 <translation id="2932150158123903946">Дані додатка Google <ph name="APP_NAME" /></translation>
 <translation id="2943166482989655199">Покращуйте Chrome і функції безпеки, надсилаючи в Google дані про систему та використання</translation>
@@ -350,6 +353,7 @@
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Далі</translation>
+<translation id="3868004864571585162">Файли сookie, ліцензії медіа-вмісту й дані із сайтів</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -375,6 +379,7 @@
 
 Щоб змінити пошуковий термін, натисніть і втримуйте його. Щоб уточнити пошуковий запит, пересуньте панель угору й торкніться вікна пошуку.</translation>
 <translation id="4056223980640387499">Сепія</translation>
+<translation id="4060598801229743805">Панель інструментів розташовано вгорі екрана</translation>
 <translation id="4062305924942672200">Правова інформація</translation>
 <translation id="4084682180776658562">Закладка</translation>
 <translation id="4084712963632273211">Видавець: <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />доставлено Google<ph name="END_DEEMPHASIZED" /></translation>
@@ -448,6 +453,7 @@
 <translation id="4616150815774728855">Відкрити файл <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
 <translation id="4645575059429386691">Керується одним із батьків</translation>
+<translation id="4660011489602794167">Показати клавіатуру</translation>
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Веб-сайт <ph name="NAME" /> додано на головний екран</translation>
 <translation id="4684427112815847243">Синхронізувати все</translation>
@@ -605,7 +611,6 @@
 <translation id="5763514718066511291">Торкніться, щоб скопіювати URL-адресу цього додатка</translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5777170031995031090">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, оголошення й інші служби Google.</translation>
-<translation id="5779929835642192302">Є пропозиції</translation>
 <translation id="5793665092639000975">Використано <ph name="SPACE_USED" /> з <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
@@ -797,7 +802,6 @@
 <translation id="7251326866581677552">Заблоковано на деяких сайтах</translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
-<translation id="72867290065237936">Торкайтеся, щоб перемикатися між пропозиціями паролів і клавіатурою</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>
@@ -909,6 +913,7 @@
 <translation id="8109613176066109935">Щоб мати доступ до закладок на всіх своїх пристроях, увімкніть синхронізацію</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
+<translation id="8156139159503939589">Якими мовами ви читаєте?</translation>
 <translation id="8168435359814927499">Вміст</translation>
 <translation id="8186512483418048923">Залишилося файлів: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
@@ -921,6 +926,7 @@
 <translation id="8260126382462817229">Спробуйте ввійти ще раз</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8266862848225348053">Папка для завантажень</translation>
+<translation id="8274165955039650276">Переглянути завантаження</translation>
 <translation id="8283853025636624853">Синхронізація з обліковим записом <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="8313455859591948645">Редагувати стартову сторінку</translation>
@@ -937,6 +943,7 @@
 <translation id="8441146129660941386">Назад</translation>
 <translation id="8445448999790540984">Не вдається експортувати паролі</translation>
 <translation id="8447861592752582886">Скасувати доступ до пристрою</translation>
+<translation id="8477071352266846533">Вимкнено синхронізацію з обліковим записом <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Доступ у режимі офлайн</translation>
 <translation id="8489271220582375723">Відкрити сторінку "Історія"</translation>
 <translation id="8493948351860045254">Звільнити місце</translation>
@@ -976,6 +983,7 @@
 <translation id="8728487861892616501">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8748850008226585750">Вміст сховано</translation>
+<translation id="8751914237388039244">Виберіть зображення</translation>
 <translation id="8788968922598763114">Відкрити останню закриту вкладку</translation>
 <translation id="8812260976093120287">На деяких веб-сайтах ви можна оплачувати за допомогою перелічених вище підтримуваних додатків для платежів на вашому пристрої.</translation>
 <translation id="8816439037877937734">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
