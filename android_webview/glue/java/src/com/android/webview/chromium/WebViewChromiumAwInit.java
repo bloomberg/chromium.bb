@@ -5,6 +5,7 @@
 package com.android.webview.chromium;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -39,6 +40,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -56,13 +58,27 @@ public class WebViewChromiumAwInit {
 
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
+    /**
+     * This holds objects of classes that are defined in N and above to ensure that run-time class
+     * verification does not occur until it is actually used for N and above.
+     */
+    @TargetApi(Build.VERSION_CODES.N)
+    @DoNotInline
+    private static class ObjectHolderForN {
+        public TokenBindingService mTokenBindingService;
+    }
+
     // TODO(gsennton): store aw-objects instead of adapters here
     // Initialization guarded by mLock.
     private AwBrowserContext mBrowserContext;
     private SharedStatics mSharedStatics;
     private GeolocationPermissionsAdapter mGeolocationPermissions;
     private CookieManagerAdapter mCookieManager;
-    private Object mTokenBindingManager;
+
+    @TargetApi(Build.VERSION_CODES.N)
+    private ObjectHolderForN mObjectHolderForN =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? new ObjectHolderForN() : null;
+
     private WebIconDatabaseAdapter mWebIconDatabase;
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
@@ -371,13 +387,15 @@ public class WebViewChromiumAwInit {
         return mServiceWorkerController;
     }
 
+    @TargetApi(Build.VERSION_CODES.N)
     public TokenBindingService getTokenBindingService() {
         synchronized (mLock) {
-            if (mTokenBindingManager == null) {
-                mTokenBindingManager = GlueApiHelperForN.createTokenBindingManagerAdapter(mFactory);
+            if (mObjectHolderForN.mTokenBindingService == null) {
+                mObjectHolderForN.mTokenBindingService =
+                        GlueApiHelperForN.createTokenBindingManagerAdapter(mFactory);
             }
         }
-        return (TokenBindingService) mTokenBindingManager;
+        return mObjectHolderForN.mTokenBindingService;
     }
 
     public android.webkit.WebIconDatabase getWebIconDatabase() {
