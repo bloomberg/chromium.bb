@@ -38,11 +38,6 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
     return browser_accessibility_cocoa_;
   }
 
-  // Detach the BrowserAccessibilityCocoa object and then recreate it.
-  // This is only used to work around VoiceOver bugs by forcing VoiceOver
-  // to rebuild its internal state.
-  void RecreateNativeObject();
-
  private:
   // This gives BrowserAccessibility::Create access to the class constructor.
   friend class BrowserAccessibility;
