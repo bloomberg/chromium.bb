@@ -461,31 +461,13 @@
     "AudioService": [
         {
             "platforms": [
+                "linux",
                 "mac",
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_LaunchOnStartup_Sandboxed_v7",
-                    "params": {
-                        "teardown_timeout_s": "0"
-                    },
-                    "enable_features": [
-                        "AudioServiceAudioStreams",
-                        "AudioServiceLaunchOnStartup",
-                        "AudioServiceOutOfProcess",
-                        "AudioServiceSandbox"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioProcess_LaunchOnStartup_v7",
+                    "name": "AudioProcess_LaunchOnStartup_v6",
                     "params": {
                         "teardown_timeout_s": "0"
                     },
