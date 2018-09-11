@@ -373,8 +373,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-      url_job_.get(), "URL", url.spec());
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+      "URL", url.spec());
   // The provider host may already have set a controller in redirect case,
   // unset it now.
   provider_host_->SetControllerRegistration(
@@ -412,8 +412,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Status", blink::ServiceWorkerStatusToString(status));
     return;
   }
   DCHECK(registration);
@@ -425,8 +425,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "No Provider");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No Provider");
     return;
   }
   provider_host_->AddMatchingRegistration(registration.get());
@@ -438,8 +438,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "No Context");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No Context");
     return;
   }
 
@@ -452,8 +452,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "ServiceWorker is blocked");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "ServiceWorker is blocked");
     return;
   }
 
@@ -466,8 +466,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "Insecure context");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "Insecure context");
     return;
   }
 
@@ -500,9 +500,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
-        "No active version, so falling back to network");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "No active version, so falling back to network");
     return;
   }
 
@@ -518,8 +517,8 @@ void ServiceWorkerControlleeRequestHandler::
                        std::move(disallow_controller)));
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "Wait until finished SW activation");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "Wait until finished SW activation");
     return;
   }
 
@@ -541,8 +540,8 @@ void ServiceWorkerControlleeRequestHandler::
         ServiceWorkerMetrics::MainResourceRequestDestination::kJobWasDestroyed);
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info", "The job was destroyed");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "The job was destroyed");
     return;
   }
 
@@ -553,9 +552,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
-        "The provider host is gone, so falling back to network");
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info", "The provider host is gone, so falling back to network");
     return;
   }
 
@@ -584,8 +582,8 @@ void ServiceWorkerControlleeRequestHandler::
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
-        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Info",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+        "Info",
         "The expected active version is not ACTIVATED, so falling back to "
         "network",
         "Status",
@@ -618,8 +616,8 @@ void ServiceWorkerControlleeRequestHandler::
   }
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
-      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-      url_job_.get(), "Info",
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
+      "Info",
       (is_forwarded) ? "Forwarded to the ServiceWorker"
                      : "Skipped the ServiceWorker which has no fetch handler");
 }
