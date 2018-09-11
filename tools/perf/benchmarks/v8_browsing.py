@@ -55,10 +55,10 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
       'navigation',
       'toplevel',
       # V8 categories.
-      'blink.console',
       'disabled-by-default-v8.gc',
       'renderer.scheduler',
       'v8',
+      'v8.console',
       'webkit.console',
       'disabled-by-default-v8.runtime_stats',
       # TODO(crbug.com/616441, primiano): Remove this temporary workaround,
@@ -78,8 +78,13 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
 
     options.SetTimelineBasedMetrics([
-      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric',
-      'blinkGcMetric', 'memoryMetric'])
+      'blinkGcMetric',
+      'consoleErrorMetric',
+      'expectedQueueingTimeMetric',
+      'gcMetric',
+      'memoryMetric',
+      'runtimeStatsTotalMetric'
+    ])
     return options
 
   @classmethod
