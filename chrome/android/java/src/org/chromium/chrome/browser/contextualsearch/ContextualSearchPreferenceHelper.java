@@ -60,10 +60,12 @@ class ContextualSearchPreferenceHelper {
      *         previously undecided.
      */
     public boolean canThrottle() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                       ChromeFeatureList.CONTEXTUAL_SEARCH_UNITY_INTEGRATION,
-                       ContextualSearchPreferenceHelper.THROTTLE, false)
+        boolean isRequestThrottled = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                                             ChromeFeatureList.CONTEXTUAL_SEARCH_UNITY_INTEGRATION,
+                                             ContextualSearchPreferenceHelper.THROTTLE, false)
                 && wasUndecided();
+        ContextualSearchUma.logUnifiedConsentThrottledRequests(isRequestThrottled);
+        return isRequestThrottled;
     }
 
     /** Updates our preference metadata storage based on what our native member knows. */
@@ -88,9 +90,11 @@ class ContextualSearchPreferenceHelper {
 
     /** @return Whether the user was "undecided" before Unified Consent changed their setting. */
     private boolean wasUndecided() {
-        return ContextualSearchPreviousPreferenceMetadata.WAS_UNDECIDED
+        boolean isThrottleEligible = ContextualSearchPreviousPreferenceMetadata.WAS_UNDECIDED
                 == ChromePreferenceManager.getInstance().readInt(
                            ChromePreferenceManager.CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF);
+        ContextualSearchUma.logUnifiedConsentThrottleEligible(isThrottleEligible);
+        return isThrottleEligible;
     }
 
     /** @return Whether we know if Unified Consent changed their setting. */
@@ -106,6 +110,8 @@ class ContextualSearchPreferenceHelper {
         assert setting != ContextualSearchPreviousPreferenceMetadata.UNKNOWN;
         ChromePreferenceManager.getInstance().writeInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF, setting);
+        ContextualSearchUma.logUnifiedConsentPreviousEnabledState(
+                setting == ContextualSearchPreviousPreferenceMetadata.WAS_UNDECIDED);
     }
 
     /**
