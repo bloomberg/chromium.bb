@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "url/gurl.h"
@@ -83,6 +84,8 @@ class SubresourceFilterAgent
   void RecordHistogramsOnLoadFinished();
   void ResetInfoForNextCommit();
 
+  const mojom::SubresourceFilterHostAssociatedPtr& GetSubresourceFilterHost();
+
   // content::RenderFrameObserver:
   void OnDestruct() override;
   void DidCreateNewDocument() override;
@@ -100,6 +103,10 @@ class SubresourceFilterAgent
 
   // Tracks all ad resource observers.
   std::unique_ptr<AdResourceTracker> ad_resource_tracker_;
+
+  // Use associated interface to make sure mojo messages are ordered with regard
+  // to legacy IPC messages.
+  mojom::SubresourceFilterHostAssociatedPtr subresource_filter_host_;
 
   // If a document has been created for this frame before. The first document
   // for a new local subframe should be about:blank.

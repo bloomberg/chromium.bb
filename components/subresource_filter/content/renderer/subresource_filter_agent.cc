@@ -25,6 +25,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -66,8 +67,7 @@ void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
 
 void SubresourceFilterAgent::
     SignalFirstSubresourceDisallowedForCommittedLoad() {
-  render_frame()->Send(new SubresourceFilterHostMsg_DidDisallowFirstSubresource(
-      render_frame()->GetRoutingID()));
+  GetSubresourceFilterHost()->DidDisallowFirstSubresource();
 }
 
 void SubresourceFilterAgent::SendDocumentLoadStatistics(
@@ -77,8 +77,7 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
 }
 
 void SubresourceFilterAgent::SendFrameIsAdSubframe() {
-  render_frame()->Send(new SubresourceFilterHostMsg_FrameIsAdSubframe(
-      render_frame()->GetRoutingID()));
+  GetSubresourceFilterHost()->FrameIsAdSubframe();
 }
 
 bool SubresourceFilterAgent::IsAdSubframe() {
@@ -171,6 +170,15 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ =
       ActivationState(mojom::ActivationLevel::kDisabled);
+}
+
+const mojom::SubresourceFilterHostAssociatedPtr&
+SubresourceFilterAgent::GetSubresourceFilterHost() {
+  if (!subresource_filter_host_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &subresource_filter_host_);
+  }
+  return subresource_filter_host_;
 }
 
 void SubresourceFilterAgent::OnDestruct() {

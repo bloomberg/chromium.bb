@@ -9,3 +9,17 @@ enum ActivationLevel {
   kDryRun,
   kEnabled
 };
+
+interface SubresourceFilterHost {
+  // Sent to the browser the first time a subresource load is disallowed for the
+  // most recently committed document load in a frame. It is used to trigger a
+  // UI prompt to inform the user and allow them to turn off filtering.
+  DidDisallowFirstSubresource();
+
+  // Sent to the browser when a RenderFrame is created and is tagged as an ad
+  // subframe. The browser keeps track of this in case the frame later changes
+  // processes, at which point it will inform the new RenderFrame that it has
+  // been tagged as an ad via SubresourceFilterMsg_ActivateForNextCommittedLoad,
+  // at ReadyToCommitNavigation time.
+  FrameIsAdSubframe();
+};
