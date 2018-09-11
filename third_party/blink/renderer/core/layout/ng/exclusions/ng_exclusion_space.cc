@@ -178,6 +178,21 @@ NGExclusionSpace::NGExclusionSpace(const NGExclusionSpace& other)
   other.derived_geometry_ = nullptr;
 }
 
+NGExclusionSpace::NGExclusionSpace(NGExclusionSpace&& other)
+    : exclusions_(std::move(other.exclusions_)),
+      num_exclusions_(other.num_exclusions_),
+      both_clear_offset_(other.both_clear_offset_),
+      derived_geometry_(std::move(other.derived_geometry_)) {}
+
+NGExclusionSpace& NGExclusionSpace::operator=(const NGExclusionSpace& other) {
+  exclusions_ = other.exclusions_;
+  num_exclusions_ = other.num_exclusions_;
+  both_clear_offset_ = other.both_clear_offset_;
+  derived_geometry_ = std::move(other.derived_geometry_);
+  other.derived_geometry_ = nullptr;
+  return *this;
+}
+
 NGExclusionSpace::DerivedGeometry::DerivedGeometry()
     : last_float_block_start_(LayoutUnit::Min()),
       left_float_clear_offset_(LayoutUnit::Min()),
