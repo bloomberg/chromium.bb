@@ -12,7 +12,9 @@
 #include "components/invalidation/impl/network_channel.h"
 
 namespace {
-const std::string private_topic_name_prefix = "/topics";
+
+const char kPrivatTopicName[] = "/topics";
+const int kPrivatTopicNameSize = 7;
 }
 
 namespace syncer {
@@ -75,12 +77,12 @@ void PerUserTopicInvalidationClient::MessageReceiver(
     const std::string& public_topic,
     const std::string& version) {
   std::string private_topic_name = private_topic;
-  if (base::StartsWith(private_topic, private_topic_name_prefix,
+  if (base::StartsWith(private_topic, kPrivatTopicName,
                        base::CompareCase::INSENSITIVE_ASCII)) {
     // FCM protocol requires topic to start with"/topics" to topic name.
     // Reason why it is necessary to strip the prefix is that later the shorter
     // topic name is used for indexing into maps.
-    private_topic_name = private_topic.substr(private_topic_name_prefix.size());
+    private_topic_name = private_topic.substr(kPrivatTopicNameSize);
   }
   int64_t v = 0;
   if (!base::StringToInt64(version, &v)) {
