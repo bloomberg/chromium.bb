@@ -270,7 +270,8 @@ bool DisassemblerElf<Traits>::ParseHeader() {
        segment != segments_ + segments_count_; ++segment) {
     if (!RangeIsBounded(segment->p_offset, segment->p_filesz, kOffsetBound))
       return false;
-    offset_t segment_end = segment->p_offset + segment->p_filesz;
+    offset_t segment_end =
+        base::checked_cast<offset_t>(segment->p_offset + segment->p_filesz);
     offset_bound = std::max(offset_bound, segment_end);
   }
 
@@ -366,8 +367,10 @@ void DisassemblerElfIntel<Traits>::ParseExecSection(
   auto& abs32_locations_ = this->abs32_locations_;
 
   std::ptrdiff_t from_offset_to_rva = section.sh_addr - section.sh_offset;
-  rva_t start_rva = section.sh_addr;
-  rva_t end_rva = start_rva + section.sh_size;
+
+  // Range of values was ensured in ParseHeader().
+  rva_t start_rva = base::checked_cast<rva_t>(section.sh_addr);
+  rva_t end_rva = base::checked_cast<rva_t>(start_rva + section.sh_size);
 
   AddressTranslator::RvaToOffsetCache target_rva_checker(this->translator_);
 
@@ -380,7 +383,8 @@ void DisassemblerElfIntel<Traits>::ParseExecSection(
     finder->Reset(gap.value());
     for (auto rel32 = finder->GetNext(); rel32.has_value();
          rel32 = finder->GetNext()) {
-      offset_t rel32_offset = offset_t(rel32->location - image_.begin());
+      offset_t rel32_offset =
+          base::checked_cast<offset_t>(rel32->location - image_.begin());
       rva_t rel32_rva = rva_t(rel32_offset + from_offset_to_rva);
       rva_t target_rva = rel32_rva + 4 + image_.read<uint32_t>(rel32_offset);
       if (target_rva_checker.IsValid(target_rva) &&
