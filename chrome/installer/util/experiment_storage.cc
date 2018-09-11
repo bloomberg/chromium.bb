@@ -383,10 +383,8 @@ base::string16 ExperimentStorage::EncodeMetrics(
 bool ExperimentStorage::LoadMetricsUnsafe(ExperimentMetrics* metrics) {
   base::string16 value;
 
-  if (!GoogleUpdateSettings::ReadExperimentLabels(
-          install_static::IsSystemInstall(), &value)) {
+  if (!GoogleUpdateSettings::ReadExperimentLabels(&value))
     return false;
-  }
 
   ExperimentLabels experiment_labels(value);
   base::StringPiece16 encoded_metrics =
@@ -401,18 +399,15 @@ bool ExperimentStorage::LoadMetricsUnsafe(ExperimentMetrics* metrics) {
 
 bool ExperimentStorage::StoreMetricsUnsafe(const ExperimentMetrics& metrics) {
   base::string16 value;
-  if (!GoogleUpdateSettings::ReadExperimentLabels(
-          install_static::IsSystemInstall(), &value)) {
+  if (!GoogleUpdateSettings::ReadExperimentLabels(&value))
     return false;
-  }
   ExperimentLabels experiment_labels(value);
 
   experiment_labels.SetValueForLabel(kExperimentLabelName,
                                      EncodeMetrics(metrics),
                                      base::TimeDelta::FromDays(182));
 
-  return GoogleUpdateSettings::SetExperimentLabels(
-      install_static::IsSystemInstall(), experiment_labels.value());
+  return GoogleUpdateSettings::SetExperimentLabels(experiment_labels.value());
 }
 
 bool ExperimentStorage::LoadStateUnsafe(Experiment* experiment) {

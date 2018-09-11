@@ -70,12 +70,11 @@ class GoogleUpdateSettingsTest : public testing::Test {
     base::string16 value;
     // Before anything is set, ReadExperimentLabels should succeed but return
     // an empty string.
-    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
-        install == SYSTEM_INSTALL, &value));
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(&value));
     EXPECT_EQ(base::string16(), value);
 
-    EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(
-        install == SYSTEM_INSTALL, kTestExperimentLabel));
+    EXPECT_TRUE(
+        GoogleUpdateSettings::SetExperimentLabels(kTestExperimentLabel));
 
     // Validate that something is written. Only worry about the label itself.
     RegKey key;
@@ -92,21 +91,18 @@ class GoogleUpdateSettingsTest : public testing::Test {
     EXPECT_EQ(ERROR_SUCCESS,
         key.ReadValue(google_update::kExperimentLabels, &value));
     EXPECT_EQ(kTestExperimentLabel, value);
-    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
-        install == SYSTEM_INSTALL, &value));
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(&value));
     EXPECT_EQ(kTestExperimentLabel, value);
     key.Close();
 
     // Now that the label is set, test the delete functionality. An empty label
     // should result in deleting the value.
-    EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(
-        install == SYSTEM_INSTALL, base::string16()));
+    EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(base::string16()));
     EXPECT_EQ(ERROR_SUCCESS,
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
     EXPECT_EQ(ERROR_FILE_NOT_FOUND,
         key.ReadValue(google_update::kExperimentLabels, &value));
-    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
-        install == SYSTEM_INSTALL, &value));
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(&value));
     EXPECT_EQ(base::string16(), value);
     key.Close();
   }
@@ -408,7 +404,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
   }
 }
 
-TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
+TEST_F(GoogleUpdateSettingsTest, SetEulaConsent) {
   using installer::FakeInstallationState;
 
   const bool system_level = true;
@@ -420,17 +416,15 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
 
   RegKey key;
   DWORD value;
-  BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
 
   // eulaconsent is set on the product.
-  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, chrome,
-                                                   true));
+  EXPECT_TRUE(GoogleUpdateSettings::SetEulaConsent(machine_state, true));
   EXPECT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE,
                      install_static::GetClientStateMediumKeyPath().c_str(),
                      KEY_QUERY_VALUE));
   EXPECT_EQ(ERROR_SUCCESS,
-      key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
+            key.ReadValueDW(google_update::kRegEulaAceptedField, &value));
   EXPECT_EQ(1U, value);
 }
 

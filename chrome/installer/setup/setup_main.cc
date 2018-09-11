@@ -691,7 +691,7 @@ installer::InstallStatus InstallProducts(
   return install_status;
 }
 
-installer::InstallStatus ShowEULADialog(const base::string16& inner_frame) {
+installer::InstallStatus ShowEulaDialog(const base::string16& inner_frame) {
   VLOG(1) << "About to show EULA";
   base::string16 eula_path = installer::GetLocalizedEulaResource();
   if (eula_path.empty()) {
@@ -716,9 +716,9 @@ installer::InstallStatus ShowEULADialog(const base::string16& inner_frame) {
 
 // Creates the sentinel indicating that the EULA was required and has been
 // accepted.
-bool CreateEULASentinel() {
+bool CreateEulaSentinel() {
   base::FilePath eula_sentinel;
-  if (!InstallUtil::GetEULASentinelFilePath(&eula_sentinel))
+  if (!InstallUtil::GetEulaSentinelFilePath(&eula_sentinel))
     return false;
 
   return (base::CreateDirectory(eula_sentinel.DirName()) &&
@@ -850,13 +850,11 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
     // then the dialog is shown and regardless of the outcome setup exits here.
     base::string16 inner_frame =
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
-    *exit_code = ShowEULADialog(inner_frame);
+    *exit_code = ShowEulaDialog(inner_frame);
 
     if (installer::EULA_REJECTED != *exit_code) {
-      if (GoogleUpdateSettings::SetEULAConsent(
-              *original_state, BrowserDistribution::GetDistribution(), true)) {
-        CreateEULASentinel();
-      }
+      if (GoogleUpdateSettings::SetEulaConsent(*original_state, true))
+        CreateEulaSentinel();
     }
   } else if (cmd_line.HasSwitch(installer::switches::kConfigureUserSettings)) {
     // NOTE: Should the work done here, on kConfigureUserSettings, change:

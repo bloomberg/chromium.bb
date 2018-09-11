@@ -205,7 +205,7 @@ extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
 extern const wchar_t kCmdStoreDMToken[];
-extern const wchar_t kEULASentinelFile[];
+extern const wchar_t kEulaSentinelFile[];
 extern const wchar_t kInstallBinaryDir[];
 extern const wchar_t kInstallerDir[];
 extern const wchar_t kInstallTempDir[];

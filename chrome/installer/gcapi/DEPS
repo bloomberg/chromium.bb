@@ -9,6 +9,7 @@ include_rules = [
 ]
 specific_include_rules = {
   ".*_test\.cc": [
+    "+chrome/install_static/test",
     "+chrome/installer/util",
   ]
 }

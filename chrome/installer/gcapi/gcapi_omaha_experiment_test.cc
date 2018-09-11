@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -19,21 +20,26 @@ using base::ASCIIToUTF16;
 namespace {
 
 const wchar_t kBrand[] = L"ABCD";
-const uint16_t kUserLevel = GCAPI_INVOKED_STANDARD_SHELL;
 
 const wchar_t kSomeExperiments[] = L"myexp=1|Aug 2;yourexp=2|Sep 5";
 const wchar_t kSomeOtherExperiments[] = L"anotherexp=joe|Jun 7 2008";
 const wchar_t kSomeMoreExperiments[] = L"moreexp=foo|Jul 31 1999";
 
-class GCAPIOmahaExperimentTest : public ::testing::Test {
+// The boolean parameter is true for system-level tests, or false for user-level
+// tests.
+class GCAPIOmahaExperimentTest : public ::testing::TestWithParam<bool> {
  protected:
   GCAPIOmahaExperimentTest()
-      : brand_(kBrand),
+      : system_level_(GetParam()),
+        shell_mode_(system_level_ ? GCAPI_INVOKED_UAC_ELEVATION
+                                  : GCAPI_INVOKED_STANDARD_SHELL),
+        scoped_install_details_(system_level_),
         reactivation_label_(gcapi_internals::GetGCAPIExperimentLabel(
-            kBrand, gcapi_internals::kReactivationLabel)),
+            kBrand,
+            gcapi_internals::kReactivationLabel)),
         relaunch_label_(gcapi_internals::GetGCAPIExperimentLabel(
-            kBrand, gcapi_internals::kRelaunchLabel)) {
-  }
+            kBrand,
+            gcapi_internals::kRelaunchLabel)) {}
 
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
@@ -44,34 +50,37 @@ class GCAPIOmahaExperimentTest : public ::testing::Test {
 
   void VerifyExperimentLabels(const base::string16& expected_labels) {
     base::string16 actual_labels;
-    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(false,
-                                                           &actual_labels));
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(&actual_labels));
     EXPECT_EQ(expected_labels, actual_labels);
   }
 
+  int shell_mode() const { return shell_mode_; }
+
+  const bool system_level_;
+  const int shell_mode_;
+  const install_static::ScopedInstallDetails scoped_install_details_;
   registry_util::RegistryOverrideManager override_manager_;
-  base::string16 brand_;
   base::string16 reactivation_label_;
   base::string16 relaunch_label_;
 };
 
-TEST_F(GCAPIOmahaExperimentTest, SetReactivationLabelFromEmptyExperiments) {
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+TEST_P(GCAPIOmahaExperimentTest, SetReactivationLabelFromEmptyExperiments) {
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
   VerifyExperimentLabels(reactivation_label_);
 }
 
 // Test the relaunch label once; all other tests go more in depth, but since
 // both labels use the same logic underneath there is no need to test both in
 // depth.
-TEST_F(GCAPIOmahaExperimentTest, SetRelaunchLabelFromEmptyExperiments) {
-  ASSERT_TRUE(SetRelaunchExperimentLabels(kBrand, kUserLevel));
+TEST_P(GCAPIOmahaExperimentTest, SetRelaunchLabelFromEmptyExperiments) {
+  ASSERT_TRUE(SetRelaunchExperimentLabels(kBrand, shell_mode()));
   VerifyExperimentLabels(relaunch_label_);
 }
 
-TEST_F(GCAPIOmahaExperimentTest, SetReactivationLabelWithExistingExperiments) {
-  GoogleUpdateSettings::SetExperimentLabels(false, kSomeExperiments);
+TEST_P(GCAPIOmahaExperimentTest, SetReactivationLabelWithExistingExperiments) {
+  GoogleUpdateSettings::SetExperimentLabels(kSomeExperiments);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -79,16 +88,16 @@ TEST_F(GCAPIOmahaExperimentTest, SetReactivationLabelWithExistingExperiments) {
   VerifyExperimentLabels(expected_labels);
 }
 
-TEST_F(GCAPIOmahaExperimentTest,
+TEST_P(GCAPIOmahaExperimentTest,
        SetReactivationLabelWithExistingIdenticalExperiment) {
   base::string16 previous_labels(kSomeExperiments);
   previous_labels += variations::kExperimentLabelSeparator;
   previous_labels.append(reactivation_label_);
   previous_labels += variations::kExperimentLabelSeparator;
   previous_labels.append(kSomeOtherExperiments);
-  GoogleUpdateSettings::SetExperimentLabels(false, previous_labels);
+  GoogleUpdateSettings::SetExperimentLabels(previous_labels);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -98,14 +107,14 @@ TEST_F(GCAPIOmahaExperimentTest,
   VerifyExperimentLabels(expected_labels);
 }
 
-TEST_F(GCAPIOmahaExperimentTest,
+TEST_P(GCAPIOmahaExperimentTest,
        SetReactivationLabelWithExistingIdenticalAtBeginning) {
   base::string16 previous_labels(reactivation_label_);
   previous_labels += variations::kExperimentLabelSeparator;
   previous_labels.append(kSomeExperiments);
-  GoogleUpdateSettings::SetExperimentLabels(false, previous_labels);
+  GoogleUpdateSettings::SetExperimentLabels(previous_labels);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -113,7 +122,7 @@ TEST_F(GCAPIOmahaExperimentTest,
   VerifyExperimentLabels(expected_labels);
 }
 
-TEST_F(GCAPIOmahaExperimentTest,
+TEST_P(GCAPIOmahaExperimentTest,
        SetReactivationLabelWithFakeMatchInAnExperiment) {
   base::string16 previous_labels(kSomeExperiments);
   previous_labels += variations::kExperimentLabelSeparator;
@@ -127,9 +136,9 @@ TEST_F(GCAPIOmahaExperimentTest,
   previous_labels.append(reactivation_label_);
   previous_labels += variations::kExperimentLabelSeparator;
   previous_labels.append(kSomeMoreExperiments);
-  GoogleUpdateSettings::SetExperimentLabels(false, previous_labels);
+  GoogleUpdateSettings::SetExperimentLabels(previous_labels);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -144,7 +153,7 @@ TEST_F(GCAPIOmahaExperimentTest,
   VerifyExperimentLabels(expected_labels);
 }
 
-TEST_F(GCAPIOmahaExperimentTest,
+TEST_P(GCAPIOmahaExperimentTest,
        SetReactivationLabelWithFakeMatchInAnExperimentAndNoRealMatch) {
   base::string16 previous_labels(kSomeExperiments);
   previous_labels += variations::kExperimentLabelSeparator;
@@ -153,9 +162,9 @@ TEST_F(GCAPIOmahaExperimentTest,
   previous_labels.append(reactivation_label_);
   previous_labels += variations::kExperimentLabelSeparator;
   previous_labels.append(kSomeOtherExperiments);
-  GoogleUpdateSettings::SetExperimentLabels(false, previous_labels);
+  GoogleUpdateSettings::SetExperimentLabels(previous_labels);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -168,7 +177,7 @@ TEST_F(GCAPIOmahaExperimentTest,
   VerifyExperimentLabels(expected_labels);
 }
 
-TEST_F(GCAPIOmahaExperimentTest,
+TEST_P(GCAPIOmahaExperimentTest,
        SetReactivationLabelWithExistingEntryWithLabelAsPrefix) {
   base::string16 previous_labels(kSomeExperiments);
   previous_labels += variations::kExperimentLabelSeparator;
@@ -176,9 +185,9 @@ TEST_F(GCAPIOmahaExperimentTest,
   previous_labels.append(gcapi_internals::kReactivationLabel);
   // Shouldn't match deletion criteria.
   previous_labels.append(kSomeOtherExperiments);
-  GoogleUpdateSettings::SetExperimentLabels(false, previous_labels);
+  GoogleUpdateSettings::SetExperimentLabels(previous_labels);
 
-  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, kUserLevel));
+  ASSERT_TRUE(SetReactivationExperimentLabels(kBrand, shell_mode()));
 
   base::string16 expected_labels(kSomeExperiments);
   expected_labels += variations::kExperimentLabelSeparator;
@@ -188,5 +197,7 @@ TEST_F(GCAPIOmahaExperimentTest,
   expected_labels.append(reactivation_label_);
   VerifyExperimentLabels(expected_labels);
 }
+
+INSTANTIATE_TEST_CASE_P(, GCAPIOmahaExperimentTest, ::testing::Bool());
 
 }  // namespace

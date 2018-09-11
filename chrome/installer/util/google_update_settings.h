@@ -24,7 +24,6 @@
 #include "components/metrics/client_info.h"
 
 class AppRegistrationData;
-class BrowserDistribution;
 
 namespace installer {
 class ChannelInfo;
@@ -133,8 +132,7 @@ class GoogleUpdateSettings {
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.
-  static bool SetEULAConsent(const installer::InstallationState& machine_state,
-                             BrowserDistribution* dist,
+  static bool SetEulaConsent(const installer::InstallationState& machine_state,
                              bool consented);
 
   // Returns the last time chrome was run in days. It uses a recorded value
@@ -300,26 +298,23 @@ class GoogleUpdateSettings {
   static bool GetUpdateDetailForGoogleUpdate(ProductData* data);
 
   // Returns product data for the current product. (Equivalent to calling
-  // GetUpdateDetailForApp with the app guid stored in BrowserDistribution.)
+  // GetUpdateDetailForApp with the current install mode's app guid.)
   static bool GetUpdateDetail(ProductData* data);
 
   // Sets |experiment_labels| as the Google Update experiment_labels value in
   // the ClientState key for this Chrome product, if appropriate. If
   // |experiment_labels| is empty, this will delete the value instead. This will
   // return true if the label was successfully set (or deleted), false otherwise
-  // (even if the label does not need to be set for this particular distribution
-  // type).
-  static bool SetExperimentLabels(bool system_install,
-                                  const base::string16& experiment_labels);
+  // (even if the label does not need to be set for this particular brand).
+  static bool SetExperimentLabels(const base::string16& experiment_labels);
 
   // Reads the Google Update experiment_labels value in the ClientState key for
   // this Chrome product and writes it into |experiment_labels|. If the key or
   // value does not exist, |experiment_labels| will be set to the empty string.
-  // If this distribution of Chrome does not set the experiment_labels value,
-  // this will do nothing to |experiment_labels|. This will return true if the
-  // label did not exist, or was successfully read.
-  static bool ReadExperimentLabels(bool system_install,
-                                   base::string16* experiment_labels);
+  // If this brand does not set the experiment_labels value, this will do
+  // nothing to |experiment_labels|. This will return true if the label did not
+  // exist, or was successfully read.
+  static bool ReadExperimentLabels(base::string16* experiment_labels);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);

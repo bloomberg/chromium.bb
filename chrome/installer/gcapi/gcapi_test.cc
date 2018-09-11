@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,6 +64,7 @@ const char kManualLaunchTests[] = "launch-chrome";
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   base::CommandLine::Init(argc, argv);
+  install_static::ScopedInstallDetails install_details;
 
   testing::InitGoogleTest(&argc, argv);
   RUN_ALL_TESTS();
