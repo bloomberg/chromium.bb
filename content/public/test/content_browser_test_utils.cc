@@ -53,7 +53,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
   same_tab_observer.Wait();
   // TODO(crbug.com/882545) Delete this if statement once the problem has been
   // identified.
-  if (same_tab_observer.last_navigation_succeeded()) {
+  if (!same_tab_observer.last_navigation_succeeded()) {
     DLOG(WARNING) << "Last navigation to " << url << " failed with net error "
                   << same_tab_observer.last_net_error_code();
   }
