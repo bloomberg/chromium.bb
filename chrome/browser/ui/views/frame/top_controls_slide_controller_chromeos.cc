@@ -111,6 +111,26 @@ void UpdateBrowserControlsStateShown(content::WebContents* web_contents,
                                        animate);
 }
 
+// Triggers a visual properties synchrnoization event on |contents|' main
+// frame's view's widget.
+void SynchronizeVisualProperties(content::WebContents* contents) {
+  DCHECK(contents);
+
+  content::RenderFrameHost* main_frame = contents->GetMainFrame();
+  if (!main_frame)
+    return;
+
+  auto* rvh = main_frame->GetRenderViewHost();
+  if (!rvh)
+    return;
+
+  auto* widget = rvh->GetWidget();
+  if (!widget)
+    return;
+
+  widget->SynchronizeVisualProperties();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,19 +149,7 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver {
     // browser's tabstrip, meaning that Browser is now the delegate of
     // |web_contents|. Updating the visual properties will now sync the correct
     // top chrome height in the renderer.
-    content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-    if (!main_frame)
-      return;
-
-    auto* rvh = main_frame->GetRenderViewHost();
-    if (!rvh)
-      return;
-
-    auto* widget = rvh->GetWidget();
-    if (!widget)
-      return;
-
-    widget->SynchronizeVisualProperties();
+    SynchronizeVisualProperties(web_contents);
   }
 
   ~TopControlsSlideTabObserver() override = default;
@@ -282,14 +290,20 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
 
 void TopControlsSlideControllerChromeOS::OnBrowserFullscreenStateWillChange(
     bool new_fullscreen_state) {
+  auto* active_web_contents = browser_view_->GetActiveWebContents();
   if (new_fullscreen_state && !browser_frame_is_fullscreen_ &&
       shown_ratio_ < 1.f) {
     // Immersive fullscreen mode could be about to start for this browser's
     // window. Therefore show the top-chrome immediately without animation.
-    ShowTopChrome(browser_view_->GetActiveWebContents(), false /* animate */);
+    ShowTopChrome(active_web_contents, false /* animate */);
   }
 
   browser_frame_is_fullscreen_ = new_fullscreen_state;
+
+  // Now that the state of this feature is changed, force the renderer to get
+  // the new top controls height by triggering a visual properties
+  // synchrnoization event.
+  SynchronizeVisualProperties(active_web_contents);
 }
 
 void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
@@ -311,10 +325,16 @@ void TopControlsSlideControllerChromeOS::SetTopControlsGestureScrollInProgress(
 }
 
 void TopControlsSlideControllerChromeOS::OnTabletModeToggled(bool enabled) {
+  auto* active_web_contents = browser_view_->GetActiveWebContents();
   if (!enabled)
-    ShowTopChrome(browser_view_->GetActiveWebContents(), false /* animate */);
+    ShowTopChrome(active_web_contents, false /* animate */);
 
   tablet_mode_enabled_ = enabled;
+
+  // Now that the state of this feature is changed, force the renderer to get
+  // the new top controls height by triggering a visual properties
+  // synchrnoization event.
+  SynchronizeVisualProperties(active_web_contents);
 }
 
 void TopControlsSlideControllerChromeOS::TabInsertedAt(
