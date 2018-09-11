@@ -34,10 +34,9 @@ cr.define('multidevice_setup', () => {
         multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
         document.body.appendChild(multiDeviceSetupElement);
-        forwardButton =
-            multiDeviceSetupElement.$$('button-bar /deep/ #forward');
+        forwardButton = multiDeviceSetupElement.$$('button-bar').$$('#forward');
         backwardButton =
-            multiDeviceSetupElement.$$('button-bar /deep/ #backward');
+            multiDeviceSetupElement.$$('button-bar').$$('#backward');
       });
 
       /** @param {string} visiblePageName */
@@ -51,7 +50,10 @@ cr.define('multidevice_setup', () => {
       test('SetupSucceededPage forward button closes UI', done => {
         setVisiblePage(SUCCESS);
         multiDeviceSetupElement.addEventListener('setup-exited', () => done());
-        forwardButton.click();
+
+        multiDeviceSetupElement.async(() => {
+          forwardButton.click();
+        });
       });
 
       // From StartSetupPage
@@ -85,7 +87,9 @@ cr.define('multidevice_setup', () => {
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.OOBE;
 
-            forwardButton.click();
+            multiDeviceSetupElement.async(() => {
+              forwardButton.click();
+            });
           });
 
       // Post-OOBE
@@ -125,7 +129,9 @@ cr.define('multidevice_setup', () => {
                 true;
             multiDeviceSetupElement.uiMode = multidevice_setup.UiMode.POST_OOBE;
 
-            forwardButton.click();
+            multiDeviceSetupElement.async(() => {
+              forwardButton.click();
+            });
           });
     });
   }
