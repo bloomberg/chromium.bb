@@ -72,6 +72,7 @@ source_set("unit_tests") {
     "mock_ui_controller.h",
     "mock_web_controller.cc",
     "mock_web_controller.h",
+    "protocol_utils_unittest.cc",
     "script_executor_unittest.cc",
     "script_precondition_unittest.cc",
     "script_tracker_unittest.cc",
