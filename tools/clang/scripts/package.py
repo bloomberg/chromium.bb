@@ -282,6 +282,12 @@ def main():
                  'lib/clang/*/lib/windows/clang_rt.ubsan*.lib',
                  ])
 
+  if sys.platform in ('linux2', 'darwin'):
+    # Include libclang_rt.builtins.a for Fuchsia targets.
+    want.extend(['lib/clang/*/aarch64-fuchsia/lib/libclang_rt.builtins.a',
+                 'lib/clang/*/x86_64-fuchsia/lib/libclang_rt.builtins.a',
+                 ])
+
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
     # root: third_party/llvm-build/Release+Asserts/lib/..., rel_root: lib/...
     rel_root = root[len(LLVM_RELEASE_DIR)+1:]
