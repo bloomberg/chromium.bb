@@ -73,6 +73,7 @@ test("gcapi_test") {
     ":lib",
     "//base/test:test_support",
     "//chrome/install_static:install_static_util",
+    "//chrome/install_static/test:test_support",
     "//chrome/installer/util:with_no_strings",
     "//components/variations",
     "//testing/gtest",

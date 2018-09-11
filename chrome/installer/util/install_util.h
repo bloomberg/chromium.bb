@@ -86,7 +86,7 @@ class InstallUtil {
   static base::string16 GetToastActivatorRegistryPath();
 
   // Populates |path| with EULA sentinel file path. Returns false on error.
-  static bool GetEULASentinelFilePath(base::FilePath* path);
+  static bool GetEulaSentinelFilePath(base::FilePath* path);
 
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key,

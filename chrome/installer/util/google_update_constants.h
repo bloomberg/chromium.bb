@@ -50,7 +50,7 @@ extern const wchar_t kRegClientField[];
 extern const wchar_t kRegCommandLineField[];
 extern const wchar_t kRegCriticalVersionField[];
 extern const wchar_t kRegDidRunField[];
-extern const wchar_t kRegEULAAceptedField[];
+extern const wchar_t kRegEulaAceptedField[];
 extern const wchar_t kRegGoogleUpdateVersion[];
 extern const wchar_t kRegInstallerProgress[];
 extern const wchar_t kRegLangField[];

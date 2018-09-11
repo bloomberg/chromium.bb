@@ -74,7 +74,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
     base::FilePath eula_sentinel;
     // Be conservative and show the EULA if the path to the sentinel can't be
     // determined.
-    if (!InstallUtil::GetEULASentinelFilePath(&eula_sentinel) ||
+    if (!InstallUtil::GetEulaSentinelFilePath(&eula_sentinel) ||
         !base::PathExists(eula_sentinel)) {
       return true;
     }
@@ -95,9 +95,9 @@ bool WriteEULAtoTempFile(base::FilePath* eula_path) {
 // accepted.
 bool CreateEULASentinel() {
   base::FilePath eula_sentinel;
-  return InstallUtil::GetEULASentinelFilePath(&eula_sentinel) &&
-      base::CreateDirectory(eula_sentinel.DirName()) &&
-      base::WriteFile(eula_sentinel, "", 0) != -1;
+  return InstallUtil::GetEulaSentinelFilePath(&eula_sentinel) &&
+         base::CreateDirectory(eula_sentinel.DirName()) &&
+         base::WriteFile(eula_sentinel, "", 0) != -1;
 }
 
 }  // namespace
