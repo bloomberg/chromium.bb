@@ -81,17 +81,9 @@ Polymer({
     // First tap on the sensor to start fingerprint enrollment.
     if (this.getActiveScreen_() === this.$.placeFinger) {
       this.showScreen_('startFingerprintEnroll');
-      return;
     }
 
-    // The fingerprint subsystem has internal limit on the number of attempts
-    // no matter successful or failed.
-    // So it always increases "percentComplete", even if touch attempt was
-    // unsuccessful. We do not want to modify displayed progress on failed
-    // scans, so we only advance on success.
-    if (scanResult === FingerprintResultType.SUCCESS)
-      this.percentComplete_ = percentComplete;
-
+    this.percentComplete_ = percentComplete;
     this.scanResult_ = scanResult;
   },
 
