@@ -1124,12 +1124,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   device::mojom::WakeLockPtr wake_lock_;
 #endif
 
-  // These information are used to verify that the renderer does not misbehave
-  // when it comes to allocating LocalSurfaceIds. If surface properties change,
-  // a new LocalSurfaceId must be created.
-  viz::LocalSurfaceId last_local_surface_id_;
-  RenderWidgetSurfaceProperties last_surface_properties_;
-
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 

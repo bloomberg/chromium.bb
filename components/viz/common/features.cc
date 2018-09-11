@@ -23,10 +23,6 @@ const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables DumpWithoutCrashing of surface invariants violations.
-const base::Feature kEnableInvariantsViolationLogging{
-    "InvariantsViolationLogging", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
 // (OOP-D).
@@ -53,11 +49,6 @@ bool IsSurfaceSynchronizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
          command_line->HasSwitch(switches::kEnableSurfaceSynchronization) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
-}
-
-bool IsSurfaceInvariantsViolationLoggingEnabled() {
-  return IsSurfaceSynchronizationEnabled() &&
-         base::FeatureList::IsEnabled(kEnableInvariantsViolationLogging);
 }
 
 bool IsVizHitTestingDrawQuadEnabled() {
