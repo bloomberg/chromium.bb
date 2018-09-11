@@ -428,8 +428,6 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
 
   if (sandbox) {
     mojo::PlatformChannel channel;
-    mojo::PlatformChannelEndpoint client_endpoint =
-        channel.TakeRemoteEndpoint();
     base::HandlesToInheritVector handles;
     channel.PrepareToPassRemoteEndpoint(&handles, cmd_line);
 
