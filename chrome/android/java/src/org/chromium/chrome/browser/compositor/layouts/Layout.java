@@ -852,16 +852,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             }
         }
 
-        // LayoutTabs may be running their own animations; make sure they are done. This should
-        // not block the completion state of the layout animations in general. Particularly, a tab
-        // could be driving theme changes (and therefore fade animations) that are not critical to
-        // the browser's UI. https://crbug.com/627066
-        boolean layoutTabsFinished = true;
-        for (int i = 0; mLayoutTabs != null && i < mLayoutTabs.length; i++) {
-            layoutTabsFinished &= mLayoutTabs[i].onUpdateAnimation(time);
-        }
-
-        if (!finished || !layoutTabsFinished) requestUpdate();
+        if (!finished) requestUpdate();
 
         return finished;
     }
