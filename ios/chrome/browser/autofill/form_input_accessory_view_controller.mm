@@ -182,6 +182,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
+  // Work Around. On focus event, keyboardReplacementView is animated but the
+  // keyboard isn't. Cancel the animation to match the keyboard behavior
+  if (!IsIPadIdiom()) {
+    [self.keyboardReplacementView.layer removeAllAnimations];
+  }
+
   CGRect keyboardFrame =
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   UIView* keyboardView = [self getKeyboardView];
