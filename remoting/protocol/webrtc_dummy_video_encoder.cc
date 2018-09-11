@@ -162,7 +162,7 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   int64_t encode_finished_time_ms =
       (encode_finished_time - base::TimeTicks()).InMilliseconds();
   encoded_image.capture_time_ms_ = capture_time_ms;
-  encoded_image._timeStamp = static_cast<uint32_t>(capture_time_ms * 90);
+  encoded_image.SetTimestamp(static_cast<uint32_t>(capture_time_ms * 90));
   encoded_image.playout_delay_.min_ms = 0;
   encoded_image.playout_delay_.max_ms = 0;
   encoded_image.timing_.encode_start_ms = encode_started_time_ms;

@@ -235,7 +235,7 @@ int32_t RTCVideoDecoder::Decode(
   }
 
   // Create buffer metadata.
-  BufferData buffer_data(next_bitstream_buffer_id_, input_image._timeStamp,
+  BufferData buffer_data(next_bitstream_buffer_id_, input_image.Timestamp(),
                          input_image._length, gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;

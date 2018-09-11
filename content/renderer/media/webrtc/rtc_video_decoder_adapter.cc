@@ -223,7 +223,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
   scoped_refptr<media::DecoderBuffer> buffer =
       media::DecoderBuffer::CopyFrom(input_image._buffer, input_image._length);
   buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(input_image._timeStamp));
+      base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 
   // Queue for decoding.
   {
