@@ -106,8 +106,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // Synchronously begins a navigation.
   virtual void Navigate(const FrameLoadRequest&) = 0;
 
-  // The base Detach() method must be the last line of overrides of Detach().
-  virtual void Detach(FrameDetachType);
+  void Detach(FrameDetachType);
   void DisconnectOwnerElement();
   virtual bool ShouldClose() = 0;
   virtual void DidFreeze() = 0;
@@ -271,6 +270,16 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
+  // DetachImpl() may be re-entered multiple times, if a frame is detached while
+  // already being detached.
+  virtual void DetachImpl(FrameDetachType) = 0;
+
+  // Note that IsAttached() and IsDetached() are not strict opposites: frames
+  // that are detaching are considered to be in neither state.
+  bool IsDetached() const {
+    return lifecycle_.GetState() == FrameLifecycle::kDetached;
+  }
+
   mutable FrameTree tree_node_;
 
   Member<Page> page_;
@@ -283,7 +292,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   bool has_received_user_gesture_before_nav_ = false;
 
-  FrameLifecycle lifecycle_;
 
   // This is set to true if this is a subframe, and the frame element in the
   // parent frame's document becomes inert. This should always be false for
@@ -309,6 +317,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
+  FrameLifecycle lifecycle_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
