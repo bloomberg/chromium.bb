@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_url_generator.h"
@@ -29,7 +30,9 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -78,9 +81,7 @@ class TestBatchableDelegate : public BatchableDelegate {
         content_data_(content_data),
         callback_(callback) {}
   GURL GetURL() const override { return url_; }
-  net::URLFetcher::RequestType GetRequestType() const override {
-    return net::URLFetcher::PUT;
-  }
+  std::string GetRequestType() const override { return "PUT"; }
   std::vector<std::string> GetExtraRequestHeaders() const override {
     return std::vector<std::string>();
   }
@@ -100,9 +101,7 @@ class TestBatchableDelegate : public BatchableDelegate {
     callback_.Run();
     closure.Run();
   }
-  void NotifyUploadProgress(const net::URLFetcher* source,
-                            int64_t current,
-                            int64_t total) override {
+  void NotifyUploadProgress(int64_t current, int64_t total) override {
     progress_values_.push_back(current);
   }
   const std::vector<int64_t>& progress_values() const {
@@ -122,16 +121,40 @@ class TestBatchableDelegate : public BatchableDelegate {
 class DriveApiRequestsTest : public testing::Test {
  public:
   DriveApiRequestsTest() {
+    network::mojom::NetworkServicePtr network_service_ptr;
+    network::mojom::NetworkServiceRequest network_service_request =
+        mojo::MakeRequest(&network_service_ptr);
+    network_service_ =
+        network::NetworkService::Create(std::move(network_service_request),
+                                        /*netlog=*/nullptr);
+    network::mojom::NetworkContextParamsPtr context_params =
+        network::mojom::NetworkContextParams::New();
+    context_params->enable_data_url_support = true;
+    network_service_ptr->CreateNetworkContext(
+        mojo::MakeRequest(&network_context_), std::move(context_params));
+
+    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    network_service_client_ =
+        std::make_unique<network::TestNetworkServiceClient>(
+            mojo::MakeRequest(&network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = network::mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    network_context_->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            url_loader_factory_.get());
   }
 
   void SetUp() override {
-    request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.task_runner());
-
-    request_sender_.reset(
-        new RequestSender(new DummyAuthService, request_context_getter_.get(),
-                          message_loop_.task_runner(), kTestUserAgent,
-                          TRAFFIC_ANNOTATION_FOR_TESTS));
+    request_sender_ = std::make_unique<RequestSender>(
+        std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
+        scoped_task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -195,11 +218,17 @@ class DriveApiRequestsTest : public testing::Test {
         test_base_url, test_base_url, TEAM_DRIVES_INTEGRATION_ENABLED));
   }
 
-  base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<RequestSender> request_sender_;
   std::unique_ptr<DriveApiUrlGenerator> url_generator_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  std::unique_ptr<network::mojom::NetworkService> network_service_;
+  std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
+  network::mojom::NetworkContextPtr network_context_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
   base::ScopedTempDir temp_dir_;
 
   // This is a path to the file which contains expected response from
@@ -2188,33 +2217,32 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequestProgress) {
   request->Commit();
   request->Prepare(base::DoNothing());
 
-  request->OnURLFetchUploadProgress(nullptr, 0, kExpectedUploadDataSize);
-  request->OnURLFetchUploadProgress(nullptr, 150, kExpectedUploadDataSize);
+  request->OnUploadProgress(0, kExpectedUploadDataSize);
+  request->OnUploadProgress(150, kExpectedUploadDataSize);
   EXPECT_EQ(0u, requests[0]->progress_values().size());
   EXPECT_EQ(0u, requests[1]->progress_values().size());
   EXPECT_EQ(0u, requests[2]->progress_values().size());
-  request->OnURLFetchUploadProgress(nullptr, kExpectedUploadDataPosition[0],
-                                    kExpectedUploadDataSize);
+  request->OnUploadProgress(kExpectedUploadDataPosition[0],
+                            kExpectedUploadDataSize);
   EXPECT_EQ(1u, requests[0]->progress_values().size());
   EXPECT_EQ(0u, requests[1]->progress_values().size());
   EXPECT_EQ(0u, requests[2]->progress_values().size());
-  request->OnURLFetchUploadProgress(
-      nullptr, kExpectedUploadDataPosition[0] + 50, kExpectedUploadDataSize);
+  request->OnUploadProgress(kExpectedUploadDataPosition[0] + 50,
+                            kExpectedUploadDataSize);
   EXPECT_EQ(2u, requests[0]->progress_values().size());
   EXPECT_EQ(0u, requests[1]->progress_values().size());
   EXPECT_EQ(0u, requests[2]->progress_values().size());
-  request->OnURLFetchUploadProgress(
-      nullptr, kExpectedUploadDataPosition[1] + 20, kExpectedUploadDataSize);
+  request->OnUploadProgress(kExpectedUploadDataPosition[1] + 20,
+                            kExpectedUploadDataSize);
   EXPECT_EQ(3u, requests[0]->progress_values().size());
   EXPECT_EQ(1u, requests[1]->progress_values().size());
   EXPECT_EQ(0u, requests[2]->progress_values().size());
-  request->OnURLFetchUploadProgress(nullptr, kExpectedUploadDataPosition[2],
-                                    kExpectedUploadDataSize);
+  request->OnUploadProgress(kExpectedUploadDataPosition[2],
+                            kExpectedUploadDataSize);
   EXPECT_EQ(3u, requests[0]->progress_values().size());
   EXPECT_EQ(2u, requests[1]->progress_values().size());
   EXPECT_EQ(1u, requests[2]->progress_values().size());
-  request->OnURLFetchUploadProgress(nullptr, kExpectedUploadDataSize,
-                                    kExpectedUploadDataSize);
+  request->OnUploadProgress(kExpectedUploadDataSize, kExpectedUploadDataSize);
   ASSERT_EQ(3u, requests[0]->progress_values().size());
   EXPECT_EQ(0, requests[0]->progress_values()[0]);
   EXPECT_EQ(50, requests[0]->progress_values()[1]);

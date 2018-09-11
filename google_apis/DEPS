@@ -10,3 +10,9 @@ include_rules = [
   "+services/network/test",
   "+third_party/ocmock",
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+services/network/network_service.h",
+  ],
+}

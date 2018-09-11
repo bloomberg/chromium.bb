@@ -22,7 +22,6 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +56,6 @@ class SyncEngineTest : public testing::Test,
         nullptr,    // extension_service
         nullptr,    // signin_manager
         nullptr,    // token_service
-        nullptr,    // request_context
         nullptr,    // url_loader_factory
         nullptr,    // drive_service_factory
         nullptr));  // in_memory_env

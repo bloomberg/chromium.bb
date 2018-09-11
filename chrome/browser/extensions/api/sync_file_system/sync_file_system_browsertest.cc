@@ -40,7 +40,6 @@ class FakeDriveServiceFactory
 
   std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
       OAuth2TokenService* oauth2_token_service,
-      net::URLRequestContextGetter* url_request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::SequencedTaskRunner* blocking_task_runner) override {
     std::unique_ptr<drive::FakeDriveService> drive_service(
@@ -96,7 +95,6 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         extension_service,
         fake_signin_manager_.get(),  // signin_manager
         nullptr,                     // token_service
-        nullptr,                     // request_context
         nullptr,                     // url_loader_factory
         std::move(drive_service_factory), in_memory_env_.get());
     remote_service_->SetSyncEnabled(true);
