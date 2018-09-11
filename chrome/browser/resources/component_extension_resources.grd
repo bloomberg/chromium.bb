@@ -51,8 +51,8 @@
         <include name="IDR_FEEDBACK_TOPBAR_HANDLER_JS" file="feedback/js/topbar_handlers.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FEEDBACK_FEEDBACK_CSS" file="feedback/css/feedback.css" type="BINDATA" />
         <include name="IDR_FEEDBACK_SYSINFO_CSS" file="feedback/css/sys_info.css" type="BINDATA" />
-        <include name="IDR_FEEDBACK_ICON_32" file="feedback/images/icon32.png" type="BINDATA" />
-        <include name="IDR_FEEDBACK_ICON_64" file="feedback/images/icon64.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_ICON_48" file="feedback/images/icon48.png" type="BINDATA" />
+        <include name="IDR_FEEDBACK_ICON_192" file="feedback/images/icon192.png" type="BINDATA" />
       </if>
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_BACKGROUND_JS" file="identity_scope_approval_dialog/background.js" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_CSS" file="identity_scope_approval_dialog/scope_approval_dialog.css" type="BINDATA" />
