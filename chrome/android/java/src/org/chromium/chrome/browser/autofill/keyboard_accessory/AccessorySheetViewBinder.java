@@ -10,9 +10,11 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
 
+import android.os.Build;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -42,6 +44,15 @@ class AccessorySheetViewBinder {
             }
         } else {
             assert false : "Every possible property update needs to be handled!";
+        }
+        // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
+        if (viewPager != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            viewPager.post(() -> {
+                ViewParent parent = viewPager.getParent();
+                if (parent != null) {
+                    parent.requestLayout();
+                }
+            });
         }
     }
 

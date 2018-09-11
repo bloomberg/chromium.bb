@@ -11,11 +11,13 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAc
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
+import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -122,6 +124,15 @@ class KeyboardAccessoryViewBinder {
             view.setTabSelectionAdapter(listener);
         } else {
             assert false : "Every possible property update needs to be handled!";
+        }
+        // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
+        if (view != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            view.post(() -> {
+                ViewParent parent = view.getParent();
+                if (parent != null) {
+                    parent.requestLayout();
+                }
+            });
         }
     }
 
