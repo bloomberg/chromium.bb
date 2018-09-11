@@ -160,6 +160,10 @@
 # Context menu tests.
 -ContextMenuBrowserTest.ContextMenuEntriesAreDisabledInLockedFullscreen
 
+# Flaky test. crbug.com/880584
+# Not implemented reached in virtual base::i18n::TextDirection content::RenderWidgetHostViewAura::GetTextDirection()
+-CrSettingsResetPageTest.All
+
 # Default extension tests.
 -DefaultProfileExtensionBrowserTest.NoExtensionHosts
 
@@ -174,6 +178,9 @@
 -MSE_Widevine/EncryptedMediaTest.*
 -SRC_ClearKey/EncryptedMediaTest.*
 -SRC_ExternalClearKey/EncryptedMediaTest.*
+
+# Failing on ASAN bot. crbug.com/882631
+-ExtensionWebRequestApiTest.WebRequestTypes
 
 # Immersive mode tests.
 -ImmersiveModeBrowserViewTest.TabNavigationAcceleratorsFullscreenBrowser/material
