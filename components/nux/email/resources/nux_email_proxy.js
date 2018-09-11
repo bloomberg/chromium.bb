@@ -44,15 +44,34 @@ cr.define('nux', function() {
 
     /**
      * @param {!bookmarkData} data
+     * @param {number} emailProviderId
      * @param {!Function} callback
      */
-    addBookmark(data, callback) {}
+    addBookmark(data, emailProviderId, callback) {}
 
     /** @param {boolean} show */
     toggleBookmarkBar(show) {}
 
     /** @return {!Array<Object>} Array of email providers. */
     getEmailList() {}
+
+    recordPageInitialized() {}
+
+    recordClickedOption() {}
+
+    recordClickedDisabledButton() {}
+
+    /**
+     * @param {number} providerId This should match one of the histogram enum
+     *     value for NuxEmailProvidersSelections.
+     */
+    recordProviderSelected(providerId) {}
+
+    recordNoThanks() {}
+
+    recordGetStarted() {}
+
+    recordFinalize() {}
   }
 
   /** @implements {NuxEmailProxy} */
@@ -63,9 +82,9 @@ cr.define('nux', function() {
     }
 
     /** @override */
-    addBookmark(data, callback) {
+    addBookmark(data, emailProviderId, callback) {
       chrome.bookmarks.create(data, callback);
-      // TODO(scottchen): request C++ to cache favicon
+      chrome.send('cacheEmailIcon', [emailProviderId]);
     }
 
     /** @override */
@@ -88,6 +107,7 @@ cr.define('nux', function() {
       return emailList;
     }
 
+    /** @override */
     recordPageInitialized() {
       chrome.metricsPrivate.recordEnumerationValue(
           INTERACTION_METRIC_NAME, NuxEmailProvidersInteractions.PageShown,
@@ -100,47 +120,46 @@ cr.define('nux', function() {
       this.lastPart = 'AndNavigatedAway';
     }
 
+    /** @override */
     recordClickedOption() {
       // Only overwrite this.firstPart if it's not overwritten already
       if (this.firstPart == 'DidNothing')
         this.firstPart = 'ChoseAnOption';
     }
 
+    /** @override */
     recordClickedDisabledButton() {
       // Only overwrite this.firstPart if it's not overwritten already
       if (this.firstPart == 'DidNothing')
         this.firstPart = 'ClickedDisabledNextButton';
     }
 
+    /** @override */
+    recordProviderSelected(providerId) {
+      chrome.metricsPrivate.recordEnumerationValue(
+          SELECTION_METRIC_NAME, providerId,
+          loadTimeData.getInteger('email_count'));
+    }
+
+    /** @override */
     recordNoThanks() {
       this.lastPart = 'AndChoseSkip';
       this.recordFinalize();
     }
 
-    /**
-     * @param {number} providerId This should match one of the histogram enum
-     *     value for NuxEmailProvidersSelections.
-     */
-    recordGetStarted(providerId) {
-      chrome.metricsPrivate.recordEnumerationValue(
-          SELECTION_METRIC_NAME, providerId,
-          loadTimeData.getInteger('email_count'));
-
+    /** @override */
+    recordGetStarted() {
       this.lastPart = 'AndChoseNext';
       this.recordFinalize();
     }
 
+    /** @override */
     recordFinalize() {
-      // Don't record again if it's already recorded before unloading.
-      if (this.finalized)
-        return;
-
       let finalValue = this.firstPart + this.lastPart;
 
       chrome.metricsPrivate.recordEnumerationValue(
           INTERACTION_METRIC_NAME, NuxEmailProvidersInteractions[finalValue],
           INTERACTION_METRIC_COUNT);
-      this.finalized = true;
     }
   }
 

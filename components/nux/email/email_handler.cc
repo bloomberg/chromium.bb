@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
@@ -37,9 +36,9 @@ enum class EmailProviders {
 
 struct EmailProviderType {
   const EmailProviders id;
-  const char* name;
+  const char* name;  // Icon in WebUI should use name to match CSS.
   const char* url;
-  const int icon;
+  const int icon;  // Corresponds with resource ID, used for bookmark cache.
 };
 
 const char* kEmailInteractionHistogram =
@@ -50,12 +49,14 @@ const char* kEmailInteractionHistogram =
 // TODO(hcarmona): populate with icon ids.
 const EmailProviderType kEmail[] = {
     {EmailProviders::kGmail, "Gmail",
-     "https://accounts.google.com/b/0/AddMailService", 0},
-    {EmailProviders::kYahoo, "Yahoo", "https://mail.yahoo.com", 0},
+     "https://accounts.google.com/b/0/AddMailService", IDR_NUX_EMAIL_GMAIL_1X},
+    {EmailProviders::kYahoo, "Yahoo", "https://mail.yahoo.com",
+     IDR_NUX_EMAIL_YAHOO_1X},
     {EmailProviders::kOutlook, "Outlook", "https://login.live.com/login.srf?",
-     0},
-    {EmailProviders::kAol, "AOL", "https://mail.aol.com", 0},
-    {EmailProviders::kiCloud, "iCloud", "https://www.icloud.com/mail", 0},
+     IDR_NUX_EMAIL_OUTLOOK_1X},
+    {EmailProviders::kAol, "AOL", "https://mail.aol.com", IDR_NUX_EMAIL_AOL_1X},
+    {EmailProviders::kiCloud, "iCloud", "https://www.icloud.com/mail",
+     IDR_NUX_EMAIL_ICLOUD_1X},
 };
 
 constexpr const int kEmailIconSize = 48;  // Pixels.
@@ -64,22 +65,15 @@ static_assert(base::size(kEmail) == (size_t)EmailProviders::kCount,
               "names and histograms must match");
 
 EmailHandler::EmailHandler(PrefService* prefs,
-                           favicon::FaviconService* favicon_service,
-                           bookmarks::BookmarkModel* bookmark_model)
-    : prefs_(prefs),
-      favicon_service_(favicon_service),
-      bookmark_model_(bookmark_model) {}
+                           favicon::FaviconService* favicon_service)
+    : prefs_(prefs), favicon_service_(favicon_service) {}
 
 EmailHandler::~EmailHandler() {}
 
 void EmailHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "rejectEmails", base::BindRepeating(&EmailHandler::HandleRejectEmails,
-                                          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "addEmails", base::BindRepeating(&EmailHandler::HandleAddEmails,
-                                       base::Unretained(this)));
+      "cacheEmailIcon", base::BindRepeating(&EmailHandler::HandleCacheEmailIcon,
+                                            base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "toggleBookmarkBar",
@@ -87,47 +81,28 @@ void EmailHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void EmailHandler::HandleRejectEmails(const base::ListValue* args) {
-  /* TODO(hcarmona): Add histograms and uncomment this code.
-  UMA_HISTOGRAM_ENUMERATION(kEmailInteractionHistogram,
-                            EmailInteraction::kNoThanks,
-                            EmailInteraction::kCount);
-  */
-}
+void EmailHandler::HandleCacheEmailIcon(const base::ListValue* args) {
+  int emailId;
+  args->GetInteger(0, &emailId);
 
-void EmailHandler::HandleAddEmails(const base::ListValue* args) {
-  // Add bookmarks for all selected emails.
-  int bookmarkIndex = 0;
-  for (size_t i = 0; i < (size_t)EmailProviders::kCount; ++i) {
-    bool selected = false;
-    CHECK(args->GetBoolean(i, &selected));
-    if (selected) {
-      /* TODO(hcarmona): Add histograms and uncomment this code.
-      UMA_HISTOGRAM_ENUMERATION("FirstRun.NewUserExperience.EmailSelection",
-                                (EmailProviders)i,
-                                EmailProviders::kCount);
-      */
-      GURL app_url = GURL(kEmail[i].url);
-      bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(),
-                              bookmarkIndex++,
-                              base::ASCIIToUTF16(kEmail[i].name), app_url);
-
-      // Preload the favicon cache with Chrome-bundled images. Otherwise, the
-      // pre-populated bookmarks don't have favicons and look bad. Favicons are
-      // updated automatically when a user visits a site.
-      favicon_service_->MergeFavicon(
-          app_url, app_url, favicon_base::IconType::kFavicon,
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              kEmail[i].icon),
-          gfx::Size(kEmailIconSize, kEmailIconSize));
+  const EmailProviderType* selectedEmail = NULL;
+  for (size_t i = 0; i < base::size(kEmail); i++) {
+    if ((int)kEmail[i].id == emailId) {
+      selectedEmail = &kEmail[i];
+      break;
     }
   }
+  CHECK(selectedEmail);  // WebUI should not be able to pass non-existent ID.
 
-  /* TODO(hcarmona): Add histograms and uncomment this code.
-  UMA_HISTOGRAM_ENUMERATION(kEmailInteractionHistogram,
-                            EmailInteraction::kGetStarted,
-                            EmailInteraction::kCount);
-  */
+  // Preload the favicon cache with Chrome-bundled images. Otherwise, the
+  // pre-populated bookmarks don't have favicons and look bad. Favicons are
+  // updated automatically when a user visits a site.
+  GURL app_url = GURL(selectedEmail->url);
+  favicon_service_->MergeFavicon(
+      app_url, app_url, favicon_base::IconType::kFavicon,
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          selectedEmail->icon),
+      gfx::Size(kEmailIconSize, kEmailIconSize));
 }
 
 void EmailHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
@@ -143,6 +118,12 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
   html_source->AddLocalizedString("getStarted", IDS_NUX_EMAIL_GET_STARTED);
   html_source->AddLocalizedString("welcomeTitle", IDS_NUX_EMAIL_WELCOME_TITLE);
   html_source->AddLocalizedString("emailPrompt", IDS_NUX_EMAIL_PROMPT);
+  html_source->AddLocalizedString("bookmarkAdded",
+                                  IDS_NUX_EMAIL_BOOKMARK_ADDED);
+  html_source->AddLocalizedString("bookmarkRemoved",
+                                  IDS_NUX_EMAIL_BOOKMARK_REMOVED);
+  html_source->AddLocalizedString("bookmarkReplaced",
+                                  IDS_NUX_EMAIL_BOOKMARK_REPLACED);
 
   // Add required resources.
   html_source->AddResourcePath("email", IDR_NUX_EMAIL_HTML);

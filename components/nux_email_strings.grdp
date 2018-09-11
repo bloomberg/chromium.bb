@@ -9,4 +9,13 @@
   <message name="IDS_NUX_EMAIL_WELCOME_TITLE" desc="Text shown to welcome the users to chrome.">
     Make Chrome your own
   </message>
+  <message name="IDS_NUX_EMAIL_BOOKMARK_ADDED" desc="String read for accessibility to inform the user a bookmark was added.">
+    Bookmark added
+  </message>
+  <message name="IDS_NUX_EMAIL_BOOKMARK_REMOVED" desc="String read for accessibility to inform the user a bookmark was removed.">
+    Bookmark removed
+  </message>
+  <message name="IDS_NUX_EMAIL_BOOKMARK_REPLACED" desc="String read for accessibility to inform the user a bookmark was replaced.">
+    Bookmark replaced
+  </message>
 </grit-part>

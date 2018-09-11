@@ -19,6 +19,9 @@ nux_email.EmailProviderModel;
 
 Polymer({
   is: 'email-chooser',
+
+  behaviors: [I18nBehavior],
+
   properties: {
     emailList: Array,
 
@@ -29,7 +32,7 @@ Polymer({
     },
 
     /** @private */
-    gotStarted_: Boolean,
+    finalized_: Boolean,
 
     /** @private {nux_email.EmailProviderModel} */
     selectedEmailProvider_: {
@@ -43,6 +46,13 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
+  attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+  },
+
+  /** @override */
   ready: function() {
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
     this.browserProxy_.recordPageInitialized();
@@ -50,13 +60,16 @@ Polymer({
     this.emailList = this.browserProxy_.getEmailList();
 
     window.addEventListener('beforeunload', () => {
-      // Only need to clean up if user didn't choose "Get Started".
-      if (this.gotStarted_)
+      // Only need to clean up if user didn't interact with the buttons.
+      if (this.finalized_)
         return;
 
-      this.revertBookmark_();
+      if (this.selectedEmailProvider_) {
+        this.browserProxy_.recordProviderSelected(
+            this.selectedEmailProvider_.id);
+      }
+
       this.browserProxy_.recordFinalize();
-      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     });
   },
 
@@ -125,24 +138,42 @@ Polymer({
     if (newEmail) {
       this.browserProxy_.toggleBookmarkBar(true);
       this.browserProxy_.addBookmark(
-          {title: newEmail.name, url: newEmail.url, parentId: '1'}, results => {
+          {
+            title: newEmail.name,
+            url: newEmail.url,
+            parentId: '1',
+          },
+          newEmail.id, results => {
             this.selectedEmailProvider_.bookmarkId = results.id;
           });
     } else {
       this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     }
+
+    // Announcements are mutually exclusive, so keeping separate.
+    if (prevEmail && newEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkReplaced')});
+    } else if (prevEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkRemoved')});
+    } else if (newEmail) {
+      this.fire('iron-announce', {text: this.i18n('bookmarkAdded')});
+    }
   },
 
   /** @private */
   onNoThanksClicked_: function() {
+    this.finalized_ = true;
+    this.revertBookmark_();
+    this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     this.browserProxy_.recordNoThanks();
     window.location.replace('chrome://newtab');
   },
 
   /** @private */
   onGetStartedClicked_: function() {
-    this.gotStarted_ = true;
-    this.browserProxy_.recordGetStarted(this.selectedEmailProvider_.id);
+    this.finalized_ = true;
+    this.browserProxy_.recordProviderSelected(this.selectedEmailProvider_.id);
+    this.browserProxy_.recordGetStarted();
     window.location.replace(this.selectedEmailProvider_.url);
   },
 

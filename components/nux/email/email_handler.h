@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
-
 namespace content {
 class WebUIDataSource;
 }  // namespace content
@@ -38,17 +34,14 @@ enum class EmailInteraction {
 
 class EmailHandler : public content::WebUIMessageHandler {
  public:
-  EmailHandler(PrefService* prefs,
-               favicon::FaviconService* favicon_service,
-               bookmarks::BookmarkModel* bookmark_model);
+  EmailHandler(PrefService* prefs, favicon::FaviconService* favicon_service);
   ~EmailHandler() override;
 
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
   // Callbacks for JS APIs.
-  void HandleRejectEmails(const base::ListValue* args);
-  void HandleAddEmails(const base::ListValue* args);
+  void HandleCacheEmailIcon(const base::ListValue* args);
   void HandleToggleBookmarkBar(const base::ListValue* args);
 
   // Adds webui sources.
@@ -61,9 +54,6 @@ class EmailHandler : public content::WebUIMessageHandler {
 
   // Weak reference.
   favicon::FaviconService* favicon_service_;
-
-  // Weak reference.
-  bookmarks::BookmarkModel* bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(EmailHandler);
 };

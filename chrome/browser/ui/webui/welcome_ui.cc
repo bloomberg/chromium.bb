@@ -130,13 +130,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   if (onboard_during_nux &&
       base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
-    content::BrowserContext* browser_context =
-        web_ui->GetWebContents()->GetBrowserContext();
     web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
-        profile->GetPrefs(),
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS),
-        BookmarkModelFactory::GetForBrowserContext(browser_context)));
+        profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
+                                 profile, ServiceAccessType::EXPLICIT_ACCESS)));
 
     nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
   }
