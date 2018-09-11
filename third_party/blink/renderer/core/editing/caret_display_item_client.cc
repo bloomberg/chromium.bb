@@ -104,6 +104,8 @@ LayoutRect CaretDisplayItemClient::ComputeCaretRect(
 
   // First compute a rect local to the layoutObject at the selection start.
   const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
+  if (!caret_rect.layout_object)
+    return LayoutRect();
 
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
