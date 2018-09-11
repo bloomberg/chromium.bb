@@ -67,7 +67,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, strong) GridLayout* defaultLayout;
 // The layout used while the grid is being reordered.
 @property(nonatomic, strong) UICollectionViewLayout* reorderingLayout;
-
+// YES if, when reordering is enabled, the order of the cells has changed.
+@property(nonatomic, assign) BOOL hasChangedOrder;
 @end
 
 @implementation GridViewController
@@ -88,6 +89,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize emptyStateAnimator = _emptyStateAnimator;
 @synthesize defaultLayout = _defaultLayout;
 @synthesize reorderingLayout = _reorderingLayout;
+@synthesize hasChangedOrder = _hasChangedOrder;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -286,7 +288,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   GridItem* item = self.items[source];
   [self.items removeObjectAtIndex:source];
   [self.items insertObject:item atIndex:destination];
-
+  self.hasChangedOrder = YES;
   [self.delegate gridViewController:self
                   didMoveItemWithID:item.identifier
                             toIndex:destination];
@@ -587,6 +589,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       if (!moving) {
         gesture.enabled = NO;
       } else {
+        base::RecordAction(
+            base::UserMetricsAction("MobileTabGridBeganReordering"));
         CGPoint cellCenter =
             [self.collectionView cellForItemAtIndexPath:path].center;
         self.itemReorderTouchPoint =
@@ -624,12 +628,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                             animated:YES];
       }];
       [self.collectionView endInteractiveMovement];
+      [self recordInteractiveReordering];
       [CATransaction commit];
       break;
     }
     case UIGestureRecognizerStateCancelled:
       self.itemReorderTouchPoint = CGPointZero;
       [self.collectionView cancelInteractiveMovement];
+      [self recordInteractiveReordering];
       [self.collectionView setCollectionViewLayout:self.defaultLayout
                                           animated:YES];
       // Re-enable cancelled gesture.
@@ -647,6 +653,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                   position.y - self.itemReorderTouchPoint.y);
 
   [self.collectionView updateInteractiveMovementTargetPosition:targetLocation];
+}
+
+- (void)recordInteractiveReordering {
+  if (self.hasChangedOrder) {
+    base::RecordAction(base::UserMetricsAction("MobileTabGridReordered"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGridEndedWithoutReordering"));
+  }
+  self.hasChangedOrder = NO;
 }
 
 @end
