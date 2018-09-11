@@ -42627,6 +42627,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
 </enum>
 
+<enum name="SB2RemoteCallCanUseLocalBlacklists">
+  <int value="0" label="FEATURE_DISABLED_DUE_TO_LOW_END_DEVICE"/>
+  <int value="1" label="FEATURE_DISABLED_VIA_FINCH"/>
+  <int value="2" label="ENABLED"/>
+</enum>
+
+<enum name="SB2RemoteCallLocalBlacklistsLookupResult">
+  <int value="0" label="BLACKLISTS_NOT_INITIALIZED"/>
+  <int value="1" label="ADDITIONAL_CHECK_REQUIRED"/>
+  <int value="2" label="ADDITIONAL_CHECK_NOT_REQUIRED"/>
+</enum>
+
 <enum name="SB2RemoteCallResult">
   <int value="0" label="INTERNAL_ERROR"/>
   <int value="1" label="TIMEOUT"/>
