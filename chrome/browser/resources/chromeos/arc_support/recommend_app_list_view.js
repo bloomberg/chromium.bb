@@ -14,6 +14,7 @@ function generateContents(appIcon, appTitle, appPackageName) {
 
   var imagePicker = doc.createElement('div');
   imagePicker.classList.add('image-picker');
+  imagePicker.addEventListener('click', toggleCheckStatus);
   item.appendChild(imagePicker);
 
   var chip = doc.createElement('div');
