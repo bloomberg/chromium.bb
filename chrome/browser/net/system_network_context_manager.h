@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -123,6 +124,17 @@ class SystemNetworkContextManager {
   // Call |FlushForTesting()| on Network Service related interfaces. For test
   // use only.
   void FlushNetworkInterfaceForTesting();
+
+  // Returns configuration that would be sent to the stub DNS resolver.
+  static void GetStubResolverConfigForTesting(
+      bool* stub_resolver_enabled,
+      base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+          dns_over_https_servers);
+
+  static network::mojom::HttpAuthStaticParamsPtr
+  GetHttpAuthStaticParamsForTesting();
+  static network::mojom::HttpAuthDynamicParamsPtr
+  GetHttpAuthDynamicParamsForTesting();
 
  private:
   class URLLoaderFactoryForSystem;

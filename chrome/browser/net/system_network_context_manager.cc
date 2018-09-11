@@ -5,10 +5,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 
 #include <set>
-#include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -97,31 +95,38 @@ void GetStubResolverConfig(
       local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
   const auto& doh_server_method_list =
       local_state->GetList(prefs::kDnsOverHttpsServerMethods)->GetList();
-  DCHECK_EQ(doh_server_list.size(), doh_server_method_list.size());
 
-  for (size_t i = 0;
-       i < doh_server_list.size() && i < doh_server_method_list.size(); ++i) {
-    if (!doh_server_list[i].is_string() ||
-        !doh_server_method_list[i].is_string()) {
-      continue;
+  // The two lists may have mismatched lengths during a pref change. Just skip
+  // the DOH server list updates then, as the configuration may be incorrect.
+  //
+  // TODO(mmenke): May need to improve safety here when / if DNS over HTTPS is
+  // exposed via settings, as it's possible for the old and new lengths to be
+  // the same, but the servers not to match. Either a PostTask or merging the
+  // prefs would work around that.
+  if (doh_server_list.size() == doh_server_method_list.size()) {
+    for (size_t i = 0; i < doh_server_list.size(); ++i) {
+      if (!doh_server_list[i].is_string() ||
+          !doh_server_method_list[i].is_string()) {
+        continue;
+      }
+
+      if (!net::IsValidDoHTemplate(doh_server_list[i].GetString(),
+                                   doh_server_method_list[i].GetString())) {
+        continue;
+      }
+
+      if (!dns_over_https_servers->has_value()) {
+        *dns_over_https_servers = base::make_optional<
+            std::vector<network::mojom::DnsOverHttpsServerPtr>>();
+      }
+
+      network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
+          network::mojom::DnsOverHttpsServer::New();
+      dns_over_https_server->server_template = doh_server_list[i].GetString();
+      dns_over_https_server->use_post =
+          (doh_server_method_list[i].GetString() == "POST");
+      (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
     }
-
-    if (!net::IsValidDoHTemplate(doh_server_list[i].GetString(),
-                                 doh_server_method_list[i].GetString())) {
-      continue;
-    }
-
-    if (!dns_over_https_servers->has_value()) {
-      *dns_over_https_servers = base::make_optional<
-          std::vector<network::mojom::DnsOverHttpsServerPtr>>();
-    }
-
-    network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
-        network::mojom::DnsOverHttpsServer::New();
-    dns_over_https_server->server_template = doh_server_list[i].GetString();
-    dns_over_https_server->use_post =
-        (doh_server_method_list[i].GetString() == "POST");
-    (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
   }
 
   *stub_resolver_enabled =
@@ -622,6 +627,23 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
   }
   if (url_loader_factory_)
     url_loader_factory_.FlushForTesting();
+}
+
+void SystemNetworkContextManager::GetStubResolverConfigForTesting(
+    bool* stub_resolver_enabled,
+    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+        dns_over_https_servers) {
+  GetStubResolverConfig(stub_resolver_enabled, dns_over_https_servers);
+}
+
+network::mojom::HttpAuthStaticParamsPtr
+SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {
+  return CreateHttpAuthStaticParams();
+}
+
+network::mojom::HttpAuthDynamicParamsPtr
+SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
+  return CreateHttpAuthDynamicParams();
 }
 
 network::mojom::NetworkContextParamsPtr
