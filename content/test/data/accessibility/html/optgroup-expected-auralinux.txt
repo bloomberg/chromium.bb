@@ -3,10 +3,10 @@
 ++++[list box] enabled
 ++++++[panel] name='Enabled' enabled xml-roles:group
 ++++++++[text] name='Enabled' enabled
-++++++[list item] name='One' enabled posinset:1 setsize:4
-++++++[list item] name='Two' enabled posinset:2 setsize:4
-++++++[list item] name='Three' enabled posinset:3 setsize:4
-++++++[list item] name='Four' enabled posinset:4 setsize:4
+++++++[list item] name='One' enabled selectable posinset:1 setsize:4
+++++++[list item] name='Two' enabled selectable posinset:2 setsize:4
+++++++[list item] name='Three' enabled selectable posinset:3 setsize:4
+++++++[list item] name='Four' enabled selectable posinset:4 setsize:4
 ++++++[panel] name='Disabled' enabled xml-roles:group
 ++++++++[text] name='Disabled' enabled
 ++++++[list item] name='One' posinset:1 setsize:4
