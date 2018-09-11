@@ -72,10 +72,12 @@ bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
     return NO;
   }
   if (command == "form.submit") {
-    return FormSubmissionHandler(message, has_user_gesture, form_in_main_frame);
+    return FormSubmissionHandler(message, has_user_gesture, form_in_main_frame,
+                                 sender_frame);
   }
   if (command == "form.activity") {
-    return HandleFormActivity(message, has_user_gesture, form_in_main_frame);
+    return HandleFormActivity(message, has_user_gesture, form_in_main_frame,
+                              sender_frame);
   }
   return false;
 }
@@ -83,7 +85,8 @@ bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
 bool FormActivityTabHelper::HandleFormActivity(
     const base::DictionaryValue& message,
     bool has_user_gesture,
-    bool form_in_main_frame) {
+    bool form_in_main_frame,
+    web::WebFrame* sender_frame) {
   FormActivityParams params;
   if (!message.GetString("formName", &params.form_name) ||
       !message.GetString("fieldName", &params.field_name) ||
@@ -97,14 +100,15 @@ bool FormActivityTabHelper::HandleFormActivity(
 
   params.is_main_frame = form_in_main_frame;
   for (auto& observer : observers_)
-    observer.FormActivityRegistered(web_state_, params);
+    observer.FormActivityRegistered(web_state_, sender_frame, params);
   return true;
 }
 
 bool FormActivityTabHelper::FormSubmissionHandler(
     const base::DictionaryValue& message,
     bool has_user_gesture,
-    bool form_in_main_frame) {
+    bool form_in_main_frame,
+    web::WebFrame* sender_frame) {
   std::string href;
   if (!message.GetString("href", &href)) {
     DLOG(WARNING) << "JS message parameter not found: href";
@@ -119,8 +123,8 @@ bool FormActivityTabHelper::FormSubmissionHandler(
       has_user_gesture || [web_state_->GetWebViewProxy() keyboardAccessory];
 
   for (auto& observer : observers_)
-    observer.DocumentSubmitted(web_state_, form_name, submitted_by_user,
-                               form_in_main_frame);
+    observer.DocumentSubmitted(web_state_, sender_frame, form_name,
+                               submitted_by_user, form_in_main_frame);
   return true;
 }
 

@@ -267,7 +267,8 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
   EXPECT_TRUE(GetSuggestionView(input_accessory_view_));
 
   // Trigger another page load. The suggestions accessory view should
@@ -286,7 +287,8 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   params.type = "blur";  // blur!
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
 }
 
@@ -304,7 +306,8 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
 
   // The suggestions accessory view should be empty.
   FormSuggestionView* suggestionView = GetSuggestionView(input_accessory_view_);
@@ -333,7 +336,8 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
 
   // The providers should each be asked if they have suggestions for the
   // form in question.
@@ -383,7 +387,8 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
 
   // Since the first provider has suggestions available, it and only it
   // should have been asked.
@@ -423,7 +428,8 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_form_activity_tab_helper_.FormActivityRegistered(params);
+  test_form_activity_tab_helper_.FormActivityRegistered(
+      /*sender_frame*/ nullptr, params);
 
   // Selecting a suggestion should notify the delegate.
   [suggestion_controller_ didSelectSuggestion:suggestions[0]];

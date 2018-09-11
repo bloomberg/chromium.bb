@@ -26,26 +26,31 @@ FormActivityObserverBridge::~FormActivityObserverBridge() {
 
 void FormActivityObserverBridge::FormActivityRegistered(
     web::WebState* web_state,
+    web::WebFrame* sender_frame,
     const FormActivityParams& params) {
   DCHECK_EQ(web_state, web_state_);
-  if ([owner_
-          respondsToSelector:@selector(webState:didRegisterFormActivity:)]) {
-    [owner_ webState:web_state didRegisterFormActivity:params];
+  if ([owner_ respondsToSelector:@selector
+              (webState:didRegisterFormActivity:inFrame:)]) {
+    [owner_ webState:web_state
+        didRegisterFormActivity:params
+                        inFrame:sender_frame];
   }
 }
 
 void FormActivityObserverBridge::DocumentSubmitted(web::WebState* web_state,
+                                                   web::WebFrame* sender_frame,
                                                    const std::string& form_name,
                                                    bool has_user_gesture,
                                                    bool form_in_main_frame) {
   DCHECK_EQ(web_state, web_state_);
   if ([owner_ respondsToSelector:@selector
               (webState:didSubmitDocumentWithFormNamed:hasUserGesture
-                          :formInMainFrame:)]) {
+                          :formInMainFrame:inFrame:)]) {
     [owner_ webState:web_state
         didSubmitDocumentWithFormNamed:form_name
                         hasUserGesture:has_user_gesture
-                       formInMainFrame:form_in_main_frame];
+                       formInMainFrame:form_in_main_frame
+                               inFrame:sender_frame];
   }
 }
 }  // namespace autofill

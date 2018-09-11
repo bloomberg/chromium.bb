@@ -583,7 +583,8 @@ void GetFormAndField(autofill::FormData* form,
 #pragma mark FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const autofill::FormActivityParams&)params {
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params
+                    inFrame:(web::WebFrame*)frame {
   if (![self isAutofillEnabled])
     return;
 
@@ -646,7 +647,8 @@ void GetFormAndField(autofill::FormData* form,
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                     hasUserGesture:(BOOL)hasUserGesture
-                   formInMainFrame:(BOOL)formInMainFrame {
+                   formInMainFrame:(BOOL)formInMainFrame
+                           inFrame:(web::WebFrame*)frame {
   if (!formInMainFrame) {
     // Saving from iframes is not implemented.
     return;

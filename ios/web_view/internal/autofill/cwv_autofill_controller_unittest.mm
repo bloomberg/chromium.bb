@@ -214,8 +214,8 @@ TEST_F(CWVAutofillControllerTest, FocusCallback) {
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.type = "focus";
-      test_form_activity_tab_helper_->FormActivityRegistered(params);
-
+      test_form_activity_tab_helper_->FormActivityRegistered(
+          /*sender_frame*/ nullptr, params);
       [delegate verify];
   }
 }
@@ -241,8 +241,8 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.type = "input";
-      test_form_activity_tab_helper_->FormActivityRegistered(params);
-
+      test_form_activity_tab_helper_->FormActivityRegistered(
+          /*sender_frame*/ nullptr, params);
       [delegate verify];
   }
 }
@@ -267,7 +267,8 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
     params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
     params.value = base::SysNSStringToUTF8(kTestFieldValue);
     params.type = "blur";
-    test_form_activity_tab_helper_->FormActivityRegistered(params);
+    test_form_activity_tab_helper_->FormActivityRegistered(
+        /*sender_frame*/ nullptr, params);
 
     [delegate verify];
   }
@@ -287,7 +288,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
                               isMainFrame:YES];
 
     test_form_activity_tab_helper_->DocumentSubmitted(
-        base::SysNSStringToUTF8(kTestFormName),
+        /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
         /*user_initiated=*/true,
         /*is_main_frame=*/true);
 
@@ -297,7 +298,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
                               isMainFrame:YES];
 
     test_form_activity_tab_helper_->DocumentSubmitted(
-        base::SysNSStringToUTF8(kTestFormName),
+        /*sender_frame*/ nullptr, base::SysNSStringToUTF8(kTestFormName),
         /*user_initiated=*/false,
         /*is_main_frame=*/true);
 

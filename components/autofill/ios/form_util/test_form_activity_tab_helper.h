@@ -10,6 +10,7 @@
 #include "base/macros.h"
 
 namespace web {
+class WebFrame;
 class WebState;
 }  // namespace web
 
@@ -22,8 +23,10 @@ class TestFormActivityTabHelper {
   explicit TestFormActivityTabHelper(web::WebState* web_state);
   ~TestFormActivityTabHelper();
 
-  void FormActivityRegistered(const FormActivityParams& params);
-  void DocumentSubmitted(const std::string& form_name,
+  void FormActivityRegistered(web::WebFrame* sender_frame,
+                              const FormActivityParams& params);
+  void DocumentSubmitted(web::WebFrame* sender_frame,
+                         const std::string& form_name,
                          bool has_user_gesture,
                          bool form_in_main_frame);
 
