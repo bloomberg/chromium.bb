@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -26,6 +27,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
@@ -167,6 +169,18 @@ bool AutocompleteProviderClientImpl::IsAuthenticated() const {
   SigninManagerBase* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(browser_state_);
   return signin_manager != nullptr && signin_manager->IsAuthenticated();
+}
+
+bool AutocompleteProviderClientImpl::IsUnifiedConsentGiven() const {
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForBrowserState(browser_state_);
+  return consent_service && consent_service->IsUnifiedConsentGiven();
+}
+
+bool AutocompleteProviderClientImpl::IsSyncActive() const {
+  syncer::SyncService* sync =
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+  return sync && sync->IsSyncActive();
 }
 
 void AutocompleteProviderClientImpl::Classify(

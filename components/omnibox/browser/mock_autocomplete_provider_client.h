@@ -82,6 +82,9 @@ class MockAutocompleteProviderClient
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(IsPersonalizedUrlDataCollectionActive, bool());
   MOCK_CONST_METHOD0(IsAuthenticated, bool());
+  MOCK_CONST_METHOD0(IsUnifiedConsentGiven, bool());
+  MOCK_CONST_METHOD0(IsSyncActive, bool());
+
   MOCK_METHOD6(
       Classify,
       void(const base::string16& text,
