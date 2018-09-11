@@ -513,13 +513,32 @@ TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
 }
 
 TEST_F(StyledLabelTest, LineHeight) {
-  const std::string text("one");
+  const std::string text("one\ntwo\nthree");
   InitStyledLabel(text);
-  int default_height = styled()->GetHeightForWidth(100);
-  const std::string newline_text("one\ntwo\nthree");
-  InitStyledLabel(newline_text);
   styled()->SetLineHeight(18);
-  EXPECT_EQ(18 * 2 + default_height, styled()->GetHeightForWidth(100));
+  EXPECT_EQ(18 * 3, styled()->GetHeightForWidth(100));
+}
+
+TEST_F(StyledLabelTest, LineHeightWithBorder) {
+  const std::string text("one\ntwo\nthree");
+  InitStyledLabel(text);
+  styled()->SetLineHeight(18);
+  styled()->SetBorder(views::CreateSolidBorder(1, SK_ColorGRAY));
+  EXPECT_EQ(18 * 3 + 2, styled()->GetHeightForWidth(100));
+}
+
+TEST_F(StyledLabelTest, LineHeightWithLink) {
+  const std::string text("one\ntwo\nthree");
+  InitStyledLabel(text);
+  styled()->SetLineHeight(18);
+
+  styled()->AddStyleRange(gfx::Range(0, 3),
+                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(gfx::Range(4, 7),
+                          StyledLabel::RangeStyleInfo::CreateForLink());
+  styled()->AddStyleRange(gfx::Range(8, 13),
+                          StyledLabel::RangeStyleInfo::CreateForLink());
+  EXPECT_EQ(18 * 3, styled()->GetHeightForWidth(100));
 }
 
 TEST_F(StyledLabelTest, HandleEmptyLayout) {
