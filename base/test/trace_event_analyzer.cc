@@ -467,13 +467,11 @@ bool Query::GetAsString(const TraceEvent& event, std::string* str) const {
 
 const TraceEvent* Query::SelectTargetEvent(const TraceEvent* event,
                                            TraceEventMember member) {
-  if (member >= OTHER_FIRST_MEMBER && member <= OTHER_LAST_MEMBER) {
+  if (member >= OTHER_FIRST_MEMBER && member <= OTHER_LAST_MEMBER)
     return event->other_event;
-  } else if (member >= PREV_FIRST_MEMBER && member <= PREV_LAST_MEMBER) {
+  if (member >= PREV_FIRST_MEMBER && member <= PREV_LAST_MEMBER)
     return event->prev_event;
-  } else {
-    return event;
-  }
+  return event;
 }
 
 bool Query::GetMemberValueAsDouble(const TraceEvent& event,

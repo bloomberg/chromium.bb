@@ -106,10 +106,7 @@ typedef time_t SysTime;
 
 SysTime SysTimeFromTimeStruct(struct tm* timestruct, bool is_local) {
   base::AutoLock locked(*GetSysTimeToTimeStructLock());
-  if (is_local)
-    return mktime(timestruct);
-  else
-    return timegm(timestruct);
+  return is_local ? mktime(timestruct) : timegm(timestruct);
 }
 
 void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {

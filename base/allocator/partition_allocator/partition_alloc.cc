@@ -276,8 +276,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   if (new_size > kGenericMaxDirectMapped) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
-    else
-      internal::PartitionExcessiveAllocationSize();
+    internal::PartitionExcessiveAllocationSize();
   }
 
   internal::PartitionPage* page = internal::PartitionPage::FromPointer(
@@ -320,8 +319,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
-    else
-      internal::PartitionExcessiveAllocationSize();
+    internal::PartitionExcessiveAllocationSize();
   }
 
   size_t copy_size = actual_old_size;

@@ -486,7 +486,8 @@ bool Value::GetAsDouble(double* out_value) const {
   if (out_value && is_double()) {
     *out_value = double_value_;
     return true;
-  } else if (out_value && is_int()) {
+  }
+  if (out_value && is_int()) {
     // Allow promotion from int to double.
     *out_value = int_value_;
     return true;

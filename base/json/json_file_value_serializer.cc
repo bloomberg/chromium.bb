@@ -69,10 +69,8 @@ int JSONFileValueDeserializer::ReadFileToString(std::string* json_string) {
       return JSON_ACCESS_DENIED;
     }
 #endif
-    if (!base::PathExists(json_file_path_))
-      return JSON_NO_SUCH_FILE;
-    else
-      return JSON_CANNOT_READ_FILE;
+    return base::PathExists(json_file_path_) ? JSON_CANNOT_READ_FILE
+                                             : JSON_NO_SUCH_FILE;
   }
 
   last_read_size_ = json_string->size();

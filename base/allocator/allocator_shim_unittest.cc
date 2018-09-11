@@ -107,9 +107,8 @@ class AllocatorShimTest : public testing::Test {
         if (!instance_->did_fail_realloc_0xfeed_once->Get()) {
           instance_->did_fail_realloc_0xfeed_once->Set(true);
           return nullptr;
-        } else {
-          return address;
         }
+        return address;
       }
 
       if (size < kMaxSizeTracked)

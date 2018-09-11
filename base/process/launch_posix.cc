@@ -376,7 +376,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   if (pid < 0) {
     DPLOG(ERROR) << "fork";
     return Process();
-  } else if (pid == 0) {
+  }
+  if (pid == 0) {
     // Child process
 
     // DANGER: no calls to malloc or locks are allowed from now on:

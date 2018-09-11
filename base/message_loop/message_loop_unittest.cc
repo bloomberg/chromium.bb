@@ -169,8 +169,7 @@ std::ostream& operator <<(std::ostream& os, TaskType type) {
 std::ostream& operator <<(std::ostream& os, const TaskItem& item) {
   if (item.start)
     return os << item.type << " " << item.cookie << " starts";
-  else
-    return os << item.type << " " << item.cookie << " ends";
+  return os << item.type << " " << item.cookie << " ends";
 }
 
 class TaskList {
