@@ -215,6 +215,15 @@ bool IsCrostiniAllowedForProfile(Profile* profile) {
   if (profile && (profile->IsChild() || profile->IsLegacySupervised())) {
     return false;
   }
+  if (!profile->GetPrefs()->GetBoolean(
+          crostini::prefs::kUserCrostiniAllowedByPolicy)) {
+    return false;
+  }
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user->IsAffiliated() && !IsUnaffiliatedCrostiniAllowedByPolicy()) {
+    return false;
+  }
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
          virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
          base::FeatureList::IsEnabled(features::kCrostini);
