@@ -109,10 +109,11 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
       const override;
 
+ protected:
+  bool IsMainThread() const;
+
  private:
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
-
-  bool IsMainThread() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;

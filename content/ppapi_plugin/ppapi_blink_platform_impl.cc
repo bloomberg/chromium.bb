@@ -154,6 +154,8 @@ void PpapiBlinkPlatformImpl::Shutdown() {
 }
 
 blink::WebThread* PpapiBlinkPlatformImpl::CurrentThread() {
+  if (IsMainThread())
+    return main_thread_;
   return BlinkPlatformImpl::CurrentThread();
 }
 
@@ -163,10 +165,6 @@ blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #else
   return nullptr;
 #endif
-}
-
-bool PpapiBlinkPlatformImpl::sandboxEnabled() {
-  return true;  // Assume PPAPI is always sandboxed.
 }
 
 unsigned long long PpapiBlinkPlatformImpl::VisitedLinkHash(

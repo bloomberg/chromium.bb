@@ -148,11 +148,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   static void Initialize(Platform*, WebThread* main_thread);
   static Platform* Current();
 
-  // This is another entry point for embedders that only require single-
-  // threaded execution of Blink. This version automatically sets up Blink
+  // This is another entry point for embedders that only require simple
+  // execution environment of Blink. This version automatically sets up Blink
   // with a minimally viable implementation of WebThread for the main thread.
   // The WebThread object is returned by Platform::CurrentThread(), therefore
-  // embedders do not need to override CurrentThread().
+  // embedders do not need to override CurrentThread(), if your application
+  // is single-threaded. If your application supports multi-thread, you
+  // need to override CurrentThread() as well as CreateThread().
   //
   // When this function is used, the WebThread instance for the main thread
   // is owned by Platform (unlike Initialize()).

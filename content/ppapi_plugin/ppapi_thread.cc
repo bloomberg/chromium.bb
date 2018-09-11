@@ -108,8 +108,7 @@ PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
 
   blink_platform_impl_.reset(new PpapiBlinkPlatformImpl);
-  blink::Platform::Initialize(blink_platform_impl_.get(),
-                              blink_platform_impl_->CurrentThread());
+  blink::Platform::CreateMainThreadAndInitialize(blink_platform_impl_.get());
 
   if (!is_broker_) {
     scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(

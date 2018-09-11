@@ -119,10 +119,13 @@ namespace {
 
 class SimpleMainThread : public WebThread {
  public:
-  bool IsCurrentThread() const override {
-    DCHECK(WTF::IsMainThread());
-    return true;
+  SimpleMainThread() {
+    // WTF is not initialized at this point, so we can't use WTF::IsMainThread()
+    // yet.
+    DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   }
+
+  bool IsCurrentThread() const override { return WTF::IsMainThread(); }
   // TODO(yutak): Remove the const qualifier so we don't have to use mutable.
   ThreadScheduler* Scheduler() const override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {

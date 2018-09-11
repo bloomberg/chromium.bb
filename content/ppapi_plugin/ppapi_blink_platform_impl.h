@@ -31,7 +31,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   // BlinkPlatformImpl methods:
   blink::WebThread* CurrentThread() override;
   blink::WebSandboxSupport* GetSandboxSupport() override;
-  virtual bool sandboxEnabled();
   unsigned long long VisitedLinkHash(const char* canonical_url,
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;
