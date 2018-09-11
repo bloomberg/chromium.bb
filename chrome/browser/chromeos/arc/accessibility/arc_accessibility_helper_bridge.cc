@@ -159,20 +159,43 @@ void ArcAccessibilityHelperBridge::SetNativeChromeVoxArcSupport(bool enabled) {
   if (task_id == kNoTaskId)
     return;
 
+  std::unique_ptr<aura::WindowTracker> window_tracker =
+      std::make_unique<aura::WindowTracker>();
+  window_tracker->Add(window);
+
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->accessibility_helper(),
                                   SetNativeChromeVoxArcSupportForFocusedWindow);
   instance->SetNativeChromeVoxArcSupportForFocusedWindow(
       enabled, base::BindOnce(&ArcAccessibilityHelperBridge::
                                   OnSetNativeChromeVoxArcSupportProcessed,
-                              base::Unretained(this), enabled));
+                              base::Unretained(this), std::move(window_tracker),
+                              enabled));
 }
 
 void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
+    std::unique_ptr<aura::WindowTracker> window_tracker,
     bool enabled,
     bool processed) {
-  if (!enabled)
-    task_id_to_tree_.clear();
+  if (!processed || window_tracker->windows().size() != 1)
+    return;
+
+  aura::Window* window = window_tracker->Pop();
+  int32_t task_id = GetTaskId(window);
+  DCHECK_NE(task_id, kNoTaskId);
+
+  if (!enabled) {
+    task_id_to_tree_.erase(task_id);
+
+    exo::Surface* surface = exo::ShellSurfaceBase::GetMainSurface(window);
+    if (surface) {
+      views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+      static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
+          ->SetChildAxTreeId(kInvalidTreeId);
+    }
+  }
+
+  UpdateWindowProperties(window);
 }
 
 void ArcAccessibilityHelperBridge::Shutdown() {
@@ -264,8 +287,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
         if (surface) {
           views::Widget* widget =
               views::Widget::GetWidgetForNativeWindow(active_window);
-          static_cast<exo::ShellSurfaceBase*>(
-              widget->widget_delegate()->GetContentsView())
+          static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
               ->SetChildAxTreeId(tree_data.tree_id);
         }
       }
