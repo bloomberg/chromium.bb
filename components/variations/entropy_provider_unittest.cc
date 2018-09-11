@@ -15,6 +15,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/hashing.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,7 +211,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
           base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
   };
 
-  for (size_t i = 0; i < arraysize(trials); ++i) {
+  for (size_t i = 0; i < base::size(trials); ++i) {
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -240,7 +241,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
           base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
   };
 
-  for (size_t i = 0; i < arraysize(trials); ++i) {
+  for (size_t i = 0; i < base::size(trials); ++i) {
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -267,7 +268,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedPermuted) {
           base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
   };
 
-  for (size_t i = 0; i < arraysize(trials); ++i) {
+  for (size_t i = 0; i < base::size(trials); ++i) {
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -294,7 +295,7 @@ TEST(EntropyProviderTest, UseOneTimeRandomizationWithCustomSeedSHA1) {
           base::FieldTrial::ONE_TIME_RANDOMIZED, kCustomSeed, nullptr, nullptr),
   };
 
-  for (size_t i = 0; i < arraysize(trials); ++i) {
+  for (size_t i = 0; i < base::size(trials); ++i) {
     for (int j = 0; j < 100; ++j)
       trials[i]->AppendGroup(std::string(), 1);
   }
@@ -310,7 +311,7 @@ TEST(EntropyProviderTest, SHA1Entropy) {
                              GenerateSHA1Entropy("there", "1") };
 
   EXPECT_NE(results[0], results[1]);
-  for (size_t i = 0; i < arraysize(results); ++i) {
+  for (size_t i = 0; i < base::size(results); ++i) {
     EXPECT_LE(0.0, results[i]);
     EXPECT_GT(1.0, results[i]);
   }
@@ -327,7 +328,7 @@ TEST(EntropyProviderTest, PermutedEntropy) {
       GeneratePermutedEntropy(4321, kMaxLowEntropySize, "1") };
 
   EXPECT_NE(results[0], results[1]);
-  for (size_t i = 0; i < arraysize(results); ++i) {
+  for (size_t i = 0; i < base::size(results); ++i) {
     EXPECT_LE(0.0, results[i]);
     EXPECT_GT(1.0, results[i]);
   }
@@ -352,14 +353,14 @@ TEST(EntropyProviderTest, PermutedEntropyProviderResults) {
 }
 
 TEST(EntropyProviderTest, SHA1EntropyIsUniform) {
-  for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
+  for (size_t i = 0; i < base::size(kTestTrialNames); ++i) {
     SHA1EntropyGenerator entropy_generator(kTestTrialNames[i]);
     PerformEntropyUniformityTest(kTestTrialNames[i], entropy_generator);
   }
 }
 
 TEST(EntropyProviderTest, PermutedEntropyIsUniform) {
-  for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
+  for (size_t i = 0; i < base::size(kTestTrialNames); ++i) {
     PermutedEntropyGenerator entropy_generator(kTestTrialNames[i]);
     PerformEntropyUniformityTest(kTestTrialNames[i], entropy_generator);
   }
@@ -394,7 +395,7 @@ TEST(EntropyProviderTest, SeededRandGeneratorIsUniform) {
   const int kMinAttempts = 1000;
   const int kMaxAttempts = 1000000;
 
-  for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
+  for (size_t i = 0; i < base::size(kTestTrialNames); ++i) {
     const uint32_t seed = HashName(kTestTrialNames[i]);
     internal::SeededRandGenerator rand_generator(seed);
 

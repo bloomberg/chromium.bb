@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,11 +32,11 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   // one. Loop over the trial names twice, to test that caching returns the
   // expected results.
   PermutedEntropyProvider provider(kEntropyValue, kMaxLowEntropySize);
-  for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
+  for (size_t i = 0; i < 2 * base::size(kTestTrialNames); ++i) {
     CachingPermutedEntropyProvider cached_provider(
         &prefs, kEntropyValue, kMaxLowEntropySize);
     const std::string trial_name =
-        kTestTrialNames[i % arraysize(kTestTrialNames)];
+        kTestTrialNames[i % base::size(kTestTrialNames)];
     EXPECT_DOUBLE_EQ(provider.GetEntropyForTrial(trial_name, 0),
                      cached_provider.GetEntropyForTrial(trial_name, 0));
   }
@@ -43,9 +44,9 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   // Now, do the same test re-using the same caching provider.
   CachingPermutedEntropyProvider cached_provider(
       &prefs, kEntropyValue, kMaxLowEntropySize);
-  for (size_t i = 0; i < 2 * arraysize(kTestTrialNames); ++i) {
+  for (size_t i = 0; i < 2 * base::size(kTestTrialNames); ++i) {
     const std::string trial_name =
-        kTestTrialNames[i % arraysize(kTestTrialNames)];
+        kTestTrialNames[i % base::size(kTestTrialNames)];
     EXPECT_DOUBLE_EQ(provider.GetEntropyForTrial(trial_name, 0),
                      cached_provider.GetEntropyForTrial(trial_name, 0));
   }
