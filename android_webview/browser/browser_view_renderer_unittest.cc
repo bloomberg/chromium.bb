@@ -547,4 +547,51 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
 
 RENDERING_TEST_F(RenderThreadManagerSwitchTest);
 
+// Test for https://crbug.com/881458, this test is to make sure we will reach
+// the maximal scroll offset.
+class DidReachMaximalScrollOffsetTest : public RenderingTest {
+ public:
+  void StartTest() override {
+    browser_view_renderer_->SetDipScale(kDipScale);
+    // |UpdateRootLayerState()| will call |SetTotalRootLayerScrollOffset()|.
+    browser_view_renderer_->UpdateRootLayerState(
+        ActiveCompositor(), kTotalScrollOffset, kTotalMaxScrollOffset,
+        kScrollableSize, kPageScaleFactor, kMinPageScaleFactor,
+        kMaxPageScaleFactor);
+  }
+
+  void ScrollContainerViewTo(const gfx::Vector2d& new_value) override {
+    EXPECT_EQ(kExpectedScrollOffset.ToString(), new_value.ToString());
+    EndTest();
+  }
+
+ private:
+  static constexpr float kDipScale = 2.625f;
+  static const gfx::Vector2dF kTotalScrollOffset;
+  static const gfx::Vector2dF kTotalMaxScrollOffset;
+  static const gfx::SizeF kScrollableSize;
+  static constexpr float kPageScaleFactor = 1.f;
+  // These two are not used in this test.
+  static constexpr float kMinPageScaleFactor = 1.f;
+  static constexpr float kMaxPageScaleFactor = 5.f;
+
+  static const gfx::Vector2d kExpectedScrollOffset;
+};
+
+// The current scroll offset in logical pixel, which is at the end.
+const gfx::Vector2dF DidReachMaximalScrollOffsetTest::kTotalScrollOffset =
+    gfx::Vector2dF(0.f, 6132.f);
+// The maximum possible scroll offset in logical pixel.
+const gfx::Vector2dF DidReachMaximalScrollOffsetTest::kTotalMaxScrollOffset =
+    gfx::Vector2dF(0.f, 6132.f);
+// This is what passed to CTS test, not used for this test.
+const gfx::SizeF DidReachMaximalScrollOffsetTest::kScrollableSize =
+    gfx::SizeF(412.f, 6712.f);
+// In max_scroll_offset() we are using ceiling rounding for scaled scroll
+// offset. Therefore ceiling(2.625 * 6132 = 16096.5) = 16097.
+const gfx::Vector2d DidReachMaximalScrollOffsetTest::kExpectedScrollOffset =
+    gfx::Vector2d(0, 16097);
+
+RENDERING_TEST_F(DidReachMaximalScrollOffsetTest);
+
 }  // namespace android_webview
