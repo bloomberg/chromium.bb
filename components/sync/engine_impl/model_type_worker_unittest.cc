@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/fake_encryptor.h"
@@ -39,6 +40,9 @@ const char kNigoriKeyName[] = "nigori-key";
 const ModelType kModelType = PREFERENCES;
 
 std::string GenerateTagHash(const std::string& tag) {
+  if (tag.empty()) {
+    return std::string();
+  }
   return GenerateSyncableHash(kModelType, tag);
 }
 
@@ -340,6 +344,28 @@ class ModelTypeWorkerTest : public ::testing::Test {
     worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
                                         server()->GetContext(), {&entity},
                                         &status_controller_);
+  }
+
+  void TriggerPartialUpdateFromServer(int64_t version_offset,
+                                      const std::string& tag1,
+                                      const std::string& value1,
+                                      const std::string& tag2,
+                                      const std::string& value2) {
+    SyncEntity entity1 = server()->UpdateFromServer(
+        version_offset, GenerateTagHash(tag1), GenerateSpecifics(tag1, value1));
+    SyncEntity entity2 = server()->UpdateFromServer(
+        version_offset, GenerateTagHash(tag2), GenerateSpecifics(tag2, value2));
+
+    if (update_encryption_filter_index_ != 0) {
+      EncryptUpdate(GetNthKeyParams(update_encryption_filter_index_),
+                    entity1.mutable_specifics());
+      EncryptUpdate(GetNthKeyParams(update_encryption_filter_index_),
+                    entity2.mutable_specifics());
+    }
+
+    worker()->ProcessGetUpdatesResponse(
+        server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
+        &status_controller_);
   }
 
   void TriggerUpdateFromServer(int64_t version_offset,
@@ -697,6 +723,90 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
 
   EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_received);
   EXPECT_EQ(1, emitter()->GetUpdateCounters().num_updates_applied);
+}
+
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1, kTag2, kValue2);
+  TriggerPartialUpdateFromServer(10, kTag3, kValue3);
+
+  // No duplicates in either of the partial updates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/false, /*count=*/2);
+
+  ApplyUpdates();
+
+  // No duplicate across the partial updates either.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  // Note that kTag1 appears twice.
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1, kTag1, kValue2);
+
+  // There was a duplicate.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+
+  ApplyUpdates();
+
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  // Note that kTag1 appears in both partial updates.
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1);
+  TriggerPartialUpdateFromServer(10, kTag1, kValue2);
+
+  // Neither of the two partial updates contained duplicates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/false, /*count=*/2);
+
+  ApplyUpdates();
+
+  // But there was a duplicate across the two partial updates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+}
+
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates_EmptyHashNotConsideredDuplicate) {
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  // Some model types (e.g. AUTOFILL_WALLET_DATA) don't have client tag hashes.
+  TriggerPartialUpdateFromServer(10, "", kValue1, "", kValue2);
+  TriggerPartialUpdateFromServer(10, "", kValue3);
+
+  // The missing (empty) tags should not be considered duplicates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/false, /*count=*/2);
+
+  ApplyUpdates();
+
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
 }
 
 // Test that an update download coming in multiple parts gets accumulated into
