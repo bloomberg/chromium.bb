@@ -39,8 +39,6 @@ class NodeTest : public EditingTestBase {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
     GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
-    PushSelectorFilterAncestors(
-        GetDocument().EnsureStyleResolver().GetSelectorFilter(), node);
     ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
@@ -66,14 +64,6 @@ class NodeTest : public EditingTestBase {
     class_div->setAttribute("class", "test");
     second_shadow.AppendChild(class_div);
     return class_div;
-  }
-
- private:
-  void PushSelectorFilterAncestors(SelectorFilter& filter, Node& node) {
-    if (Element* parent = FlatTreeTraversal::ParentElement(node)) {
-      PushSelectorFilterAncestors(filter, *parent);
-      filter.PushParent(*parent);
-    }
   }
 };
 
