@@ -124,7 +124,7 @@ class BASE_EXPORT StackSamplingProfiler {
     // a mutex, including allocating memory (which includes LOG messages)
     // because that mutex could be held by a stopped thread, thus resulting in
     // deadlock.
-    virtual void RecordAnnotations() = 0;
+    virtual void RecordAnnotations();
 
     // Records a new set of frames. Invoked when sampling a sample completes.
     virtual void OnSampleCompleted(std::vector<Frame> frames) = 0;

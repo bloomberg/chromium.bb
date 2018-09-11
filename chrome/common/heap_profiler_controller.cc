@@ -15,7 +15,7 @@
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/legacy_call_stack_profile_builder.h"
 #include "content/public/common/content_switches.h"
 
 namespace {
@@ -104,7 +104,7 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
       metrics::CallStackProfileParams::BROWSER_PROCESS,
       metrics::CallStackProfileParams::UNKNOWN_THREAD,
       metrics::CallStackProfileParams::PERIODIC_HEAP_COLLECTION);
-  metrics::CallStackProfileBuilder profile_builder(params);
+  metrics::LegacyCallStackProfileBuilder profile_builder(params);
 
   for (const base::SamplingHeapProfiler::Sample& sample : samples) {
     std::vector<base::StackSamplingProfiler::Frame> frames;

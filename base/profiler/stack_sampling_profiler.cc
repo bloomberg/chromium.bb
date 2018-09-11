@@ -612,6 +612,8 @@ void StackSamplingProfiler::TestAPI::PerformSamplingThreadIdleShutdown(
   SamplingThread::TestAPI::ShutdownAssumingIdle(simulate_intervening_start);
 }
 
+void StackSamplingProfiler::ProfileBuilder::RecordAnnotations() {}
+
 StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
