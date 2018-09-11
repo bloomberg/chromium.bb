@@ -9,7 +9,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "libxml/parser.h"
@@ -20,30 +22,34 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+#if defined(OS_WIN)
+#include "chrome/install_static/install_util.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
-const int kDownloadTimeoutSec = 10;
-const char kPostXml[] =
+constexpr char kDefaultAppID[] = "{8A69D345-D564-463C-AFF1-A69D9E530F96}";
+constexpr int kDownloadTimeoutSec = 10;
+constexpr char kPostXml[] =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     "<request"
     "    version=\"chromeprofilereset-1.1\""
     "    protocol=\"3.0\""
     "    installsource=\"profilereset\">"
-    "  <app appid=\"{8A69D345-D564-463C-AFF1-A69D9E530F96}\">"
-    "    <data name=\"install\" index=\"__BRANDCODE_PLACEHOLDER__\"/>"
+    "  <app appid=\"%s\">"
+    "    <data name=\"install\" index=\"%s\"/>"
     "  </app>"
     "</request>";
 
 // Returns the query to the server which can be used to retrieve the config.
 // |brand| is a brand code, it mustn't be empty.
 std::string GetUploadData(const std::string& brand) {
+  std::string app_id(kDefaultAppID);
+#if defined(OS_WIN)
+  app_id = install_static::UTF16ToUTF8(install_static::GetAppGuid());
+#endif  // defined(OS_WIN)
   DCHECK(!brand.empty());
-  std::string data(kPostXml);
-  const std::string placeholder("__BRANDCODE_PLACEHOLDER__");
-  size_t placeholder_pos = data.find(placeholder);
-  DCHECK(placeholder_pos != std::string::npos);
-  data.replace(placeholder_pos, placeholder.size(), brand);
-  return data;
+  return base::StringPrintf(kPostXml, app_id.c_str(), brand.c_str());
 }
 
 // Extracts json master prefs from xml.
