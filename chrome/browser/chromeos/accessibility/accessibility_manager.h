@@ -451,7 +451,6 @@ class AccessibilityManager
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   friend class DictationTest;
-  friend class SwitchAccessTest;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
 
