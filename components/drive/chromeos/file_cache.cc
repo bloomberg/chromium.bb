@@ -78,7 +78,7 @@ bool SetExtendedFileAttributes(const base::FilePath& path,
 bool UnsetExtendedFileAttributes(const base::FilePath& path,
                                  const std::string& name) {
   if (removexattr(path.value().c_str(), name.c_str()) != 0) {
-    PLOG(ERROR) << "removexattr: " << path.value();
+    PLOG_IF(ERROR, errno != ENODATA) << "removexattr: " << path.value();
     return false;
   }
   return true;
