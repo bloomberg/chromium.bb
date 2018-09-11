@@ -592,26 +592,7 @@ void GpuServiceImpl::RequestHDRStatusOnMainThread(
                        base::BindOnce(std::move(callback), hdr_enabled));
 }
 
-#if defined(OS_MACOSX)
-void GpuServiceImpl::UpdateGpuInfoPlatform(
-    base::OnceClosure on_gpu_info_updated) {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  // gpu::CollectContextGraphicsInfo() is already called during gpu process
-  // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
-  // platforms, and during in-browser gpu thread initialization on all platforms
-  // (See InProcessGpuThread::Init()).
-  if (in_host_process())
-    return;
-
-  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
-  if (!success) {
-    LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
-    // TODO(piman): can we signal overall failure?
-  }
-  gpu::SetKeysForCrashLogging(gpu_info_);
-  std::move(on_gpu_info_updated).Run();
-}
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 void GpuServiceImpl::UpdateGpuInfoPlatform(
     base::OnceClosure on_gpu_info_updated) {
   DCHECK(main_runner_->BelongsToCurrentThread());

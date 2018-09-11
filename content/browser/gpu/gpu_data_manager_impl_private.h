@@ -168,9 +168,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   int64_t GetBlockAllDomainsDurationInMs() const;
 
   // This is platform specific. At the moment:
-  //   1) on MacOSX, if GL strings are missing, this returns true;
-  //   2) on Windows, if DxDiagnostics are missing, this returns true;
-  //   3) all other platforms, this returns false.
+  //   1) on Windows, if DxDiagnostics are missing, this returns true;
+  //   2) all other platforms, this returns false.
   bool NeedsCompleteGpuInfoCollection() const;
 
   GpuDataManagerImpl* const owner_;
