@@ -76,9 +76,9 @@ void DefaultKeyboardExtensionBrowserTest::RunTest(
   InjectJavascript(base::FilePath(kWebuiTestDir),
                    base::FilePath(kMockController));
   InjectJavascript(base::FilePath(kWebuiTestDir), base::FilePath(kMockTimer));
-  InjectJavascript(base::FilePath(FILE_PATH_LITERAL(config.test_dir_)),
-                   base::FilePath(FILE_PATH_LITERAL(config.base_framework_)));
-  InjectJavascript(base::FilePath(FILE_PATH_LITERAL(config.test_dir_)), file);
+  InjectJavascript(base::FilePath(config.test_dir_),
+                   base::FilePath(config.base_framework_));
+  InjectJavascript(base::FilePath(config.test_dir_), file);
 
   ASSERT_TRUE(content::ExecuteScript(web_contents, utf8_content_));
 
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, EndToEndTest) {
 
   // Press 'a' on keyboard.
   base::FilePath path = ui_test_utils::GetTestFilePath(
-      base::FilePath(FILE_PATH_LITERAL(kVirtualKeyboardExtensionTestDir)),
+      base::FilePath(kVirtualKeyboardExtensionTestDir),
       base::FilePath(FILE_PATH_LITERAL("end_to_end_test.js")));
   std::string script;
   ASSERT_TRUE(base::ReadFileToString(path, &script));

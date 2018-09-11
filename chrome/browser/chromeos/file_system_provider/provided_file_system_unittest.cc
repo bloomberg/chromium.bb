@@ -374,7 +374,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher) {
   Watchers* const watchers = provided_file_system_->GetWatchers();
   ASSERT_EQ(1u, watchers->size());
   const Watcher& watcher = watchers->begin()->second;
-  EXPECT_EQ(FILE_PATH_LITERAL(kDirectoryPath), watcher.entry_path.value());
+  EXPECT_EQ(kDirectoryPath, watcher.entry_path.value());
   EXPECT_FALSE(watcher.recursive);
   EXPECT_EQ("", watcher.last_tag);
 
@@ -469,8 +469,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_Exists) {
     ASSERT_TRUE(watchers);
     ASSERT_EQ(1u, watchers->size());
     const auto& watcher_it = watchers->find(
-        WatcherKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
-                   false /* recursive */));
+        WatcherKey(base::FilePath(kDirectoryPath), false /* recursive */));
     ASSERT_NE(watchers->end(), watcher_it);
 
     EXPECT_EQ(1u, watcher_it->second.subscribers.size());
@@ -539,8 +538,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_MultipleOrigins) {
     ASSERT_TRUE(watchers);
     ASSERT_EQ(1u, watchers->size());
     const auto& watcher_it = watchers->find(
-        WatcherKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
-                   false /* recursive */));
+        WatcherKey(base::FilePath(kDirectoryPath), false /* recursive */));
     ASSERT_NE(watchers->end(), watcher_it);
 
     EXPECT_EQ(1u, watcher_it->second.subscribers.size());
@@ -574,8 +572,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_MultipleOrigins) {
     ASSERT_TRUE(watchers);
     ASSERT_EQ(2u, watchers->size());
     const auto& watcher_it = watchers->find(
-        WatcherKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
-                   false /* recursive */));
+        WatcherKey(base::FilePath(kDirectoryPath), false /* recursive */));
     ASSERT_NE(watchers->end(), watcher_it);
 
     EXPECT_EQ(1u, watcher_it->second.subscribers.size());
@@ -604,8 +601,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_MultipleOrigins) {
     ASSERT_TRUE(watchers);
     EXPECT_EQ(1u, watchers->size());
     const auto& watcher_it = watchers->find(
-        WatcherKey(base::FilePath(FILE_PATH_LITERAL(kDirectoryPath)),
-                   false /* recursive */));
+        WatcherKey(base::FilePath(kDirectoryPath), false /* recursive */));
     ASSERT_NE(watchers->end(), watcher_it);
 
     EXPECT_EQ(1u, watcher_it->second.subscribers.size());

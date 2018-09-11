@@ -93,7 +93,7 @@ TEST_F(BrowserDMTokenStorageLinuxTest, InitDMToken) {
   ASSERT_TRUE(base::CreateDirectory(dm_token_dir_path));
 
   base::FilePath dm_token_file_path =
-      dm_token_dir_path.Append(FILE_PATH_LITERAL(kExpectedClientId));
+      dm_token_dir_path.Append(kExpectedClientId);
   int bytes_written = base::WriteFile(base::FilePath(dm_token_file_path),
                                       kDMToken, strlen(kDMToken));
   ASSERT_EQ(static_cast<int>(strlen(kDMToken)), bytes_written);
@@ -169,7 +169,7 @@ TEST_F(BrowserDMTokenStorageLinuxTest, SaveDMToken) {
       base::PathService::Get(chrome::DIR_USER_DATA, &dir_user_data_path));
   base::FilePath dm_token_dir_path = dir_user_data_path.Append(kDmTokenBaseDir);
   base::FilePath dm_token_file_path =
-      dm_token_dir_path.Append(FILE_PATH_LITERAL(kExpectedClientId));
+      dm_token_dir_path.Append(kExpectedClientId);
 
   std::string dm_token;
   ASSERT_TRUE(base::ReadFileToString(dm_token_file_path, &dm_token));
