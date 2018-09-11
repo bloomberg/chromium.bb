@@ -12,13 +12,15 @@ import android.view.View.OnClickListener;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 
 /**
  * Manager for one-off snackbar showing at the top of activity.
  */
 public class TopSnackbarManager
-        implements OnClickListener, ApplicationStatus.ActivityStateListener {
+        implements OnClickListener, ApplicationStatus.ActivityStateListener, FullscreenListener {
     private final Handler mDismissSnackbarHandler;
     private final Runnable mDismissSnackbarRunnable = new Runnable() {
         @Override
@@ -27,6 +29,7 @@ public class TopSnackbarManager
         }
     };
 
+    private Activity mActivity;
     private Snackbar mSnackbar;
     private TopSnackbarView mSnackbarView;
 
@@ -46,6 +49,23 @@ public class TopSnackbarManager
         }
     }
 
+    @Override
+    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+        // When the top toolbar offset changes, dismiss the top snackbar. Ideally we want to move
+        // the top snackbar together with the top toolbar, but they can't be made sync because they
+        // are drawn in different layers (C++ vs Android native).
+        dismissSnackbar(false);
+    }
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+
+    @Override
+    public void onContentOffsetChanged(float offset) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
     /**
      * Shows a snackbar at the top of the given activity.
      */
@@ -55,6 +75,7 @@ public class TopSnackbarManager
             return;
         }
 
+        mActivity = activity;
         mSnackbar = snackbar;
 
         mSnackbarView = new TopSnackbarView(activity, this, mSnackbar, null);
@@ -62,6 +83,11 @@ public class TopSnackbarManager
         mSnackbarView.announceforAccessibility();
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);
         mDismissSnackbarHandler.postDelayed(mDismissSnackbarRunnable, mSnackbar.getDuration());
+
+        if (activity instanceof ChromeActivity) {
+            ChromeActivity chromeActivity = (ChromeActivity) activity;
+            chromeActivity.getFullscreenManager().addListener(this);
+        }
 
         ApplicationStatus.registerStateListenerForActivity(this, activity);
     }
@@ -83,6 +109,11 @@ public class TopSnackbarManager
         }
 
         ApplicationStatus.unregisterActivityStateListener(this);
+
+        if (mActivity instanceof ChromeActivity) {
+            ChromeActivity chromeActivity = (ChromeActivity) mActivity;
+            chromeActivity.getFullscreenManager().removeListener(this);
+        }
 
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);
         if (mSnackbarView != null) {

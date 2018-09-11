@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.offlinepages.indicator;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -41,7 +40,13 @@ public class TopSnackbarView extends SnackbarView {
 
     @Override
     protected int getBottomMarginForLayout() {
-        return mParent.getHeight() - mSnackbarView.getHeight() - getToolbarHeight();
+        return mParent.getHeight() - mSnackbarView.getHeight() - getOffsetFromTop();
+    }
+
+    @Override
+    protected ViewGroup findParentView(Activity activity) {
+        // Override this in order not to associate top snackbar view with bottom container view.
+        return (ViewGroup) activity.findViewById(android.R.id.content);
     }
 
     @Override
@@ -50,7 +55,7 @@ public class TopSnackbarView extends SnackbarView {
                 + mContainerView.getResources().getString(R.string.top_bar_screen_position));
     }
 
-    private int getToolbarHeight() {
+    private int getOffsetFromTop() {
         if (!(mActivity instanceof ChromeActivity)) return 0;
 
         if (mActivity instanceof FullscreenActivity) return 0;
@@ -59,8 +64,6 @@ public class TopSnackbarView extends SnackbarView {
 
         if (chromeActivity.getFullscreenManager().getContentOffset() == 0) return 0;
 
-        // TODO(jianli): This may not work in Duet on the NTP.
-        Resources resources = chromeActivity.getResources();
-        return resources.getDimensionPixelSize(chromeActivity.getControlContainerHeightResource());
+        return chromeActivity.getFullscreenManager().getTopControlsHeight();
     }
 }
