@@ -76,6 +76,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
 
   // Event helpers
+  void OnCheckedStateChanged();
   void OnFocused();
   void OnSelected();
 
@@ -119,6 +120,9 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
   void DestroyAtkObjects();
+
+  // The AtkStateType for a checkable node can vary depending on the role.
+  AtkStateType GetAtkStateTypeForCheckableNode();
 
   // Keep information of latest AtkInterfaces mask to refresh atk object
   // interfaces accordingly if needed.

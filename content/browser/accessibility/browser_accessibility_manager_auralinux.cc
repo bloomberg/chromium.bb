@@ -54,10 +54,7 @@ ui::AXTreeUpdate
 void BrowserAccessibilityManagerAuraLinux::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
-  if (node->IsNative()) {
-    ToBrowserAccessibilityAuraLinux(node)->GetNode()->NotifyAccessibilityEvent(
-        ax::mojom::Event::kFocus);
-  }
+  FireEvent(node, ax::mojom::Event::kFocus);
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
@@ -71,10 +68,16 @@ void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
   if (!node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     return;
 
-  if (node->IsNative()) {
-    ToBrowserAccessibilityAuraLinux(node)->GetNode()->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelection);
-  }
+  FireEvent(node, ax::mojom::Event::kSelection);
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireEvent(BrowserAccessibility* node,
+                                                     ax::mojom::Event event) {
+  if (!node->IsNative())
+    return;
+
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->NotifyAccessibilityEvent(
+      event);
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
@@ -90,6 +93,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
 
   switch (event_type) {
+    case Event::CHECKED_STATE_CHANGED:
+      FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
+      break;
     case Event::MENU_ITEM_SELECTED:
     case Event::SELECTED_CHANGED:
       FireSelectedEvent(node);

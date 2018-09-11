@@ -423,4 +423,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("text-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaCheckedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-checked-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaPressedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-pressed-changed.html"));
+}
+
 }  // namespace content
