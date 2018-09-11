@@ -96,7 +96,7 @@ class SearchTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& load_details) override;
 
   // Overridden from SearchIPCRouter::Delegate:
-  void FocusOmnibox(OmniboxFocusState state) override;
+  void FocusOmnibox(bool focus) override;
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
