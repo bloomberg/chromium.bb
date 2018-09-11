@@ -1456,7 +1456,8 @@
                   '|third_party/hunspell_dictionaries/',
     },
     'stack_sampling_profiler': {
-      'filepath': 'components/metrics/*call_stack_profile*',
+      'filepath': 'components/metrics/*call_stack_profile*'\
+                  '|base/profiler/',
     },
     'startup': {
       'filepath': 'chrome/browser/ui/startup/',
