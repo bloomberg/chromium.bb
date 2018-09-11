@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -75,6 +76,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/789531")
     public void testManualDismissPromo() throws Exception {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
@@ -82,10 +84,10 @@ public class BookmarkPersonalizedSigninPromoTest {
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
     }
 
-    // If this starts flaking again, disable the test. See crbug.com/789531.
     @Test
     @LargeTest
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/776405.
+    @DisabledTest(message = "crbug.com/789531")
     public void testAutoDismissPromo() throws Exception {
         int impressionCap = SigninPromoController.getMaxImpressionsBookmarksForTests();
         for (int impression = 0; impression < impressionCap; impression++) {
@@ -99,6 +101,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/789531")
     public void testSigninButtonDefaultAccount() throws Exception {
         addTestAccount();
         openBookmarkManager();
@@ -120,6 +123,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/789531")
     public void testSigninButtonNotDefaultAccount() throws Exception {
         addTestAccount();
         openBookmarkManager();
@@ -140,6 +144,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/789531")
     public void testSigninButtonNewAccount() throws Exception {
         openBookmarkManager();
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
