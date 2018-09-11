@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.UserData;
@@ -68,7 +69,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
         UserDataHost host = tab.getUserDataHost();
         TabRedirectHandler handler = host.getUserData(USER_DATA_KEY);
         if (handler == null) {
-            handler = new TabRedirectHandler(tab.getContext());
+            handler = new TabRedirectHandler(tab.getThemedApplicationContext());
             host.setUserData(USER_DATA_KEY, handler);
             tab.addObserver(handler);
         }
@@ -79,7 +80,8 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      * @return {@link TabRedirectHandler} hanging to the given {@link Tab},
      *     or {@code null} if there is no instance available.
      */
-    public static TabRedirectHandler getOrNull(Tab tab) {
+    @Nullable
+    public static TabRedirectHandler get(Tab tab) {
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 

@@ -562,7 +562,7 @@ public class Tab
         return mUserDataHost;
     }
 
-    Context getContext() {
+    public Context getThemedApplicationContext() {
         return mThemedApplicationContext;
     }
 
@@ -1822,19 +1822,11 @@ public class Tab
 
             initNativeWebContents(mWebContents, parentId);
 
+            // The InfoBarContainer needs to be created after the ContentView has been natively
+            // initialized.
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
-            if (mInfoBarContainer == null) {
-                WindowAndroid windowAndroid = getWindowAndroid();
-                Activity activity =
-                        windowAndroid == null ? null : windowAndroid.getActivity().get();
-                ViewGroup bottomContainer = activity == null ? null
-                        : (ViewGroup) activity.findViewById(R.id.bottom_container);
-                // The InfoBarContainer needs to be created after the ContentView has been natively
-                // initialized.
-                mInfoBarContainer = new InfoBarContainer(mThemedApplicationContext, bottomContainer,
-                        this);
-            }
+            mInfoBarContainer = InfoBarContainer.from(this);
             mInfoBarContainer.setWebContents(getWebContents());
 
             mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext, this);
@@ -2055,10 +2047,6 @@ public class Tab
         nativeDestroy(mNativeTabAndroid);
         assert mNativeTabAndroid == 0;
 
-        if (mInfoBarContainer != null) {
-            mInfoBarContainer.destroy();
-            mInfoBarContainer = null;
-        }
         mUserDataHost.destroy();
     }
 
