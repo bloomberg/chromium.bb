@@ -421,6 +421,9 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
   registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
   registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
+  registry->RegisterBooleanPref(
+      prefs::kOobeRecommendAppScreenFinished, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
