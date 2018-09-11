@@ -8571,7 +8571,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
         // get negative of mask
         const uint8_t *mask = av1_get_contiguous_soft_mask(
             mbmi->interintra_wedge_index, 1, bsize);
-        tmp_mv = av1_get_ref_mv(x, 0);
+        tmp_mv = mbmi->mv[0];
         compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, mi_row,
                                       mi_col, intrapred, mask, bw, &tmp_rate_mv,
                                       0);
