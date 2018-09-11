@@ -162,7 +162,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
@@ -1930,7 +1929,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
 #if defined(OS_CHROMEOS)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (browser_->is_type_tabbed()) {
-    return rb.GetImageNamed(IDR_CHROME_APP_ICON_192).AsImageSkia();
+    return rb.GetImageNamed(IDR_PRODUCT_LOGO_32).AsImageSkia();
   }
   auto* window = GetNativeWindow();
   int override_window_icon_resource_id =
