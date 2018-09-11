@@ -421,9 +421,7 @@ void MediaRouterUIBase::OnRouteResponseReceived(
 }
 
 void MediaRouterUIBase::HandleCreateSessionRequestRouteResponse(
-    const RouteRequestResult&) {
-  Close();
-}
+    const RouteRequestResult&) {}
 
 void MediaRouterUIBase::InitCommon(content::WebContents* initiator) {
   DCHECK(initiator);
@@ -551,15 +549,16 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
                      weak_factory_.GetWeakPtr(), cast_mode));
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterUIBase will need to
-  // be notified via OnRouteResponseReceived(). In case (2) the dialog will be
-  // closed via HandleCreateSessionRequestRouteResponse().
+  // be notified. In case (2) the dialog will be closed.
   // (1) Non-presentation route request (e.g., mirroring). No additional
   //     notification necessary.
   // (2) Presentation route request for a PresentationRequest.start() call.
   //     The StartPresentationContext will need to be answered with the route
   //     response.
   // (3) Browser-initiated presentation route request. If successful,
-  //     PresentationServiceDelegateImpl will have to be notified.
+  //     PresentationServiceDelegateImpl will have to be notified. Note that we
+  //     treat subsequent route requests from a Presentation API-initiated
+  //     dialogs as browser-initiated.
   if (!for_presentation_source || !start_presentation_context_) {
     params.route_result_callbacks.push_back(base::BindOnce(
         &MediaRouterUIBase::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
