@@ -24,6 +24,8 @@ struct BridgedNativeWidgetInitParams {
   ui.mojom.ModalType modal_type;
   // If true, the underlying window potentially be seen through.
   bool is_translucent;
+  // True if the widget is considered top level widget.
+  bool widget_is_top_level;
   // If true, then the NSWindow is set to have a shadow using
   // -[NSWindow setHasShadow:YES].
   bool has_window_server_shadow;

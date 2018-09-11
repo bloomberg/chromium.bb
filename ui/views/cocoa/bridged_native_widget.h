@@ -44,7 +44,6 @@ class BridgedNativeWidgetHostHelper;
 class CocoaMouseCapture;
 class CocoaWindowMoveLoop;
 class DragDropClientMac;
-class NativeWidgetMac;
 class View;
 
 using views_bridge_mac::mojom::BridgedNativeWidgetHost;
@@ -64,14 +63,17 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
+  // Retrieves the bridge associated with the given NSWindow. Returns null if
+  // the supplied handle has no associated Widget.
+  static BridgedNativeWidgetImpl* GetFromNativeWindow(NSWindow* window);
+
   // Retrieve a BridgedNativeWidgetImpl* from its id.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
   BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
                           BridgedNativeWidgetHost* host,
-                          BridgedNativeWidgetHostHelper* host_helper,
-                          NativeWidgetMac* parent);
+                          BridgedNativeWidgetHostHelper* host_helper);
   ~BridgedNativeWidgetImpl() override;
 
   // Initialize the NSWindow by taking ownership of the specified object.
@@ -151,7 +153,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Sort child NSViews according to their ranking in |rank|.
   void SortSubviews(std::map<NSView*, int> rank);
 
-  NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
   BridgedNativeWidgetHost* host() { return host_; }
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
@@ -283,7 +284,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
-  NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |host_|.
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
@@ -293,6 +293,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
   ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;
+  bool widget_is_top_level_ = false;
 
   BridgedNativeWidgetOwner* parent_ = nullptr;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidgetImpl*> child_windows_;

@@ -94,7 +94,7 @@ void NativeViewHostMac::AttachNativeView() {
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
   BridgedNativeWidgetHostImpl* bridge_host =
-      NativeWidgetMac::GetBridgeHostImplForNativeWindow(
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
           host_->GetWidget()->GetNativeWindow());
   DCHECK(bridge_host);
   bridge_host->SetAssociationForView(host_, native_view_);
@@ -127,7 +127,7 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
   BridgedNativeWidgetHostImpl* bridge_host =
-      NativeWidgetMac::GetBridgeHostImplForNativeWindow(
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow(
           host_->GetWidget()->GetNativeWindow());
   // BridgedNativeWidgetImpl can be null when Widget is closing.
   if (bridge_host)

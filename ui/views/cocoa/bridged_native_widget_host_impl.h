@@ -46,6 +46,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       public ui::LayerOwner,
       public ui::AcceleratedWidgetMacNSView {
  public:
+  // Retrieves the bridge host associated with the given NSWindow. Returns null
+  // if the supplied handle has no associated Widget.
+  static BridgedNativeWidgetHostImpl* GetFromNativeWindow(
+      gfx::NativeWindow window);
+
   // Unique integer id handles are used to bridge between the
   // BridgedNativeWidgetHostImpl in one process and the BridgedNativeWidgetHost
   // potentially in another.
