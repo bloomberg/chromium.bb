@@ -625,6 +625,7 @@ extern const char kInitialLocale[];
 extern const char kOobeComplete[];
 extern const char kOobeScreenPending[];
 extern const char kOobeControllerDetected[];
+extern const char kOobeRecommendAppScreenFinished[];
 extern const char kCanShowOobeGoodiesPage[];
 extern const char kDeviceRegistered[];
 extern const char kEnrollmentRecoveryRequired[];

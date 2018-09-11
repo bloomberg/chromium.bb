@@ -1862,6 +1862,10 @@ const char kOobeScreenPending[] = "OobeScreenPending";
 // and get enrolled into a domain automatically.
 const char kOobeControllerDetected[] = "OobeControllerDetected";
 
+// A boolean pref to indicate if the Recommend App screen in OOBE is finished
+// for the user.
+const char kOobeRecommendAppScreenFinished[] = "OobeRecommendAppScreenFinished";
+
 // A boolean pref for whether the Goodies promotion webpage has been displayed,
 // or otherwise disqualified for auto-display, on this device.
 const char kCanShowOobeGoodiesPage[] = "CanShowOobeGoodiesPage";

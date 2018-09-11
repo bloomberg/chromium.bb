@@ -272,9 +272,12 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   return true;
 }
 
-// Return true if the feature flag for recommend app screen is on.
+// Return true if the feature flag for recommend app screen is on and the screen
+// is never triggered before.
 bool ShouldShowRecommendAppsScreen() {
-  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
+  return base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen) &&
+         !ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+             prefs::kOobeRecommendAppScreenFinished);
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
@@ -1122,7 +1125,7 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  // If the feature flag for recommend app screen is on, show it after the user
+  // If the recommend app screen should be shown, show it after the user
   // finished with the PlayStore Terms of Service. Otherwise, advance to the
   // assistant opt-in flow screen.
   if (ShouldShowRecommendAppsScreen()) {
