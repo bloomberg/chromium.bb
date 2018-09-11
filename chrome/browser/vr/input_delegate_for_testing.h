@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_CONTROLLER_DELEGATE_FOR_TESTING_H_
-#define CHROME_BROWSER_VR_CONTROLLER_DELEGATE_FOR_TESTING_H_
+#ifndef CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_
+#define CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_
 
 #include <queue>
 
 #include "base/macros.h"
-#include "chrome/browser/vr/controller_delegate.h"
+#include "chrome/browser/vr/input_delegate.h"
 #include "chrome/browser/vr/model/controller_model.h"
 
 namespace vr {
@@ -16,19 +16,20 @@ namespace vr {
 class UiInterface;
 struct ControllerTestInput;
 
-class ControllerDelegateForTesting : public ControllerDelegate {
+class InputDelegateForTesting : public InputDelegate {
  public:
-  explicit ControllerDelegateForTesting(UiInterface* ui);
-  ~ControllerDelegateForTesting() override;
+  explicit InputDelegateForTesting(UiInterface* ui);
+  ~InputDelegateForTesting() override;
 
   void QueueControllerActionForTesting(ControllerTestInput controller_input);
   bool IsQueueEmpty() const;
 
-  // ControllerDelegate implementation.
+  // InputDelegate implementation.
+  gfx::Transform GetHeadPose() override;
   void UpdateController(const gfx::Transform& head_pose,
                         base::TimeTicks current_time,
                         bool is_webxr_frame) override;
-  ControllerModel GetModel(const gfx::Transform& head_pose) override;
+  ControllerModel GetControllerModel(const gfx::Transform& head_pose) override;
   InputEventList GetGestures(base::TimeTicks current_time) override;
   device::mojom::XRInputSourceStatePtr GetInputSourceState() override;
   void OnResume() override;
@@ -39,9 +40,9 @@ class ControllerDelegateForTesting : public ControllerDelegate {
   std::queue<ControllerModel> controller_model_queue_;
   ControllerModel cached_controller_model_;
 
-  DISALLOW_COPY_AND_ASSIGN(ControllerDelegateForTesting);
+  DISALLOW_COPY_AND_ASSIGN(InputDelegateForTesting);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_CONTROLLER_DELEGATE_FOR_TESTING_H_
+#endif  // CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_

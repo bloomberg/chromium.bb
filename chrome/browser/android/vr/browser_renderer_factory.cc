@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/android/vr/gvr_controller_delegate.h"
+#include "chrome/browser/android/vr/gvr_input_delegate.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
 #include "chrome/browser/android/vr/vr_gl_thread.h"
@@ -63,8 +63,8 @@ std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
       vr_gl_thread, vr_gl_thread, std::move(keyboard_delegate),
       std::move(text_input_delegate), std::move(audio_delegate),
       params->ui_initial_state);
-  auto controller_delegate =
-      std::make_unique<GvrControllerDelegate>(params->gvr_api, vr_gl_thread);
+  auto input_delegate =
+      std::make_unique<GvrInputDelegate>(params->gvr_api, vr_gl_thread);
   auto graphics_delegate = std::make_unique<GvrGraphicsDelegate>(
       vr_gl_thread,
       base::BindOnce(&UiInterface::OnGlInitialized, base::Unretained(ui.get())),
@@ -84,8 +84,8 @@ std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
                      params->ui_initial_state.in_web_vr));
   auto browser_renderer = std::make_unique<BrowserRenderer>(
       std::move(ui), std::move(scheduler_delegate),
-      std::move(graphics_delegate), std::move(controller_delegate),
-      vr_gl_thread, kSlidingAverageSize);
+      std::move(graphics_delegate), std::move(input_delegate), vr_gl_thread,
+      kSlidingAverageSize);
   return browser_renderer;
 }
 

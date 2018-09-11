@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/controller_delegate_for_testing.h"
+#include "chrome/browser/vr/input_delegate_for_testing.h"
 
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -34,15 +34,18 @@ void SetOriginAndTransform(vr::ControllerModel* model) {
 
 namespace vr {
 
-ControllerDelegateForTesting::ControllerDelegateForTesting(UiInterface* ui)
-    : ui_(ui) {
+InputDelegateForTesting::InputDelegateForTesting(UiInterface* ui) : ui_(ui) {
   cached_controller_model_.laser_direction = kForwardVector;
   SetOriginAndTransform(&cached_controller_model_);
 }
 
-ControllerDelegateForTesting::~ControllerDelegateForTesting() = default;
+InputDelegateForTesting::~InputDelegateForTesting() = default;
 
-void ControllerDelegateForTesting::QueueControllerActionForTesting(
+gfx::Transform InputDelegateForTesting::GetHeadPose() {
+  return gfx::Transform();
+}
+
+void InputDelegateForTesting::QueueControllerActionForTesting(
     ControllerTestInput controller_input) {
   DCHECK_NE(controller_input.action,
             VrControllerTestAction::kRevertToRealController);
@@ -92,14 +95,13 @@ void ControllerDelegateForTesting::QueueControllerActionForTesting(
   }
 }
 
-bool ControllerDelegateForTesting::IsQueueEmpty() const {
+bool InputDelegateForTesting::IsQueueEmpty() const {
   return controller_model_queue_.empty();
 }
 
-void ControllerDelegateForTesting::UpdateController(
-    const gfx::Transform& head_pose,
-    base::TimeTicks current_time,
-    bool is_webxr_frame) {
+void InputDelegateForTesting::UpdateController(const gfx::Transform& head_pose,
+                                               base::TimeTicks current_time,
+                                               bool is_webxr_frame) {
   if (!controller_model_queue_.empty()) {
     cached_controller_model_ = controller_model_queue_.front();
     controller_model_queue_.pop();
@@ -108,18 +110,18 @@ void ControllerDelegateForTesting::UpdateController(
   cached_controller_model_.last_button_timestamp = current_time;
 }
 
-ControllerModel ControllerDelegateForTesting::GetModel(
+ControllerModel InputDelegateForTesting::GetControllerModel(
     const gfx::Transform& head_pose) {
   return cached_controller_model_;
 }
 
-InputEventList ControllerDelegateForTesting::GetGestures(
+InputEventList InputDelegateForTesting::GetGestures(
     base::TimeTicks current_time) {
   return InputEventList();
 }
 
 device::mojom::XRInputSourceStatePtr
-ControllerDelegateForTesting::GetInputSourceState() {
+InputDelegateForTesting::GetInputSourceState() {
   auto state = device::mojom::XRInputSourceState::New();
   state->description = device::mojom::XRInputSourceDescription::New();
   state->source_id = 1;
@@ -130,8 +132,8 @@ ControllerDelegateForTesting::GetInputSourceState() {
   return state;
 }
 
-void ControllerDelegateForTesting::OnResume() {}
+void InputDelegateForTesting::OnResume() {}
 
-void ControllerDelegateForTesting::OnPause() {}
+void InputDelegateForTesting::OnPause() {}
 
 }  // namespace vr

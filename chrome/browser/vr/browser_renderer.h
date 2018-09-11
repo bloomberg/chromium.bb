@@ -26,7 +26,7 @@ namespace vr {
 
 enum class VrUiTestActivityResult;
 class BrowserUiInterface;
-class ControllerDelegate;
+class InputDelegate;
 class PlatformInputHandler;
 class PlatformUiInputDelegate;
 class BrowserRendererBrowserInterface;
@@ -45,7 +45,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   BrowserRenderer(std::unique_ptr<UiInterface> ui,
                   std::unique_ptr<SchedulerDelegate> scheduler_delegate,
                   std::unique_ptr<GraphicsDelegate> graphics_delegate,
-                  std::unique_ptr<ControllerDelegate> controller_delegate,
+                  std::unique_ptr<InputDelegate> input_delegate,
                   BrowserRendererBrowserInterface* browser,
                   size_t sliding_time_size);
   ~BrowserRenderer() override;
@@ -82,20 +82,22 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
 
+ private:
   // SchedulerBrowserRendererInterface implementation.
   void DrawBrowserFrame(base::TimeTicks current_time) override;
-  void DrawWebXrFrame(base::TimeTicks current_time) override;
+  void DrawWebXrFrame(base::TimeTicks current_time,
+                      const gfx::Transform& head_pose) override;
   void ProcessControllerInputForWebXr(base::TimeTicks current_time) override;
 
- private:
-  void Draw(GraphicsDelegate::FrameType frame_type,
-            base::TimeTicks current_time);
+  void Draw(FrameType frame_type,
+            base::TimeTicks current_time,
+            const gfx::Transform& head_pose);
 
   // Position, hide and/or show UI elements, process input and update textures.
   // Returns true if the scene changed.
   void UpdateUi(const RenderInfo& render_info,
                 base::TimeTicks currrent_time,
-                GraphicsDelegate::FrameType frame_type);
+                FrameType frame_type);
   void DrawWebXr();
   void DrawWebXrOverlay(const RenderInfo& render_info);
   void DrawContentQuad();
@@ -110,9 +112,9 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   std::unique_ptr<UiInterface> ui_;
   std::unique_ptr<SchedulerDelegate> scheduler_delegate_;
   std::unique_ptr<GraphicsDelegate> graphics_delegate_;
-  std::unique_ptr<ControllerDelegate> controller_delegate_;
-  std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
-  bool using_controller_delegate_for_testing_ = false;
+  std::unique_ptr<InputDelegate> input_delegate_;
+  std::unique_ptr<InputDelegate> input_delegate_for_testing_;
+  bool using_input_delegate_for_testing_ = false;
 
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
 

@@ -99,10 +99,6 @@ void GvrSchedulerDelegate::SetBrowserRenderer(
   browser_renderer_ = browser_renderer;
 }
 
-gfx::Transform GvrSchedulerDelegate::GetHeadPose() {
-  return head_pose_;
-}
-
 void GvrSchedulerDelegate::AddInputSourceState(
     device::mojom::XRInputSourceStatePtr state) {
   input_states_.push_back(std::move(state));
@@ -406,16 +402,10 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
   pending_time_ = frame_time;
   WebXrTryStartAnimatingFrame(true);
 
-  if (ShouldDrawWebVr()) {
-    // When drawing WebVR, controller input doesn't need to be synchronized with
-    // rendering as WebVR uses the gamepad api. To ensure we always handle input
-    // like app button presses, process the controller here.
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_, &head_pose_);
-    DCHECK(browser_renderer_);
+  if (ShouldDrawWebVr())
     browser_renderer_->ProcessControllerInputForWebXr(frame_time);
-  } else {
+  else
     DrawFrame(-1, frame_time);
-  }
 }
 
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
@@ -458,20 +448,6 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
   // of them.
   DCHECK(!is_webxr_frame || webxr_.HaveProcessingFrame());
 
-  // When using async reprojection, we need to know which pose was
-  // used in the WebVR app for drawing this frame and supply it when
-  // submitting. Technically we don't need a pose if not reprojecting,
-  // but keeping it uninitialized seems likely to cause problems down
-  // the road. Copying it is cheaper than fetching a new one.
-  if (is_webxr_frame) {
-    // Copy into render info for overlay UI. WebVR doesn't use this.
-    DCHECK(webxr_.HaveProcessingFrame());
-    WebXrFrame* frame = webxr_.GetProcessingFrame();
-    head_pose_ = frame->head_pose;
-  } else {
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_, &head_pose_);
-  }
-
   graphics_->UpdateViewports();
 
   if (is_webxr_frame) {
@@ -485,12 +461,18 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
   if (!graphics_->AcquireGvrFrame(frame_index))
     return;
 
-  if (is_webxr_frame)
-    browser_renderer_->DrawWebXrFrame(current_time);
-  else
+  if (is_webxr_frame) {
+    // When using async reprojection, we need to know which pose was
+    // used in the WebVR app for drawing this frame and supply it when
+    // submitting. Technically we don't need a pose if not reprojecting,
+    // but keeping it uninitialized seems likely to cause problems down
+    // the road. Copying it is cheaper than fetching a new one.
+    DCHECK(webxr_.HaveProcessingFrame());
+    browser_renderer_->DrawWebXrFrame(current_time,
+                                      webxr_.GetProcessingFrame()->head_pose);
+  } else {
     browser_renderer_->DrawBrowserFrame(current_time);
-
-  SubmitDrawnFrame(is_webxr_frame);
+  }
 }
 
 void GvrSchedulerDelegate::UpdatePendingBounds(int16_t frame_index) {
@@ -525,19 +507,10 @@ void GvrSchedulerDelegate::UpdatePendingBounds(int16_t frame_index) {
   }
 }
 
-void GvrSchedulerDelegate::SubmitDrawnFrame(bool is_webxr_frame) {
-  // GVR submit needs the exact head pose that was used for rendering.
-  gfx::Transform submit_head_pose;
-  if (is_webxr_frame) {
-    // Don't use render_info_.head_pose here, that may have been
-    // overwritten by OnVSync's controller handling. We need the pose that was
-    // sent to JS.
-    submit_head_pose = webxr_.GetProcessingFrame()->head_pose;
-  } else {
-    submit_head_pose = head_pose_;
-  }
+void GvrSchedulerDelegate::SubmitDrawnFrame(FrameType frame_type,
+                                            const gfx::Transform& head_pose) {
   std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
-  if (is_webxr_frame && graphics_->DoesSurfacelessRendering()) {
+  if (frame_type == kWebXrFrame && graphics_->DoesSurfacelessRendering()) {
     webxr_.GetProcessingFrame()->time_copied = base::TimeTicks::Now();
     if (webxr_use_gpu_fence_) {
       // Continue with submit once the previous frame's GL fence signals that
@@ -564,21 +537,20 @@ void GvrSchedulerDelegate::SubmitDrawnFrame(bool is_webxr_frame) {
         base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
                             base::Unretained(this)));
     task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
-                       submit_head_pose, base::Passed(&fence)));
+        FROM_HERE, base::BindOnce(webxr_delayed_gvr_submit_.callback(),
+                                  frame_type, head_pose, base::Passed(&fence)));
   } else {
     // Continue with submit immediately.
-    DrawFrameSubmitNow(is_webxr_frame, submit_head_pose);
+    DrawFrameSubmitNow(frame_type, head_pose);
   }
 }
 
 void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
-    bool is_webxr_frame,
+    FrameType frame_type,
     const gfx::Transform& head_pose,
     std::unique_ptr<gl::GLFenceEGL> fence) {
-  TRACE_EVENT1("gpu", __func__, "is_webxr_frame", is_webxr_frame);
-  DVLOG(2) << __func__ << ": is_webxr_frame=" << is_webxr_frame;
+  TRACE_EVENT1("gpu", __func__, "frame_type", frame_type);
+  DVLOG(2) << __func__ << ": frame_type=" << frame_type;
   bool use_polling = webxr_.mailbox_bridge_ready() &&
                      mailbox_bridge_->IsGpuWorkaroundEnabled(
                          gpu::DONT_USE_EGLCLIENTWAITSYNC_WITH_TIMEOUT);
@@ -600,13 +572,13 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
         // with a delay of up to one polling interval.
         task_runner()->PostDelayedTask(
             FROM_HERE,
-            base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
+            base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
                            head_pose, base::Passed(&fence)),
             kWebVRFenceCheckPollInterval);
       } else {
         task_runner()->PostTask(
             FROM_HERE,
-            base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
+            base::BindOnce(webxr_delayed_gvr_submit_.callback(), frame_type,
                            head_pose, base::Passed(&fence)));
       }
       return;
@@ -620,7 +592,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
   }
 
   webxr_delayed_gvr_submit_.Cancel();
-  DrawFrameSubmitNow(is_webxr_frame, head_pose);
+  DrawFrameSubmitNow(frame_type, head_pose);
 }
 
 void GvrSchedulerDelegate::AddWebVrRenderTimeEstimate(
@@ -636,14 +608,13 @@ void GvrSchedulerDelegate::AddWebVrRenderTimeEstimate(
   }
 }
 
-void GvrSchedulerDelegate::DrawFrameSubmitNow(bool is_webxr_frame,
+void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
                                               const gfx::Transform& head_pose) {
-  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::DrawFrameSubmitNow",
-               "is_webxr_frame", is_webxr_frame);
-
+  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::DrawFrameSubmitNow", "frame_type",
+               frame_type);
   {
     std::unique_ptr<ScopedGpuTrace> browser_gpu_trace;
-    if (gl::GLFence::IsGpuFenceSupported() && is_webxr_frame) {
+    if (gl::GLFence::IsGpuFenceSupported() && frame_type == kWebXrFrame) {
       // This fence instance is created for the tracing side effect. Insert it
       // before GVR submit. Then replace the previous instance below after GVR
       // submit completes, at which point the previous fence (if any) should be
@@ -667,7 +638,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(bool is_webxr_frame,
   // false for a WebVR frame. Ignore the ShouldDrawWebVr status to ensure we
   // send render notifications while paused for exclusive UI mode. Skip the
   // steps if we lost the processing state, that means presentation has ended.
-  if (is_webxr_frame && webxr_.HaveProcessingFrame()) {
+  if (frame_type == kWebXrFrame && webxr_.HaveProcessingFrame()) {
     // Report rendering completion to the Renderer so that it's permitted to
     // submit a fresh frame. We could do this earlier, as soon as the frame
     // got pulled off the transfer surface, but that results in overstuffed
@@ -697,7 +668,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(bool is_webxr_frame,
   DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
 
-  if (is_webxr_frame) {
+  if (frame_type == kWebXrFrame) {
     // We finished processing a frame, this may make pending WebVR
     // work eligible to proceed.
     webxr_.TryDeferredProcessing();

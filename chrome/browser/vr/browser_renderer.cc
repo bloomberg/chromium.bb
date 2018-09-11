@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/vr/browser_renderer_browser_interface.h"
-#include "chrome/browser/vr/controller_delegate_for_testing.h"
+#include "chrome/browser/vr/input_delegate_for_testing.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
@@ -26,13 +26,13 @@ BrowserRenderer::BrowserRenderer(
     std::unique_ptr<UiInterface> ui,
     std::unique_ptr<SchedulerDelegate> scheduler_delegate,
     std::unique_ptr<GraphicsDelegate> graphics_delegate,
-    std::unique_ptr<ControllerDelegate> controller_delegate,
+    std::unique_ptr<InputDelegate> input_delegate,
     BrowserRendererBrowserInterface* browser,
     size_t sliding_time_size)
     : ui_(std::move(ui)),
       scheduler_delegate_(std::move(scheduler_delegate)),
       graphics_delegate_(std::move(graphics_delegate)),
-      controller_delegate_(std::move(controller_delegate)),
+      input_delegate_(std::move(input_delegate)),
       browser_(browser),
       ui_processing_time_(sliding_time_size),
       ui_controller_update_time_(sliding_time_size),
@@ -43,18 +43,20 @@ BrowserRenderer::BrowserRenderer(
 BrowserRenderer::~BrowserRenderer() = default;
 
 void BrowserRenderer::DrawBrowserFrame(base::TimeTicks current_time) {
-  Draw(GraphicsDelegate::kUiFrame, current_time);
+  Draw(kUiFrame, current_time, input_delegate_->GetHeadPose());
 }
 
-void BrowserRenderer::DrawWebXrFrame(base::TimeTicks current_time) {
-  Draw(GraphicsDelegate::kWebXrFrame, current_time);
+void BrowserRenderer::DrawWebXrFrame(base::TimeTicks current_time,
+                                     const gfx::Transform& head_pose) {
+  Draw(kWebXrFrame, current_time, head_pose);
 }
 
-void BrowserRenderer::Draw(GraphicsDelegate::FrameType frame_type,
-                           base::TimeTicks current_time) {
+void BrowserRenderer::Draw(FrameType frame_type,
+                           base::TimeTicks current_time,
+                           const gfx::Transform& head_pose) {
   TRACE_EVENT1("gpu", __func__, "frame_type", frame_type);
-  const auto& render_info = graphics_delegate_->GetRenderInfo(
-      frame_type, scheduler_delegate_->GetHeadPose());
+  const auto& render_info =
+      graphics_delegate_->GetRenderInfo(frame_type, head_pose);
   UpdateUi(render_info, current_time, frame_type);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   bool use_quad_layer = ui_->IsContentVisibleAndOpaque() &&
@@ -62,7 +64,7 @@ void BrowserRenderer::Draw(GraphicsDelegate::FrameType frame_type,
   ui_->SetContentUsesQuadLayer(use_quad_layer);
 
   graphics_delegate_->InitializeBuffers();
-  if (frame_type == GraphicsDelegate::kWebXrFrame) {
+  if (frame_type == kWebXrFrame) {
     DCHECK(!use_quad_layer);
     DrawWebXr();
     if (ui_->HasWebXrOverlayElementsToDraw())
@@ -77,6 +79,8 @@ void BrowserRenderer::Draw(GraphicsDelegate::FrameType frame_type,
                  ui_processing_time_.GetAverage().InMicroseconds(),
                  "controller",
                  ui_controller_update_time_.GetAverage().InMicroseconds());
+
+  scheduler_delegate_->SubmitDrawnFrame(frame_type, head_pose);
 }
 
 void BrowserRenderer::DrawWebXr() {
@@ -128,16 +132,16 @@ void BrowserRenderer::DrawBrowserUi(const RenderInfo& render_info) {
 }
 
 void BrowserRenderer::OnPause() {
-  DCHECK(controller_delegate_);
-  controller_delegate_->OnPause();
+  DCHECK(input_delegate_);
+  input_delegate_->OnPause();
   scheduler_delegate_->OnPause();
   ui_->OnPause();
 }
 
 void BrowserRenderer::OnResume() {
-  DCHECK(controller_delegate_);
+  DCHECK(input_delegate_);
   scheduler_delegate_->OnResume();
-  controller_delegate_->OnResume();
+  input_delegate_->OnResume();
 }
 
 void BrowserRenderer::OnExitPresent() {
@@ -251,7 +255,7 @@ void BrowserRenderer::AcceptDoffPromptForTesting() {
 
 void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
                                base::TimeTicks current_time,
-                               GraphicsDelegate::FrameType frame_type) {
+                               FrameType frame_type) {
   TRACE_EVENT0("gpu", __func__);
 
   // Update the render position of all UI elements.
@@ -260,7 +264,7 @@ void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
 
   // WebXR handles controller input in OnVsync.
   base::TimeDelta controller_time;
-  if (frame_type == GraphicsDelegate::kUiFrame)
+  if (frame_type == kUiFrame)
     controller_time = ProcessControllerInput(render_info, current_time);
 
   if (ui_->SceneHasDirtyTextures()) {
@@ -281,19 +285,19 @@ void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
 void BrowserRenderer::ProcessControllerInputForWebXr(
     base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
-  DCHECK(controller_delegate_);
+  DCHECK(input_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(scheduler_delegate_->GetHeadPose(),
-                                         current_time, true);
-  auto input_event_list = controller_delegate_->GetGestures(current_time);
+  // No transform required for input handling while in WebXR.
+  input_delegate_->UpdateController(gfx::Transform(), current_time, true);
+  auto input_event_list = input_delegate_->GetGestures(current_time);
   ui_->HandleMenuButtonEvents(&input_event_list);
 
   ui_controller_update_time_.AddSample(base::TimeTicks::Now() - timing_start);
 
   scheduler_delegate_->AddInputSourceState(
-      controller_delegate_->GetInputSourceState());
+      input_delegate_->GetInputSourceState());
 }
 
 void BrowserRenderer::ConnectPresentingService(
@@ -307,16 +311,15 @@ base::TimeDelta BrowserRenderer::ProcessControllerInput(
     const RenderInfo& render_info,
     base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
-  DCHECK(controller_delegate_);
+  DCHECK(input_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(render_info.head_pose, current_time,
-                                         false);
-  auto input_event_list = controller_delegate_->GetGestures(current_time);
+  input_delegate_->UpdateController(render_info.head_pose, current_time, false);
+  auto input_event_list = input_delegate_->GetGestures(current_time);
   ReticleModel reticle_model;
   ControllerModel controller_model =
-      controller_delegate_->GetModel(render_info.head_pose);
+      input_delegate_->GetControllerModel(render_info.head_pose);
   ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
                    &input_event_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
@@ -328,30 +331,29 @@ base::TimeDelta BrowserRenderer::ProcessControllerInput(
 
 void BrowserRenderer::PerformControllerActionForTesting(
     ControllerTestInput controller_input) {
-  DCHECK(controller_delegate_);
+  DCHECK(input_delegate_);
   if (controller_input.action ==
       VrControllerTestAction::kRevertToRealController) {
-    if (using_controller_delegate_for_testing_) {
-      DCHECK(
-          static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
-              ->IsQueueEmpty())
+    if (using_input_delegate_for_testing_) {
+      DCHECK(static_cast<InputDelegateForTesting*>(input_delegate_.get())
+                 ->IsQueueEmpty())
           << "Attempted to revert to using real controller with actions still "
              "queued";
-      using_controller_delegate_for_testing_ = false;
-      controller_delegate_for_testing_.swap(controller_delegate_);
+      using_input_delegate_for_testing_ = false;
+      input_delegate_for_testing_.swap(input_delegate_);
     }
     return;
   }
-  if (!using_controller_delegate_for_testing_) {
-    using_controller_delegate_for_testing_ = true;
-    if (!controller_delegate_for_testing_)
-      controller_delegate_for_testing_ =
-          std::make_unique<ControllerDelegateForTesting>(ui_.get());
-    controller_delegate_for_testing_.swap(controller_delegate_);
+  if (!using_input_delegate_for_testing_) {
+    using_input_delegate_for_testing_ = true;
+    if (!input_delegate_for_testing_)
+      input_delegate_for_testing_ =
+          std::make_unique<InputDelegateForTesting>(ui_.get());
+    input_delegate_for_testing_.swap(input_delegate_);
   }
   if (controller_input.action !=
       VrControllerTestAction::kEnableMockedController) {
-    static_cast<ControllerDelegateForTesting*>(controller_delegate_.get())
+    static_cast<InputDelegateForTesting*>(input_delegate_.get())
         ->QueueControllerActionForTesting(controller_input);
   }
 }

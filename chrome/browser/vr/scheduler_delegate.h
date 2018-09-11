@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "chrome/browser/vr/frame_type.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -21,9 +22,7 @@ class SchedulerBrowserRendererInterface;
 
 // The SchedulerDelegate is responsible for starting the draw calls of the
 // BrowserRenderer, given different signals, such as WebXR frames submitted or
-// VSync events. It also provides head poses, obtained from the underlaying
-// platform.
-// TODO(acondor): Move head pose logic to the ControllerDelegate.
+// VSync events.
 class VR_EXPORT SchedulerDelegate {
  public:
   virtual ~SchedulerDelegate() {}
@@ -31,13 +30,14 @@ class VR_EXPORT SchedulerDelegate {
   virtual void OnPause() = 0;
   virtual void OnResume() = 0;
 
-  virtual gfx::Transform GetHeadPose() = 0;
   virtual void OnExitPresent() = 0;
   virtual void OnTriggerEvent(bool pressed) = 0;
   virtual void SetWebXrMode(bool enabled) = 0;
   virtual void SetShowingVrDialog(bool showing) = 0;
   virtual void SetBrowserRenderer(
       SchedulerBrowserRendererInterface* browser_renderer) = 0;
+  virtual void SubmitDrawnFrame(FrameType frame_type,
+                                const gfx::Transform& transform) = 0;
   virtual void AddInputSourceState(
       device::mojom::XRInputSourceStatePtr state) = 0;
   virtual void ConnectPresentingService(

@@ -9,13 +9,19 @@ namespace base {
 class TimeTicks;
 }
 
+namespace gfx {
+class Transform;
+}
+
 namespace vr {
 
 class SchedulerBrowserRendererInterface {
  public:
   virtual ~SchedulerBrowserRendererInterface() {}
   virtual void DrawBrowserFrame(base::TimeTicks current_time) = 0;
-  virtual void DrawWebXrFrame(base::TimeTicks current_time) = 0;
+  // Pass the same head_pose used to render the submitted WebXR frame.
+  virtual void DrawWebXrFrame(base::TimeTicks current_time,
+                              const gfx::Transform& head_pose) = 0;
   virtual void ProcessControllerInputForWebXr(base::TimeTicks current_time) = 0;
 };
 
