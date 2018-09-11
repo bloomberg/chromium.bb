@@ -139,7 +139,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 
   if (anchor_view) {
     intent_picker_bubble_->SetAnchorView(anchor_view);
-    intent_picker_bubble_->set_arrow(views::BubbleBorder::TOP_RIGHT);
+    intent_picker_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
   } else {
     intent_picker_bubble_->set_parent_window(browser_view->GetNativeWindow());
     // Using the TopContainerBoundsInScreen Rect to specify an anchor for the

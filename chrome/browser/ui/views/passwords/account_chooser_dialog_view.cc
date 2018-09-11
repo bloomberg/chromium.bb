@@ -89,7 +89,7 @@ AccountChooserDialogView::AccountChooserDialogView(
   DCHECK(controller);
   DCHECK(web_contents);
   set_close_on_deactivate(false);
-  set_arrow(views::BubbleBorder::NONE);
+  SetArrow(views::BubbleBorder::NONE);
   set_margins(gfx::Insets(margins().top(), 0, margins().bottom(), 0));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ACCOUNT_CHOOSER);
 }

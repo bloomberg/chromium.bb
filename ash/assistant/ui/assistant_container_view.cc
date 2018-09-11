@@ -325,7 +325,7 @@ void AssistantContainerView::SetAnchor(aura::Window* root_window) {
                 work_area.width(), 0);
 
   SetAnchorRect(anchor);
-  set_arrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
+  SetArrow(views::BubbleBorder::Arrow::BOTTOM_CENTER);
 }
 
 void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode) {

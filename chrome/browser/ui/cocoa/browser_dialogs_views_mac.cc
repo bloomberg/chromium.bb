@@ -69,7 +69,7 @@ void ShowPageInfoBubbleViews(Browser* browser,
           configuration.anchor_view, anchor_rect, parent_window,
           browser->profile(), web_contents, virtual_url, security_info);
   bubble->GetWidget()->Show();
-  bubble->set_arrow(configuration.bubble_arrow);
+  bubble->SetArrow(configuration.bubble_arrow);
   KeepBubbleAnchored(bubble, GetPageInfoDecoration(parent_window));
 }
 

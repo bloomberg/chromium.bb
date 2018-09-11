@@ -147,7 +147,7 @@ views::Widget* TranslateBubbleView::ShowBubble(
     // However, the bubble will be set up with no parent and no anchor. That
     // needs to be set up before showing the bubble.
     DCHECK(!anchor_view);
-    view->set_arrow(views::BubbleBorder::TOP_RIGHT);
+    view->SetArrow(views::BubbleBorder::TOP_RIGHT);
     view->set_parent_window(platform_util::GetViewForWindow(
         web_contents->GetTopLevelNativeWindow()));
   } else {

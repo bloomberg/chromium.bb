@@ -184,7 +184,7 @@ void ParentToCocoaBrowser(Browser* browser, ZoomBubbleView* zoom_bubble) {
   gfx::NativeView parent =
       platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
   DCHECK(parent);
-  zoom_bubble->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  zoom_bubble->SetArrow(views::BubbleBorder::TOP_RIGHT);
   zoom_bubble->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
 }

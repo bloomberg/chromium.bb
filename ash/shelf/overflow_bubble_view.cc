@@ -57,7 +57,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   shelf_view_ = shelf_view;
 
   SetAnchorView(anchor);
-  set_arrow(views::BubbleBorder::NONE);
+  SetArrow(views::BubbleBorder::NONE);
   SetBackground(nullptr);
   if (shelf_->IsHorizontalAlignment())
     set_margins(gfx::Insets(0, kEndPadding));

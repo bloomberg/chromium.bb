@@ -166,7 +166,7 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
   SetAnchorView(configuration.anchor_view);
   if (!configuration.anchor_view)
     SetAnchorRect(GetChooserAnchorRect(browser));
-  set_arrow(configuration.bubble_arrow);
+  SetArrow(configuration.bubble_arrow);
 }
 
 void ChooserBubbleUiViewDelegate::set_bubble_reference(

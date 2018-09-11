@@ -932,7 +932,7 @@ void ShowPageInfoDialogImpl(Browser* browser,
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,
           browser->profile(), web_contents, virtual_url, security_info);
-  bubble->set_arrow(configuration.bubble_arrow);
+  bubble->SetArrow(configuration.bubble_arrow);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   auto* location_bar = browser_view->GetLocationBarView();
   if (location_bar)
