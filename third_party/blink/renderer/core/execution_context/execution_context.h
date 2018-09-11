@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
@@ -64,6 +63,7 @@ class FetchClientSettingsObjectSnapshot;
 class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
 class KURL;
+class LocalDOMWindow;
 class PausableObject;
 class PublicURLManager;
 class ResourceFetcher;
