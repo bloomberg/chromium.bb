@@ -764,7 +764,8 @@ FocusController::FocusController(Page* page)
     : page_(page),
       is_active_(false),
       is_focused_(false),
-      is_changing_focused_frame_(false) {}
+      is_changing_focused_frame_(false),
+      is_emulating_focus_(false) {}
 
 FocusController* FocusController::Create(Page* page) {
   return new FocusController(page);
@@ -887,18 +888,14 @@ bool FocusController::IsDocumentFocused(const Document& document) const {
          focused_frame_->Tree().IsDescendantOf(document.GetFrame());
 }
 
-void FocusController::SetFocused(bool focused) {
-  if (IsFocused() == focused)
-    return;
-
-  is_focused_ = focused;
-
-  if (!is_focused_ && FocusedOrMainFrame()->IsLocalFrame())
+void FocusController::FocusHasChanged() {
+  bool focused = IsFocused();
+  if (!focused && FocusedOrMainFrame()->IsLocalFrame())
     ToLocalFrame(FocusedOrMainFrame())->GetEventHandler().StopAutoscroll();
 
   // Do not set a focused frame when being unfocused. This might reset
   // m_isFocused to true.
-  if (!focused_frame_ && is_focused_)
+  if (!focused_frame_ && focused)
     SetFocusedFrame(page_->MainFrame());
 
   // setFocusedFrame above might reject to update m_focusedFrame, or
@@ -911,6 +908,26 @@ void FocusController::SetFocused(bool focused) {
   }
 
   NotifyFocusChangedObservers();
+}
+
+void FocusController::SetFocused(bool focused) {
+  if (is_focused_ == focused)
+    return;
+  is_focused_ = focused;
+  if (!is_emulating_focus_)
+    FocusHasChanged();
+}
+
+void FocusController::SetFocusEmulationEnabled(bool emulate_focus) {
+  if (emulate_focus == is_emulating_focus_)
+    return;
+  bool active = IsActive();
+  bool focused = IsFocused();
+  is_emulating_focus_ = emulate_focus;
+  if (active != IsActive())
+    ActiveHasChanged();
+  if (focused != IsFocused())
+    FocusHasChanged();
 }
 
 bool FocusController::SetInitialFocus(WebFocusType type) {
@@ -1229,12 +1246,7 @@ bool FocusController::SetFocusedElement(Element* element,
   return true;
 }
 
-void FocusController::SetActive(bool active) {
-  if (is_active_ == active)
-    return;
-
-  is_active_ = active;
-
+void FocusController::ActiveHasChanged() {
   Frame* frame = FocusedOrMainFrame();
   if (frame->IsLocalFrame()) {
     Document* const document =
@@ -1249,6 +1261,15 @@ void FocusController::SetActive(bool active) {
       view->InvalidateAllCustomScrollbarsOnActiveChanged();
     ToLocalFrame(frame)->Selection().PageActivationChanged();
   }
+}
+
+void FocusController::SetActive(bool active) {
+  if (is_active_ == active)
+    return;
+
+  is_active_ = active;
+  if (!is_emulating_focus_)
+    ActiveHasChanged();
 }
 
 static void UpdateFocusCandidateIfNeeded(WebFocusType direction,

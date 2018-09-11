@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DOM.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -48,7 +49,8 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       virtual_time_offset_(&agent_state_, /*default_value=*/0.0),
       virtual_time_policy_(&agent_state_, /*default_value=*/WTF::String()),
       virtual_time_task_starvation_count_(&agent_state_, /*default_value=*/0),
-      wait_for_navigation_(&agent_state_, /*default_value=*/false) {}
+      wait_for_navigation_(&agent_state_, /*default_value=*/false),
+      emulate_focus_(&agent_state_, /*default_value=*/false) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() = default;
 
@@ -85,6 +87,7 @@ void InspectorEmulationAgent::Restore() {
       }
     }
   }
+  setFocusEmulationEnabled(emulate_focus_.Get());
 
   if (virtual_time_policy_.Get().IsNull())
     return;
@@ -131,6 +134,7 @@ Response InspectorEmulationAgent::disable() {
   setTouchEmulationEnabled(false, Maybe<int>());
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
+  setFocusEmulationEnabled(false);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
   if (virtual_time_setup_) {
     DCHECK(web_local_frame_);
@@ -224,6 +228,16 @@ Response InspectorEmulationAgent::setCPUThrottlingRate(double rate) {
   if (!response.isSuccess())
     return response;
   scheduler::ThreadCPUThrottler::GetInstance()->SetThrottlingRate(rate);
+  return response;
+}
+
+Response InspectorEmulationAgent::setFocusEmulationEnabled(bool enabled) {
+  Response response = AssertPage();
+  if (!response.isSuccess())
+    return response;
+  emulate_focus_.Set(enabled);
+  GetWebViewImpl()->GetPage()->GetFocusController().SetFocusEmulationEnabled(
+      enabled);
   return response;
 }
 
