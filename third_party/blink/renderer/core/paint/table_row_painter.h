@@ -31,6 +31,10 @@ class TableRowPainter {
  private:
   void HandleChangedPartialPaint(const PaintInfo&,
                                  const CellSpan& dirtied_columns);
+  // Paint a hit test display item and record hit test data. This should be
+  // called in the background paint phase even if there is no other painted
+  // content.
+  void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
 
   const LayoutTableRow& layout_table_row_;
 };
