@@ -6483,11 +6483,25 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDecoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter fatal
+    getter ignoreBOM
+    getter readable
+    getter writable
+    method constructor
 interface TextEncoder
     attribute @@toStringTag
     getter encoding
     method constructor
     method encode
+interface TextEncoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter readable
+    getter writable
+    method constructor
 interface TextEvent : UIEvent
     attribute @@toStringTag
     getter data
