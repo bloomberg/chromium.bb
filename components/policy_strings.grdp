@@ -434,8 +434,8 @@ Additional details:
   <message name="IDS_POLICY_SOURCE_PLATFORM" desc="Indicates that the policy is obtained from the local OS.">
     Platform
   </message>
-  <message name="IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE" desc="Indicates that the policy is set programmatically because of an active public session (for Chrome OS only). It could have overridden other sources that set this policy.">
-    Public session override
+  <message name="IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE" desc="Indicates that the policy is set programmatically because of an active managed session (for Chrome OS only). It could have overridden other sources that set this policy.">
+    Managed session override
   </message>
   <message name="IDS_POLICY_RISK_TAG_FULL_ADMIN_ACCESS" desc="Title of a group/tag whose policies potentially allow the administrator to access all of a user's data.">
     Full Admin Access

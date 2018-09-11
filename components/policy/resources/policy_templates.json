@@ -6400,7 +6400,7 @@
       'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one.
 
-      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstital screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Public Session is configured. When a Public Session is configured, only the Public Session accounts will be shown, allowing to pick one of them.
+      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
 
       Note that this policy does not affect whether the device keeps or discards the local user data.''',
     },
@@ -6841,11 +6841,11 @@
       },
       'example_value': "public@example.com",
       'id': 194,
-      'caption': '''Public session for auto-login''',
+      'caption': '''Device-local account for auto-login''',
       'tags': [],
-      'desc': '''A public session to auto-login after a delay.
+      'desc': '''A device-local account to auto-login after a delay.
 
-      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
+      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The device-local account must already be configured (see |DeviceLocalAccounts|).
 
       If this policy is unset, there will be no auto-login.''',
     },
@@ -6861,13 +6861,13 @@
       },
       'example_value': 180000,
       'id': 195,
-      'caption': '''Public session auto-login timer''',
+      'caption': '''Device-local account auto-login timer''',
       'tags': [],
-      'desc': '''The public session auto-login delay.
+      'desc': '''The device-local account auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
 
-      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the public session specified by the |DeviceLocalAccountAutoLoginId| policy.
+      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the device-local account specified by the |DeviceLocalAccountAutoLoginId| policy.
 
       If this policy is unset, 0 milliseconds will be used as the timeout.
 
@@ -9269,19 +9269,19 @@
       },
       'example_value': ['de', 'fr'],
       'id': 274,
-      'caption': '''Set the recommended locales for a public session''',
+      'caption': '''Set the recommended locales for a managed session''',
       'tags': [],
-      'desc': '''Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
+      'desc': '''Sets one or more recommended locales for a managed session, allowing users to easily choose one of these locales.
 
-      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
+      The user can choose a locale and a keyboard layout before starting a managed session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
 
       If this policy is not set, the current UI locale will be pre-selected.
 
       If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
 
-      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
+      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a managed session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a managed session.
 
-      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
+      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started managed session will use the first recommended locale and the most popular keyboard layout matching this locale.
 
       The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
 
