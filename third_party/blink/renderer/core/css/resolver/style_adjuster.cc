@@ -78,17 +78,6 @@ TouchAction AdjustTouchActionForElement(TouchAction touch_action,
   return touch_action;
 }
 
-// Returns true for elements that are either <img> or <svg> image or <video>
-// that are not in an image or media document; returns false otherwise.
-bool IsImageOrVideoElement(const Element* element) {
-  if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
-      !element->GetDocument().IsImageDocument())
-    return true;
-  if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
-    return true;
-  return false;
-}
-
 bool ShouldForceLegacyLayout(const ComputedStyle& style,
                              const ComputedStyle& layout_parent_style,
                              const Element& element) {
@@ -733,28 +722,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       element &&
       ShouldForceLegacyLayout(style, layout_parent_style, *element)) {
     style.SetForceLegacyLayout(true);
-  }
-
-  // If intrinsically sized images or videos are disallowed by feature policy,
-  // use default size (300 x 150) instead.
-  if (IsImageOrVideoElement(element)) {
-    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-        element->GetDocument().GetFrame() &&
-        (!style.Width().IsSpecified() || !style.Height().IsSpecified())) {
-      // This check will trigger reporting, so only do it if either width or
-      // height is unspecified.
-      if (!element->GetDocument().GetFrame()->IsFeatureEnabled(
-              mojom::FeaturePolicyFeature::kUnsizedMedia,
-              ReportOptions::kReportOnFailure)) {
-        if (!style.Width().IsSpecified()) {
-          style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
-        }
-        if (!style.Height().IsSpecified()) {
-          style.SetLogicalHeight(
-              Length(LayoutReplaced::kDefaultHeight, kFixed));
-        }
-      }
-    }
   }
 }
 }  // namespace blink

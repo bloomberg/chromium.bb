@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
@@ -497,13 +498,21 @@ void LayoutImage::UpdateShouldInvertColorForTest(bool value) {
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
-  // Check for optimized image policies.
-  if (IsHTMLImageElement(node) && View() && View()->GetFrameView()) {
-    bool old_flag = ShouldInvertColor();
-    is_downscaled_image_ = CheckForMaxDownscalingImagePolicy(
-        View()->GetFrameView()->GetFrame(), ToHTMLImageElement(node), this);
-    if (old_flag != ShouldInvertColor())
-      UpdateShouldInvertColor();
+  if (auto* image_element = ToHTMLImageElementOrNull(node)) {
+    if (View() && View()->GetFrameView()) {
+      const LocalFrame& frame = View()->GetFrameView()->GetFrame();
+
+      // Check for optimized image policies.
+      bool old_flag = ShouldInvertColor();
+      is_downscaled_image_ =
+          CheckForMaxDownscalingImagePolicy(frame, image_element, this);
+      if (old_flag != ShouldInvertColor())
+        UpdateShouldInvertColor();
+    }
+
+    // Report violation of unsized-media policy.
+    if (image_element->IsDefaultIntrinsicSize())
+      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
   }
 }
 

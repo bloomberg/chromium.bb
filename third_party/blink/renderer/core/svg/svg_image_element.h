@@ -69,6 +69,10 @@ class CORE_EXPORT SVGImageElement final
     return GetImageLoader().GetContent();
   }
 
+  bool IsDefaultIntrinsicSize() const {
+    return is_default_overridden_intrinsic_size_;
+  }
+
  private:
   explicit SVGImageElement(Document&);
 
@@ -98,6 +102,7 @@ class CORE_EXPORT SVGImageElement final
   SVGImageLoader& GetImageLoader() const override { return *image_loader_; }
 
   IntSize overridden_intrinsic_size_;
+  bool is_default_overridden_intrinsic_size_;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;

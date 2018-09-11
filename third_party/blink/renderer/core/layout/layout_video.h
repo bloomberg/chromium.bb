@@ -50,6 +50,8 @@ class LayoutVideo final : public LayoutMedia {
 
   void IntrinsicSizeChanged() override;
 
+  void UpdateAfterLayout() override;
+
  private:
   void UpdateFromElement() override;
 

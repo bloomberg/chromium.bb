@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
@@ -35,6 +36,7 @@ namespace blink {
 inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document),
       SVGURIReference(this),
+      is_default_overridden_intrinsic_size_(false),
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
                                    SVGLengthMode::kWidth,
@@ -64,6 +66,13 @@ inline SVGImageElement::SVGImageElement(Document& document)
   AddToPropertyMap(width_);
   AddToPropertyMap(height_);
   AddToPropertyMap(preserve_aspect_ratio_);
+
+  if (MediaElementParserHelpers::IsMediaElement(this) &&
+      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+    is_default_overridden_intrinsic_size_ = true;
+    overridden_intrinsic_size_ =
+        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
+  }
 }
 
 DEFINE_NODE_FACTORY(SVGImageElement)
@@ -168,7 +177,8 @@ void SVGImageElement::ParseAttribute(
     String message;
     bool intrinsic_size_changed =
         MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
-            params.new_value, &overridden_intrinsic_size_, &message);
+            params.new_value, this, &overridden_intrinsic_size_,
+            &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kOtherMessageSource, kWarningMessageLevel, message));
