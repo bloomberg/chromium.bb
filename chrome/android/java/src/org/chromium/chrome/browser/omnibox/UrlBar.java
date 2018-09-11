@@ -36,8 +36,9 @@ import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -339,7 +340,7 @@ public class UrlBar extends AutocompleteEditText {
                 post(new Runnable() {
                     @Override
                     public void run() {
-                        KeyboardVisibilityDelegate.getInstance().showKeyboard(UrlBar.this);
+                        UiUtils.showKeyboard(UrlBar.this);
                     }
                 });
             }

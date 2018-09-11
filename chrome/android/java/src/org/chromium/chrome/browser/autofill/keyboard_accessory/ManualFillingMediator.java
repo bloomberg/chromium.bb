@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.ui.DropdownPopupWindow;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.HashMap;
@@ -178,7 +179,6 @@ class ManualFillingMediator
     // TODO(fhorschig): Look for stronger signals than |keyboardVisibilityChanged|.
     // This variable remembers the last state of |keyboardVisibilityChanged| which might not be
     // sufficient for edge cases like hardware keyboards, floating keyboards, etc.
-    @VisibleForTesting
     void onKeyboardVisibilityChanged(boolean isShowing) {
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
@@ -235,9 +235,7 @@ class ManualFillingMediator
         if (!isInitialized()) return;
         pause();
         ViewGroup contentView = getContentView();
-        if (contentView != null) {
-            mWindowAndroid.getKeyboardDelegate().hideKeyboard(getContentView());
-        }
+        if (contentView != null) UiUtils.hideKeyboard(contentView);
     }
 
     void notifyPopupOpened(DropdownPopupWindow popup) {
@@ -266,14 +264,14 @@ class ManualFillingMediator
         View rootView = contentView.getRootView();
         if (rootView == null) return;
         mAccessorySheet.setHeight(calculateAccessorySheetHeight(rootView));
-        mWindowAndroid.getKeyboardDelegate().hideKeyboard(contentView);
+        UiUtils.hideKeyboard(contentView);
     }
 
     @Override
     public void onCloseAccessorySheet() {
         ViewGroup contentView = getContentView();
         if (contentView == null || mActivity == null) return; // The tab was cleaned up already.
-        if (mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(mActivity, contentView)) {
+        if (UiUtils.isKeyboardShowing(mActivity, contentView)) {
             return; // If the keyboard is showing or is starting to show, the sheet closes gently.
         }
         mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
@@ -294,9 +292,7 @@ class ManualFillingMediator
     public void onOpenKeyboard() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
         mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
-        if (mActivity.getCurrentFocus() != null) {
-            mWindowAndroid.getKeyboardDelegate().showKeyboard(mActivity.getCurrentFocus());
-        }
+        if (mActivity.getCurrentFocus() != null) UiUtils.showKeyboard(mActivity.getCurrentFocus());
     }
 
     @Override
@@ -370,7 +366,7 @@ class ManualFillingMediator
                 org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
         // Ensure that the minimum height is always sufficient to display a suggestion.
         return Math.max(accessorySheetSuggestionHeight,
-                mWindowAndroid.getKeyboardDelegate().calculateKeyboardHeight(mActivity, rootView));
+                UiUtils.calculateKeyboardHeight(mActivity, rootView));
     }
 
     private @Px int calculateAccessoryBarHeight() {

@@ -4,18 +4,22 @@
 
 package org.chromium.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -33,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility functions for common Android UI tasks.
@@ -40,6 +45,9 @@ import java.util.Set;
  */
 public class UiUtils {
     private static final String TAG = "UiUtils";
+
+    private static final int KEYBOARD_RETRY_ATTEMPTS = 10;
+    private static final long KEYBOARD_RETRY_DELAY_MS = 100;
 
     public static final String EXTERNAL_IMAGE_FILE_PATH = "browser-images";
     // Keep this variable in sync with the value defined in file_paths.xml.
@@ -69,11 +77,31 @@ public class UiUtils {
     private UiUtils() {
     }
 
+    /** The minimum size of the bottom margin below the app to detect a keyboard. */
+    private static final float KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP = 100;
+
+    /** A delegate that allows disabling keyboard visibility detection. */
+    private static KeyboardShowingDelegate sKeyboardShowingDelegate;
+
     /** A delegate for the photo picker. */
     private static PhotoPickerDelegate sPhotoPickerDelegate;
 
     /** A delegate for the contacts picker. */
     private static ContactsPickerDelegate sContactsPickerDelegate;
+
+    /**
+     * A delegate that can be implemented to override whether or not keyboard detection will be
+     * used.
+     */
+    public interface KeyboardShowingDelegate {
+        /**
+         * Will be called to determine whether or not to detect if the keyboard is visible.
+         * @param context A {@link Context} instance.
+         * @param view    A {@link View}.
+         * @return        Whether or not the keyboard check should be disabled.
+         */
+        boolean disableKeyboardCheck(Context context, View view);
+    }
 
     /**
      * A delegate interface for the contacts picker.
@@ -194,6 +222,125 @@ public class UiUtils {
     public static void onPhotoPickerDismissed() {
         if (sPhotoPickerDelegate == null) return;
         sPhotoPickerDelegate.onPhotoPickerDismissed();
+    }
+
+    // KeyboardShowingDelegate:
+
+    /**
+     * Allows setting a delegate to override the default software keyboard visibility detection.
+     * @param delegate A {@link KeyboardShowingDelegate} instance.
+     */
+    public static void setKeyboardShowingDelegate(KeyboardShowingDelegate delegate) {
+        sKeyboardShowingDelegate = delegate;
+    }
+
+    /**
+     * Shows the software keyboard if necessary.
+     * @param view The currently focused {@link View}, which would receive soft keyboard input.
+     */
+    public static void showKeyboard(final View view) {
+        final Handler handler = new Handler();
+        final AtomicInteger attempt = new AtomicInteger();
+        Runnable openRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // Not passing InputMethodManager.SHOW_IMPLICIT as it does not trigger the
+                // keyboard in landscape mode.
+                InputMethodManager imm =
+                        (InputMethodManager) view.getContext().getSystemService(
+                                Context.INPUT_METHOD_SERVICE);
+                // Third-party touches disk on showSoftInput call. http://crbug.com/619824,
+                // http://crbug.com/635118
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+                try {
+                    imm.showSoftInput(view, 0);
+                } catch (IllegalArgumentException e) {
+                    if (attempt.incrementAndGet() <= KEYBOARD_RETRY_ATTEMPTS) {
+                        handler.postDelayed(this, KEYBOARD_RETRY_DELAY_MS);
+                    } else {
+                        Log.e(TAG, "Unable to open keyboard.  Giving up.", e);
+                    }
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
+                }
+            }
+        };
+        openRunnable.run();
+    }
+
+    /**
+     * Hides the keyboard.
+     * @param view The {@link View} that is currently accepting input.
+     * @return Whether the keyboard was visible before.
+     */
+    public static boolean hideKeyboard(View view) {
+        InputMethodManager imm =
+                (InputMethodManager) view.getContext().getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+        return imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    /**
+     * Detects whether or not the keyboard is showing.  This is a best guess as there is no
+     * standardized/foolproof way to do this.
+     * @param context A {@link Context} instance.
+     * @param view    A {@link View}.
+     * @return        Whether or not the software keyboard is visible and taking up screen space.
+     */
+    @SuppressLint("NewApi")
+    public static boolean isKeyboardShowing(Context context, View view) {
+        if (sKeyboardShowingDelegate != null
+                && sKeyboardShowingDelegate.disableKeyboardCheck(context, view)) {
+            return false;
+        }
+
+        View rootView = view.getRootView();
+        return rootView != null && calculateKeyboardHeight(context, rootView) > 0;
+    }
+
+    /**
+     * Calculates the keyboard height based on the bottom margin it causes for the given rootView.
+     * @param context A {@link Context} instance.
+     * @param rootView A {@link View}.
+     * @return The size of the bottom margin which most likely is exactly the keyboard size.
+     */
+    public static int calculateKeyboardHeight(Context context, View rootView) {
+        Rect appRect = new Rect();
+        rootView.getWindowVisibleDisplayFrame(appRect);
+
+        // Assume status bar is always at the top of the screen.
+        final int statusBarHeight = appRect.top;
+
+        int bottomMargin = rootView.getHeight() - (appRect.height() + statusBarHeight);
+
+        // If there is no bottom margin, the keyboard is not showing.
+        if (bottomMargin <= 0) return 0;
+
+        // If the display frame width is < root view width, controls are on the side of the screen.
+        // The inverse is not necessarily true; i.e. if navControlsOnSide is false, it doesn't mean
+        // the controls are not on the side or that they _are_ at the bottom. It might just mean the
+        // app is not responsible for drawing their background.
+        boolean navControlsOnSide = appRect.width() != rootView.getWidth();
+
+        // If the Android nav controls are on the sides instead of at the bottom, its height is not
+        // needed.
+        if (!navControlsOnSide) {
+            // When available, get the root view insets.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                WindowInsets insets = rootView.getRootWindowInsets();
+                if (insets != null) { // Either not supported or the rootView isn't attached.
+                    bottomMargin -= insets.getStableInsetBottom();
+                }
+            } else {
+                // In the event we couldn't get the bottom nav height, use a best guess of the
+                // keyboard height. In certain cases this also means including the height of the
+                // Android navigation.
+                final float density = context.getResources().getDisplayMetrics().density;
+                bottomMargin = (int) (bottomMargin - KEYBOARD_DETECT_BOTTOM_THRESHOLD_DP * density);
+            }
+        }
+        // After subtracting the bottom navigation, the remaining margin represents the keyboard.
+        return bottomMargin;
     }
 
     /**

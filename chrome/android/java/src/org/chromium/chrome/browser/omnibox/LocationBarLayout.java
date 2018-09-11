@@ -280,7 +280,7 @@ public class LocationBarLayout extends FrameLayout
                 return true;
             } else if (KeyNavigationUtil.isEnter(event)
                     && LocationBarLayout.this.getVisibility() == VISIBLE) {
-                getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+                UiUtils.hideKeyboard(mUrlBar);
                 final String urlText = mUrlCoordinator.getTextWithAutocomplete();
                 if (mNativeInitialized) {
                     findMatchAndLoadUrl(urlText, event.getEventTime());
@@ -703,7 +703,7 @@ public class LocationBarLayout extends FrameLayout
                         SelectionState.SELECT_ALL);
             }
             hideSuggestions();
-            getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+            UiUtils.hideKeyboard(mUrlBar);
         }
     }
 
@@ -1347,7 +1347,7 @@ public class LocationBarLayout extends FrameLayout
                 loadUrlFromOmniboxMatch(
                         suggestionMatchUrl, position, suggestion, mLastActionUpTimestamp);
                 hideSuggestions();
-                getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+                UiUtils.hideKeyboard(mUrlBar);
             }
 
             @Override
@@ -1608,7 +1608,7 @@ public class LocationBarLayout extends FrameLayout
         post(new Runnable() {
             @Override
             public void run() {
-                getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
+                UiUtils.showKeyboard(mUrlBar);
             }
         });
     }
@@ -1762,7 +1762,7 @@ public class LocationBarLayout extends FrameLayout
     public void backKeyPressed() {
         setUrlBarFocus(false);
         hideSuggestions();
-        getWindowAndroid().getKeyboardDelegate().hideKeyboard(mUrlBar);
+        UiUtils.hideKeyboard(mUrlBar);
         // Revert the URL to match the current page.
         setUrlToPageUrl();
         focusCurrentTab();

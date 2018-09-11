@@ -34,7 +34,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.UiUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -290,12 +290,11 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
 
     /**
      * @return True if the keyboard might be showing. This is not 100% accurate; see
-     *         {@link KeyboardVisibilityDelegate#isKeyboardShowing}.
+     *         UiUtils.isKeyboardShowing(...).
      */
     protected boolean isKeyboardShowing() {
-        return mChromeActivity != null && mChromeActivity.getWindowAndroid() != null
-                && mChromeActivity.getWindowAndroid().getKeyboardDelegate().isKeyboardShowing(
-                           mChromeActivity, mChromeActivity.findViewById(android.R.id.content));
+        return mChromeActivity != null && UiUtils.isKeyboardShowing(mChromeActivity,
+                mChromeActivity.findViewById(android.R.id.content));
     }
 
     protected WebContentsObserver createWebContentsObserver(final WebContents webContents) {
