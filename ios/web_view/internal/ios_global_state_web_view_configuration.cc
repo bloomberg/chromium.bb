@@ -5,6 +5,8 @@
 #include "ios/web/public/global_state/ios_global_state_configuration.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
 
@@ -16,7 +18,7 @@ GetSharedNetworkIOThreadTaskRunner() {
   dispatch_once(&once_token, ^{
     ios_web_view::InitializeGlobalState();
   });
-  return web::WebThread::GetTaskRunnerForThread(web::WebThread::IO);
+  return base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
 }
 
 }  // namespace ios_global_state

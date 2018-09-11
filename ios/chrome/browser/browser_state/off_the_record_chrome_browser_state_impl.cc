@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/proxy_config/ios/proxy_service_factory.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
@@ -13,6 +14,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
 OffTheRecordChromeBrowserStateImpl::OffTheRecordChromeBrowserStateImpl(
@@ -106,7 +108,7 @@ void OffTheRecordChromeBrowserStateImpl::ClearNetworkingHistorySince(
   // BrowsingDataRemover will never be destroyed and the dialog will never be
   // closed. We must do this asynchronously in order to avoid reentrancy issues.
   if (!completion.is_null()) {
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, completion);
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, completion);
   }
 }
 

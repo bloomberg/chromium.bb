@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #import "base/ios/block_types.h"
+#include "base/task/post_task.h"
 #import "ios/net/cookies/cookie_creation_time_manager.h"
 #include "ios/net/cookies/system_cookie_util.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cookies/canonical_cookie.h"
@@ -27,7 +29,7 @@ namespace {
 // SystemCookieStore should operate on IO thread.
 void RunBlockOnIOThread(ProceduralBlock block) {
   DCHECK(block != nil);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::BindOnce(block));
 }
 
@@ -70,8 +72,8 @@ void WKHTTPSystemCookieStore::GetCookiesForURLAsync(
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
   GURL block_url = url;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [cookie_store_ getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
           NSMutableArray* result = [NSMutableArray array];
           for (NSHTTPCookie* cookie in cookies) {
@@ -95,8 +97,8 @@ void WKHTTPSystemCookieStore::GetAllCookiesAsync(
   __block SystemCookieCallbackForCookies shared_callback = std::move(callback);
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [cookie_store_ getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
           RunSystemCookieCallbackForCookies(std::move(shared_callback),
                                             weak_time_manager, cookies);
@@ -112,8 +114,8 @@ void WKHTTPSystemCookieStore::DeleteCookieAsync(NSHTTPCookie* cookie,
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
   NSHTTPCookie* block_cookie = cookie;
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [cookie_store_ deleteCookie:block_cookie
                   completionHandler:^{
                     RunBlockOnIOThread(^{
@@ -139,8 +141,8 @@ void WKHTTPSystemCookieStore::SetCookieAsync(
   if (optional_creation_time && !optional_creation_time->is_null())
     cookie_time = *optional_creation_time;
 
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [cookie_store_
                     setCookie:block_cookie
             completionHandler:^{
@@ -161,8 +163,8 @@ void WKHTTPSystemCookieStore::ClearStoreAsync(SystemCookieCallback callback) {
   __block SystemCookieCallback shared_callback = std::move(callback);
   base::WeakPtr<net::CookieCreationTimeManager> weak_time_manager =
       creation_time_manager_->GetWeakPtr();
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         [cookie_store_ getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
           ProceduralBlock completionHandler = ^{
             RunBlockOnIOThread(^{

@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -71,9 +72,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
           browser_state,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state))));
   bookmark_model->Load(
-      browser_state->GetPrefs(),
-      browser_state->GetStatePath(), browser_state->GetIOTaskRunner(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+      browser_state->GetPrefs(), browser_state->GetStatePath(),
+      browser_state->GetIOTaskRunner(),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
   ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
       ->Start(bookmark_model.get());
   return bookmark_model;
@@ -83,7 +84,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   const base::FilePath& browser_state_path = context->GetStatePath();
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
       base::DoNothing());
 }
@@ -281,7 +282,7 @@ void TestChromeBrowserState::ClearNetworkingHistorySince(
 net::URLRequestContextGetter* TestChromeBrowserState::CreateRequestContext(
     ProtocolHandlerMap* protocol_handlers) {
   return new net::TestURLRequestContextGetter(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 }
 
 net::URLRequestContextGetter*

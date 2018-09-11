@@ -8,9 +8,11 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/net/request_tracker_impl.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -125,8 +127,8 @@ void RegisterUserAgentForUIWebView(NSString* user_agent) {
                             fromTime:(base::Time)deleteBegin
                               toTime:(base::Time)deleteEnd {
   DCHECK(contextGetter.get());
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&ClearCookiesOnIOThread, base::RetainedRef(contextGetter),
                  net::CookieDeletionInfo::TimeRange(deleteBegin, deleteEnd)));
 }

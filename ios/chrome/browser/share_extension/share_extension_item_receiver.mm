@@ -21,6 +21,7 @@
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
@@ -179,7 +180,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   }
 
   __weak ShareExtensionItemReceiver* weakSelf = self;
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                              [weakSelf readingListFolderCreated];
                            }));
 }
@@ -276,7 +277,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                             }));
     }
   };
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                            base::BindOnce(processEntryBlock));
   return YES;
 }
@@ -370,7 +371,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
   if ([files count]) {
     __weak ShareExtensionItemReceiver* weakSelf = self;
-    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                                [weakSelf entriesReceived:files];
                              }));
   }
@@ -389,8 +390,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
     _taskRunner->PostTask(FROM_HERE, base::BindOnce(^{
                             [weakSelf handleFileAtURL:fileURL
                                        withCompletion:^{
-                                         web::WebThread::PostTask(
-                                             web::WebThread::UI, FROM_HERE,
+                                         base::PostTaskWithTraits(
+                                             FROM_HERE, {web::WebThread::UI},
                                              base::BindOnce(^{
                                                batchToken.reset();
                                              }));

@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -35,6 +36,7 @@
 #include "components/version_info/version_info.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/cert/cert_verifier.h"
@@ -130,7 +132,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOSIOThread* io_thread)
     : io_thread_(io_thread),
       network_task_runner_(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::IO)) {}
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO})) {}
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
@@ -212,8 +214,8 @@ net_log::ChromeNetLog* IOSIOThread::net_log() {
 
 void IOSIOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
                  base::Unretained(this)));
 }

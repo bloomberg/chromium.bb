@@ -5,7 +5,9 @@
 #include "ios/web/service_manager_connection_impl.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -38,13 +40,14 @@ TEST_F(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   service_manager::mojom::ServicePtr service;
   ServiceManagerConnectionImpl connection_impl(
       mojo::MakeRequest(&service),
-      WebThread::GetTaskRunnerForThread(WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}));
   ServiceManagerConnection& connection = connection_impl;
   service_manager::EmbeddedServiceInfo info;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   info.factory = base::Bind(&LaunchService, &event);
-  info.task_runner = WebThread::GetTaskRunnerForThread(WebThread::IO);
+  info.task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO});
   connection.AddEmbeddedService(kTestServiceName, info);
   connection.Start();
   service_manager::BindSourceInfo source_info(

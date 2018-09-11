@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "ios/web/history_state_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/url_util.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request.h"
@@ -184,8 +186,8 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
   DCHECK(policy_cache);
 
   // Take care of the IO-thread init.
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&RequestTrackerImpl::InitOnIOThread, tracker, policy_cache));
   RegisterTracker(tracker.get(), request_group_id);
   return tracker;
@@ -194,22 +196,22 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
 void RequestTrackerImpl::StartPageLoad(const GURL& url, id user_info) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   id scoped_user_info = user_info;
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&RequestTrackerImpl::TrimToURL, this, url, scoped_user_info));
 }
 
 void RequestTrackerImpl::FinishPageLoad(const GURL& url, bool load_success) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&RequestTrackerImpl::StopPageLoad, this, url, load_success));
 }
 
 void RequestTrackerImpl::HistoryStateChange(const GURL& url) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&RequestTrackerImpl::HistoryStateChangeToURL, this, url));
 }
 
@@ -223,12 +225,11 @@ void RequestTrackerImpl::Close() {
   // scoped_refptr here retains |this|, we a are guaranteed that destruiction
   // won't begin until the block completes, and thus |is_closing_| will always
   // be set before destruction begins.
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
-                           base::Bind(
-                               [](RequestTrackerImpl* tracker) {
-                                 tracker->is_closing_ = true;
-                               },
-                               base::RetainedRef(this)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
+      base::Bind(
+          [](RequestTrackerImpl* tracker) { tracker->is_closing_ = true; },
+          base::RetainedRef(this)));
 
   // The user_info is no longer needed.
   user_info_ = nil;
@@ -240,7 +241,7 @@ void RequestTrackerImpl::RunAfterRequestsCancel(const base::Closure& callback) {
   // Post a no-op to the IO thread, and after that has executed, run |callback|.
   // This ensures that |callback| runs after anything elese queued on the IO
   // thread, in particular CancelRequest() calls made from closing trackers.
-  web::WebThread::PostTaskAndReply(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(FROM_HERE, {web::WebThread::IO},
                                    base::DoNothing(), callback);
 }
 
@@ -261,7 +262,7 @@ void RequestTrackerImpl::BlockUntilTrackersShutdown() {
     base::AutoLock scoped_lock(*g_waiting_on_io_thread_lock);
     g_waiting_on_io_thread = true;
   }
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::Bind(&StopIOThreadWaiting));
 
   // Poll endlessly until the wait flag is unset on the IO thread by
@@ -446,7 +447,7 @@ void RequestTrackerImpl::PostIOTask(const base::Closure& task) {
 
 void RequestTrackerImpl::ScheduleIOTask(const base::Closure& task) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, task);
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, task);
 }
 
 #pragma mark Private Object Lifecycle API
@@ -490,7 +491,7 @@ void RequestTrackerImplTraits::Destruct(const RequestTrackerImpl* t) {
     // method is the mechanism by which all RequestTrackerImpl instances are
     // destroyed, the object inconstant_t points to won't be deleted while
     // the block is executing (and Destruct() itself will do the deleting).
-    web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
                                inconstant_t->Destruct();
                              }));
   }
@@ -507,7 +508,7 @@ void RequestTrackerImpl::Destruct() {
   }
   InvalidateWeakPtrs();
   // Delete on the UI thread.
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                              delete this;
                            }));
 }
@@ -522,8 +523,8 @@ void RequestTrackerImpl::Notify() {
   // thread. This is used to collate notifications together, avoiding
   // blanketing the UI with a stream of information.
   notification_depth_ += 1;
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(&RequestTrackerImpl::StackNotification, this));
 }
 
@@ -863,7 +864,7 @@ void RequestTrackerImpl::PostTask(const base::Closure& task,
   // the tracker is closing).
   if (is_closing_ && web::WebThread::CurrentlyOn(web::WebThread::IO))
     return;
-  web::WebThread::PostTask(thread, FROM_HERE, task);
+  base::PostTaskWithTraits(FROM_HERE, {thread}, task);
 }
 
 #pragma mark Other internal methods.

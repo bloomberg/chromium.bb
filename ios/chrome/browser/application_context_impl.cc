@@ -50,6 +50,7 @@
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/browser/web_resource/web_resource_util.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -75,10 +76,10 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 void RequestProxyResolvingSocketFactory(
     ApplicationContextImpl* app_context,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  web::WebThread::GetTaskRunnerForThread(web::WebThread::UI)
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                app_context, std::move(request)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, app_context,
+                     std::move(request)));
 }
 
 // Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
@@ -426,7 +427,7 @@ void ApplicationContextImpl::CreateGCMDriver() {
                           base::Unretained(this)),
       GetSharedURLLoaderFactory(), ::GetChannel(),
       IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
       blocking_task_runner);
 }

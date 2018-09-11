@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/google/core/common/google_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
@@ -21,6 +22,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/ui/contextual_search/protos/client_discourse_context.pb.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
@@ -132,8 +134,8 @@ void ContextualSearchDelegate::PostSearchTermRequest(
     StartPendingSearchTermRequest();
   } else {
     base::TimeDelta delay = last_request_startup_time_ + interval - now;
-    web::WebThread::PostDelayedTask(
-        web::WebThread::UI, FROM_HERE,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {web::WebThread::UI},
         base::Bind(&ContextualSearchDelegate::StartPendingSearchTermRequest,
                    weak_ptr_factory_.GetWeakPtr()),
         delay);

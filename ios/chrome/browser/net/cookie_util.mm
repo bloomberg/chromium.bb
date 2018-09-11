@@ -17,6 +17,7 @@
 #include "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/features.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -43,7 +44,8 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
     net::CookieCryptoDelegate* crypto_delegate) {
   return scoped_refptr<net::SQLitePersistentCookieStore>(
       new net::SQLitePersistentCookieStore(
-          path, web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+          path,
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
           restore_old_session_cookies, crypto_delegate));
@@ -139,7 +141,7 @@ bool ShouldClearSessionCookies() {
 void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
                              getter->GetURLRequestContext()
                                  ->cookie_store()
                                  ->DeleteSessionCookiesAsync(base::DoNothing());
