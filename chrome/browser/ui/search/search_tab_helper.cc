@@ -244,40 +244,27 @@ void SearchTabHelper::MostVisitedItemsChanged(
   ipc_router_.SendMostVisitedItems(items, is_custom_links);
 }
 
-void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
+void SearchTabHelper::FocusOmnibox(bool focus) {
   OmniboxView* omnibox_view = GetOmniboxView();
   if (!omnibox_view)
     return;
 
-  // Do not add a default case in the switch block for the following reasons:
-  // (1) Explicitly handle the new states. If new states are added in the
-  // OmniboxFocusState, the compiler will warn the developer to handle the new
-  // states.
-  // (2) An attacker may control the renderer and sends the browser process a
-  // malformed IPC. This function responds to the invalid |state| values by
-  // doing nothing instead of crashing the browser process (intentional no-op).
-  switch (state) {
-    case OMNIBOX_FOCUS_VISIBLE:
-      NOTREACHED();
-      break;
-    case OMNIBOX_FOCUS_INVISIBLE:
-      omnibox_view->SetFocus();
-      omnibox_view->model()->SetCaretVisibility(false);
-      // If the user clicked on the fakebox, any text already in the omnibox
-      // should get cleared when they start typing. Selecting all the existing
-      // text is a convenient way to accomplish this. It also gives a slight
-      // visual cue to users who really understand selection state about what
-      // will happen if they start typing.
-      omnibox_view->SelectAll(false);
-      omnibox_view->ShowVirtualKeyboardIfEnabled();
-      break;
-    case OMNIBOX_FOCUS_NONE:
-      // Remove focus only if the popup is closed. This will prevent someone
-      // from changing the omnibox value and closing the popup without user
-      // interaction.
-      if (!omnibox_view->model()->popup_model()->IsOpen())
-        web_contents()->Focus();
-      break;
+  if (focus) {
+    omnibox_view->SetFocus();
+    omnibox_view->model()->SetCaretVisibility(false);
+    // If the user clicked on the fakebox, any text already in the omnibox
+    // should get cleared when they start typing. Selecting all the existing
+    // text is a convenient way to accomplish this. It also gives a slight
+    // visual cue to users who really understand selection state about what
+    // will happen if they start typing.
+    omnibox_view->SelectAll(false);
+    omnibox_view->ShowVirtualKeyboardIfEnabled();
+  } else {
+    // Remove focus only if the popup is closed. This will prevent someone
+    // from changing the omnibox value and closing the popup without user
+    // interaction.
+    if (!omnibox_view->model()->popup_model()->IsOpen())
+      web_contents()->Focus();
   }
 }
 

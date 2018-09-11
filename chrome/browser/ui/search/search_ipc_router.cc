@@ -148,14 +148,14 @@ void SearchIPCRouter::OnTabDeactivated() {
   is_active_tab_ = false;
 }
 
-void SearchIPCRouter::FocusOmnibox(int page_seq_no, OmniboxFocusState state) {
+void SearchIPCRouter::FocusOmnibox(int page_seq_no, bool focus) {
   if (page_seq_no != commit_counter_)
     return;
 
   if (!policy_->ShouldProcessFocusOmnibox(is_active_tab_))
     return;
 
-  delegate_->FocusOmnibox(state);
+  delegate_->FocusOmnibox(focus);
 }
 
 void SearchIPCRouter::DeleteMostVisitedItem(int page_seq_no, const GURL& url) {

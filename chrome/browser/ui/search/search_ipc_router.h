@@ -42,9 +42,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // the page.
   class Delegate {
    public:
-    // Called when the page wants the omnibox to be focused. |state| specifies
-    // the omnibox focus state.
-    virtual void FocusOmnibox(OmniboxFocusState state) = 0;
+    // Called when the page wants the omnibox to be focused.
+    virtual void FocusOmnibox(bool focus) = 0;
 
     // Called when the EmbeddedSearch wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
@@ -191,7 +190,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void OnTabDeactivated();
 
   // chrome::mojom::EmbeddedSearch:
-  void FocusOmnibox(int page_id, OmniboxFocusState state) override;
+  void FocusOmnibox(int page_id, bool focus) override;
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
   void UndoAllMostVisitedDeletions(int page_seq_no) override;

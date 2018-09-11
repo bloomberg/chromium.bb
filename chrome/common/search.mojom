@@ -34,7 +34,7 @@ interface EmbeddedSearchConnector {
 // See http://dev.chromium.org/embeddedsearch
 interface EmbeddedSearch {
   // Tells InstantExtended to set the omnibox focus state.
-  FocusOmnibox(int32 page_seq_no, OmniboxFocusState state);
+  FocusOmnibox(int32 page_seq_no, bool focus);
 
   // Tells InstantExtended to delete a most visited item.
   DeleteMostVisitedItem(int32 page_seq_no, url.mojom.Url url);
