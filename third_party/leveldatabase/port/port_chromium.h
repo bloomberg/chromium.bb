@@ -25,10 +25,6 @@
 #  include <linux/unistd.h>
 #endif
 
-#if defined(OS_WIN)
-typedef SSIZE_T ssize_t;
-#endif
-
 namespace leveldb {
 namespace port {
 
