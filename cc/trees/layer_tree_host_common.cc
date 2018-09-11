@@ -576,7 +576,7 @@ void CalculateDrawPropertiesInternal(
                    << inputs->root_layer->layer_tree_impl()
                           ->settings()
                           .is_layer_tree_for_subframe;
-        CHECK(false);
+        NOTREACHED();
       }
 
       draw_property_utils::UpdatePageScaleFactor(
