@@ -465,8 +465,7 @@
         "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1800,
-          "shards": 20
+          "hard_timeout": 1800
         },
         "test": "browser_tests"
       },
@@ -479,8 +478,8 @@
         "name": "single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 3600,
-          "shards": 10
+          "hard_timeout": 1800,
+          "shards": 20
         },
         "test": "browser_tests"
       },
@@ -1169,7 +1168,7 @@
         "name": "single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 3600,
+          "hard_timeout": 1800,
           "shards": 10
         },
         "test": "browser_tests"
