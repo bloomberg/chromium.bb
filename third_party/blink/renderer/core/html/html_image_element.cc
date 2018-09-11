@@ -105,6 +105,12 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       sizes_set_width_(false),
       referrer_policy_(kReferrerPolicyDefault) {
   SetHasCustomStyleCallbacks();
+  if (MediaElementParserHelpers::IsMediaElement(this) &&
+      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+    is_default_overridden_intrinsic_size_ = true;
+    overridden_intrinsic_size_ =
+        IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
+  }
 }
 
 HTMLImageElement* HTMLImageElement::Create(Document& document) {
@@ -296,7 +302,8 @@ void HTMLImageElement::ParseAttribute(
     String message;
     bool intrinsic_size_changed =
         MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
-            params.new_value, &overridden_intrinsic_size_, &message);
+            params.new_value, this, &overridden_intrinsic_size_,
+            &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kOtherMessageSource, kWarningMessageLevel, message));

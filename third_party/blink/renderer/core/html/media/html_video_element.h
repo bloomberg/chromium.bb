@@ -67,6 +67,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   IntSize videoVisibleSize() const;
 
   IntSize GetOverriddenIntrinsicSize() const;
+  bool IsDefaultIntrinsicSize() const {
+    return is_default_overridden_intrinsic_size_;
+  }
 
   // Fullscreen
   void webkitEnterFullscreen();
@@ -251,6 +254,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   bool is_effectively_fullscreen_ = false;
 
   IntSize overridden_intrinsic_size_;
+  bool is_default_overridden_intrinsic_size_;
 };
 
 }  // namespace blink

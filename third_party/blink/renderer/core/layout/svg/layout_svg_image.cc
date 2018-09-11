@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
@@ -152,6 +153,11 @@ void LayoutSVGImage::UpdateLayout() {
 
   DCHECK(!needs_boundaries_update_);
   DCHECK(!needs_transform_update_);
+
+  if (auto* svg_image_element = ToSVGImageElementOrNull(GetElement())) {
+    if (svg_image_element->IsDefaultIntrinsicSize())
+      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+  }
   ClearNeedsLayout();
 }
 
