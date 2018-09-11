@@ -50,7 +50,7 @@ class AVxEncoderThreadTest
     SetMode(encoding_mode_);
 
     if (encoding_mode_ != ::libaom_test::kRealTime) {
-      cfg_.g_lag_in_frames = 3;
+      cfg_.g_lag_in_frames = 5;
       cfg_.rc_end_usage = AOM_VBR;
       cfg_.rc_2pass_vbr_minsection_pct = 5;
       cfg_.rc_2pass_vbr_maxsection_pct = 2000;
@@ -116,7 +116,7 @@ class AVxEncoderThreadTest
 
   void DoTest() {
     ::libaom_test::YUVVideoSource video(
-        "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, 640, 480, 30, 1, 15, 18);
+        "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, 640, 480, 30, 1, 15, 21);
     cfg_.rc_target_bitrate = 1000;
 
     // Encode using single thread.
@@ -231,9 +231,8 @@ TEST_P(AVxEncoderThreadTestLarge, EncoderResultTest) {
 // For AV1, only test speed 0 to 3.
 // Here test cpu_used 2 and 3
 AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTest,
-                          ::testing::Values(::libaom_test::kTwoPassGood,
-                                            ::libaom_test::kOnePassGood),
-                          ::testing::Range(2, 4), ::testing::Values(0, 1, 2),
+                          ::testing::Values(::libaom_test::kTwoPassGood),
+                          ::testing::Range(2, 4), ::testing::Values(0, 2),
                           ::testing::Values(0, 1));
 
 // Test cpu_used 0 and 1.
