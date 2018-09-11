@@ -3739,6 +3739,8 @@ jumbo_split_static_library("browser") {
       "media/webrtc/tab_capture_access_handler.h",
       "metrics/extensions_metrics_provider.cc",
       "metrics/extensions_metrics_provider.h",
+      "policy/chrome_extension_policy_migrator.cc",
+      "policy/chrome_extension_policy_migrator.h",
       "renderer_context_menu/context_menu_content_type_app_mode.cc",
       "renderer_context_menu/context_menu_content_type_app_mode.h",
       "renderer_context_menu/context_menu_content_type_extension_popup.cc",

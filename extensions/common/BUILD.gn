@@ -405,6 +405,7 @@ if (enable_extensions) {
       "features/feature_provider_unittest.cc",
       "features/simple_feature_unittest.cc",
       "file_util_unittest.cc",
+      "hashed_extension_id_unittest.cc",
       "image_util_unittest.cc",
       "manifest_handler_perf_test.cc",
       "manifest_handler_unittest.cc",

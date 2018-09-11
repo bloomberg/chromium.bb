@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/extension_policy_migrator.h"
+#include "chrome/browser/policy/chrome_extension_policy_migrator.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "extensions/common/hashed_extension_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -43,16 +44,18 @@ void SetPolicy(PolicyMap* policy,
               POLICY_SOURCE_CLOUD, std::move(value), nullptr);
 }
 
-class TestingPolicyMigrator : public ExtensionPolicyMigrator {
+class TestingPolicyMigrator : public ChromeExtensionPolicyMigrator {
  public:
   void Migrate(PolicyBundle* bundle) override {
-    CopyPoliciesIfUnset(bundle, kExtensionId, kMigrations);
+    CopyPoliciesIfUnset(bundle,
+                        extensions::HashedExtensionId(kExtensionId).value(),
+                        kMigrations);
   }
 };
 
 }  // namespace
 
-TEST(ExtensionPolicyMigratorTest, CopyPoliciesIfUnset) {
+TEST(ChromeExtensionPolicyMigratorTest, CopyPoliciesIfUnset) {
   PolicyBundle bundle;
 
   PolicyMap& chrome_map = bundle.Get(

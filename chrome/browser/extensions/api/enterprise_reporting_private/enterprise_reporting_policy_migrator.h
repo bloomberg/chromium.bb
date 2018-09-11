@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_POLICY_MIGRATOR_H_
 #define CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_POLICY_MIGRATOR_H_
 
-#include "components/policy/core/common/extension_policy_migrator.h"
+#include "chrome/browser/policy/chrome_extension_policy_migrator.h"
 
 namespace extensions {
 namespace enterprise_reporting {
 
 class EnterpriseReportingPolicyMigrator
-    : public policy::ExtensionPolicyMigrator {
+    : public policy::ChromeExtensionPolicyMigrator {
  public:
   EnterpriseReportingPolicyMigrator();
   ~EnterpriseReportingPolicyMigrator() override;
