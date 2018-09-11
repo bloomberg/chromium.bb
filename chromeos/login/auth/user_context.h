@@ -88,6 +88,9 @@ class CHROMEOS_EXPORT UserContext {
 
   bool HasCredentials() const;
 
+  // If this user is under advanced protection.
+  bool IsUnderAdvancedProtection() const;
+
   void SetAccountId(const AccountId& account_id);
   void SetKey(const Key& key);
   void SetPasswordKey(const Key& key);
@@ -105,6 +108,7 @@ class CHROMEOS_EXPORT UserContext {
   void SetGAPSCookie(const std::string& gaps_cookie);
   void SetSyncPasswordData(
       const password_manager::PasswordHashData& sync_password_data);
+  void SetIsUnderAdvancedProtection(bool is_under_advanced_protection);
 
   void ClearSecrets();
 
@@ -126,6 +130,7 @@ class CHROMEOS_EXPORT UserContext {
   std::string public_session_input_method_;
   std::string device_id_;
   std::string gaps_cookie_;
+  bool is_under_advanced_protection_ = false;
 
   // For password reuse detection use.
   base::Optional<password_manager::PasswordHashData> sync_password_data_;

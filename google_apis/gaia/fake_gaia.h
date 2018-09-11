@@ -49,6 +49,7 @@ class FakeGaia {
     std::string email;
     // When set to true, any scope set for issue token request matches |this|.
     bool any_scope = false;
+    std::string id_token;
   };
 
   // Cookies and tokens for /MergeSession call seqeunce.

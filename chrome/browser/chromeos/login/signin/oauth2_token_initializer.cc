@@ -35,6 +35,8 @@ void OAuth2TokenInitializer::OnOAuth2TokensAvailable(
   user_context_.SetAuthCode(std::string());
   user_context_.SetRefreshToken(result.refresh_token);
   user_context_.SetAccessToken(result.access_token);
+  user_context_.SetIsUnderAdvancedProtection(
+      result.is_under_advanced_protection);
 
   const bool support_usm =
       base::FeatureList::IsEnabled(features::kCrOSEnableUSMUserService);

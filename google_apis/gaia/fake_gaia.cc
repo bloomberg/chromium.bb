@@ -730,6 +730,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
       base::DictionaryValue response_dict;
       response_dict.SetString("access_token", token_info->token);
       response_dict.SetInteger("expires_in", 3600);
+      response_dict.SetString("id_token", token_info->id_token);
       FormatJSONResponse(response_dict, http_response);
       return;
     }
@@ -759,6 +760,7 @@ void FakeGaia::HandleTokenInfo(const HttpRequest& request,
     response_dict.SetString("scope", base::JoinString(scope_vector, " "));
     response_dict.SetInteger("expires_in", token_info->expires_in);
     response_dict.SetString("email", token_info->email);
+    response_dict.SetString("id_token", token_info->id_token);
     FormatJSONResponse(response_dict, http_response);
   } else {
     http_response->set_code(net::HTTP_BAD_REQUEST);
@@ -781,6 +783,7 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
       response_dict.SetString("expiresIn",
                               base::IntToString(token_info->expires_in));
       response_dict.SetString("token", token_info->token);
+      response_dict.SetString("id_token", token_info->id_token);
       FormatJSONResponse(response_dict, http_response);
       return;
     }
@@ -819,6 +822,7 @@ void FakeGaia::HandleOAuthUserInfo(
     response_dict.SetString("id", GetGaiaIdOfEmail(token_info->email));
     response_dict.SetString("email", token_info->email);
     response_dict.SetString("verified_email", token_info->email);
+    response_dict.SetString("id_token", token_info->id_token);
     FormatJSONResponse(response_dict, http_response);
   } else {
     http_response->set_code(net::HTTP_BAD_REQUEST);
