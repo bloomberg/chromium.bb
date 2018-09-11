@@ -27,9 +27,9 @@ ChromeComponentExtensionResourceManager() {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
+    {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
+    {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
 #if defined(OS_CHROMEOS)
-    {"chrome_app/chrome_app_icon_32.png", IDR_CHROME_APP_ICON_32},
-    {"chrome_app/chrome_app_icon_192.png", IDR_CHROME_APP_ICON_192},
     {"webstore_widget/app/icons/icon_16.png", IDR_WEBSTORE_ICON_16},
     {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
     {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
