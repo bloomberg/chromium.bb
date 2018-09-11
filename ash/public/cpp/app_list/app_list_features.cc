@@ -30,7 +30,7 @@ const base::Feature kEnableAppsGridGapFeature{"EnableAppsGridGapFeature",
 const base::Feature kEnableNewStyleLauncher{"EnableNewStyleLauncher",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableContinueReading{"EnableContinueReading",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
