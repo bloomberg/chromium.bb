@@ -180,6 +180,12 @@ void FullscreenControllerTest::EnterActiveTabFullscreen() {
   fullscreen_observer.Wait();
 }
 
+void FullscreenControllerTest::ToggleBrowserFullscreen() {
+  FullscreenNotificationObserver fullscreen_observer;
+  chrome::ToggleFullscreenMode(browser());
+  fullscreen_observer.Wait();
+}
+
 void FullscreenControllerTest::EnterExtensionInitiatedFullscreen() {
   FullscreenNotificationObserver fullscreen_observer;
   browser()->ToggleFullscreenModeWithExtension(GURL("faux_extension"));
