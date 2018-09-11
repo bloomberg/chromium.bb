@@ -22,8 +22,6 @@ namespace {
 class TracingProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
-  void RecordAnnotations() override {}
-
   void OnSampleCompleted(
       std::vector<base::StackSamplingProfiler::Frame> frames) override {
     if (frames.empty())

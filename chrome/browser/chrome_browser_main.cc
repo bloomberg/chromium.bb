@@ -135,10 +135,10 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
-#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/expired_histogram_util.h"
+#include "components/metrics/legacy_call_stack_profile_builder.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -2120,8 +2120,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainParts::PreShutdown() {
-  metrics::CallStackProfileBuilder::SetProcessMilestone(
-      metrics::CallStackProfileBuilder::SHUTDOWN_START);
+  metrics::LegacyCallStackProfileBuilder::SetProcessMilestone(
+      metrics::LegacyCallStackProfileBuilder::SHUTDOWN_START);
 }
 
 void ChromeBrowserMainParts::PostDestroyThreads() {

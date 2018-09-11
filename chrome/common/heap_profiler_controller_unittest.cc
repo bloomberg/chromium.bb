@@ -8,7 +8,7 @@
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/legacy_call_stack_profile_builder.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -21,7 +21,7 @@ TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   command_line->AppendSwitchASCII(switches::kSamplingHeapProfiler, "1");
 
   int profiles_collected = 0;
-  metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
+  metrics::LegacyCallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindLambdaForTesting(
           [&](base::TimeTicks time, metrics::SampledProfile profile) {
             EXPECT_EQ(metrics::SampledProfile::PERIODIC_HEAP_COLLECTION,
