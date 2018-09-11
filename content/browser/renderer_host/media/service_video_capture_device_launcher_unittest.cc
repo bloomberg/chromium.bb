@@ -6,10 +6,10 @@
 
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -113,7 +113,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   void RunLaunchingDeviceIsAbortedTest(
       video_capture::mojom::DeviceAccessResultCode service_result_code);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
   MockDeviceFactory mock_device_factory_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
   video_capture::mojom::DeviceFactoryPtr device_factory_;
