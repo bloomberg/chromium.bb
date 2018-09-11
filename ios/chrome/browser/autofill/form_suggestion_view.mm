@@ -39,13 +39,18 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   // The FormSuggestions that are displayed by this view.
   NSArray* _suggestions;
 
+  // The stack view with the suggestions.
+  UIStackView* _stackView;
+
   // Handles user interactions.
   id<FormSuggestionViewClient> _client;
 }
 
+@synthesize trailingView = _trailingView;
+
 - (instancetype)initWithFrame:(CGRect)frame
                        client:(id<FormSuggestionViewClient>)client
-                  suggestions:(NSArray*)suggestions {
+                  suggestions:(NSArray<FormSuggestion*>*)suggestions {
   self = [super initWithFrame:frame];
   if (self) {
     _client = client;
@@ -122,10 +127,28 @@ const CGFloat kSuggestionHorizontalMargin = 6;
     }
   };
   [_suggestions enumerateObjectsUsingBlock:setupBlock];
+  if (self.trailingView) {
+    [stackView addArrangedSubview:self.trailingView];
+  }
+  _stackView = stackView;
 }
+
+#pragma mark - Getters
 
 - (NSArray*)suggestions {
   return _suggestions;
+}
+
+#pragma mark - Setters
+
+- (void)setTrailingView:(UIView*)subview {
+  if (_trailingView.superview) {
+    [_stackView removeArrangedSubview:_trailingView];
+  }
+  _trailingView = subview;
+  if (_stackView) {
+    [_stackView addArrangedSubview:_trailingView];
+  }
 }
 
 @end

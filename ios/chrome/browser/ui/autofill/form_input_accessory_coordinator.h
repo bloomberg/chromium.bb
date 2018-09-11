@@ -9,7 +9,6 @@
 
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
-@protocol CRWWebViewProxy;
 class WebStateList;
 
 // Creates and manages a custom input accessory view while the user is

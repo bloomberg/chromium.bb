@@ -179,15 +179,7 @@ class FormSuggestionControllerTest : public PlatformTest {
 
     id mock_consumer_ = [OCMockObject
         niceMockForProtocol:@protocol(FormInputAccessoryConsumer)];
-    accessory_mediator_ =
-        [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
-                                                webStateList:NULL];
-    [accessory_mediator_ injectWebState:&test_web_state_];
-    [accessory_mediator_
-        injectProviders:@[ [suggestion_controller_ accessoryViewProvider] ]];
-    [accessory_mediator_ injectSuggestionManager:mock_js_suggestion_manager_];
-
-    // Mock the mediator consumer used to verify the suggestion views.
+    // Mock the consumer to verify the suggestion views.
     void (^mockShow)(NSInvocation*) = ^(NSInvocation* invocation) {
       for (UIView* view in [input_accessory_view_ subviews]) {
         [view removeFromSuperview];
@@ -200,13 +192,22 @@ class FormSuggestionControllerTest : public PlatformTest {
         showCustomInputAccessoryView:[OCMArg any]
                   navigationDelegate:[OCMArg any]];
 
+    // Mock restore keyboard to verify cleanup.
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
       for (UIView* view in [input_accessory_view_ subviews]) {
         [view removeFromSuperview];
       }
     };
-    [[[mock_consumer_ stub] andDo:mockRestore]
-        restoreDefaultInputAccessoryView];
+    [[[mock_consumer_ stub] andDo:mockRestore] restoreKeyboardView];
+
+    accessory_mediator_ =
+        [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
+                                                webStateList:NULL];
+
+    [accessory_mediator_ injectWebState:&test_web_state_];
+    [accessory_mediator_
+        injectProviders:@[ [suggestion_controller_ accessoryViewProvider] ]];
+    [accessory_mediator_ injectSuggestionManager:mock_js_suggestion_manager_];
   }
 
   // The FormSuggestionController under test.

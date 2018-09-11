@@ -11,9 +11,9 @@
 
 @protocol FormInputAccessoryConsumer<NSObject>
 
-// Restores the default input accessory view, removing (if necessary) any
-// previously-added custom view.
-- (void)restoreDefaultInputAccessoryView;
+// Restores the keyboard and its default input accessory view, removing (if
+// necessary) any previously-added custom view.
+- (void)restoreKeyboardView;
 
 // Hides the default input accessory view and replaces it with one that shows
 // |customView| and form navigation controls.

@@ -6,13 +6,11 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -80,9 +78,6 @@ AutofillSuggestionState::AutofillSuggestionState(
   // Access to WebView from the CRWWebController.
   id<CRWWebViewProxy> _webViewProxy;
 }
-
-// Returns an autoreleased input accessory view that shows |suggestions|.
-- (UIView*)suggestionViewWithSuggestions:(NSArray*)suggestions;
 
 // Updates keyboard for |suggestionState|.
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState;
@@ -269,13 +264,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   if (!accessoryViewUpdateBlock_) {
     return;
   }
-  BOOL isManualFillEnabled =
-      base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
-  if (isManualFillEnabled) {
-    accessoryViewUpdateBlock_(nil, self);
-  } else {
-    accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:@[]], self);
-  }
+  accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:@[]], self);
 }
 
 - (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
@@ -317,14 +306,16 @@ AutofillSuggestionState::AutofillSuggestionState(
   }
 }
 
-- (void)updateKeyboardWithSuggestions:(NSArray*)suggestions {
+- (void)updateKeyboardWithSuggestions:(NSArray<FormSuggestion*>*)suggestions {
   if (accessoryViewUpdateBlock_) {
     accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:suggestions],
                               self);
   }
 }
 
-- (UIView*)suggestionViewWithSuggestions:(NSArray*)suggestions {
+// Returns an autoreleased input accessory view that shows |suggestions|.
+- (UIView*)suggestionViewWithSuggestions:
+    (NSArray<FormSuggestion*>*)suggestions {
   CGRect frame = [_webViewProxy keyboardAccessory].frame;
   // Force the desired height on iPad where the height of the
   // inputAccessoryView is 0.
