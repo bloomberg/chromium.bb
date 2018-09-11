@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID" /> จาก <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">ไฟล์ Manifest ไม่ถูกต้อง</translation>
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME" /> โดยไม่สามารถลบหรือแก้ไขได้</translation>
+<translation id="7612608473764576263">ค่าที่ป้อนสำหรับคีย์ส่วนตัวจะต้องเป็นรูปแบบที่ถูกต้อง (คีย์ RSA ที่เข้ารหัส PEM ในรูปแบบ PKCS#8)</translation>
 <translation id="7939686037314084444">ส่วนขยายโหลดไม่ถูกต้อง และอาจดักจับคำขอของเครือข่ายไม่ได้</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">กล้องหน้า</translation>

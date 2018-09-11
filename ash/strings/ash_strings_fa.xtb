@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
+<translation id="2790844815106384441">انتخاب کند وب‌سایت‌ها امکان استفاده از خدمات مکان، میکروفون، دوربین یا سایر ویژگی‌های دستگاه را داشته باشند یا نه</translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
 <translation id="2808012452536866044">‏Better Together به تلفن جدیدی منتقل شد</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">بزرگ کردن منو</translation>
 <translation id="3087734570205094154">پایین</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (بلوتوث)</translation>
-<translation id="3124698051292518391">همیشه قفسه نشان داده شود</translation>
 <translation id="3126069444801937830">راه‌اندازی مجدد برای به‌روزرسانی</translation>
 <translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="315116470104423982">داده‌های تلفن همراه</translation>
@@ -194,6 +194,7 @@
 <translation id="4200057768455216496">میان‌بر مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4217571870635786043">املا</translation>
 <translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
+<translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
 <translation id="4274921305979314545">‏Chromebook را با تلفنتان مرتبط کنید</translation>
 <translation id="4279490309300973883">بازتاب می‌شود</translation>
 <translation id="4292681942966152062">درحال فعال کردن <ph name="NETWORK_NAME" /></translation>
@@ -222,6 +223,7 @@
 <translation id="4734965478015604180">افقی</translation>
 <translation id="476166673298332917">سرپرست این سیستم به همه فعالیت‌ها، ازجمله گذرواژه‌ها و ارتباطات دسترسی دارد.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">‏«دستیار Google» در جلسه نمایشی در دسترس نیست.</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4849058404725798627">برجسته کردن شیء با فوکوس صفحه‌کلید</translation>
@@ -337,6 +339,7 @@
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
+<translation id="6814658242098378692">مدیریت برنامه‌ها، برنامه‌های افزودنی و طرح‌های زمینه</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +363,7 @@
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="726276584504105859">برای استفاده از تقسیم صفحه، به اینجا بکشید</translation>
+<translation id="7303365578352795231">درحال پاسخ دادن در دستگاه دیگر.</translation>
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
@@ -392,6 +396,7 @@
 <translation id="7842211907556571265">درحال اتصال به <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">هشدار: ویژگی آزمایشی</translation>
 <translation id="7846634333498149051">صفحه‌کلید</translation>
+<translation id="7886169021410746335">تنظیمات حریم خصوصی را تنظیم کند</translation>
 <translation id="7886277072580235377">وقتی از سیستم خارج شوید، جلسه اینترنت پاک خواهد شد. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">‏Send an email (ایمیل ارسال کن)</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>

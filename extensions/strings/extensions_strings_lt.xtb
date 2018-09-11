@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš „<ph name="VENDOR_NAME" />“</translation>
 <translation id="7068383018033524534">Netinkamas aprašo failas</translation>
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME" />“. Jo negalima pašalinti ar pakeisti.</translation>
+<translation id="7612608473764576263">Privačiojo rakto įvesties vertė turi būti galiojančio formato (PKCS#8 formato PEM koduotas RSA raktas).</translation>
 <translation id="7939686037314084444">Nepavyko tinkamai įkelti plėtinio. Gali būti, kad jam nepavyks nuskaityti tinklo užklausų.</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME" />“</translation>
 <translation id="8035920974645200807">Nukreiptas į naudotoją</translation>

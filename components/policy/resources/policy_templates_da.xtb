@@ -339,7 +339,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="199764499252435679">Aktivér komponentopdateringer i <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Strømstyring</translation>
 <translation id="201557587962247231">Hyppighed for upload af rapporter om enhedsstatus</translation>
-<translation id="2017301949684549118">Webadresser til webapps skal installeres lydløst.</translation>
+<translation id="2017301949684549118">Webadresser til webapps skal installeres uovervåget.</translation>
 <translation id="2018836497795982119">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten anmodes om brugerpolitikoplysninger.
 
       Angivelse af denne politik tilsidesætter standardværdien på tre timer. Gyldige værdier for denne politik ligger i intervallet fra 1800000 (30 minutter) til 86400000 (ét døgn). Alle værdier, der ikke ligger inden for dette interval, fastgøres til den respektive grænse. Hvis platformen understøtter underretninger vedrørende politik, angives forsinkelsen af opdateringen til 24 timer, da det forventes, at underretninger vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres.
@@ -642,7 +642,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Googles søgewebadresse kan angives som: <ph name="GOOGLE_SEARCH_URL" />.
 
           Denne indstilling skal aktiveres, når politikken "DefaultSearchProviderEnabled" er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
-<translation id="2659019163577049044">Hvis denne indstilling aktiveres, kan brugerne konfigurere deres enheder for at synkronisere sms-beskeder mellem deres telefoner og Chromebooks. Bemærk! Hvis denne politik tillades, skal brugerne udtrykkeligt tilmelde sig denne funktion ved at gennemføre en konfiguration. Når konfigurationen er gennemført, kan brugerne sende og modtage sms-beskeder på deres Chromebooks.
+<translation id="2659019163577049044">Hvis denne indstilling aktiveres, kan brugerne konfigurere deres enheder til at synkronisere sms-beskeder mellem deres telefoner og Chromebooks. Bemærk! Hvis denne politik tillades, skal brugerne udtrykkeligt tilmelde sig denne funktion ved at gennemføre en konfiguration. Når konfigurationen er gennemført, kan brugerne sende og modtage sms-beskeder på deres Chromebooks.
 
       Hvis denne indstilling deaktiveres, kan brugerne ikke konfigurere synkronisering af sms-beskeder.
 
@@ -2273,7 +2273,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7343497214039883642">Fil til konfiguration af virksomhedsprintere for enheder</translation>
-<translation id="7349338075015720646">Angiver en liste over websites, som installeres lydløst uden brugerinteraktion, og som ikke kan afinstalleres af brugeren.
+<translation id="7349338075015720646">Angiver en liste over websites, som installeres uovervåget uden brugerinteraktion, og som ikke kan afinstalleres af brugeren.
 
       Hvert listepunkt i politikken er et objekt med to medlemmer: "url" og "launch_container". "url" bør være webadressen til den webapp, der skal installeres, og "launch_container" bør enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret. Hvis "launch_container" udelades, åbnes appen i et vindue, hvis Chrome betragter den som en progressiv webapp, og ellers åbnes den på en fane.</translation>
 <translation id="7367028210010532881">Tjenesten Beskyttet browsing viser en advarselsside, når brugerne går til websites, der er rapporteret som potentielt skadelige. Denne indstilling forhindrer brugerne i at fortsætte fra advarselssiden til det skadelige website.
@@ -2762,7 +2762,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       I dette tidsrum informeres brugeren gentagne gange om nødvendigheden af en opdatering. Når der registreres en opdatering til <ph name="PRODUCT_OS_NAME" />-enheder, vises en underretning om genstart i systembakken. For <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at vise, at genstart er nødvendig, når en tredjedel af underretningsperioden er gået. Underretningen skifter farve, når to tredjedele af underretningsperioden er gået, og igen når hele underretningsperioden er udløbet. De yderligere underretninger, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, følger samme tidsplan.
 
-      Hvis politikken ikke konfigureres, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" /> -enheder og 604800000 millisekunder (én uge) for <ph name="PRODUCT_NAME" />.</translation>
+      Hvis politikken ikke konfigureres, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (én uge) for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Advarsler via adgangskodebeskyttelse udløses ved genbrug af adgangskoder</translation>
 <translation id="8693243869659262736">Brug den indbyggede DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
@@ -2943,9 +2943,9 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="9158929520101169054">Tillad samlet login fra flere konti i browseren</translation>
 <translation id="9159126470527871268">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" /> skal genstartes for at anvende en afventende opdatering.
 
-      Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren eller enheden. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig, mens <ph name="PRODUCT_OS_NAME" /> indikerer det samme via en underretning i systembakken. Hvis "Anbefales" angives for politikken, får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis "Påkrævet" angives for politikken, får brugeren vist en fast advarsel, som indikerer, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage for <ph name="PRODUCT_NAME" /> og fire dage for <ph name="PRODUCT_OS_NAME" />, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren eller enheden. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig, mens <ph name="PRODUCT_OS_NAME" /> indikerer det samme via en underretning i systembakken. Hvis "Anbefales" angives for politikken, får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis "Påkrævet" angives for politikken, får brugeren vist en fast advarsel, som angiver, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage for <ph name="PRODUCT_NAME" /> og fire dage for <ph name="PRODUCT_OS_NAME" />, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-      Brugerens session genoprettes efter genstarten.</translation>
+      Brugerens session gendannes efter genstarten.</translation>
 <translation id="9165792353046089850">Giver dig mulighed for at angive, om websites må få adgang til tilsluttede USB-enheder. Adgangen kan være fuldstændig blokeret, eller brugeren kan blive spurgt, hver gang et website vil have adgang til tilsluttede USB-enheder.
 
           Denne politik kan tilsidesættes for bestemte webadressemønstre ved hjælp af politikkerne "WebUsbAskForUrls" og "WebUsbBlockedForUrls".

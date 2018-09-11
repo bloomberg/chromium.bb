@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1151972924205500581">Būtinas slaptažodis</translation>
 <translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK" />talpykloje saugomą <ph name="URL" /> kopiją<ph name="END_LINK" /></translation>
+<translation id="1156303062776767266">Peržiūrite vietinį arba bendrinamą failą</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> netikėtai nutraukė ryšį.</translation>
 <translation id="1161325031994447685">Iš naujo prisijungti prie „Wi-Fi“</translation>
 <translation id="1165039591588034296">Klaida</translation>
@@ -535,6 +536,7 @@
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
 <translation id="4619615317237390068">Skirtukai iš kitų įrenginių</translation>
+<translation id="4646534391647090355">Eiti dabar</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="4690462567478992370">Nebenaudoti negaliojančio sertifikato</translation>
@@ -581,6 +583,7 @@
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
 <translation id="4974590756084640048">Iš naujo įgalinti įspėjimus</translation>
 <translation id="4988217478422488391">Padeda greičiau sumokėti internete</translation>
+<translation id="4989163558385430922">Žr. viską</translation>
 <translation id="4989809363548539747">Šis papildinys nepalaikomas</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
 <translation id="5018422839182700155">Negalima atidaryti šio puslapio</translation>
@@ -725,6 +728,7 @@
 <translation id="5922853866070715753">Beveik atlikta</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5951495562196540101">Nepavyko prisiregistruoti su kliento paskyra (galima įsigyti licencijos paketą).</translation>
+<translation id="5966151627327109289">Būsite atjungti nuo daugelio svetainių. Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="5967592137238574583">Kontaktinės informacijos redagavimas</translation>
 <translation id="5967867314010545767">Pašalinti iš istorijos</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -746,6 +750,7 @@
 <translation id="6071091556643036997">Politikos tipas netinkamas.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Ši kortelė bus išsaugota „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}one{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}few{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}many{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}other{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}}</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
+<translation id="6096619198407627433">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros. Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="610911394827799129">„Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (sinchronizuotas)}one{# slaptažodis (sinchronizuotas)}few{# slaptažodžiai (sinchronizuoti)}many{# slaptažodžio (sinchronizuota)}other{# slaptažodžių (sinchronizuota)}}</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
@@ -817,6 +822,7 @@
 <translation id="6710594484020273272">&lt;Įveskite paieškos terminą&gt;</translation>
 <translation id="6711464428925977395">Kažkas negerai su tarpiniu serveriu arba adresas netinkamas.</translation>
 <translation id="674375294223700098">Nežinoma serverio sertifikato klaida.</translation>
+<translation id="6744009308914054259">Laukdami ryšio galite apsilankyti skiltyje „Atsisiuntimai“ ir perskaityti neprisijungus pasiekiamus straipsnius.</translation>
 <translation id="6753269504797312559">Politikos vertė</translation>
 <translation id="6757797048963528358">Įjungta įrenginio miego būsena.</translation>
 <translation id="6778737459546443941">Jūsų tėtis ar mama dar jos nepatvirtino</translation>
@@ -847,6 +853,7 @@
 <translation id="6965978654500191972">Įrenginys</translation>
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
+<translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="6979440798594660689">Nutildyti (numatytasis)</translation>
 <translation id="6984479912851154518">Išjungiate privatų režimą, kad galėtumėte sumokėti naudodami išorinę programą. Tęsti?</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
@@ -913,6 +920,7 @@ Papildoma išsami informacija:
 <translation id="7416351320495623771">Tvarkyti slaptažodžius…</translation>
 <translation id="7419106976560586862">Profilio kelias</translation>
 <translation id="7437289804838430631">Pridėti kontaktinę informaciją</translation>
+<translation id="7440140511386898319">Naršymas neprisijungus</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7444046173054089907">Ši svetainė užblokuota</translation>
 <translation id="7445762425076701745">Nepavyksta visiškai patvirtinti serverio, prie kurio esate prisijungę, tapatybės. Prie serverio esate prisijungę naudodami tik tinklui galiojantį vardą, kurio nuosavybės teisių išorinė sertifikatą išduodanti institucija negali patvirtinti. Nors kai kurios sertifikatus išduodančios institucijos vis tiek išduos sertifikatus pagal šiuos vardus, niekaip nebus galima užtikrinti, kad būsite prisijungę prie numatytos svetainės, o ne prie užpuolėjo.</translation>

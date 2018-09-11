@@ -149,6 +149,8 @@
 <translation id="7814458197256864873">&amp;ቅዳ</translation>
 <translation id="7879499977785298635">አታግድ</translation>
 <translation id="7907591526440419938">ፋይል ክፈት</translation>
+<translation id="7969046989155602842">ትእዛዝ</translation>
+<translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ሰዓት በፊት}one{# ሰዓቶች በፊት}other{# ሰዓቶች በፊት}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ሰከንድ ቀርቷል}one{# ሰከንዶች ቀርቷል}other{# ሰከንዶች ቀርተዋል}}</translation>
 <translation id="815598010540052116">ወደ ታች ሸብልል</translation>

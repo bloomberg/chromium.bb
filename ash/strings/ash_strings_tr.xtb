@@ -23,7 +23,7 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1290331692326790741">Zayıf sinyal</translation>
 <translation id="1293264513303784526">USB-C cihaz (sol bağlantı noktası)</translation>
-<translation id="1294929383540927798">Kilit ekranı bildirim ayarlarını değiştirin</translation>
+<translation id="1294929383540927798">Kilit ekranı bildirim ayarlarını değiştir</translation>
 <translation id="1302880136325416935">Bluetooth ayarlarını göster. <ph name="STATE_TEXT" /></translation>
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="1351937230027495976">Menüyü daralt</translation>
@@ -137,7 +137,6 @@
 <translation id="3081696990447829002">Menüyü genişlet</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3124698051292518391">Her Zaman Rafı Göster</translation>
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
 <translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
 <translation id="315116470104423982">Mobil veriler</translation>

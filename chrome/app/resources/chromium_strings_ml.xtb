@@ -133,7 +133,7 @@
 <translation id="5680901439334282664">Chromium-ത്തിലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5698481217667032250">ഈ ഭാഷയിൽ Chromium പ്രദർശിപ്പിക്കുക</translation>
 <translation id="5712253116097046984">ഈ അപ്‌ഡേറ്റ് ബാധകമാക്കുന്നതിന് നിങ്ങൾ Chromium OS പുനഃരാരംഭിക്കാൻ അഡ്‌മിൻ ആവശ്യപ്പെടുന്നു</translation>
-<translation id="5726838626470692954">നിങ്ങളുടെ മാനേജർ നിങ്ങളെ നീക്കംചെയ്‌ത് Chromium-ത്തിലേക്ക് തിരികെ ചേർക്കേണ്ടതാണ്.</translation>
+<translation id="5726838626470692954">നിങ്ങളുടെ മാനേജർ നിങ്ങളെ നീക്കം ചെയ്‌ത് Chromium-ത്തിലേക്ക് തിരികെ ചേർക്കേണ്ടതാണ്.</translation>
 <translation id="5768914737813585044">ഈ ഭാഷയിൽ Chromium OS പ്രദർശിപ്പിക്കുക</translation>
 <translation id="5796460469508169315">Chromium ഏകദേശം തയാറായിക്കഴിഞ്ഞു.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -241,7 +241,7 @@
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> മുമ്പ് Chromium ഉപയോഗിച്ചിട്ടുണ്ട്</translation>
 <translation id="8375950122744241554">Chromium 70 പതിപ്പ് മുതൽ സൂപ്പർവൈസ് ചെയ്യപ്പെടുന്ന ഉപയോക്തൃ പ്രൊഫൈലുകള്‍‌ ഇനിയങ്ങോട്ട് ലഭ്യമല്ല.</translation>
 <translation id="8379713241968949941">{0,plural, =1{Chromium ഒരു മണിക്കൂറിൽ വീണ്ടും സമാരംഭിക്കും}other{Chromium # മണിക്കൂറിൽ വീണ്ടും സമാരംഭിക്കും}}</translation>
-<translation id="8453117565092476964">ഇൻസ്റ്റാളർ ആർക്കൈവ് കേടായതാണ് അല്ലെങ്കിൽ അസാധുവാണ്. Chromium വീണ്ടും ഡൗൺലോഡുചെയ്യുക.</translation>
+<translation id="8453117565092476964">ഇൻസ്റ്റാളർ ആർക്കൈവ് കേടായതാണ് അല്ലെങ്കിൽ അസാധുവാണ്. Chromium വീണ്ടും ഡൗൺലോഡ് ചെയ്യുക.</translation>
 <translation id="8493179195440786826">Chromium കാലഹരണപ്പെട്ടു</translation>
 <translation id="85843667276690461">Chromium ഉപയോഗിക്കുന്നതിനുള്ള സഹായം നേടുക</translation>
 <translation id="8586442755830160949">പകർപ്പവകാശം <ph name="YEAR" /> Chromium രചയിതാക്കൾ. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‌തം.</translation>
@@ -258,7 +258,7 @@
 <translation id="8897323336392112261">നിങ്ങൾ Chromium ആരംഭിക്കുമ്പോഴോ ഹോം ബട്ടൺ ക്ലിക്കുചെയ്യുമ്പോഴോ ദൃശ്യമാകുന്ന പേജും അത് നിയന്ത്രിയ്ക്കും.</translation>
 <translation id="8907580949721785412">Chromium പാസ്‌വേഡുകൾ ദൃശ്യമാക്കാൻ ശ്രമിക്കുന്നു. ഇത് അനുവദിക്കാൻ നിങ്ങളുടെ Windows പാസ്‌വേഡ് ടൈപ്പുചെയ്യുക.</translation>
 <translation id="8941642502866065432">Chromium അപ്‌ഡേറ്റ് ചെയ്യാനാകില്ല</translation>
-<translation id="8974095189086268230">Chromium OS നിർമ്മിച്ചത് കൂടുതൽ <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പൺ സോഴ്‌സ് സോഫ്റ്റ്‌വെയർ<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാകാം.</translation>
+<translation id="8974095189086268230">Chromium OS പ്രാവർത്തികമായത് കൂടുതൽ <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പൺ സോഴ്‌സ് സോഫ്റ്റ്‌വെയർ<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ്.</translation>
 <translation id="8985587603644336029">മുമ്പ് മറ്റാരോ Chromium-ലേയ്‌ക്ക് ഈ കമ്പ്യൂട്ടറിൽ നിന്ന് <ph name="ACCOUNT_EMAIL_LAST" /> എന്നായി സൈൻ ഇൻ ചെയ്‌തു. അത് നിങ്ങളുടെ അക്കൗണ്ടല്ലെങ്കിൽ, നിങ്ങളുടെ വിവരങ്ങൾ വേർതിരിച്ച് നിലനിർത്തുന്നതിന് ഒരു പുതിയ Chromium ഉപയോക്താവിനെ സൃഷ്‌ടിക്കുക.
 
 ഏതുവിധേനയും സൈൻ ഇൻ ചെയ്യുന്നത് ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, മറ്റ് ക്രമീകരണങ്ങൾ എന്നിവ പോലുള്ള Chromium വിവരങ്ങൾ <ph name="ACCOUNT_EMAIL_NEW" /> എന്നതുമായി ലയിപ്പിക്കും.</translation>

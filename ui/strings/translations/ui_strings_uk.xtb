@@ -65,7 +65,7 @@
 <translation id="3660179305079774227">Курсор угору</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ГБ/сек.</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
-<translation id="3842239759367498783">Продовжити читати "<ph name="TITLE" />" на мобільному пристрої</translation>
+<translation id="3842239759367498783">Продовжити читати з мобільного пристрою <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3889424535448813030">Курсор праворуч</translation>
 <translation id="3892641579809465218">Внутрішній екран</translation>
@@ -149,6 +149,8 @@
 <translation id="7814458197256864873">&amp;Копіювати</translation>
 <translation id="7879499977785298635">Не блокувати</translation>
 <translation id="7907591526440419938">Відкрити файл</translation>
+<translation id="7969046989155602842">Клавіша Command</translation>
+<translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

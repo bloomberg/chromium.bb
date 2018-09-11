@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">找不到任何网络</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">正在注册指纹</translation>
+<translation id="1059855432287631118">注册指纹</translation>
 <translation id="1061904396131502319">快到休息时间了</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1067048845568873861">创建时间</translation>
@@ -1509,7 +1509,6 @@
 <translation id="3285322247471302225">打开新的标签页(&amp;T)</translation>
 <translation id="3288047731229977326">以开发者模式运行的扩展程序可能会损害您的计算机。如果您不是开发者，那么，为安全起见，应停用以开发者模式运行的扩展程序。</translation>
 <translation id="3289856944988573801">要检查是否有更新，请使用以太网或 WLAN。</translation>
-<translation id="3292421191230118801">在您的 Chromebook 上继续浏览先前在手机上访问的网站</translation>
 <translation id="32939749466444286">无法启动 Linux 容器。请重试。</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="329838636886466101">修复</translation>
@@ -4945,7 +4944,6 @@
 <translation id="8557930019681227453">由应用缓存指定的网址</translation>
 <translation id="8559694214572302298">图片解码器</translation>
 <translation id="8561853412914299728">“<ph name="TAB_TITLE" />”<ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">继续阅读</translation>
 <translation id="8565650234829130278">已尝试降低应用版本。</translation>
 <translation id="8569002732135253578">正在打印 <ph name="DOCUMENT_NAME" /></translation>
 <translation id="8569682776816196752">未找到任何目标</translation>

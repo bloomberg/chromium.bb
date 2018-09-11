@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Iš naujo prisijungiama prie „<ph name="NAME" />“</translation>
+<translation id="2790844815106384441">Pasirinkite, ar svetainėse galima naudoti Vietovės paslaugas arba įrenginio mikrofoną, fotoaparatą ir kitas funkcijas</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
 <translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2808012452536866044">„Better Together“ perjungta į naują telefoną</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">Išskleisti meniu</translation>
 <translation id="3087734570205094154">Apačia</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> („Bluetooth“)</translation>
-<translation id="3124698051292518391">Visada rodyti lentyną</translation>
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="3147142846278915599">Paleidimo priemonė (sinchronizuojamos programos...)</translation>
 <translation id="315116470104423982">Duomenys mobiliesiems</translation>
@@ -194,6 +194,7 @@
 <translation id="4200057768455216496">Paspaudėte prie doko prijungto didintuvo spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4261870227682513959">Rodyti pranešimų nustatymus. Pranešimai išjungti</translation>
+<translation id="4269883910223712419">Šio įrenginio administratorius gali atlikti nurodytus veiksmus.</translation>
 <translation id="4274921305979314545">Susiekite „Chromebook“ su telefonu</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4292681942966152062">Suaktyvinamas „<ph name="NETWORK_NAME" />“</translation>
@@ -222,6 +223,7 @@
 <translation id="4734965478015604180">Horizontaliai</translation>
 <translation id="476166673298332917">Šio įrenginio administratorius gali pasiekti visą veiklą, įskaitant slaptažodžius ir pranešimus.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
+<translation id="4778095205580009397">„Google“ padėjėjas nepasiekiamas demonstracinėje sesijoje.</translation>
 <translation id="479989351350248267">ieškoti</translation>
 <translation id="4804818685124855865">Atsijungti</translation>
 <translation id="4849058404725798627">Paryškinti objektą jį suaktyvinus klaviatūra</translation>
@@ -337,6 +339,7 @@
 <translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
+<translation id="6814658242098378692">Valdykite programas, plėtinius ir temas</translation>
 <translation id="6820676911989879663">Padarykite pertrauką!</translation>
 <translation id="683971173229319003">Paieškos klavišas + L</translation>
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE" />“</translation>
@@ -360,6 +363,7 @@
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
 <translation id="7256634071279256947">Užpakalinis mikrofonas</translation>
 <translation id="726276584504105859">Vilkite čia, kad naudotumėte skaidytą ekraną</translation>
+<translation id="7303365578352795231">Atsakoma kitame įrenginyje.</translation>
 <translation id="7348093485538360975">Ekraninė klaviatūra</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="7377169924702866686">Įjungtas didžiųjų raidžių klavišas.</translation>
@@ -392,6 +396,7 @@
 <translation id="7842211907556571265">Prisijungiama prie „<ph name="NETWORK_NAME" />“</translation>
 <translation id="7842569679327885685">Įspėjimas: eksperimentinė funkcija</translation>
 <translation id="7846634333498149051">Klaviatūra</translation>
+<translation id="7886169021410746335">Koreguokite privatumo nustatymus</translation>
 <translation id="7886277072580235377">Interneto sesijos duomenys bus išvalyti, kai atsijungsite. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">„Send an email“ (Siųsk el. laišką)</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>

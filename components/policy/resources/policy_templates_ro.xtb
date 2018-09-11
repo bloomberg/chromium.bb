@@ -1300,10 +1300,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Pentru o descriere completă a setărilor posibile și a structurii acestei politici, accesează https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
 <translation id="4554651132977135445">Modul de procesare loopback conform politicii privind utilizatorii</translation>
-<translation id="4554841826517980623">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> trebuie să folosească <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul în rețea.
-      Când politica este activată, descoperirea elementelor la care se permite accesul va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul în rețea.
-      Când politica este dezactivată, descoperirea elementelor la care se permite accesul nu va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi elementele la care se permite accesul.
-      Dacă politica nu este configurată, opțiunea prestabilită este dezactivată pentru utilizatorii gestionați de întreprindere și activată pentru utilizatorii negestionați.</translation>
+<translation id="4554841826517980623">Această politică stabilește dacă funcția Dispozitive de stocare în rețea pentru <ph name="PRODUCT_NAME" /> trebuie să folosească <ph name="NETBIOS_PROTOCOL" /> pentru a descoperi dispozitive în rețea.
+      Când politica este activată, se va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a se descoperi dispozitive în rețea.
+      Când politica este dezactivată, nu se va folosi protocolul <ph name="NETBIOS_PROTOCOL" /> pentru a se descoperi dispozitive.
+      Dacă politica nu este configurată, opțiunea este în mod prestabilit dezactivată pentru utilizatorii gestionați de întreprindere și activată pentru utilizatorii negestionați.</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
 <translation id="4557134566541205630">Adresa URL pentru pagina Filă nouă a furnizorului de căutare prestabilit</translation>
 <translation id="4567137030726189378">Permite folosirea Instrumentelor pentru dezvoltatori</translation>
@@ -1702,7 +1702,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă această politică nu este configurată, feedbackul vocal este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze feedbackul vocal, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="5868414965372171132">Configurație de rețea la nivel de utilizator</translation>
-<translation id="5879014913445067283">Controlează descoperirea elementelor la care se permite accesul din rețea prin <ph name="NETBIOS_NAME" /></translation>
+<translation id="5879014913445067283">Controlează descoperirea dispozitivelor de stocare în rețea prin <ph name="NETBIOS_NAME" /></translation>
 <translation id="5883015257301027298">Setări prestabilite cu privire la cookie-uri</translation>
 <translation id="5887414688706570295">Configurează prefixul TalkGadget care va fi utilizat de gazdele de acces la distanță și nu le permite utilizatorilor să-l modifice.
 
@@ -2147,7 +2147,7 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
 
       Dacă politica este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> nu poate colecta sau încărca astfel de jurnale.
 
-      Aceste jurnale conțin informații de diagnosticare utile la remedierea problemelor cu apelurile audio sau video din Chrome, precum ora și dimensiunea pachetelor RTP trimite și primite, feedback privind congestionarea rețelei și metadate despre ora și calitatea cadrelor audio și video. Jurnalele nu conțin înregistrări audio sau video din apel.
+      Aceste jurnale conțin informații de diagnosticare utile la remedierea problemelor cu apelurile audio sau video din Chrome, precum ora și dimensiunea pachetelor RTP trimise și primite, feedback privind congestionarea rețelei și metadate despre ora și calitatea cadrelor audio și video. Jurnalele nu conțin înregistrări audio sau video din apel.
 
       Această colectare a datelor de către Chrome poate fi declanșată numai de serviciile web Google, precum Google Hangouts sau Google Meet.
 
@@ -2778,7 +2778,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem atunci când se detectează un upgrade. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> urmează același program.
 
-      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (patru zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și 604.800.000 de milisecunde (o săptămână) pentru <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Avertismentul privind protecția prin parolă este declanșat de refolosirea parolei</translation>
 <translation id="8693243869659262736">Utilizați clientul DNS integrat</translation>
 <translation id="8704831857353097849">Lista pluginurilor dezactivate</translation>
@@ -2961,7 +2961,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
 <translation id="9159126470527871268">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru aplicarea unei actualizări în așteptare.
 
-      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului sau repornirea utilizatorului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului, în timp ce <ph name="PRODUCT_OS_NAME" /> indică acest lucru printr-o notificare în bara de sistem. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile pentru <ph name="PRODUCT_NAME" /> și patru zile pentru <ph name="PRODUCT_OS_NAME" /> și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului sau repornirea dispozitivului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului, în timp ce <ph name="PRODUCT_OS_NAME" /> indică acest lucru printr-o notificare în bara de sistem. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să închidă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile pentru <ph name="PRODUCT_NAME" /> și patru zile pentru <ph name="PRODUCT_OS_NAME" /> și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesiunea utilizatorului este restabilită după relansare/repornire.</translation>
 <translation id="9165792353046089850">Îți permite să stabilești dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.

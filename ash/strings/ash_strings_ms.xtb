@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Pilih sama ada tapak web boleh menggunakan perkhidmatan lokasi atau mikrofon, kamera atau ciri peranti yang lain</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2808012452536866044">Lebih Baik Bersama dialihkan ke telefon baharu</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">Kembangkan menu</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3124698051292518391">Sentiasa Tunjukkan Rak</translation>
 <translation id="3126069444801937830">Mulakan semula untuk mengemas kini</translation>
 <translation id="3147142846278915599">Pelancar (menyegerakkan apl...)</translation>
 <translation id="315116470104423982">Data mudah alih</translation>
@@ -195,6 +195,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
 <translation id="4261870227682513959">Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan</translation>
+<translation id="4269883910223712419">Pentadbir peranti ini berkeupayaan untuk:</translation>
 <translation id="4274921305979314545">Sambungkan Chromebook dengan telefon anda</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
@@ -222,6 +223,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4734965478015604180">Mendatar</translation>
 <translation id="476166673298332917">Pentadbir peranti ini mempunyai akses kepada semua aktiviti, termasuk kata laluan dan komunikasi.</translation>
 <translation id="4776917500594043016">Kata laluan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google Assistant tidak tersedia dalam sesi tunjuk cara.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan sambungan</translation>
 <translation id="4849058404725798627">Serlahkan objek dengan fokus papan kekunci</translation>
@@ -337,6 +339,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6751826523481687655">Pengesanan prestasi dihidupkan</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
+<translation id="6814658242098378692">Urus apl, sambungan dan tema</translation>
 <translation id="6820676911989879663">Berehatlah!</translation>
 <translation id="683971173229319003">Carian+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +363,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Seret ke sini untuk menggunakan skrin pisah</translation>
+<translation id="7303365578352795231">Menjawab menggunakan peranti lain.</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
 <translation id="735745346212279324">VPN diputuskan sambungan</translation>
 <translation id="7377169924702866686">Caps Lock dihidupkan.</translation>
@@ -392,6 +396,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7842211907556571265">Menyambung ke <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Amaran: Ciri percubaan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>
+<translation id="7886169021410746335">Laraskan tetapan privasi</translation>
 <translation id="7886277072580235377">Sesi Internet anda akan dipadam bersih apabila anda log keluar. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Hantar e-mel</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>

@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2761704814324807722">Baki status, waktu <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambungkan lagi ke <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Memilih apakah situs dapat menggunakan layanan lokasi atau mikrofon perangkat, kamera, atau fitur lainnya</translation>
 <translation id="2792498699870441125">Alt+Telusuri</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2808012452536866044">Better Together dialihkan ke ponsel baru</translation>
@@ -137,7 +138,6 @@
 <translation id="3081696990447829002">Luaskan menu</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
-<translation id="3124698051292518391">Selalu Tampilkan Rak</translation>
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
 <translation id="3147142846278915599">Peluncur (menyinkronkan aplikasi...)</translation>
 <translation id="315116470104423982">Data seluler</translation>
@@ -194,6 +194,7 @@
 <translation id="4200057768455216496">Anda menekan pintasan untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4261870227682513959">Tampilkan setelan notifikasi. Notifikasi nonaktif.</translation>
+<translation id="4269883910223712419">Admin perangkat ini memiliki kemampuan untuk:</translation>
 <translation id="4274921305979314545">Hubungkan Chromebook dengan ponsel</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +222,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">Administrator perangkat ini memiliki akses ke semua aktivitas, termasuk sandi dan komunikasi.</translation>
 <translation id="4776917500594043016">Sandi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Asisten Google tidak tersedia dalam sesi demo.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
 <translation id="4849058404725798627">Sorot objek dengan fokus keyboard</translation>
@@ -336,6 +338,7 @@
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
+<translation id="6814658242098378692">Mengelola aplikasi, ekstensi, dan tema</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
+<translation id="7303365578352795231">Menjawab di perangkat lain.</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
 <translation id="735745346212279324">VPN terputus</translation>
 <translation id="7377169924702866686">Caps Lock aktif.</translation>
@@ -391,6 +395,7 @@
 <translation id="7842211907556571265">Menyambungkan ke <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Peringatan: Fitur eksperimental</translation>
 <translation id="7846634333498149051">Keyboard</translation>
+<translation id="7886169021410746335">Menyesuaikan setelan privasi</translation>
 <translation id="7886277072580235377">Sesi internet Anda akan dihapus saat Anda logout. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Kirim email</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>

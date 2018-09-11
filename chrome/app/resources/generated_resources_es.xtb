@@ -67,7 +67,7 @@
 <translation id="1094607894174825014">La operación de lectura o escritura se ha solicitado con una variación no válida de "<ph name="DEVICE_NAME" />".</translation>
 <translation id="109758035718544977">Activar sonido de sitios web</translation>
 <translation id="1097658378307015415">Antes de iniciar sesión, entra como invitado para activar la red <ph name="NETWORK_ID" />.</translation>
-<translation id="1103523840287552314">Traducir siempre el <ph name="LANGUAGE" /></translation>
+<translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;Detener</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">La pestaña en segundo plano está usando el Bluetooth</translation>
@@ -1513,7 +1513,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3285322247471302225">Nueva &amp;pestaña</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de desarrollador pueden causar daños en el ordenador. Si no eres desarrollador, debes inhabilitar esas extensiones para mantener protegido tu ordenador.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
-<translation id="3292421191230118801">Sigue leyendo en tu Chromebook los sitios web que tengas en el móvil</translation>
 <translation id="32939749466444286">El contenedor de Linux no se ha iniciado. Inténtalo de nuevo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="329838636886466101">Reparar</translation>
@@ -1961,7 +1960,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3936390757709632190">&amp;Abrir audio en una pestaña nueva</translation>
 <translation id="3936925983113350642">La contraseña que selecciones será necesaria para restaurar este certificado más adelante. Guárdala en un lugar seguro.</translation>
 <translation id="3937640725563832867">Nombre alternativo del emisor del certificado</translation>
-<translation id="3937734102568271121">Traducir siempre el <ph name="LANGUAGE" /></translation>
+<translation id="3937734102568271121">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="3940233957883229251">Habilitar repetición automática</translation>
 <translation id="3941357410013254652">ID de canal</translation>
 <translation id="3941565636838060942">Para ocultar el acceso a este programa, debes desinstalarlo utilizando la función <ph name="CONTROL_PANEL_APPLET_NAME" /> del Panel de control.
@@ -2052,7 +2051,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4077917118009885966">Los anuncios están bloqueados en este sitio web</translation>
 <translation id="4079799245038595838">Se ha enviado una notificación a tu teléfono. Sigue las indicaciones para confirmar que eres tú.</translation>
 <translation id="4081242589061676262">No se ha podido enviar el archivo.</translation>
-<translation id="4084682180776658562">Marcador</translation>
+<translation id="4084682180776658562">Añadir a marcadores</translation>
 <translation id="4084835346725913160">Cerrar <ph name="TAB_NAME" /></translation>
 <translation id="4085298594534903246">Se ha bloqueado JavaScript en esta página.</translation>
 <translation id="4087089424473531098">Se ha creado la extensión:
@@ -2470,7 +2469,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4801956050125744859">Conservar las dos versiones</translation>
 <translation id="4804818685124855865">Desvincular</translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
-<translation id="4808667324955055115">Ventanas emergentes bloqueadas</translation>
+<translation id="4808667324955055115">Pop-ups bloqueados</translation>
 <translation id="480990236307250886">Abrir página de inicio</translation>
 <translation id="4812632551187706935">No se ha podido iniciar la conexión</translation>
 <translation id="4813136279048157860">Mis imágenes</translation>
@@ -4956,7 +4955,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8557930019681227453">Archivo de manifiesto</translation>
 <translation id="8559694214572302298">Decodificador de imágenes</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">Seguir leyendo</translation>
 <translation id="8565650234829130278">Se ha intentado instalar una versión anterior de la aplicación.</translation>
 <translation id="8569002732135253578">Imprimiendo <ph name="DOCUMENT_NAME" /></translation>
 <translation id="8569682776816196752">No se ha encontrado ningún destino.</translation>

@@ -200,6 +200,7 @@
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
+<translation id="1541170838458414064">Ogranicz rozmiar drukowanych stron</translation>
 <translation id="1553684822621013552">Gdy ta zasada jest włączona, użytkownik ma dostęp do rozszerzenia ARC
       (zależy to jednak od kontroli dodatkowych ustawień zasad – rozszerzenie ARC nadal jest niedostępne,
       jeśli w bieżącej sesji użytkownika włączono tryb tymczasowy
@@ -350,7 +351,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="199764499252435679">Włącz aktualizacje komponentów w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
-<translation id="2017301949684549118">Adresy URL aplikacji internetowych do zainstalowania po cichu.</translation>
+<translation id="2017301949684549118">Adresy URL aplikacji internetowych, które mają być instalowane dyskretnie.</translation>
 <translation id="2018836497795982119">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące użytkowników.
 
       Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej. Jeśli platforma obsługuje powiadomienia o naruszeniu zasad, czas odświeżania będzie ustawiony na 24 godziny, ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad.
@@ -375,6 +376,12 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
+<translation id="2098916259427011890">Ta zasada określa, czy mają być zgłaszane informacje o wersji, takie jak wersja, platforma i architektura systemu operacyjnego, wersja <ph name="PRODUCT_NAME" /> i kanał <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o wersji są zbierane.
+      Gdy ta zasada ma wartość fałsz, informacje o wersji nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="2111016292707172233">Pozwala korzystać z funkcji „Kliknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
       Jeśli włączysz to ustawienie, funkcja „Kliknij, by wyszukać” będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
@@ -409,6 +416,8 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Kiedy ta zasada nie jest skonfigurowana, domyślna wartość to 0 stopni,
       a użytkownik może ją zmienić. Jeśli tak zrobi, zmieniona wartość nie zostanie ponownie
       zastosowana po ponownym uruchomieniu urządzenia.</translation>
+<translation id="214901426630414675">Ogranicz tryb drukowania dwustronnego</translation>
+<translation id="2149330464730004005">Włącz drukowanie w kolorze</translation>
 <translation id="2156132677421487971">Pozwala skonfigurować zasady dotyczące <ph name="PRODUCT_NAME" /> – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
 <translation id="2166472654199325139">Nie filtruj witryn pod kątem treści dla dorosłych</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
@@ -598,6 +607,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2536525645274582300">Użytkownik decyduje, czy włączyć usługi lokalizacyjne Google</translation>
+<translation id="2550593661567988768">Tylko drukowanie jednostronne</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
 <translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
 
@@ -654,7 +664,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           URL wyszukiwania Google to: <ph name="GOOGLE_SEARCH_URL" />.
 
           Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie egzekwowana.</translation>
-<translation id="2659019163577049044">Jeśli to ustawienie jest włączone, użytkownicy będą mogli włączyć synchronizację SMS-ów między telefonem a Chromebookiem. Jeśli jest to dozwolone, użytkownicy muszą włączyć ją samodzielnie, wykonując proces konfiguracji. Po ukończeniu procesu konfiguracji użytkownicy mogą wysyłać i odbierać SMS-y na swoich Chromebookach.
+<translation id="2659019163577049044">Jeśli to ustawienie jest włączone, użytkownicy będą mogli włączyć synchronizację SMS-ów między telefonem a Chromebookiem. Jeśli jest to dozwolone, użytkownicy muszą włączyć ją samodzielnie, przeprowadzając konfigurację. Po ukończeniu konfiguracji użytkownicy mogą wysyłać i odbierać SMS-y na swoich Chromebookach.
 
       Jeśli to ustawienie jest wyłączone, użytkownicy nie będą mogli skonfigurować synchronizacji SMS-ów.
 
@@ -725,9 +735,12 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli wyłączysz to ustawienie lub pozostawisz je puste, w podglądzie wydruku zostanie wybrana ostatnio użyta drukarka.
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
+<translation id="2856674246949497058">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana procedura Powerwash.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
+<translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
+<translation id="2892414556511568464">Ogranicza tryb drukowania dwustronnego. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
 <translation id="2899002520262095963">Aplikacje na Androida mogą używać konfiguracji sieci i certyfikatów CA ustawianych przez tę zasadę, ale nie mają dostępu do niektórych opcji konfiguracji.</translation>
 <translation id="290002216614278247">Umożliwia blokowanie sesji użytkownika na podstawie godziny na kliencie lub dziennego limitu użytkowania.
@@ -812,6 +825,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Zalecamy wdrożenie na serwerach mechanizmów szyfrowania ECDHE. Jeśli nie ma takiej możliwości, upewnij się, że włączony jest mechanizm szyfrowania obsługujący wymianę kluczy RSA.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
+<translation id="3171369832001535378">Szablon sieciowej nazwy hosta urządzenia</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikacje na Androida nie mają dostępu do kluczy firmowych. Ta zasada nie ma na nie żadnego wpływu.</translation>
 <translation id="3201273385265130876">Umożliwia wskazanie serwera proxy używanego przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
@@ -922,6 +936,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
         Wartość tej zasady stanowi token rejestracji, który można pobrać z konsoli Google Admin.</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
+<translation id="3502555714327823858">Zezwól na wszystkie tryby drukowania dwustronnego</translation>
 <translation id="350443680860256679">Konfigurowanie aplikacji ARC</translation>
 <translation id="3504791027627803580">Określa adres URL wyszukiwarki używanej do wyszukiwania obrazem. Żądania wyszukiwania będą wysyłane przy użyciu metody GET. Jeśli zasada DefaultSearchProviderImageURLPostParams jest ustawiona, wtedy takie żądania będą używać metody POST.
 
@@ -931,6 +946,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="350797926066071931">Włącz Tłumacza</translation>
 <translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
 <translation id="3524204464536655762">Nie zezwalaj żadnym stronom na wysyłanie próśb o dostęp do urządzeń USB przez interfejs API WebUSB</translation>
+<translation id="3526752951628474302">Tylko drukowanie monochromatyczne</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3545457887306538845">Określa, gdzie można używać narzędzi dla programistów.
 
@@ -954,6 +970,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
+<translation id="3628480121685794414">Włącz drukowanie jednostronne</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
@@ -1044,6 +1061,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3851039766298741586">Przesyłaj informacje o aktywnej sesji publicznej, np. identyfikator i wersję aplikacji.
 
 Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Jeśli zasada jest włączona lub nieustawiona, informacje o sesji będą przesyłane.</translation>
+<translation id="3858658082795336534">Domyślny tryb drukowania dwustronnego</translation>
 <translation id="3859780406608282662">Dodaj parametr do pobierania odmian referencyjnych w <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada jest ustalona, zostanie dodany parametr zapytania „z ograniczeniem” do adresu URL używanego do pobierania odmian referencyjnych. Wartością parametru będzie wartość tej zasady.
@@ -1152,6 +1170,12 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="412697421478384751">Zezwalaj użytkownikom na ustawianie słabych kodów PIN blokady ekranu</translation>
+<translation id="4129183564590133854">Ta zasada określa, czy mają być zgłaszane informacje, na podstawie których można zidentyfikować użytkowników, takie jak login użytkownika systemu operacyjnego, login profilu <ph name="PRODUCT_NAME" />, nazwa profilu <ph name="PRODUCT_NAME" />, ścieżka profilu <ph name="PRODUCT_NAME" /> i ścieżka pliku wykonywalnego <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować użytkowników, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="4138655880188755661">Limit czasu</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4157594634940419685">Zezwalaj na dostęp do natywnych drukarek CUPS</translation>
@@ -1455,6 +1479,12 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>
 <translation id="5058573563327660283">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
+<translation id="5058771123777243130">Ta zasada określa, czy zgłaszać informacje o zasadach i czas pobrania zasad.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o zasadach i czas pobrania zasad są zbierane.
+      Gdy zasada ma wartość fałsz, informacje o zasadach i czas pobrania zasad nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
@@ -1557,6 +1587,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5366977351895725771">Jeśli ta zasada ma wartość „fałsz”, ten użytkownik nie może tworzyć użytkowników nadzorowanych. Dotychczasowi użytkownicy nadzorowani będą nadal dostępni.
 
           Jeśli ma ona wartość „prawda” lub nie jest skonfigurowana, ten użytkownik może tworzyć użytkowników nadzorowanych i zarządzać nimi.</translation>
+<translation id="5369937289900051171">Tylko drukowanie kolorowe</translation>
 <translation id="5370279767682621504">Włącz obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
@@ -1576,6 +1607,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli ta zasada ma ustawioną jako wartość listę identyfikatorów metod wprowadzania, metody te są dostępne na ekranie logowania. Wstępnie wybrana jest pierwsza z nich. Gdy na ekranie logowania jest wybrany profil danego użytkownika, oprócz metod wprowadzania ustawionych w tej zasadzie dostępna jest metoda ostatnio używana przez tego użytkownika. Gdy zasada nie jest skonfigurowana, metody wprowadzania na ekranie logowania odpowiadają ustawieniom regionalnym stosowanym do wyświetlania tego ekranu. Wartości, które nie są prawidłowymi identyfikatorami metod wprowadzania, są ignorowane.</translation>
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
+<translation id="5424147596523390018">Zezwalaj na wszystkie tryby kolorów</translation>
 <translation id="5442026853063570579">Ta zasada kontroluje też dostęp do Opcji programisty aplikacji na Androida. Gdy jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), użytkownicy nie mają dostępu do Opcji programisty. Gdy jest ustawiona na inną wartość lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji programisty, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="5447306928176905178">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony (opcja wycofana)</translation>
 <translation id="5457065417344056871">Włącz tryb gościa w przeglądarce</translation>
@@ -1642,6 +1674,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="5630352020869108293">Przywróć ostatnią sesję</translation>
 <translation id="5645779841392247734">Zezwalaj na pliki cookie w tych witrynach</translation>
+<translation id="5689430183304951538">Domyślny rozmiar drukowanych stron</translation>
 <translation id="5693469654327063861">Zezwól na migrację danych</translation>
 <translation id="5694594914843889579">Po włączeniu tej zasady pamięci zewnętrzne będą niedostępne w przeglądarce plików.
 
@@ -1671,6 +1704,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="5783009211970309878">Drukuj nagłówki i stopki</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
 <translation id="5815129011704381141">Automatyczne ponowne uruchomienie po aktualizacji</translation>
@@ -1682,6 +1716,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Gdy ta opcja nie jest ustawiona, obowiązuje domyślny katalog profilu.</translation>
 <translation id="5826047473100157858">Określa, czy użytkownik może otwierać strony w trybie incognito w <ph name="PRODUCT_NAME" />. W przypadku opcji „Włączone” lub nieskonfigurowania zasady strony mogą być otwierane w tym trybie. Opcja „Wyłączone” uniemożliwia otwieranie stron w tym trybie. Po wybraniu opcji „Wymuszone” strony można otwierać TYLKO w trybie incognito.</translation>
+<translation id="582857022372205358">Włącz drukowanie dwustronne względem krótkiej krawędzi</translation>
 <translation id="583091600226586337">
       Jeśli zasada jest włączona, podczas pobierania każdego pliku użytkownik jest pytany, gdzie należy zapisać plik.
       Jeśli zasada jest wyłączona, pobieranie zaczyna się od razu bez pytania o miejsce zapisania pliku.
@@ -1717,6 +1752,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, żądania uwierzytelniania Gnubby nie będą przesyłane przez serwer proxy.</translation>
 <translation id="5898486742390981550">Gdy zalogowanych jest wielu użytkowników, tylko główny użytkownik może używać aplikacji na Androida.</translation>
+<translation id="5901427587865226597">Tylko drukowanie dwustronne</translation>
 <translation id="5906199912611534122">Umożliwia włączenie lub wyłączenie ograniczenia przepustowości sieci.
       Ta zasada wpływa na wszystkich użytkowników i wszystkie interfejsy urządzenia. Po włączeniu tej funkcji
       przepustowość będzie ograniczana do czasu, aż zasada ta nie zostanie zmieniona.
@@ -1824,6 +1860,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Wartość dla tej zasady należy określić w milisekundach. Wartości są zmniejszane tak, by były mniejsze niż opóźnienie nieaktywności.</translation>
 <translation id="6097601282776163274">Włącz zbieranie zanonimizowanych danych z URL-em jako kluczem</translation>
+<translation id="6099853574908182288">Domyślny tryb drukowania kolorów</translation>
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
@@ -1836,6 +1873,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6190022522129724693">Domyślne ustawienie wyskakujących okienek</translation>
+<translation id="6190367314942602985">Zgłaszanie informacji identyfikujących użytkownika</translation>
 <translation id="6197453924249895891">Przyznaje dostęp do kluczy firmowych do rozszerzeń.
 
       Klucze są przeznaczone do użytku firmowego, jeśli są wygenerowane przy użyciu interfejsu API chrome.platformKeys na koncie zarządzanym. Klucze importowane lub wygenerowane w inny sposób nie są przeznaczone do użytku firmowego.
@@ -1845,6 +1883,8 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Domyślnie rozszerzenie nie może używać klucza przeznaczonego do użytku firmowego. Jest to równoznaczne z wyłączeniem zasady allowCorporateKeyUsage dla tego rozszerzenia.
 
       Tylko jeśli zasada allowCorporateKeyUsage jest włączona dla rozszerzenia, może ono używać dowolnego klucza platformy oznaczonego jako do użytku firmowego, by podpisywać arbitralne dane. To uprawnienie należy przyznawać, tylko jeśli rozszerzenie jest zaufane, by uniemożliwić osobom niepowołanym dostęp do klucza.</translation>
+<translation id="6208896993204286313">Zgłaszanie informacji o zasadach <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Zgłaszanie informacji o wersji systemu operacyjnego i <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Zgłasza godziny aktywności urządzenia.
 
       Jeśli to ustawienie nie jest określone lub jego wartość to Prawda, zarejestrowane urządzenie zgłasza, kiedy korzysta z niego użytkownik. Jeśli ta zasada ma wartość Fałsz, godziny aktywności urządzenia nie są rejestrowane ani zgłaszane.</translation>
@@ -1858,6 +1898,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6233173491898450179">Ustaw katalog pobierania</translation>
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
+<translation id="6261643884958898336">Zgłaszanie informacji identyfikujących urządzenie</translation>
 <translation id="6281043242780654992">Konfiguruje zasady wiadomości natywnych. Hosty wiadomości natywnych na czarnej liście nie będą dostępne, dopóki nie znajdą się na białej liście.</translation>
 <translation id="6282799760374509080">Zezwól lub nie na przechwytywanie dźwięku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1888,6 +1929,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Jeśli wybierzesz automatyczne wykrywanie serwera proxy, aplikacje na Androida otrzymają URL skryptu „http://wpad/wpad.dat”. Nie jest używana żadna inna część protokołu automatycznego wykrywania serwera proxy.
 
           Jeśli wybierzesz używanie skryptu .pac serwera proxy, aplikacje na Androida otrzymają URL skryptu.</translation>
+<translation id="6430366557948788869">Rozszerzenie zgłaszające informacje o Chrome</translation>
 <translation id="6440051664870270040">Zezwalaj stronom na otwieranie wyskakujących okienek podczas nawigowania</translation>
 <translation id="6447948611083700881">Wyłączono tworzenie i przywracanie kopii zapasowej</translation>
 <translation id="645425387487868471">Włącz wymuszone logowanie w: <ph name="PRODUCT_NAME" /></translation>
@@ -1934,6 +1976,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6628646143828354685">Pozwala określić, czy strony mogą korzystać z urządzeń Bluetooth w pobliżu. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
 
           Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „3”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="663685822663765995">Ogranicz tryb drukowania kolorów</translation>
 <translation id="6641981670621198190">Wyłącz obsługę interfejsów API grafiki 3D</translation>
 <translation id="6647965994887675196">Jeśli ta zasada ma wartość „prawda”, można tworzyć użytkowników nadzorowanych i logować się jako oni.
 
@@ -1961,6 +2004,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Wzorce adresów URL z tej zasady nie mogą kolidować z wzorcami skonfigurowanymi w zasadzie WebUsbAskForUrls. Nie jest określone, która zasada zostanie zastosowana, gdy URL pasuje do obu zasad.</translation>
 <translation id="6689792153960219308">Raportuj stan sprzętu</translation>
+<translation id="6698632841807204978">Włącz drukowanie monochromatyczne</translation>
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
 <translation id="6724842112053619797">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu przenośnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
 
@@ -2000,6 +2044,12 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       To ustawienie kontroluje wyświetlanie stron powitalnych pomagających użytkownikom zalogować się w <ph name="PRODUCT_NAME" />, ustawić domyślną przeglądarkę czy informować o innych funkcjach przeglądarki.</translation>
 <translation id="6766216162565713893">Zezwól, by strony prosiły użytkownika o przyznanie dostępu do urządzeń Bluetooth w pobliżu</translation>
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
+<translation id="6773056206551814546">Ta zasada określa, czy mają być zgłaszane informacje umożliwiające identyfikację urządzeń, takie jak nazwa urządzenia i adresy sieciowe.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować urządzenia, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować urządzenia, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
@@ -2099,6 +2149,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       </translation>
 <translation id="6922884955650325312">Blokuj wtyczkę <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
+<translation id="6926703471186170050">Włącz drukowanie dwustronne względem długiej krawędzi</translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
 <translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
@@ -2279,7 +2330,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>
-<translation id="7349338075015720646">Określa listę witryn internetowych instalowanych po cichu, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
+<translation id="7349338075015720646">Określa listę witryn internetowych instalowanych dyskretnie, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
 
       Każda pozycja na liście jest obiektem o dwóch składowych: „url” i „launch_container”. „url” to URL aplikacji internetowej do zainstalowania, a „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Jeśli element „launch_container” zostanie pominięty, aplikacja będzie otwierana w oknie, o ile Chrome uzna ją za progresywną aplikację internetową, a w przeciwnym razie na karcie.</translation>
 <translation id="7367028210010532881">Funkcja Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
@@ -2287,6 +2338,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
       Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
+<translation id="737655323154569539">Ogranicza rozmiar drukowanych stron. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="7417728346887499628">Wyłączenie tej zasady powoduje, że Czyszczenie Chrome nie będzie skanować systemu w celu wykrycia i usunięcia niechcianego oprogramowania. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings/cleanup będzie wyłączone.
 
       Jeśli zasada zostanie włączona lub nie będzie skonfigurowana, Czyszczenie Chrome będzie okresowo skanować system, a gdy wykryje niechciane oprogramowanie, zapyta użytkownika, czy je usunąć. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings będzie włączone.
@@ -2355,6 +2407,8 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7617319494457709698">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
+<translation id="7618907117929117943">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa i jest możliwe zachowanie konfiguracji na poziomie urządzenia (w tym danych logowania do sieci) podczas cofnięcia. Po cofnięciu pomijana jest procedura pierwszego uruchomienia (OOBE). Jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), cofnięcie nie zostanie wykonane lub zostanie przerwane.
+          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość powoduje wyłączenie cofnięcia.</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
@@ -2549,6 +2603,7 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
       Jeśli włączysz to ustawienie lub go nie skonfigurujesz, użytkownik zachowa kontrolę nad autouzupełnianiem. Będzie mógł wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8050080920415773384">Drukowanie natywne</translation>
+<translation id="8053580360728293758">Zastępuje domyślny tryb drukowania kolorów. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
 <translation id="8078366200175825572">Umożliwia skonfigurowanie listy wzorców adresów URL określających witryny, którym nie wolno tworzyć plików cookie.
 
@@ -2740,6 +2795,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
       „Wersja” może być określona dokładnym numerem wersji, np. „61.0.3163.120”, lub prefiksem, np. „61.0”.  </translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Zezwól na synchronizację SMS-ów między telefonem a Chromebookiem.</translation>
+<translation id="8548832052135586762">Ustawia drukowanie tylko kolorowe, tylko monochromatyczne albo brak ograniczenia. Nieskonfigurowanie zasady oznacza brak ograniczenia.</translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8586528890725660268">Określa drukarki, z których użytkownik nie może korzystać.
@@ -2845,6 +2901,7 @@ Jeśli jako stronę główną ustawisz stronę Nowa karta albo adres URL (wpisan
 
       Jeśli ustawienie pozostanie nieskonfigurowane, użytkownik może sam zdecydować, czy będzie korzystać z tej funkcji.</translation>
 <translation id="8870318296973696995">Strona główna</translation>
+<translation id="8876188741456358123">Zastępuje domyślny tryb drukowania dwustronnego. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
 <translation id="890403179930035128">Wymusza włączenie sprawdzania pisowni. Nierozpoznane języki z tej listy będą ignorowane.
 
@@ -2940,6 +2997,8 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
+<translation id="9094064873808699479">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Jeśli to możliwe, konfiguracja na poziomie urządzenia (w tym dane logowania do sieci) zostanie zachowana, ale jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wykonane zostanie cofnięcie z pełną procedurą Powerwash.
+          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość powoduje wyłączenie cofnięcia.</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
@@ -2983,6 +3042,13 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="9187743794267626640">Wyłącz podłączanie pamięci zewnętrznych</translation>
 <translation id="9197740283131855199">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu, jeśli użytkownik stanie się aktywny po przyciemnieniu</translation>
 <translation id="9200828125069750521">Parametry dla adresów URL obrazów używających POST</translation>
+<translation id="920209539000507585">Wymusza włączenie lub wyłączenie opcji „Nagłówki i stopki” w oknie drukowania.
+
+      Jeśli zasada jest nieskonfigurowana, użytkownik może wybrać, czy drukować nagłówki i stopki.
+
+      Jeśli zasada ma wartość fałsz, opcja „Nagłówki i stopki” jest wyłączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.
+
+      Jeśli zasada ma wartość prawda, opcja „Nagłówki i stopki” jest włączona w oknie podglądu wydruku, a użytkownik nie może jej zmienić.</translation>
 <translation id="9210953373038593554">Konfiguruje typ uwierzytelniania dla logowania SAML.
 
       Gdy ta zasada nie jest ustawiona lub jest ustawiona na wartość Domyślna (wartość 0), przebieg logowania SAML jest ustalany przez przeglądarkę na podstawie innych czynników. W podstawowym scenariuszu do uwierzytelniania użytkownika i do ochrony jego danych w pamięci podręcznej używane są hasła wpisywane ręcznie przez użytkownika.
@@ -2990,6 +3056,9 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Gdy zasada jest ustawiona na wartość Certyfikat klienta (wartość 1), dla nowo dodanych użytkowników logujących się za pomocą SAML jest używane uwierzytelnianie przy użyciu certyfikatu klienta. Nie są używane żadne hasła, a dane tych użytkowników w pamięci podręcznej są chronione za pomocą odpowiednich kluczy kryptograficznych. To ustawienie umożliwia na przykład skonfigurowanie uwierzytelniania przy użyciu kart inteligentnych (aplikacje pośredniczące dla kart inteligentnych muszą zostać zainstalowane za pomocą zasady DeviceLoginScreenAppInstallList).
 
       Ta zasada ma wpływ tylko na użytkowników uwierzytelniających się za pomocą SAML.</translation>
+<translation id="9211439035693857287">Konfigurowanie zasad związanych z Rozszerzeniem zgłaszającym informacje o Chrome.
+
+      Te zasady są stosowane tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="9213347477683611358">Skonfiguruj tapetę na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
 
       Zasadę należy zdefiniować jako ciąg znaków w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:
