@@ -12,6 +12,7 @@ import os
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import cros_sdk_lib
 from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
@@ -92,8 +93,7 @@ def UpdateChroot(board=None, update_host_packages=True):
   """Update the chroot."""
   # Run chroot update hooks.
   logging.notice('Updating the chroot. This may take several minutes.')
-  cmd = [os.path.join(constants.CROSUTILS_DIR, 'run_chroot_version_hooks')]
-  cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG)
+  cros_sdk_lib.RunChrootVersionHooks()
 
   # Update toolchains.
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')]
