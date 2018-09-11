@@ -179,39 +179,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return getFirstPositionForType(ItemViewType.HEADER);
     }
 
-    public int getFirstSnippetPosition() {
-        return getFirstPositionForType(ItemViewType.SNIPPET);
-    }
-
-    /**
-     * Returns the position in the adapter of the header to the article suggestions if it exists.
-     * @return The article header position. RecyclerView.NO_POSITION if articles or their header
-     *         does not exist.
-     */
-    public int getArticleHeaderPosition() {
-        SuggestionsSection suggestions = mSections.getSection(KnownCategories.ARTICLES);
-        if (suggestions == null || !suggestions.hasCards()) return RecyclerView.NO_POSITION;
-
-        int articlesRank = RecyclerView.NO_POSITION;
-        int emptySectionCount = 0;
-        int[] categories = mUiDelegate.getSuggestionsSource().getCategories();
-        for (int i = 0; i < categories.length; i++) {
-            // The categories array includes empty sections.
-            if (mSections.getSection(categories[i]) == null) emptySectionCount++;
-            if (categories[i] == KnownCategories.ARTICLES) {
-                articlesRank = i - emptySectionCount;
-                break;
-            }
-        }
-        if (articlesRank == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
-
-        int headerRank = RecyclerView.NO_POSITION;
-        for (int i = 0; i < getItemCount(); i++) {
-            if (getItemViewType(i) == ItemViewType.HEADER && ++headerRank == articlesRank) return i;
-        }
-        return RecyclerView.NO_POSITION;
-    }
-
     public int getFirstCardPosition() {
         for (int i = 0; i < getItemCount(); ++i) {
             if (CardViewHolder.isCard(getItemViewType(i))) return i;

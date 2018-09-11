@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGroup;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -313,43 +312,6 @@ public class NewTabPageView extends FrameLayout {
         mSnapshotHeight = getHeight();
         mSnapshotScrollY = mRecyclerView.computeVerticalScrollOffset();
         mNewTabPageRecyclerViewChanged = false;
-    }
-
-    /**
-     * Scrolls to the top of content suggestions header if one exists. If not, scrolls to the top
-     * of the first article suggestion. Uses scrollToPositionWithOffset to position the suggestions
-     * below the toolbar and not below the status bar.
-     */
-    void scrollToSuggestions() {
-        int scrollPosition = getSuggestionsScrollPosition();
-        // Nothing to scroll to; return early.
-        if (scrollPosition == RecyclerView.NO_POSITION) return;
-
-        // Scrolling doesn't occur if it's called too soon i.e. the ntp hasn't finished loading.
-        if (mTab.isLoading()) {
-            mTab.addObserver(new EmptyTabObserver() {
-                @Override
-                public void onPageLoadFinished(Tab tab) {
-                    mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                            scrollPosition, mScrollToSuggestionsOffset);
-                    mTab.removeObserver(this);
-                }
-            });
-            return;
-        }
-
-        mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                scrollPosition, mScrollToSuggestionsOffset);
-    }
-
-    /**
-     * Retrieves the position of articles or of their header in the NTP adapter to scroll to.
-     * @return The header's position if a header is present. Otherwise, the first
-     *         suggestion card's position.
-     */
-    private int getSuggestionsScrollPosition() {
-        // Header always exists.
-        return mRecyclerView.getNewTabPageAdapter().getArticleHeaderPosition();
     }
 
     /**

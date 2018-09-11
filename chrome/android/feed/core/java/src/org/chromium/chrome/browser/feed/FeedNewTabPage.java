@@ -242,11 +242,6 @@ public class FeedNewTabPage extends NewTabPage {
     }
 
     @Override
-    protected void scrollToSuggestions() {
-        // TODO(twellington): implement this method.
-    }
-
-    @Override
     public boolean shouldCaptureThumbnail() {
         return mNewTabPageLayout.shouldCaptureThumbnail() || mMediator.shouldCaptureThumbnail();
     }
