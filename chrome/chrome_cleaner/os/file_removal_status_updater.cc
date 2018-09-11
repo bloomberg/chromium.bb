@@ -51,6 +51,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kOkToOverride},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_MATCHED_ONLY] = {
@@ -64,6 +65,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kOkToOverride},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL] = {
@@ -77,6 +79,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kNotAllowed},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kNotAllowed},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kNotAllowed},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_REMOVED] = {
@@ -90,6 +93,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kSkip},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kNotAllowed},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_FAILED_TO_REMOVE] = {
@@ -103,6 +107,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL] = {
@@ -116,6 +121,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kSkip},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_FAILED_TO_SCHEDULE_FOR_REMOVAL] = {
@@ -129,6 +135,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_NOT_FOUND] = {
@@ -142,6 +149,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK] = {
@@ -155,6 +163,7 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kSkip},
     };
 
     (*overriding_decisions)[REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION] = {
@@ -168,6 +177,21 @@ GetRemovalStatusOverridePermissionMap() {
         {REMOVAL_STATUS_NOT_FOUND, kNotAllowed},
         {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kNotAllowed},
         {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kNotAllowed},
+    };
+
+    (*overriding_decisions)[REMOVAL_STATUS_ERROR_IN_ARCHIVER] = {
+        {REMOVAL_STATUS_UNSPECIFIED, kNotAllowed},
+        {REMOVAL_STATUS_MATCHED_ONLY, kNotAllowed},
+        {REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL, kNotAllowed},
+        {REMOVAL_STATUS_REMOVED, kOkToOverride},
+        {REMOVAL_STATUS_FAILED_TO_REMOVE, kOkToOverride},
+        {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL, kOkToOverride},
+        {REMOVAL_STATUS_FAILED_TO_SCHEDULE_FOR_REMOVAL, kOkToOverride},
+        {REMOVAL_STATUS_NOT_FOUND, kOkToOverride},
+        {REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK, kOkToOverride},
+        {REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION, kNotAllowed},
+        {REMOVAL_STATUS_ERROR_IN_ARCHIVER, kOkToOverride},
     };
     return overriding_decisions;
   }();
@@ -194,7 +218,7 @@ void FileRemovalStatusUpdater::UpdateRemovalStatus(const base::FilePath& path,
   // Force update of RemovalStatusCanBeOverriddenBy() if RemovalStatus enum
   // changes. REMOVAL_STATUS_UNSPECIFIED should never be set.
   DCHECK(status > REMOVAL_STATUS_UNSPECIFIED &&
-         status <= REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION);
+         status <= REMOVAL_STATUS_ERROR_IN_ARCHIVER);
 
   const base::string16 sanitized_path = SanitizePath(path);
 

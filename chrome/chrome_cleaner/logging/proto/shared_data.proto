@@ -103,13 +103,16 @@ message ScheduledTask {
 }
 
 // Information related to a matched UwS file.
-// Next tag: 3.
+// Next tag: 4.
 message MatchedFile {
   optional FileInformation file_information = 1;
 
   // Indication if the file was matched only, removed, scheduled for removal,
   // etc.
   optional RemovalStatus removal_status = 2;
+
+  // Indicates the quarantine status of the file.
+  optional QuarantineStatus quarantine_status = 3;
 }
 
 // Information related to a matched UwS folder.
