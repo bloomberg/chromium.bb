@@ -216,8 +216,8 @@ const ui::Layer* NativeWidgetMac::GetLayer() const {
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
-  if (bridge_impl())
-    bridge_impl()->ReorderChildViews();
+  if (bridge_host_)
+    bridge_host_->ReorderChildViews();
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {
@@ -228,13 +228,13 @@ void NativeWidgetMac::ViewRemoved(View* view) {
 }
 
 void NativeWidgetMac::SetNativeWindowProperty(const char* name, void* value) {
-  if (bridge_impl())
-    bridge_impl()->SetNativeWindowProperty(name, value);
+  if (bridge_host_)
+    bridge_host_->SetNativeWindowProperty(name, value);
 }
 
 void* NativeWidgetMac::GetNativeWindowProperty(const char* name) const {
-  if (bridge_impl())
-    return bridge_impl()->GetNativeWindowProperty(name);
+  if (bridge_host_)
+    return bridge_host_->GetNativeWindowProperty(name);
 
   return nullptr;
 }
@@ -703,25 +703,26 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  BridgedNativeWidgetImpl* bridge_impl =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([native_view window]);
-  if (!bridge_impl)
+  BridgedNativeWidgetHostImpl* bridge_host =
+      NativeWidgetMac::GetBridgeHostImplForNativeWindow([native_view window]);
+  if (!bridge_host)
     return nullptr;
 
   NativeWidgetPrivate* ancestor =
-      bridge_impl->parent()
+      bridge_host->bridge_impl()->parent()
           ? GetTopLevelNativeWidget(
-                [bridge_impl->parent()->GetNSWindow() contentView])
+                [bridge_host->bridge_impl()->parent()->GetNSWindow()
+                        contentView])
           : nullptr;
-  return ancestor ? ancestor : bridge_impl->native_widget_mac();
+  return ancestor ? ancestor : bridge_host->native_widget_mac();
 }
 
 // static
 void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
-  BridgedNativeWidgetImpl* bridge_impl =
-      NativeWidgetMac::GetBridgeImplForNativeWindow([native_view window]);
-  if (!bridge_impl) {
+  BridgedNativeWidgetHostImpl* bridge_host =
+      NativeWidgetMac::GetBridgeHostImplForNativeWindow([native_view window]);
+  if (!bridge_host) {
     // The NSWindow is not itself a views::Widget, but it may have children that
     // are. Support returning Widgets that are parented to the NSWindow, except:
     // - Ignore requests for children of an NSView that is not a contentView.
@@ -744,23 +745,25 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 
   // If |native_view| is a subview of the contentView, it will share an
   // NSWindow, but will itself be a native child of the Widget. That is, adding
-  // bridge_impl->..->GetWidget() to |children| would be adding the _parent_ of
+  // bridge_host->..->GetWidget() to |children| would be adding the _parent_ of
   // |native_view|, not the Widget for |native_view|. |native_view| doesn't have
   // a corresponding Widget of its own in this case (and so can't have Widget
   // children of its own on Mac).
-  if (bridge_impl->ns_view() != native_view)
+  if (bridge_host->bridge_impl()->ns_view() != native_view)
     return;
 
   // Code expects widget for |native_view| to be added to |children|.
-  if (bridge_impl->native_widget_mac()->GetWidget())
-    children->insert(bridge_impl->native_widget_mac()->GetWidget());
+  if (bridge_host->native_widget_mac()->GetWidget())
+    children->insert(bridge_host->native_widget_mac()->GetWidget());
 
   // When the NSWindow *is* a Widget, only consider child_windows(). I.e. do not
-  // look through -[NSWindow childWindows] as done for the (!bridge_impl) case
+  // look through -[NSWindow childWindows] as done for the (!bridge_host) case
   // above. -childWindows does not support hidden windows, and anything in there
   // which is not in child_windows() would have been added by AppKit.
-  for (BridgedNativeWidgetImpl* child : bridge_impl->child_windows())
+  for (BridgedNativeWidgetImpl* child :
+       bridge_host->bridge_impl()->child_windows()) {
     GetAllChildWidgets(child->ns_view(), children);
+  }
 }
 
 // static

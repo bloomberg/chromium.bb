@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 #import "ui/base/cocoa/accessibility_hostable.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
@@ -93,12 +93,11 @@ void NativeViewHostMac::AttachNativeView() {
   }
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
-  BridgedNativeWidgetImpl* bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow(
+  BridgedNativeWidgetHostImpl* bridge_host =
+      NativeWidgetMac::GetBridgeHostImplForNativeWindow(
           host_->GetWidget()->GetNativeWindow());
-  DCHECK(bridge);
-  [bridge->ns_view() addSubview:native_view_];
-  bridge->SetAssociationForView(host_, native_view_);
+  DCHECK(bridge_host);
+  bridge_host->SetAssociationForView(host_, native_view_);
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
@@ -127,12 +126,12 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   }
 
   EnsureNativeViewHasNoChildWidgets(host_->native_view());
-  BridgedNativeWidgetImpl* bridge =
-      NativeWidgetMac::GetBridgeImplForNativeWindow(
+  BridgedNativeWidgetHostImpl* bridge_host =
+      NativeWidgetMac::GetBridgeHostImplForNativeWindow(
           host_->GetWidget()->GetNativeWindow());
   // BridgedNativeWidgetImpl can be null when Widget is closing.
-  if (bridge)
-    bridge->ClearAssociationForView(host_);
+  if (bridge_host)
+    bridge_host->ClearAssociationForView(host_);
 
   native_view_.reset();
 }

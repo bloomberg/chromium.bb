@@ -59,9 +59,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
       public CocoaMouseCaptureDelegate,
       public BridgedNativeWidgetOwner {
  public:
-  // Contains NativeViewHost->gfx::NativeView associations.
-  using AssociatedViews = std::map<const views::View*, NSView*>;
-
   // Return the size that |window| will take for the given client area |size|,
   // based on its current style mask.
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
@@ -108,10 +105,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   Widget::MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset);
   void EndMoveLoop();
 
-  // See views::Widget.
-  void SetNativeWindowProperty(const char* key, void* value);
-  void* GetNativeWindowProperty(const char* key) const;
-
   // Sets the cursor associated with the NSWindow. Retains |cursor|.
   void SetCursor(NSCursor* cursor);
 
@@ -155,12 +148,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Called by the window show animation when it completes and wants to destroy
   // itself.
   void OnShowAnimationComplete();
-
-  // Updates |associated_views_| on NativeViewHost::Attach()/Detach().
-  void SetAssociationForView(const views::View* view, NSView* native_view);
-  void ClearAssociationForView(const views::View* view);
-  // Sorts child NSViews according to NativeViewHosts order in views hierarchy.
-  void ReorderChildViews();
+  // Sort child NSViews according to their ranking in |rank|.
+  void SortSubviews(std::map<NSView*, int> rank);
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
@@ -285,10 +274,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void OnMouseCaptureLost() override;
   NSWindow* GetWindow() const override;
 
-  // Returns a properties dictionary associated with the NSWindow.
-  // Creates and attaches a new instance if not found.
-  NSMutableDictionary* GetWindowProperties() const;
-
   // BridgedNativeWidgetOwner:
   NSWindow* GetNSWindow() override;
   gfx::Vector2d GetChildWindowOffset() const override;
@@ -356,8 +341,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // If true, the window has been made visible or changed shape and the window
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
-
-  AssociatedViews associated_views_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
 };
