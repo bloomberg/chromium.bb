@@ -145,8 +145,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;
 
- protected:
-  friend class base::RefCounted<GpuVideoAcceleratorFactories>;
   virtual ~GpuVideoAcceleratorFactories() = default;
 };
 
