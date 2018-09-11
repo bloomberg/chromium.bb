@@ -46,6 +46,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
  private:
+  void FireEvent(BrowserAccessibility* node, ax::mojom::Event event);
+
   AtkObject* parent_object_;
 
   // Give BrowserAccessibilityManager::Create access to our constructor.

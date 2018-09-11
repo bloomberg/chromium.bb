@@ -1457,8 +1457,10 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
           static_cast<int32_t>(ax::mojom::InvalidState::kFalse))
     atk_state_set_add_state(atk_state_set, ATK_STATE_INVALID_ENTRY);
 #if defined(ATK_216)
-  if (data.HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kCheckedState) &&
+      data.role != ax::mojom::Role::kToggleButton) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKABLE);
+  }
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
 #endif
@@ -1488,18 +1490,9 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
 
   // Checked state
   const auto checked_state = GetData().GetCheckedState();
-  switch (checked_state) {
-    case ax::mojom::CheckedState::kMixed:
-      atk_state_set_add_state(atk_state_set, ATK_STATE_INDETERMINATE);
-      break;
-    case ax::mojom::CheckedState::kTrue:
-      atk_state_set_add_state(atk_state_set,
-                              data.role == ax::mojom::Role::kToggleButton
-                                  ? ATK_STATE_PRESSED
-                                  : ATK_STATE_CHECKED);
-      break;
-    default:
-      break;
+  if (checked_state == ax::mojom::CheckedState::kTrue ||
+      checked_state == ax::mojom::CheckedState::kMixed) {
+    atk_state_set_add_state(atk_state_set, GetAtkStateTypeForCheckableNode());
   }
 
   switch (GetData().GetRestriction()) {
@@ -1595,6 +1588,14 @@ gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {
   return atk_object_;
 }
 
+void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
+  DCHECK(atk_object_);
+
+  atk_object_notify_state_change(
+      ATK_OBJECT(atk_object_), GetAtkStateTypeForCheckableNode(),
+      GetData().GetCheckedState() != ax::mojom::CheckedState::kFalse);
+}
+
 AtkObject* AXPlatformNodeAuraLinux::current_focused_ = nullptr;
 
 void AXPlatformNodeAuraLinux::OnFocused() {
@@ -1664,6 +1665,9 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
+    case ax::mojom::Event::kCheckedStateChanged:
+      OnCheckedStateChanged();
+      break;
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
       OnFocused();
@@ -1774,6 +1778,14 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetAtkAttributes() {
   AtkAttributeSet* attribute_list = nullptr;
   ComputeAttributes(&attribute_list);
   return attribute_list;
+}
+
+AtkStateType AXPlatformNodeAuraLinux::GetAtkStateTypeForCheckableNode() {
+  if (GetData().GetCheckedState() == ax::mojom::CheckedState::kMixed)
+    return ATK_STATE_INDETERMINATE;
+  if (GetData().role == ax::mojom::Role::kToggleButton)
+    return ATK_STATE_PRESSED;
+  return ATK_STATE_CHECKED;
 }
 
 // AtkDocumentHelpers
