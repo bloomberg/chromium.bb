@@ -3196,8 +3196,7 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
           "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView",
-          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse",
-          "--extra-browser-args=--disable-gpu"
+          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
