@@ -17,16 +17,11 @@
 #include "chrome/browser/android/vr/android_vsync_helper.h"
 #include "chrome/browser/android/vr/gvr_graphics_delegate.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
-#include "chrome/browser/vr/fps_meter.h"
-#include "chrome/browser/vr/scheduler_delegate.h"
+#include "chrome/browser/vr/base_scheduler_delegate.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/transform.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace gfx {
 class GpuFence;
@@ -52,15 +47,15 @@ class SlidingTimeDeltaAverage;
 
 // Apart from scheduling, this class implements the XR providers and the
 // transport logic.
-class GvrSchedulerDelegate : public SchedulerDelegate,
-                             device::mojom::XRPresentationProvider,
-                             device::mojom::XRFrameDataProvider {
+class GvrSchedulerDelegate : public BaseSchedulerDelegate,
+                             public device::mojom::XRPresentationProvider,
+                             public device::mojom::XRFrameDataProvider {
  public:
   GvrSchedulerDelegate(GlBrowserInterface* browser,
                        SchedulerUiInterface* ui,
                        gvr::GvrApi* gvr_api,
                        GvrGraphicsDelegate* graphics,
-                       bool start_in_web_xr_mode,
+                       bool start_in_webxr_mode,
                        bool cardboard_gamepad,
                        size_t sliding_time_size);
   ~GvrSchedulerDelegate() override;
@@ -73,7 +68,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   void AddInputSourceState(device::mojom::XRInputSourceStatePtr state) override;
   void OnPause() override;
   void OnResume() override;
-  void OnExitPresent() override;
   void OnTriggerEvent(bool pressed) override;
   void SetWebXrMode(bool enabled) override;
   void SetShowingVrDialog(bool showing) override;
@@ -86,8 +80,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   void GvrInit();
   void ScheduleOrCancelWebVrFrameTimeout();
   bool CanSendWebXrVSync() const;
-  void OnWebXrTimeoutImminent();
-  void OnWebXrFrameTimedOut();
   void OnVSync(base::TimeTicks frame_time);
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
   void WebVrSendRenderNotification(bool was_rendered);
@@ -164,7 +156,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   bool SubmitFrameCommon(int16_t frame_index, base::TimeDelta time_waited);
   bool IsSubmitFrameExpected(int16_t frame_index);
 
-  void OnNewWebXrFrame();
   void OnWebXrTokenSignaled(int16_t frame_index,
                             std::unique_ptr<gfx::GpuFence> gpu_fence);
 
@@ -179,14 +170,12 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   GlBrowserInterface* browser_;
   gvr::GvrApi* gvr_api_;
 
-  SchedulerUiInterface* ui_ = nullptr;
   SchedulerBrowserRendererInterface* browser_renderer_ = nullptr;
 
   // Set from feature flags.
   const bool webvr_vsync_align_;
 
   WebXrPresentationState webxr_;
-  bool web_xr_mode_ = false;
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;
   // TODO(acondor): Move trigger data to controller delegate.
@@ -202,10 +191,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   bool webxr_use_shared_buffer_draw_ = false;
 
   AndroidVSyncHelper vsync_helper_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  base::CancelableOnceClosure webvr_frame_timeout_;
-  base::CancelableOnceClosure webvr_spinner_timeout_;
 
   gfx::Transform head_pose_;
 
@@ -214,7 +199,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
 
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
   device::mojom::XRPresentationClientPtr submit_client_;
-  uint64_t webvr_frames_received_ = 0;
   base::queue<uint16_t> pending_frames_;
 
   base::queue<std::pair<WebXrPresentationState::FrameIndexType, WebVrBounds>>
@@ -252,7 +236,6 @@ class GvrSchedulerDelegate : public SchedulerDelegate,
   std::unique_ptr<ScopedGpuTrace> gpu_trace_;
 
   FPSMeter vr_ui_fps_meter_;
-  FPSMeter webxr_fps_meter_;
 
   // Render time is from JS submitFrame to estimated render completion.
   // This is an estimate when submitting incomplete frames to GVR.

@@ -64,19 +64,20 @@ GvrSchedulerDelegate::GvrSchedulerDelegate(GlBrowserInterface* browser,
                                            SchedulerUiInterface* ui,
                                            gvr::GvrApi* gvr_api,
                                            GvrGraphicsDelegate* graphics,
-                                           bool start_in_web_xr_mode,
+                                           bool start_in_webxr_mode,
                                            bool cardboard_gamepad,
                                            size_t sliding_time_size)
-    : browser_(browser),
+    : BaseSchedulerDelegate(ui,
+                            start_in_webxr_mode,
+                            kWebVrSpinnerTimeoutSeconds,
+                            kWebVrInitialFrameTimeoutSeconds),
+      browser_(browser),
       gvr_api_(gvr_api),
-      ui_(ui),
       webvr_vsync_align_(
           base::FeatureList::IsEnabled(features::kWebVrVsyncAlign)),
-      web_xr_mode_(start_in_web_xr_mode),
       cardboard_gamepad_(cardboard_gamepad),
       vsync_helper_(base::BindRepeating(&GvrSchedulerDelegate::OnVSync,
                                         base::Unretained(this))),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       presentation_binding_(this),
       frame_data_binding_(this),
       graphics_(graphics),
@@ -84,7 +85,7 @@ GvrSchedulerDelegate::GvrSchedulerDelegate(GlBrowserInterface* browser,
       webvr_js_time_(sliding_time_size),
       webvr_js_wait_time_(sliding_time_size),
       weak_ptr_factory_(this) {
-  if (cardboard_gamepad_ && web_xr_mode_)
+  if (cardboard_gamepad_ && webxr_mode())
     browser_->ToggleCardboardGamepad(true);
 }
 
@@ -110,21 +111,15 @@ void GvrSchedulerDelegate::AddInputSourceState(
 void GvrSchedulerDelegate::OnPause() {
   vsync_helper_.CancelVSyncRequest();
   gvr_api_->PauseTracking();
-  webvr_frame_timeout_.Cancel();
-  webvr_spinner_timeout_.Cancel();
+  CancelWebXrFrameTimeout();
 }
 
 void GvrSchedulerDelegate::OnResume() {
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   OnVSync(base::TimeTicks::Now());
-  if (web_xr_mode_)
+  if (webxr_mode())
     ScheduleOrCancelWebVrFrameTimeout();
-}
-
-void GvrSchedulerDelegate::OnExitPresent() {
-  webvr_frame_timeout_.Cancel();
-  webvr_spinner_timeout_.Cancel();
 }
 
 void GvrSchedulerDelegate::OnTriggerEvent(bool pressed) {
@@ -137,19 +132,12 @@ void GvrSchedulerDelegate::OnTriggerEvent(bool pressed) {
 }
 
 void GvrSchedulerDelegate::SetWebXrMode(bool enabled) {
-  web_xr_mode_ = enabled;
-
-  if (web_xr_mode_ && submit_client_) {
-    ScheduleOrCancelWebVrFrameTimeout();
-  } else {
-    webvr_frame_timeout_.Cancel();
-    webvr_frames_received_ = 0;
-  }
+  BaseSchedulerDelegate::SetWebXrMode(enabled);
 
   if (cardboard_gamepad_)
     browser_->ToggleCardboardGamepad(enabled);
 
-  if (!web_xr_mode_) {
+  if (!webxr_mode()) {
     // Closing presentation bindings ensures we won't get any mojo calls such
     // as SubmitFrame from this session anymore. This makes it legal to cancel
     // an outstanding animating frame (if any).
@@ -218,7 +206,8 @@ void GvrSchedulerDelegate::ConnectPresentingService(
   session->submit_frame_sink = std::move(submit_frame_sink);
   session->display_info = std::move(display_info);
 
-  ScheduleOrCancelWebVrFrameTimeout();
+  if (CanSendWebXrVSync())
+    ScheduleWebXrFrameTimeout();
 
   browser_->SendRequestPresentReply(std::move(session));
 }
@@ -360,7 +349,7 @@ void GvrSchedulerDelegate::OnWebXrFrameAvailable() {
     // due to an active exclusive UI such as a permission prompt, or after
     // exiting a presentation session when a pending frame arrives late.
     DVLOG(1) << __func__ << ": discarding frame, "
-             << (web_xr_mode_ ? "UI is active" : "not presenting");
+             << (webxr_mode() ? "UI is active" : "not presenting");
     WebXrCancelProcessingFrameAfterTransfer();
     // We're no longer in processing state, unblock pending processing frames.
     webxr_.TryDeferredProcessing();
@@ -383,39 +372,16 @@ void GvrSchedulerDelegate::ScheduleOrCancelWebVrFrameTimeout() {
   // TODO(mthiesse): We should also timeout after the initial frame to prevent
   // bad experiences, but we have to be careful to handle things like splash
   // screens correctly. For now just ensure we receive a first frame.
-  if (!web_xr_mode_ || webvr_frames_received_ > 0) {
-    if (!webvr_frame_timeout_.IsCancelled())
-      webvr_frame_timeout_.Cancel();
-    if (!webvr_spinner_timeout_.IsCancelled())
-      webvr_spinner_timeout_.Cancel();
+  if (!webxr_mode() || webxr_frames_received() > 0) {
+    CancelWebXrFrameTimeout();
     return;
   }
-  if (CanSendWebXrVSync() && submit_client_) {
-    webvr_spinner_timeout_.Reset(base::BindOnce(
-        &GvrSchedulerDelegate::OnWebXrTimeoutImminent, base::Unretained(this)));
-    task_runner_->PostDelayedTask(
-        FROM_HERE, webvr_spinner_timeout_.callback(),
-        base::TimeDelta::FromSeconds(kWebVrSpinnerTimeoutSeconds));
-    webvr_frame_timeout_.Reset(base::BindOnce(
-        &GvrSchedulerDelegate::OnWebXrFrameTimedOut, base::Unretained(this)));
-    task_runner_->PostDelayedTask(
-        FROM_HERE, webvr_frame_timeout_.callback(),
-        base::TimeDelta::FromSeconds(kWebVrInitialFrameTimeoutSeconds));
-  }
+  if (CanSendWebXrVSync() && submit_client_)
+    ScheduleWebXrFrameTimeout();
 }
 
 bool GvrSchedulerDelegate::CanSendWebXrVSync() const {
-  return web_xr_mode_ && !showing_vr_dialog_;
-}
-
-void GvrSchedulerDelegate::OnWebXrFrameTimedOut() {
-  DCHECK(ui_);
-  ui_->OnWebXrTimedOut();
-}
-
-void GvrSchedulerDelegate::OnWebXrTimeoutImminent() {
-  DCHECK(ui_);
-  ui_->OnWebXrTimeoutImminent();
+  return webxr_mode() && !showing_vr_dialog_;
 }
 
 void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
@@ -468,7 +434,7 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
   }
   DCHECK(browser_renderer_);
 
-  if (web_xr_mode_ && !ShouldDrawWebVr()) {
+  if (webxr_mode() && !ShouldDrawWebVr()) {
     // We're in a WebVR session, but don't want to draw WebVR frames, i.e.
     // because UI has taken over for a permissions prompt. Do state cleanup if
     // needed.
@@ -597,7 +563,7 @@ void GvrSchedulerDelegate::SubmitDrawnFrame(bool is_webxr_frame) {
     webxr_delayed_gvr_submit_.Reset(
         base::BindRepeating(&GvrSchedulerDelegate::DrawFrameSubmitWhenReady,
                             base::Unretained(this)));
-    task_runner_->PostTask(
+    task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
                        submit_head_pose, base::Passed(&fence)));
@@ -632,13 +598,13 @@ void GvrSchedulerDelegate::DrawFrameSubmitWhenReady(
         // avoids excessive waiting on devices which don't handle timeouts
         // correctly. Downside is that the completion status is only detected
         // with a delay of up to one polling interval.
-        task_runner_->PostDelayedTask(
+        task_runner()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
                            head_pose, base::Passed(&fence)),
             kWebVRFenceCheckPollInterval);
       } else {
-        task_runner_->PostTask(
+        task_runner()->PostTask(
             FROM_HERE,
             base::BindOnce(webxr_delayed_gvr_submit_.callback(), is_webxr_frame,
                            head_pose, base::Passed(&fence)));
@@ -771,7 +737,7 @@ bool GvrSchedulerDelegate::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (!web_xr_mode_) {
+  if (!webxr_mode()) {
     DVLOG(2) << __func__ << ": no active session, ignore";
     return false;
   }
@@ -835,7 +801,7 @@ void GvrSchedulerDelegate::WebXrTryStartAnimatingFrame(bool is_from_onvsync) {
 }
 
 bool GvrSchedulerDelegate::ShouldDrawWebVr() {
-  return web_xr_mode_ && !showing_vr_dialog_ && webvr_frames_received_ > 0;
+  return webxr_mode() && !showing_vr_dialog_ && webxr_frames_received() > 0;
 }
 
 void GvrSchedulerDelegate::WebXrCancelAnimatingFrame() {
@@ -1132,7 +1098,7 @@ GvrSchedulerDelegate::GetGazeInputSourceState() {
 }
 
 void GvrSchedulerDelegate::ClosePresentationBindings() {
-  webvr_frame_timeout_.Cancel();
+  CancelWebXrFrameTimeout();
   submit_client_.reset();
   if (!get_frame_data_callback_.is_null()) {
     // When this Presentation provider is going away we have to respond to
@@ -1300,19 +1266,6 @@ bool GvrSchedulerDelegate::SubmitFrameCommon(int16_t frame_index,
   }
 
   return true;
-}
-
-void GvrSchedulerDelegate::OnNewWebXrFrame() {
-  ui_->OnWebXrFrameAvailable();
-
-  if (web_xr_mode_) {
-    ++webvr_frames_received_;
-
-    webxr_fps_meter_.AddFrame(base::TimeTicks::Now());
-    TRACE_COUNTER1("gpu", "WebVR FPS", webxr_fps_meter_.GetFPS());
-  }
-
-  ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void GvrSchedulerDelegate::ProcessWebVrFrameFromMailbox(
