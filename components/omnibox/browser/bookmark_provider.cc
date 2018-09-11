@@ -36,8 +36,6 @@ BookmarkProvider::BookmarkProvider(AutocompleteProviderClient* client)
 void BookmarkProvider::Start(const AutocompleteInput& input,
                              bool minimal_changes) {
   TRACE_EVENT0("omnibox", "BookmarkProvider::Start");
-  if (minimal_changes)
-    return;
   matches_.clear();
 
   if (input.from_omnibox_focus() || input.text().empty())
