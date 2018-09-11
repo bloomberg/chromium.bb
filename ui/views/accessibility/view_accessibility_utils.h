@@ -20,8 +20,7 @@ class VIEWS_EXPORT ViewAccessibilityUtils {
   static Widget* GetFocusedChildWidgetForAccessibility(const View* view);
 
   // Used by GetFocusedChildWidgetForAccessibility to determine if a Widget
-  // should be handled separately. When visible and focused, these include:
-  //  - tab modal dialogs
+  // should be handled separately.
   static bool IsFocusedChildWidget(Widget* widget, const View* focused_view);
 };
 
