@@ -210,6 +210,7 @@ public abstract class CafBaseMediaRouteProvider
     @Override
     public void onSessionStartFailed(CastSession session, int error) {
         removeAllRoutesWithError("Launch error");
+        mPendingCreateRouteRequestInfo = null;
     }
 
     @Override
@@ -263,8 +264,14 @@ public abstract class CafBaseMediaRouteProvider
         mSessionController.detachFromCastSession();
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
         removeAllRoutesWithError(error);
-        CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
-                this, CastSession.class);
+        if (mPendingCreateRouteRequestInfo == null) {
+            // The Cast SDK notifies about session ending when a route is unselected, even when
+            // there's no current session. Because CastSessionController unselects the route to set
+            // the receiver app ID, this needs to be guarded by a pending request null check to make
+            // sure the listener is not unregistered during a session relaunch.
+            CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
+                    this, CastSession.class);
+        }
     }
 
     public @NonNull MediaRouter getAndroidMediaRouter() {
