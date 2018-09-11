@@ -25,7 +25,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.ui.UiUtils;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -81,7 +80,8 @@ public class OSKOverscrollTest {
         CriteriaHelper.pollUiThread(new Criteria("Keyboard was never shown.") {
             @Override
             public boolean isSatisfied() {
-                return UiUtils.isKeyboardShowing(mActivityTestRule.getActivity(),
+                return mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                        mActivityTestRule.getActivity(),
                         mActivityTestRule.getActivity().getActivityTab().getContentView());
             }
         });

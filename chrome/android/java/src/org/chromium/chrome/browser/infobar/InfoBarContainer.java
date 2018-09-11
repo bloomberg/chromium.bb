@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.UiUtils;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
@@ -484,7 +484,8 @@ public class InfoBarContainer extends SwipableOverlayView {
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         // Hide the View when the keyboard is showing.
         boolean isShowing = (getVisibility() == View.VISIBLE);
-        if (UiUtils.isKeyboardShowing(getContext(), InfoBarContainer.this)) {
+        if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
+                    getContext(), InfoBarContainer.this)) {
             if (isShowing) {
                 // Set to invisible (instead of gone) so that onLayout() will be called when the
                 // keyboard is dismissed.

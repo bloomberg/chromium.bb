@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.UiUtils;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -534,7 +534,9 @@ public class EditorDialog
         if (mDialogInOutAnimator != null && mIsDismissed) return;
 
         // Hide keyboard and disable EditText views for animation efficiency.
-        if (getCurrentFocus() != null) UiUtils.hideKeyboard(getCurrentFocus());
+        if (getCurrentFocus() != null) {
+            KeyboardVisibilityDelegate.getInstance().hideKeyboard(getCurrentFocus());
+        }
         for (int i = 0; i < mEditableTextFields.size(); i++) {
             mEditableTextFields.get(i).setEnabled(false);
         }
@@ -558,7 +560,9 @@ public class EditorDialog
                     mEditableTextFields.get(i).setEnabled(true);
                 }
                 // Note that keyboard will not show for dropdown field since it's not necessary.
-                if (getCurrentFocus() != null) UiUtils.showKeyboard(getCurrentFocus());
+                if (getCurrentFocus() != null) {
+                    KeyboardVisibilityDelegate.getInstance().showKeyboard(getCurrentFocus());
+                }
                 mDialogInOutAnimator = null;
                 initFocus();
             }
