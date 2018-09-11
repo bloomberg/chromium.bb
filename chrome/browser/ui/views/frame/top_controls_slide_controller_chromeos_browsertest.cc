@@ -29,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
@@ -693,6 +694,81 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
       CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
     }
   }
+}
+
+// Waits for receiving an IPC message from the render frame that the page state
+// has been updated. This makes sure that the renderer now sees the new top
+// controls height if it changed.
+class PageStateUpdateWaiter : content::WebContentsObserver {
+ public:
+  explicit PageStateUpdateWaiter(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+  ~PageStateUpdateWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // content::WebContentsObserver:
+  void NavigationEntryChanged(
+      const content::EntryChangedDetails& change_details) override {
+    // This notification is triggered upon receiving the
+    // |FrameHostMsg_UpdateState| message in the |RenderFrameHostImpl|, which
+    // indicates that the page state now has been updated, and we can now
+    // proceeed with testing gesture scrolls behavior.
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageStateUpdateWaiter);
+};
+
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       TestScrollingMaximizedPageBeforeGoingToTabletMode) {
+  // If the page exists in a maximized browser window before going to tablet
+  // mode, the layout that results from going to tablet mode does not change
+  // the size of the page viewport. Hence, the visual properties of the renderer
+  // and the browser are not automatically synchrnoized. But going to tablet
+  // mode enables the top-chrome sliding feature (i.e.
+  // BrowserView::GetTopControlsHeight() now returns a non-zero value). We must
+  // make sure that we synchronize the visual properties manually, otherwise
+  // the renderer will never get the new top-controls height.
+  browser_view()->frame()->Maximize();
+
+  // Navigate to our test scrollable page.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/top_controls_scroll.html"));
+  content::WebContents* active_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  TabNonEmptyPaintWaiter paint_waiter(active_contents);
+  paint_waiter.Wait();
+  ASSERT_EQ(browser()->tab_strip_model()->count(), 1);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  EXPECT_EQ(browser_view()->GetTopControlsHeight(), 0);
+
+  // Switch to tablet mode. This should trigger a synchronize visual properties
+  // event with the renderer so that it can get the correct top controls height
+  // now that the top-chrome slide feature is enabled. Otherwise hiding top
+  // chrome with gesture scrolls won't be possible at all.
+  PageStateUpdateWaiter page_state_update_waiter(active_contents);
+  ToggleTabletMode();
+  ASSERT_TRUE(GetTabletModeEnabled());
+  EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
+  EXPECT_NE(browser_view()->GetTopControlsHeight(), 0);
+  page_state_update_waiter.Wait();
+
+  // Scroll to fully hide top-chrome.
+  auto* browser_window = browser()->window()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
+                                           browser_window);
+  const gfx::Point start_point = event_generator.current_location();
+  const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
+  GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
+  TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
+  waiter.WaitForRatio(0.f);
+  EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 0);
+  CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
 }
 
 }  // namespace

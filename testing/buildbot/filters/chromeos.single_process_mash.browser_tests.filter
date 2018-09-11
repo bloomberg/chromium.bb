@@ -33,10 +33,11 @@
 
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.DisplayRotation
--TopControlsSlideControllerTest.TestScrollingPage
--TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
 -TopControlsSlideControllerTest.TestClosingATab
 -TopControlsSlideControllerTest.TestFocusEditableElements
+-TopControlsSlideControllerTest.TestScrollingMaximizedPageBeforeGoingToTabletMode
+-TopControlsSlideControllerTest.TestScrollingPage
+-TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -NonHomeLauncherBrowserNonClientFrameViewAshTest.*
