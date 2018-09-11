@@ -9,7 +9,7 @@ import android.content.Context;
 /**
  * The implementation of {@link IModuleHost}.
  */
-public class ModuleHostImpl extends IModuleHost.Stub {
+public class ModuleHostImpl extends BaseModuleHost {
     private static final int VERSION = 3;
     private static final int MINIMUM_MODULE_VERSION = 1;
 
