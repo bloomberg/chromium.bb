@@ -139,7 +139,7 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     dest.connected = true;
 
     seen_gamepads.insert(source->controller_id);
-    dest.timestamp = CurrentTimeInMicroseconds();
+    dest.timestamp = TimeInMicroseconds(source->timestamp);
     dest.pose = GamepadPoseFromXRPose(source->pose.get());
     dest.pose.has_position = source->can_provide_position;
     dest.pose.has_orientation = source->can_provide_orientation;
@@ -180,6 +180,10 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
         swprintf(dest.id, Gamepad::kIdLengthCap, L"Oculus Remote");
       }
     }
+
+    TRACE_COUNTER1(
+        "input", "XR gamepad sample age (ms)",
+        (base::TimeTicks::Now() - source->timestamp).InMilliseconds());
 
     dest.mapping[0] = 0;
   }

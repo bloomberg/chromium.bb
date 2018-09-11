@@ -5,6 +5,7 @@
 module device.mojom;
 
 import "device/vr/public/mojom/vr_service.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 const string kVrIsolatedServiceName = "xr_device_service";
 
@@ -100,6 +101,9 @@ struct XRGamepad {
   // A unique (per device_id) id that allows controllers to be tracked between
   // updates.  Useful to identify controllers as they are added/removed.
   uint32 controller_id;
+
+  // The time at which this pose was retrieved.
+  mojo_base.mojom.TimeTicks timestamp;
 };
 
 // Represents the state of a set of controllers driven by some runtime API.

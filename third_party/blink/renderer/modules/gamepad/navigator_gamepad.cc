@@ -108,6 +108,12 @@ static void SampleGamepad(size_t index,
   gamepad.SetPose(device_gamepad.pose);
   gamepad.SetHand(device_gamepad.hand);
 
+  if (device_gamepad.is_xr) {
+    TimeTicks now = TimeTicks::Now();
+    TRACE_COUNTER1("input", "XR gamepad pose age (ms)",
+                   (now - last_updated).InMilliseconds());
+  }
+
   bool newly_connected;
   HasGamepadConnectionChanged(old_id, gamepad.id(), old_was_connected,
                               gamepad.connected(), &newly_connected, nullptr);

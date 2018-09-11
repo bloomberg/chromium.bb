@@ -60,6 +60,8 @@ mojom::XRGamepadDataPtr OpenVRGamepadHelper::GetGamepadData(
     auto gamepad = mojom::XRGamepad::New();
     gamepad->controller_id = i;
 
+    gamepad->timestamp = base::TimeTicks::Now();
+
     vr::ETrackedControllerRole hand =
         vr_system->GetControllerRoleForTrackedDeviceIndex(i);
     switch (hand) {
