@@ -2414,7 +2414,7 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
     return;
 
   AXObject* focused_object = AXObjectCache().FocusedObject();
-  if (focused_object == this && SupportsARIAActiveDescendant()) {
+  if (focused_object == this) {
     AXObject* active_descendant = ActiveDescendant();
     if (active_descendant && active_descendant->IsSelectedFromFocus()) {
       // In single selection containers, selection follows focus, so a selection
