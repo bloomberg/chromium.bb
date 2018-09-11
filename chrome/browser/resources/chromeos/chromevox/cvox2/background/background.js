@@ -178,30 +178,35 @@ Background.prototype = {
     // the user navigates.
     cvox.ChromeVox.braille.thaw();
 
-    if (newRange && !newRange.isValid())
+    if (newRange && !newRange.isValid()) {
+      chrome.accessibilityPrivate.setFocusRing([]);
       return;
+    }
 
     this.currentRange_ = newRange;
     ChromeVoxState.observers.forEach(function(observer) {
       observer.onCurrentRangeChanged(newRange);
     });
 
-    if (this.currentRange_) {
-      var start = this.currentRange_.start.node;
-      start.makeVisible();
-
-      var root = AutomationUtil.getTopLevelRoot(start);
-      if (!root || root.role == RoleType.DESKTOP || root == start)
-        return;
-
-      var position = {};
-      var loc = start.unclippedLocation;
-      position.x = loc.left + loc.width / 2;
-      position.y = loc.top + loc.height / 2;
-      var url = root.docUrl;
-      url = url.substring(0, url.indexOf('#')) || url;
-      cvox.ChromeVox.position[url] = position;
+    if (!this.currentRange_) {
+      chrome.accessibilityPrivate.setFocusRing([]);
+      return;
     }
+
+    var start = this.currentRange_.start.node;
+    start.makeVisible();
+
+    var root = AutomationUtil.getTopLevelRoot(start);
+    if (!root || root.role == RoleType.DESKTOP || root == start)
+      return;
+
+    var position = {};
+    var loc = start.unclippedLocation;
+    position.x = loc.left + loc.width / 2;
+    position.y = loc.top + loc.height / 2;
+    var url = root.docUrl;
+    url = url.substring(0, url.indexOf('#')) || url;
+    cvox.ChromeVox.position[url] = position;
   },
 
   /**
