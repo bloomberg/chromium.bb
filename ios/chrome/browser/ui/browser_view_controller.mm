@@ -712,6 +712,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Secondary toolbar.
 @property(nonatomic, strong)
     AdaptiveToolbarCoordinator* secondaryToolbarCoordinator;
+// The container view for the secondary toolbar.
+// TODO(crbug.com/880656): Convert to a container coordinator.
+@property(nonatomic, strong) UIView* secondaryToolbarContainerView;
 // Interface object with the toolbars.
 @property(nonatomic, strong) id<ToolbarCoordinating> toolbarInterface;
 
@@ -937,6 +940,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @synthesize bubblePresenter = _bubblePresenter;
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
 @synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
+@synthesize secondaryToolbarContainerView = _secondaryToolbarContainerView;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
 @synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
 @synthesize secondaryToolbarHeightConstraint =
@@ -2367,26 +2371,30 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (self.secondaryToolbarCoordinator) {
     // Create a constraint for the height of the toolbar to include the unsafe
     // area height.
-    UIView* secondaryView =
-        self.secondaryToolbarCoordinator.viewController.view;
-    self.secondaryToolbarHeightConstraint = [secondaryView.heightAnchor
+    UIView* toolbarView = self.secondaryToolbarCoordinator.viewController.view;
+    self.secondaryToolbarHeightConstraint = [toolbarView.heightAnchor
         constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
     self.secondaryToolbarHeightConstraint.active = YES;
-
     AddSameConstraintsToSides(
-        self.view, secondaryView,
+        self.secondaryToolbarContainerView, toolbarView,
         LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
 
-    UILayoutGuide* guide =
+    // Constrain the container view to the bottom of self.view, and add a
+    // constant height constraint such that the container's frame is equal to
+    // that of the secondary toolbar at a fullscreen progress of 1.0.
+    UIView* containerView = self.secondaryToolbarContainerView;
+    self.secondaryToolbarNoFullscreenHeightConstraint =
+        [containerView.heightAnchor
+            constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
+    self.secondaryToolbarNoFullscreenHeightConstraint.active = YES;
+    AddSameConstraintsToSides(
+        self.view, containerView,
+        LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
+
+    NamedGuide* guide =
         [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreenGuide];
     [self.view addLayoutGuide:guide];
-    self.secondaryToolbarNoFullscreenHeightConstraint = [guide.heightAnchor
-        constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
-    self.secondaryToolbarNoFullscreenHeightConstraint.active = YES;
-
-    AddSameConstraintsToSides(
-        self.view, guide,
-        LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
+    guide.constrainedView = containerView;
   }
 }
 
@@ -2538,9 +2546,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:bottomView];
     if (self.secondaryToolbarCoordinator) {
-      [[self view]
-          insertSubview:self.secondaryToolbarCoordinator.viewController.view
+      // Create the container view for the secondary toolbar and add it to the
+      // hierarchy
+      UIView* container = [[UIView alloc] init];
+      container.translatesAutoresizingMaskIntoConstraints = NO;
+      [container
+          addSubview:self.secondaryToolbarCoordinator.viewController.view];
+      [self.view
+          insertSubview:container
            aboveSubview:self.primaryToolbarCoordinator.viewController.view];
+      self.secondaryToolbarContainerView = container;
     }
     NSArray<GuideName*>* guideNames = @[
       kContentAreaGuide,
@@ -4150,10 +4165,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.footerFullscreenProgress = progress;
 
   if (IsUIRefreshPhase1Enabled()) {
-    // TODO(crbug.com/880656): Update implementation to make the bottom toolbar
-    // animatable.
+    // Update the height constraint and force a layout on the container view so
+    // that the update is animatable.
     self.secondaryToolbarHeightConstraint.constant =
         [self secondaryToolbarHeightWithInset] * progress;
+    [self.secondaryToolbarContainerView setNeedsLayout];
+    [self.secondaryToolbarContainerView layoutIfNeeded];
 
     // Resize the infobars to take into account the changes in the toolbar.
     [self infoBarContainerStateDidChangeAnimated:NO];
