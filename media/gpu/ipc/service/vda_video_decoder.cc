@@ -395,7 +395,8 @@ void VdaVideoDecoder::Reset(const base::RepeatingClosure& reset_cb) {
   DVLOG(2) << __func__;
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_.is_null());
-  // Note: |flush_cb_| may not be null.
+  // Note: |flush_cb_| may be non-null. If so, the flush can be completed by
+  // NotifyResetDone().
   DCHECK(reset_cb_.is_null());
 
   if (has_error_) {
@@ -609,6 +610,10 @@ void VdaVideoDecoder::NotifyFlushDoneOnParentThread() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
 
   if (has_error_)
+    return;
+
+  // Protect against incorrect calls from the VDA.
+  if (flush_cb_.is_null())
     return;
 
   DCHECK(decode_cbs_.empty());
