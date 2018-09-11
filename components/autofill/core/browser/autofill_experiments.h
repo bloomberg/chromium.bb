@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "ui/gfx/font.h"
 
 class PrefService;
 
@@ -28,6 +29,13 @@ extern const base::Feature kAutofillDropdownLayoutExperiment;
 extern const char kAutofillDropdownLayoutParameterName[];
 extern const char kAutofillDropdownLayoutParameterLeadingIcon[];
 extern const char kAutofillDropdownLayoutParameterTrailingIcon[];
+
+extern const base::Feature kAutofillPrimaryInfoStyleExperiment;
+extern const char kAutofillPrimaryInfoFontWeightParameterName[];
+extern const char kAutofillPrimaryInfoFontWeightParameterMedium[];
+extern const char kAutofillPrimaryInfoFontWeightParameterSemiBold[];
+extern const char kAutofillPrimaryInfoFontWeightParameterBold[];
+extern const char kAutofillPrimaryInfoFontWeightParameterExtraBold[];
 #endif  // !defined(OS_ANDROID)
 
 // Returns true if uploading credit cards to Wallet servers is enabled. This
@@ -59,6 +67,12 @@ bool OfferStoreUnmaskedCards();
 bool ShouldUseActiveSignedInAccount();
 
 #if !defined(OS_ANDROID)
+// Sets |font_weight| as the font weight to be used for primary information on
+// the Autofill dropdown for Addresses and Credit Cards. Returns false if
+// feature kAutofillPrimaryInfoStyleExperiment is disabled or if the
+// corresponding feature param is invalid.
+bool ShouldUseCustomFontWeightForPrimaryInfo(gfx::Font::Weight* font_weight);
+
 enum class ForcedPopupLayoutState {
   kDefault,       // No popup layout forced by experiment.
   kLeadingIcon,   // Experiment forces leading (left in LTR) icon layout.

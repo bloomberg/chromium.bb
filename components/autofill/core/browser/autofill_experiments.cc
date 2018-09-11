@@ -28,6 +28,14 @@
 namespace autofill {
 
 #if !defined(OS_ANDROID)
+const base::Feature kAutofillPrimaryInfoStyleExperiment{
+    "AutofillPrimaryInfoStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kAutofillPrimaryInfoFontWeightParameterName[] = "font_weight";
+const char kAutofillPrimaryInfoFontWeightParameterMedium[] = "medium";
+const char kAutofillPrimaryInfoFontWeightParameterSemiBold[] = "semi-bold";
+const char kAutofillPrimaryInfoFontWeightParameterBold[] = "bold";
+const char kAutofillPrimaryInfoFontWeightParameterExtraBold[] = "extra-bold";
+
 const base::Feature kAutofillDropdownLayoutExperiment{
     "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kAutofillDropdownLayoutParameterName[] = "variant";
@@ -156,6 +164,45 @@ bool ShouldUseActiveSignedInAccount() {
 }
 
 #if !defined(OS_ANDROID)
+namespace {
+
+// Returns the font weight corresponding to the value of param
+// kAutofillPrimaryInfoFontWeightParameterName, or INVALID if the param is not
+// valid.
+gfx::Font::Weight GetFontWeightFromParam() {
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      autofill::kAutofillPrimaryInfoStyleExperiment,
+      autofill::kAutofillPrimaryInfoFontWeightParameterName);
+
+  if (param == autofill::kAutofillPrimaryInfoFontWeightParameterMedium)
+    return gfx::Font::Weight::MEDIUM;
+  if (param == autofill::kAutofillPrimaryInfoFontWeightParameterSemiBold)
+    return gfx::Font::Weight::SEMIBOLD;
+  if (param == autofill::kAutofillPrimaryInfoFontWeightParameterBold)
+    return gfx::Font::Weight::BOLD;
+  if (param == autofill::kAutofillPrimaryInfoFontWeightParameterExtraBold)
+    return gfx::Font::Weight::EXTRA_BOLD;
+
+  return gfx::Font::Weight::INVALID;
+}
+
+}  // namespace
+
+bool ShouldUseCustomFontWeightForPrimaryInfo(gfx::Font::Weight* font_weight) {
+  if (!base::FeatureList::IsEnabled(
+          autofill::kAutofillPrimaryInfoStyleExperiment)) {
+    return false;
+  }
+
+  // Only read the feature param's value the first time it's needed.
+  static gfx::Font::Weight font_weight_from_param = GetFontWeightFromParam();
+  if (font_weight_from_param == gfx::Font::Weight::INVALID)
+    return false;
+
+  *font_weight = font_weight_from_param;
+  return true;
+}
+
 ForcedPopupLayoutState GetForcedPopupLayoutState() {
   if (!base::FeatureList::IsEnabled(
           autofill::kAutofillDropdownLayoutExperiment))
