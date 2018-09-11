@@ -63,12 +63,9 @@ class FullscreenMediator : public FullscreenModelObserver {
   void FullscreenModelScrollEventEnded(FullscreenModel* model) override;
   void FullscreenModelWasReset(FullscreenModel* model) override;
 
-  // Sets up |animator_| with |style|.
-  void SetUpAnimator(FullscreenAnimatorStyle style);
-
-  // Starts |animator+| if it has animations to run.  |animator_| will be reset
-  // if no animations have been added.
-  void StartAnimator();
+  // Sets up |animator_| with |style|, notifies FullscreenControllerObservers,
+  // and starts the animation.
+  void AnimateWithStyle(FullscreenAnimatorStyle style);
 
   // Stops the current scroll end animation if one is in progress.  If
   // |update_model| is true, the FullscreenModel will be updated with the active
