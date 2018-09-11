@@ -34,8 +34,13 @@ void GamepadDataFetcher::ResetVibration(
 }
 
 // static
+int64_t GamepadDataFetcher::TimeInMicroseconds(base::TimeTicks update_time) {
+  return update_time.since_origin().InMicroseconds();
+}
+
+// static
 int64_t GamepadDataFetcher::CurrentTimeInMicroseconds() {
-  return base::TimeTicks::Now().since_origin().InMicroseconds();
+  return TimeInMicroseconds(base::TimeTicks::Now());
 }
 
 GamepadDataFetcherFactory::GamepadDataFetcherFactory() = default;

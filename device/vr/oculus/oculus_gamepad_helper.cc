@@ -163,6 +163,7 @@ void AddTouchData(mojom::XRGamepadDataPtr& data,
   gamepad->pose = std::move(dst_pose);
   gamepad->can_provide_position = true;
   gamepad->can_provide_orientation = true;
+  gamepad->timestamp = base::TimeTicks::Now();
   data->gamepads.push_back(std::move(gamepad));
 }
 

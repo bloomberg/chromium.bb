@@ -44,6 +44,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   // the value returned by this method to update the |timestamp| gamepad member.
   static int64_t CurrentTimeInMicroseconds();
 
+  // Converts a TimeTicks value to a timestamp in microseconds, as used for
+  // the |timestamp| gamepad member.
+  static int64_t TimeInMicroseconds(base::TimeTicks update_time);
+
  protected:
   friend GamepadPadStateProvider;
 
