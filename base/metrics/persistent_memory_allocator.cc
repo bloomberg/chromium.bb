@@ -817,17 +817,15 @@ void PersistentMemoryAllocator::MakeIterable(Reference ref) {
                                                      std::memory_order_release,
                                                      std::memory_order_relaxed);
       return;
-    } else {
-      // In the unlikely case that a thread crashed or was killed between the
-      // update of "next" and the update of "tailptr", it is necessary to
-      // perform the operation that would have been done. There's no explicit
-      // check for crash/kill which means that this operation may also happen
-      // even when the other thread is in perfect working order which is what
-      // necessitates the CompareAndSwap above.
-      shared_meta()->tailptr.compare_exchange_strong(tail, next,
-                                                     std::memory_order_acq_rel,
-                                                     std::memory_order_acquire);
     }
+    // In the unlikely case that a thread crashed or was killed between the
+    // update of "next" and the update of "tailptr", it is necessary to
+    // perform the operation that would have been done. There's no explicit
+    // check for crash/kill which means that this operation may also happen
+    // even when the other thread is in perfect working order which is what
+    // necessitates the CompareAndSwap above.
+    shared_meta()->tailptr.compare_exchange_strong(
+        tail, next, std::memory_order_acq_rel, std::memory_order_acquire);
   }
 }
 

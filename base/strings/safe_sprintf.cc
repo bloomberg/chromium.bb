@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <algorithm>
 #include <limits>
 
 #include "base/macros.h"
@@ -236,10 +237,9 @@ class Buffer {
     if (count_ > kSSizeMax - 1 - inc) {
       count_ = kSSizeMax - 1;
       return false;
-    } else {
-      count_ += inc;
-      return true;
     }
+    count_ += inc;
+    return true;
   }
 
   // Convenience method for the common case of incrementing |count_| by one.
@@ -433,11 +433,9 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt, const Arg* args,
   // never overflows kSSizeMax. Not only does that use up most or all of the
   // address space, it also would result in a return code that cannot be
   // represented.
-  if (static_cast<ssize_t>(sz) < 1) {
+  if (static_cast<ssize_t>(sz) < 1)
     return -1;
-  } else if (sz > kSSizeMax) {
-    sz = kSSizeMax;
-  }
+  sz = std::min(sz, kSSizeMax);
 
   // Iterate over format string and interpret '%' arguments as they are
   // encountered.
@@ -659,11 +657,9 @@ ssize_t SafeSNPrintf(char* buf, size_t sz, const char* fmt) {
   // never overflows kSSizeMax. Not only does that use up most or all of the
   // address space, it also would result in a return code that cannot be
   // represented.
-  if (static_cast<ssize_t>(sz) < 1) {
+  if (static_cast<ssize_t>(sz) < 1)
     return -1;
-  } else if (sz > kSSizeMax) {
-    sz = kSSizeMax;
-  }
+  sz = std::min(sz, kSSizeMax);
 
   Buffer buffer(buf, sz);
 

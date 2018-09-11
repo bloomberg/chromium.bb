@@ -68,9 +68,8 @@ static int NextSize(int size) {
 
     CHECK_EQ(size, power);
     return power + 1;
-  } else {
-    return -1;
   }
+  return -1;
 }
 
 static void TestCalloc(size_t n, size_t s, bool ok) {

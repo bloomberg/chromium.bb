@@ -66,15 +66,13 @@ class SecureHashAlgorithm {
 };
 
 static inline uint32_t f(uint32_t t, uint32_t B, uint32_t C, uint32_t D) {
-  if (t < 20) {
+  if (t < 20)
     return (B & C) | ((~B) & D);
-  } else if (t < 40) {
+  if (t < 40)
     return B ^ C ^ D;
-  } else if (t < 60) {
+  if (t < 60)
     return (B & C) | (B & D) | (C & D);
-  } else {
-    return B ^ C ^ D;
-  }
+  return B ^ C ^ D;
 }
 
 static inline uint32_t S(uint32_t n, uint32_t X) {
@@ -82,15 +80,13 @@ static inline uint32_t S(uint32_t n, uint32_t X) {
 }
 
 static inline uint32_t K(uint32_t t) {
-  if (t < 20) {
+  if (t < 20)
     return 0x5a827999;
-  } else if (t < 40) {
+  if (t < 40)
     return 0x6ed9eba1;
-  } else if (t < 60) {
+  if (t < 60)
     return 0x8f1bbcdc;
-  } else {
-    return 0xca62c1d6;
-  }
+  return 0xca62c1d6;
 }
 
 const int SecureHashAlgorithm::kDigestSizeBytes = 20;
