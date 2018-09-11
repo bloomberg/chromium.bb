@@ -134,6 +134,7 @@ public class WebappVisibilityTest {
                           false /* forceNavigation */)
                 : WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null, null,
                           displayMode, 0, 0, 0, 0, "", 0, null, "",
-                          WebApkInfo.WebApkDistributor.BROWSER, null, false /* forceNavigation */);
+                          WebApkInfo.WebApkDistributor.BROWSER, null, null,
+                          false /* forceNavigation */);
     }
 }

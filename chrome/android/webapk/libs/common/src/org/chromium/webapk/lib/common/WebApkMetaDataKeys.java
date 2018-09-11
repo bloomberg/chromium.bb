@@ -33,4 +33,5 @@ public final class WebApkMetaDataKeys {
     public static final String SHARE_ACTION = "org.chromium.webapk.shell_apk.shareAction";
     public static final String SHARE_PARAM_TITLE = "org.chromium.webapk.shell_apk.shareParamTitle";
     public static final String SHARE_PARAM_TEXT = "org.chromium.webapk.shell_apk.shareParamText";
+    public static final String SHARE_PARAM_URL = "org.chromium.webapk.shell_apk.shareParamUrl";
 }

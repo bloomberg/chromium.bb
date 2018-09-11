@@ -159,7 +159,7 @@ public class WebApkUpdateManagerTest {
                         creationData.backgroundColor, "", WebApkVersion.CURRENT_SHELL_APK_VERSION,
                         creationData.manifestUrl, creationData.startUrl,
                         WebApkInfo.WebApkDistributor.BROWSER, creationData.iconUrlToMurmur2HashMap,
-                        false /* forceNavigation */);
+                        null, false /* forceNavigation */);
                 updateManager.updateIfNeeded(mTab, info);
             }
         });
