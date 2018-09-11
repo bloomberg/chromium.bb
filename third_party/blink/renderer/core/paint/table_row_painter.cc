@@ -67,9 +67,32 @@ void TableRowPainter::HandleChangedPartialPaint(
       paint_result, paint_info.GetCullRect());
 }
 
+void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                        const LayoutPoint& paint_offset) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  auto touch_action = layout_table_row_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = layout_table_row_.BorderBoxRect();
+  rect.MoveBy(paint_offset);
+  HitTestData::RecordTouchActionRect(paint_info.context, layout_table_row_,
+                                     TouchActionRect(rect, touch_action));
+}
+
 void TableRowPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const CellSpan& dirtied_columns) {
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
+  const auto& local_paint_info = paint_state.GetPaintInfo();
+  auto paint_offset = paint_state.PaintOffset();
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    RecordHitTestData(local_paint_info, paint_offset);
+
   bool has_background = layout_table_row_.StyleRef().HasBackground();
   bool has_box_shadow = layout_table_row_.StyleRef().BoxShadow();
   if (!has_background && !has_box_shadow)
@@ -77,14 +100,11 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
   HandleChangedPartialPaint(paint_info, dirtied_columns);
 
-  ScopedPaintState paint_state(layout_table_row_, paint_info);
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_row_,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  const auto& local_paint_info = paint_state.GetPaintInfo();
-  auto paint_offset = paint_state.PaintOffset();
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
                            DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(paint_offset, layout_table_row_.Size());
