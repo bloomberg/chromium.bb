@@ -107,7 +107,7 @@ WorkerFetchContext::WorkerFetchContext(
         SubresourceFilter::Create(global_scope, std::move(web_filter));
   }
 }
-const FetchClientSettingsObject*
+const FetchClientSettingsObjectImpl*
 WorkerFetchContext::GetFetchClientSettingsObject() const {
   return fetch_client_settings_object_.Get();
 }

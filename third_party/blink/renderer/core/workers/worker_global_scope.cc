@@ -356,6 +356,13 @@ WorkerGlobalScope::WorkerGlobalScope(
         creation_params->starter_origin->CreatePrivilegeData());
   }
   SetSecurityOrigin(std::move(security_origin));
+
+  // https://html.spec.whatwg.org/#run-a-worker
+  // 4. Set worker global scope's HTTPS state to response's HTTPS state. [spec
+  // text]
+  https_state_ = CalculateHttpsState(GetSecurityOrigin(),
+                                     creation_params->starter_https_state);
+
   InitContentSecurityPolicyFromVector(
       creation_params->content_security_policy_parsed_headers);
   BindContentSecurityPolicyToExecutionContext();

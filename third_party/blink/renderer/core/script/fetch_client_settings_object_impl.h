@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -34,6 +35,8 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
   const SecurityOrigin* GetSecurityOrigin() const override;
   ReferrerPolicy GetReferrerPolicy() const override;
   const String GetOutgoingReferrer() const override;
+
+  HttpsState GetHttpsState() const;
 
   void Trace(Visitor* visitor) override;
 

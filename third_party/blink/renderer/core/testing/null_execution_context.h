@@ -34,6 +34,10 @@ class NullExecutionContext
   void DisableEval(const String&) override {}
   String UserAgent() const override { return String(); }
 
+  HttpsState GetHttpsState() const override {
+    return CalculateHttpsState(GetSecurityOrigin());
+  }
+
   EventTarget* ErrorEventTarget() override { return nullptr; }
 
   bool TasksNeedPause() override { return tasks_need_pause_; }

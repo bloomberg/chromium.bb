@@ -37,7 +37,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
+  const FetchClientSettingsObjectImpl* GetFetchClientSettingsObject()
       const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
