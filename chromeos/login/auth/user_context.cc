@@ -143,6 +143,10 @@ bool UserContext::HasCredentials() const {
          !auth_code_.empty();
 }
 
+bool UserContext::IsUnderAdvancedProtection() const {
+  return is_under_advanced_protection_;
+}
+
 void UserContext::SetAccountId(const AccountId& account_id) {
   account_id_ = account_id;
 }
@@ -206,6 +210,11 @@ void UserContext::SetGAPSCookie(const std::string& gaps_cookie) {
 void UserContext::SetSyncPasswordData(
     const password_manager::PasswordHashData& sync_password_data) {
   sync_password_data_ = {sync_password_data};
+}
+
+void UserContext::SetIsUnderAdvancedProtection(
+    bool is_under_advanced_protection) {
+  is_under_advanced_protection_ = is_under_advanced_protection;
 }
 
 void UserContext::ClearSecrets() {
