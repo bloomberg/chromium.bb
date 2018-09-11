@@ -88,6 +88,9 @@ namespace {
 
 base::LazyInstance<internal::RequestInvokeGLTracker>::DestructorAtExit
     g_request_invoke_gl_tracker = LAZY_INSTANCE_INITIALIZER;
+
+constexpr base::TimeDelta kSlightlyMoreThanOneFrame =
+    base::TimeDelta::FromMilliseconds(17);
 }
 
 RenderThreadManager::RenderThreadManager(
@@ -128,11 +131,11 @@ void RenderThreadManager::ClientRequestInvokeGL(bool for_idle) {
       callback = request_draw_gl_closure_;
     }
     // 17ms is slightly longer than a frame, hoping that it will come
-    // after the next frame so that the idle work is taken care off by
+    // after the next frame so that the idle work is taken care of by
     // the next frame instead.
     ui_loop_->PostDelayedTask(
         FROM_HERE, std::move(callback),
-        for_idle ? base::TimeDelta::FromMilliseconds(17) : base::TimeDelta());
+        for_idle ? kSlightlyMoreThanOneFrame : base::TimeDelta());
   }
 }
 
@@ -251,6 +254,9 @@ void RenderThreadManager::InsertReturnedResourcesOnRT(
     const std::vector<viz::ReturnedResource>& resources,
     const CompositorID& compositor_id,
     uint32_t layer_tree_frame_sink_id) {
+  if (resources.empty())
+    return;
+
   base::AutoLock lock(lock_);
   ReturnedResources& returned_resources =
       returned_resources_map_[compositor_id];
@@ -260,6 +266,28 @@ void RenderThreadManager::InsertReturnedResourcesOnRT(
   returned_resources.resources.insert(returned_resources.resources.end(),
                                       resources.begin(), resources.end());
   returned_resources.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
+
+  if (!returned_resource_available_pending_) {
+    returned_resource_available_pending_ = true;
+    ui_loop_->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&RenderThreadManager::ReturnedResourceAvailableOnUI,
+                       ui_thread_weak_ptr_),
+        kSlightlyMoreThanOneFrame * 2);
+  }
+}
+
+void RenderThreadManager::ReturnedResourceAvailableOnUI() {
+  bool empty = false;
+  {
+    base::AutoLock lock(lock_);
+    DCHECK(returned_resource_available_pending_);
+    returned_resource_available_pending_ = false;
+    empty = returned_resources_map_.empty();
+  }
+  if (!empty && compositor_frame_producer_) {
+    compositor_frame_producer_->ReturnedResourceAvailable(this);
+  }
 }
 
 void RenderThreadManager::SwapReturnedResourcesOnUI(

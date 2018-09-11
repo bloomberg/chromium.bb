@@ -141,6 +141,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   ui::TouchHandleDrawable* CreateDrawable() override;
 
   // CompositorFrameProducer overrides
+  void ReturnedResourceAvailable(
+      CompositorFrameConsumer* compositor_frame_consumer) override;
   void OnParentDrawConstraintsUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override;
   void RemoveCompositorFrameConsumer(
