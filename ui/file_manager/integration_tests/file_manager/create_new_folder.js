@@ -127,7 +127,9 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(elements) {
     // Check: the test folder only should be 'selected'.
     chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq(0, elements[0].text.indexOf('Test Folder Name--'));
+    chrome.test.assertEq(
+        0, elements[0].text.indexOf('Test Folder Name--'),
+        'Actual text was: ' + elements[0].text);
   });
 }
 
