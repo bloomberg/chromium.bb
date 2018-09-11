@@ -49,6 +49,7 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<int> max_touch_points) override;
   protocol::Response setEmulatedMedia(const String&) override;
   protocol::Response setCPUThrottlingRate(double) override;
+  protocol::Response setFocusEmulationEnabled(bool) override;
   protocol::Response setVirtualTimePolicy(
       const String& policy,
       protocol::Maybe<double> virtual_time_budget_ms,
@@ -139,6 +140,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::String virtual_time_policy_;
   InspectorAgentState::Integer virtual_time_task_starvation_count_;
   InspectorAgentState::Boolean wait_for_navigation_;
+  InspectorAgentState::Boolean emulate_focus_;
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };
 

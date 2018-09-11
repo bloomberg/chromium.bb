@@ -91,10 +91,12 @@ class CORE_EXPORT FocusController final
   bool SetFocusedElement(Element*, Frame*);
 
   void SetActive(bool);
-  bool IsActive() const { return is_active_; }
+  bool IsActive() const { return is_active_ || is_emulating_focus_; }
 
   void SetFocused(bool);
-  bool IsFocused() const { return is_focused_; }
+  bool IsFocused() const { return is_focused_ || is_emulating_focus_; }
+
+  void SetFocusEmulationEnabled(bool);
 
   void RegisterFocusChangedObserver(FocusChangedObserver*);
 
@@ -130,11 +132,15 @@ class CORE_EXPORT FocusController final
 
   void NotifyFocusChangedObservers() const;
 
+  void ActiveHasChanged();
+  void FocusHasChanged();
+
   Member<Page> page_;
   Member<Frame> focused_frame_;
   bool is_active_;
   bool is_focused_;
   bool is_changing_focused_frame_;
+  bool is_emulating_focus_;
   HeapHashSet<WeakMember<FocusChangedObserver>> focus_changed_observers_;
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
