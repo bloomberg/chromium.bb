@@ -258,8 +258,7 @@ class NotificationPlatformBridgeWinImpl
       std::vector<winui::Notifications::IToastNotification*> notifications;
       GetNotifications(profile_id, incognito, &notifications);
 
-      for (winui::Notifications::IToastNotification* notification :
-           notifications) {
+      for (auto* notification : notifications) {
         winui::Notifications::IToastNotification2* t2 = nullptr;
         HRESULT hr = notification->QueryInterface(&t2);
         if (FAILED(hr))
@@ -546,8 +545,7 @@ class NotificationPlatformBridgeWinImpl
     GetNotifications(profile_id, incognito, &notifications);
 
     auto displayed_notifications = std::make_unique<std::set<std::string>>();
-    for (winui::Notifications::IToastNotification* notification :
-         notifications) {
+    for (auto* notification : notifications) {
       NotificationLaunchId launch_id(GetNotificationLaunchId(notification));
       if (!launch_id.is_valid()) {
         LogGetDisplayedLaunchIdStatus(
