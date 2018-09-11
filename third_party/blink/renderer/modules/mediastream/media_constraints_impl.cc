@@ -64,12 +64,7 @@ struct NameValueStringConstraint {
 };
 
 // Legal constraint names.
-// Temporary Note: Comments about source are where they are copied from.
-// Once the chrome parts use the new-style constraint values, they will
-// be deleted from the files mentioned.
-// TODO(hta): remove comments before https://crbug.com/543997 is closed.
 
-// From content/renderer/media/stream/media_stream_video_source.cc
 const char kMinAspectRatio[] = "minAspectRatio";
 const char kMaxAspectRatio[] = "maxAspectRatio";
 const char kMaxWidth[] = "maxWidth";
@@ -78,17 +73,15 @@ const char kMaxHeight[] = "maxHeight";
 const char kMinHeight[] = "minHeight";
 const char kMaxFrameRate[] = "maxFrameRate";
 const char kMinFrameRate[] = "minFrameRate";
-// From content/common/media/media_stream_options.cc
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] =
     "chromeMediaSourceId";                           // mapped to deviceId
 const char kMediaStreamSourceInfoId[] = "sourceId";  // mapped to deviceId
 const char kMediaStreamRenderToAssociatedSink[] =
     "chromeRenderToAssociatedSink";
-// RenderToAssociatedSink will be going away in M50-M60 some time.
+// RenderToAssociatedSink will be going away some time.
 const char kMediaStreamAudioHotword[] = "googHotword";
 // TODO(hta): googHotword should go away. https://crbug.com/577627
-// From content/renderer/media/stream/media_stream_audio_processor_options.cc
 const char kEchoCancellation[] = "echoCancellation";
 const char kDisableLocalEcho[] = "disableLocalEcho";
 const char kGoogEchoCancellation[] = "googEchoCancellation";
@@ -102,13 +95,8 @@ const char kGoogArrayGeometry[] = "googArrayGeometry";
 const char kGoogHighpassFilter[] = "googHighpassFilter";
 const char kGoogTypingNoiseDetection[] = "googTypingNoiseDetection";
 const char kGoogAudioMirroring[] = "googAudioMirroring";
-
-// From
-// third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.cc
-
 // Audio constraints.
 const char kDAEchoCancellation[] = "googDAEchoCancellation";
-
 // Google-specific constraint keys for a local video source (getUserMedia).
 const char kNoiseReduction[] = "googNoiseReduction";
 
@@ -139,11 +127,8 @@ const char kCpuOveruseEncodeRsdThreshold[] = "googCpuOveruseEncodeRsdThreshold";
 const char kCpuOveruseEncodeUsage[] = "googCpuOveruseEncodeUsage";
 const char kHighStartBitrate[] = "googHighStartBitrate";
 const char kPayloadPadding[] = "googPayloadPadding";
-// From webrtc_audio_capturer
 const char kAudioLatency[] = "latencyMs";
-// From media_stream_video_capturer_source
 
-// End of names from libjingle
 // Names that have been used in the past, but should now be ignored.
 // Kept around for backwards compatibility.
 // https://crbug.com/579729
