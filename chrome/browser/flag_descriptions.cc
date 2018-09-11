@@ -1524,6 +1524,11 @@ const char kRemoveNavigationHistoryDescription[] =
     "Remove a navigation entry when the corresponding history entry has been "
     "deleted.";
 
+const char kRewriteLevelDBOnDeletionName[] =
+    "Rewrite LevelDB instances after full deletions";
+const char kRewriteLevelDBOnDeletionDescription[] =
+    "Rewrite LevelDB instances to remove traces of deleted data from disk.";
+
 const char kRendererSideResourceSchedulerName[] =
     "Renderer side ResourceScheduler";
 const char kRendererSideResourceSchedulerDescription[] =

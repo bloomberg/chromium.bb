@@ -14,12 +14,14 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -647,6 +649,143 @@ TEST(ChromiumLevelDB, DeleteInMemoryDB) {
   EXPECT_FALSE(mem_env->FileExists(temp_path.AsUTF8Unsafe()));
   // On disk should be untouched.
   EXPECT_TRUE(leveldb_chrome::PossiblyValidDB(db_path, on_disk_options.env));
+}
+
+class ChromiumLevelDBRebuildTest : public ::testing::Test {
+ protected:
+  ChromiumLevelDBRebuildTest() {
+    feature_list_.InitAndEnableFeature(leveldb::kLevelDBRewriteFeature);
+  }
+
+  void SetUp() override {
+    testing::Test::SetUp();
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+  }
+
+  const base::FilePath& temp_path() const { return scoped_temp_dir_.GetPath(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  base::ScopedAllowBlockingForTesting allow_blocking_;
+  base::ScopedTempDir scoped_temp_dir_;
+};
+
+TEST_F(ChromiumLevelDBRebuildTest, RebuildDb) {
+  std::unique_ptr<leveldb::DB> db;
+  base::FilePath db_path = temp_path().AppendASCII("db");
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+
+  auto s = leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok());
+  db->Put(leveldb::WriteOptions(), "key1", "value1");
+  db->Put(leveldb::WriteOptions(), "key2", "value2");
+  db->Delete(leveldb::WriteOptions(), "key1");
+
+  leveldb::DB* old_db_ptr = db.get();
+  s = leveldb_env::RewriteDB(options, db_path.AsUTF8Unsafe(), &db);
+  EXPECT_TRUE(s.ok());
+  EXPECT_NE(old_db_ptr, db.get());
+  EXPECT_TRUE(db);
+
+  std::string value;
+  s = db->Get(leveldb::ReadOptions(), "key1", &value);
+  EXPECT_TRUE(s.IsNotFound());
+  s = db->Get(leveldb::ReadOptions(), "key2", &value);
+  EXPECT_TRUE(s.ok());
+  EXPECT_EQ("value2", value);
+}
+
+TEST_F(ChromiumLevelDBRebuildTest, RecoverMissingDB) {
+  std::unique_ptr<leveldb::DB> db;
+  base::FilePath db_path = temp_path().AppendASCII("db");
+  base::FilePath tmp_path =
+      temp_path().AppendASCII(leveldb_env::DatabaseNameForRewriteDB("db"));
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+
+  // Write a temporary db to simulate a failed rewrite attempt where only the
+  // temporary db exists.
+  auto s = leveldb_env::OpenDB(options, tmp_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok());
+  db->Put(leveldb::WriteOptions(), "key", "value");
+  db.reset();
+
+  EXPECT_FALSE(base::DirectoryExists(db_path));
+  EXPECT_TRUE(base::DirectoryExists(tmp_path));
+
+  // Open the regular db and check if the temporary one is recovered.
+  s = leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok()) << s.ToString();
+  std::string value;
+  s = db->Get(leveldb::ReadOptions(), "key", &value);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  EXPECT_EQ("value", value);
+  EXPECT_TRUE(base::DirectoryExists(db_path));
+  EXPECT_FALSE(base::DirectoryExists(tmp_path));
+}
+
+TEST_F(ChromiumLevelDBRebuildTest, RecoverCorruptDB) {
+  std::unique_ptr<leveldb::DB> db;
+  base::FilePath db_path = temp_path().AppendASCII("db");
+  base::FilePath tmp_path =
+      temp_path().AppendASCII(leveldb_env::DatabaseNameForRewriteDB("db"));
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+
+  // Create a corrupt db.
+  ASSERT_TRUE(base::CreateDirectory(db_path));
+  ASSERT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(db_path));
+
+  // Write a temporary db to simulate a failed rewrite attempt.
+  auto s = leveldb_env::OpenDB(options, tmp_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok());
+  db->Put(leveldb::WriteOptions(), "key", "value");
+  db.reset();
+
+  // Open the regular db and check if the temporary one is recovered.
+  s = leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok()) << s.ToString();
+  std::string value;
+  s = db->Get(leveldb::ReadOptions(), "key", &value);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  EXPECT_EQ("value", value);
+  EXPECT_TRUE(base::DirectoryExists(db_path));
+  EXPECT_FALSE(base::DirectoryExists(tmp_path));
+}
+
+TEST_F(ChromiumLevelDBRebuildTest, FinishCleanup) {
+  std::unique_ptr<leveldb::DB> db;
+  base::FilePath db_path = temp_path().AppendASCII("db");
+  base::FilePath tmp_path =
+      temp_path().AppendASCII(leveldb_env::DatabaseNameForRewriteDB("db"));
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+
+  // Write a regular and a temporary db to simulate a rewrite attempt that
+  // crashed before finishing.
+  auto s = leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok());
+  db->Put(leveldb::WriteOptions(), "key", "regular");
+  db.reset();
+
+  s = leveldb_env::OpenDB(options, tmp_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok());
+  db->Put(leveldb::WriteOptions(), "key", "temp");
+  db.reset();
+
+  EXPECT_TRUE(base::DirectoryExists(db_path));
+  EXPECT_TRUE(base::DirectoryExists(tmp_path));
+
+  // Open the regular db and check that the temporary one was cleaned up.
+  s = leveldb_env::OpenDB(options, db_path.AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(s.ok()) << s.ToString();
+  std::string value;
+  s = db->Get(leveldb::ReadOptions(), "key", &value);
+  EXPECT_TRUE(s.ok()) << s.ToString();
+  EXPECT_EQ("regular", value);
+  EXPECT_TRUE(base::DirectoryExists(db_path));
+  EXPECT_FALSE(base::DirectoryExists(tmp_path));
 }
 
 }  // namespace leveldb_env

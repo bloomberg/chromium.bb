@@ -131,6 +131,7 @@
 #include "services/service_manager/sandbox/switches.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/libaom/av1_buildflags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -2872,6 +2873,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRemoveNavigationHistoryName,
      flag_descriptions::kRemoveNavigationHistoryDescription, kOsAll,
      FEATURE_VALUE_TYPE(browsing_data::features::kRemoveNavigationHistory)},
+    {"rewrite-leveldb-on-deletion",
+     flag_descriptions::kRewriteLevelDBOnDeletionName,
+     flag_descriptions::kRewriteLevelDBOnDeletionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(leveldb::kLevelDBRewriteFeature)},
     {"passive-listener-default",
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,
