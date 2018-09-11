@@ -47,10 +47,9 @@ settings below are inside Window > Preferences.
     * Select the android-formatting.xml file
     * Make sure Android is set as the Active Profile
  * Java import order
-    * Download [android.importorder](https://raw.githubusercontent.com/android/platform_development/master/ide/eclipse/android.importorder)
     * Select Java > Code Style > Organize Imports from the tree on the left
     * Click Import...
-    * Select the android.importorder file
+    * Select the `<project root>/tools/android/eclipse/android.importorder` file
  * Disable automatic refresh. Otherwise, Eclipse will constantly try to refresh
    your projects (which can be slow).
     * Select General > Workspace from the tree on the left.
