@@ -84,6 +84,7 @@ const char* const kKnownSettings[] = {
     kDevicePrintersConfigurations,
     kDevicePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
+    kDeviceUnaffiliatedCrostiniAllowed,
     kDeviceWallpaperImage,
     kDisplayRotationDefault,
     kExtensionCacheSize,
