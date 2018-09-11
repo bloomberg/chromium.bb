@@ -45,11 +45,20 @@ Example test filter file for excluding a set of tests:
 ## Usage
 
 When running tests on desktop platforms, the test filter file can be specified
-using `--test-launcher-filter-file` command line flag. Example test invocation:
+using `--test-launcher-filter-file` command line flag. Example test invocation
+(single filter file):
 
 ```bash
 $ out/dbg/content_browsertests \
     --test-launcher-filter-file=testing/buildbot/filters/foo.content_browsertests.filter
+```
+
+Example test invocation (multiple filter files, separated by ';'):
+
+```bash
+$ out/dbg/content_browsertests \
+    --test-launcher-filter-file=testing/buildbot/filters/foo.content_browsertests.filter;\
+                                testing/buildbot/filters/foo.chromeos.content_browsertests.filter
 ```
 
 When running tests on Android, the test filter file can also be specified using
