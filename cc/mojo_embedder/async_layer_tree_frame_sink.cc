@@ -20,6 +20,30 @@
 namespace cc {
 namespace mojo_embedder {
 
+AsyncLayerTreeFrameSink::PipelineReporting::PipelineReporting(
+    const viz::BeginFrameArgs args,
+    base::TimeTicks now)
+    : trace_id_(args.trace_id), frame_time_(now) {}
+
+AsyncLayerTreeFrameSink::PipelineReporting::~PipelineReporting() = default;
+
+void AsyncLayerTreeFrameSink::PipelineReporting::Report() {
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(trace_id_),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "SubmitCompositorFrame");
+
+  // Note that client_name is constant during the lifetime of the process and
+  // it's either "Browser" or "Renderer".
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      base::StringPrintf(
+          "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
+          GetClientNameForMetrics()),
+      base::TimeTicks::Now() - frame_time_,
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(200), 50);
+}
+
 AsyncLayerTreeFrameSink::InitParams::InitParams() = default;
 AsyncLayerTreeFrameSink::InitParams::~InitParams() = default;
 
@@ -124,11 +148,15 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
             frame.metadata.begin_frame_ack.sequence_number);
   TRACE_EVENT0("cc,benchmark",
                "AsyncLayerTreeFrameSink::SubmitCompositorFrame");
-  TRACE_EVENT_WITH_FLOW1(
-      "viz,benchmark", "Graphics.Pipeline",
-      TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SubmitCompositorFrame");
+
+  // It's possible to request an immediate composite from cc which will bypass
+  // BeginFrame. In that case, we cannot collect full graphics pipeline data.
+  auto it = pipeline_reporting_frame_times_.find(
+      frame.metadata.begin_frame_ack.trace_id);
+  if (it != pipeline_reporting_frame_times_.end()) {
+    it->second.Report();
+    pipeline_reporting_frame_times_.erase(it);
+  }
 
   if (!enable_surface_synchronization_) {
     local_surface_id_ =
@@ -180,7 +208,14 @@ void AsyncLayerTreeFrameSink::DidNotProduceFrame(
   DCHECK(compositor_frame_sink_ptr_);
   DCHECK(!ack.has_damage);
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
-  compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
+
+  // TODO(yiyix): Remove duplicated calls of DidNotProduceFrame from the same
+  // BeginFrames. https://crbug.com/881949
+  auto it = pipeline_reporting_frame_times_.find(ack.trace_id);
+  if (it != pipeline_reporting_frame_times_.end()) {
+    compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
+    pipeline_reporting_frame_times_.erase(it);
+  }
 }
 
 void AsyncLayerTreeFrameSink::DidAllocateSharedBitmap(
@@ -211,16 +246,22 @@ void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
 }
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   // Note that client_name is constant during the lifetime of the process and
   // it's either "Browser" or "Renderer".
-  if (const char* client_name = GetClientNameForMetrics()) {
-    base::TimeDelta frame_difference = base::TimeTicks::Now() - args.frame_time;
+  const char* client_name = GetClientNameForMetrics();
+  if (client_name && args.trace_id != -1) {
+    base::TimeTicks current_time = base::TimeTicks::Now();
+    base::TimeDelta frame_difference = current_time - args.frame_time;
+    PipelineReporting report(args, current_time);
+    pipeline_reporting_frame_times_.emplace(args.trace_id, report);
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         base::StringPrintf("GraphicsPipeline.%s.ReceivedBeginFrame",
                            client_name),
         frame_difference, base::TimeDelta::FromMicroseconds(1),
         base::TimeDelta::FromMilliseconds(100), 50);
   }
+
   if (!needs_begin_frames_) {
     TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
                            TRACE_ID_GLOBAL(args.trace_id),
@@ -229,12 +270,13 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
     // sink know that we didn't use this BeginFrame.
     DidNotProduceFrame(viz::BeginFrameAck(args, false));
-  } else {
-    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
-                           TRACE_ID_GLOBAL(args.trace_id),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "step", "ReceiveBeginFrame");
+    return;
   }
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "ReceiveBeginFrame");
+
   if (begin_frame_source_)
     begin_frame_source_->OnBeginFrame(args);
 }
