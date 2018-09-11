@@ -232,9 +232,9 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 template <typename Base>
 void LayoutNGMixin<Base>::SetCachedLayoutResult(
     const NGConstraintSpace& constraint_space,
-    NGBreakToken* break_token,
-    scoped_refptr<NGLayoutResult> layout_result) {
-  if (break_token || layout_result->Status() != NGLayoutResult::kSuccess) {
+    const NGBreakToken* break_token,
+    const NGLayoutResult& layout_result) {
+  if (break_token || layout_result.Status() != NGLayoutResult::kSuccess) {
     // We can't cache these yet
     return;
   }
@@ -242,11 +242,11 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
     return;
 
   Base::cached_constraint_space_ = &constraint_space;
-  cached_result_ = layout_result;
+  cached_result_ = &layout_result;
 }
 
 template <typename Base>
-scoped_refptr<NGLayoutResult>
+scoped_refptr<const NGLayoutResult>
 LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
   return cached_result_;
 }
