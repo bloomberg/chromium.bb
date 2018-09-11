@@ -346,7 +346,7 @@ void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
   bottom_radius_ = bottom_radius;
 
   if (GetWidget())
-    InstallMask();
+    UpdateMask();
 }
 
 void ArcNotificationContentView::OnSlideChanged() {
@@ -484,7 +484,7 @@ void ArcNotificationContentView::AttachSurface() {
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
 
-  InstallMask();
+  UpdateMask();
 }
 
 void ArcNotificationContentView::ShowCopiedSurface() {
@@ -522,18 +522,28 @@ void ArcNotificationContentView::HideCopiedSurface() {
 
   // Re-install the mask since the custom mask is unset by
   // |::wm::RecreateLayers()| in |ShowCopiedSurface()| method.
-  InstallMask();
+  UpdateMask();
 }
 
-void ArcNotificationContentView::InstallMask() {
+void ArcNotificationContentView::UpdateMask() {
   if (top_radius_ == 0 && bottom_radius_ == 0) {
     SetCustomMask(nullptr);
+    mask_insets_.reset();
     return;
   }
 
-  SetCustomMask(views::Painter::CreatePaintedLayer(
+  gfx::Insets new_insets = GetContentsBounds().InsetsFrom(GetVisibleBounds());
+  if (mask_insets_ == new_insets)
+    return;
+  mask_insets_ = new_insets;
+
+  auto mask_painter =
       std::make_unique<message_center::NotificationBackgroundPainter>(
-          top_radius_, bottom_radius_)));
+          top_radius_, bottom_radius_);
+  // Set insets to round visible notification corners. https://crbug.com/866777
+  mask_painter->set_insets(new_insets);
+
+  SetCustomMask(views::Painter::CreatePaintedLayer(std::move(mask_painter)));
 }
 
 void ArcNotificationContentView::AddedToWidget() {
@@ -595,6 +605,9 @@ void ArcNotificationContentView::Layout() {
     // |views::NativeViewHostAura::ShowWidget()| and |aura::Window::Show()|
     // which has DCHECK the opacity of the window.
     views::NativeViewHost::Layout();
+    // Reinstall mask to update rounded mask insets. Set null mask unless radius
+    // is set.
+    UpdateMask();
 
     // Scale notification surface if necessary.
     gfx::Transform transform;

@@ -90,7 +90,7 @@ class ArcNotificationContentView
   void HideCopiedSurface();
 
   // Generates a mask using |top_radius_| and |bottom_radius_| and installs it.
-  void InstallMask();
+  void UpdateMask();
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
@@ -175,9 +175,12 @@ class ArcNotificationContentView
 
   base::string16 accessible_name_;
 
-  // Radiuses of rounded corners. These values are used in InstallMask().
+  // Radiuses of rounded corners. These values are used in UpdateMask().
   int top_radius_ = 0;
   int bottom_radius_ = 0;
+
+  // Current insets of mask layer.
+  base::Optional<gfx::Insets> mask_insets_;
 
   std::unique_ptr<ui::LayerTreeOwner> surface_copy_;
   std::unique_ptr<ui::LayerOwner> surface_copy_mask_;
