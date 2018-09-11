@@ -2569,8 +2569,6 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const int diff_stride = block_size_wide[plane_bsize];
   const int shift = (xd->bd - 8);
 
-  const double sse_norm = (double)sse / num_samples;
-
   if (sse == 0) {
     if (rate) *rate = 0;
     if (dist) *dist = 0;
@@ -2585,6 +2583,9 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
     if (dist) *dist = model_dist;
     return;
   }
+
+  aom_clear_system_state();
+  const double sse_norm = (double)sse / num_samples;
 
   double sse_norm_arr[4];
   get_2x2_normalized_sses_and_sads(cpi, plane_bsize, src, src_stride, dst,
@@ -2622,6 +2623,7 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
+  aom_clear_system_state();
 
   // Check if skip is better
   if (rate_i == 0) {
@@ -2653,7 +2655,6 @@ static void model_rd_for_sb_with_dnn(
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
@@ -2689,7 +2690,6 @@ static void model_rd_for_sb_with_dnn(
     if (plane_sse) plane_sse[plane] = sse;
     if (plane_dist) plane_dist[plane] = dist;
   }
-  aom_clear_system_state();
 
   if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
@@ -2716,6 +2716,7 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
     if (dist) *dist = 0;
     return;
   }
+  aom_clear_system_state();
   const double sse_norm = (double)sse / num_samples;
   const double qstepsqr = (double)qstep * qstep;
   const double xm = log(sse_norm + 1.0) / log(2.0);
@@ -2724,9 +2725,10 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
 
   av1_model_rd_surffit(xm, yl, &rate_f, &dist_by_sse_norm_f);
 
-  const float dist_f = (float)((double)dist_by_sse_norm_f * sse_norm);
+  const double dist_f = dist_by_sse_norm_f * sse_norm;
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
+  aom_clear_system_state();
 
   // Check if skip is better
   if (rate_i == 0) {
@@ -2757,7 +2759,6 @@ static void model_rd_for_sb_with_surffit(
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
@@ -2794,7 +2795,6 @@ static void model_rd_for_sb_with_surffit(
     if (plane_sse) plane_sse[plane] = sse;
     if (plane_dist) plane_dist[plane] = dist;
   }
-  aom_clear_system_state();
 
   if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
@@ -2822,6 +2822,7 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
     if (dist) *dist = 0;
     return;
   }
+  aom_clear_system_state();
   const double sse_norm = (double)sse / num_samples;
   const double qstepsqr = (double)qstep * qstep;
   const double xqr = log(sse_norm / qstepsqr) / log(2.0);
@@ -2829,9 +2830,10 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   double rate_f, dist_by_sse_norm_f;
   av1_model_rd_curvfit(xqr, &rate_f, &dist_by_sse_norm_f);
 
-  const float dist_f = (float)((double)dist_by_sse_norm_f * sse_norm);
+  const double dist_f = dist_by_sse_norm_f * sse_norm;
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
+  aom_clear_system_state();
 
   // Check if skip is better
   if (rate_i == 0) {
@@ -2862,7 +2864,6 @@ static void model_rd_for_sb_with_curvfit(
   int64_t dist_sum = 0;
   int64_t total_sse = 0;
 
-  aom_clear_system_state();
   for (int plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
@@ -2900,7 +2901,6 @@ static void model_rd_for_sb_with_curvfit(
     if (plane_sse) plane_sse[plane] = sse;
     if (plane_dist) plane_dist[plane] = dist;
   }
-  aom_clear_system_state();
 
   if (skip_txfm_sb) *skip_txfm_sb = total_sse == 0;
   if (skip_sse_sb) *skip_sse_sb = total_sse << 4;
