@@ -19,7 +19,6 @@
 #include <stdint.h>
 
 #include "base/file_version_info_win.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
