@@ -156,6 +156,10 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
       base::TimeDelta::FromMilliseconds(640);
   timing.document_timing->load_event_start =
       base::TimeDelta::FromMilliseconds(1280);
+  timing.interactive_timing->first_input_delay =
+      base::TimeDelta::FromMilliseconds(50);
+  timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(1400);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/webhp?q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -223,6 +227,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramFromGWSLoad,
       timing.document_timing->load_event_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstInputDelay, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSFirstInputDelay,
+      timing.interactive_timing->first_input_delay.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
