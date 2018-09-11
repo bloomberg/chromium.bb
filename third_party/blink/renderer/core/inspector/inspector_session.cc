@@ -19,6 +19,19 @@ namespace {
 const char kV8StateKey[] = "v8";
 }
 
+// static
+bool InspectorSession::ShouldInterruptForMethod(const String& method) {
+  // Keep in sync with DevToolsSession::ShouldSendOnIO.
+  // TODO(dgozman): find a way to share this.
+  return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
+         method == "Debugger.setBreakpointByUrl" ||
+         method == "Debugger.removeBreakpoint" ||
+         method == "Debugger.setBreakpointsActive" ||
+         method == "Performance.getMetrics" || method == "Page.crash" ||
+         method == "Runtime.terminateExecution" ||
+         method == "Emulation.setScriptExecutionDisabled";
+}
+
 InspectorSession::InspectorSession(
     Client* client,
     CoreProbeSink* instrumenting_agents,

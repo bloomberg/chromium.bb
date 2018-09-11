@@ -414,6 +414,10 @@ WorkerFetchContext::GetLoadingTaskRunner() {
   return loading_task_runner_;
 }
 
+bool WorkerFetchContext::DefersLoading() const {
+  return global_scope_->IsContextPaused();
+}
+
 std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
 WorkerFetchContext::CreateResourceLoadingTaskRunnerHandle() {
   return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(

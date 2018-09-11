@@ -100,9 +100,12 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
     return resource_fetcher_;
   WorkerFetchContext* fetch_context = WorkerFetchContext::Create(*this);
   resource_fetcher_ = ResourceFetcher::Create(fetch_context);
+  if (IsContextPaused())
+    resource_fetcher_->SetDefersLoading(true);
   DCHECK(resource_fetcher_);
   return resource_fetcher_;
 }
+
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
   DCHECK(IsContextThread());
   DCHECK(resource_fetcher_);
@@ -196,6 +199,18 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   // Step 3. "Perform the internal module script graph fetching procedure ..."
   modulator->FetchTree(module_url_record, fetch_client_settings_object,
                        destination, options, custom_fetch_type, client);
+}
+
+void WorkerOrWorkletGlobalScope::TasksWerePaused() {
+  ExecutionContext::TasksWerePaused();
+  if (resource_fetcher_)
+    resource_fetcher_->SetDefersLoading(true);
+}
+
+void WorkerOrWorkletGlobalScope::TasksWereUnpaused() {
+  ExecutionContext::TasksWereUnpaused();
+  if (resource_fetcher_)
+    resource_fetcher_->SetDefersLoading(false);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

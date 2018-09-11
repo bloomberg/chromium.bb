@@ -114,6 +114,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       ModuleScriptCustomFetchType,
       ModuleTreeClient*);
 
+  void TasksWerePaused() override;
+  void TasksWereUnpaused() override;
+
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<ResourceFetcher> resource_fetcher_;
