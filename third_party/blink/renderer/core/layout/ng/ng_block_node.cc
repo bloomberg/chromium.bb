@@ -176,7 +176,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // In particular, that fragment would have an incorrect offset if we
       // don't re-set the result here.
       ToLayoutBlockFlow(box_)->SetCachedLayoutResult(
-          constraint_space, break_token, layout_result);
+          constraint_space, break_token, *layout_result);
       if (!constraint_space.IsIntermediateLayout() && first_child &&
           first_child.IsInline()) {
         block_flow->UpdatePaintFragmentFromCachedLayoutResult(
@@ -256,7 +256,7 @@ void NGBlockNode::FinishLayout(const NGConstraintSpace& constraint_space,
   if (box_->IsLayoutNGMixin()) {
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
-                                      layout_result);
+                                      *layout_result);
     NGLayoutInputNode first_child = FirstChild();
     if (first_child && first_child.IsInline()) {
       CopyFragmentDataToLayoutBoxForInlineChildren(

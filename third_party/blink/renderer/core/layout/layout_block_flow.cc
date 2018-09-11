@@ -2532,13 +2532,14 @@ scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
   return nullptr;
 }
 
-scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResultForTesting() {
+scoped_refptr<const NGLayoutResult>
+LayoutBlockFlow::CachedLayoutResultForTesting() {
   return nullptr;
 }
 
 void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
-                                            NGBreakToken*,
-                                            scoped_refptr<NGLayoutResult>) {}
+                                            const NGBreakToken*,
+                                            const NGLayoutResult&) {}
 
 void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
                                        scoped_refptr<const NGPhysicalFragment>,
