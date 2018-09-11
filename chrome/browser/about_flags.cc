@@ -4382,13 +4382,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kLongPressBackForHistory)},
 #endif
 
-#if defined(OS_ANDROID)
-    {"long-press-back-new-design",
-     flag_descriptions::kLongPressBackNewDesignName,
-     flag_descriptions::kLongPressBackNewDesignDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kLongPressBackNewDesign)},
-#endif
-
     {"sync-standalone-transport",
      flag_descriptions::kSyncStandaloneTransportName,
      flag_descriptions::kSyncStandaloneTransportDescription, kOsAll,

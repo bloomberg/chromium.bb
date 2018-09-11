@@ -6,13 +6,8 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
@@ -37,7 +32,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
-import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -66,7 +60,6 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     private final NavigationController mNavigationController;
     private NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
-    private final ListItemFactory mListItemFactory;
     private final @Type int mType;
 
     private final int mFaviconSize;
@@ -113,12 +106,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         // prevent that.
         if (anchorToBottom) setVerticalOffset(0);
 
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.LONG_PRESS_BACK_NEW_DESIGN)) {
-            mAdapter = new NewNavigationAdapter();
-        } else {
-            mAdapter = new NavigationAdapter();
-        }
+        mAdapter = new NavigationAdapter();
         if (anchorToBottom) mAdapter.reverseOrder();
 
         setModal(true);
@@ -128,7 +116,6 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         setAdapter(mAdapter);
 
         mFaviconSize = mContext.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        mListItemFactory = new ListItemFactory(context);
     }
 
     private String buildComputedAction(String action) {
@@ -222,68 +209,8 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         dismiss();
     }
 
-    private void updateBitmapForTextView(TextView view, Bitmap bitmap) {
-        Drawable faviconDrawable = null;
-        if (bitmap != null) {
-            faviconDrawable = new BitmapDrawable(mContext.getResources(), bitmap);
-            ((BitmapDrawable) faviconDrawable).setGravity(Gravity.FILL);
-        } else {
-            faviconDrawable = new ColorDrawable(Color.TRANSPARENT);
-        }
-        faviconDrawable.setBounds(0, 0, mFaviconSize, mFaviconSize);
-        view.setCompoundDrawables(faviconDrawable, null, null, null);
-    }
-
-    private static class ListItemFactory {
-        private static final int LIST_ITEM_HEIGHT_DP = 48;
-        private static final int PADDING_DP = 8;
-        private static final int TEXT_SIZE_SP = 18;
-        private static final float FADE_LENGTH_DP = 25.0f;
-        private static final float FADE_STOP = 0.75f;
-
-        int mFadeEdgeLength;
-        int mFadePadding;
-        int mListItemHeight;
-        int mPadding;
-        boolean mIsLayoutDirectionRTL;
-        Context mContext;
-
-        public ListItemFactory(Context context) {
-            mContext = context;
-            computeFadeDimensions();
-        }
-
-        private void computeFadeDimensions() {
-            // Fade with linear gradient starting 25dp from right margin.
-            // Reaches 0% opacity at 75% length. (Simulated with extra padding)
-            float density = mContext.getResources().getDisplayMetrics().density;
-            float fadeLength = (FADE_LENGTH_DP * density);
-            mFadeEdgeLength = (int) (fadeLength * FADE_STOP);
-            mFadePadding = (int) (fadeLength * (1 - FADE_STOP));
-            mListItemHeight = (int) (density * LIST_ITEM_HEIGHT_DP);
-            mPadding = (int) (density * PADDING_DP);
-            mIsLayoutDirectionRTL = LocalizationUtils.isLayoutRtl();
-        }
-
-        public TextView createListItem() {
-            TextView view = new TextView(mContext);
-            view.setFadingEdgeLength(mFadeEdgeLength);
-            view.setHorizontalFadingEdgeEnabled(true);
-            view.setSingleLine();
-            view.setTextSize(TEXT_SIZE_SP);
-            view.setMinimumHeight(mListItemHeight);
-            view.setGravity(Gravity.CENTER_VERTICAL);
-            view.setCompoundDrawablePadding(mPadding);
-            if (!mIsLayoutDirectionRTL) {
-                view.setPadding(mPadding, 0, mPadding + mFadePadding , 0);
-            } else {
-                view.setPadding(mPadding + mFadePadding, 0, mPadding, 0);
-            }
-            return view;
-        }
-    }
-
     private class NavigationAdapter extends BaseAdapter {
+        private Integer mTopPadding;
         boolean mInReverseOrder;
 
         public void reverseOrder() {
@@ -305,25 +232,6 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         public long getItemId(int position) {
             return ((NavigationEntry) getItem(position)).getIndex();
         }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            TextView view;
-            if (convertView instanceof TextView) {
-                view = (TextView) convertView;
-            } else {
-                view = mListItemFactory.createListItem();
-            }
-            NavigationEntry entry = (NavigationEntry) getItem(position);
-            setViewText(entry, view);
-            updateBitmapForTextView(view, entry.getFavicon());
-
-            return view;
-        }
-    }
-
-    private class NewNavigationAdapter extends NavigationAdapter {
-        private Integer mTopPadding;
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -357,6 +265,14 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
             return convertView;
         }
+
+        private void setViewText(NavigationEntry entry, TextView view) {
+            String entryText = entry.getTitle();
+            if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
+            if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
+
+            view.setText(entryText);
+        }
     }
 
     private static class EntryViewHolder {
@@ -365,11 +281,5 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         TextView mTextView;
     }
 
-    private static void setViewText(NavigationEntry entry, TextView view) {
-        String entryText = entry.getTitle();
-        if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
-        if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
 
-        view.setText(entryText);
-    }
 }
