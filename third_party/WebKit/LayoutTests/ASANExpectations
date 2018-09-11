@@ -42,6 +42,9 @@ crbug.com/385015 [ Linux ] fast/frames/iframe-onload-remove-self-no-crash.html [
 crbug.com/385015 [ Linux ] fast/loader/create-frame-in-DOMContentLoaded.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/loader/frame-creation-removal.html [ Failure ]
 
+crbug.com/867982 external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
+crbug.com/882756 external/wpt/requestidlecallback/cancel-invoked.html [ Timeout Pass ]
+
 # Stack use-after-return detection
 crbug.com/438499 [ Linux ] crypto/worker-random-values-limits.html [ Timeout ]
 crbug.com/438499 [ Linux ] fast/workers/simultaneous-errors.html [ Timeout ]

@@ -4889,7 +4889,8 @@ crbug.com/867376 [ Mac ] http/tests/devtools/elements/css-variables/resolve-inhe
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
-crbug.com/867982 [ Linux Mac Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
+crbug.com/867982 [ Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
+crbug.com/882756 [ Debug ] external/wpt/requestidlecallback/cancel-invoked.html [ Timeout Pass ]
 
 # Sheriff 2018-07-27
 crbug.com/868317 [ Mac ] external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Pass ]
