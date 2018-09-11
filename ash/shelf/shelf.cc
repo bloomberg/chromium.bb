@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -176,6 +177,14 @@ ShelfBackgroundType Shelf::GetBackgroundType() const {
 void Shelf::UpdateVisibilityState() {
   if (shelf_layout_manager_)
     shelf_layout_manager_->UpdateVisibilityState();
+}
+
+void Shelf::MaybeUpdateShelfBackground() {
+  if (!shelf_layout_manager_)
+    return;
+
+  shelf_layout_manager_->MaybeUpdateShelfBackground(
+      AnimationChangeType::ANIMATE);
 }
 
 ShelfVisibilityState Shelf::GetVisibilityState() const {

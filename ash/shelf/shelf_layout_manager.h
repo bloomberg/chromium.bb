@@ -212,6 +212,9 @@ class ASH_EXPORT ShelfLayoutManager
   // panel height. The Docked Magnifier appears above the ChromeVox panel.
   void SetDockedMagnifierHeight(int height);
 
+  // Updates the background of the shelf if it has changed.
+  void MaybeUpdateShelfBackground(AnimationChangeType change_type);
+
  private:
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
@@ -274,9 +277,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Updates the target bounds if a gesture-drag is in progress. This is only
   // used by |CalculateTargetBounds()|.
   void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
-
-  // Updates the background of the shelf if it has changed.
-  void MaybeUpdateShelfBackground(AnimationChangeType change_type);
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

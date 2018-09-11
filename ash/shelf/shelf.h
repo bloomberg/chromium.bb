@@ -91,6 +91,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   void UpdateVisibilityState();
 
+  void MaybeUpdateShelfBackground();
+
   ShelfVisibilityState GetVisibilityState() const;
 
   int GetAccessibilityPanelHeight() const;

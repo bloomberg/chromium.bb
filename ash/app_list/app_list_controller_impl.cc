@@ -21,6 +21,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -541,6 +542,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
   Show(display::Display::InternalDisplayId(), app_list::kTabletMode,
        base::TimeTicks());
   UpdateHomeLauncherVisibility();
+  Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
