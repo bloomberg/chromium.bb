@@ -49,6 +49,8 @@ blink_modules_sources("filesystem") {
     "file_system_client.h",
     "file_system_directory_handle.cc",
     "file_system_directory_handle.h",
+    "file_system_directory_iterator.cc",
+    "file_system_directory_iterator.h",
     "file_system_file_handle.cc",
     "file_system_file_handle.h",
     "file_system_writer.cc",

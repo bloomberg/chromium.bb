@@ -6,9 +6,9 @@
 [
     RuntimeEnabled=WritableFiles
 ] interface FileSystemDirectoryHandle : FileSystemBaseHandle {
-    [CallWith=ScriptState] Promise<FileSystemFileHandle> getFile(USVString name);
-    [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getDirectory(USVString name);
-    // TODO(mek): Other methods such as getEntries etc.
+    [CallWith=ScriptState] Promise<FileSystemFileHandle> getFile(USVString name, optional FileSystemGetFileOptions options);
+    [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getDirectory(USVString name, optional FileSystemGetDirectoryOptions options);
+    [CallWith=ScriptState] object getEntries();
 
     [CallWith=ScriptState]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);
