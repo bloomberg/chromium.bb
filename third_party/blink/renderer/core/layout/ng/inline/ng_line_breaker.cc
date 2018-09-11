@@ -1151,13 +1151,9 @@ void NGLineBreaker::Rewind(unsigned new_end) {
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
-  current_style_ = &style;
-
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
-    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
-
     if (UNLIKELY(override_break_anywhere_)) {
       break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
     } else {
@@ -1186,6 +1182,15 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     hyphenation_ = style.GetHyphenation();
   }
 
+  // The above calls are cheap & necessary. But the following are expensive
+  // and do not need to be reset every time if the style doesn't change,
+  // so avoid them if possible.
+  if (&style == current_style_.get())
+    return;
+
+  current_style_ = &style;
+  if (auto_wrap_)
+    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   spacing_.SetSpacing(style.GetFontDescription());
 }
 
