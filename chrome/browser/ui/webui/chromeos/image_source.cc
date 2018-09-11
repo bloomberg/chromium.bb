@@ -26,9 +26,7 @@
 namespace chromeos {
 namespace {
 
-const char* kWhitelistedDirectories[] = {
-  "regulatory_labels"
-};
+const char* const kWhitelistedDirectories[] = {"regulatory_labels"};
 
 // Callback for user_manager::UserImageLoader.
 void ImageLoaded(
@@ -64,7 +62,7 @@ void ImageSource::StartDataRequest(
     return;
   }
 
-  const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
+  const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath image_path = asset_dir.AppendASCII(path);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},

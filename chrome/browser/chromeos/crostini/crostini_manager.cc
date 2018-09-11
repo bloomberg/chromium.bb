@@ -340,8 +340,7 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_condition=" << mount_info.mount_condition;
     } else {
       // Register filesystem and add volume to VolumeManager.
-      base::FilePath mount_path =
-          base::FilePath(FILE_PATH_LITERAL(mount_info.mount_path));
+      base::FilePath mount_path = base::FilePath(mount_info.mount_path);
       storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
           file_manager::util::GetCrostiniMountPointName(profile_),
           storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),

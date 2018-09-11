@@ -46,7 +46,7 @@ bool GetDmTokenFilePath(base::FilePath* token_file_path,
   if (create_dir && !base::CreateDirectory(*token_file_path))
     return false;
 
-  *token_file_path = token_file_path->Append(FILE_PATH_LITERAL(client_id));
+  *token_file_path = token_file_path->Append(client_id);
 
   return true;
 }

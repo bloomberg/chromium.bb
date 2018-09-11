@@ -352,8 +352,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
         "c", storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(),
-        base::FilePath(FILE_PATH_LITERAL(kExternalMountPoint)));
+        storage::FileSystemMountOption(), base::FilePath(kExternalMountPoint));
 
     // Just verify that we are properly setting the mount points.
     std::vector<storage::MountPoints::MountPointInfo> external_mount_points;
