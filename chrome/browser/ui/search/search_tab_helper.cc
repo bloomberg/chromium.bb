@@ -258,7 +258,9 @@ void SearchTabHelper::FocusOmnibox(bool focus) {
     // visual cue to users who really understand selection state about what
     // will happen if they start typing.
     omnibox_view->SelectAll(false);
+#if !defined(OS_WIN)
     omnibox_view->ShowVirtualKeyboardIfEnabled();
+#endif
   } else {
     // Remove focus only if the popup is closed. This will prevent someone
     // from changing the omnibox value and closing the popup without user

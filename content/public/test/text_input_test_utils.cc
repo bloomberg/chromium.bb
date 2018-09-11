@@ -186,7 +186,7 @@ class TestRenderWidgetHostViewDestructionObserver::InternalObserver
   DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
 
-#ifdef USE_AURA
+#if defined(USE_AURA)
 class InputMethodObserverAura : public TestInputMethodObserver,
                                 public ui::InputMethodObserver {
  public:
@@ -453,6 +453,15 @@ void TextInputStateSender::SetShowVirtualKeyboardIfEnabled(
   text_input_state_->show_ime_if_needed = show_ime_if_needed;
 }
 
+#if defined(USE_AURA)
+void TextInputStateSender::SetLastPointerType(
+    ui::EventPointerType last_pointer_type) {
+  RenderWidgetHostViewAura* rwhva =
+      static_cast<RenderWidgetHostViewAura*>(view_);
+  rwhva->SetLastPointerType(last_pointer_type);
+}
+#endif
+
 TestInputMethodObserver::TestInputMethodObserver() {}
 
 TestInputMethodObserver::~TestInputMethodObserver() {}
@@ -462,7 +471,7 @@ std::unique_ptr<TestInputMethodObserver> TestInputMethodObserver::Create(
     WebContents* web_contents) {
   std::unique_ptr<TestInputMethodObserver> observer;
 
-#ifdef USE_AURA
+#if defined(USE_AURA)
   RenderWidgetHostViewAura* view = static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView());
   observer.reset(new InputMethodObserverAura(view->GetInputMethod()));
