@@ -735,9 +735,6 @@ class CORE_EXPORT LocalFrameView final
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
 
-  void Reset();
-  void Init();
-
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
 
   void PerformPreLayoutTasks();
