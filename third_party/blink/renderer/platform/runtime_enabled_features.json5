@@ -392,7 +392,7 @@
     },
     {
       name: "EncodingStreams",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
