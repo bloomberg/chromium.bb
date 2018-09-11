@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -512,7 +513,9 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       list_controller_(list_controller),
       model_updater_(model_updater),
       clock_(clock),
-      ranker_(std::make_unique<AppSearchResultRanker>(profile)),
+      ranker_(std::make_unique<AppSearchResultRanker>(
+          profile->GetPath(),
+          chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       update_results_factory_(this) {
   data_sources_.emplace_back(
       std::make_unique<ExtensionDataSource>(profile, this));

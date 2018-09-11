@@ -336,9 +336,7 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
 TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitWithFeatures(
-      {features::kEnableSearchResultRankerTrain,
-       features::kEnableSearchResultRankerInfer},
-      {});
+      {features::kEnableAppSearchResultRanker}, {});
   CreateSearch();
 
   extensions::ExtensionPrefs* prefs =
@@ -360,8 +358,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
 TEST_F(AppSearchProviderTest, RankerIsDisabledWithFlag) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitWithFeatures(
-      {features::kEnableSearchResultRankerTrain},
-      {features::kEnableSearchResultRankerInfer});
+      {}, {features::kEnableAppSearchResultRanker});
   CreateSearch();
 
   extensions::ExtensionPrefs* prefs =

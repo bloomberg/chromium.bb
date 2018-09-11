@@ -61,13 +61,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enables the feature to rank app search result using AppSearchResultRanker
-// (only training).
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSearchResultRankerTrain;
-
-// Enables the feature to rank app search result using AppSearchResultRanker
-// (only inferencing).
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSearchResultRankerInfer;
+// Enables the feature to rank app search result using AppSearchResultRanker.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppSearchResultRanker;
 
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
@@ -81,12 +76,11 @@ bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsContinueReadingEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsSearchResultRankerTrainEnabled();
-bool ASH_PUBLIC_EXPORT IsSearchResultRankerInferEnabled();
+bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
-std::string ASH_PUBLIC_EXPORT SearchResultRankerPredictorName();
+std::string ASH_PUBLIC_EXPORT AppSearchResultRankerPredictorName();
 
 }  // namespace features
 }  // namespace app_list
