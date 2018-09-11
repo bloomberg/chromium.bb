@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
+#include "chromecast/graphics/cast_touch_activity_observer.h"
+#include "chromecast/graphics/cast_touch_event_gate.h"
 #include "chromecast/graphics/gestures/cast_system_gesture_event_handler.h"
 #include "chromecast/graphics/gestures/side_swipe_detector.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -220,6 +222,11 @@ void CastWindowManagerAura::Setup() {
                                         screen_position_client_.get());
 
   window_tree_host_->Show();
+
+  // Install the CastTouchEventGate before other event rewriters. It has to be
+  // the first in the chain.
+  event_gate_ = std::make_unique<CastTouchEventGate>(root_window);
+
   system_gesture_dispatcher_ = std::make_unique<CastSystemGestureDispatcher>();
   system_gesture_event_handler_ =
       std::make_unique<CastSystemGestureEventHandler>(
@@ -237,6 +244,7 @@ void CastWindowManagerAura::TearDown() {
   if (!window_tree_host_) {
     return;
   }
+  event_gate_.reset();
   side_swipe_detector_.reset();
   capture_client_.reset();
   aura::client::SetWindowParentingClient(window_tree_host_->window(), nullptr);
@@ -300,6 +308,20 @@ void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(
 
 CastGestureHandler* CastWindowManagerAura::GetGestureHandler() const {
   return system_gesture_dispatcher_.get();
+}
+
+void CastWindowManagerAura::SetTouchInputDisabled(bool disabled) {
+  event_gate_->SetEnabled(disabled);
+}
+
+void CastWindowManagerAura::AddTouchActivityObserver(
+    CastTouchActivityObserver* observer) {
+  event_gate_->AddObserver(observer);
+}
+
+void CastWindowManagerAura::RemoveTouchActivityObserver(
+    CastTouchActivityObserver* observer) {
+  event_gate_->RemoveObserver(observer);
 }
 
 }  // namespace chromecast

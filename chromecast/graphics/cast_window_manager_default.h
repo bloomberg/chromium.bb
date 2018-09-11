@@ -30,6 +30,11 @@ class CastWindowManagerDefault : public CastWindowManager {
 
   void SetColorInversion(bool enable) override;
 
+  void SetTouchInputDisabled(bool disabled) override;
+  void AddTouchActivityObserver(CastTouchActivityObserver* observer) override;
+  void RemoveTouchActivityObserver(
+      CastTouchActivityObserver* observer) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CastWindowManagerDefault);
 };
