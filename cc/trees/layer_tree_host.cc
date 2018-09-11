@@ -1127,13 +1127,9 @@ void LayerTreeHost::SetViewportSizeAndScale(
   if (changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
-#if defined(OS_MACOSX)
-    // TODO(ccameron): This check is not valid on Aura or Mus yet, but should
-    // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
           !local_surface_id_from_parent_.is_valid());
-#endif
   }
 }
 
