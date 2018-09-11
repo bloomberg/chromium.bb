@@ -69,7 +69,6 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
 
   // Set Y.
   const int height = frame_size.height();
-  VLOG(1) << "frame num_strides: " << frame->layout().num_strides();
   const int stride_y = frame->stride(VideoFrame::kYPlane);
   uint8_t* y_plane = frame->data(VideoFrame::kYPlane);
   for (int j = 0; j < height; ++j) {
