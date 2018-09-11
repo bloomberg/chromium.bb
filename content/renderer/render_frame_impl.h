@@ -809,7 +809,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidFailProvisionalLoadInternal(
       const blink::WebURLError& error,
       blink::WebHistoryCommitType commit_type,
-      const base::Optional<std::string>& error_page_content);
+      const base::Optional<std::string>& error_page_content,
+      std::unique_ptr<blink::WebNavigationParams> navigation_params,
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> document_state);
+
+  void NotifyObserversOfFailedProvisionalLoad(const blink::WebURLError& error);
 
   bool handling_select_range() const { return handling_select_range_; }
 
