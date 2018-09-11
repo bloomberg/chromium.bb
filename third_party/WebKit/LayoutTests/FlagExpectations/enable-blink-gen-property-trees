@@ -115,6 +115,8 @@ Bug(none) xr/ [ Skip ]
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
+Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
+Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
@@ -126,8 +128,6 @@ crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html 
 # the expectations differ, but these do not block BlinkGenPropertyTrees.
 crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
-
-crbug.com/861824 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
 
 # These scrollbar tests should pass.
 crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Failure ]
@@ -213,5 +213,14 @@ crbug.com/879173 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nes
 
 crbug.com/879610 virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
 
-Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
+crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
+
 crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
+
+crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
+
+# Check failed: 1u == property_trees()->element_id_to_effect_node_index.count(element_id) (1 vs. 0)
+crbug.com/882974 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Crash ]
+crbug.com/882974 virtual/threaded/fast/animationworklet/worklet-animation-local-time-undefined.html [ Crash ]
