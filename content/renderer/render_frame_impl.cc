@@ -4832,13 +4832,9 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNone &&
-      pending_navigation_params_) {
-    // Skip the processing for the main resource, it has been done before
-    // sending the request to the browser.
-    return;
-  }
+  CHECK(!pending_navigation_params_);
+  // TODO(ahemery): We should skip the processing for the main resource, it has
+  // been done before sending the request to the browser.
 
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
