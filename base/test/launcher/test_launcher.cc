@@ -948,11 +948,17 @@ bool TestLauncher::Init() {
   std::vector<std::string> positive_gtest_filter;
 
   if (command_line->HasSwitch(switches::kTestLauncherFilterFile)) {
-    base::FilePath filter_file_path = base::MakeAbsoluteFilePath(
-        command_line->GetSwitchValuePath(switches::kTestLauncherFilterFile));
-    if (!LoadFilterFile(filter_file_path, &positive_file_filter,
-                        &negative_test_filter_))
-      return false;
+    auto filter =
+        command_line->GetSwitchValueNative(switches::kTestLauncherFilterFile);
+    for (auto filter_file :
+         SplitString(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
+                     base::SPLIT_WANT_ALL)) {
+      base::FilePath filter_file_path =
+          base::MakeAbsoluteFilePath(FilePath(filter_file));
+      if (!LoadFilterFile(filter_file_path, &positive_file_filter,
+                          &negative_test_filter_))
+        return false;
+    }
   }
 
   // Split --gtest_filter at '-', if there is one, to separate into
