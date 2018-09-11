@@ -66,7 +66,7 @@ constexpr struct {
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
     {&kAdvancedProtectionStatusFeature, true},
-    {&kBillingInterstitial, false},
+    {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kForceEnableResetPasswordWebUI, true},
     {&kInspectDownloadedRarFiles, true},
