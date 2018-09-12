@@ -29,6 +29,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
+#include "ui/aura/window.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
@@ -37,6 +38,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace app_list {
 
@@ -88,7 +90,16 @@ void AppListMainView::AddContentsViews() {
 }
 
 void AppListMainView::ShowAppListWhenReady() {
-  GetWidget()->Show();
+  // After switching to tablet mode, other app windows may be active. Show the
+  // app list without activating it to avoid breaking other windows' state.
+  const aura::Window* active_window =
+      wm::GetActivationClient(
+          app_list_view_->GetWidget()->GetNativeView()->GetRootWindow())
+          ->GetActiveWindow();
+  if (app_list_view_->IsHomeLauncherEnabledInTabletMode() && active_window)
+    GetWidget()->ShowInactive();
+  else
+    GetWidget()->Show();
 }
 
 void AppListMainView::ResetForShow() {
