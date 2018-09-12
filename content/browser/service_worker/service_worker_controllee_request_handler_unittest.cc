@@ -145,8 +145,9 @@ class ServiceWorkerControlleeRequestHandlerTest
     options.scope = scope_;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), script_url_, 1L, context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
+                                        blink::mojom::ScriptType::kClassic, 1L,
+                                        context()->AsWeakPtr());
 
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();

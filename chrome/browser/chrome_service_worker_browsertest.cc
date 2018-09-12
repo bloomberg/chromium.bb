@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      embedded_test_server()->GetURL("/"),
+      embedded_test_server()->GetURL("/"), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/service_worker.js"), options,
@@ -551,6 +551,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
   base::RunLoop run_loop;
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/scope/"),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/sw.js"), options,

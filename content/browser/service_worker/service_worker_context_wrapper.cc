@@ -322,7 +322,8 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
     return;
   }
   blink::mojom::ServiceWorkerRegistrationOptions options_to_pass(
-      net::SimplifyUrlForRequest(options.scope), options.update_via_cache);
+      net::SimplifyUrlForRequest(options.scope), options.type,
+      options.update_via_cache);
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options_to_pass,
       base::BindOnce(&FinishRegistrationOnIO, std::move(callback)));
