@@ -275,7 +275,6 @@ template("test") {
 
     fuchsia_package(_pkg_target) {
       testonly = true
-      sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
       binary = ":$_exec_target"
       package_name_override = _output_name
     }

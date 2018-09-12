@@ -1,14 +1,12 @@
 {
-  "features": [ "persistent-storage", "root-ssl-certificates", "system-temp",
-      "vulkan" ],
-  "dev": ["null", "zero"],
+  "features": [],
   "services": [
+      "chromium.web.ContextProvider",
       "fuchsia.fonts.FontProvider",
       "fuchsia.media.Audio",
       "fuchsia.net.LegacySocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
-      "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",
       "fuchsia.ui.viewsv1.ViewManager"
   ]

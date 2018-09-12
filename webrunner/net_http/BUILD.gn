@@ -29,6 +29,7 @@ executable("http_service") {
 fuchsia_package("http_pkg") {
   binary = ":http_service"
   package_name_override = "http"
+  sandbox_policy = "sandbox_policy"
 }
 
 fuchsia_package_runner("http_pkg_runner") {
