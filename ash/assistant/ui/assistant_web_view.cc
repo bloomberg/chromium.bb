@@ -160,10 +160,10 @@ void AssistantWebView::OnWebContentsReady(
     content_view_->AddObserver(this);
 
     // Apply our layer mask which enforces corner radius.
-    app_list::AnswerCardContentsRegistry::Get()
-        ->GetNativeView(embed_token.value())
-        ->layer()
-        ->SetMaskLayer(content_view_mask_->layer());
+    native_content_view_ =
+        app_list::AnswerCardContentsRegistry::Get()->GetNativeView(
+            embed_token.value());
+    native_content_view_->layer()->SetMaskLayer(content_view_mask_->layer());
 
     AddChildView(content_view_);
   }
@@ -186,6 +186,11 @@ void AssistantWebView::ReleaseWebContents() {
       delete content_view_;
 
     content_view_ = nullptr;
+  }
+
+  if (native_content_view_) {
+    native_content_view_->layer()->SetMaskLayer(nullptr);
+    native_content_view_ = nullptr;
   }
 
   assistant_controller_->ReleaseWebContents(web_contents_id_token_.value());
