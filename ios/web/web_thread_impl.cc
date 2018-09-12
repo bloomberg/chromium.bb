@@ -355,47 +355,6 @@ std::string WebThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
 }
 
 // static
-bool WebThread::PostTask(ID identifier,
-                         const base::Location& from_here,
-                         base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), true);
-}
-
-// static
-bool WebThread::PostDelayedTask(ID identifier,
-                                const base::Location& from_here,
-                                base::OnceClosure task,
-                                base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, true);
-}
-
-// static
-bool WebThread::PostNonNestableTask(ID identifier,
-                                    const base::Location& from_here,
-                                    base::OnceClosure task) {
-  return PostTaskHelper(identifier, from_here, std::move(task),
-                        base::TimeDelta(), false);
-}
-
-// static
-bool WebThread::PostNonNestableDelayedTask(ID identifier,
-                                           const base::Location& from_here,
-                                           base::OnceClosure task,
-                                           base::TimeDelta delay) {
-  return PostTaskHelper(identifier, from_here, std::move(task), delay, false);
-}
-
-// static
-bool WebThread::PostTaskAndReply(ID identifier,
-                                 const base::Location& from_here,
-                                 base::OnceClosure task,
-                                 base::OnceClosure reply) {
-  return GetTaskRunnerForThread(identifier)
-      ->PostTaskAndReply(from_here, std::move(task), std::move(reply));
-}
-
-// static
 bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
   if (!g_globals.IsCreated())
     return false;
