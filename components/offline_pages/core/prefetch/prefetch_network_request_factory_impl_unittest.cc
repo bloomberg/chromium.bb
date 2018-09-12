@@ -230,7 +230,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GetOperationRequestDoneUMA) {
   // Ensure that the status was recorded in UMA.
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.ServiceGetOperationStatus",
-      static_cast<int>(PrefetchRequestStatus::SHOULD_SUSPEND), 1);
+      static_cast<int>(PrefetchRequestStatus::kShouldSuspendNotImplemented), 1);
 }
 
 TEST_F(PrefetchNetworkRequestFactoryTest, GeneratePageBundleRequestDoneUMA) {
@@ -245,7 +245,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GeneratePageBundleRequestDoneUMA) {
                                                    callback.Get());
 
   // Have the test framework call back into the GeneratePageBundleRequestDone
-  // method with an error code that will produce SHOULD_RETRY_WITHOUT_BACKOFF.
+  // method with an error code that will produce kShouldRetryWithoutBackoff.
   RespondWithNetError(net::ERR_NETWORK_CHANGED);
   RunUntilIdle();
 
@@ -256,7 +256,7 @@ TEST_F(PrefetchNetworkRequestFactoryTest, GeneratePageBundleRequestDoneUMA) {
   // Ensure that the status was recorded in UMA.
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.ServiceGetPageBundleStatus",
-      static_cast<int>(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF), 1);
+      static_cast<int>(PrefetchRequestStatus::kShouldRetryWithoutBackoff), 1);
 }
 
 }  // namespace offline_pages

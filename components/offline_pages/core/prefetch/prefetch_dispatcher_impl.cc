@@ -283,22 +283,24 @@ void PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest(
   task_queue_.AddTask(std::make_unique<PageBundleUpdateTask>(
       prefetch_store, this, operation_name, pages));
 
-  if (background_task_ && status != PrefetchRequestStatus::SUCCESS) {
+  if (background_task_ && status != PrefetchRequestStatus::kSuccess) {
     PrefetchBackgroundTaskRescheduleType reschedule_type =
         PrefetchBackgroundTaskRescheduleType::NO_RESCHEDULE;
     switch (status) {
-      case PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF:
+      case PrefetchRequestStatus::kShouldRetryWithBackoff:
         reschedule_type =
             PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITH_BACKOFF;
         break;
-      case PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF:
+      case PrefetchRequestStatus::kShouldRetryWithoutBackoff:
         reschedule_type =
             PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITHOUT_BACKOFF;
         break;
-      case PrefetchRequestStatus::SHOULD_SUSPEND:
+      case PrefetchRequestStatus::kShouldSuspendForbidden:
+      case PrefetchRequestStatus::kShouldSuspendNotImplemented:
+      case PrefetchRequestStatus::kShouldSuspendBlockedByAdministrator:
         reschedule_type = PrefetchBackgroundTaskRescheduleType::SUSPEND;
         break;
-      default:
+      case PrefetchRequestStatus::kSuccess:
         NOTREACHED();
         break;
     }

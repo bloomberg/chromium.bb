@@ -51,7 +51,7 @@ GeneratePageBundleRequest::~GeneratePageBundleRequest() {}
 
 void GeneratePageBundleRequest::OnCompleted(PrefetchRequestStatus status,
                                             const std::string& data) {
-  if (status != PrefetchRequestStatus::SUCCESS) {
+  if (status != PrefetchRequestStatus::kSuccess) {
     std::move(callback_).Run(status, std::string(),
                              std::vector<RenderPageInfo>());
     return;
@@ -60,12 +60,12 @@ void GeneratePageBundleRequest::OnCompleted(PrefetchRequestStatus status,
   std::vector<RenderPageInfo> pages;
   std::string operation_name = ParseOperationResponse(data, &pages);
   if (operation_name.empty()) {
-    std::move(callback_).Run(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+    std::move(callback_).Run(PrefetchRequestStatus::kShouldRetryWithBackoff,
                              std::string(), std::vector<RenderPageInfo>());
     return;
   }
 
-  std::move(callback_).Run(PrefetchRequestStatus::SUCCESS, operation_name,
+  std::move(callback_).Run(PrefetchRequestStatus::kSuccess, operation_name,
                            pages);
 }
 

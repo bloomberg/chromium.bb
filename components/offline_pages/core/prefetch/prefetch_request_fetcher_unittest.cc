@@ -87,53 +87,55 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
 }
 
 TEST_F(PrefetchRequestFetcherTest, NetErrors) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_SUSPEND,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendBlockedByAdministrator,
             RunFetcherWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR));
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithoutBackoff,
             RunFetcherWithNetError(net::ERR_INTERNET_DISCONNECTED));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithoutBackoff,
             RunFetcherWithNetError(net::ERR_NETWORK_CHANGED));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithoutBackoff,
             RunFetcherWithNetError(net::ERR_CONNECTION_RESET));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithoutBackoff,
             RunFetcherWithNetError(net::ERR_CONNECTION_CLOSED));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithoutBackoff,
             RunFetcherWithNetError(net::ERR_CONNECTION_REFUSED));
 }
 
 TEST_F(PrefetchRequestFetcherTest, HttpErrors) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_SUSPEND,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendNotImplemented,
             RunFetcherWithHttpError(net::HTTP_NOT_IMPLEMENTED));
+  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendForbidden,
+            RunFetcherWithHttpError(net::HTTP_FORBIDDEN));
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_BAD_REQUEST));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_UNAUTHORIZED));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_NOT_FOUND));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_CONFLICT));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_BAD_GATEWAY));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_SERVICE_UNAVAILABLE));
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_GATEWAY_TIMEOUT));
 }
 
 TEST_F(PrefetchRequestFetcherTest, EmptyResponse) {
   std::string data;
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithData("", &data));
   EXPECT_TRUE(data.empty());
 }
 
 TEST_F(PrefetchRequestFetcherTest, Success) {
   std::string data;
-  EXPECT_EQ(PrefetchRequestStatus::SUCCESS,
+  EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             RunFetcherWithData("Any data.", &data));
   EXPECT_FALSE(data.empty());
 }

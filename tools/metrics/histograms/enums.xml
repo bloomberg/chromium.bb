@@ -36523,7 +36523,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Should retry without backoff"/>
   <int value="2" label="Should retry with backoff"/>
-  <int value="3" label="Should suspend"/>
+  <int value="3" label="Should suspend, not implemented"/>
+  <int value="4" label="Should suspend, not allowed"/>
+  <int value="5" label="Should suspend, blocked by administrator"/>
 </enum>
 
 <enum name="OfflineStatus">

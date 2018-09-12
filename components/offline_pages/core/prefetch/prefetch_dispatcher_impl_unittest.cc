@@ -140,7 +140,7 @@ class FakePrefetchNetworkRequestFactory
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), PrefetchRequestStatus::SUCCESS,
+        base::BindOnce(std::move(callback), PrefetchRequestStatus::kSuccess,
                        kOperationName, pages));
   }
 

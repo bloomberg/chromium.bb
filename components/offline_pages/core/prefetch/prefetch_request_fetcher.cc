@@ -120,26 +120,30 @@ PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
 
   if ((response_code < 200 || response_code > 299) && response_code != -1) {
     DVLOG(1) << "HTTP status: " << response_code;
-    return (response_code == net::HTTP_NOT_IMPLEMENTED)
-               ? PrefetchRequestStatus::SHOULD_SUSPEND
-               : PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
+    switch (response_code) {
+      case net::HTTP_NOT_IMPLEMENTED:
+        return PrefetchRequestStatus::kShouldSuspendNotImplemented;
+      case net::HTTP_FORBIDDEN:
+        return PrefetchRequestStatus::kShouldSuspendForbidden;
+      default:
+        return PrefetchRequestStatus::kShouldRetryWithBackoff;
+    }
   }
-
   if (!response_body) {
     int net_error = url_loader_->NetError();
     DVLOG(1) << "Net error: " << net_error;
     return (net_error == net::ERR_BLOCKED_BY_ADMINISTRATOR)
-               ? PrefetchRequestStatus::SHOULD_SUSPEND
-               : PrefetchRequestStatus::SHOULD_RETRY_WITHOUT_BACKOFF;
+               ? PrefetchRequestStatus::kShouldSuspendBlockedByAdministrator
+               : PrefetchRequestStatus::kShouldRetryWithoutBackoff;
   }
 
   if (response_body->empty()) {
     DVLOG(1) << "Failed to get response or empty response";
-    return PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
+    return PrefetchRequestStatus::kShouldRetryWithBackoff;
   }
 
   *data = *response_body;
-  return PrefetchRequestStatus::SUCCESS;
+  return PrefetchRequestStatus::kSuccess;
 }
 
-}  // offline_pages
+}  // namespace offline_pages

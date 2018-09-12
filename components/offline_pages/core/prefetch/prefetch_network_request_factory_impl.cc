@@ -32,14 +32,12 @@ namespace offline_pages {
 
 void RecordGetOperationStatusUma(PrefetchRequestStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.Prefetching.ServiceGetOperationStatus", status,
-      PrefetchRequestStatus::COUNT);
+      "OfflinePages.Prefetching.ServiceGetOperationStatus", status);
 }
 
 void RecordGeneratePageBundleStatusUma(PrefetchRequestStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.Prefetching.ServiceGetPageBundleStatus", status,
-      PrefetchRequestStatus::COUNT);
+      "OfflinePages.Prefetching.ServiceGetPageBundleStatus", status);
 }
 
 PrefetchNetworkRequestFactoryImpl::PrefetchNetworkRequestFactoryImpl(
