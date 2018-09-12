@@ -2845,16 +2845,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
-  // Ensure there are no CopyOutputRequests stowed-away in the CompositorFrame.
-  // For security/privacy reasons, renderers are not allowed to make copy
-  // requests because they could use this to gain access to content from another
-  // domain (e.g., in a child frame).
-  if (frame.HasCopyOutputRequests()) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_COPY_REQUEST_ATTEMPT);
-    return;
-  }
-
   last_received_content_source_id_ = frame.metadata.content_source_id;
 
   if (enable_surface_synchronization_) {
