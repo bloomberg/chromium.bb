@@ -21,8 +21,8 @@ import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 
 @DoNotInline
 @TargetApi(Build.VERSION_CODES.M)
-public final class ApiHelperForM {
-    private ApiHelperForM() {}
+public final class ContentApiHelperForM {
+    private ContentApiHelperForM() {}
 
     /**
      * See {@link View#startActionMode(ActionMode.Callback, int)}, which was added in M.

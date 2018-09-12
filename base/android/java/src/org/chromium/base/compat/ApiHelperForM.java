@@ -11,6 +11,8 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Process;
+import android.view.ActionMode;
+import android.view.ViewConfiguration;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -78,5 +80,29 @@ public final class ApiHelperForM {
     public static boolean isPermissionRevokedByPolicy(Activity activity, String permission) {
         return activity.getPackageManager().isPermissionRevokedByPolicy(
                 permission, activity.getPackageName());
+    }
+
+    /*
+     * See {@link ActionMode#invalidateContentRect()}.
+     * @param actionMode
+     */
+    public static void invalidateContentRectOnActionMode(ActionMode actionMode) {
+        actionMode.invalidateContentRect();
+    }
+
+    public static void onWindowFocusChangedOnActionMode(ActionMode actionMode, boolean gainFocus) {
+        actionMode.onWindowFocusChanged(gainFocus);
+    }
+
+    public static int getActionModeType(ActionMode actionMode) {
+        return actionMode.getType();
+    }
+
+    public static long getDefaultActionModeHideDuration() {
+        return ViewConfiguration.getDefaultActionModeHideDuration();
+    }
+
+    public static void hideActionMode(ActionMode actionMode, long duration) {
+        actionMode.hide(duration);
     }
 }
