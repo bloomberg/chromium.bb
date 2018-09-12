@@ -19,6 +19,9 @@ cr.define('cr.ui.dialogs', function() {
     this.previousActiveElement_ = null;
 
     this.initDom_();
+
+    /** @private{boolean} */
+    this.showing_ = false;
   }
 
   /**
@@ -214,6 +217,7 @@ cr.define('cr.ui.dialogs', function() {
    */
   BaseDialog.prototype.show_ = function(
       title, opt_onOk, opt_onCancel, opt_onShow) {
+    this.showing_ = true;
     // Make all outside nodes unfocusable while the dialog is active.
     this.deactivatedNodes_ = this.findFocusableElements_(this.document_);
     this.tabIndexes_ = this.deactivatedNodes_.map(function(n) {
@@ -239,10 +243,11 @@ cr.define('cr.ui.dialogs', function() {
 
     var self = this;
     setTimeout(function() {
-      // Note that we control the opacity of the *container*, but the top/left
-      // of the *frame*.
-      self.container_.classList.add('shown');
-      self.initialFocusElement_.focus();
+      // Check that hide() was not called in between.
+      if (self.showing_) {
+        self.container_.classList.add('shown');
+        self.initialFocusElement_.focus();
+      }
       setTimeout(function() {
         if (opt_onShow)
           opt_onShow();
@@ -252,6 +257,7 @@ cr.define('cr.ui.dialogs', function() {
 
   /** @param {Function=} opt_onHide */
   BaseDialog.prototype.hide = function(opt_onHide) {
+    this.showing_ = false;
     // Restore focusability.
     for (var i = 0; i < this.deactivatedNodes_.length; i++) {
       var node = this.deactivatedNodes_[i];
@@ -263,8 +269,6 @@ cr.define('cr.ui.dialogs', function() {
     this.deactivatedNodes_ = null;
     this.tabIndexes_ = null;
 
-    // Note that we control the opacity of the *container*, but the top/left
-    // of the *frame*.
     this.container_.classList.remove('shown');
 
     if (this.previousActiveElement_) {
@@ -277,9 +281,10 @@ cr.define('cr.ui.dialogs', function() {
     var self = this;
     setTimeout(function() {
       // Wait until the transition is done before removing the dialog.
-      // It is possible to show/hide/show/hide and have hide called twice
+      // Check show() was not called in between.
+      // It is also possible to show/hide/show/hide and have hide called twice
       // and container_ already removed from parentNode_.
-      if (self.parentNode_ === self.container_.parentNode)
+      if (!self.showing_ && self.parentNode_ === self.container_.parentNode)
         self.parentNode_.removeChild(self.container_);
       if (opt_onHide)
         opt_onHide();
