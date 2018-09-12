@@ -6955,8 +6955,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
 
-      <message name="IDS_USED_EXISTING_BROWSER" desc="Message printed to console when the app is ran a second time, causing a new window to show rather than starting up a new browser.">
-        Created new window in existing browser session.
+      <message name="IDS_USED_EXISTING_BROWSER" desc="Message printed to console when the program is run a second time, causing a new tab or window to be opened in an existing browser session rather than starting up a new browser.">
+        Opening in existing browser session.
       </message>
 
       <!-- Upgrade recovery bubble -->
