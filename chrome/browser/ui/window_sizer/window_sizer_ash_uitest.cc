@@ -19,6 +19,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
@@ -71,17 +72,25 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   // Chrome replies to Ash with the context menu items to display.
   ChromeLauncherController::instance()->FlushForTesting();
 
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
   // Move the cursor up to the "New window" menu option - assumes menu content.
-  const int offset =
+  const int y_offset =
       // Top half of the button we just clicked on.
       ash::ShelfConstants::button_size() / 2 +
       // Space between shelf top and menu bottom. Here we get this menu with
       // a right-click but long-pressing yields the same result. All menus
       // here use a touchable layout.
-      views::MenuConfig::instance().touchable_anchor_offset +
+      menu_config.touchable_anchor_offset +
       // 2 menu items we don't want, and go over part of the one we want.
-      2.2 * views::MenuConfig::instance().touchable_menu_height;
-  generator.MoveMouseBy(0, -offset);
+      2.2 * menu_config.touchable_menu_height;
+  const int x_offset =
+      // Skip over the left edge border inset.
+      views::BubbleBorder::GetBorderAndShadowInsets(
+          menu_config.touchable_menu_shadow_elevation)
+          .left() +
+      // Space between the left edge and the item content.
+      menu_config.item_horizontal_padding;
+  generator.MoveMouseBy(x_offset, -y_offset);
   generator.ReleaseRightButton();
 
   // Ash notifies Chrome's ShelfItemDelegate that the menu item was selected.
