@@ -224,6 +224,15 @@ cr.define('settings_people_page_sync_page', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE
       };
       assertTrue(ironCollapse.hidden);
+
+      // Test passphrase error state.
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: true,
+        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+      };
+      assertFalse(ironCollapse.hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignoutCollapse', function() {
