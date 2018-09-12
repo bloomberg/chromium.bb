@@ -444,7 +444,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->ext_tile_debug = ctx->ext_tile_debug;
     frame_worker_data->pbi->row_mt = ctx->row_mt;
 
-    worker->hook = (AVxWorkerHook)frame_worker_hook;
+    worker->hook = frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
       return AOM_CODEC_MEM_ERROR;

@@ -27,7 +27,8 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
 }
 
-static int enc_worker_hook(EncWorkerData *const thread_data, void *unused) {
+static int enc_worker_hook(void *arg1, void *unused) {
+  EncWorkerData *const thread_data = (EncWorkerData *)arg1;
   AV1_COMP *const cpi = thread_data->cpi;
   const AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = cm->tile_cols;
@@ -241,7 +242,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
   } else {
     num_workers = AOMMIN(num_workers, cpi->num_workers);
   }
-  prepare_enc_workers(cpi, (AVxWorkerHook)enc_worker_hook, num_workers);
+  prepare_enc_workers(cpi, enc_worker_hook, num_workers);
   launch_enc_workers(cpi, num_workers);
   sync_enc_workers(cpi, num_workers);
   accumulate_counters_enc_workers(cpi, num_workers);
