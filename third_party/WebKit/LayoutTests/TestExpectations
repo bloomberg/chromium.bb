@@ -1999,8 +1999,6 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-009.html 
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-011.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.html [ Failure ]
-crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-end-003.html [ Failure ]
-crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-end-016.html [ Failure ]
 crbug.com/626703 [ Win Mac ] external/wpt/css/css-text/text-align/text-align-start-004.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-text/text-justify/text-justify-001.html [ Failure ]
@@ -3322,7 +3320,6 @@ crbug.com/626703 external/wpt/css/css-writing-modes/available-size-003.html [ Fa
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-009.html [ Failure ]
 crbug.com/626703 [ Linux Mac ] external/wpt/css/css-writing-modes/mongolian-orientation-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/mongolian-orientation-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-fieldset-nested-legend.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-026.html [ Failure ]
 crbug.com/626703 external/wpt/svg/path/closepath/segment-completing.svg [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/lh-unit-002.html [ Failure ]
@@ -3679,8 +3676,6 @@ crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/setrequestheader-he
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-placeholder-shown-type-change-001.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-read-write-type-change-002.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type-change-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -3993,7 +3988,6 @@ crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Fa
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/716320 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
-crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Failure Timeout ]
 
 # SharedArrayBuffer is disabled on Android
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/identity-not-preserved.html [ Failure ]
