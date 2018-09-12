@@ -529,6 +529,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    @VisibleForTesting
+    public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
+        if (script == null) return;
+        nativeEvaluateJavaScriptForTests(mNativeWebContentsAndroid, script, callback);
+    }
+
+    @Override
     public void addMessageToDevToolsConsole(int level, String message) {
         nativeAddMessageToDevToolsConsole(mNativeWebContentsAndroid, level, message);
     }
@@ -917,6 +924,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);
     private native void nativeResumeLoadingCreatedWebContents(long nativeWebContentsAndroid);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,
+            String script, JavaScriptCallback callback);
+    private native void nativeEvaluateJavaScriptForTests(long nativeWebContentsAndroid,
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);

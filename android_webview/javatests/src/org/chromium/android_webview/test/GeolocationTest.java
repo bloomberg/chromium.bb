@@ -156,11 +156,11 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() == 1);
 
-        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() == 2);
     }
 
@@ -177,7 +177,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 1);
     }
@@ -192,7 +192,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 1);
 
@@ -229,7 +229,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
 
         Assert.assertEquals(0, getPositionCountFromJS());
 
@@ -268,7 +268,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
@@ -290,7 +290,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
@@ -310,7 +310,7 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
+        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 0);
     }

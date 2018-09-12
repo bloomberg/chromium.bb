@@ -78,7 +78,6 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
-import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -191,11 +190,11 @@ public class TabsTest {
 
         mActivityTestRule.newIncognitoTabFromMenu();
 
-        WebContentsUtils.evaluateJavaScript(tab.getWebContents(),
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.getWebContents().evaluateJavaScriptForTests(
                 "(function() {"
                         + "  window.open('www.google.com');"
                         + "})()",
-                null);
+                null));
 
         CriteriaHelper.pollUiThread(Criteria.equals(2,
                 () -> mActivityTestRule.getActivity()
@@ -213,11 +212,11 @@ public class TabsTest {
         mActivityTestRule.newIncognitoTabFromMenu();
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        WebContentsUtils.evaluateJavaScript(tab.getWebContents(),
+        ThreadUtils.runOnUiThreadBlocking(() -> tab.getWebContents().evaluateJavaScriptForTests(
                 "(function() {"
                         + "  alert('hi');"
                         + "})()",
-                null);
+                null));
 
         final AtomicReference<JavascriptAppModalDialog> dialog =
                 new AtomicReference<>();
