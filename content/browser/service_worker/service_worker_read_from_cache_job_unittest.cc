@@ -96,6 +96,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(options, kRegistrationId,
                                                   context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
+                                        blink::mojom::ScriptType::kClassic,
                                         kVersionId, context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
     resources.push_back(main_script_);

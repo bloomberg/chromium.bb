@@ -54,12 +54,11 @@ namespace {
 bool IsRequestContextSupported(WebURLRequest::RequestContext request_context) {
   // TODO(nhiroki): Support |kRequestContextSharedWorker| for module loading for
   // shared workers (https://crbug.com/824646).
-  // TODO(nhiroki): Support |kRequestContextServiceWorker| for module loading
-  // for service workers (https://crbug.com/824647).
   // TODO(nhiroki): Support "audioworklet" and "paintworklet" destinations.
   switch (request_context) {
     case WebURLRequest::kRequestContextScript:
     case WebURLRequest::kRequestContextWorker:
+    case WebURLRequest::kRequestContextServiceWorker:
       return true;
     default:
       break;
