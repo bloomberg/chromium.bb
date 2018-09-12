@@ -499,7 +499,7 @@ void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
 
 void LoginBubble::OnWidgetBoundsChanged(views::Widget* widget,
                                         const gfx::Rect& new_bounds) {
-  EnsureBubbleInWorkArea();
+  EnsureBubbleInScreen();
 }
 
 void LoginBubble::OnMouseEvent(ui::MouseEvent* event) {
@@ -559,7 +559,7 @@ void LoginBubble::Show() {
   DCHECK(bubble_view_);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
-  EnsureBubbleInWorkArea();
+  EnsureBubbleInScreen();
   widget->ShowInactive();
   widget->AddObserver(this);
   widget->StackAtTop();
@@ -643,7 +643,7 @@ void LoginBubble::Reset(bool widget_already_closing) {
   flags_ = kFlagsNone;
 }
 
-void LoginBubble::EnsureBubbleInWorkArea() {
+void LoginBubble::EnsureBubbleInScreen() {
   DCHECK(bubble_view_);
   DCHECK(bubble_view_->GetWidget());
 
@@ -654,13 +654,7 @@ void LoginBubble::EnsureBubbleInWorkArea() {
               bubble_view_->GetWidget()->GetNativeWindow())
           .work_area();
 
-  int vertical_offset = 0;
   int horizontal_offset = 0;
-
-  // If the widget extends down into the shelf, move it up.
-  if (work_area.bottom() < view_bounds.bottom()) {
-    vertical_offset = work_area.bottom() - view_bounds.bottom();
-  }
 
   // If the widget extends past the right side of the screen, make it go to
   // the left instead.
@@ -670,7 +664,7 @@ void LoginBubble::EnsureBubbleInWorkArea() {
 
   bubble_view_->set_anchor_view_insets(
       bubble_view_->anchor_view_insets().Offset(
-          gfx::Vector2d(horizontal_offset, vertical_offset)));
+          gfx::Vector2d(horizontal_offset, 0)));
   bubble_view_->OnAnchorBoundsChanged();
 }
 

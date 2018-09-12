@@ -126,7 +126,7 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   void Reset(bool widget_already_closing);
 
   // Repositions the bubble view if it extends too far right or down.
-  void EnsureBubbleInWorkArea();
+  void EnsureBubbleInScreen();
 
   // Flags passed to ShowErrorBubble().
   uint32_t flags_ = kFlagsNone;
