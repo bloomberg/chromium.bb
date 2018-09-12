@@ -1024,6 +1024,12 @@ Polymer({
   updateSelectedCerts_: function() {
     if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_))
       this.selectedServerCaHash_ = undefined;
+    if (!this.selectedServerCaHash_ ||
+        this.selectedServerCaHash_ == DEFAULT_HASH) {
+      var eap = this.eapProperties_;
+      if (eap && eap.UseSystemCAs === false)
+        this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
+    }
     if (!this.selectedServerCaHash_ && this.serverCaCerts_[0])
       this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
 
