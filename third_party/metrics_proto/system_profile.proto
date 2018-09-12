@@ -500,7 +500,7 @@ message SystemProfileProto {
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
-  // Next tag: 29
+  // Next tag: 30
   message Stability {
     // Total amount of time that the program was running, in seconds,
     // since the last time a log was recorded, as measured using a client-side
@@ -591,6 +591,10 @@ message SystemProfileProto {
     // This should be most common scenario and should be very close to
     // |launch_count|.
     optional int32 debugger_not_present_count = 21;
+
+    // Whether the metrics being reported are from a previous run picked up via
+    // the left-over memory mapped files.
+    optional bool from_previous_run = 29;
 
     // Stability information for all installed plugins.
     message PluginStability {

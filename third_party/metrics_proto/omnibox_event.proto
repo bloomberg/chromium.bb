@@ -14,7 +14,7 @@ package metrics;
 import "omnibox_input_type.proto";
 
 // Stores information about an omnibox interaction.
-// Next tag: 18
+// Next tag: 19
 message OmniboxEventProto {
   // The timestamp for the event, in seconds.
   // This value comes from Chromium's TimeTicks::Now(), which is an abstract
@@ -159,6 +159,16 @@ message OmniboxEventProto {
     // so that these new options are displayed on about:omnibox.
   }
   optional PageClassification current_page_classification = 10;
+
+  enum ModeType {
+    // Unknown type (should not be reported).
+    UNKNOWN_MODE = 0;
+    // This user is in web mode when looking for suggestions.
+    WEB_MODE = 1;
+    // This user is in image mode when looking for suggestions.
+    IMAGE_MODE = 2;
+  }
+  optional ModeType mode_type = 18;
 
   optional OmniboxInputType input_type = 8;
 

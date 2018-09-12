@@ -749,8 +749,10 @@ bool FileMetricsProvider::ProvideIndependentMetrics(
                              sources_with_profile_.begin());
     ScheduleSourcesCheck();
 
-    if (success)
+    if (success) {
+      system_profile_proto->mutable_stability()->set_from_previous_run(true);
       return true;
+    }
   }
 
   return false;
