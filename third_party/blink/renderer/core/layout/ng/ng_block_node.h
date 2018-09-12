@@ -29,7 +29,7 @@ struct NGLogicalOffset;
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   friend NGLayoutInputNode;
  public:
-  explicit NGBlockNode(LayoutBox*);
+  explicit NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
 
   scoped_refptr<NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
