@@ -60,6 +60,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class RenderWidgetTargeter;
 class TouchEmulator;
+class TouchEventAckQueue;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
@@ -253,7 +254,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                           RenderWidgetHostViewBase* target,
                           const blink::WebTouchEvent& touch_event,
                           const ui::LatencyInfo& latency,
-                          const base::Optional<gfx::PointF>& target_location);
+                          const base::Optional<gfx::PointF>& target_location,
+                          bool is_emulated);
   // Assumes |gesture_event| has coordinates in root view's coordinate space.
   void DispatchTouchscreenGestureEvent(
       RenderWidgetHostViewBase* root_view,
@@ -330,6 +332,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   bool events_being_flushed_ = false;
 
   std::unique_ptr<TouchEmulator> touch_emulator_;
+  std::unique_ptr<TouchEventAckQueue> touch_event_ack_queue_;
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
 
