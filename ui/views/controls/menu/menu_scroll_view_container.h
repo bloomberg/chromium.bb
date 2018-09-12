@@ -9,6 +9,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/view.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
@@ -17,7 +18,7 @@ class SubmenuView;
 // MenuScrollViewContainer contains the SubmenuView (through a MenuScrollView)
 // and two scroll buttons. The scroll buttons are only visible and enabled if
 // the preferred height of the SubmenuView is bigger than our bounds.
-class MenuScrollViewContainer : public View {
+class VIEWS_EXPORT MenuScrollViewContainer : public View {
  public:
   explicit MenuScrollViewContainer(SubmenuView* content_view);
 
@@ -25,7 +26,7 @@ class MenuScrollViewContainer : public View {
   View* scroll_down_button() const { return scroll_down_button_; }
   View* scroll_up_button() const { return scroll_up_button_; }
 
-  // External function to check if the bubble border is usd.
+  // External function to check if the bubble border is used.
   bool HasBubbleBorder();
 
   // Offsets the Arrow from the default location.

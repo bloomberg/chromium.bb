@@ -1429,6 +1429,10 @@ TEST_F(MenuControllerTest, ArrowKeysAtEnds) {
 TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   MenuBoundsOptions options;
   gfx::Rect expected;
+  MenuScrollViewContainer* container =
+      menu_item()->GetSubmenu()->GetScrollViewContainer();
+  gfx::Insets menu_insets =
+      container->HasBubbleBorder() ? container->GetInsets() : gfx::Insets();
 
   // Fits in all locations -> placed below.
   options.anchor_bounds =
@@ -1436,9 +1440,9 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.anchor_bounds.bottom() + options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.x(), options.anchor_bounds.bottom(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits above and to both sides -> placed above.
@@ -1447,8 +1451,9 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.anchor_bounds.bottom());
-  expected = gfx::Rect(options.anchor_bounds.x(),
-                       options.anchor_bounds.y() - options.menu_size.height(),
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.y() - options.menu_size.height() +
+                           menu_insets.bottom(),
                        options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
@@ -1458,10 +1463,10 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.right(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.right() - menu_insets.left(),
+                       options.monitor_bounds.bottom() -
+                           options.menu_size.height() + menu_insets.bottom(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits only on left -> placed left.
@@ -1469,10 +1474,11 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
                                     options.menu_size.height() / 2, 0, 0);
   options.monitor_bounds = gfx::Rect(0, 0, options.anchor_bounds.right(),
                                      options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - options.menu_size.width() +
+                           menu_insets.right(),
+                       options.monitor_bounds.bottom() -
+                           options.menu_size.height() + menu_insets.bottom(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits on both sides, prefer left -> placed left.
@@ -1482,10 +1488,11 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - options.menu_size.width() +
+                           menu_insets.right(),
+                       options.monitor_bounds.bottom() -
+                           options.menu_size.height() + menu_insets.bottom(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits only on right -> placed right.
@@ -1493,10 +1500,10 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.right(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.right() - menu_insets.left(),
+                       options.monitor_bounds.bottom() -
+                           options.menu_size.height() + menu_insets.bottom(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 }
 
@@ -1504,18 +1511,22 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
 TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   MenuBoundsOptions options;
   gfx::Rect expected;
+  MenuScrollViewContainer* container =
+      menu_item()->GetSubmenu()->GetScrollViewContainer();
+  gfx::Insets menu_insets =
+      container->HasBubbleBorder() ? container->GetInsets() : gfx::Insets();
 
   options.menu_anchor = MENU_ANCHOR_TOPLEFT;
-  expected =
-      gfx::Rect(options.anchor_bounds.x(), options.anchor_bounds.bottom(),
-                options.menu_size.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   options.menu_anchor = MENU_ANCHOR_TOPRIGHT;
-  expected =
-      gfx::Rect(options.anchor_bounds.right() - options.menu_size.width(),
-                options.anchor_bounds.bottom(), options.menu_size.width(),
-                options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.right() -
+                           options.menu_size.width() + menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Menu will be placed above or below with an offset.
@@ -1526,7 +1537,8 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   expected = gfx::Rect(
       options.anchor_bounds.x() +
           (options.anchor_bounds.width() - options.menu_size.width()) / 2,
-      options.anchor_bounds.y() - options.menu_size.height() - kTouchYPadding,
+      options.anchor_bounds.y() - options.menu_size.height() +
+          menu_insets.bottom() - kTouchYPadding,
       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
@@ -1536,8 +1548,8 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   expected = gfx::Rect(
       options.anchor_bounds.x() +
           (options.anchor_bounds.width() - options.menu_size.width()) / 2,
-      options.anchor_bounds.y() + kTouchYPadding, options.menu_size.width(),
-      options.menu_size.height());
+      options.anchor_bounds.y() - menu_insets.top() + kTouchYPadding,
+      options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Assumes anchor bounds is at the bottom of screen.
@@ -1549,7 +1561,8 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   expected = gfx::Rect(
       options.anchor_bounds.x() +
           (options.anchor_bounds.width() - options.menu_size.width()) / 2,
-      options.anchor_bounds.y() - options.menu_size.height(),
+      options.anchor_bounds.y() - options.menu_size.height() +
+          menu_insets.bottom(),
       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
@@ -1560,8 +1573,8 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   options.anchor_bounds =
       gfx::Rect(options.monitor_bounds.x(), options.menu_size.height(), 0, 0);
   expected = gfx::Rect(
-      options.anchor_bounds.x(),
-      options.anchor_bounds.y() +
+      options.anchor_bounds.x() - menu_insets.left(),
+      options.anchor_bounds.y() + menu_insets.top() +
           (options.anchor_bounds.height() - options.menu_size.height()) / 2,
       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
@@ -1569,8 +1582,9 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   options.anchor_bounds = gfx::Rect(options.monitor_bounds.right(),
                                     options.menu_size.height(), 0, 0);
   expected = gfx::Rect(
-      options.anchor_bounds.right() - options.menu_size.width(),
-      options.anchor_bounds.y() +
+      options.anchor_bounds.right() - options.menu_size.width() +
+          menu_insets.right(),
+      options.anchor_bounds.y() + menu_insets.top() +
           (options.anchor_bounds.height() - options.menu_size.height()) / 2,
       options.menu_size.width(), options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
@@ -1578,29 +1592,38 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
 
 TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
   MenuBoundsOptions options;
+  MenuScrollViewContainer* scroll_view_container =
+      menu_item()->GetSubmenu()->GetScrollViewContainer();
+  gfx::Insets menu_insets = scroll_view_container->HasBubbleBorder()
+                                ? scroll_view_container->GetInsets()
+                                : gfx::Insets();
+
   gfx::Rect expected;
   options.monitor_bounds = gfx::Rect(0, 0, 100, 100);
   options.anchor_bounds = gfx::Rect();
 
   options.menu_size = gfx::Size(options.monitor_bounds.width() / 2,
                                 options.monitor_bounds.height() * 2);
-  expected =
-      gfx::Rect(options.anchor_bounds.x(), options.anchor_bounds.bottom(),
-                options.menu_size.width(), options.monitor_bounds.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.menu_size.width(),
+                       options.monitor_bounds.height() + menu_insets.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   options.menu_size = gfx::Size(options.monitor_bounds.width() * 2,
                                 options.monitor_bounds.height() / 2);
-  expected =
-      gfx::Rect(options.anchor_bounds.x(), options.anchor_bounds.bottom(),
-                options.monitor_bounds.width(), options.menu_size.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.monitor_bounds.width() + menu_insets.width(),
+                       options.menu_size.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   options.menu_size = gfx::Size(options.monitor_bounds.width() * 2,
                                 options.monitor_bounds.height() * 2);
-  expected = gfx::Rect(
-      options.anchor_bounds.x(), options.anchor_bounds.bottom(),
-      options.monitor_bounds.width(), options.monitor_bounds.height());
+  expected = gfx::Rect(options.anchor_bounds.x() - menu_insets.left(),
+                       options.anchor_bounds.bottom() - menu_insets.top(),
+                       options.monitor_bounds.width() + menu_insets.width(),
+                       options.monitor_bounds.height() + menu_insets.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 }
 
@@ -1743,11 +1766,18 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
       std::make_unique<TestMenuItemViewShown>(sub_menu_item_delegate.get());
   sub_menu_item->AddEmptyMenusForTest();
   sub_menu_item->SetController(controller);
-  sub_menu_item->SetBounds(0, 50, 50, 50);
+  gfx::Rect sub_menu_bounds(0, 50, 50, 50);
+  sub_menu_item->SetBoundsRect(sub_menu_bounds);
   base_submenu->AddChildView(sub_menu_item.get());
   SubmenuView* sub_menu_view = sub_menu_item->GetSubmenu();
-  sub_menu_view->SetBounds(0, 50, 50, 50);
-  sub_menu_view->ShowAt(owner(), gfx::Rect(0, 50, 50, 50), false);
+  MenuScrollViewContainer* sub_menu_view_container =
+      sub_menu_view->GetScrollViewContainer();
+  gfx::Insets menu_insets = sub_menu_view_container->HasBubbleBorder()
+                                ? sub_menu_view_container->GetInsets()
+                                : gfx::Insets();
+  sub_menu_bounds.Inset(-menu_insets);
+  sub_menu_view->SetBoundsRect(sub_menu_bounds);
+  sub_menu_view->ShowAt(owner(), sub_menu_bounds, false);
   GetMenuHost(sub_menu_view)
       ->SetContentsView(sub_menu_view->GetScrollViewContainer());
 
