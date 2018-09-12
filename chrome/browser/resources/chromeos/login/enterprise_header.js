@@ -5,17 +5,13 @@
 Polymer({
   is: 'enterprise-header',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * Title of the header
      * @type {String}
      */
     headerTitle: {type: String, value: ''},
-
-    /**
-     * Additional text shown in the header
-     * @type {String}
-     */
-    headerComment: {type: String, value: ''},
   },
 });

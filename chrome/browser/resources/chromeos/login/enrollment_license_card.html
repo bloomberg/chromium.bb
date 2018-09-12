@@ -25,16 +25,19 @@
 <dom-module id="enrollment-license-card">
   <template>
     <link rel="stylesheet" href="gaia_input_form.css">
+    <link rel="stylesheet" href="enterprise_card.css">
     <link rel="stylesheet" href="enterprise_card_footer.css">
     <link rel="stylesheet" href="enrollment_license_card.css">
 
     <enterprise-card id="license-selection-prompt-card" class="fit">
       <enterprise-header slot="header"
-                         i18n-values="header-title:oauthEnrollScreenTitle;
-                   header-comment:licenseSelectionCardExplanation">
+                         i18n-values="header-title:oauthEnrollScreenTitle">
         <hd-iron-icon slot="enterprise-icon"
                       icon1x="enterprise-header-32:briefcase"
                       icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+        <div slot="header-comment" class="header-comment">
+          [[i18nDynamic(locale, 'licenseSelectionCardExplanation')]]
+        </div>
       </enterprise-header>
       <div slot="content" class="content flex vertical layout justified">
         <div>

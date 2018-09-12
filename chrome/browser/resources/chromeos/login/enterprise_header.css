@@ -15,12 +15,3 @@
   font-size: 28px;
   height: 64px;
 }
-
-.header-comment {
-  color: #333;
-  display: flex;
-  flex-direction: column-reverse;
-  font-size: 13px;
-  height: 40px;
-  line-height: 20px;
-}
