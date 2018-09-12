@@ -2138,6 +2138,9 @@ extern const char kUiModeAuto[];
 extern const char kUnfilteredBluetoothDevicesName[];
 extern const char kUnfilteredBluetoothDevicesDescription[];
 
+extern const char kUsbguardName[];
+extern const char kUsbguardDescription[];
+
 extern const char kUseMashName[];
 extern const char kUseMashDescription[];
 

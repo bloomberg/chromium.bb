@@ -4453,6 +4453,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseMultiloginEndpointDescription, kOsAll,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-usbguard", flag_descriptions::kUsbguardName,
+     flag_descriptions::kUsbguardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kUsbguard)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
