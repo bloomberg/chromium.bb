@@ -396,6 +396,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
+  // Set the flag to change the visibility of the snapshot on the background
+  // when the surface is set or unset. The surface sets while the window on
+  // Android side is visible.
+  bool need_to_update_snapshot = (surface_ == nullptr || surface == nullptr);
+
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
 
@@ -430,6 +435,10 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
       AttachSurface();
     }
   }
+
+  // Schedules to draw the background (snapshot or a blank).
+  if (need_to_update_snapshot)
+    SchedulePaint();
 }
 
 void ArcNotificationContentView::UpdatePreferredSize() {
