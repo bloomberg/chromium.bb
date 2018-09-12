@@ -93,9 +93,7 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));
-  // Will also initialize the sync client.
   profile_sync_service->Initialize();
-
   return profile_sync_service;
 }
 

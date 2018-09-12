@@ -59,13 +59,7 @@ syncer::ModelTypeSet GetDisabledTypes() {
 }  // namespace
 
 WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
-    : browser_state_(browser_state) {}
-
-WebViewSyncClient::~WebViewSyncClient() {}
-
-void WebViewSyncClient::Initialize() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-
+    : browser_state_(browser_state) {
   profile_web_data_service_ =
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
@@ -92,6 +86,8 @@ void WebViewSyncClient::Initialize() {
       password_store_,
       /*bookmark_sync_service=*/nullptr));
 }
+
+WebViewSyncClient::~WebViewSyncClient() {}
 
 syncer::SyncService* WebViewSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);

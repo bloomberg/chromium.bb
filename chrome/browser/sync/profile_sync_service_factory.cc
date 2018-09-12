@@ -181,6 +181,13 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   Profile* profile = Profile::FromBrowserContext(context);
 
+  std::unique_ptr<browser_sync::ChromeSyncClient> sync_client =
+      client_factory_
+          ? client_factory_->Run(profile)
+          : std::make_unique<browser_sync::ChromeSyncClient>(profile);
+  sync_client->Initialize();
+
+  init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
@@ -189,13 +196,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.channel = chrome::GetChannel();
   init_params.user_events_separate_pref_group =
       unified_consent::IsUnifiedConsentFeatureEnabled();
-
-  if (!client_factory_) {
-    init_params.sync_client =
-        std::make_unique<browser_sync::ChromeSyncClient>(profile);
-  } else {
-    init_params.sync_client = client_factory_->Run(profile);
-  }
 
   bool local_sync_backend_enabled = false;
 // Since the local sync backend is currently only supported on Windows don't
@@ -264,8 +264,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   }
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
-
-  // Will also initialize the sync client.
   pss->Initialize();
   return pss.release();
 }

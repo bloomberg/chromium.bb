@@ -156,13 +156,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       sync_sessions_client_(
-          std::make_unique<SyncSessionsClientImpl>(browser_state)) {}
-
-IOSChromeSyncClient::~IOSChromeSyncClient() {}
-
-void IOSChromeSyncClient::Initialize() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-
+          std::make_unique<SyncSessionsClientImpl>(browser_state)) {
   profile_web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
@@ -190,6 +184,8 @@ void IOSChromeSyncClient::Initialize() {
         ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
   }
 }
+
+IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
 syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
