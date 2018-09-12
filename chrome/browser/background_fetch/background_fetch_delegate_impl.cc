@@ -79,6 +79,7 @@ BackgroundFetchDelegateImpl::JobDetails::JobDetails(
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
   offline_item.is_off_the_record = is_off_the_record;
+  current_download_guids = std::move(this->fetch_description->current_guids);
   UpdateOfflineItem();
 }
 
@@ -212,6 +213,9 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // Initialize the download service in case it hasn't been yet.
+  GetDownloadService();
+
   std::string job_unique_id = fetch_description->job_unique_id;
   DCHECK(!job_details_map_.count(job_unique_id));
   auto emplace_result = job_details_map_.emplace(
@@ -220,13 +224,9 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
                  profile_->IsOffTheRecord()));
 
   const JobDetails& details = emplace_result.first->second;
-  for (const auto& download_guid : details.fetch_description->current_guids) {
+  for (const auto& download_guid : details.current_download_guids) {
     DCHECK(!download_job_unique_id_map_.count(download_guid));
     download_job_unique_id_map_.emplace(download_guid, job_unique_id);
-    if (GetDownloadService()->GetStatus() ==
-        download::DownloadService::ServiceStatus::READY) {
-      GetDownloadService()->ResumeDownload(download_guid);
-    }
   }
 
   for (auto* observer : observers_) {
@@ -558,16 +558,6 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
     GetDownloadService()->ResumeDownload(download_guid);
 
   // TODO(delphick): Start new downloads that weren't started because of pause.
-}
-
-void BackgroundFetchDelegateImpl::ResumeActiveJobs() {
-  DCHECK_EQ(GetDownloadService()->GetStatus(),
-            download::DownloadService::ServiceStatus::READY);
-
-  for (const auto& job_details : job_details_map_) {
-    for (const auto& download_guid : job_details.second.current_download_guids)
-      GetDownloadService()->ResumeDownload(download_guid);
-  }
 }
 
 void BackgroundFetchDelegateImpl::GetItemById(

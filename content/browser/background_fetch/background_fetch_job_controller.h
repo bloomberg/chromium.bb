@@ -110,6 +110,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   bool HasMoreRequests() override;
   void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                     RequestFinishedCallback request_finished_callback) override;
+  bool IsProcessingARequest() override;
+  void Resume(RequestFinishedCallback request_finished_callback) override;
   void Abort(
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override;
 
@@ -145,6 +147,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
 
   // Number of the requests that have been completed so far.
   int completed_downloads_ = 0;
+
+  // Whether the DownloadService is processing a request.
+  bool is_processing_a_request_ = false;
 
   // The reason background fetch was aborted.
   blink::mojom::BackgroundFetchFailureReason reason_to_abort_ =

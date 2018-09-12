@@ -52,7 +52,12 @@ bool ParseOriginListHeader(const std::string& value,
 BackgroundFetchCrossOriginFilter::BackgroundFetchCrossOriginFilter(
     const url::Origin& source_origin,
     const BackgroundFetchRequestInfo& request) {
-  DCHECK(!request.GetURLChain().empty());
+  if (request.GetURLChain().empty()) {
+    // This can happen if a request is resumed on browser restart.
+    // In that case all the header / url chain info will be lost.
+    // TODO(crbug.com/881314): Make sure the info is propagated.
+    return;
+  }
 
   const GURL& final_url = request.GetURLChain().back();
   const auto& response_header_map = request.GetResponseHeaders();

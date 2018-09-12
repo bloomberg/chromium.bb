@@ -53,8 +53,18 @@ BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 void BackgroundFetchScheduler::AddJobController(Controller* controller) {
   DCHECK(controller);
 
-  controller_queue_.push_back(controller);
+  if (controller->IsProcessingARequest()) {
+    // There is a resuming download from the previous session, no need to
+    // schedule.
+    DCHECK(!active_controller_);
+    active_controller_ = controller;
+    active_controller_->Resume(
+        base::BindOnce(&BackgroundFetchScheduler::MarkRequestAsComplete,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
+  controller_queue_.push_back(controller);
   if (!active_controller_)
     ScheduleDownload();
 }
