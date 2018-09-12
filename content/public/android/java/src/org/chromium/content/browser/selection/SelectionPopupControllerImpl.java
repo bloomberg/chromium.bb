@@ -29,7 +29,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.textclassifier.TextClassifier;
@@ -40,9 +39,10 @@ import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
-import org.chromium.content.browser.ApiHelperForM;
+import org.chromium.content.browser.ContentApiHelperForM;
 import org.chromium.content.browser.ContentClassFactory;
 import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.PopupController;
@@ -70,7 +70,7 @@ import java.util.List;
  * Implementation of the interface {@link SelectionPopupController}.
  */
 @JNINamespace("content")
-@TargetApi(Build.VERSION_CODES.M)
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         implements ImeEventObserver, SelectionPopupController, WindowEventObserver, HideablePopup,
                    ContainerViewObserver, UserData {
@@ -443,7 +443,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private ActionMode startFloatingActionMode() {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-        ActionMode actionMode = ApiHelperForM.startActionMode(mView, this, mCallback);
+        ActionMode actionMode = ContentApiHelperForM.startActionMode(mView, this, mCallback);
         return actionMode;
     }
 
@@ -552,7 +552,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     public void invalidateContentRect() {
         if (supportsFloatingActionMode() && isActionModeValid()) {
-            mActionMode.invalidateContentRect();
+            ApiHelperForM.invalidateContentRectOnActionMode(mActionMode);
         }
     }
 
@@ -561,7 +561,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void onWindowFocusChanged(boolean gainFocus) {
         if (supportsFloatingActionMode() && isActionModeValid()) {
-            mActionMode.onWindowFocusChanged(gainFocus);
+            ApiHelperForM.onWindowFocusChangedOnActionMode(mActionMode, gainFocus);
         }
     }
 
@@ -653,18 +653,18 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private void hideActionModeTemporarily(long duration) {
         assert isFloatingActionMode();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (isActionModeValid()) mActionMode.hide(duration);
+            if (isActionModeValid()) ApiHelperForM.hideActionMode(mActionMode, duration);
         }
     }
 
     private boolean isFloatingActionMode() {
         return supportsFloatingActionMode() && isActionModeValid()
-                && mActionMode.getType() == ActionMode.TYPE_FLOATING;
+                && ApiHelperForM.getActionModeType(mActionMode) == ActionMode.TYPE_FLOATING;
     }
 
     private long getDefaultHideDuration() {
         if (supportsFloatingActionMode()) {
-            return ViewConfiguration.getDefaultActionModeHideDuration();
+            return ApiHelperForM.getDefaultActionModeHideDuration();
         }
         return 2000;
     }
