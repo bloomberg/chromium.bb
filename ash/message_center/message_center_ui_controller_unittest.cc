@@ -34,13 +34,25 @@ class MockDelegate : public MessageCenterUiDelegate {
   MockDelegate() {}
   ~MockDelegate() override {}
   void OnMessageCenterContentsChanged() override {}
-  bool ShowPopups() override { return show_message_center_success_; }
-  void HidePopups() override {}
+  bool ShowPopups() override {
+    if (!show_message_center_success_)
+      return false;
+
+    EXPECT_FALSE(popups_visible_);
+    popups_visible_ = true;
+    return true;
+  }
+  void HidePopups(bool animate) override {
+    EXPECT_TRUE(popups_visible_);
+    popups_visible_ = false;
+  }
   bool ShowMessageCenter(bool show_by_click) override {
+    EXPECT_FALSE(popups_visible_);
     return show_popups_success_;
   }
-  void HideMessageCenter() override {}
+  void HideMessageCenter() override { EXPECT_FALSE(popups_visible_); }
 
+  bool popups_visible_ = false;
   bool show_popups_success_ = true;
   bool show_message_center_success_ = true;
 

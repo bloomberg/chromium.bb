@@ -22,7 +22,7 @@ class MessageCenterUiDelegate {
   virtual bool ShowPopups() = 0;
 
   // Remove the popup bubbles from the UI.
-  virtual void HidePopups() = 0;
+  virtual void HidePopups(bool animate) = 0;
 
   // Display the message center containing all undismissed notifications to the
   // user. Set |show_by_click| to true if message center is shown by mouse or

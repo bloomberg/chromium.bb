@@ -72,7 +72,7 @@ void MessagePopupCollection::Update() {
   DCHECK(state_ == State::IDLE || animation_->is_animating());
 }
 
-void MessagePopupCollection::MarkAllPopupsShown() {
+void MessagePopupCollection::MarkAllPopupsShown(bool animate) {
   if (is_updating_)
     return;
   {
@@ -86,8 +86,15 @@ void MessagePopupCollection::MarkAllPopupsShown() {
     animation_->End();
   }
 
-  // Restart animation for FADE_OUT.
-  Update();
+  if (animate) {
+    // Restart animation for FADE_OUT.
+    Update();
+  } else {
+    // Mark "animating" the popups which is marked as shown.
+    MarkRemovedPopup();
+    // Remove the animating-marked popups immwdiately without animation.
+    CloseAnimatingPopups();
+  }
 }
 
 void MessagePopupCollection::ResetBounds() {
