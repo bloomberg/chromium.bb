@@ -53,13 +53,13 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
  private:
   // Calls AudioDeviceOwner to start on main thread.
   void OnDecoderInitialized(bool success,
-                            int bytes_per_sample,
-                            int samples_per_second,
-                            int channels);
+                            uint32_t bytes_per_sample,
+                            uint32_t samples_per_second,
+                            uint32_t channels);
   void OnDecoderInitializedOnThread(bool success,
-                                    int bytes_per_sample,
-                                    int samples_per_second,
-                                    int channels);
+                                    uint32_t bytes_per_sample,
+                                    uint32_t samples_per_second,
+                                    uint32_t channels);
 
   // Called by |FillBuffer()| to fill available data. If no available data, it
   // will call |DecodeOnThread()| to get more data.

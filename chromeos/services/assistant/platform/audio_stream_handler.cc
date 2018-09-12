@@ -46,9 +46,9 @@ void AudioStreamHandler::StartAudioDecoder(
 }
 
 void AudioStreamHandler::OnDecoderInitialized(bool success,
-                                              int bytes_per_sample,
-                                              int samples_per_second,
-                                              int channels) {
+                                              uint32_t bytes_per_sample,
+                                              uint32_t samples_per_second,
+                                              uint32_t channels) {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioStreamHandler::OnDecoderInitializedOnThread,
@@ -99,10 +99,11 @@ void AudioStreamHandler::OnStopped() {
   delegate_ = nullptr;
 }
 
-void AudioStreamHandler::OnDecoderInitializedOnThread(bool success,
-                                                      int bytes_per_sample,
-                                                      int samples_per_second,
-                                                      int channels) {
+void AudioStreamHandler::OnDecoderInitializedOnThread(
+    bool success,
+    uint32_t bytes_per_sample,
+    uint32_t samples_per_second,
+    uint32_t channels) {
   if (!success) {
     OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
     std::move(start_device_owner_on_main_thread_);

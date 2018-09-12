@@ -69,10 +69,10 @@ void IPCDataSource::ReadMediaData(uint8_t* destination,
 
 void IPCDataSource::ReadDone(uint8_t* destination,
                              const DataSource::ReadCB& callback,
-                             int requested_size,
+                             uint32_t requested_size,
                              const std::vector<uint8_t>& data) {
   DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
-  if (static_cast<int>(data.size()) > requested_size) {
+  if (data.size() > requested_size) {
     mojo::ReportBadMessage("IPCDataSource::ReadDone: Unexpected data size.");
     callback.Run(0);
     return;
