@@ -5,6 +5,9 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Process;
 import android.webkit.WebView;
@@ -35,5 +38,26 @@ public final class ApiHelperForM {
      */
     public static boolean isProcess64Bit() {
         return Process.is64Bit();
+    }
+
+    /** See {@link ConnectivityManager#getBoundNetworkForProcess() } */
+    public static Network getBoundNetworkForProcess(ConnectivityManager connectivityManager) {
+        return connectivityManager.getBoundNetworkForProcess();
+    }
+
+    /** See {@link Network#getNetworkHandle() } */
+    public static long getNetworkHandle(Network network) {
+        return network.getNetworkHandle();
+    }
+
+    /** See @{link ConnectivityManager#getActiveNetwork() } */
+    public static Network getActiveNetwork(ConnectivityManager connectivityManager) {
+        return connectivityManager.getActiveNetwork();
+    }
+
+    /** See @{link ConnectivityManager#getNetworkInfo(Network) } */
+    public static NetworkInfo getNetworkInfo(
+            ConnectivityManager connectivityManager, Network network) {
+        return connectivityManager.getNetworkInfo(network);
     }
 }
