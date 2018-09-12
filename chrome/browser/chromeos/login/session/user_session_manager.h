@@ -363,7 +363,8 @@ class UserSessionManager
 
   // Initializes |chromeos::DemoSession| if starting user session for demo mode.
   // Runs |callback| when demo session initialization finishes, i.e. when the
-  // offline demo session resources are loaded.
+  // offline demo session resources are loaded. In addition, disables browser
+  // launch if demo session is started.
   void InitDemoSessionIfNeeded(base::OnceClosure callback);
 
   // Updates ARC file system compatibility pref, and then calls
