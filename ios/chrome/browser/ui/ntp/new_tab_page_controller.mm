@@ -185,6 +185,11 @@ using base::UserMetricsAction;
   return self;
 }
 
+- (void)focusFakebox {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  [self.contentSuggestionsCoordinator.headerController focusFakebox];
+}
+
 - (void)dealloc {
   // This is not an ideal place to put view controller contaimnent, rather a
   // //web -wasDismissed method on CRWNativeContent would be more accurate. If

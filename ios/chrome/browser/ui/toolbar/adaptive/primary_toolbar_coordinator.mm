@@ -176,8 +176,8 @@
 
 #pragma mark - FakeboxFocuser
 
-- (void)focusFakebox {
-  [self.locationBarCoordinator focusOmnibox];
+- (void)fakeboxFocused {
+  [self.locationBarCoordinator focusOmniboxFromFakebox];
 }
 
 - (void)onFakeboxBlur {

@@ -243,7 +243,7 @@ enum {
 }
 
 - (void)focusOmnibox:(id)sender {
-  [self.dispatcher focusFakebox];
+  [self.dispatcher fakeboxFocused];
 }
 
 @end
