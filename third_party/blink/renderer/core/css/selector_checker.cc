@@ -334,6 +334,13 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
                                     WebFeature::kCSSDeepCombinator);
       FALLTHROUGH;
     case CSSSelector::kDescendant:
+      if (next_context.selector->GetPseudoType() == CSSSelector::kPseudoScope) {
+        if (next_context.selector->IsLastInTagHistory()) {
+          if (context.scope->IsDocumentFragment())
+            return kSelectorMatches;
+        }
+      }
+
       if (context.selector->RelationIsAffectedByPseudoContent()) {
         for (Element* element = context.element; element;
              element = element->parentElement()) {
@@ -361,6 +368,14 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       }
       return kSelectorFailsCompletely;
     case CSSSelector::kChild: {
+      if (next_context.selector->GetPseudoType() == CSSSelector::kPseudoScope) {
+        if (next_context.selector->IsLastInTagHistory()) {
+          if (context.element->parentNode() == context.scope &&
+              context.scope->IsDocumentFragment())
+            return kSelectorMatches;
+        }
+      }
+
       if (context.selector->RelationIsAffectedByPseudoContent())
         return MatchForPseudoContent(next_context, *context.element, result);
 
@@ -668,6 +683,7 @@ bool SelectorChecker::CheckOne(const SelectorCheckingContext& context,
   // http://drafts.csswg.org/css-scoping/#host-element
   if (context.scope && context.scope->OwnerShadowHost() == element &&
       (!selector.IsHostPseudoClass() &&
+       selector.GetPseudoType() != CSSSelector::kPseudoScope &&
        !context.treat_shadow_host_as_normal_scope &&
        selector.Match() != CSSSelector::kPseudoElement))
     return false;
@@ -1047,8 +1063,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoPastCue:
       return element.IsVTTElement() && ToVTTElement(element).IsPastNode();
     case CSSSelector::kPseudoScope:
+      if (!context.scope)
+        return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
+      if (context.scope->IsShadowRoot())
+        return element == ToShadowRoot(context.scope)->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
       return element.IsUnresolvedV0CustomElement();
