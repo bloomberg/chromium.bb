@@ -62,13 +62,21 @@ action("remoting_me2me_host_archive") {
     "$root_out_dir/remoting_start_host.exe",
     "$root_gen_dir/remoting/CREDITS.txt",
     "$root_out_dir/remoting/com.google.chrome.remote_assistance.json",
+    "$root_out_dir/remoting/com.google.chrome.remote_assistance-firefox.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
+    "$root_out_dir/remoting/com.google.chrome.remote_desktop-firefox.json",
     "$root_out_dir/icudtl.dat",
   ]
 
   _generated_files = rebase_path(inputs, root_build_dir)
   _generated_files +=
       [ rebase_path("//remoting/resources/chromoting.ico", root_build_dir) ]
+
+  # Inputs that should not be part of _generated_files.
+  inputs += [
+    "chromoting.wxs",
+    "parameters.json",
+  ]
 
   # _generated_dst_files must contain the same files in the same order as
   # _generated_files, otherwise the Windows MSI will not be built correctly.
@@ -83,7 +91,9 @@ action("remoting_me2me_host_archive") {
     "files/remoting_start_host.exe",
     "files/CREDITS.txt",
     "files/com.google.chrome.remote_assistance.json",
+    "files/com.google.chrome.remote_assistance-firefox.json",
     "files/com.google.chrome.remote_desktop.json",
+    "files/com.google.chrome.remote_desktop-firefox.json",
     "files/icudtl.dat",
     "files/chromoting.ico",
   ]

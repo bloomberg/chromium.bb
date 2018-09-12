@@ -25,7 +25,8 @@
   "light": {
     "switches": [
       "-cultures:en-us",
-      "-sw1076"
+      "-sw1076",
+      "-sice:ICE80"
     ]
   }
 }
