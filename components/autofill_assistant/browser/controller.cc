@@ -17,10 +17,12 @@ namespace autofill_assistant {
 void Controller::CreateAndStartForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client) {
-  new Controller(web_contents, std::move(client),
-                 WebController::CreateForWebContents(web_contents),
-                 std::make_unique<Service>(client->GetApiKey(),
-                                           web_contents->GetBrowserContext()));
+  // Get the key early since |client| will be invalidated when moved below.
+  const std::string api_key = client->GetApiKey();
+  new Controller(
+      web_contents, std::move(client),
+      WebController::CreateForWebContents(web_contents),
+      std::make_unique<Service>(api_key, web_contents->GetBrowserContext()));
 }
 
 Service* Controller::GetService() {
