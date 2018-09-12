@@ -25,7 +25,9 @@ SyncUsernameTestBase::LocalFakeSyncService::GetPreferredDataTypes() const {
 
 SyncUsernameTestBase::SyncUsernameTestBase()
     : signin_client_(&prefs_),
-      signin_manager_(&signin_client_, &account_tracker_) {
+      signin_manager_(&signin_client_,
+                      &account_tracker_,
+                      nullptr /* signin_error_controller */) {
   SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
   AccountTrackerService::RegisterPrefs(prefs_.registry());
   account_tracker_.Initialize(&prefs_, base::FilePath());
@@ -35,11 +37,6 @@ SyncUsernameTestBase::~SyncUsernameTestBase() {}
 
 void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
   signin_manager_.SetAuthenticatedAccountInfo("12345", email);
-}
-
-void SyncUsernameTestBase::FakeSignout() {
-  signin_manager_.ClearAuthenticatedAccountId();
-  prefs_.SetString(prefs::kGoogleServicesAccountId, std::string());
 }
 
 // static
