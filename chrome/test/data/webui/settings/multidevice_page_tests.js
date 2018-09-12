@@ -48,6 +48,12 @@ suite('Multidevice', function() {
     Polymer.dom.flush();
   }
 
+  function setSuiteState(newState) {
+    multidevicePage.pageContentData = Object.assign(
+        {}, multidevicePage.pageContentData, {betterTogetherState: newState});
+    Polymer.dom.flush();
+  }
+
   suiteSetup(function() {
     ALL_MODES = Object.values(settings.MultiDeviceSettingsMode);
   });
@@ -143,5 +149,16 @@ suite('Multidevice', function() {
     assertTrue(!!verificationButton);
     // Button should be disabled because UI is waiting on server.
     assertTrue(verificationButton.disabled);
+  });
+
+  test('policy prohibited suite shows policy indicator', function() {
+    setPageContentData(settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS);
+    assertFalse(!!multidevicePage.$$('cr-policy-indicator'));
+    // Prohibit suite by policy.
+    setSuiteState(settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY);
+    assertTrue(!!multidevicePage.$$('cr-policy-indicator'));
+    // Reallow suite.
+    setSuiteState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);
+    assertFalse(!!multidevicePage.$$('cr-policy-indicator'));
   });
 });
