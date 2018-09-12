@@ -24,6 +24,8 @@ class ChildFrameCompositor {
 
   // Returns a sad page bitmap used when the child frame has crashed.
   virtual SkBitmap* GetSadPageBitmap() = 0;
+
+  virtual bool HasPointerEventsNone() = 0;
 };
 
 }  // namespace content

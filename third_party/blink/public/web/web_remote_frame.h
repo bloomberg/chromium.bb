@@ -138,6 +138,8 @@ class WebRemoteFrame : public WebFrame {
 
   virtual WebRect GetCompositingRect() = 0;
 
+  virtual bool OOPIFHasPointerEventsNone() const = 0;
+
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

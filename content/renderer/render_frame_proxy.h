@@ -201,6 +201,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void VisibilityChanged(bool visible) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(cc::TouchAction) override;
+  void PointerEventsChanged() override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;
   void DidChangeOpener(blink::WebFrame* opener) override;
@@ -276,6 +277,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;
+  bool HasPointerEventsNone() override;
 
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 

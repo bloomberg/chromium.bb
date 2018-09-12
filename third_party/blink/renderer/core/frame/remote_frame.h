@@ -61,6 +61,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   RemoteFrameClient* Client() const;
 
+  void PointerEventsChanged();
+
  private:
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
 
