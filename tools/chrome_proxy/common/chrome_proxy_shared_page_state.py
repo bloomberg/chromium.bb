@@ -15,4 +15,3 @@ class ChromeProxySharedPageState(SharedPageState):
 
     #TODO(bustamante): Implement/use a non-private way to stop the forwarder.
     network_controller._network_controller_backend._StopForwarder()
-

@@ -18,4 +18,3 @@ class ChromeProxyBenchmark(benchmark.Benchmark):
   def ProcessCommandLineArgs(cls, parser, args):
     if args.extra_header:
       measurements.ChromeProxyValidation.extra_via_header = args.extra_header
-
