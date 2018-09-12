@@ -91,6 +91,8 @@ _COMMANDS = {
     "DismissAlert": (Method.POST, "/session/:sessionId/dismiss_alert"),
     "DoubleClick": (Method.POST, "/session/:sessionId/doubleclick"),
     "Drag": (Method.POST, "/session/:sessionId/element/:id/drag"),
+    "ElementScreenshot":
+    (Method.GET, "/session/:sessionId/element/:id/screenshot"),
     "ExecuteAsyncScript": (Method.POST, "/session/:sessionId/execute_async"),
     "ExecuteCDP": (Method.POST, "/session/:sessionId/goog/cdp/execute"),
     "ExecuteScript": (Method.POST, "/session/:sessionId/execute/sync"),
