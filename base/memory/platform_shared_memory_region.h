@@ -92,6 +92,22 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
     kMaxValue = kUnsafe
   };
 
+  // Errors that can occur during Shared Memory construction.
+  // These match tools/metrics/histograms/enums.xml.
+  // This enum is append-only.
+  enum class CreateError {
+    SUCCESS = 0,
+    SIZE_ZERO = 1,
+    SIZE_TOO_LARGE = 2,
+    INITIALIZE_ACL_FAILURE = 3,
+    INITIALIZE_SECURITY_DESC_FAILURE = 4,
+    SET_SECURITY_DESC_FAILURE = 5,
+    CREATE_FILE_MAPPING_FAILURE = 6,
+    REDUCE_PERMISSIONS_FAILURE = 7,
+    ALREADY_EXISTS = 8,
+    kMaxValue = ALREADY_EXISTS
+  };
+
 // Platform-specific shared memory type used by this class.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   using PlatformHandle = mach_port_t;
