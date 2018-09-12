@@ -39,6 +39,18 @@
 
 namespace viz {
 
+namespace {
+
+// Assign each Display instance a starting value for the the display-trace id,
+// so that multiple Displays all don't start at 0, because that makes it
+// difficult to associate the trace-events with the particular displays.
+int64_t GetStartingTraceId() {
+  static int64_t client = 0;
+  return ((++client & 0xffffffff) << 32);
+}
+
+}  // namespace
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -53,7 +65,9 @@ Display::Display(
       skia_output_surface_(skia_output_surface),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
-      current_task_runner_(std::move(current_task_runner)) {
+      current_task_runner_(std::move(current_task_runner)),
+      swapped_trace_id_(GetStartingTraceId()),
+      last_acked_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
   if (scheduler_)
