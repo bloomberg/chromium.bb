@@ -37,14 +37,14 @@ class UiController {
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
 
   // Show UI to ask user to choose an address in personal data manager. GUID of
-  // the chosen address will be returned through callback if succeed, otherwise
-  // empty string is returned.
+  // the chosen address will be returned through callback, otherwise empty
+  // string if the user chose to continue manually.
   virtual void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Show UI to ask user to choose a card in personal data manager. GUID of the
-  // chosen card will be returned through callback if succeed, otherwise empty
-  // string is returned.
+  // chosen card will be returned through callback, otherwise empty string if
+  // the user chose to continue manually.
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 

@@ -38,7 +38,7 @@ WebController* Controller::GetWebController() {
 }
 
 ClientMemory* Controller::GetClientMemory() {
-  return &memory_;
+  return memory_.get();
 }
 
 Controller::Controller(content::WebContents* web_contents,
@@ -49,7 +49,8 @@ Controller::Controller(content::WebContents* web_contents,
       client_(std::move(client)),
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
-      script_tracker_(std::make_unique<ScriptTracker>(this, this)) {
+      script_tracker_(std::make_unique<ScriptTracker>(this, this)),
+      memory_(std::make_unique<ClientMemory>()) {
   GetUiController()->SetUiDelegate(this);
   GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {

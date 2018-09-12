@@ -80,7 +80,7 @@ class Controller : public ScriptExecutorDelegate,
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
-  ClientMemory memory_;
+  std::unique_ptr<ClientMemory> memory_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };

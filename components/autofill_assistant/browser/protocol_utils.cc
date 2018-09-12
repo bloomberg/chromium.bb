@@ -7,10 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
-#include "components/autofill_assistant/browser/actions/use_address_action.h"
-#include "components/autofill_assistant/browser/actions/use_card_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/version_info/version_info.h"
@@ -125,16 +124,13 @@ bool ProtocolUtils::ParseActions(const std::string& response,
         actions->emplace_back(std::make_unique<TellAction>(action));
         break;
       }
-      case ActionProto::ActionInfoCase::kUseAddress: {
-        actions->emplace_back(std::make_unique<UseAddressAction>(action));
-        break;
-      }
+      case ActionProto::ActionInfoCase::kUseAddress:
       case ActionProto::ActionInfoCase::kUseCard: {
-        actions->emplace_back(std::make_unique<UseCardAction>(action));
+        actions->emplace_back(std::make_unique<AutofillAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
-        actions->emplace_back(std::make_unique<UseCardAction>(action));
+        actions->emplace_back(std::make_unique<WaitForDomAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

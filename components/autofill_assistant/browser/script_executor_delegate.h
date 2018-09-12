@@ -10,7 +10,7 @@ namespace autofill_assistant {
 class Service;
 class UiController;
 class WebController;
-struct ClientMemory;
+class ClientMemory;
 
 class ScriptExecutorDelegate {
  public:
