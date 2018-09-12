@@ -93,6 +93,7 @@ void InstanceIDAndroid::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
     const std::map<std::string, std::string>& options,
+    bool is_lazy,
     const GetTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -112,7 +113,7 @@ void InstanceIDAndroid::GetToken(
       env, java_ref_, request_id,
       ConvertUTF8ToJavaString(env, authorized_entity),
       ConvertUTF8ToJavaString(env, scope),
-      base::android::ToJavaArrayOfStrings(env, options_strings));
+      base::android::ToJavaArrayOfStrings(env, options_strings), is_lazy);
 }
 
 void InstanceIDAndroid::ValidateToken(const std::string& authorized_entity,

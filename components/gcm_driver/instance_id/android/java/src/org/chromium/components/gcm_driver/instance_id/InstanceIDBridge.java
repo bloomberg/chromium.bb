@@ -94,10 +94,13 @@ public class InstanceIDBridge {
         }.execute();
     }
 
-    /** Async wrapper for {@link InstanceID#getToken(String, String, Bundle)}. */
+    /** Async wrapper for {@link InstanceID#getToken(String, String, Bundle)}.
+     * |isLazy| isn't part of the InstanceID.getToken() call and not sent to the
+     * FCM server. It's used to mark the subscription as lazy such that incoming
+     * messages are deferred until there are visible activities.*/
     @CalledByNative
     private void getToken(final int requestId, final String authorizedEntity, final String scope,
-            String[] extrasStrings) {
+            String[] extrasStrings, boolean isLazy) {
         final Bundle extras = new Bundle();
         assert extrasStrings.length % 2 == 0;
         for (int i = 0; i < extrasStrings.length; i += 2) {
@@ -107,6 +110,8 @@ public class InstanceIDBridge {
             @Override
             protected String doBackgroundWork() {
                 try {
+                    // TODO(https://crbug.com/882887): Mark this subscription as lazy and store
+                    // that information in SharedPreferences.
                     return mInstanceID.getToken(authorizedEntity, scope, extras);
                 } catch (IOException ex) {
                     return "";

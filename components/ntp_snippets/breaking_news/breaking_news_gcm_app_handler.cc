@@ -177,6 +177,7 @@ void BreakingNewsGCMAppHandler::Subscribe(bool force_token_retrieval) {
   instance_id_driver_->GetInstanceID(kBreakingNewsGCMAppID)
       ->GetToken(kBreakingNewsGCMSenderId, kGCMScope,
                  /*options=*/std::map<std::string, std::string>(),
+                 /*is_lazy=*/false,
                  base::Bind(&BreakingNewsGCMAppHandler::DidRetrieveToken,
                             weak_ptr_factory_.GetWeakPtr()));
 }
@@ -230,7 +231,7 @@ void BreakingNewsGCMAppHandler::ResubscribeIfInvalidToken() {
   instance_id_driver_->GetInstanceID(kBreakingNewsGCMAppID)
       ->GetToken(
           kBreakingNewsGCMSenderId, kGCMScope,
-          /*options=*/std::map<std::string, std::string>(),
+          /*options=*/std::map<std::string, std::string>(), /*is_lazy=*/false,
           base::Bind(&BreakingNewsGCMAppHandler::DidReceiveTokenForValidation,
                      weak_ptr_factory_.GetWeakPtr()));
 }

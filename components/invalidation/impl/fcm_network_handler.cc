@@ -90,9 +90,12 @@ void FCMNetworkHandler::StartListening() {
   // Being the listener is pre-requirement for token operations.
   gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
 
+  // TODO(https://crbug.com/882887): Switch to a lazy subscription when they are
+  // supported by the GCM driver.
   instance_id_driver_->GetInstanceID(kInvalidationsAppId)
       ->GetToken(kInvalidationGCMSenderId, kGCMScope,
                  /*options=*/std::map<std::string, std::string>(),
+                 /*is_lazy=*/false,
                  base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -142,9 +145,12 @@ void FCMNetworkHandler::ScheduleNextTokenValidation() {
 void FCMNetworkHandler::StartTokenValidation() {
   DCHECK(IsListening());
 
+  // TODO(https://crbug.com/882887): Switch to a lazy subscription when they are
+  // supported by the GCM driver.
   instance_id_driver_->GetInstanceID(kInvalidationsAppId)
       ->GetToken(kInvalidationGCMSenderId, kGCMScope,
                  std::map<std::string, std::string>(),
+                 /*is_lazy=*/false,
                  base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
                             weak_ptr_factory_.GetWeakPtr()));
 }

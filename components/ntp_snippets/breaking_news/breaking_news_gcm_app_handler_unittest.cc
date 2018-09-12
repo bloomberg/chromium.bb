@@ -90,10 +90,11 @@ class MockInstanceID : public InstanceID {
 
   MOCK_METHOD1(GetID, void(const GetIDCallback& callback));
   MOCK_METHOD1(GetCreationTime, void(const GetCreationTimeCallback& callback));
-  MOCK_METHOD4(GetToken,
+  MOCK_METHOD5(GetToken,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
+                    bool is_lazy,
                     const GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,
@@ -332,9 +333,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   // Check that the handler validates the token through GetToken. ValidateToken
   // always returns true on Android, so it's not useful. Instead, the handler
   // must check that the result from GetToken is unchanged.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   handler->StartListening(base::DoNothing(), base::DoNothing());
   task_runner->RunUntilIdle();
@@ -360,16 +361,16 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
 
   // Check that handler does not validate the token yet.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   handler->StartListening(base::DoNothing(), base::DoNothing());
   task_runner->FastForwardBy(time_to_validation -
                              base::TimeDelta::FromSeconds(1));
 
   // But when it is time, validation happens.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
@@ -388,7 +389,7 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldNotValidateTokenBeforeListening) {
 
   // Check that handler does not validate the token before StartListening even
   // though a validation is due.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
   task_runner->FastForwardBy(10 * GetTokenValidationPeriod());
@@ -414,7 +415,7 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
   // Check that handler does not validate the token after StopListening even
   // though a validation is due.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
   handler->StartListening(base::DoNothing(), base::DoNothing());
@@ -439,21 +440,21 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
 
   // There is no token yet, thus, handler retrieves it on StartListening.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   handler->StartListening(base::DoNothing(), base::DoNothing());
 
   // Check that the validation schedule has changed. "Old validation" should not
   // happen because the token was retrieved recently.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   task_runner->FastForwardBy(GetTokenValidationPeriod() -
                              base::TimeDelta::FromSeconds(1));
 
   // The new validation should happen.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
@@ -478,20 +479,20 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   handler->StartListening(base::DoNothing(), base::DoNothing());
 
   // Handler validates the token.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   task_runner->FastForwardBy(time_to_validation);
 
   // Check that the next validation is scheduled in time.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   task_runner->FastForwardBy(GetTokenValidationPeriod() -
                              base::TimeDelta::FromSeconds(1));
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
@@ -516,9 +517,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
   // Check that handler resubscribes with the new token after a validation, if
   // old is invalid.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("new_token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("new_token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   EXPECT_CALL(*mock_subscription_manager(), Resubscribe("new_token"));
   EXPECT_CALL(*mock_subscription_manager(), Subscribe(_)).Times(0);
@@ -546,9 +547,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
   // Check that provider does not resubscribe if the old token is still valid
   // after validation.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   EXPECT_CALL(*mock_subscription_manager(), Subscribe(_)).Times(0);
   EXPECT_CALL(*mock_subscription_manager(), Resubscribe(_)).Times(0);
@@ -576,8 +577,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   // Save the GetToken callback during the subscription.
   base::RepeatingCallback<void(const std::string&, InstanceID::Result)>
       get_token_callback;
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
-      .WillOnce(SaveArg<3>(&get_token_callback));
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
+      .WillOnce(SaveArg<4>(&get_token_callback));
   handler->StartListening(
       base::BindRepeating(
           [](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}),
@@ -629,8 +630,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   // Save the GetToken callback during the validation.
   base::RepeatingCallback<void(const std::string&, InstanceID::Result)>
       get_token_callback;
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
-      .WillOnce(SaveArg<3>(&get_token_callback));
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
+      .WillOnce(SaveArg<4>(&get_token_callback));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // The client stops listening for the push updates.
@@ -672,9 +673,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
   ASSERT_FALSE(handler->IsListening());
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillRepeatedly(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   handler->StartListening(base::DoNothing(), base::DoNothing());
 
   EXPECT_TRUE(handler->IsListening());
@@ -690,9 +691,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
   ASSERT_FALSE(handler->IsListening());
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillRepeatedly(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   handler->StartListening(base::DoNothing(), base::DoNothing());
   ASSERT_TRUE(handler->IsListening());
 
@@ -711,9 +712,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
   ASSERT_FALSE(handler->IsListening());
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillRepeatedly(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   handler->StartListening(base::DoNothing(), base::DoNothing());
   ASSERT_TRUE(handler->IsListening());
 
@@ -889,13 +890,13 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
   handler->StartListening(base::DoNothing(), base::DoNothing());
 
   // Check that the next validation is scheduled in time.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _)).Times(0);
   task_runner->FastForwardBy(time_to_validation -
                              base::TimeDelta::FromSeconds(1));
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Check that the next forced subscription is scheduled in time.
@@ -1094,8 +1095,8 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportTokenRetrievalResult) {
       new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
   std::unique_ptr<BreakingNewsGCMAppHandler> handler = MakeHandler(task_runner);
 
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
-      .WillOnce(InvokeCallbackArgument<3>(/*token=*/"",
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
+      .WillOnce(InvokeCallbackArgument<4>(/*token=*/"",
                                           InstanceID::Result::NETWORK_ERROR));
   handler->StartListening(base::DoNothing(), base::DoNothing());
 
@@ -1137,9 +1138,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
       IsEmpty());
 
   // But when the validation happens, the time is reported.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   histogram_tester.ExpectTimeBucketCount(
@@ -1182,9 +1183,9 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
               IsEmpty());
 
   // But when the validation happens, the old token validness is reported.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions."

@@ -55,7 +55,7 @@ void PrefetchInstanceIDProxy::GetGCMToken(
   DCHECK(instance_id);
 
   instance_id->GetToken(kProdSenderId, kScopeGCM,
-                        std::map<std::string, std::string>(),
+                        std::map<std::string, std::string>(), /*is_lazy=*/false,
                         base::Bind(&PrefetchInstanceIDProxy::GotGCMToken,
                                    weak_factory_.GetWeakPtr(), callback));
 }
