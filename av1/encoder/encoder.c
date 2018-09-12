@@ -3383,13 +3383,13 @@ static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME - 1 };
 
   for (int i = 2; i > 0; --i) {
-    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i - 1]];
-
     // [0] is allocated to the current coded frame, i.e. bwdref
     memcpy(
         cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
         cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME],
         sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1] + LAST_FRAME]));
+
+    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i - 1]];
   }
 }
 
@@ -3403,13 +3403,13 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME - 1 };
 
   for (int i = 0; i < 2; ++i) {
-    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i + 1]];
-
     // [0] is allocated to the current coded frame, i.e. bwdref
     memcpy(
         cpi->interp_filter_selected[ordered_bwd[i] + LAST_FRAME],
         cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME],
         sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME]));
+
+    cpi->ref_fb_idx[ordered_bwd[i]] = cpi->ref_fb_idx[ordered_bwd[i + 1]];
   }
 }
 #endif  // USE_SYMM_MULTI_LAYER
