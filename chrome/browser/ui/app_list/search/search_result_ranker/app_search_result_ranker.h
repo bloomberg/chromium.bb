@@ -30,8 +30,8 @@ class AppSearchResultRanker {
   // SearchResultRankerPredictorName() in "app_list_features.h".
   // Ephemeral users are speically handled since their profiles are cleaned up
   // after logging out.
-  explicit AppSearchResultRanker(const base::FilePath& profile_path,
-                                 bool is_ephemeral_user);
+  AppSearchResultRanker(const base::FilePath& profile_path,
+                        bool is_ephemeral_user);
 
   ~AppSearchResultRanker();
 
