@@ -222,7 +222,7 @@ computer.
 This is essentially the same situation as with physically-local attacks. The
 attacker's code, when it runs as your user account on your machine, can do
 anything you can do. (See also [Microsoft's Ten Immutable Laws Of
-Security](https://technet.microsoft.com/en-us/library/hh278941.aspx).)
+Security](https://web.archive.org/web/20160311224620/https://technet.microsoft.com/en-us/library/hh278941.aspx).)
 
 <a name="TOC-What-about-unmasking-of-passwords-with-the-developer-tools-"></a>
 ## What about unmasking of passwords with the developer tools?
