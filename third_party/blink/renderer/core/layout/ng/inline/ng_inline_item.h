@@ -26,6 +26,8 @@ class LayoutObject;
 // In this representation TextNodes are merged up into their parent inline
 // element where possible.
 class CORE_EXPORT NGInlineItem {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
  public:
   enum NGInlineItemType {
     kText,
@@ -206,6 +208,9 @@ inline void NGInlineItem::AssertEndOffset(unsigned offset) const {
 // Represents a text content with a list of NGInlineItem. A node may have an
 // additional NGInlineItemsData for ::first-line pseudo element.
 struct CORE_EXPORT NGInlineItemsData {
+  USING_FAST_MALLOC(NGInlineItemsData);
+
+ public:
   // Text content for all inline items represented by a single NGInlineNode.
   // Encoded either as UTF-16 or latin-1 depending on the content.
   String text_content;
