@@ -1,0 +1,11 @@
+rootWebArea
+++genericContainer editable multiline richlyEditable value='Editable paragraph<newline><newline>Non-editable paragraph' editableRoot=true
+++++paragraph editable richlyEditable
+++++++staticText editable richlyEditable name='Editable paragraph'
+++++++++inlineTextBox name='Editable paragraph'
+++++paragraph
+++++++staticText name='Non-editable paragraph'
+++++++++inlineTextBox name='Non-editable paragraph'
+++genericContainer editable richlyEditable
+++++staticText editable richlyEditable name='Fake-editable'
+++++++inlineTextBox name='Fake-editable'

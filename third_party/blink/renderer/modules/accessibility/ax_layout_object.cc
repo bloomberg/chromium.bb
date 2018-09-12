@@ -396,12 +396,27 @@ bool AXLayoutObject::IsEditable() const {
   if (IsDetached())
     return false;
 
-  if (GetLayoutObject()->IsTextControl())
-    return true;
-
   const Node* node = GetNodeOrContainingBlockNode();
   if (!node)
     return false;
+
+  // TODO(accessibility) pursue standards track so that aria-goog-editable
+  // becomes aria-editable. At that time, create ariaEditableAttr in
+  // html_element.cc. The current version of the editable attribute does not
+  // inherit, in order to match the automatic Gecko implementation, but
+  // hopefully the standardized version will, in which case a more performant
+  // implementation will be required, e.g. cache it or only expose on ancestor,
+  // having browser-side propagate it.
+  const Element* elem = node->IsElementNode()
+                            ? ToElement(node)
+                            : FlatTreeTraversal::ParentElement(*node);
+  if (elem && elem->hasAttribute("aria-goog-editable")) {
+    auto editable = elem->getAttribute("aria-goog-editable");
+    return !EqualIgnoringASCIICase("false", editable);
+  }
+
+  if (GetLayoutObject()->IsTextControl())
+    return true;
 
   if (HasEditableStyle(*node))
     return true;
@@ -429,6 +444,21 @@ bool AXLayoutObject::IsRichlyEditable() const {
   const Node* node = GetNodeOrContainingBlockNode();
   if (!node)
     return false;
+
+  // TODO(accessibility) pursue standards track so that aria-goog-editable
+  // becomes aria-editable. At that time, create ariaEditableAttr in
+  // html_element.cc. The current version of the editable attribute does not
+  // inherit, in order to match the automatic Gecko implementation, but
+  // hopefully the standardized version will, in which case a more performant
+  // implementation will be required, e.g. cache it or only expose on ancestor,
+  // having browser-side propagate it.
+  const Element* elem = node->IsElementNode()
+                            ? ToElement(node)
+                            : FlatTreeTraversal::ParentElement(*node);
+  if (elem && elem->hasAttribute("aria-goog-editable")) {
+    auto editable = elem->getAttribute("aria-goog-editable");
+    return !EqualIgnoringASCIICase("false", editable);
+  }
 
   if (HasRichlyEditableStyle(*node))
     return true;

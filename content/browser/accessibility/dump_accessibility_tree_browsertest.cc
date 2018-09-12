@@ -514,6 +514,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDropEffect) {
   RunAriaTest(FILE_PATH_LITERAL("aria-dropeffect.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaEditable) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-editable.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaErrorMessage) {
   RunAriaTest(FILE_PATH_LITERAL("aria-errormessage.html"));
