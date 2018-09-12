@@ -45,8 +45,9 @@ static INLINE void av1_round_shift_array_32_sse4_1(__m128i *input,
 static INLINE void av1_round_shift_rect_array_32_sse4_1(__m128i *input,
                                                         __m128i *output,
                                                         const int size,
-                                                        const int bit) {
-  const __m128i sqrt2 = _mm_set1_epi32(NewSqrt2);
+                                                        const int bit,
+                                                        const int val) {
+  const __m128i sqrt2 = _mm_set1_epi32(val);
   if (bit > 0) {
     int i;
     for (i = 0; i < size; i++) {
