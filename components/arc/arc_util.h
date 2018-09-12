@@ -9,8 +9,6 @@
 // outside of ARC, e.g. CommandLine flag, attribute of global data/state,
 // users' preferences, and FeatureList.
 
-#include <stdint.h>
-
 namespace aura {
 class Window;
 }  // namespace aura
@@ -113,10 +111,6 @@ bool IsArcDataCleanupOnStartRequested();
 // restricted CPU resources.
 // TODO(yusukes): Use enum instead of bool.
 void SetArcCpuRestriction(bool do_restrict);
-
-// Returns the Android density that should be used for the given device scale
-// factor used on chrome.
-int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor);
 
 }  // namespace arc
 

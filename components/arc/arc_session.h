@@ -15,10 +15,6 @@
 #include "components/arc/arc_stop_reason.h"
 #include "components/arc/arc_supervision_transition.h"
 
-namespace ash {
-class DefaultScaleFactorRetriever;
-}
-
 namespace base {
 class FilePath;
 }
@@ -89,8 +85,7 @@ class ArcSession {
 
   // Creates a default instance of ArcSession.
   static std::unique_ptr<ArcSession> Create(
-      ArcBridgeService* arc_bridge_service,
-      ash::DefaultScaleFactorRetriever* retriever);
+      ArcBridgeService* arc_bridge_service);
   virtual ~ArcSession();
 
   // Sends D-Bus message to start a mini-container.

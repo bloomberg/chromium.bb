@@ -28,10 +28,9 @@ void ArcSession::RemoveObserver(Observer* observer) {
 
 // static
 std::unique_ptr<ArcSession> ArcSession::Create(
-    ArcBridgeService* arc_bridge_service,
-    ash::DefaultScaleFactorRetriever* retriever) {
+    ArcBridgeService* arc_bridge_service) {
   return std::make_unique<ArcSessionImpl>(
-      ArcSessionImpl::CreateDelegate(arc_bridge_service, retriever));
+      ArcSessionImpl::CreateDelegate(arc_bridge_service));
 }
 
 }  // namespace arc

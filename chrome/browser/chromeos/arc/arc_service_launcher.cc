@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/default_scale_factor_retriever.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -69,8 +67,6 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 namespace {
@@ -85,16 +81,9 @@ ArcServiceLauncher::ArcServiceLauncher()
       arc_session_manager_(std::make_unique<ArcSessionManager>(
           std::make_unique<ArcSessionRunner>(
               base::Bind(ArcSession::Create,
-                         arc_service_manager_->arc_bridge_service(),
-                         &default_scale_factor_retriever_)))) {
+                         arc_service_manager_->arc_bridge_service())))) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
-
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config);
-  default_scale_factor_retriever_.Start(std::move(cros_display_config));
 }
 
 ArcServiceLauncher::~ArcServiceLauncher() {
@@ -223,8 +212,7 @@ void ArcServiceLauncher::ResetForTesting() {
   // unexpected behavior, specifically on test teardown.
   arc_session_manager_ = std::make_unique<ArcSessionManager>(
       std::make_unique<ArcSessionRunner>(base::Bind(
-          ArcSession::Create, arc_service_manager_->arc_bridge_service(),
-          &default_scale_factor_retriever_)));
+          ArcSession::Create, arc_service_manager_->arc_bridge_service())));
 }
 
 }  // namespace arc
