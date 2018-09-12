@@ -252,14 +252,19 @@ void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   const char* client_name = GetClientNameForMetrics();
   if (client_name && args.trace_id != -1) {
     base::TimeTicks current_time = base::TimeTicks::Now();
-    base::TimeDelta frame_difference = current_time - args.frame_time;
     PipelineReporting report(args, current_time);
     pipeline_reporting_frame_times_.emplace(args.trace_id, report);
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        base::StringPrintf("GraphicsPipeline.%s.ReceivedBeginFrame",
-                           client_name),
-        frame_difference, base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromMilliseconds(100), 50);
+    // Missed BeginFrames use the frame time of the last received BeginFrame
+    // which is bogus from a reporting perspective if nothing has been updating
+    // on screen for a while.
+    if (args.type != viz::BeginFrameArgs::MISSED) {
+      base::TimeDelta frame_difference = current_time - args.frame_time;
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          base::StringPrintf("GraphicsPipeline.%s.ReceivedBeginFrame",
+                             client_name),
+          frame_difference, base::TimeDelta::FromMicroseconds(1),
+          base::TimeDelta::FromMilliseconds(100), 50);
+    }
   }
 
   if (!needs_begin_frames_) {
