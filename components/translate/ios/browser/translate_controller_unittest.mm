@@ -162,4 +162,15 @@ TEST_F(TranslateControllerTest, TranslationFailure) {
   EXPECT_FALSE(error_type_ == TranslateErrors::NONE);
 }
 
+// Tests that OnTranslateLoadJavaScript() is called with the right paramters
+// when a |translate.loadjavascript| message is received from the JS side.
+TEST_F(TranslateControllerTest, OnTranslateLoadJavascript) {
+  base::DictionaryValue command;
+  command.SetString("command", "translate.loadjavascript");
+  command.SetString("url", "https:///translate.googleapis.com/javascript.js");
+  EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
+      command, GURL("http://google.com"), /*interacting=*/false,
+      /*is_main_frame=*/true, /*sender_frame=*/nullptr));
+}
+
 }  // namespace translate
