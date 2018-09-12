@@ -49,9 +49,7 @@
       <div class="header-title" hidden$="{{!headerTitle}}">
         <span>[[headerTitle]]</span>
       </div>
-      <div class="header-comment" hidden$="{{!headerComment}}">
-        <span>[[headerComment]]</span>
-      </div>
+      <slot name="header-comment"></slot>
     </div>
   </template>
 </dom-module>

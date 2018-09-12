@@ -320,8 +320,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     showAttestationBasedEnrollmentSuccess: function(
         device, enterpriseEnrollmentDomain) {
-      $('oauth-enroll-abe-success-card').innerHTML = loadTimeData.getStringF(
-          'oauthEnrollAbeSuccess', device, enterpriseEnrollmentDomain);
+      $('oauth-enroll-abe-success-comment-no-domain').hidden = true;
+      $('oauth-enroll-abe-success-comment-domain').hidden = false;
+      $('oauth-enroll-abe-success-comment-domain').innerHTML =
+          loadTimeData.getStringF(
+              'oauthEnrollAbeSuccess', device, enterpriseEnrollmentDomain);
       this.showStep(STEP_ABE_SUCCESS);
     },
 
