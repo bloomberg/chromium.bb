@@ -93,7 +93,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
       ClientRedirectPolicy,
       const base::UnguessableToken& devtools_navigation_token);
   ~WebDocumentLoaderImpl() override;
-  void DetachFromFrame() override;
+  void DetachFromFrame(bool flush_microtask_queue) override;
   String DebugName() const override { return "WebDocumentLoaderImpl"; }
 
   // Mutable because the const getters will magically sync these to the

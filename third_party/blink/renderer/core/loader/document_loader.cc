@@ -76,6 +76,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -841,9 +844,24 @@ void DocumentLoader::StopLoading() {
     LoadFailed(ResourceError::CancelledError(Url()));
 }
 
-void DocumentLoader::DetachFromFrame() {
+void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
+  if (flush_microtask_queue) {
+    // Flush microtask queue so that they all run on pre-navigation context.
+    // TODO(dcheng): This is a temporary hack that should be removed. This is
+    // only here because it's currently not possible to drop the microtasks
+    // queued for a Document when the Document is navigated away; instead, the
+    // entire microtask queue needs to be flushed. Unfortunately, running the
+    // microtasks any later results in violating internal invariants, since
+    // Blink does not expect the DocumentLoader for a not-yet-detached Document
+    // to be null. It is also not possible to flush microtasks any earlier,
+    // since flushing microtasks can only be done after any other JS (which can
+    // queue additional microtasks) has run. Once it is possible to associate
+    // microtasks with a v8::Context, remove this hack.
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  }
+  ScriptForbiddenScope forbid_scripts;
   fetcher_->ClearContext();
 
   // If that load cancellation triggered another detach, leave.

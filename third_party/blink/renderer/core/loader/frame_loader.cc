@@ -38,6 +38,7 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -89,8 +90,6 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -513,12 +512,13 @@ void FrameLoader::UpdateForSameDocumentNavigation(
     Client()->DidStopLoading();
 }
 
-void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader) {
+void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
+                                       bool flush_microtask_queue) {
   if (!loader)
     return;
 
   FrameNavigationDisabler navigation_disabler(*frame_);
-  loader->DetachFromFrame();
+  loader->DetachFromFrame(flush_microtask_queue);
   loader = nullptr;
 }
 
@@ -1192,19 +1192,12 @@ bool FrameLoader::PrepareForCommit() {
   if (document_loader_) {
     base::AutoReset<bool> in_detach_document_loader(
         &protect_provisional_loader_, true);
-    DetachDocumentLoader(document_loader_);
+    DetachDocumentLoader(document_loader_, true);
   }
   // 'abort' listeners can also detach the frame.
   if (!frame_->Client())
     return false;
   DCHECK_EQ(provisional_document_loader_, pdl);
-
-  // Flush microtask queue so that they all run on pre-navigation context.
-  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
-
-  // Ensure that the frame_ hasn't detached from running the microtasks.
-  if (!frame_->Client())
-    return false;
 
   // No more events will be dispatched so detach the Document.
   // TODO(yoav): Should we also be nullifying domWindow's document (or
