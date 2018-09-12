@@ -14,7 +14,9 @@ static_library("core") {
     "request_metadata.cc",
     "request_metadata.h",
   ]
-
+  deps = [
+    "//components/image_fetcher/core/storage",
+  ]
   public_deps = [
     "//base",
     "//components/data_use_measurement/core",
@@ -34,7 +36,6 @@ static_library("test_support") {
     "mock_image_fetcher.cc",
     "mock_image_fetcher.h",
   ]
-
   public_deps = [
     ":core",
     "//services/network:test_support",
