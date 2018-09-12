@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -322,8 +323,28 @@ void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
   script_state->DisposePerContextData();
 }
 
-void V8GCController::CollectAllGarbageForTesting(v8::Isolate* isolate) {
-  for (unsigned i = 0; i < 5; i++)
+void V8GCController::CollectAllGarbageForTesting(
+    v8::Isolate* isolate,
+    v8::EmbedderHeapTracer::EmbedderStackState stack_state) {
+  constexpr unsigned kNumberOfGCs = 5;
+
+  if (stack_state != v8::EmbedderHeapTracer::EmbedderStackState::kUnknown) {
+    V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+    v8::EmbedderHeapTracer* tracer =
+        RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled()
+            ? static_cast<v8::EmbedderHeapTracer*>(
+                  data->GetUnifiedHeapController())
+            : static_cast<v8::EmbedderHeapTracer*>(
+                  data->GetScriptWrappableMarkingVisitor());
+    // Passing a stack state is only supported when either wrapper tracing or
+    // unified heap is enabled.
+    CHECK(tracer);
+    for (unsigned i = 0; i < kNumberOfGCs; i++)
+      tracer->GarbageCollectionForTesting(stack_state);
+    return;
+  }
+
+  for (unsigned i = 0; i < kNumberOfGCs; i++)
     isolate->RequestGarbageCollectionForTesting(
         v8::Isolate::kFullGarbageCollection);
 }

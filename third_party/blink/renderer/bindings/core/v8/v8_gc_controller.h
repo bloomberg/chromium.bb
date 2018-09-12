@@ -49,11 +49,14 @@ class CORE_EXPORT V8GCController {
   static void GcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
 
   static void CollectGarbage(v8::Isolate*, bool only_minor_gc = false);
-  // You should use collectAllGarbageForTesting() when you want to collect all
-  // V8 & Blink objects. It runs multiple V8 GCs to collect references
-  // that cross the binding boundary. collectAllGarbage() also runs multipe
-  // Oilpan GCs to collect a chain of persistent handles.
-  static void CollectAllGarbageForTesting(v8::Isolate*);
+
+  // Collects V8 and Blink objects in multiple garbage collectin passes. Also
+  // triggers follow up garbage collections in Oilpan to collect chains of
+  // persistent handles.
+  static void CollectAllGarbageForTesting(
+      v8::Isolate*,
+      v8::EmbedderHeapTracer::EmbedderStackState stack_state =
+          v8::EmbedderHeapTracer::EmbedderStackState::kUnknown);
 
   static Node* OpaqueRootForGC(v8::Isolate*, Node*);
 
