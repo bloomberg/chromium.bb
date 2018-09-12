@@ -28,7 +28,6 @@ class SyncUsernameTestBase : public testing::Test {
 
   // Instruct the signin manager to sign in with |email| or out.
   void FakeSigninAs(const std::string& email);
-  void FakeSignout();
 
   // Produce a sample PasswordForm.
   static autofill::PasswordForm SimpleGaiaForm(const char* username);
@@ -61,21 +60,10 @@ class SyncUsernameTestBase : public testing::Test {
     bool syncing_passwords_;
   };
 
-  class FakeSigninManagerBase : public SigninManagerBase {
-   public:
-    FakeSigninManagerBase(SigninClient* client,
-                          AccountTrackerService* account_tracker_service)
-        : SigninManagerBase(client,
-                            account_tracker_service,
-                            nullptr /* signin_error_controller */) {}
-
-    using SigninManagerBase::ClearAuthenticatedAccountId;
-  };
-
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
-  FakeSigninManagerBase signin_manager_;
+  SigninManagerBase signin_manager_;
   LocalFakeSyncService sync_service_;
 };
 
