@@ -15,23 +15,17 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
--CrSettingsLanguagesPageTest.InputMethods
--CrSettingsMainPageTest.MainPage
 -CrSettingsMenuTest.SettingsMenu
 -CrSettingsPeoplePageSyncAccountControlTest.All
 -CrSettingsPeoplePageSyncPageTest.All
 -CrSettingsPeoplePageTest.All
--CrSettingsRouteDynamicParametersTest.All
--CrSettingsSiteDataTest.All
 -CrSettingsSiteListTest.SiteList
--CrSettingsSubpageTest.All
 -CrSettingsZoomLevelsTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
 -MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
--PasswordsAndFormsBrowserTest.uiTests
 -SettingsAdvancedPageBrowserTest.Load
 
 # Mac only failure. See crbug.com/876990
@@ -195,6 +189,7 @@ CrSettingsGoogleAssistantPageTest.*
 CrSettingsImportDataDialogTest.*
 CrSettingsLanguagesPageTest.InputMethods
 CrSettingsLanguagesTest.*
+CrSettingsMainPageTest.*
 CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
 CrSettingsMultidevicePageTest.*
@@ -213,11 +208,13 @@ CrSettingsPrivacyPageTest.*
 CrSettingsProtocolHandlersTest.*
 CrSettingsResetPageTest.*
 CrSettingsResetProfileBannerTest.*
+CrSettingsRouteDynamicParametersTest.*
 CrSettingsRouteTest.*
 CrSettingsSearchEnginesTest.*
 CrSettingsSearchPageTest.*
 CrSettingsSearchTest.*
 CrSettingsSiteDataDetailsTest.*
+CrSettingsSiteDataTest.*
 CrSettingsSiteDataTest.*
 CrSettingsSiteDetailsPermissionTest.*
 CrSettingsSiteDetailsTest.*
@@ -227,6 +224,7 @@ CrSettingsSiteListTest.EditExceptionDialog
 CrSettingsSliderTest.*
 CrSettingsSmbPageTest.*
 CrSettingsStartupUrlsPageTest.*
+CrSettingsSubpageTest.*
 CrSettingsSyncPageTest.*
 CrSettingsSystemPageTest.*
 CrSettingsTextareaTest.*
@@ -298,6 +296,7 @@ MultiProfileDriveFileSystemExtensionApiTest.*
 MultiProfileFilesAppBrowserTest.*
 NetInternalsTest.*
 NTP4WebUITest.*
+PasswordsAndFormsBrowserTest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
 PrintPreviewBaseSettingsSectionTest.*

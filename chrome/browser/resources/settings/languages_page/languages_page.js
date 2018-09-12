@@ -288,6 +288,9 @@ Polymer({
    * @private
    */
   disableUILanguageCheckbox_: function(languageState, prospectiveUILanguage) {
+    if (this.detailLanguage_ === undefined)
+      return true;
+
     // UI language setting belongs to the primary user.
     if (this.isSecondaryUser_())
       return true;
