@@ -62,7 +62,8 @@ class AssistantWebView : public views::View,
 
   // In Mash, |content_view_| is owned by the view hierarchy. Otherwise, the
   // view is owned by the WebContentsManager.
-  views::View* content_view_;
+  views::View* content_view_ = nullptr;
+  gfx::NativeView native_content_view_ = nullptr;
 
   // Our contents are drawn to a layer that is not masked by our widget's layer.
   // This causes our contents to ignore the corner radius that we have set on
