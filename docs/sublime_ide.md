@@ -86,8 +86,8 @@ The settings will take effect as soon as you save the file.
     of the sidebar
 *   ``Ctrl+` `` will show the console; it shows errors and debugging output, and
     you can run Python
-*   `View > Distractio-Free Mode` goes into fullscreen and removes Sublime's
-    header and footer
+*   `View > Enter Distraction Free Mode` goes into fullscreen and removes
+    Sublime's header and footer
 *   `View > Layout > ...` changes the configuration of files you can open side-
     by-side
 *   `Ctrl + P` (`Cmd + P` on Mac) quickly opens a search box to find a file or
@@ -125,7 +125,7 @@ configured. You can install the package manager by following in the
 website. Once the package manager is installed, restart Sublime.
 
 To install a package, press `Ctrl + Shift + P` and select `Package Manager:
-Install Package` (the string match is fairly leniant; you can just type
+Install Package` (the string match is fairly lenient; you can just type
 `"instp"` and it should find it). Then type or select the package you want to
 install.
 
@@ -210,13 +210,13 @@ useful on third_party projects that use another style.
     Package > SublimeLinter-cpplint`).
 
 Now when you save a C++ file, red dots should appear next to lines that
-invalidate the style. You can change this behavior with Choose Lint Mode (`Ctrl
-+ Shift + P > "lint mode"`).
+invalidate the style. You can change this behavior with Choose Lint Mode
+(`Ctrl + Shift + P > "lint mode"`).
 
-You can also see and navigate all the linter errors with Show All Errors (`Ctrl
-+ Shift + P > "show all"`). You can also use Next Error/Previous Error (and
-their associated shortcuts) to navigate the errors. The gutter at the bottom of
-the screen shows the message for the error on the current line.
+You can also see and navigate all the linter errors with Show All Errors
+(`Ctrl + Shift + P > "show all"`). You can also use Next Error/Previous Error
+(and their associated shortcuts) to navigate the errors. The gutter at the
+bottom of the screen shows the message for the error on the current line.
 
 You can also change the style of dot next to the line with Choose Gutter Theme
 (`Ctrl + Shift + P > "gutter"`)
@@ -267,12 +267,12 @@ page](https://github.com/karlinjf/ChromiumXRefs/).
 SublimeClang is a powerful autocompletion plugin for Sublime that uses the Clang
 static analyzer to provide real-time type and function completion and
 compilation errors on save. It works with Chromium with a script that finds and
-parses the appropriate *.ninja files to find the necessary include paths for a
+parses the appropriate \*.ninja files to find the necessary include paths for a
 given file.
 
 **Note**: Currently, only the Linux setup of SublimeClang is working. However,
 there are instructions below for Windows/Mac which you are welcome to try -- if
-you can get them to work, please update these instructions ^_^
+you can get them to work, please update these instructions ^\_^
 
 More information on SublimeClang's functionality (including keyboard shortcuts)
 can be found on the [SublimeClang GitHub
