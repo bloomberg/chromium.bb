@@ -183,6 +183,9 @@
 # Failing on ASAN bot. crbug.com/882631
 -ExtensionWebRequestApiTest.WebRequestTypes
 
+# Crashing flakily. https://crbug.com/883371
+-ExtensionDisabledGlobalErrorTest.UninstallWhilePromptBeingShown
+
 # Immersive mode tests.
 -ImmersiveModeBrowserViewTest.TabNavigationAcceleratorsFullscreenBrowser/material
 
