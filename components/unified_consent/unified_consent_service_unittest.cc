@@ -668,6 +668,8 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.ConsentBump.EligibleAtStartup", true, 1);
 
   // Simulate shutdown.
   consent_service_->Shutdown();
@@ -679,6 +681,8 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.ConsentBump.EligibleAtStartup", true, 2);
 }
 
 TEST_F(UnifiedConsentServiceTest,
@@ -697,6 +701,8 @@ TEST_F(UnifiedConsentServiceTest,
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.ConsentBump.EligibleAtStartup", true, 1);
 
   // Simulate shutdown.
   consent_service_->Shutdown();
@@ -715,6 +721,10 @@ TEST_F(UnifiedConsentServiceTest,
       "UnifiedConsent.ConsentBump.SuppressReason",
       unified_consent::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff,
       1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.ConsentBump.EligibleAtStartup", true, 1);
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.ConsentBump.EligibleAtStartup", false, 1);
 }
 
 TEST_F(UnifiedConsentServiceTest,

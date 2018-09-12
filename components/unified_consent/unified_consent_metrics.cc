@@ -8,7 +8,7 @@
 
 namespace {
 
-// Histogram name.
+// Histogram name for the consent bump action.
 const char kConsentBumpActionMetricName[] = "UnifiedConsent.ConsentBump.Action";
 
 }  // namespace
@@ -21,6 +21,11 @@ void RecordConsentBumpMetric(UnifiedConsentBumpAction action) {
   UMA_HISTOGRAM_ENUMERATION(
       kConsentBumpActionMetricName, action,
       UnifiedConsentBumpAction::kUnifiedConsentBumpActionMoreOptionsMax);
+}
+
+void RecordConsentBumpEligibility(bool eligible) {
+  UMA_HISTOGRAM_BOOLEAN("UnifiedConsent.ConsentBump.EligibleAtStartup",
+                        eligible);
 }
 
 }  // namespace metrics
