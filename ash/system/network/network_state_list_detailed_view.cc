@@ -384,7 +384,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
 void NetworkStateListDetailedView::CallRequestScan() {
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan(
-      NetworkTypePattern::WiFi());
+      NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
   // Periodically request a scan while this UI is open.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

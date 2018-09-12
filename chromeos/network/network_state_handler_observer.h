@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/network_type_pattern.h"
 
 namespace chromeos {
 
@@ -49,8 +50,8 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
   // One or more properties of |device| have been updated.
   virtual void DevicePropertiesUpdated(const DeviceState* device);
 
-  // A scan for has been requested.
-  virtual void ScanRequested();
+  // A scan for a given network type has been requested.
+  virtual void ScanRequested(const NetworkTypePattern& type);
 
   // A scan for |device| completed.
   virtual void ScanCompleted(const DeviceState* device);

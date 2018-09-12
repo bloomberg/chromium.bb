@@ -12,8 +12,8 @@ FakeHostScanScheduler::FakeHostScanScheduler() = default;
 
 FakeHostScanScheduler::~FakeHostScanScheduler() = default;
 
-void FakeHostScanScheduler::ScheduleScan() {
-  ++num_scheduled_scans_;
+void FakeHostScanScheduler::AttemptScanIfOffline() {
+  ++num_attempted_scans_;
 }
 
 }  // namespace tether

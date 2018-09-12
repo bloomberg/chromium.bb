@@ -213,7 +213,8 @@ void TetherComponentImpl::OnPreCrashStateRestored() {
   }
 
   // Start a scan now that the Tether module has started up.
-  synchronous_shutdown_object_container_->host_scan_scheduler()->ScheduleScan();
+  synchronous_shutdown_object_container_->host_scan_scheduler()
+      ->AttemptScanIfOffline();
 }
 
 void TetherComponentImpl::InitiateShutdown() {

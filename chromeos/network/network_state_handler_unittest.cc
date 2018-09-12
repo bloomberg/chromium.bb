@@ -83,7 +83,6 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
         network_list_changed_count_(0),
         network_count_(0),
         default_network_change_count_(0),
-        scan_requested_count_(0),
         scan_completed_count_(0) {}
 
   ~TestObserver() override = default;
@@ -135,7 +134,9 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     device_property_updates_[device->path()]++;
   }
 
-  void ScanRequested() override { scan_requested_count_++; }
+  void ScanRequested(const NetworkTypePattern& type) override {
+    scan_requests_.push_back(type);
+  }
 
   void ScanCompleted(const DeviceState* device) override {
     DCHECK(device);
@@ -149,14 +150,17 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   size_t default_network_change_count() {
     return default_network_change_count_;
   }
-  size_t scan_requested_count() { return scan_requested_count_; }
+  size_t scan_requested_count() { return scan_requests_.size(); }
+  const std::vector<NetworkTypePattern>& scan_requests() {
+    return scan_requests_;
+  }
   size_t scan_completed_count() { return scan_completed_count_; }
   void reset_change_counts() {
     VLOG(1) << "=== RESET CHANGE COUNTS ===";
     default_network_change_count_ = 0;
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
-    scan_requested_count_ = 0;
+    scan_requests_.clear();
     scan_completed_count_ = 0;
     connection_state_changes_.clear();
   }
@@ -193,7 +197,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   size_t network_list_changed_count_;
   size_t network_count_;
   size_t default_network_change_count_;
-  size_t scan_requested_count_;
+  std::vector<NetworkTypePattern> scan_requests_;
   size_t scan_completed_count_;
   std::string default_network_;
   std::string default_network_connection_state_;
@@ -1656,7 +1660,12 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
 TEST_F(NetworkStateHandlerTest, RequestScan) {
   EXPECT_EQ(0u, test_observer_->scan_requested_count());
   network_state_handler_->RequestScan(NetworkTypePattern::WiFi());
-  EXPECT_EQ(1u, test_observer_->scan_requested_count());
+  network_state_handler_->RequestScan(NetworkTypePattern::Tether());
+  EXPECT_EQ(2u, test_observer_->scan_requested_count());
+  EXPECT_TRUE(
+      NetworkTypePattern::WiFi().Equals(test_observer_->scan_requests()[0]));
+  EXPECT_TRUE(
+      NetworkTypePattern::Tether().Equals(test_observer_->scan_requests()[1]));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
