@@ -395,4 +395,3 @@ class ChromeProxyMetricTest(unittest.TestCase):
     except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
-

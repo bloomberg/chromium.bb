@@ -64,4 +64,3 @@ class ChromeProxyDataSavingMetrics(benchmark.Benchmark):
   @classmethod
   def Name(cls):
     return 'chrome_proxy_benchmark.data_saving_metrics.metrics'
-
