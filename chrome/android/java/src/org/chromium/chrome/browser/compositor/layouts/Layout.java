@@ -4,21 +4,16 @@
 
 package org.chromium.chrome.browser.compositor.layouts;
 
-import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
-
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.annotation.IntDef;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
-import android.view.animation.Interpolator;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -95,8 +90,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     // Tabs
     protected TabModelSelector mTabModelSelector;
     protected TabContentManager mTabContentManager;
-
-    private ChromeAnimation<Animatable> mLayoutAnimations;
 
     // Tablet tab strip managers.
     private final List<SceneOverlay> mSceneOverlays = new ArrayList<SceneOverlay>();
@@ -209,8 +202,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param isTitleNeeded   Whether a title will be shown.
      * @return                The newly created {@link LayoutTab}.
      */
-    public LayoutTab createLayoutTab(int id, boolean isIncognito,
-            boolean showCloseButton, boolean isTitleNeeded) {
+    public LayoutTab createLayoutTab(
+            int id, boolean isIncognito, boolean showCloseButton, boolean isTitleNeeded) {
         return createLayoutTab(id, isIncognito, showCloseButton, isTitleNeeded, -1.f, -1.f);
     }
 
@@ -538,19 +531,13 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param vx   The horizontal velocity of the fling.
      * @param vy   The vertical velocity of the fling.
      */
-    public void swipeFlingOccurred(long time, float x, float y, float tx, float ty, float vx,
-            float vy) { }
+    public void swipeFlingOccurred(
+            long time, float x, float y, float tx, float ty, float vx, float vy) {}
 
     /**
      * Forces the current animation to finish and broadcasts the proper event.
      */
-    protected void forceAnimationToFinish() {
-        if (mLayoutAnimations != null) {
-            mLayoutAnimations.updateAndFinish();
-            mLayoutAnimations = null;
-            onAnimationFinished();
-        }
-    }
+    protected void forceAnimationToFinish() {}
 
     /**
      * @return The width of the drawing area in dp.
@@ -837,24 +824,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return          Whether the animation was finished.
      */
     protected boolean onUpdateAnimation(long time, boolean jumpToEnd) {
-        boolean finished = true;
-        if (mLayoutAnimations != null) {
-            if (jumpToEnd) {
-                finished = mLayoutAnimations.finished();
-                mLayoutAnimations.updateAndFinish();
-            } else {
-                finished = mLayoutAnimations.update(time);
-            }
-
-            if (finished || jumpToEnd) {
-                mLayoutAnimations = null;
-                onAnimationFinished();
-            }
-        }
-
-        if (!finished) requestUpdate();
-
-        return finished;
+        return true;
     }
 
     /**
@@ -862,86 +832,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     @VisibleForTesting
     public boolean isLayoutAnimating() {
-        return mLayoutAnimations != null && !mLayoutAnimations.finished();
-    }
-
-    /**
-     * Called when layout-specific actions are needed after the animation finishes.
-     */
-    protected void onAnimationStarted() {
-    }
-
-    /**
-     * Called when layout-specific actions are needed after the animation finishes.
-     */
-    protected void onAnimationFinished() {
-    }
-
-    /**
-     * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation
-     * .AnimatableAnimation} and adds it to the animation.
-     * Automatically sets the start value at the beginning of the animation.
-     */
-    protected void addToAnimation(
-            Animatable object, int prop, float start, float end, long duration, long startTime) {
-        addToAnimation(object, prop, start, end, duration, startTime, false);
-    }
-
-    /**
-     * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation
-     * .AnimatableAnimation} and it to the animation. Uses a deceleration interpolator by default.
-     */
-    protected void addToAnimation(Animatable object, int prop, float start, float end,
-            long duration, long startTime, boolean setStartValueAfterDelay) {
-        addToAnimation(object, prop, start, end, duration, startTime, setStartValueAfterDelay,
-                ChromeAnimation.getDecelerateInterpolator());
-    }
-
-    /**
-     * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation
-     * .AnimatableAnimation} and
-     * adds it to the animation.
-     *
-     * @param <T>                     The Enum type of the Property being used
-     * @param object                  The object being animated
-     * @param prop                    The property being animated
-     * @param start                   The starting value of the animation
-     * @param end                     The ending value of the animation
-     * @param duration                The duration of the animation in ms
-     * @param startTime               The start time in ms
-     * @param setStartValueAfterDelay See {@link Animation#setStartValueAfterStartDelay(boolean)}
-     * @param interpolator            The interpolator to use for the animation
-     */
-    protected void addToAnimation(Animatable object, int prop, float start, float end,
-            long duration, long startTime, boolean setStartValueAfterDelay,
-            Interpolator interpolator) {
-        ChromeAnimation.Animation<Animatable> component = createAnimation(object, prop, start, end,
-                duration, startTime, setStartValueAfterDelay, interpolator);
-        addToAnimation(component);
-    }
-
-    /**
-     * Appends an Animation to the current animation set and starts it immediately.  If the set is
-     * already finished or doesn't exist, the animation set is also started.
-     */
-    protected void addToAnimation(ChromeAnimation.Animation<Animatable> component) {
-        if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
-            onAnimationStarted();
-            mLayoutAnimations = new ChromeAnimation<Animatable>();
-            mLayoutAnimations.start();
-        }
-        component.start();
-        mLayoutAnimations.add(component);
-        requestUpdate();
-    }
-
-    /**
-     * Cancels any animation for the given object and property.
-     * @param object The object being animated.
-     * @param prop   The property to search for.
-     */
-    protected void cancelAnimation(Animatable object, int prop) {
-        if (mLayoutAnimations != null) mLayoutAnimations.cancel(object, prop);
+        return false;
     }
 
     /**
@@ -1113,13 +1004,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     protected void updateSceneLayer(RectF viewport, RectF contentViewport,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
-    }
-
-    @VisibleForTesting
-    public void finishAnimationsForTests() {
-        if (mLayoutAnimations != null) mLayoutAnimations.updateAndFinish();
-    }
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {}
 
     /**
      * Gets the full screen manager.
