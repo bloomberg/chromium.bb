@@ -274,7 +274,6 @@
     <dimen name="location_bar_lateral_padding">10dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
-    <dimen name="tablet_toolbar_start_padding_no_buttons">6dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
 
