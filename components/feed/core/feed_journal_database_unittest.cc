@@ -31,6 +31,7 @@ const char kJournalData2[] = "Journal Data2";
 const char kJournalData3[] = "Journal Data3";
 const char kJournalData4[] = "Journal Data4";
 const char kJournalData5[] = "Journal Data5";
+const char kJournalData6[] = "Journal Data6";
 
 }  // namespace
 
@@ -75,6 +76,7 @@ class FeedJournalDatabaseTest : public testing::Test {
 
   MOCK_METHOD1(OnJournalEntryReceived, void(std::vector<std::string>));
   MOCK_METHOD1(OnStorageCommitted, void(bool));
+  MOCK_METHOD1(OnCheckJournalExistReceived, void(bool));
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -312,6 +314,87 @@ TEST_F(FeedJournalDatabaseTest, DeleteJournal) {
       base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
                      base::Unretained(this)));
   storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, ChecExistingJournal) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Store |kJournalKey1| and |kJournalKey2|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4});
+
+  // Check |kJournalKey1|.
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(true));
+
+  db()->DoesJournalExist(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnCheckJournalExistReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, CheckNonExistingJournal) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Check |kJournalKey1|.
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(false));
+  db()->DoesJournalExist(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnCheckJournalExistReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, LoadAllJournalKeys) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kJournalKey1|, |kJournalKey2| and |kJournalKey3|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+  InjectJournalStorageProto(kJournalKey3, {kJournalData6});
+
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 3U);
+        EXPECT_EQ(results[0], kJournalKey1);
+        EXPECT_EQ(results[1], kJournalKey2);
+        EXPECT_EQ(results[2], kJournalKey3);
+      });
+  db()->LoadAllJournalKeys(
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadKeysCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, DeleteAllJournals) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kJournalKey1|, |kJournalKey2|, |kJournalKey3|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+  InjectJournalStorageProto(kJournalKey3, {kJournalData6});
+
+  // Delete all journals, meaning |kJournalKey1|, |kJournalKey2| and
+  // |kJournalKey3| are expected to be deleted.
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->DeleteAllJournals(base::BindOnce(
+      &FeedJournalDatabaseTest::OnStorageCommitted, base::Unretained(this)));
+  storage_db()->UpdateCallback(true);
+
+  // Make sure all journals got deleted.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 0U);
+      });
+  db()->LoadAllJournalKeys(
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadKeysCallback(true);
 }
 
 }  // namespace feed

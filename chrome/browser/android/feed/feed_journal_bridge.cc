@@ -32,6 +32,24 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 
+namespace {
+
+void OnLoadJournalDone(base::android::ScopedJavaGlobalRef<jobject> callback,
+                       std::vector<std::string> entries) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_entries =
+      ToJavaArrayOfStrings(env, entries);
+
+  RunObjectCallbackAndroid(callback, j_entries);
+}
+
+void OnStorageBooleanCallbackDone(ScopedJavaGlobalRef<jobject> callback,
+                                  bool result) {
+  RunBooleanCallbackAndroid(callback, result);
+}
+
+}  // namespace
+
 static jlong JNI_FeedJournalBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_this,
@@ -68,8 +86,7 @@ void FeedJournalBridge::LoadJournal(
   ScopedJavaGlobalRef<jobject> callback(j_callback);
 
   feed_journal_database_->LoadJournal(
-      journal_name,
-      base::BindOnce(&FeedJournalBridge::OnLoadJournalDone, callback));
+      journal_name, base::BindOnce(&OnLoadJournalDone, callback));
 }
 
 void FeedJournalBridge::CommitJournalMutation(
@@ -81,24 +98,40 @@ void FeedJournalBridge::CommitJournalMutation(
 
   feed_journal_database_->CommitJournalMutation(
       std::move(journal_mutation_),
-      base::BindOnce(&FeedJournalBridge::OnStorageCommitDone, callback));
+      base::BindOnce(&OnStorageBooleanCallbackDone, callback));
 }
 
 void FeedJournalBridge::DoesJournalExist(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
     const base::android::JavaRef<jstring>& j_journal_name,
-    const base::android::JavaRef<jobject>& j_callback) {}
+    const base::android::JavaRef<jobject>& j_callback) {
+  std::string journal_name = ConvertJavaStringToUTF8(j_env, j_journal_name);
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  feed_journal_database_->DoesJournalExist(
+      journal_name, base::BindOnce(&OnStorageBooleanCallbackDone, callback));
+}
 
 void FeedJournalBridge::LoadAllJournalKeys(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jobject>& j_callback) {}
+    const base::android::JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  feed_journal_database_->LoadAllJournalKeys(
+      base::BindOnce(&OnLoadJournalDone, callback));
+}
 
 void FeedJournalBridge::DeleteAllJournals(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const base::android::JavaRef<jobject>& j_callback) {}
+    const base::android::JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+
+  feed_journal_database_->DeleteAllJournals(
+      base::BindOnce(&OnStorageBooleanCallbackDone, callback));
+}
 
 void FeedJournalBridge::StartJournalMutation(
     JNIEnv* j_env,
@@ -141,24 +174,6 @@ void FeedJournalBridge::AddDeleteOperation(
     const base::android::JavaRef<jobject>& j_this) {
   DCHECK(journal_mutation_);
   journal_mutation_->AddDeleteOperation();
-}
-
-// static
-void FeedJournalBridge::OnLoadJournalDone(
-    base::android::ScopedJavaGlobalRef<jobject> callback,
-    std::vector<std::string> entries) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> j_entries =
-      ToJavaArrayOfStrings(env, entries);
-
-  RunObjectCallbackAndroid(callback, j_entries);
-}
-
-// static
-void FeedJournalBridge::OnStorageCommitDone(
-    ScopedJavaGlobalRef<jobject> callback,
-    bool success) {
-  RunBooleanCallbackAndroid(callback, success);
 }
 
 }  // namespace feed
