@@ -8,6 +8,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "media/base/video_types.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
@@ -189,7 +190,7 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     }
 
     default:
-      VLOGF(1) << "Unhandled pixelformat " << std::hex << "0x" << pix_fmt;
+      VLOGF(1) << "Unhandled pixelformat " << FourccToString(pix_fmt);
       return profiles;
   }
 
@@ -220,7 +221,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
       return DRM_FORMAT_MT21;
 
     default:
-      DVLOGF(1) << "Unrecognized format " << std::hex << "0x" << format;
+      DVLOGF(1) << "Unrecognized format " << FourccToString(format);
       return 0;
   }
 }
@@ -415,13 +416,13 @@ void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
   if (max_resolution->IsEmpty()) {
     max_resolution->SetSize(1920, 1088);
     VLOGF(1) << "GetSupportedResolution failed to get maximum resolution for "
-             << "fourcc " << std::hex << pixelformat << ", fall back to "
+             << "fourcc " << FourccToString(pixelformat) << ", fall back to "
              << max_resolution->ToString();
   }
   if (min_resolution->IsEmpty()) {
     min_resolution->SetSize(16, 16);
     VLOGF(1) << "GetSupportedResolution failed to get minimum resolution for "
-             << "fourcc " << std::hex << pixelformat << ", fall back to "
+             << "fourcc " << FourccToString(pixelformat) << ", fall back to "
              << min_resolution->ToString();
   }
 }

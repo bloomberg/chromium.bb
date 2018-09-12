@@ -25,6 +25,7 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_types.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 
@@ -172,8 +173,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
 
   if (!device_->Open(V4L2Device::Type::kEncoder, output_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile="
-             << GetProfileName(config.output_profile) << ", fourcc=0x"
-             << std::hex << output_format_fourcc_;
+             << GetProfileName(config.output_profile)
+             << ", fourcc=" << FourccToString(output_format_fourcc_);
     return false;
   }
 
@@ -1104,7 +1105,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     input_format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
     if (input_format == PIXEL_FORMAT_UNKNOWN) {
-      VLOGF(1) << "Unsupported input format" << input_format_fourcc;
+      VLOGF(1) << "Unsupported input format: "
+               << FourccToString(input_format_fourcc);
       return false;
     }
 

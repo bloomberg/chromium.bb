@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/scopedfd_helper.h"
+#include "media/base/video_types.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -150,7 +151,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   if (!device_->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for input format: "
              << VideoPixelFormatToString(input_format)
-             << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
+             << " fourcc: " << FourccToString(input_format_fourcc_);
     return false;
   }
 
