@@ -209,17 +209,13 @@ component("network_service") {
     deps += [ "//sandbox/win:sandbox" ]
   }
 
-  # TODO(sdefresne): This depends on net's enable_net_mojo getting turned on for
-  # iOS, which depends on net_with_v8 as well. http://crbug.com/803149
-  if (!is_ios) {
-    sources += [
-      "proxy_resolver_factory_mojo.cc",
-      "proxy_resolver_factory_mojo.h",
-      "proxy_service_mojo.cc",
-      "proxy_service_mojo.h",
-    ]
-    deps += [ "//net/dns:mojo_service" ]
-  }
+  sources += [
+    "proxy_resolver_factory_mojo.cc",
+    "proxy_resolver_factory_mojo.h",
+    "proxy_service_mojo.cc",
+    "proxy_service_mojo.h",
+  ]
+  deps += [ "//net/dns:mojo_service" ]
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
