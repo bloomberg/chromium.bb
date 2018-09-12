@@ -531,11 +531,16 @@ base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
 
 void BodyStreamBuffer::RetainWrapperUntilV8WrapperGetReturnedToV8(
     ScriptState* script_state) {
-  ExecutionContext::From(script_state)
-      ->GetTaskRunner(TaskType::kInternalDefault)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(Noop, ScriptValue(script_state, ToV8(this, script_state))));
+  bool post_task_succeeded =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kInternalDefault)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(Noop, ScriptValue(script_state,
+                                                 ToV8(this, script_state))));
+  // Temporary CHECK to find out if and how often this PostTask fails.
+  // TODO(ricea): Set stream_broken_ to false if PostTask fails instead of
+  // crashing.
+  CHECK(post_task_succeeded);
 }
 
 BytesConsumer* BodyStreamBuffer::ReleaseHandle(
