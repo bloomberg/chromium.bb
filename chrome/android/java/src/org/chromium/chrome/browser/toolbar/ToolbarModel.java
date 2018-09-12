@@ -71,7 +71,7 @@ public class ToolbarModel implements ToolbarDataProvider {
     public ToolbarModel(Context context, @Nullable BottomSheet bottomSheet) {
         mContext = context;
         mBottomSheet = bottomSheet;
-        mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), true, false);
+        mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), false);
     }
 
     /**
@@ -299,8 +299,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         Context context = ContextUtils.getApplicationContext();
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
-                        != ColorUtils.getDefaultThemeColor(
-                                   context.getResources(), true, isIncognito())
+                        != ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
                 && hasTab() && !mTab.isNativePage();
     }
 

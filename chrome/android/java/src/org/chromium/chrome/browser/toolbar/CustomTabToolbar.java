@@ -162,8 +162,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setBackground(
-                new ColorDrawable(ColorUtils.getDefaultThemeColor(getResources(), true, false)));
+        setBackground(new ColorDrawable(ColorUtils.getDefaultThemeColor(getResources(), false)));
         mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
         mUrlBar.setEnabled(false);
@@ -480,7 +479,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         if (getProgressBar() != null) {
             if (!ColorUtils.isUsingDefaultToolbarColor(
-                        getResources(), false, false, getBackground().getColor())) {
+                        getResources(), false, getBackground().getColor())) {
                 getProgressBar().setThemeColor(getBackground().getColor(), false);
             } else {
                 getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(resources,

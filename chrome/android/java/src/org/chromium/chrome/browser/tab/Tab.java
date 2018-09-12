@@ -655,7 +655,7 @@ public class Tab
 
     private int calculateDefaultThemeColor() {
         Resources resources = mThemedApplicationContext.getResources();
-        return ColorUtils.getDefaultThemeColor(resources, true, mIncognito);
+        return ColorUtils.getDefaultThemeColor(resources, mIncognito);
     }
 
     /**

@@ -422,7 +422,7 @@ public class WebappNavigationTest {
 
     private long getDefaultPrimaryColor() {
         return ColorUtils.getDefaultThemeColor(
-                mActivityTestRule.getActivity().getResources(), true, false);
+                mActivityTestRule.getActivity().getResources(), false);
     }
 
     private String offOriginUrl() {

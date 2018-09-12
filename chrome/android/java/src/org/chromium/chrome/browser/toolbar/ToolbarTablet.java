@@ -378,7 +378,7 @@ public class ToolbarTablet
         super.onTabOrModelChanged();
         boolean incognito = isIncognito();
         if (mUseLightColorAssets == null || mUseLightColorAssets != incognito) {
-            int color = ColorUtils.getDefaultThemeColor(getResources(), true, isIncognito());
+            int color = ColorUtils.getDefaultThemeColor(getResources(), isIncognito());
             setBackgroundColor(color);
             getProgressBar().setThemeColor(color, isIncognito());
 

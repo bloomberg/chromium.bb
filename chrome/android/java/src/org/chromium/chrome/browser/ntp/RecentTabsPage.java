@@ -152,7 +152,7 @@ public class RecentTabsPage
 
     @Override
     public int getThemeColor() {
-        return ColorUtils.getDefaultThemeColor(mActivity.getResources(), true, false);
+        return ColorUtils.getDefaultThemeColor(mActivity.getResources(), false);
     }
 
     @Override

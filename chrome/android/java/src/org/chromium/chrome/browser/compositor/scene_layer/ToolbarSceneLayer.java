@@ -104,8 +104,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             }
         }
 
-        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
-                isLocationBarShownInNtp, browserControlsBackgroundColor, true);
+        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(
+                mContext.getResources(), isLocationBarShownInNtp, browserControlsBackgroundColor);
         int textBoxResourceId = R.drawable.modern_location_bar;
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,

@@ -561,7 +561,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         setStatusBarColor(null,
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(this)
                         ? Color.BLACK
-                        : ColorUtils.getDefaultThemeColor(getResources(), true, false));
+                        : ColorUtils.getDefaultThemeColor(getResources(), false));
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
