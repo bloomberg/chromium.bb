@@ -5,11 +5,13 @@
 package org.chromium.content_public.browser.test.util;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
@@ -97,7 +99,34 @@ public class WebContentsUtils {
         }
     }
 
+    /**
+     * Injects the passed Javascript code in the current page and evaluates it. This is different
+     * from {@link WebContents#evaluateJavaScript()} in that it allows for executing script
+     * in non-webui frames.
+     * <p>
+     * If a result is required, pass in a callback.
+     *
+     * @param script The Javascript to execute.
+     * @param callback The callback to be fired off when a result is ready. The script's
+     *                 result will be json encoded and passed as the parameter, and the call
+     *                 will be made on the main thread.
+     *                 If no result is required, pass null.
+     */
+    public static void evaluateJavaScript(
+            WebContents webContents, String script, JavaScriptCallback callback) {
+        if (script == null) return;
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> nativeEvaluateJavaScript(webContents, script, callback));
+    }
+
+    @CalledByNative
+    private static void onEvaluateJavaScriptResult(String jsonResult, JavaScriptCallback callback) {
+        callback.handleJavaScriptResult(jsonResult);
+    }
+
     private static native void nativeReportAllFrameSubmissions(
             WebContents webContents, boolean enabled);
     private static native RenderFrameHost nativeGetFocusedFrame(WebContents webContents);
+    private static native void nativeEvaluateJavaScript(
+            WebContents webContents, String script, JavaScriptCallback callback);
 }

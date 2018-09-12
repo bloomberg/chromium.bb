@@ -1193,13 +1193,16 @@ shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
     "../browser/android/chrome_sync_shell_entry_point.cc",
+    "js_utils.cc",
   ]
   deps = [
+    ":chrome_sync_shell_jni",
     ":chrome_sync_shell_jni_registration($default_toolchain)",
     "//chrome:chrome_android_core",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/sync",
     "//components/sync:test_support_fake_server_android",
+    "//content/public/test/android:content_native_test_support",
   ]
   if (chromium_linker_supported && use_lld) {
     configs += [ "//build/config/android:lld_pack_relocations" ]
@@ -1209,6 +1212,13 @@ shared_library("chrome_sync_shell") {
     deps +=
         [ "//chrome/browser/android/vr:jni_registration($default_toolchain)" ]
   }
+}
+
+generate_jni("chrome_sync_shell_jni") {
+  sources = [
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/JsUtils.java",
+  ]
+  jni_package = "sync_shell_test"
 }
 
 # Java libraries that go into each public chrome APK and base module. The chrome
@@ -1240,11 +1250,17 @@ java_group("chrome_public_base_module_java_for_test") {
 # Similar to chrome_public_base_module_java but for Java libraries that go into
 # the chrome sync shell APK.
 android_library("chrome_sync_shell_java") {
+  testonly = true
+
   # This exists here rather than in chrome_sync_shell_test_apk for JNI
   # registration to be able to find the native side functions.
-  java_files = [ "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java" ]
+  java_files = [
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/JsUtils.java",
+  ]
   deps = [
     ":chrome_public_base_module_java",
+    "//base:base_java_test_support",
 
     # This exists here because com.google.protobuf.nano is needed in tests,
     # but that code is stripped out via proguard. Adding this deps adds
@@ -1491,7 +1507,11 @@ chrome_public_common_apk_or_module_tmpl("chrome_sync_shell_apk") {
   deps = _chrome_public_and_sync_shell_shared_deps + [
            ":chrome_sync_shell_apk_template_resources",
            ":chrome_sync_shell_java",
+           "//third_party/android_tools:android_test_mock_java",
          ]
+  if (!is_java_debug) {
+    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+  }
 }
 
 chrome_public_test_apk_manifest =
