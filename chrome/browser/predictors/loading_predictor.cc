@@ -94,9 +94,8 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url,
   if (has_preconnect_prediction) {
     // To report hint durations and deduplicate hints to the same url.
     active_hints_.emplace(url, base::TimeTicks::Now());
-    if (config_.IsPreconnectEnabledForOrigin(profile_, origin)) {
+    if (IsPreconnectAllowed(profile_))
       MaybeAddPreconnect(url, std::move(prediction.requests), origin);
-    }
   }
 }
 
@@ -123,11 +122,10 @@ ResourcePrefetchPredictor* LoadingPredictor::resource_prefetch_predictor() {
 }
 
 PreconnectManager* LoadingPredictor::preconnect_manager() {
-  if (shutdown_)
+  if (shutdown_ || !IsPreconnectFeatureEnabled())
     return nullptr;
 
-  if (!preconnect_manager_ &&
-      config_.IsPreconnectEnabledForSomeOrigin(profile_)) {
+  if (!preconnect_manager_) {
     preconnect_manager_ =
         std::make_unique<PreconnectManager>(GetWeakPtr(), profile_);
   }
@@ -225,10 +223,8 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
 }
 
 void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
-  if (!url.is_valid() || !url.has_host() ||
-      !config_.IsPreconnectEnabledForOrigin(profile_, HintOrigin::OMNIBOX)) {
+  if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_))
     return;
-  }
 
   GURL origin = url.GetOrigin();
   bool is_new_origin = origin != last_omnibox_origin_;

@@ -1062,12 +1062,6 @@ extern const char kSoleIntegrationDescription[];
 extern const char kSoundContentSettingName[];
 extern const char kSoundContentSettingDescription[];
 
-extern const char kSpeculativePreconnectName[];
-extern const char kSpeculativePreconnectDescription[];
-
-extern const char kSpeculativePrefetchName[];
-extern const char kSpeculativePrefetchDescription[];
-
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 

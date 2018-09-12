@@ -11,8 +11,11 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_context.h"
@@ -60,17 +63,22 @@ MockPreconnectManager::MockPreconnectManager(base::WeakPtr<Delegate> delegate,
                                              Profile* profile)
     : PreconnectManager(delegate, profile) {}
 
+LoadingPredictorConfig CreateConfig() {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  return config;
+}
+
 }  // namespace
 
 class LoadingPredictorTest : public testing::Test {
  public:
-  LoadingPredictorTest();
   ~LoadingPredictorTest() override;
   void SetUp() override;
   void TearDown() override;
 
  protected:
-  virtual LoadingPredictorConfig CreateConfig();
+  virtual void SetPreference();
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -78,12 +86,11 @@ class LoadingPredictorTest : public testing::Test {
   StrictMock<MockResourcePrefetchPredictor>* mock_predictor_;
 };
 
-LoadingPredictorTest::LoadingPredictorTest()
-    : profile_(std::make_unique<TestingProfile>()) {}
-
 LoadingPredictorTest::~LoadingPredictorTest() = default;
 
 void LoadingPredictorTest::SetUp() {
+  profile_ = std::make_unique<TestingProfile>();
+  SetPreference();
   auto config = CreateConfig();
   predictor_ = std::make_unique<LoadingPredictor>(config, profile_.get());
 
@@ -107,10 +114,10 @@ void LoadingPredictorTest::TearDown() {
   predictor_->Shutdown();
 }
 
-LoadingPredictorConfig LoadingPredictorTest::CreateConfig() {
-  LoadingPredictorConfig config;
-  PopulateTestConfig(&config);
-  return config;
+void LoadingPredictorTest::SetPreference() {
+  profile_->GetPrefs()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      chrome_browser_net::NETWORK_PREDICTION_NEVER);
 }
 
 class LoadingPredictorPreconnectTest : public LoadingPredictorTest {
@@ -118,7 +125,8 @@ class LoadingPredictorPreconnectTest : public LoadingPredictorTest {
   void SetUp() override;
 
  protected:
-  LoadingPredictorConfig CreateConfig() override;
+  void SetPreference() override;
+
   StrictMock<MockPreconnectManager>* mock_preconnect_manager_;
 };
 
@@ -131,10 +139,10 @@ void LoadingPredictorPreconnectTest::SetUp() {
   predictor_->set_mock_preconnect_manager(std::move(mock_preconnect_manager));
 }
 
-LoadingPredictorConfig LoadingPredictorPreconnectTest::CreateConfig() {
-  LoadingPredictorConfig config = LoadingPredictorTest::CreateConfig();
-  config.mode |= LoadingPredictorConfig::PRECONNECT;
-  return config;
+void LoadingPredictorPreconnectTest::SetPreference() {
+  profile_->GetPrefs()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      chrome_browser_net::NETWORK_PREDICTION_ALWAYS);
 }
 
 TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {

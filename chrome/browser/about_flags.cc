@@ -1127,21 +1127,6 @@ const FeatureEntry::Choice kThirdPartyDoodlesChoices[] = {
 };
 #endif  // defined(OS_ANDROID)
 
-const FeatureEntry::FeatureParam kSpeculativePreconnectPreconnect[] = {
-    {predictors::kModeParamName, predictors::kPreconnectMode}};
-const FeatureEntry::FeatureParam kSpeculativePreconnectLearning[] = {
-    {predictors::kModeParamName, predictors::kLearningMode}};
-const FeatureEntry::FeatureParam kSpeculativePreconnectNoPreconnect[] = {
-    {predictors::kModeParamName, predictors::kNoPreconnectMode}};
-
-const FeatureEntry::FeatureVariation kSpeculativePreconnectFeatureVariations[] =
-    {{"Preconnect", kSpeculativePreconnectPreconnect,
-      arraysize(kSpeculativePreconnectPreconnect), nullptr},
-     {"Learning", kSpeculativePreconnectLearning,
-      arraysize(kSpeculativePreconnectLearning), nullptr},
-     {"No preconnect", kSpeculativePreconnectNoPreconnect,
-      arraysize(kSpeculativePreconnectNoPreconnect), nullptr}};
-
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
@@ -3697,12 +3682,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHtmlBasedUsernameDetectorDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kHtmlBasedUsernameDetector)},
-
-    {"enable-new-preconnect", flag_descriptions::kSpeculativePreconnectName,
-     flag_descriptions::kSpeculativePreconnectDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(predictors::kSpeculativePreconnectFeature,
-                                    kSpeculativePreconnectFeatureVariations,
-                                    "SpeculativePreconnectValidation")},
 
 #if defined(OS_ANDROID)
     {"enable-async-dns", flag_descriptions::kAsyncDnsName,
