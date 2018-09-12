@@ -16,22 +16,24 @@
 
 namespace bubble_anchor_util {
 
-views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
+AnchorConfiguration GetPageInfoAnchorConfiguration(Browser* browser,
+                                                   Anchor anchor) {
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa())
-    return nullptr;
+    return {};
 #endif
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
   if (anchor == kLocationBar && browser_view->GetLocationBarView()->IsDrawn())
-    return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
+    return {browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView(),
+            views::BubbleBorder::TOP_LEFT};
   // Fall back to menu button if no location bar present.
 
   views::View* app_menu_button =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
   if (app_menu_button && app_menu_button->IsDrawn())
-    return app_menu_button;
-  return nullptr;
+    return {app_menu_button, views::BubbleBorder::TOP_RIGHT};
+  return {};
 }
 
 gfx::Rect GetPageInfoAnchorRect(Browser* browser) {
@@ -39,8 +41,9 @@ gfx::Rect GetPageInfoAnchorRect(Browser* browser) {
   if (views_mode_controller::IsViewsBrowserCocoa())
     return GetPageInfoAnchorRectCocoa(browser);
 #endif
-  // GetPageInfoAnchorView() should be preferred if available.
-  DCHECK_EQ(GetPageInfoAnchorView(browser), nullptr);
+  // GetPageInfoAnchorConfiguration()'s anchor_view should be preferred if
+  // available.
+  DCHECK_EQ(GetPageInfoAnchorConfiguration(browser).anchor_view, nullptr);
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   // Get position in view (taking RTL UI into account).

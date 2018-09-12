@@ -77,8 +77,9 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
+using bubble_anchor_util::AnchorConfiguration;
 using bubble_anchor_util::GetPageInfoAnchorRect;
-using bubble_anchor_util::GetPageInfoAnchorView;
+using bubble_anchor_util::GetPageInfoAnchorConfiguration;
 
 namespace {
 
@@ -922,14 +923,16 @@ void ShowPageInfoDialogImpl(Browser* browser,
                                            security_info, anchor);
   }
 #endif
-  views::View* anchor_view = GetPageInfoAnchorView(browser, anchor);
+  AnchorConfiguration configuration =
+      GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
-      anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
+      configuration.anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
   gfx::NativeWindow parent_window = browser->window()->GetNativeWindow();
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          anchor_view, anchor_rect, parent_window, browser->profile(),
-          web_contents, virtual_url, security_info);
+          configuration.anchor_view, anchor_rect, parent_window,
+          browser->profile(), web_contents, virtual_url, security_info);
+  bubble->set_arrow(configuration.bubble_arrow);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   auto* location_bar = browser_view->GetLocationBarView();
   if (location_bar)

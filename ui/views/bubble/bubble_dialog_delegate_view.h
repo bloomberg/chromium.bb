@@ -72,7 +72,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
   BubbleBorder::Arrow arrow() const { return arrow_; }
-  void set_arrow(BubbleBorder::Arrow arrow) { arrow_ = arrow; }
+  void set_arrow(BubbleBorder::Arrow arrow);
 
   void set_mirror_arrow_in_rtl(bool mirror) { mirror_arrow_in_rtl_ = mirror; }
 
