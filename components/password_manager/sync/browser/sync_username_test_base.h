@@ -12,12 +12,16 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_CHROMEOS)
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#endif
 
 namespace password_manager {
 
@@ -63,7 +67,12 @@ class SyncUsernameTestBase : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestSigninClient signin_client_;
   AccountTrackerService account_tracker_;
+#if defined(OS_CHROMEOS)
   SigninManagerBase signin_manager_;
+#else
+  FakeProfileOAuth2TokenService token_service_;
+  SigninManager signin_manager_;
+#endif
   LocalFakeSyncService sync_service_;
 };
 
