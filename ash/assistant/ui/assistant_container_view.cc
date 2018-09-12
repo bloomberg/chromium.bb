@@ -14,6 +14,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/shell.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -34,7 +35,6 @@ namespace {
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 constexpr int kMiniUiCornerRadiusDip = 24;
-constexpr int kMarginBottomDip = 8;
 
 // Animation.
 constexpr int kResizeAnimationDurationMs = 250;
@@ -321,7 +321,7 @@ void AssistantContainerView::SetAnchor(aura::Window* root_window) {
   // Align to the bottom, horizontal center of the work area.
   gfx::Rect work_area = display.work_area();
   gfx::Rect anchor =
-      gfx::Rect(work_area.x(), work_area.bottom() - kMarginBottomDip,
+      gfx::Rect(work_area.x(), work_area.bottom() - kVerticalMarginDip,
                 work_area.width(), 0);
 
   SetAnchorRect(anchor);
@@ -372,6 +372,8 @@ void AssistantContainerView::AnimationProgressed(
   bounds.set_size(gfx::Size(size.width(), size.height()));
 
   // Maintain original |center_x| and |bottom| positions.
+  DCHECK_GT(center_x - (bounds.width() / 2), 0);
+  DCHECK_GT(bottom - bounds.height(), 0);
   bounds.set_x(center_x - (bounds.width() / 2));
   bounds.set_y(bottom - bounds.height());
 
