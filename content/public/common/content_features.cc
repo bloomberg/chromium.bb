@@ -469,7 +469,7 @@ const base::Feature kV8VmFuture{"V8VmFuture",
 // Enable WebAssembly structured cloning.
 // http://webassembly.org/
 const base::Feature kWebAssembly{"WebAssembly",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly streamed compilation.
 const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
