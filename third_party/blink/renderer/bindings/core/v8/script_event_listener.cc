@@ -135,16 +135,6 @@ v8::Local<v8::Function> EventListenerEffectiveFunction(
   return v8::Local<v8::Function>();
 }
 
-void GetFunctionLocation(v8::Local<v8::Function> function,
-                         String& script_id,
-                         int& line_number,
-                         int& column_number) {
-  int script_id_value = function->ScriptId();
-  script_id = String::Number(script_id_value);
-  line_number = function->GetScriptLineNumber();
-  column_number = function->GetScriptColumnNumber();
-}
-
 // TODO(yukiy): move this method into V8EventListenerImpl or interface class
 // of EventListener and EventHandler
 std::unique_ptr<SourceLocation> GetFunctionLocation(
