@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/style/style_path.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

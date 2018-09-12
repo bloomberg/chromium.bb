@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
@@ -862,6 +863,31 @@ inline bool operator!=(const Persistent<T>& a, const Member<U>& b) {
 }  // namespace blink
 
 namespace WTF {
+
+template <
+    typename T,
+    blink::WeaknessPersistentConfiguration weaknessConfiguration,
+    blink::CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
+struct VectorTraits<blink::PersistentBase<T,
+                                          weaknessConfiguration,
+                                          crossThreadnessConfiguration>>
+    : VectorTraitsBase<blink::PersistentBase<T,
+                                             weaknessConfiguration,
+                                             crossThreadnessConfiguration>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool kNeedsDestruction = true;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = false;
+  static const bool kCanMoveWithMemcpy = true;
+};
+
+template <typename T>
+struct HashTraits<blink::Persistent<T>>
+    : HandleHashTraits<T, blink::Persistent<T>> {};
+
+template <typename T>
+struct HashTraits<blink::CrossThreadPersistent<T>>
+    : HandleHashTraits<T, blink::CrossThreadPersistent<T>> {};
 
 template <typename T>
 struct DefaultHash<blink::Persistent<T>> {

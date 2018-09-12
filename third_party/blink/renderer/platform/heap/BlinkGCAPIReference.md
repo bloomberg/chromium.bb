@@ -13,7 +13,7 @@ see [Wrapper Tracing Reference](../bindings/TraceWrapperReference.md).
 Unless otherwise noted, any of the primitives explained in this page requires the following `#include` statement:
 
 ```c++
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 ```
 
 ## Base class templates
@@ -311,12 +311,20 @@ garbage-collected, just like `WeakMember<T>`.
 `WeakPersistent<T>`, respectively, which can point to an object in a different thread.
 
 ```c++
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+...
 class NonGarbageCollectedClass {
     ...
 private:
     Persistent<SomeGarbageCollectedClass> m_something; // OK, the object will be alive while this persistent is alive.
 };
 ```
+
+`persistent.h` provides these persistent pointers.  It also provides
+persistent collections such as `PersistentHeapHashMap`, `PersistentHeapHashSet`,
+`PersistentHeapLinkedHashSet`, `PersistentheapListHashSet`,
+`PersistentHeapHashCountedSet`, `PersistentHeapVector`, and
+`PersistentHeapDeque`.
 
 *** note
 **Warning:** `Persistent<T>` and `CrossThreadPersistent<T>` are vulnerable to reference cycles. If a reference cycle

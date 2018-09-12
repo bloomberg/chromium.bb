@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_VAR_CYCLE_INTERPOLATION_TYPE_H_
 
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
