@@ -141,8 +141,6 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
 
 }  // namespace
 
-NGBlockNode::NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
-
 scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token) {
