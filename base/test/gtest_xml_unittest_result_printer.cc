@@ -114,7 +114,7 @@ void XmlUnitTestResultPrinter::OnTestEnd(const testing::TestInfo& test_info) {
 
   if (test_info.result()->total_part_count() > limit) {
     WriteTestPartResult(
-        "<unknown>", 0, testing::TestPartResult::kNonFatalFailure,
+        "unknown", 0, testing::TestPartResult::kNonFatalFailure,
         kTestPartLesultsLimitExceeded, kTestPartLesultsLimitExceeded);
   }
 
