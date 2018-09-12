@@ -376,6 +376,14 @@ std::wstring GetClientStateMediumKeyPath() {
   return GetClientStateMediumKeyPath(GetAppGuid());
 }
 
+std::wstring GetClientStateKeyPathForBinaries() {
+  return GetBinariesClientStateKeyPath();
+}
+
+std::wstring GetClientStateMediumKeyPathForBinaries() {
+  return GetBinariesClientStateMediumKeyPath();
+}
+
 std::wstring GetUninstallRegistryPath() {
   std::wstring result(
       L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\");

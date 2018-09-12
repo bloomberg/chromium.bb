@@ -23,8 +23,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/metrics/client_info.h"
 
-class AppRegistrationData;
-
 namespace installer {
 class ChannelInfo;
 class InstallationState;
@@ -97,19 +95,8 @@ class GoogleUpdateSettings {
 
 #if defined(OS_WIN)
   // Returns whether the user has given consent to collect UMA data and send
-  // crash dumps to Google. This information is collected by the web server
-  // used to download the chrome installer.
-  static bool GetCollectStatsConsentAtLevel(bool system_install);
-
-  // Returns the consent value for an app or TRISTATE_NONE if none is found.
-  static google_update::Tristate GetCollectStatsConsentForApp(
-      bool system_install,
-      const AppRegistrationData& reg_data);
-
-  // Sets the user consent to send UMA and crash dumps to Google. Returns
-  // false if the setting could not be recorded.
-  static bool SetCollectStatsConsentAtLevel(bool system_install,
-                                            bool consented);
+  // crash dumps to Google for the deprecated Chrome binaries.
+  static google_update::Tristate GetCollectStatsConsentForBinaries();
 
   // Returns the default (original) state of the "send usage stats" checkbox
   // shown to the user when they downloaded Chrome. The value is returned via

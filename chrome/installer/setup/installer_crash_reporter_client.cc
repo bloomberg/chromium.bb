@@ -107,8 +107,7 @@ bool InstallerCrashReporterClient::IsRunningUnattended() {
 
 bool InstallerCrashReporterClient::GetCollectStatsConsent() {
 #if defined(GOOGLE_CHROME_BUILD)
-  return GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
-      !is_per_user_install_);
+  return GoogleUpdateSettings::GetCollectStatsConsent();
 #else
   return false;
 #endif
