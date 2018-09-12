@@ -57,6 +57,7 @@ class AuthenticatorRequestDialogView
   // current sheet model defines a model for the other transports popup menu,
   // and whether it has at least one element.
   void ToggleOtherTransportsButtonVisibility();
+  bool ShouldOtherTransportsButtonBeVisible() const;
 
   AuthenticatorRequestSheetView* sheet() const {
     DCHECK(sheet_);
@@ -73,6 +74,7 @@ class AuthenticatorRequestDialogView
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  View* GetInitiallyFocusedView() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;

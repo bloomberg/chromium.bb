@@ -41,6 +41,9 @@ class TransportListView : public views::View,
  private:
   void AddViewForListItem(size_t index, AuthenticatorTransport transport);
 
+  // views::View:
+  void RequestFocus() override;
+
   // TransportListModel::Observer:
   void OnModelDestroyed() override;
   void OnTransportAppended() override;
@@ -50,6 +53,7 @@ class TransportListView : public views::View,
 
   TransportListModel* model_;  // Weak.
   Delegate* const delegate_;   // Weak, may be nullptr.
+  views::Button* first_list_item_view_;  // Weak, may be nullptr.
 
   DISALLOW_COPY_AND_ASSIGN(TransportListView);
 };
