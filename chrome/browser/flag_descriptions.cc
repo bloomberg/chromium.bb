@@ -3512,6 +3512,12 @@ const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
 const char kUnfilteredBluetoothDevicesDescription[] =
     "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";
 
+const char kUsbguardName[] = "Block new USB devices at the lock screen.";
+const char kUsbguardDescription[] =
+    "Prevents newly connected USB devices from operating at the lock screen"
+    " until Chrome OS is unlocked to protect against malicious USB devices."
+    " Already connected USB devices will continue to function.";
+
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "
