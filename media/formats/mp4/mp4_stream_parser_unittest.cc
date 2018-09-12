@@ -62,7 +62,8 @@ class MP4StreamParserTest : public testing::Test {
   MP4StreamParserTest()
       : configs_received_(false),
         lower_bound_(
-            DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max())) {
+            DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max())),
+        verifying_keyframeness_sequence_(false) {
     std::set<int> audio_object_types;
     audio_object_types.insert(kISO_14496_3);
     parser_.reset(new MP4StreamParser(audio_object_types, false, false));
@@ -78,6 +79,7 @@ class MP4StreamParserTest : public testing::Test {
   DecodeTimestamp lower_bound_;
   StreamParser::TrackId audio_track_id_;
   StreamParser::TrackId video_track_id_;
+  bool verifying_keyframeness_sequence_;
 
   bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, length);
@@ -139,6 +141,11 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
+  // Useful in single-track test media cases that need to verify
+  // keyframe/non-keyframe sequence in output of parse.
+  MOCK_METHOD0(ParsedKeyframe, void());
+  MOCK_METHOD0(ParsedNonKeyframe, void());
+
   bool NewBuffersF(const StreamParser::BufferQueueMap& buffer_queue_map) {
     DecodeTimestamp lowest_end_dts = kNoDecodeTimestamp();
     for (const auto& it : buffer_queue_map) {
@@ -157,6 +164,14 @@ class MP4StreamParserTest : public testing::Test {
                  << ", dur=" << buf->duration().InSecondsF();
         // Ensure that track ids are properly assigned on all emitted buffers.
         EXPECT_EQ(it.first, buf->track_id());
+
+        // Let single-track tests verify the sequence of keyframes/nonkeyframes.
+        if (verifying_keyframeness_sequence_) {
+          if (buf->is_key_frame())
+            ParsedKeyframe();
+          else
+            ParsedNonKeyframe();
+        }
       }
     }
 
@@ -298,9 +313,13 @@ TEST_F(MP4StreamParserTest, AVC_KeyAndNonKeyframeness_Match_Container) {
   // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
   //          on others.
   // This is the base case; see also the "Mismatches" cases, below.
+  InSequence s;  // The EXPECT* sequence matters for this test.
   auto params = GetDefaultInitParametersExpectations();
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(*this, ParsedNonKeyframe());
   ParseMP4File("bear-640x360-v-2frames_frag.mp4", 512);
 }
 
@@ -310,12 +329,16 @@ TEST_F(MP4StreamParserTest, AVC_Keyframeness_Mismatches_Container) {
   //          others.
   // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
   //          on others.
+  InSequence s;  // The EXPECT* sequence matters for this test.
   auto params = GetDefaultInitParametersExpectations();
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "not a keyframe, but the video frame contents indicate the opposite."));
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(*this, ParsedNonKeyframe());
   ParseMP4File("bear-640x360-v-2frames-keyframe-is-non-sync-sample_frag.mp4",
                512);
 }
@@ -326,12 +349,16 @@ TEST_F(MP4StreamParserTest, AVC_NonKeyframeness_Mismatches_Container) {
   //          depend on others.
   // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: SYNC sample, DOES NOT
   //          depend on others.
+  InSequence s;  // The EXPECT* sequence matters for this test.
   auto params = GetDefaultInitParametersExpectations();
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_CALL(*this, ParsedKeyframe());
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "a keyframe, but the video frame contents indicate the opposite."));
+  EXPECT_CALL(*this, ParsedNonKeyframe());
   ParseMP4File("bear-640x360-v-2frames-nonkeyframe-is-sync-sample_frag.mp4",
                512);
 }
