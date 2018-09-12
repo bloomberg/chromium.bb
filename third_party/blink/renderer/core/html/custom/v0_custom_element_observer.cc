@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_observer.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

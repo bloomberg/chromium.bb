@@ -34,6 +34,7 @@
 
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

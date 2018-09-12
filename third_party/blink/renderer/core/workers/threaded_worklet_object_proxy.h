@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

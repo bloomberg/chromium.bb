@@ -27,6 +27,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

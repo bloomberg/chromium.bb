@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/length_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
