@@ -33,14 +33,15 @@ class FakeFlingController : public FlingController {
   bool FlingBoosted() const { return fling_booster_->fling_boosted(); }
 };
 
-class FlingControllerTest : public testing::Test,
-                            public GestureEventQueueClient,
+class FlingControllerTest : public GestureEventQueueClient,
                             public FlingControllerEventSenderClient,
-                            public FlingControllerSchedulerClient {
+                            public FlingControllerSchedulerClient,
+                            public testing::TestWithParam<bool> {
  public:
   // testing::Test
   FlingControllerTest()
-      : scoped_task_environment_(
+      : needs_begin_frame_for_fling_progress_(GetParam()),
+        scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   ~FlingControllerTest() override {}
@@ -83,6 +84,9 @@ class FlingControllerTest : public testing::Test,
   void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) override {
     notified_client_after_fling_stop_ = true;
+  }
+  bool NeedsBeginFrameForFlingProgress() override {
+    return needs_begin_frame_for_fling_progress_;
   }
 
   void SimulateFlingStart(blink::WebGestureDevice source_device,
@@ -132,11 +136,15 @@ class FlingControllerTest : public testing::Test,
   int sent_scroll_gesture_count_ = 0;
 
  private:
+  bool needs_begin_frame_for_fling_progress_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<GestureEventQueue> queue_;
+  DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 
-TEST_F(FlingControllerTest,
+INSTANTIATE_TEST_CASE_P(, FlingControllerTest, testing::Bool());
+
+TEST_P(FlingControllerTest,
        ControllerSendsWheelEndOnTouchpadFlingWithZeroVelocity) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF());
   // The controller doesn't start a fling and sends a wheel end event
@@ -147,7 +155,7 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest,
+TEST_P(FlingControllerTest,
        ControllerSendsGSEOnTouchscreenFlingWithZeroVelocity) {
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen, gfx::Vector2dF());
   // The controller doesn't start a fling and sends a GSE immediately.
@@ -156,7 +164,7 @@ TEST_F(FlingControllerTest,
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest, DISABLED_ControllerHandlesTouchpadGestureFling) {
+TEST_P(FlingControllerTest, DISABLED_ControllerHandlesTouchpadGestureFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
@@ -197,7 +205,7 @@ TEST_F(FlingControllerTest, DISABLED_ControllerHandlesTouchpadGestureFling) {
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest, DISABLED_ControllerHandlesTouchscreenGestureFling) {
+TEST_P(FlingControllerTest, DISABLED_ControllerHandlesTouchscreenGestureFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -224,7 +232,7 @@ TEST_F(FlingControllerTest, DISABLED_ControllerHandlesTouchscreenGestureFling) {
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest,
+TEST_P(FlingControllerTest,
        DISABLED_ControllerSendsWheelEndWhenTouchpadFlingIsOver) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(100, 0));
@@ -260,7 +268,7 @@ TEST_F(FlingControllerTest,
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest,
+TEST_P(FlingControllerTest,
        DISABLED_ControllerSendsGSEWhenTouchscreenFlingIsOver) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
@@ -283,7 +291,7 @@ TEST_F(FlingControllerTest,
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest,
+TEST_P(FlingControllerTest,
        DISABLED_EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
@@ -319,7 +327,7 @@ TEST_F(FlingControllerTest,
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest,
+TEST_P(FlingControllerTest,
        DISABLED_EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
@@ -346,7 +354,7 @@ TEST_F(FlingControllerTest,
 }
 
 // Flaky. https://crbug.com/836996.
-TEST_F(FlingControllerTest, DISABLED_EarlyTouchpadFlingCancelationOnFlingStop) {
+TEST_P(FlingControllerTest, DISABLED_EarlyTouchpadFlingCancelationOnFlingStop) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
@@ -372,7 +380,7 @@ TEST_F(FlingControllerTest, DISABLED_EarlyTouchpadFlingCancelationOnFlingStop) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_F(FlingControllerTest, EarlyTouchscreenFlingCancelationOnFlingStop) {
+TEST_P(FlingControllerTest, EarlyTouchscreenFlingCancelationOnFlingStop) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -391,7 +399,7 @@ TEST_F(FlingControllerTest, EarlyTouchscreenFlingCancelationOnFlingStop) {
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 
-TEST_F(FlingControllerTest, GestureFlingCancelsFiltered) {
+TEST_P(FlingControllerTest, GestureFlingCancelsFiltered) {
   // GFC without previous GFS is dropped.
   SimulateFlingCancel(blink::kWebGestureDeviceTouchscreen);
   EXPECT_TRUE(last_fling_cancel_filtered_);
@@ -410,7 +418,7 @@ TEST_F(FlingControllerTest, GestureFlingCancelsFiltered) {
 }
 
 // Flaky. https://crbug.com/836996.
-TEST_F(FlingControllerTest, DISABLED_GestureFlingNotCancelledBySmallTimeDelta) {
+TEST_P(FlingControllerTest, DISABLED_GestureFlingNotCancelledBySmallTimeDelta) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -436,7 +444,7 @@ TEST_F(FlingControllerTest, DISABLED_GestureFlingNotCancelledBySmallTimeDelta) {
 }
 
 // TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
-TEST_F(FlingControllerTest, DISABLED_GestureFlingWithNegativeTimeDelta) {
+TEST_P(FlingControllerTest, DISABLED_GestureFlingWithNegativeTimeDelta) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -467,7 +475,7 @@ TEST_F(FlingControllerTest, DISABLED_GestureFlingWithNegativeTimeDelta) {
 #else
 #define MAYBE_ControllerBoostsTouchpadFling ControllerBoostsTouchpadFling
 #endif
-TEST_F(FlingControllerTest, MAYBE_ControllerBoostsTouchpadFling) {
+TEST_P(FlingControllerTest, MAYBE_ControllerBoostsTouchpadFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
@@ -503,7 +511,7 @@ TEST_F(FlingControllerTest, MAYBE_ControllerBoostsTouchpadFling) {
   EXPECT_TRUE(FlingBoosted());
 }
 
-TEST_F(FlingControllerTest, ControllerBoostsTouchscreenFling) {
+TEST_P(FlingControllerTest, ControllerBoostsTouchscreenFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -529,7 +537,7 @@ TEST_F(FlingControllerTest, ControllerBoostsTouchscreenFling) {
   EXPECT_TRUE(FlingBoosted());
 }
 
-TEST_F(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
+TEST_P(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -549,7 +557,7 @@ TEST_F(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
   EXPECT_TRUE(notified_client_after_fling_stop_);
 }
 
-TEST_F(FlingControllerTest, MiddleClickAutoScrollFling) {
+TEST_P(FlingControllerTest, MiddleClickAutoScrollFling) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceSyntheticAutoscroll,
                      gfx::Vector2dF(1000, 0));
