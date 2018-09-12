@@ -35,6 +35,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.compat.ApiHelperForM;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -212,7 +213,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             NetworkInfo networkInfo;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 network = getDefaultNetwork();
-                networkInfo = mConnectivityManager.getNetworkInfo(network);
+                networkInfo = ApiHelperForM.getNetworkInfo(mConnectivityManager, network);
             } else {
                 networkInfo = mConnectivityManager.getActiveNetworkInfo();
             }
@@ -352,7 +353,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         Network getDefaultNetwork() {
             Network defaultNetwork = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                defaultNetwork = mConnectivityManager.getActiveNetwork();
+                defaultNetwork = ApiHelperForM.getActiveNetwork(mConnectivityManager);
                 // getActiveNetwork() returning null cannot be trusted to indicate disconnected
                 // as it suffers from https://crbug.com/677365.
                 if (defaultNetwork != null) {
@@ -1073,7 +1074,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     @VisibleForTesting
     static long networkToNetId(Network network) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return network.getNetworkHandle();
+            return ApiHelperForM.getNetworkHandle(network);
         } else {
             // NOTE(pauljensen): This depends on Android framework implementation details. These
             // details cannot change because Lollipop is long since released.
