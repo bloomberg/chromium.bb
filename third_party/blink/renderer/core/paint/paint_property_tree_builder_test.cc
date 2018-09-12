@@ -5107,7 +5107,8 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   }
 
   const auto* transform = target_properties->Transform();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     ASSERT_NE(nullptr, transform);
     EXPECT_TRUE(transform->Matrix().IsIdentity());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,

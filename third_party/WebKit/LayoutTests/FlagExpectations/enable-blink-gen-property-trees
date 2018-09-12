@@ -139,10 +139,6 @@ crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 
-# Backface visibility looks incorrect.
-crbug.com/879364 compositing/backface-visibility-transformed.html [ Failure ]
-crbug.com/879364 compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ Failure ]
-
 # Single pixel snapping difference on scrolling content size.
 Bug(none) compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
 

@@ -458,7 +458,8 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
 }
 
 static bool NeedsTransform(const LayoutObject& object) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if ((RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
       object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
     return true;
 
