@@ -4,6 +4,11 @@
 
 #include "ash/assistant/ui/assistant_web_view.h"
 
+#include <algorithm>
+#include <map>
+#include <string>
+#include <utility>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -14,8 +19,11 @@
 #include "base/unguessable_token.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -39,7 +47,18 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 }
 
 int AssistantWebView::GetHeightForWidth(int width) const {
-  return kMaxHeightDip;
+  // |height| <= |kMaxHeightDip|.
+  int height = kMaxHeightDip;
+
+  // |height| should not exceed workspace height.
+  aura::Window* root_window =
+      parent()->GetWidget()->GetNativeWindow()->GetRootWindow();
+  display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
+      root_window->GetBoundsInScreen());
+  gfx::Rect work_area = display.work_area();
+  height = std::min(height, work_area.height() - 2 * kVerticalMarginDip);
+
+  return height;
 }
 
 void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {

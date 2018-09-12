@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/assistant_main_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
@@ -17,9 +18,13 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -74,6 +79,15 @@ int AssistantMainView::GetHeightForWidth(int width) const {
   int height = views::View::GetHeightForWidth(width);
   height = std::min(height, kMaxHeightDip);
   height = std::max(height, min_height_dip_);
+
+  // |height| should not exceed workspace height.
+  aura::Window* root_window =
+      parent()->GetWidget()->GetNativeWindow()->GetRootWindow();
+  display::Display display = display::Screen::GetScreen()->GetDisplayMatching(
+      root_window->GetBoundsInScreen());
+  gfx::Rect work_area = display.work_area();
+  height = std::min(height, work_area.height() - 2 * kVerticalMarginDip);
+
   return height;
 }
 
