@@ -755,10 +755,12 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(bool editable) {
     return;
   auto* controller = input_method->GetInputMethodKeyboardController();
   if (editable && host()->GetView() && host()->delegate()) {
-    keyboard_observer_.reset(nullptr);
-    if (last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH &&
-        controller->DisplayVirtualKeyboard()) {
+    if (last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH) {
       keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
+      if (!controller->DisplayVirtualKeyboard())
+        keyboard_observer_.reset(nullptr);
+    } else {
+      keyboard_observer_.reset(nullptr);
     }
     virtual_keyboard_requested_ = keyboard_observer_.get();
   } else {
