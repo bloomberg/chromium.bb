@@ -258,6 +258,7 @@ void IOSTranslateDriver::OnTranslateComplete(
   if (error_type != TranslateErrors::NONE) {
     translate_manager_->PageTranslated(source_language_, target_language_,
                                        error_type);
+    return;
   }
 
   TranslationDidSucceed(source_language_, target_language_,
