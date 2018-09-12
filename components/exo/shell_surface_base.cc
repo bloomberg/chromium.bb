@@ -503,10 +503,6 @@ void ShellSurfaceBase::SetStartupId(const char* startup_id) {
 }
 
 void ShellSurfaceBase::SetChildAxTreeId(int32_t child_ax_tree_id) {
-  // We don't expect that child ax tree id is changed once it's set.
-  DCHECK_EQ(child_ax_tree_id_, kInvalidChildAxTreeId);
-  DCHECK_NE(child_ax_tree_id, kInvalidChildAxTreeId);
-
   child_ax_tree_id_ = child_ax_tree_id;
 
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);

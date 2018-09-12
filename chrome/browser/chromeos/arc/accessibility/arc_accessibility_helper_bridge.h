@@ -18,6 +18,7 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_host_delegate.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 class Profile;
@@ -56,7 +57,10 @@ class ArcAccessibilityHelperBridge
   void SetNativeChromeVoxArcSupport(bool enabled);
 
   // Receives the result of setting native ChromeVox Arc support.
-  void OnSetNativeChromeVoxArcSupportProcessed(bool enabled, bool processed);
+  void OnSetNativeChromeVoxArcSupportProcessed(
+      std::unique_ptr<aura::WindowTracker> window_tracker,
+      bool enabled,
+      bool processed);
 
   // KeyedService overrides.
   void Shutdown() override;
