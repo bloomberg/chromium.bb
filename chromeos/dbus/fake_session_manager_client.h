@@ -159,6 +159,10 @@ class FakeSessionManagerClient : public SessionManagerClient {
       const {
     return last_upgrade_arc_request_;
   }
+  const login_manager::StartArcMiniContainerRequest
+  last_start_arc_mini_container_request() const {
+    return last_start_arc_mini_container_request_;
+  }
 
   // Notify observers about a property change completion.
   void OnPropertyChangeComplete(bool success);
@@ -227,6 +231,10 @@ class FakeSessionManagerClient : public SessionManagerClient {
   bool low_disk_ = false;
   // Pseudo running container id. If not running, empty.
   std::string container_instance_id_;
+
+  // Contains last request passed to StartArcMiniContainer
+  login_manager::StartArcMiniContainerRequest
+      last_start_arc_mini_container_request_;
 
   // Contains last requst passed to StartArcInstance
   login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;

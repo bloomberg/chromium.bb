@@ -27,8 +27,6 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
@@ -124,6 +122,11 @@
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/zoom_level_delegate.h"
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
