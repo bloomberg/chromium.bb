@@ -148,6 +148,12 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
           message_loop, DefaultTickClock::GetInstance())));
 }
 
+void SequenceManagerImpl::BindToMessageLoop(MessageLoop* message_loop) {
+  controller_->SetMessageLoop(message_loop);
+  BindToCurrentThread();
+  CompleteInitializationOnBoundThread();
+}
+
 void SequenceManagerImpl::BindToCurrentThread() {
   associated_thread_->BindToCurrentThread();
 }

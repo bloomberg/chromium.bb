@@ -98,6 +98,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
+  void BindToMessageLoop(MessageLoop* message_loop) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
   void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;

@@ -34,6 +34,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   // ThreadController implementation:
   void SetSequencedTaskSource(SequencedTaskSource* task_source) override;
+  void SetMessageLoop(MessageLoop* message_loop) override;
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task) override;
   void ScheduleWork() override;

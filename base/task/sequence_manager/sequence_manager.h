@@ -58,6 +58,12 @@ class SequenceManager {
   // performs this initialization automatically.
   virtual void BindToCurrentThread() = 0;
 
+  // Finishes the initialization for a SequenceManager created via
+  // CreateUnboundSequenceManager(nullptr). Must not be called in any other
+  // circumstances. Note it's assumed |message_loop| outlives the
+  // SequenceManager.
+  virtual void BindToMessageLoop(MessageLoop* message_loop) = 0;
+
   // Initializes the SequenceManager on the bound thread. Should only be called
   // once and only after the ThreadController's dependencies were initialized.
   // Note that CreateSequenceManagerOnCurrentThread() performs this
