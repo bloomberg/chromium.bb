@@ -80,7 +80,7 @@ class ASH_EXPORT MessageCenterUiController
  private:
   void OnMessageCenterChanged();
   void NotifyUiControllerChanged();
-  void HidePopupBubbleInternal();
+  void HidePopupBubbleInternal(bool animate);
 
   message_center::MessageCenter* const message_center_;
   bool message_center_visible_ = false;

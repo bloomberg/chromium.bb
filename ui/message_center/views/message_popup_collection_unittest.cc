@@ -413,8 +413,25 @@ TEST_F(MessagePopupCollectionTest, MarkAllPopupsShown) {
 
   EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
 
-  popup_collection()->MarkAllPopupsShown();
+  popup_collection()->MarkAllPopupsShown(true /* animate */);
+
+  EXPECT_EQ(3u, GetPopupCounts());
+  EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
+
   AnimateUntilIdle();
+
+  EXPECT_EQ(0u, GetPopupCounts());
+  EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
+}
+
+TEST_F(MessagePopupCollectionTest, MarkAllPopupsShownWithoutAnimation) {
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
+    AddNotification();
+  AnimateUntilIdle();
+
+  EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
+
+  popup_collection()->MarkAllPopupsShown(false /* animate */);
 
   EXPECT_EQ(0u, GetPopupCounts());
   EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
@@ -954,7 +971,7 @@ TEST_F(MessagePopupCollectionTest, HighPriorityNotificationShownAgain) {
 
   // The notification with system priority should not be dismissed by
   // MarkAllPopupsShown.
-  popup_collection()->MarkAllPopupsShown();
+  popup_collection()->MarkAllPopupsShown(true /* animate */);
   EXPECT_FALSE(IsAnimating());
   EXPECT_EQ(1u, GetPopupCounts());
 
