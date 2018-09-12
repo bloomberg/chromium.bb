@@ -22,6 +22,7 @@ fuchsia_package("webrunner_pkg") {
 fuchsia_package_runner("webrunner") {
   package = ":webrunner_pkg"
   package_name_override = "web_runner"
+  install_only = true
   package_deps = [ [
         ":service_pkg",
         "chromium",
@@ -64,6 +65,7 @@ executable("service_exe") {
 fuchsia_package_runner("service_runner") {
   package = ":service_pkg"
   package_name_override = "chromium"
+  install_only = true
 }
 
 component("service_lib") {
