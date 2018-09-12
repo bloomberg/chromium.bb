@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
@@ -324,8 +325,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   base::Optional<MinMaxSize> maybe_sizes =
       ComputeMinMaxSizeWithAlgorithm(*this, *constraint_space,
                                      /* break token */ nullptr, input);
-  if (maybe_sizes.has_value())
+  if (maybe_sizes.has_value()) {
+    if (UNLIKELY(IsHTMLMarqueeElement(box_->GetNode()) &&
+                 ToHTMLMarqueeElement(box_->GetNode())->IsHorizontal()))
+      maybe_sizes->min_size = LayoutUnit();
     return *maybe_sizes;
+  }
 
   if (!box_->GetFrameView()->IsInPerformLayout()) {
     // We can't synthesize these using Layout() if we're not in PerformLayout.

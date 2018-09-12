@@ -17,12 +17,6 @@ crbug.com/850504 fast/multicol/vertical-lr/ [ Skip ]
 # NG doesn't have bug 450202, so the following test will never pass.
 crbug.com/450202 fast/multicol/span/overflow-on-multicol.html [ Skip ]
 
-# Fails because we don't yet special-case marquee like legacy does:
-# https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
-crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
-
-# Whitespace differences only
-
 # Wrong quirks mode line height for pattern <div><a><img></a></div>
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
