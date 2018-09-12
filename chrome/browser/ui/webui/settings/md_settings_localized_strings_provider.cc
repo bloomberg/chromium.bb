@@ -2651,13 +2651,6 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
               chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
                   .spec())));
   html_source->AddString(
-      "multideviceCouldNotConnect",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_MULTIDEVICE_COULD_NOT_CONNECT,
-          base::UTF8ToUTF16(
-              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
-                  .spec())));
-  html_source->AddString(
       "multideviceSetupSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,

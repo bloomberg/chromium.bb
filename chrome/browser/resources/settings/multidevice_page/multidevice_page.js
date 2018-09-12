@@ -102,7 +102,7 @@ Polymer({
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18nAdvanced('multideviceSetupSummary');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        return this.i18nAdvanced('multideviceCouldNotConnect');
+      // Intentional fall-through.
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18nAdvanced('multideviceVerificationText');
       default:
@@ -120,7 +120,7 @@ Polymer({
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18n('multideviceSetupButton');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        return this.i18n('multideviceVerifyButton');
+      // Intentional fall-through.
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         return this.i18n('multideviceVerifyButton');
       default:
@@ -138,15 +138,6 @@ Polymer({
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
     ].includes(this.pageContentData.mode);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldDisableButton_: function() {
-    return this.pageContentData.mode ===
-        settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER;
   },
 
   /**
