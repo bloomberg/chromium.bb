@@ -116,6 +116,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // For unit tests, manually trigger the UpdateContainerPolicy method.
   void UpdateContainerPolicyForTests() { UpdateContainerPolicy(); }
 
+  bool HasPointerEventsNone() const;
+  // This function is to notify ChildFrameCompositor of pointer-events changes
+  // of an OOPIF.
+  void PointerEventsChanged();
+
   void CancelPendingLazyLoad();
 
   void ParseAttribute(const AttributeModificationParams&) override;
@@ -124,6 +129,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
+
   void SetSandboxFlags(SandboxFlags);
 
   bool LoadOrRedirectSubframe(const KURL&,
