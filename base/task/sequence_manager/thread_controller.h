@@ -13,6 +13,7 @@
 
 namespace base {
 
+class MessageLoop;
 class TickClock;
 struct PendingTask;
 
@@ -66,6 +67,10 @@ class ThreadController {
   // Requests desired timer precision from the OS.
   // Has no effect on some platforms.
   virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
+
+  // Completes delayed initialization of a ThreadControllers created with a null
+  // MessageLoop. May only be called once.
+  virtual void SetMessageLoop(MessageLoop* message_loop) = 0;
 
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager

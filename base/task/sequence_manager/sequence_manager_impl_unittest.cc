@@ -3343,6 +3343,31 @@ TEST_P(SequenceManagerTestWithCustomInitialization, OffThreadInitialization) {
   thread.Stop();
 }
 
+TEST_P(SequenceManagerTestWithCustomInitialization,
+       SequenceManagerCreatedBeforeMessageLoop) {
+  std::unique_ptr<SequenceManager> manager =
+      CreateUnboundSequenceManager(nullptr);
+  scoped_refptr<TaskQueue> default_task_queue =
+      manager->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
+  EXPECT_THAT(default_task_queue.get(), testing::NotNull());
+
+  std::unique_ptr<MessageLoop> message_loop(new MessageLoop());
+  manager->BindToMessageLoop(message_loop.get());
+
+  // Check that task posting works.
+  std::vector<EnqueueOrder> run_order;
+  default_task_queue->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
+  default_task_queue->PostTask(FROM_HERE, BindOnce(&TestTask, 2, &run_order));
+  default_task_queue->PostTask(FROM_HERE, BindOnce(&TestTask, 3, &run_order));
+  RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
+
+  // We must release the SequenceManager before the MessageLoop because
+  // SequenceManager assumes the MessageLoop outlives it.
+  manager.reset();
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager
