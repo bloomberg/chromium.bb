@@ -45,6 +45,7 @@ message CastLogsProto {
     optional string serial_number = 5;
 
     // Hardware information stored in factory partition.
+    // Next Tag: 12
     message HardwareInfo {
       optional string color = 1;
 
@@ -65,6 +66,8 @@ message CastLogsProto {
       optional string display = 9;
 
       optional string amp = 10;
+
+      optional string board_name = 11;
     }
     optional HardwareInfo hardware_info = 6;
   }
