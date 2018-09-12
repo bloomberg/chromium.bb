@@ -95,17 +95,19 @@ function createNode(options) {
     shortNameIndex,
     size = 0,
     flags = 0,
+    numAliases,
     childStats = {},
   } = options;
   return {
     children: [],
     parent: null,
-    childStats,
     idPath,
+    type,
     shortNameIndex,
     size,
-    type,
     flags,
+    numAliases,
+    childStats,
   };
 }
 
@@ -374,6 +376,7 @@ class TreeBuilder {
       const type = symbol[_KEYS.TYPE];
       const count = symbol[_KEYS.COUNT] || 1;
       const flags = symbol[_KEYS.FLAGS] || 0;
+      const numAliases = symbol[_KEYS.NUM_ALIASES] || 1;
 
       const symbolNode = createNode({
         // Join file path to symbol name with a ":"
@@ -382,6 +385,7 @@ class TreeBuilder {
         size,
         type,
         flags,
+        numAliases,
         childStats: {
           [type]: {
             size,

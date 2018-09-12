@@ -357,10 +357,13 @@ function _makeSizeTextGetter() {
       const suffixElement = dom.textElement('small', unit);
 
       const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
-
+      let description = `${bytesGrouped} bytes`;
+      if (node.numAliases && node.numAliases > 1) {
+        description += ` for 1 of ${node.numAliases} aliases`;
+      }
       return {
         element: dom.createFragment([textNode, suffixElement]),
-        description: `${bytesGrouped} bytes`,
+        description,
         value: bytes,
       };
     }
