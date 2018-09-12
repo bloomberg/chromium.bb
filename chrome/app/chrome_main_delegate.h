@@ -23,6 +23,10 @@ namespace base {
 class CommandLine;
 }
 
+namespace tracing {
+class TracingSamplerProfiler;
+}
+
 class ChromeContentBrowserClient;
 
 // Chrome implementation of ContentMainDelegate.
@@ -88,6 +92,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   std::unique_ptr<ChromeFeatureListCreator> chrome_feature_list_creator_;
 #endif
+
+  std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegate);
 };

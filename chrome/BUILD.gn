@@ -1430,6 +1430,7 @@ group("browser_dependencies") {
     "//chrome/browser",
     "//chrome/common",
     "//components/sync",
+    "//components/tracing",
   ]
   if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
@@ -1471,6 +1472,7 @@ group("child_dependencies") {
     "//chrome/utility",
     "//components/services/heap_profiling",
     "//components/sync",
+    "//components/tracing",
     "//content/public/child",
     "//pdf",
     "//third_party/blink/public:blink_devtools_frontend_resources",
@@ -1793,6 +1795,7 @@ if (is_android) {
       "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
+      "//components/tracing",
       "//content/public/app:both",
       "//content/public/common:service_names",
       "//services/service_manager/embedder",

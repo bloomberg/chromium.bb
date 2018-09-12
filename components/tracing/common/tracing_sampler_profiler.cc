@@ -61,29 +61,25 @@ class TracingProfileBuilder
 
 }  // namespace
 
-TracingSamplerProfiler::TracingSamplerProfiler()
-    : sampled_thread_id_(base::PlatformThread::CurrentId()) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+TracingSamplerProfiler::TracingSamplerProfiler(
+    base::PlatformThreadId sampled_thread_id)
+    : sampled_thread_id_(sampled_thread_id), weak_ptr_factory_(this) {
   // Make sure tracing system notices profiler category.
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
 
-  // If tracing is currently running, start the sample profiler.
-  bool is_already_enabled =
-      base::trace_event::TraceLog::GetInstance()->IsEnabled();
-  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
-  if (is_already_enabled)
-    OnTraceLogEnabled();
+  DCHECK_NE(sampled_thread_id_, base::kInvalidThreadId);
+
+  // In case tracing is currently running, start the sample profiler. The trace
+  // category can be enabled only if tracing is enabled.
+  OnTraceLogEnabled();
 }
 
 TracingSamplerProfiler::~TracingSamplerProfiler() {
-  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
+      this);
 }
 
 void TracingSamplerProfiler::OnTraceLogEnabled() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(sampled_thread_id_, base::kInvalidThreadId);
-
   // Ensure there was not an instance of the profiler already running.
   if (profiler_.get())
     return;
@@ -105,13 +101,17 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
 }
 
 void TracingSamplerProfiler::OnTraceLogDisabled() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   if (!profiler_.get())
     return;
   // Stop and release the stack sampling profiler.
   profiler_->Stop();
   profiler_.reset();
+}
+
+void TracingSamplerProfiler::OnMessageLoopStarted() {
+  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+      weak_ptr_factory_.GetWeakPtr());
+  OnTraceLogEnabled();
 }
 
 }  // namespace tracing

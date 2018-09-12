@@ -6,6 +6,7 @@
 #define COMPONENTS_TRACING_COMMON_TRACING_SAMPLER_PROFILER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_log.h"
@@ -21,19 +22,22 @@ namespace tracing {
 // tracing. It's listening to TraceLog enabled/disabled events and it's starting
 // a stack profiler on the current thread if needed.
 class TRACING_EXPORT TracingSamplerProfiler
-    : public base::trace_event::TraceLog::EnabledStateObserver {
+    : public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
-  TracingSamplerProfiler();
+  TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
   ~TracingSamplerProfiler() override;
 
   // trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
+  void OnMessageLoopStarted();
+
  private:
-  base::PlatformThreadId sampled_thread_id_;
+  const base::PlatformThreadId sampled_thread_id_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;
-  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<TracingSamplerProfiler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);
 };

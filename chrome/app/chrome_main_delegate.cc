@@ -50,6 +50,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
+#include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -509,6 +510,7 @@ ChromeMainDelegate::~ChromeMainDelegate() {
 void ChromeMainDelegate::PostEarlyInitialization() {
   DCHECK(chrome_feature_list_creator_);
   chrome_feature_list_creator_->CreateFeatureList();
+  tracing_sampler_profiler_->OnMessageLoopStarted();
 }
 #endif
 
@@ -542,6 +544,10 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::Bind(&IsTraceEventArgsWhitelisted));
+
+  // Setup tracing sampler profiler as early as possible at startup if needed.
+  tracing_sampler_profiler_ = std::make_unique<tracing::TracingSamplerProfiler>(
+      base::PlatformThread::CurrentId());
 
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
   v8_breakpad_support::SetUp();
