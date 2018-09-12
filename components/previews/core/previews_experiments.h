@@ -128,6 +128,9 @@ int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 
+// The maximum number of page hints that should be loaded to memory.
+size_t GetMaxPageHintsInMemoryThreshhold();
+
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
