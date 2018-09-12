@@ -733,9 +733,11 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
   generic_allocator.root()->Free(ptr3);
   generic_allocator.root()->Free(ptr4);
 
+#if DCHECK_IS_ON()
   // |PartitionPage::Free| must poison the slot's contents with |kFreedByte|.
   EXPECT_EQ(kFreedByte,
             *(reinterpret_cast<unsigned char*>(new_ptr) + (size - 1)));
+#endif
 
   // Can we allocate a massive (512MB) size?
   // Allocate 512MB, but +1, to test for cookie writing alignment issues.
