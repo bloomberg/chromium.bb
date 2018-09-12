@@ -173,18 +173,15 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CombinedInputActionsTest.testControlClickingOnMultiSelectionList',
     'CombinedInputActionsTest.testShiftClickingOnMultiSelectionList',
     'CombinedInputActionsTest.testPlainClickingOnMultiSelectionList',
+    'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'CorrectEventFiringTest.testClickingAnUnfocusableChildShouldNotBlurTheParent',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromium'] = (
