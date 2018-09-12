@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/layout_selection.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
@@ -1806,6 +1807,10 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
 }
 
 #endif  // NDEBUG
+
+bool LayoutObject::IsSelected() const {
+  return LayoutSelection::IsSelected(*this);
+}
 
 bool LayoutObject::IsSelectable() const {
   return !IsInert() && !(StyleRef().UserSelect() == EUserSelect::kNone &&

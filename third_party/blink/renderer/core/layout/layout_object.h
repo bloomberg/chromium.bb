@@ -1586,10 +1586,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutRect AbsoluteSelectionRect() const;
 
   bool CanBeSelectionLeaf() const;
-  bool IsSelected() const {
-    return GetSelectionState() != SelectionState::kNone;
-  }
-
+  bool IsSelected() const;
   bool IsSelectable() const;
 
   /**
