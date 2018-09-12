@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/common/url_constants.h",
   "+components/proximity_auth/logging/logging.h",
   "+components/cryptauth",
   "+components/sync_preferences/testing_pref_service_syncable.h",
