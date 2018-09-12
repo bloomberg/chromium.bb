@@ -25,9 +25,19 @@ SyncUsernameTestBase::LocalFakeSyncService::GetPreferredDataTypes() const {
 
 SyncUsernameTestBase::SyncUsernameTestBase()
     : signin_client_(&prefs_),
+#if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_,
                       &account_tracker_,
                       nullptr /* signin_error_controller */) {
+#else
+      token_service_(&prefs_),
+      signin_manager_(&signin_client_,
+                      &token_service_,
+                      &account_tracker_,
+                      nullptr, /* cookie_manager_service */
+                      nullptr, /* signin_error_controller */
+                      signin::AccountConsistencyMethod::kDisabled) {
+#endif
   SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
   AccountTrackerService::RegisterPrefs(prefs_.registry());
   account_tracker_.Initialize(&prefs_, base::FilePath());
