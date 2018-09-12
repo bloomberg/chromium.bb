@@ -540,9 +540,8 @@ bool ClassicPendingScript::StartStreamingIfPossible(
   DCHECK(!streamer_);
   DCHECK(!IsCurrentlyStreaming());
   DCHECK(!streamer_done_);
-  ScriptStreamer::StartStreaming(
-      this, document->GetFrame()->GetSettings(), script_state,
-      document->GetTaskRunner(task_type), &not_streamed_reason_);
+  ScriptStreamer::StartStreaming(this, document->GetTaskRunner(task_type),
+                                 &not_streamed_reason_);
   DCHECK(streamer_ || not_streamed_reason_ != ScriptStreamer::kInvalid);
   bool success = streamer_ && !streamer_->IsStreamingFinished();
 
