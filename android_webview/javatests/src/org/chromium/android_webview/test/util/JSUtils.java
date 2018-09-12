@@ -43,7 +43,7 @@ public class JSUtils {
         }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
 
         instrumentation.runOnMainSync(
-                () -> awContents.getWebContents().evaluateJavaScriptForTests(
+                () -> awContents.evaluateJavaScript(
                         "var evObj = new MouseEvent('click', {bubbles: true});"
                                 + "document.getElementById('" + linkId + "').dispatchEvent(evObj);"
                                 + "console.log('element with id [" + linkId + "] clicked');",

@@ -123,7 +123,7 @@ public class TestCallbackHelperContainer {
                 }
             };
             mJsonResult = null;
-            webContents.evaluateJavaScriptForTests(code, callback);
+            WebContentsUtils.evaluateJavaScript(webContents, code, callback);
         }
 
         /**

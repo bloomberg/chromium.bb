@@ -126,12 +126,6 @@ class CONTENT_EXPORT WebContentsAndroid
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jstring>& script,
                           const base::android::JavaParamRef<jobject>& callback);
-  void EvaluateJavaScriptForTests(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& script,
-      const base::android::JavaParamRef<jobject>& callback);
-
   void AddMessageToDevToolsConsole(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,

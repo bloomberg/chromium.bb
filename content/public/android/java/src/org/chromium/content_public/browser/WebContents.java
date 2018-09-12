@@ -11,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -276,19 +275,6 @@ public interface WebContents extends Parcelable {
      *                 If no result is required, pass null.
      */
     void evaluateJavaScript(String script, JavaScriptCallback callback);
-
-    /**
-     * Injects the passed Javascript code in the current page and evaluates it.
-     * If a result is required, pass in a callback.
-     *
-     * @param script The Javascript to execute.
-     * @param callback The callback to be fired off when a result is ready. The script's
-     *                 result will be json encoded and passed as the parameter, and the call
-     *                 will be made on the main thread.
-     *                 If no result is required, pass null.
-     */
-    @VisibleForTesting
-    void evaluateJavaScriptForTests(String script, JavaScriptCallback callback);
 
     /**
      * Adds a log message to dev tools console. |level| must be a value of

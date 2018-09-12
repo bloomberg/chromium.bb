@@ -23,6 +23,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
@@ -288,7 +289,7 @@ public class JavaBridgeChildFrameTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                webContents.evaluateJavaScriptForTests(script, resultCallback);
+                WebContentsUtils.evaluateJavaScript(webContents, script, resultCallback);
             }
         });
         resultCallback.waitForResult();

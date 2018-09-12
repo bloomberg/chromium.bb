@@ -168,9 +168,6 @@ public class MockWebContents implements WebContents {
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {}
 
     @Override
-    public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {}
-
-    @Override
     public void addMessageToDevToolsConsole(int level, String message) {}
 
     @Override

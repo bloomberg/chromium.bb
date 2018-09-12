@@ -76,7 +76,7 @@ public class AwJavaBridgeTest {
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         awContents, mContentsClient, "typeof test.destroy"));
         int currentCallCount = client2.getOnPageFinishedHelper().getCallCount();
-        awContents.evaluateJavaScriptForTests("test.destroy()", null);
+        awContents.evaluateJavaScript("test.destroy()", null);
 
         client2.getOnPageFinishedHelper().waitForCallback(currentCallCount);
     }
