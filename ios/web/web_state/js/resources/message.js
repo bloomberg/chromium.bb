@@ -25,6 +25,14 @@ __gCrWeb['message'] = __gCrWeb.message;
 /* Beginning of anonymous object. */
 (function() {
 /**
+ * Boolean to track if messaging is suspended. While suspended, messages will be
+ * queued and sent once messaging is no longer suspended.
+ * @type {boolean}
+ * @private
+ */
+var messaging_suspended_ = true;
+
+/**
  * Object to manage queue of messages waiting to be sent to the main
  * application for asynchronous processing.
  * @type {Object}
@@ -91,8 +99,8 @@ __gCrWeb.message.invokeQueues = function() {
 };
 
 function sendQueue_(queueObject) {
-  // Do nothing if windowId has not been set.
-  if (typeof window.top.__gCrWeb.windowId != 'string') {
+  // Do nothing if messaging is suspended or windowId has not been set.
+  if (messaging_suspended_ || typeof window.top.__gCrWeb.windowId != 'string') {
     return;
   }
   // Some pages/plugins implement Object.prototype.toJSON, which can result
@@ -344,6 +352,10 @@ __gCrWeb.message['registerFrame'] = function() {
       'crwFrameKey': frameKey,
       'crwFrameLastReceivedMessageId': lastReceivedMessageId_
     });
+    // Allow messaging now that the frame has been registered and send any
+    // already queued messages.
+    messaging_suspended_ = false;
+    __gCrWeb.message.invokeQueues();
   });
 };
 
