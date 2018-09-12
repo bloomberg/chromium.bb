@@ -2107,7 +2107,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
+IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2127,7 +2127,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", company_name_enabled_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -2178,9 +2178,11 @@ IN_PROC_BROWSER_TEST_F(AutofillCreditCardInteractiveTest, FillLocalCreditCard) {
 //        restricted to checkout related pages.
 class AutofillRestrictUnownedFieldsTest
     : public AutofillInteractiveTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
-  AutofillRestrictUnownedFieldsTest() : restrict_unowned_fields_(GetParam()) {
+  AutofillRestrictUnownedFieldsTest()
+      : restrict_unowned_fields_(std::get<0>(GetParam())),
+        autofill_enable_company_name_(std::get<1>(GetParam())) {
     std::vector<base::Feature> enabled;
     std::vector<base::Feature> disabled = {
         features::kAutofillEnforceMinRequiredFieldsForHeuristics,
@@ -2188,10 +2190,13 @@ class AutofillRestrictUnownedFieldsTest
         features::kAutofillEnforceMinRequiredFieldsForUpload};
     (restrict_unowned_fields_ ? enabled : disabled)
         .push_back(features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    (autofill_enable_company_name_ ? enabled : disabled)
+        .push_back(features::kAutofillEnableCompanyName);
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
   const bool restrict_unowned_fields_;
+  const bool autofill_enable_company_name_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2247,7 +2252,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, NoAutocomplete) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -2309,7 +2314,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
     ExpectFieldValue("address", "4120 Freidrich Lane");
     ExpectFieldValue("state", "TX");
     ExpectFieldValue("city", "Austin");
-    ExpectFieldValue("company", "Initech");
+    ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
     ExpectFieldValue("email", "red.swingline@initech.com");
     ExpectFieldValue("phone", "15125551234");
   }
@@ -2355,7 +2360,7 @@ IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
   ExpectFieldValue("address", "4120 Freidrich Lane");
   ExpectFieldValue("state", "TX");
   ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("company", autofill_enable_company_name_ ? "Initech" : "");
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
@@ -3070,5 +3075,5 @@ INSTANTIATE_TEST_CASE_P(All,
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillRestrictUnownedFieldsTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill
