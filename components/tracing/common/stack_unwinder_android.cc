@@ -211,11 +211,15 @@ namespace tracing {
 StackUnwinderAndroid::StackUnwinderAndroid() {}
 StackUnwinderAndroid::~StackUnwinderAndroid() {}
 
-void StackUnwinderAndroid::Initialize() {
-  is_initialized_ = true;
+//  static
+StackUnwinderAndroid* StackUnwinderAndroid::GetInstance() {
+  static StackUnwinderAndroid* instance = new StackUnwinderAndroid();
+  return instance;
+}
 
-  // Ensure Chrome unwinder is initialized.
-  CFIBacktraceAndroid::GetInitializedInstance();
+void StackUnwinderAndroid::Initialize() {
+  DCHECK(!is_initialized_);
+  is_initialized_ = true;
 
   // Parses /proc/self/maps.
   std::string contents;
