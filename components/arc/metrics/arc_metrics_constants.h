@@ -54,6 +54,9 @@ enum class UserInteractionType {
   // User started an app from chrome.arcAppsPrivate.launchApp.
   APP_STARTED_FROM_EXTENSION_API = 12,
 
+  // User started note-taking app from stylus tools.
+  APP_STARTED_FROM_STYLUS_TOOLS = 13,
+
   // The size of this enum; keep last.
   SIZE,
 };
