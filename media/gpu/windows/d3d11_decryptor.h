@@ -62,6 +62,9 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
 
   template <class T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  // After a successful InitializeDecryptionBuffer() call, these are set for the
+  // current Decrypt() call.
   ComPtr<ID3D11Device> device_;
   ComPtr<ID3D11DeviceContext> device_context_;
   ComPtr<ID3D11VideoContext> video_context_;
