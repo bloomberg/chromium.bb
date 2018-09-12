@@ -28,7 +28,7 @@ namespace chromeos {
 
 OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
-      restore_strategy_(RESTORE_FROM_COOKIE_JAR),
+      restore_strategy_(RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
       state_(SESSION_RESTORE_NOT_STARTED) {
   GetTokenService()->AddObserver(this);
 
@@ -66,11 +66,10 @@ void OAuth2LoginManager::RestoreSession(
 }
 
 void OAuth2LoginManager::ContinueSessionRestore() {
+  DCHECK_NE(DEPRECATED_RESTORE_FROM_COOKIE_JAR, restore_strategy_)
+      << "Exchanging cookies for OAuth 2.0 tokens is no longer supported";
+
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
-  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
-    FetchOAuth2Tokens();
-    return;
-  }
 
   // Save passed OAuth2 refresh token.
   if (restore_strategy_ == RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN) {
@@ -80,7 +79,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
     return;
   }
 
-  DCHECK(restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN);
+  DCHECK_EQ(RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN, restore_strategy_);
   RestoreSessionFromSavedTokens();
 }
 
@@ -190,25 +189,6 @@ void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
 void OAuth2LoginManager::FireRefreshTokensLoaded() {
   // TODO(570218): Figure out the right way to plumb this.
   GetTokenService()->LoadCredentials(std::string());
-}
-
-void OAuth2LoginManager::FetchOAuth2Tokens() {
-  DCHECK(auth_url_loader_factory_);
-  if (restore_strategy_ != RESTORE_FROM_COOKIE_JAR) {
-    NOTREACHED();
-    SetSessionRestoreState(SESSION_RESTORE_FAILED);
-    return;
-  }
-
-  // If we have authenticated cookie jar, get OAuth1 token first, then fetch
-  // SID/LSID cookies through OAuthLogin call.
-  std::string signin_scoped_device_id =
-      GetSigninScopedDeviceIdForProfile(user_profile_);
-
-  oauth2_token_fetcher_ =
-      std::make_unique<OAuth2TokenFetcher>(this, auth_url_loader_factory_);
-  oauth2_token_fetcher_->StartExchangeFromCookies(std::string(),
-                                                  signin_scoped_device_id);
 }
 
 void OAuth2LoginManager::OnOAuth2TokensAvailable(

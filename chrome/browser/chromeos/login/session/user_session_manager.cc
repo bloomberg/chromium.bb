@@ -1615,10 +1615,6 @@ void UserSessionManager::InitSessionRestoreStrategy() {
   if (!user_context_.GetRefreshToken().empty()) {
     session_restore_strategy_ =
         OAuth2LoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
-  } else if (has_auth_cookies_) {
-    // TODO(b/63865968): Deprecate RESTORE_FROM_COOKIE_JAR after confirming no
-    //   Gaia cookies will be generated out of SAML flow.
-    session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
   } else {
     session_restore_strategy_ =
         OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;

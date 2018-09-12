@@ -36,24 +36,6 @@ WildcardLoginChecker::WildcardLoginChecker() {}
 
 WildcardLoginChecker::~WildcardLoginChecker() {}
 
-void WildcardLoginChecker::StartWithSigninURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory,
-    StatusCallback callback) {
-  CHECK(!token_fetcher_);
-  CHECK(!user_info_fetcher_);
-
-  start_timestamp_ = base::Time::Now();
-  callback_ = std::move(callback);
-
-  token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
-  token_fetcher_->StartWithSigninURLLoaderFactory(
-      auth_url_loader_factory,
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory(),
-      base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
-                 base::Unretained(this)));
-}
-
 void WildcardLoginChecker::StartWithRefreshToken(
     const std::string& refresh_token,
     StatusCallback callback) {

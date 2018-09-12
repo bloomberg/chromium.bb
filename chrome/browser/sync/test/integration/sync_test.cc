@@ -906,10 +906,6 @@ void SyncTest::SetupMockGaiaResponses() {
   test_url_loader_factory_.AddResponse(GoogleURLTracker::kSearchDomainCheckURL,
                                        ".google.com");
   test_url_loader_factory_.AddResponse(
-      GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url().spec(),
-      "some_response");
-
-  test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_url().spec(),
       R"({
             "refresh_token": "rt1",

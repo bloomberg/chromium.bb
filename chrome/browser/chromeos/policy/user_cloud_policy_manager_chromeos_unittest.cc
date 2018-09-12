@@ -91,15 +91,6 @@ constexpr char kTestGaiaId[] = "12345";
 constexpr char kChildAccountId[] = "child@example.com";
 constexpr char kChildTestGaiaId[] = "54321";
 
-constexpr char kOAuthCodeCookie[] = "oauth_code=1234; Secure; HttpOnly";
-
-constexpr char kOAuth2TokenPairData[] = R"(
-    {
-      "refresh_token": "1234",
-      "access_token": "5678",
-      "expires_in": 3600
-    })";
-
 constexpr char kOAuth2AccessTokenData[] = R"(
     {
       "access_token": "5678",
@@ -262,30 +253,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
 
       network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-      // Raw headers are needed on the ResourceResponseHead for cookies to be
-      // accessible.
-      network::ResourceResponseHead ok_response_with_oauth_cookie =
-          network::CreateResourceResponseHead(net::HTTP_OK,
-                                              /*report_raw_headers=*/true);
-      network::AddCookiesToResourceResponseHead({kOAuthCodeCookie},
-                                                &ok_response_with_oauth_cookie);
-
-      // Issue the oauth_token cookie first.
-      if (!test_signin_url_loader_factory_.SimulateResponseForPendingRequest(
-              gaia_urls->deprecated_client_login_to_oauth2_url(),
-              ok_completion_status, ok_response_with_oauth_cookie,
-              /*content=*/"",
-              /*flags=*/network::TestURLLoaderFactory::kUrlMatchPrefix))
-        return nullptr;
-
       network::ResourceResponseHead ok_response =
           network::CreateResourceResponseHead(net::HTTP_OK);
-      // Issue the refresh token.
-      if (!test_signin_url_loader_factory_.SimulateResponseForPendingRequest(
-              gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-              kOAuth2TokenPairData))
-        return nullptr;
-
       // Issue the access token.
       EXPECT_TRUE(
           test_system_url_loader_factory_.SimulateResponseForPendingRequest(
@@ -407,6 +376,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         test_signin_shared_loader_factory_);
     manager_->SetSystemURLLoaderFactoryForTests(
         test_system_shared_loader_factory_);
+    manager_->SetUserContextRefreshTokenForTests("fake-user-context-rt");
     should_create_token_forwarder_ = fetch_timeout.is_zero();
   }
 
@@ -552,13 +522,13 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
   EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   // The PolicyOAuth2TokenFetcher posts delayed retries on some errors. This
   // data will make it fail immediately.
+
   EXPECT_TRUE(
-      test_signin_url_loader_factory()->SimulateResponseForPendingRequest(
-          GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url(),
+      test_system_url_loader_factory()->SimulateResponseForPendingRequest(
+          GaiaUrls::GetInstance()->oauth2_token_url(),
           network::URLLoaderCompletionStatus(net::OK),
           network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST),
-          "Error=BadAuthentication",
-          /*flags=*/network::TestURLLoaderFactory::kUrlMatchPrefix));
+          "Error=BadAuthentication"));
 
   // Server check failed, so profile should not be initialized.
   EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));

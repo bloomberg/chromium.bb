@@ -38,13 +38,6 @@ using ::testing::_;
 
 namespace {
 
-const char kGetAuthCodeValidCookie[] =
-    "oauth_code=test-code; Path=/test; Secure; HttpOnly";
-const char kGetAuthCodeCookieNoSecure[] =
-    "oauth_code=test-code; Path=/test; HttpOnly";
-const char kGetAuthCodeCookieNoHttpOnly[] =
-    "oauth_code=test-code; Path=/test; Secure";
-const char kGetAuthCodeCookieNoOAuthCode[] = "Path=/test; Secure; HttpOnly";
 const char kGetTokenPairValidResponse[] =
     R"({
         "refresh_token": "rt1",
@@ -54,22 +47,27 @@ const char kGetTokenPairValidResponse[] =
         "id_token": "it1"
      })";
 
+std::string GetRequestBodyAsString(const network::ResourceRequest* request) {
+  if (!request->request_body || !request->request_body->elements() ||
+      !request->request_body->elements()->size()) {
+    return "";
+  }
+  const network::DataElement& elem = request->request_body->elements()->at(0);
+  return std::string(elem.bytes(), elem.length());
+}
+
 }  // namespace
 
 class GaiaAuthFetcherTest : public testing::Test {
  protected:
   GaiaAuthFetcherTest()
-      : client_login_to_oauth2_source_(
-            GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url()),
-        oauth2_token_source_(GaiaUrls::GetInstance()->oauth2_token_url()),
+      : oauth2_token_source_(GaiaUrls::GetInstance()->oauth2_token_url()),
         token_auth_source_(GaiaUrls::GetInstance()->token_auth_url()),
         merge_session_source_(GaiaUrls::GetInstance()->merge_session_url()),
         uberauth_token_source_(
             GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
                 "?source=&issueuberauth=1")),
         oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
-        deprecated_client_login_to_oauth2_url_(
-            GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url()),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_shared_loader_factory_(
@@ -117,13 +115,11 @@ class GaiaAuthFetcherTest : public testing::Test {
     EXPECT_EQ(captcha_token, out_captcha_token);
   }
 
-  GURL client_login_to_oauth2_source_;
   GURL oauth2_token_source_;
   GURL token_auth_source_;
   GURL merge_session_source_;
   GURL uberauth_token_source_;
   GURL oauth_login_gurl_;
-  GURL deprecated_client_login_to_oauth2_url_;
 
  protected:
   void OnResourceIntercepted(const network::ResourceRequest& resource) {
@@ -323,7 +319,7 @@ TEST_F(GaiaAuthFetcherTest, ServiceUnavailableError) {
   EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
+TEST_F(GaiaAuthFetcherTest, StartAuthCodeForOAuth2TokenExchange_Success) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(0);
   EXPECT_CALL(consumer,
@@ -333,16 +329,12 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
       .Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
-  auth.DeprecatedStartCookieForOAuthLoginTokenExchange("0");
+  auth.StartAuthCodeForOAuth2TokenExchange("auth_code");
   ASSERT_EQ(received_requests_.size(), 1U);
-  EXPECT_EQ(net::LOAD_NORMAL, received_requests_.at(0).load_flags);
-  EXPECT_EQ(std::string::npos,
-            received_requests_.at(0).url.query().find("device_type=chrome"));
-  EXPECT_TRUE(auth.HasPendingFetch());
-
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
-                                     {std::string(kGetAuthCodeValidCookie)},
-                                     /*body=*/"");
+  EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES,
+            received_requests_.at(0).load_flags);
+  std::string body = GetRequestBodyAsString(&received_requests_.at(0));
+  EXPECT_EQ(std::string::npos, body.find("device_type=chrome"));
   EXPECT_TRUE(auth.HasPendingFetch());
 
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {},
@@ -350,80 +342,32 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccessNoTokenFetch) {
+TEST_F(GaiaAuthFetcherTest, StartAuthCodeForOAuth2TokenExchange_DeviceId) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnClientOAuthCode("test-code")).Times(1);
-  EXPECT_CALL(consumer,
-              OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
-                  "", "", 0, false /* is_child_account */,
-                  false /* is_advanced_protection */)))
-      .Times(0);
-
-  net::TestURLFetcherFactory factory;
-  TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
-  auth.DeprecatedStartCookieForOAuthLoginTokenExchange(false, "0",
-                                                       "ABCDE_12345", "");
-  ASSERT_EQ(received_requests_.size(), 1U);
-  EXPECT_EQ(net::LOAD_NORMAL, received_requests_.at(0).load_flags);
-  EXPECT_EQ(std::string::npos,
-            received_requests_.at(0).url.query().find("device_type=chrome"));
-  EXPECT_TRUE(auth.HasPendingFetch());
-
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
-                                     {kGetAuthCodeValidCookie});
-  EXPECT_FALSE(auth.HasPendingFetch());
-}
-
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies_DeviceId) {
-  MockGaiaConsumer consumer;
-  std::string expected_device_id("ABCDE-12345");
   GaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
-  auth.DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
-      "0", expected_device_id);
+  auth.StartAuthCodeForOAuth2TokenExchangeWithDeviceId("auth_code",
+                                                       "device_ABCDE_1");
 
-  ASSERT_EQ(received_requests_.size(), 1U);
-  EXPECT_EQ(net::LOAD_NORMAL, received_requests_.at(0).load_flags);
-  EXPECT_NE(std::string::npos,
-            received_requests_.at(0).url.query().find("device_type=chrome"));
-
-  std::string device_id;
-  EXPECT_TRUE(
-      received_requests_.at(0).headers.GetHeader("X-Device-ID", &device_id));
-  EXPECT_EQ(device_id, expected_device_id);
+  ASSERT_EQ(1U, received_requests_.size());
+  EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES,
+            received_requests_.at(0).load_flags);
+  std::string body = GetRequestBodyAsString(&received_requests_.at(0));
+  EXPECT_NE(std::string::npos, body.find("device_type=chrome"));
+  EXPECT_NE(std::string::npos, body.find("device_id=device_ABCDE_1"));
 }
 
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenClientLoginToOAuth2Failure) {
+TEST_F(GaiaAuthFetcherTest, StartAuthCodeForOAuth2TokenExchange_Failure) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthFailure(_)).Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
-  auth.DeprecatedStartCookieForOAuthLoginTokenExchange(std::string());
-
+  auth.StartAuthCodeForOAuth2TokenExchange("auth_code");
   EXPECT_TRUE(auth.HasPendingFetch());
 
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_FORBIDDEN);
-
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenOAuth2TokenPairFailure) {
-  MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnClientOAuthFailure(_)).Times(1);
-
-  net::TestURLFetcherFactory factory;
-  TestGaiaAuthFetcher auth(&consumer, std::string(), GetURLLoaderFactory());
-  auth.DeprecatedStartCookieForOAuthLoginTokenExchange(std::string());
-  EXPECT_TRUE(auth.HasPendingFetch());
-
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK,
-                                     {kGetAuthCodeValidCookie});
-
-  EXPECT_TRUE(auth.HasPendingFetch());
-
-  auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_FORBIDDEN);
-
-  EXPECT_FALSE(auth.HasPendingFetch());
-}
 
 TEST_F(GaiaAuthFetcherTest, MergeSessionSuccess) {
   MockGaiaConsumer consumer;
@@ -451,45 +395,6 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, {}, "uberToken");
 
   EXPECT_FALSE(auth.HasPendingFetch());
-}
-
-TEST_F(GaiaAuthFetcherTest, ParseClientLoginToOAuth2Response) {
-  {  // No cookies.
-    std::string auth_code;
-    net::ResponseCookies cookies;
-    EXPECT_FALSE(GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
-        cookies, &auth_code));
-    EXPECT_EQ("", auth_code);
-  }
-  {  // Few cookies, nothing appropriate.
-    std::string auth_code;
-    net::ResponseCookies cookies;
-    cookies.push_back(kGetAuthCodeCookieNoSecure);
-    cookies.push_back(kGetAuthCodeCookieNoHttpOnly);
-    cookies.push_back(kGetAuthCodeCookieNoOAuthCode);
-    EXPECT_FALSE(GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
-        cookies, &auth_code));
-    EXPECT_EQ("", auth_code);
-  }
-  {  // Few cookies, one of them is valid.
-    std::string auth_code;
-    net::ResponseCookies cookies;
-    cookies.push_back(kGetAuthCodeCookieNoSecure);
-    cookies.push_back(kGetAuthCodeCookieNoHttpOnly);
-    cookies.push_back(kGetAuthCodeCookieNoOAuthCode);
-    cookies.push_back(kGetAuthCodeValidCookie);
-    EXPECT_TRUE(GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
-        cookies, &auth_code));
-    EXPECT_EQ("test-code", auth_code);
-  }
-  {  // Single valid cookie (like in real responses).
-    std::string auth_code;
-    net::ResponseCookies cookies;
-    cookies.push_back(kGetAuthCodeValidCookie);
-    EXPECT_TRUE(GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
-        cookies, &auth_code));
-    EXPECT_EQ("test-code", auth_code);
-  }
 }
 
 TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {
