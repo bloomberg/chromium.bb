@@ -366,6 +366,19 @@ void OpenVRRenderLoop::GetFrameData(
     }
   }
 
+  // Yield here to let the event queue process pending mojo messages,
+  // specifically the next gamepad callback request that's likely to
+  // have been sent during WaitGetPoses.
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&OpenVRRenderLoop::GetControllerDataAndSendFrameData,
+                     base::Unretained(this), std::move(callback),
+                     std::move(frame_data)));
+}
+
+void OpenVRRenderLoop::GetControllerDataAndSendFrameData(
+    XRFrameDataProvider::GetFrameDataCallback callback,
+    mojom::XRFrameDataPtr frame_data) {
   // Update gamepad controllers.
   UpdateControllerState();
 
