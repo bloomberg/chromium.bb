@@ -11,15 +11,6 @@
 var PiexRequestCallbacks;
 
 /**
- * Color space.
- * @enum {string}
- */
-var ColorSpace = {
-  SRGB: 'sRgb',
-  ADOBE_RGB: 'adobeRgb'
-};
-
-/**
  * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number,
  *          colorSpace: ColorSpace}}
  *     data Data directly returned from NaCl module.

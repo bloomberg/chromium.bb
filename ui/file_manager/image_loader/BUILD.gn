@@ -12,6 +12,7 @@ js_type_check("closure_compile_module") {
     ":image_loader",
     ":image_loader_client",
     ":image_loader_util",
+    ":load_image_request",
     ":piex_loader",
     ":request",
     ":scheduler",
@@ -30,6 +31,7 @@ js_library("cache") {
 js_library("cache_unittest") {
   deps = [
     ":cache",
+    ":load_image_request",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }
@@ -37,6 +39,7 @@ js_library("cache_unittest") {
 js_library("image_loader") {
   deps = [
     ":cache",
+    ":load_image_request",
     ":piex_loader",
     ":request",
     ":scheduler",
@@ -53,13 +56,22 @@ js_library("image_loader_unittest") {
 
 js_library("image_loader_util") {
   deps = [
+    ":load_image_request",
     ":piex_loader",
+    "//ui/webui/resources/js:assert",
+  ]
+}
+
+js_library("load_image_request") {
+  deps = [
+    "../file_manager/foreground/js/metadata:image_orientation",
     "//ui/webui/resources/js:assert",
   ]
 }
 
 js_library("image_loader_client") {
   deps = [
+    ":load_image_request",
     "../file_manager/common/js:lru_cache",
   ]
   externs_list = [
@@ -79,6 +91,7 @@ js_library("image_loader_client_unittest") {
 
 js_library("piex_loader") {
   deps = [
+    ":load_image_request",
     "../file_manager/foreground/js/metadata:image_orientation",
   ]
 }
@@ -96,6 +109,7 @@ js_library("request") {
   deps = [
     ":cache",
     ":image_loader_util",
+    ":load_image_request",
     ":piex_loader",
     "../file_manager/common/js:file_type",
     "../file_manager/common/js:metrics",

@@ -27,6 +27,7 @@
 // <include src="metrics_start.js">
 //
 // <include src="../../common/js/lru_cache.js">
+// <include src="../../../image_loader/load_image_request.js">
 // <include src="../../../image_loader/image_loader_client.js">
 //
 // <include src="../../../../webui/resources/js/load_time_data.js">
@@ -43,8 +44,10 @@
 // <include src="../../../../webui/resources/js/cr/ui/dialogs.js">
 // <include src="../../../../webui/resources/js/cr/ui/list_item.js">
 // <include src="../../../../webui/resources/js/cr/ui/list_selection_model.js">
-// <include src="../../../../webui/resources/js/cr/ui/list_single_selection_model.js">
-// <include src="../../../../webui/resources/js/cr/ui/list_selection_controller.js">
+// <include
+// src="../../../../webui/resources/js/cr/ui/list_single_selection_model.js">
+// <include
+// src="../../../../webui/resources/js/cr/ui/list_selection_controller.js">
 // <include src="../../../../webui/resources/js/cr/ui/list.js">
 // <include src="../../../../webui/resources/js/cr/ui/tree.js">
 // <include src="../../../../webui/resources/js/cr/ui/autocomplete_list.js">

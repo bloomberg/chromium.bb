@@ -56,32 +56,7 @@ function ImageLoader() {
 
   // Listen for incoming requests.
   chrome.runtime.onMessageExternal.addListener(
-      function(request, sender, sendResponse) {
-        if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1) {
-          // Sending a response may fail if the receiver already went offline.
-          // This is not an error, but a normal and quite common situation.
-          var failSafeSendResponse = function(response) {
-            try {
-              sendResponse(response);
-            }
-            catch (e) {
-              // Ignore the error.
-            }
-          };
-          if (typeof request.orientation === 'number') {
-            request.orientation =
-                ImageOrientation.fromDriveOrientation(request.orientation);
-          } else if (request.orientation) {
-            request.orientation =
-                ImageOrientation.fromRotationAndScale(request.orientation);
-          } else {
-            request.orientation = new ImageOrientation(1, 0, 0, 1);
-          }
-          return this.onMessage_(sender.id,
-                                 /** @type {LoadImageRequest} */ (request),
-                                 failSafeSendResponse);
-        }
-      }.bind(this));
+      this.onIncomingRequest_.bind(this));
 }
 
 /**
@@ -97,12 +72,53 @@ ImageLoader.ALLOWED_CLIENTS = [
 ];
 
 /**
+ * Handler for incoming requests.
+ *
+ * @param {*} request_data A LoadImageRequest (received untyped).
+ * @param {!MessageSender} sender
+ * @param {function(*): void} sendResponse
+ */
+ImageLoader.prototype.onIncomingRequest_ = function(
+    request_data, sender, sendResponse) {
+  if (!sender.id || !request_data)
+    return;
+  if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) === -1)
+    return;
+
+  var request = /** @type {!LoadImageRequest} */ (request_data);
+
+  // Sending a response may fail if the receiver already went offline.
+  // This is not an error, but a normal and quite common situation.
+  let failSafeSendResponse = function(response) {
+    try {
+      sendResponse(response);
+    } catch (e) {
+      // Ignore the error.
+    }
+  };
+  // Incoming requests won't have the full type.
+  assert(!(request.orientation instanceof ImageOrientation));
+
+  if (typeof request.orientation === 'number') {
+    request.orientation =
+        ImageOrientation.fromDriveOrientation(request.orientation);
+  } else if (request.orientation) {
+    request.orientation =
+        ImageOrientation.fromRotationAndScale(request.orientation);
+  } else {
+    request.orientation = new ImageOrientation(1, 0, 0, 1);
+  }
+  return this.onMessage_(sender.id, request, failSafeSendResponse);
+};
+
+/**
  * Handles a request. Depending on type of the request, starts or stops
  * an image task.
  *
  * @param {string} senderId Sender's extension id.
- * @param {!LoadImageRequest} request Request message as a hash array.
- * @param {function(Object)} callback Callback to be called to return response.
+ * @param {!LoadImageRequest} request Pre-processed request.
+ * @param {function(!LoadImageResponse)} callback Callback to be called to
+ *     return response.
  * @return {boolean} True if the message channel should stay alive until the
  *     callback is called.
  * @private

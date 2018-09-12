@@ -30,7 +30,7 @@ function generateSampleImageDataUrl(width, height) {
 /**
  * Installs a mock ImageLoader with a compatible load method.
  *
- * @param {function(string, function(!Object), Object=)} mockLoad
+ * @param {function(!LoadImageRequest, function(!Object))} mockLoad
  */
 function installMockLoad(mockLoad) {
   ImageLoaderClient.getInstance = function() {
@@ -67,7 +67,7 @@ function testShouldUseMetadataThumbnail() {
 }
 
 function testLoadAsDataUrlFromImageClient(callback) {
-  installMockLoad(function(url, callback, opt_option) {
+  installMockLoad(function(request, callback) {
     callback({status: 'success', data: 'imageDataUrl', width: 32, height: 32});
   });
 
@@ -82,10 +82,10 @@ function testLoadAsDataUrlFromImageClient(callback) {
 }
 
 function testLoadAsDataUrlFromExifThumbnail(callback) {
-  installMockLoad(function(url, callback, opt_option) {
+  installMockLoad(function(request, callback) {
     // Assert that data url is passed.
-    assertTrue(/^data:/i.test(url));
-    callback({status: 'success', data: url, width: 32, height: 32});
+    assertTrue(/^data:/i.test(request.url));
+    callback({status: 'success', data: request.url, width: 32, height: 32});
   });
 
   var metadata = {
@@ -105,10 +105,10 @@ function testLoadAsDataUrlFromExifThumbnail(callback) {
 }
 
 function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
-  installMockLoad(function(url, callback, opt_option) {
+  installMockLoad(function(request, callback) {
     // Assert that data url and transform info is passed.
-    assertTrue(/^data:/i.test(url));
-    assertEquals(1, opt_option.orientation.rotate90);
+    assertTrue(/^data:/i.test(request.url));
+    assertEquals(1, request.orientation.rotate90);
     callback({
       status: 'success',
       data: generateSampleImageDataUrl(32, 64),
@@ -145,8 +145,8 @@ function testLoadAsDataUrlFromExternal(callback) {
   var externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
   var externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
 
-  installMockLoad(function(url, callback, opt_option) {
-    assertEquals(externalCroppedThumbnailUrl, url);
+  installMockLoad(function(request, callback) {
+    assertEquals(externalCroppedThumbnailUrl, request.url);
     callback({
       status: 'success',
       data: externalThumbnailDataUrl,
@@ -173,11 +173,11 @@ function testLoadAsDataUrlFromExternal(callback) {
 }
 
 function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
-  installMockLoad(function(url, callback, opt_option) {
+  installMockLoad(function(request, callback) {
     // Assert that data url is passed.
-    assertTrue(/^data:/i.test(url));
+    assertTrue(/^data:/i.test(request.url));
     // Assert that the rotation is propagated to ImageLoader.
-    assertEquals(1, opt_option.orientation.rotate90);
+    assertEquals(1, request.orientation.rotate90);
     // ImageLoader returns rotated image.
     callback({
       status: 'success',

@@ -3,31 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{
- *   cache: (boolean|undefined),
- *   priority: (number|undefined),
- *   taskId: number,
- *   timestamp: (number|undefined),
- *   url: string,
- *   orientation: !ImageOrientation,
- *   colorSpace: ?ColorSpace
- * }}
- */
-var LoadImageRequest;
-
-/**
  * Creates and starts downloading and then resizing of the image. Finally,
  * returns the image using the callback.
  *
  * @param {string} id Request ID.
  * @param {ImageCache} cache Cache object.
  * @param {!PiexLoader} piexLoader Piex loader for RAW file.
- * @param {LoadImageRequest} request Request message as a hash array.
- * @param {function(Object)} callback Callback used to send the response.
+ * @param {!LoadImageRequest} request Request message as a hash array.
+ * @param {function(!LoadImageResponse)} callback Response handler.
  * @constructor
  */
 function ImageRequest(id, cache, piexLoader, request, callback) {
   /**
+   * Global ID (concatenated client ID and client request ID).
    * @type {string}
    * @private
    */
@@ -46,13 +34,13 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
   this.piexLoader_ = piexLoader;
 
   /**
-   * @type {LoadImageRequest}
+   * @type {!LoadImageRequest}
    * @private
    */
   this.request_ = request;
 
   /**
-   * @type {function(Object)}
+   * @type {function(!LoadImageResponse)}
    * @private
    */
   this.sendResponse_ = callback;
@@ -128,6 +116,16 @@ ImageRequest.prototype.getId = function() {
 };
 
 /**
+ * Returns the client's task ID for the request.
+ * @return {number}
+ */
+ImageRequest.prototype.getClientTaskId = function() {
+  // Every incoming request should have been given a taskId.
+  assert(this.request_.taskId);
+  return this.request_.taskId;
+};
+
+/**
  * Returns priority of the request. The higher priority, the faster it will
  * be handled. The highest priority is 0. The default one is 2.
  *
@@ -174,7 +172,7 @@ ImageRequest.prototype.downloadAndProcess = function(callback) {
  * @private
  */
 ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
-  var cacheKey = ImageCache.createKey(this.request_);
+  let cacheKey = LoadImageRequest.cacheKey(this.request_);
 
   if (!cacheKey) {
     // Cache key is not provided for the request.
@@ -216,7 +214,7 @@ ImageRequest.prototype.saveToCache_ = function(data, width, height) {
     return;
   }
 
-  var cacheKey = ImageCache.createKey(this.request_);
+  let cacheKey = LoadImageRequest.cacheKey(this.request_);
   if (!cacheKey) {
     // Cache key is not provided for the request.
     return;
@@ -540,10 +538,9 @@ ImageRequest.prototype.sendImage_ = function(imageChanged) {
  * @private
  */
 ImageRequest.prototype.sendImageData_ = function(data, width, height) {
-  this.sendResponse_({
-    status: 'success', data: data, width: width, height: height,
-    taskId: this.request_.taskId
-  });
+  this.sendResponse_(new LoadImageResponse(
+      LoadImageResponseStatus.SUCCESS, this.getClientTaskId(),
+      {width: width, height: height, data: data}));
 };
 
 /**
@@ -575,8 +572,8 @@ ImageRequest.prototype.onImageLoad_ = function() {
  * @private
  */
 ImageRequest.prototype.onImageError_ = function() {
-  this.sendResponse_(
-      {status: 'error', taskId: this.request_.taskId});
+  this.sendResponse_(new LoadImageResponse(
+      LoadImageResponseStatus.ERROR, this.getClientTaskId()));
   this.cleanup_();
   this.downloadCallback_();
 };
