@@ -472,6 +472,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
     WebRuntimeFeatures::EnableAccessibilityObjectModel(true);
 
+  if (base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI))
+    WebRuntimeFeatures::EnableFeatureFromString("WritableFiles", true);
+
   // End individual features.
   // Do not add individual features below this line.
 
@@ -487,10 +490,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableMediaControlsExpandGesture(
       base::FeatureList::IsEnabled(media::kMediaControlsExpandGesture));
 #endif
-
-  WebRuntimeFeatures::EnableFeatureFromString(
-      "WritableFiles",
-      base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI));
 
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
