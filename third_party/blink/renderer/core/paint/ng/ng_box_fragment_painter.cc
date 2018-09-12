@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
@@ -34,8 +35,10 @@
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
+#include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
@@ -400,6 +403,8 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
                   border_edges_.line_left, border_edges_.line_right);
 }
 
+// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
+// eliminate LayoutObject dependency were done yet.
 void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
@@ -407,7 +412,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
 
   LayoutRect paint_rect;
-  base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
+  base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           box_fragment_, paint_info)) {
     // For the case where we are painting the background into the scrolling
@@ -416,17 +421,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     const LayoutBox& layout_box = ToLayoutBox(layout_object);
     paint_rect = layout_box.PhysicalLayoutOverflowRect();
 
-    const auto* fragment = paint_info.FragmentToPaint(layout_box);
-    if (!fragment)
-      return;
-
-    scoped_scroll_property.emplace(
-        paint_info.context.GetPaintController(), fragment->ContentsProperties(),
-        layout_box, DisplayItem::PaintPhaseToScrollType(paint_info.phase));
-    // See comments for ScrollTranslation in object_paint_properties.h for the
-    // reason of moving by ScrollOrigin(). TODO(wangxianzhu): Encapsulate such
-    // logic at various places into one class.
-    paint_rect.MoveBy(layout_box.ScrollOrigin());
+    contents_paint_state.emplace(paint_info, paint_offset, layout_box);
+    paint_rect.MoveBy(contents_paint_state->PaintOffset());
 
     // The background painting code assumes that the borders are part of the
     // paintRect so we expand the paintRect by the border size when painting the
@@ -438,16 +434,59 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     // much bigger change.
     NGPhysicalSize size = box_fragment_.Size();
     paint_rect = LayoutRect(LayoutPoint(), LayoutSize(size.width, size.height));
+    paint_rect.MoveBy(paint_offset);
   }
-  paint_rect.MoveBy(paint_offset);
+
+  PaintBoxDecorationBackgroundWithRect(
+      contents_paint_state ? contents_paint_state->GetPaintInfo() : paint_info,
+      paint_rect);
+}
+
+// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
+// eliminate LayoutObject dependency were done yet.
+bool NGBoxFragmentPainter::BackgroundIsKnownToBeOpaque(
+    const PaintInfo& paint_info) {
+  const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
+  LayoutRect bounds =
+      IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+          box_fragment_, paint_info)
+          ? layout_box.LayoutOverflowRect()
+          : layout_box.SelfVisualOverflowRect();
+  return layout_box.BackgroundIsKnownToBeOpaqueInRect(bounds);
+}
+
+// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
+// eliminate LayoutObject dependency were done yet.
+void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
+    const PaintInfo& paint_info,
+    const LayoutRect& paint_rect) {
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
+  const LayoutBox& layout_box = ToLayoutBox(layout_object);
 
   bool painting_overflow_contents =
       IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           box_fragment_, paint_info);
   const ComputedStyle& style = box_fragment_.Style();
 
-  // TODO(layout-dev): Implement support for painting overflow contents.
-  const DisplayItemClient& display_item_client = box_fragment_;
+  base::Optional<DisplayItemCacheSkipper> cache_skipper;
+  // Disable cache in under-invalidation checking mode for MediaSliderPart
+  // because we always paint using the latest data (buffered ranges, current
+  // time and duration) which may be different from the cached data, and for
+  // delayed-invalidation object because it may change before it's actually
+  // invalidated. Note that we still report harmless under-invalidation of
+  // non-delayed-invalidation animated background, which should be ignored.
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      (style.Appearance() == kMediaSliderPart ||
+       layout_box.ShouldDelayFullPaintInvalidation())) {
+    cache_skipper.emplace(paint_info.context);
+  }
+
+  const DisplayItemClient& display_item_client =
+      painting_overflow_contents ? static_cast<const DisplayItemClient&>(
+                                       *layout_box.Layer()
+                                            ->GetCompositedLayerMapping()
+                                            ->ScrollingContentsLayer())
+                                 : box_fragment_;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, display_item_client,
           DisplayItem::kBoxDecorationBackground))
@@ -458,6 +497,12 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   BoxDecorationData box_decoration_data(PhysicalFragment());
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
+      BackgroundIsKnownToBeOpaque(paint_info))
+    recorder.SetKnownToBeOpaque();
+
+  bool needs_end_layer = false;
   if (!painting_overflow_contents) {
     PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges_.line_left,
                          border_edges_.line_right);
@@ -468,24 +513,31 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
           paint_rect, border_edges_.line_left, border_edges_.line_right);
       paint_info.context.ClipRoundedRect(border);
 
-      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
+      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer) {
         paint_info.context.BeginLayer();
+        needs_end_layer = true;
+      }
     }
   }
 
-  // TODO(layout-dev): Support theme painting.
-  bool theme_painted = false;
-
+  IntRect snapped_paint_rect(PixelSnappedIntRect(paint_rect));
+  ThemePainter& theme_painter = LayoutTheme::GetTheme().Painter();
+  bool theme_painted =
+      box_decoration_data.has_appearance &&
+      !theme_painter.Paint(layout_box, paint_info, snapped_paint_rect);
   bool should_paint_background =
-      !theme_painted &&
-      (!paint_info.SkipRootBackground() ||
-       paint_info.PaintContainer() != layout_object) &&
-      (!layout_object.IsBoxModelObject() ||
-       !ToLayoutBoxModelObject(layout_object).BackgroundStolenForBeingBody());
+      !theme_painted && (!paint_info.SkipRootBackground() ||
+                         paint_info.PaintContainer() != layout_box);
   if (should_paint_background) {
     PaintBackground(paint_info, paint_rect,
                     box_decoration_data.background_color,
                     box_decoration_data.bleed_avoidance);
+
+    if (box_decoration_data.has_appearance) {
+      theme_painter.PaintDecorations(layout_box.GetNode(),
+                                     layout_box.GetDocument(), style,
+                                     paint_info, snapped_paint_rect);
+    }
   }
 
   if (!painting_overflow_contents) {
@@ -493,7 +545,13 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
                                       border_edges_.line_left,
                                       border_edges_.line_right);
 
+    // The theme will tell us whether or not we should also paint the CSS
+    // border.
     if (box_decoration_data.has_border_decoration &&
+        (!box_decoration_data.has_appearance ||
+         (!theme_painted &&
+          LayoutTheme::GetTheme().Painter().PaintBorderOnly(
+              layout_box.GetNode(), style, paint_info, snapped_paint_rect))) &&
         ShouldPaintBoxFragmentBorders(layout_object)) {
       Node* generating_node = layout_object.GeneratingNode();
       const Document& document = layout_object.GetDocument();
@@ -503,8 +561,31 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     }
   }
 
-  if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
+  if (needs_end_layer)
     paint_info.context.EndLayer();
+}
+
+// TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
+// eliminate LayoutObject dependency were done yet.
+void NGBoxFragmentPainter::PaintBackground(
+    const PaintInfo& paint_info,
+    const LayoutRect& paint_rect,
+    const Color& background_color,
+    BackgroundBleedAvoidance bleed_avoidance) {
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
+  const LayoutBox& layout_box = ToLayoutBox(layout_object);
+  if (layout_box.IsDocumentElement())
+    return;
+  if (layout_box.BackgroundStolenForBeingBody())
+    return;
+  if (layout_box.BackgroundIsKnownToBeObscured())
+    return;
+  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
+  BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
+      box_fragment_.GetLayoutObject()));
+  PaintFillLayers(paint_info, background_color,
+                  box_fragment_.Style().BackgroundLayers(), paint_rect,
+                  geometry, bleed_avoidance);
 }
 
 void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
@@ -826,19 +907,6 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
       box_fragment_.GetLayoutObject()->GetDocument(), box_fragment_.Style(),
       box_fragment_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       border_edges_.line_left, border_edges_.line_right);
-}
-
-void NGBoxFragmentPainter::PaintBackground(
-    const PaintInfo& paint_info,
-    const LayoutRect& paint_rect,
-    const Color& background_color,
-    BackgroundBleedAvoidance bleed_avoidance) {
-  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
-  BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
-      box_fragment_.GetLayoutObject()));
-  PaintFillLayers(paint_info, background_color,
-                  box_fragment_.Style().BackgroundLayers(), paint_rect,
-                  geometry, bleed_avoidance);
 }
 
 bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {

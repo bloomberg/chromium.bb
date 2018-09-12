@@ -441,7 +441,6 @@ crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot.js [ F
 crbug.com/714962 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.js [ Failure ]
 crbug.com/591099 inspector-protocol/timeline/page-frames.js [ Failure ]
 crbug.com/591099 intersection-observer/v2/text-shadow.html [ Failure ]
-crbug.com/591099 paint/background/scrolling-background-with-negative-z-child.html [ Failure ]
 crbug.com/591099 paint/float/float-under-inline-self-painting-change.html [ Failure ]
 crbug.com/835484 paint/inline/focus-ring-under-absolute-with-relative-continuation.html [ Failure ]
 crbug.com/591099 paint/invalidation/clip/control-clip.html [ Failure ]
