@@ -31,8 +31,4 @@ UIImage* StretchableImageNamed(NSString* name,
                                NSInteger left_cap_width,
                                NSInteger top_cap_height);
 
-// Returns the extension by checking the first byte of image |data|. If |data|
-// is nil, empty, or cannot be recognized, nil will be returned.
-NSString* GetImageExtensionFromData(NSData* data);
-
 #endif  // IOS_CHROME_BROWSER_UI_IMAGE_UTIL_IMAGE_UTIL_H_
