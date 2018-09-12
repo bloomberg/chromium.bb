@@ -72,7 +72,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-  syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
+  syncer::FCMFakeInvalidator* fake_invalidator_;  // Owned by the service.
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
   network::TestURLLoaderFactory url_loader_factory_;
