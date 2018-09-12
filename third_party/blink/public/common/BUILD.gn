@@ -103,6 +103,10 @@ source_set("headers") {
     ]
     deps += [ ":font_unique_name_table_proto" ]
   }
+
+  if (is_win) {
+    sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.h" ]
+  }
 }
 
 if (is_android) {
