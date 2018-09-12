@@ -48,6 +48,19 @@ const char kFilledAndLoginActionName[] =
 const char kEnterpriseURL[] = "https://enterprise.test/";
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
+void DisallowSyncOnReauth(base::test::ScopedFeatureList* feature_list) {
+  feature_list->InitFromCommandLine(
+      features::kProtectSyncCredentialOnReauth.name,
+      features::kProtectSyncCredential.name);
+}
+
+void DisallowSync(base::test::ScopedFeatureList* feature_list) {
+  feature_list->InitFromCommandLine(
+      features::kProtectSyncCredential.name + std::string(",") +
+          features::kProtectSyncCredentialOnReauth.name,
+      std::string());
+}
+
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
   FakePasswordManagerClient()
@@ -108,7 +121,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   struct TestCase {
     enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
     PasswordForm form;
-    std::string fake_sync_username;
     const char* const last_committed_entry_url;
     enum { FORM_FILTERED, FORM_NOT_FILTERED } is_form_filtered;
     enum { NO_HISTOGRAM, HISTOGRAM_REPORTED } histogram_reported;
@@ -136,8 +148,9 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   }
 
   void CheckFilterResultsTestCase(const TestCase& test_case) {
+    DCHECK(signin_manager()->IsAuthenticated());
+
     SetSyncingPasswords(test_case.password_sync == TestCase::SYNCING_PASSWORDS);
-    FakeSigninAs(test_case.fake_sync_username);
     client_.set_last_committed_entry_url(test_case.last_committed_entry_url);
     base::HistogramTester tester;
     const bool expected_is_form_filtered =
@@ -150,7 +163,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     } else {
       tester.ExpectTotalCount("PasswordManager.SyncCredentialFiltered", 0);
     }
-    FakeSignout();
   }
 
   // Makes |form_manager_| provisionally save |pending_|. Depending on
@@ -177,36 +189,39 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   SyncCredentialsFilter filter_;
 };
 
-TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
+TEST_F(CredentialsFilterTest, FilterResults_AllowAll_NonSyncingAccount) {
+  FakeSigninAs("another_user@example.org");
+
+  CheckFilterResultsTestCase(
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM});
+}
+
+TEST_F(CredentialsFilterTest, FilterResults_AllowAll_SyncingAccount) {
+  FakeSigninAs("user@example.org");
+
   // By default, sync username is not filtered at all.
   const TestCase kTestCases[] = {
-      // Reauth URL, not sync username.
+      // Reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "another_user@example.org",
        "https://accounts.google.com/login?rart=123&continue=blah",
        TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
 
-      // Reauth URL, sync username.
+      // Slightly invalid reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
-
-      // Slightly invalid reauth URL, sync username.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
        "https://accounts.google.com/addlogin?rart",  // Missing rart value.
        TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
 
-      // Non-reauth URL, sync username.
+      // Non-reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org", "https://accounts.google.com/login?param=123",
+       "https://accounts.google.com/login?param=123",
        TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
 
-      // Non-GAIA "reauth" URL, sync username.
+      // Non-GAIA "reauth" URL.
       {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "user@example.org", "https://site.com/login?rart=678",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
+       TestCase::NO_HISTOGRAM},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -215,42 +230,50 @@ TEST_F(CredentialsFilterTest, FilterResults_AllowAll) {
   }
 }
 
-TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
+TEST_F(CredentialsFilterTest,
+       FilterResults_DisallowSyncOnReauth_NonSyncingAccount) {
+  FakeSigninAs("another_user@example.org");
+
   // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill the
   // sync credential everywhere but on reauth.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      features::kProtectSyncCredentialOnReauth.name,
-      features::kProtectSyncCredential.name);
+  DisallowSyncOnReauth(&scoped_feature_list);
+
+  CheckFilterResultsTestCase(
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED});
+}
+
+TEST_F(CredentialsFilterTest,
+       FilterResults_DisallowSyncOnReauth_SyncingAccount) {
+  FakeSigninAs("user@example.org");
+
+  // Only 'ProtectSyncCredentialOnReauth' feature is kept enabled, fill the
+  // sync credential everywhere but on reauth.
+  base::test::ScopedFeatureList scoped_feature_list;
+  DisallowSyncOnReauth(&scoped_feature_list);
 
   const TestCase kTestCases[] = {
-      // Reauth URL, not sync username.
+      // Reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "another_user@example.org",
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Reauth URL, sync username.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
        "https://accounts.google.com/login?rart=123&continue=blah",
        TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-      // Slightly invalid reauth URL, sync username.
+      // Slightly invalid reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
        "https://accounts.google.com/addlogin?rart",  // Missing rart value.
        TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-      // Non-reauth URL, sync username.
+      // Non-reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org", "https://accounts.google.com/login?param=123",
+       "https://accounts.google.com/login?param=123",
        TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
 
-      // Non-GAIA "reauth" URL, sync username.
+      // Non-GAIA "reauth" URL.
       {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "user@example.org", "https://site.com/login?rart=678",
-       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
+       TestCase::NO_HISTOGRAM},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -259,43 +282,48 @@ TEST_F(CredentialsFilterTest, FilterResults_DisallowSyncOnReauth) {
   }
 }
 
-TEST_F(CredentialsFilterTest, FilterResults_DisallowSync) {
+TEST_F(CredentialsFilterTest, FilterResults_DisallowSync_NonSyncingAccount) {
+  FakeSigninAs("another_user@example.org");
+
   // Both features are kept enabled, should cause sync credential to be
   // filtered.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      features::kProtectSyncCredential.name + std::string(",") +
-          features::kProtectSyncCredentialOnReauth.name,
-      std::string());
+  DisallowSync(&scoped_feature_list);
+
+  CheckFilterResultsTestCase(
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED});
+}
+
+TEST_F(CredentialsFilterTest, FilterResults_DisallowSync_SyncingAccount) {
+  FakeSigninAs("user@example.org");
+
+  // Both features are kept enabled, should cause sync credential to be
+  // filtered.
+  base::test::ScopedFeatureList scoped_feature_list;
+  DisallowSync(&scoped_feature_list);
 
   const TestCase kTestCases[] = {
-      // Reauth URL, not sync username.
+      // Reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "another_user@example.org",
-       "https://accounts.google.com/login?rart=123&continue=blah",
-       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
-
-      // Reauth URL, sync username.
-      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
        "https://accounts.google.com/login?rart=123&continue=blah",
        TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-      // Slightly invalid reauth URL, sync username.
+      // Slightly invalid reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org",
        "https://accounts.google.com/addlogin?rart",  // Missing rart value.
        TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-      // Non-reauth URL, sync username.
+      // Non-reauth URL.
       {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
-       "user@example.org", "https://accounts.google.com/login?param=123",
-       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
+       "https://accounts.google.com/login?param=123", TestCase::FORM_FILTERED,
+       TestCase::HISTOGRAM_REPORTED},
 
-      // Non-GAIA "reauth" URL, sync username.
+      // Non-GAIA "reauth" URL.
       {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
-       "user@example.org", "https://site.com/login?rart=678",
-       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
+       "https://site.com/login?rart=678", TestCase::FORM_NOT_FILTERED,
+       TestCase::HISTOGRAM_REPORTED},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -394,10 +422,7 @@ TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
   // Both features are kept enabled, should cause sync credential to be
   // filtered.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      features::kProtectSyncCredential.name + std::string(",") +
-          features::kProtectSyncCredentialOnReauth.name,
-      std::string());
+  DisallowSync(&scoped_feature_list);
 
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(
