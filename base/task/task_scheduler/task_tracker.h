@@ -84,13 +84,13 @@ namespace internal {
 //                   Go back to (*)                      |_________________|
 //
 //
-// Note: A background task is a task posted with TaskPriority::BEST_EFFORT. A
+// Note: A best-effort task is a task posted with TaskPriority::BEST_EFFORT. A
 // foreground task is a task posted with TaskPriority::USER_VISIBLE or
 // TaskPriority::USER_BLOCKING.
 //
 // TODO(fdoray): We want to allow disabling TaskPriority::BEST_EFFORT tasks in a
 // scope (e.g. during startup or page load), but we don't need a dynamic maximum
-// number of background tasks. The code could probably be simplified if it
+// number of best-effort tasks. The code could probably be simplified if it
 // didn't support that. https://crbug.com/831835
 class BASE_EXPORT TaskTracker {
  public:
@@ -98,10 +98,10 @@ class BASE_EXPORT TaskTracker {
   // The first constructor sets the maximum number of TaskPriority::BEST_EFFORT
   // sequences that can be scheduled concurrently to 0 if the
   // --disable-background-tasks flag is specified, max() otherwise. The second
-  // constructor sets it to |max_num_scheduled_background_sequences|.
+  // constructor sets it to |max_num_scheduled_best_effort_sequences|.
   TaskTracker(StringPiece histogram_label);
   TaskTracker(StringPiece histogram_label,
-              int max_num_scheduled_background_sequences);
+              int max_num_scheduled_best_effort_sequences);
 
   virtual ~TaskTracker();
 
@@ -263,12 +263,11 @@ class BASE_EXPORT TaskTracker {
   void SetMaxNumScheduledSequences(int max_scheduled_sequences,
                                    TaskPriority priority);
 
-  // Pops the next sequence in
-  // |preemption_state_[priority].preempted_sequences| and increments
-  // |preemption_state_[priority].current_scheduled_sequences|. Must only be
-  // called in the scope of |preemption_state_[priority].lock|, with
-  // |preemption_state_[priority].preempted_sequences| non-empty. The caller
-  // must forward the returned sequence to the associated
+  // Pops the next sequence in |preemption_state_[priority].preempted_sequences|
+  // and increments |preemption_state_[priority].current_scheduled_sequences|.
+  // Must only be called in the scope of |preemption_state_[priority].lock|,
+  // with |preemption_state_[priority].preempted_sequences| non-empty. The
+  // caller must forward the returned sequence to the associated
   // CanScheduleSequenceObserver as soon as |preemption_state_[priority].lock|
   // is released.
   PreemptedSequence GetPreemptedSequenceToScheduleLockRequired(
@@ -302,8 +301,8 @@ class BASE_EXPORT TaskTracker {
   // if it reaches zero.
   void DecrementNumIncompleteUndelayedTasks();
 
-  // To be called after running a background task from |just_ran_sequence|.
-  // Performs the following actions:
+  // To be called after running a task from |just_ran_sequence|. Performs the
+  // following actions:
   //  - If |just_ran_sequence| is non-null:
   //    - returns it if it should be rescheduled by the caller of
   //      RunAndPopNextTask(), i.e. its next task is set to run earlier than the
@@ -314,8 +313,7 @@ class BASE_EXPORT TaskTracker {
   //  - If |just_ran_sequence| is null (RunAndPopNextTask() just popped the last
   //    task from it):
   //    - the next preempeted sequence (if any) is scheduled.
-  //  - In all cases: adjusts the number of scheduled background sequences
-  //    accordingly.
+  //  - In all cases: adjusts the number of scheduled sequences accordingly.
   scoped_refptr<Sequence> ManageSequencesAfterRunningTask(
       scoped_refptr<Sequence> just_ran_sequence,
       CanScheduleSequenceObserver* observer,

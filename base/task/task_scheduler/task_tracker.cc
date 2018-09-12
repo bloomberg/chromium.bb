@@ -112,7 +112,7 @@ void RecordNumBlockShutdownTasksPostedDuringShutdown(
 
 // Returns the maximum number of TaskPriority::BEST_EFFORT sequences that can be
 // scheduled concurrently based on command line flags.
-int GetMaxNumScheduledBackgroundSequences() {
+int GetMaxNumScheduledBestEffortSequences() {
   // The CommandLine might not be initialized if TaskScheduler is initialized
   // in a dynamic library which doesn't have access to argc/argv.
   if (CommandLine::InitializedForCurrentProcess() &&
@@ -230,7 +230,7 @@ struct TaskTracker::PreemptedSequence {
     return next_task_sequenced_time > other.next_task_sequenced_time;
   }
 
-  // A background sequence waiting to be scheduled.
+  // A sequence waiting to be scheduled.
   scoped_refptr<Sequence> sequence;
 
   // The sequenced time of the next task in |sequence|.
@@ -247,10 +247,10 @@ TaskTracker::PreemptionState::PreemptionState() = default;
 TaskTracker::PreemptionState::~PreemptionState() = default;
 
 TaskTracker::TaskTracker(StringPiece histogram_label)
-    : TaskTracker(histogram_label, GetMaxNumScheduledBackgroundSequences()) {}
+    : TaskTracker(histogram_label, GetMaxNumScheduledBestEffortSequences()) {}
 
 TaskTracker::TaskTracker(StringPiece histogram_label,
-                         int max_num_scheduled_background_sequences)
+                         int max_num_scheduled_best_effort_sequences)
     : state_(new State),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
@@ -298,7 +298,7 @@ TaskTracker::TaskTracker(StringPiece histogram_label,
                                      1][0] -
            1));
   preemption_state_[static_cast<int>(TaskPriority::BEST_EFFORT)]
-      .max_scheduled_sequences = max_num_scheduled_background_sequences;
+      .max_scheduled_sequences = max_num_scheduled_best_effort_sequences;
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -856,7 +856,7 @@ scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
   }
 
   // |sequence_to_schedule.sequence| may be null if there was no preempted
-  // background sequence.
+  // sequence.
   if (sequence_to_schedule.sequence)
     SchedulePreemptedSequence(std::move(sequence_to_schedule));
 
