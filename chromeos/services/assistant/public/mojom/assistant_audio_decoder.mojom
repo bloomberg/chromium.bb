@@ -18,9 +18,9 @@ interface AssistantAudioDecoderFactory {
 interface AssistantAudioDecoder {
   // Reads the audio data format.
   OpenDecoder() => (bool success,
-                    int32 bytes_per_sample,
-                    int32 samples_per_second,
-                    int32 channels);
+                    uint32 bytes_per_sample,
+                    uint32 samples_per_second,
+                    uint32 channels);
 
   // Reads the audio data and decodes.
   Decode();
@@ -35,5 +35,5 @@ interface AssistantAudioDecoderClient {
 
 // Interface used to read data from the calling process.
 interface AssistantMediaDataSource {
-  Read(int32 size) => (array<uint8> data);
+  Read(uint32 size) => (array<uint8> data);
 };

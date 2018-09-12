@@ -44,7 +44,7 @@ class IPCDataSource : public media::DataSource {
   void ReadMediaData(uint8_t* destination, const ReadCB& callback, int size);
   void ReadDone(uint8_t* destination,
                 const ReadCB& callback,
-                int requested_size,
+                uint32_t requested_size,
                 const std::vector<uint8_t>& data);
 
   mojom::AssistantMediaDataSourcePtr media_data_source_;
