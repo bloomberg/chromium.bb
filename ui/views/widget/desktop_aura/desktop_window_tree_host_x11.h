@@ -208,7 +208,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // If mapped, sends a message to the window manager to enable or disable the
   // states |state1| and |state2|.  Otherwise, the states will be enabled or
-  // disabled on the next map.
+  // disabled on the next map.  It's the caller's responsibility to make sure
+  // atoms are set and unset in the appropriate pairs.  For example, if a caller
+  // sets (_NET_WM_STATE_MAXIMIZED_VERT, _NET_WM_STATE_MAXIMIZED_HORZ), it would
+  // be invalid to unset the maximized state by making two calls like
+  // (_NET_WM_STATE_MAXIMIZED_VERT, x11::None), (_NET_WM_STATE_MAXIMIZED_HORZ,
+  // x11::None).
   void SetWMSpecState(bool enabled, XAtom state1, XAtom state2);
 
   // Called when |xwindow_|'s _NET_WM_STATE property is updated.
@@ -345,10 +350,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // The window manager state bits as indicated by the server.  May be
   // out-of-sync.  May include bits set by non-Chrome apps.
-  base::flat_set<::Atom> window_properties_in_server_;
+  base::flat_set<XAtom> window_properties_in_server_;
 
   // The window manager state bits that Chrome has set.
-  base::flat_set<::Atom> window_properties_in_client_;
+  base::flat_set<std::pair<XAtom, XAtom>> window_properties_in_client_;
 
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_;

@@ -1523,7 +1523,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
                   reinterpret_cast<unsigned char*>(&window_type), 1);
 
   // List of window state properties (_NET_WM_STATE) to set, if any.
-  std::vector< ::Atom> state_atom_list;
+  std::vector<XAtom> state_atom_list;
 
   // Remove popup windows from taskbar unless overridden.
   if ((params.type == Widget::InitParams::TYPE_POPUP ||
@@ -1553,7 +1553,9 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // mapped. So we manually change the state.
   if (!state_atom_list.empty()) {
     DCHECK(window_properties_in_client_.empty());
-    window_properties_in_client_ = state_atom_list;
+    window_properties_in_client_.clear();
+    for (XAtom atom : state_atom_list)
+      window_properties_in_client_.insert(std::make_pair(atom, x11::None));
     ui::SetAtomArrayProperty(xwindow_,
                              "_NET_WM_STATE",
                              "ATOM",
@@ -1656,14 +1658,11 @@ void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
                                               XAtom state2) {
   if (IsVisible())
     ui::SetWMSpecState(xwindow_, enabled, state1, state2);
-  for (XAtom atom : {state1, state2}) {
-    if (atom != x11::None) {
-      if (enabled)
-        window_properties_in_client_.insert(atom);
-      else
-        window_properties_in_client_.erase(atom);
-    }
-  }
+  auto atoms = std::make_pair(state1, state2);
+  if (enabled)
+    window_properties_in_client_.insert(atoms);
+  else
+    window_properties_in_client_.erase(atoms);
 }
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
@@ -1988,8 +1987,8 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   XMapWindow(xdisplay_, xwindow_);
   window_mapped_in_client_ = true;
 
-  for (XAtom atom : window_properties_in_client_)
-    ui::SetWMSpecState(xwindow_, true, atom, x11::None);
+  for (const auto& atoms : window_properties_in_client_)
+    ui::SetWMSpecState(xwindow_, true, atoms.first, atoms.second);
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
