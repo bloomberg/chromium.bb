@@ -88,17 +88,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
 
   void DoRead();
   void OnRecv(int result);
-  void HandleReadResult(int result);
 
-  void DoSend(const PendingPacket& packet);
+  // Following 3 methods return false if the result was an error and the socket
+  // was destroyed. The caller should stop using |this| in that case.
+  bool HandleReadResult(int result);
+  bool HandleSendResult(uint64_t packet_id,
+                        int32_t transport_sequence_number,
+                        base::TimeTicks send_time,
+                        int result);
+  bool DoSend(const PendingPacket& packet);
+
   void OnSend(uint64_t packet_id,
               int32_t transport_sequence_number,
               base::TimeTicks send_time,
               int result);
-  void HandleSendResult(uint64_t packet_id,
-                        int32_t transport_sequence_number,
-                        base::TimeTicks send_time,
-                        int result);
+
   int SetSocketDiffServCodePointInternal(net::DiffServCodePoint dscp);
   static std::unique_ptr<net::DatagramServerSocket> DefaultSocketFactory(
       net::NetLog* net_log);

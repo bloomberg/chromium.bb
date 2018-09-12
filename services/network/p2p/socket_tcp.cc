@@ -228,9 +228,9 @@ void P2PSocketTcpBase::DoRead() {
 
 void P2PSocketTcpBase::OnRead(int result) {
   DidCompleteRead(result);
-  if (state_ == STATE_OPEN) {
+  // DidCompleteRead() destroys the socket on error or EOF.
+  if (result > 0 && state_ == STATE_OPEN)
     DoRead();
-  }
 }
 
 void P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
@@ -272,13 +272,14 @@ void P2PSocketTcpBase::WriteOrQueue(SendBuffer& send_buffer) {
 }
 
 void P2PSocketTcpBase::DoWrite() {
-  while (write_buffer_.buffer.get() && state_ == STATE_OPEN &&
-         !write_pending_) {
+  while (write_buffer_.buffer.get()) {
     int result = socket_->Write(
         write_buffer_.buffer.get(), write_buffer_.buffer->BytesRemaining(),
         base::BindOnce(&P2PSocketTcp::OnWritten, base::Unretained(this)),
         net::NetworkTrafficAnnotationTag(write_buffer_.traffic_annotation));
     HandleWriteResult(result);
+    if (result < 0)
+      return;
   }
 }
 
@@ -288,7 +289,9 @@ void P2PSocketTcpBase::OnWritten(int result) {
 
   write_pending_ = false;
   HandleWriteResult(result);
-  DoWrite();
+  // HandleWriteResult() destroys the socket on error.
+  if (result > 0)
+    DoWrite();
 }
 
 void P2PSocketTcpBase::HandleWriteResult(int result) {
