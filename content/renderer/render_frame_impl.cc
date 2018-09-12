@@ -310,31 +310,6 @@ using blink::WebFloatRect;
 
 namespace content {
 
-// Helper struct keeping track in one place of all the parameters the browser
-// provided to the renderer to commit a navigation.
-struct PendingNavigationParams {
-  PendingNavigationParams(
-      const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
-      base::TimeTicks time_commit_requested,
-      content::mojom::FrameNavigationControl::CommitNavigationCallback
-          commit_callback)
-      : common_params(common_params),
-        request_params(request_params),
-        time_commit_requested(time_commit_requested),
-        commit_callback_(std::move(commit_callback)) {}
-  ~PendingNavigationParams() = default;
-
-  CommonNavigationParams common_params;
-  RequestNavigationParams request_params;
-
-  // Time when RenderFrameImpl::CommitNavigation() is called.
-  base::TimeTicks time_commit_requested;
-
-  content::mojom::FrameNavigationControl::CommitNavigationCallback
-      commit_callback_;
-};
-
 namespace {
 
 const int kExtraCharsBeforeAndAfterSelection = 100;
@@ -419,14 +394,6 @@ GURL GetOriginalRequestURL(WebDocumentLoader* document_loader) {
     return redirects.at(0);
 
   return document_loader->OriginalRequest().Url();
-}
-
-bool IsBrowserInitiated(PendingNavigationParams* pending) {
-  // A navigation resulting from loading a javascript URL should not be treated
-  // as a browser initiated event.  Instead, we want it to look as if the page
-  // initiated any load resulting from JS execution.
-  return pending &&
-         !pending->common_params.url.SchemeIs(url::kJavaScriptScheme);
 }
 
 // Returns false unless this is a top-level navigation.
@@ -804,7 +771,7 @@ blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
 }
 
 // Creates a fully functional DocumentState in the case where we do not have
-// pending_navigation_params_ available in the RenderFrameImpl.
+// navigation parameters available.
 std::unique_ptr<DocumentState> BuildDocumentState() {
   std::unique_ptr<DocumentState> document_state =
       std::make_unique<DocumentState>();
@@ -814,22 +781,16 @@ std::unique_ptr<DocumentState> BuildDocumentState() {
 }
 
 // Creates a fully functional DocumentState in the case where we have
-// pending_navigation_params_ available in the RenderFrameImpl.
-// TODO(ahemery): This currently removes the callback from the pending params
-// which is a bit counterintuitive. We would like to leave
-// pending_navigation_params in a valid state. Callback should probably not be
-// a part of PendingNavigationParams.
-std::unique_ptr<DocumentState> BuildDocumentStateFromPending(
-    PendingNavigationParams* pending_navigation_params,
+// navigation parameters available in the RenderFrameImpl.
+std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    base::TimeTicks time_commit_requested,
+    mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
     const network::ResourceResponseHead* head) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state.get());
-
-  const CommonNavigationParams& common_params =
-      pending_navigation_params->common_params;
-  const RequestNavigationParams& request_params =
-      pending_navigation_params->request_params;
 
   DCHECK(!common_params.navigation_start.is_null());
   DCHECK(!common_params.url.SchemeIs(url::kJavaScriptScheme));
@@ -877,11 +838,9 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromPending(
     document_state->set_data_url(common_params.url);
 
   document_state->set_navigation_state(
-      NavigationStateImpl::CreateBrowserInitiated(
-          pending_navigation_params->common_params,
-          pending_navigation_params->request_params,
-          pending_navigation_params->time_commit_requested,
-          std::move(pending_navigation_params->commit_callback_)));
+      NavigationStateImpl::CreateBrowserInitiated(common_params, request_params,
+                                                  time_commit_requested,
+                                                  std::move(commit_callback)));
   return document_state;
 }
 
@@ -2641,23 +2600,16 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
   if (!navigation_state->IsContentInitiated()) {
-    pending_navigation_params_.reset(new PendingNavigationParams(
+    document_state = BuildDocumentStateFromParams(
         navigation_state->common_params(), navigation_state->request_params(),
-        base::TimeTicks(),  // not used for failed navigation.
-        CommitNavigationCallback()));
-    document_state = BuildDocumentStateFromPending(
-        pending_navigation_params_.get(), nullptr);
+        base::TimeTicks(),  // Not used for failed navigation.
+        CommitNavigationCallback(), nullptr);
     navigation_params = BuildNavigationParams(
-        pending_navigation_params_->common_params,
-        pending_navigation_params_->request_params,
+        navigation_state->common_params(), navigation_state->request_params(),
         BuildServiceWorkerNetworkProviderForNavigation(
             nullptr /* request_params */,
             nullptr /* controller_service_worker_info */));
   }
-
-  DCHECK(!pending_navigation_params_ || document_state)
-      << "We should never have pending_navigation_params_ if we "
-         "are not coming from CommitFailedNavigation.";
 
   LoadNavigationErrorPage(failed_request, error, replace, nullptr,
                           error_page_content, std::move(navigation_params),
@@ -3135,9 +3087,6 @@ void RenderFrameImpl::CommitNavigation(
   if (request_params.is_view_source)
     frame_->EnableViewSourceMode(true);
 
-  pending_navigation_params_.reset(
-      new PendingNavigationParams(common_params, request_params,
-                                  base::TimeTicks::Now(), std::move(callback)));
   PrepareFrameForCommit(common_params.url, request_params);
 
   // We only save metrics of the main frame's main resource to the
@@ -3147,8 +3096,9 @@ void RenderFrameImpl::CommitNavigation(
   const network::ResourceResponseHead* response_head = nullptr;
   if (!frame_->Parent() && !frame_->IsViewSourceModeEnabled())
     response_head = &head;
-  std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromPending(
-      pending_navigation_params_.get(), response_head));
+  std::unique_ptr<DocumentState> document_state(BuildDocumentStateFromParams(
+      common_params, request_params, base::TimeTicks::Now(),
+      std::move(callback), response_head));
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -3217,9 +3167,6 @@ void RenderFrameImpl::CommitNavigation(
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
 
-  // In case LoadRequest failed before DidCreateDocumentLoader was called.
-  pending_navigation_params_.reset();
-
   // Reset the source location now that the commit checks have been processed.
   frame_->GetDocumentLoader()->ResetSourceLocation();
   if (frame_->GetProvisionalDocumentLoader())
@@ -3279,7 +3226,6 @@ void RenderFrameImpl::CommitFailedNavigation(
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
     std::move(callback).Run(blink::mojom::CommitResult::Aborted);
-    pending_navigation_params_.reset();
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3298,7 +3244,6 @@ void RenderFrameImpl::CommitFailedNavigation(
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
       std::move(callback).Run(blink::mojom::CommitResult::Aborted);
-      pending_navigation_params_.reset();
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     } else {
       std::move(callback).Run(blink::mojom::CommitResult::Ok);
@@ -3332,16 +3277,13 @@ void RenderFrameImpl::CommitFailedNavigation(
   // otherwise it will result in a use-after-free bug.
   base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
 
-  pending_navigation_params_.reset(new PendingNavigationParams(
-      common_params, request_params,
-      base::TimeTicks(),  // Not used for failed navigation.
-      std::move(callback)));
   std::unique_ptr<blink::WebNavigationParams> navigation_params =
       BuildNavigationParams(common_params, request_params,
                             BuildServiceWorkerNetworkProviderForNavigation(
                                 &request_params, nullptr));
-  std::unique_ptr<DocumentState> navigation_data(
-      BuildDocumentStateFromPending(pending_navigation_params_.get(), nullptr));
+  std::unique_ptr<DocumentState> navigation_data(BuildDocumentStateFromParams(
+      common_params, request_params, base::TimeTicks(), std::move(callback),
+      nullptr));
 
   // For renderer initiated navigations, we send out a didFailProvisionalLoad()
   // notification.
@@ -3448,8 +3390,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
       commit_status != blink::mojom::CommitResult::Ok) {
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
-
-  pending_navigation_params_.reset();
 }
 
 void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
@@ -4106,7 +4046,6 @@ void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
 
 void RenderFrameImpl::DidCreateDocumentLoader(
     blink::WebDocumentLoader* document_loader) {
-  pending_navigation_params_.reset();
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(document_loader);
   if (!document_state) {
@@ -4595,10 +4534,6 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
 
-  // Just reset pending navigation params here, if they exist they are for some
-  // other navigation <https://crbug.com/597239>.
-  pending_navigation_params_.reset();
-
   DidCommitNavigationInternal(item, commit_type,
                               true /* was_within_same_document */,
                               nullptr /* remote_interface_provider_request */);
@@ -4827,7 +4762,6 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  CHECK(!pending_navigation_params_);
   // TODO(ahemery): We should skip the processing for the main resource, it has
   // been done before sending the request to the browser.
 
@@ -6451,18 +6385,8 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
   params.triggering_event_info = info.triggering_event_info;
   params.blob_url_token =
       CloneBlobURLToken(info.blob_url_token.get()).PassHandle().release();
-
-  if (IsBrowserInitiated(pending_navigation_params_.get())) {
-    // This is necessary to preserve the should_replace_current_entry value on
-    // cross-process redirects, in the event it was set by a previous process.
-    WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
-    DCHECK(document_loader);
-    params.should_replace_current_entry =
-        document_loader->ReplacesCurrentHistoryItem();
-  } else {
-    params.should_replace_current_entry = info.replaces_current_history_item &&
-                                          render_view_->history_list_length_;
-  }
+  params.should_replace_current_entry =
+      info.replaces_current_history_item && render_view_->history_list_length_;
   params.user_gesture =
       WebUserGestureIndicator::IsProcessingUserGesture(frame_);
   if (GetContentClient()->renderer()->AllowPopup())

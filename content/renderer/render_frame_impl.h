@@ -161,7 +161,6 @@ class HistoryEntry;
 class ManifestManager;
 class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
-class NavigationState;
 class NavigationClient;
 class PepperPluginInstanceImpl;
 class PushMessagingClient;
@@ -181,7 +180,6 @@ struct FileChooserFileInfo;
 struct FileChooserParams;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct PendingNavigationParams;
 struct RequestNavigationParams;
 struct ScreenInfo;
 
@@ -1376,11 +1374,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // layout, etc. A local frame is also a local root iff it does not have a
   // parent that is a local frame.
   scoped_refptr<RenderWidget> render_widget_;
-
-  // Temporarily holds state pertaining to a navigation that has been initiated
-  // until the NavigationState corresponding to the new navigation is created in
-  // DidCreateDocumentLoader().
-  std::unique_ptr<PendingNavigationParams> pending_navigation_params_;
 
   // Keeps track of which future subframes the browser process has history items
   // for during a history navigation, as well as whether those items are for
