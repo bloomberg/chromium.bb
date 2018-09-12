@@ -9,7 +9,7 @@ var ImageLoaderUtil = {};
  *
  * @param {number} width Source width.
  * @param {number} height Source height.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} options The request, containing resizing options.
  * @return {boolean} True if yes, false if not.
  */
 ImageLoaderUtil.shouldProcess = function(width, height, options) {
@@ -41,8 +41,8 @@ ImageLoaderUtil.shouldProcess = function(width, height, options) {
  *
  * @param {number} width Source width.
  * @param {number} height Source height.
- * @param {Object} options Resizing options as a hash array.
- * @return {Object} Dimensions, eg. {width: 100, height: 50}.
+ * @param {!LoadImageRequest} options The request, containing resizing options.
+ * @return {!{width: number, height:number}} Dimensions.
  */
 ImageLoaderUtil.resizeDimensions = function(width, height, options) {
   var scale = options.scale || 1;
@@ -80,7 +80,7 @@ ImageLoaderUtil.resizeDimensions = function(width, height, options) {
  *
  * @param {HTMLCanvasElement|Image} source Source image or canvas.
  * @param {HTMLCanvasElement} target Target canvas.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} options The request, containing resizing options.
  */
 ImageLoaderUtil.resizeAndCrop = function(source, target, options) {
   // Calculates copy parameters.
@@ -121,7 +121,7 @@ ImageLoaderUtil.CopyParameters;
  * Calculates copy parameters.
  *
  * @param {HTMLCanvasElement|Image} source Source image or canvas.
- * @param {Object} options Resizing options as a hash array.
+ * @param {!LoadImageRequest} options The request, containing resizing options.
  * @return {!ImageLoaderUtil.CopyParameters} Calculated copy parameters.
  */
 ImageLoaderUtil.calculateCopyParameters = function(source, options) {

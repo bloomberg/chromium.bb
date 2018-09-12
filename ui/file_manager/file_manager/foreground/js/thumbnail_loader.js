@@ -36,6 +36,16 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
   this.priority_ = (opt_priority !== undefined) ? opt_priority : 2;
+
+  /**
+   * The image transform from metadata.
+   *
+   * TODO(tapted): I suspect this actually needs to be more complicated, but
+   * it can't be properly type-checked so long as |opt_metadata| is passed in
+   * merely as "{Object}".
+   *
+   * @type {?ImageTransformParam}
+   */
   this.transform_ = null;
 
   /**
@@ -213,16 +223,16 @@ ThumbnailLoader.prototype.load = function(
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
   this.taskId_ = ImageLoaderClient.loadToImage(
-      this.thumbnailUrl_, this.image_,
-      {
+      LoadImageRequest.createRequest({
+        url: this.thumbnailUrl_,
         maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
         priority: this.priority_,
         timestamp: modificationTime,
         orientation: this.transform_
-      },
-      function() {},
+      }),
+      this.image_, function() {},
       function() {
         this.image_.onerror(new Event('load-error'));
       }.bind(this));
@@ -252,37 +262,34 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
                            this.metadata_.filesystem &&
                            this.metadata_.filesystem.modificationTime &&
                            this.metadata_.filesystem.modificationTime.getTime();
-    var thumbnailUrl = this.thumbnailUrl_;
-    var options = {
+    let request = LoadImageRequest.createRequest({
+      url: this.thumbnailUrl_,
       maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
       maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
       cache: true,
       priority: this.priority_,
       timestamp: modificationTime,
       orientation: this.transform_
-    };
+    });
 
     if (fillMode === ThumbnailLoader.FillMode.OVER_FILL) {
       // Use cropped thumbnail url if available.
-      thumbnailUrl = this.croppedThumbnailUrl_ ?
-          this.croppedThumbnailUrl_ : this.thumbnailUrl_;
+      request.url = this.croppedThumbnailUrl_ ? this.croppedThumbnailUrl_ :
+                                                this.thumbnailUrl_;
 
       // Set crop option to image loader. Since image of croppedThumbnailUrl_ is
-      // 360x360 with current implemenation, it's no problem to crop it.
-      options['width'] = 360;
-      options['height'] = 360;
-      options['crop'] = true;
+      // 360x360 with current implementation, it's no problem to crop it.
+      request.width = 360;
+      request.height = 360;
+      request.crop = true;
     }
 
-    ImageLoaderClient.getInstance().load(
-        thumbnailUrl,
-        function(result) {
-          if (result.status === 'success')
-            resolve(result);
-          else
-            reject(result);
-        },
-        options);
+    ImageLoaderClient.getInstance().load(request, function(result) {
+      if (result.status === LoadImageResponseStatus.SUCCESS)
+        resolve(result);
+      else
+        reject(result);
+    });
   }.bind(this));
 };
 
@@ -343,17 +350,16 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
   this.taskId_ = ImageLoaderClient.loadToImage(
-      this.thumbnailUrl_,
-      this.image_,
-      {
+      LoadImageRequest.createRequest({
+        url: this.thumbnailUrl_,
         maxWidth: ThumbnailLoader.THUMBNAIL_MAX_WIDTH,
         maxHeight: ThumbnailLoader.THUMBNAIL_MAX_HEIGHT,
         cache: true,
         priority: this.priority_,
         timestamp: modificationTime,
         orientation: this.transform_
-      },
-      function() {},
+      }),
+      this.image_, function() {},
       function() {
         this.image_.onerror(new Event('load-error'));
       }.bind(this));

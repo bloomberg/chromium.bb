@@ -47,25 +47,6 @@ ImageCache.MEMORY_LIMIT = 250 * 1024 * 1024;  // 250 MB.
 ImageCache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
 
 /**
- * Creates a cache key.
- *
- * @param {Object} request Request options.
- * @return {?string} Cache key. It may be null if the cache does not support
- *     |request|. e.g. Data URI.
- */
-ImageCache.createKey = function(request) {
-  if (/^data:/i.test(request.url))
-    return null;
-  return JSON.stringify({
-    url: request.url,
-    scale: request.scale,
-    width: request.width,
-    height: request.height,
-    maxWidth: request.maxWidth,
-    maxHeight: request.maxHeight});
-};
-
-/**
  * Initializes the cache database.
  * @param {function()} callback Completion callback.
  */

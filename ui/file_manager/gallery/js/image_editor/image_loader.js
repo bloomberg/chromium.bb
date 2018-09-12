@@ -177,18 +177,20 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
           item.getMetadataItem() &&
           item.getMetadataItem().modificationTime &&
           item.getMetadataItem().modificationTime.getTime();
-      ImageLoaderClient.getInstance().load(entry.toURL(), function(result) {
+      let request = LoadImageRequest.createFullImageRequest({
+        url: entry.toURL(),
+        cache: true,
+        timestamp: timestamp,
+        priority: 0  // Use highest priority to show main image.
+      });
+      ImageLoaderClient.getInstance().load(request, function(result) {
         if (generation !== this.generation_)
           return;
         if (result.status === 'success')
           loadImage(result.data);
         else
           onError('GALLERY_IMAGE_ERROR');
-      }.bind(this), {
-        cache: true,
-        timestamp: timestamp,
-        priority: 0  // Use highest priority to show main image.
-      });
+      }.bind(this));
       return;
     }
 

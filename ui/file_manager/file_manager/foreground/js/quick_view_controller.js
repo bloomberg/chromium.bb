@@ -480,6 +480,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
  */
 QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
   return new Promise(function(resolve) {
-    ImageLoaderClient.getInstance().load(url, resolve);
+    ImageLoaderClient.getInstance().load(
+        LoadImageRequest.createForUrl(url), resolve);
   });
 };

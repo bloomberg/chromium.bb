@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 /**
+ * rotate90: clockwise degrees / 90.
+ *
+ * @typedef {{scaleX: number, scaleY: number, rotate90: number}}
+ */
+let ImageTransformParam;
+
+/**
  * Class representing image orientation.
  * The constructor takes 2x2 matrix value that cancels the image orientation:
  * |a, c|
@@ -101,8 +108,7 @@ ImageOrientation.fromClockwiseRotation = function(rotation90) {
 
 /**
  * Builds a transformation matrix from the image transform parameters.
- * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
- *     rotate90: clockwise degrees / 90.
+ * @param {ImageTransformParam} transform
  * @return {!ImageOrientation}
  */
 ImageOrientation.fromRotationAndScale = function(transform) {
@@ -124,7 +130,7 @@ ImageOrientation.fromRotationAndScale = function(transform) {
     orientation.b * scaleX,
     orientation.c * scaleY,
     orientation.d * scaleY);
-}
+};
 
 /**
  * Obtains the image size after cancelling its orientation.
