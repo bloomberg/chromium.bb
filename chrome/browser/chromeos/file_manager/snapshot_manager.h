@@ -37,7 +37,7 @@ namespace file_manager {
 class SnapshotManager {
  public:
   // The callback type for CreateManagedSnapshot.
-  typedef base::Callback<void(const base::FilePath&)> LocalPathCallback;
+  typedef base::OnceCallback<void(const base::FilePath&)> LocalPathCallback;
 
   explicit SnapshotManager(Profile* profile);
   ~SnapshotManager();
@@ -45,7 +45,7 @@ class SnapshotManager {
   // Creates a snapshot file copy of a file system file |absolute_file_path| and
   // returns back to |callback|. Returns empty path for failure.
   void CreateManagedSnapshot(const base::FilePath& absolute_file_path,
-                             const LocalPathCallback& callback);
+                             LocalPathCallback callback);
 
   // Struct for keeping the snapshot file reference with its file size used for
   // computing the necessity of clean up.
@@ -63,12 +63,12 @@ class SnapshotManager {
   // Part of CreateManagedSnapshot.
   void CreateManagedSnapshotAfterSpaceComputed(
       const storage::FileSystemURL& filesystem_url,
-      const LocalPathCallback& callback,
+      LocalPathCallback callback,
       int64_t needed_space);
 
   // Part of CreateManagedSnapshot.
   void OnCreateSnapshotFile(
-      const LocalPathCallback& callback,
+      LocalPathCallback callback,
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,

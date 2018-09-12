@@ -22,7 +22,7 @@
 namespace file_manager {
 namespace {
 
-typedef base::Callback<void(int64_t)> GetNecessaryFreeSpaceCallback;
+typedef base::OnceCallback<void(int64_t)> GetNecessaryFreeSpaceCallback;
 
 // Part of ComputeSpaceNeedToBeFreed.
 int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataAsync(
@@ -41,31 +41,32 @@ int64_t ComputeSpaceNeedToBeFreedAfterGetMetadataAsync(
 // Part of ComputeSpaceNeedToBeFreed.
 void ComputeSpaceNeedToBeFreedAfterGetMetadata(
     const base::FilePath& path,
-    const GetNecessaryFreeSpaceCallback& callback,
+    GetNecessaryFreeSpaceCallback callback,
     base::File::Error result,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (result != base::File::FILE_OK) {
-    callback.Run(-1);
+    std::move(callback).Run(-1);
     return;
   }
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
-                 file_info.size),
-      callback);
+      base::BindOnce(&ComputeSpaceNeedToBeFreedAfterGetMetadataAsync, path,
+                     file_info.size),
+      std::move(callback));
 }
 
 // Part of ComputeSpaceNeedToBeFreed.
 void GetMetadataOnIOThread(const base::FilePath& path,
                            scoped_refptr<storage::FileSystemContext> context,
                            const storage::FileSystemURL& url,
-                           const GetNecessaryFreeSpaceCallback& callback) {
+                           GetNecessaryFreeSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   context->operation_runner()->GetMetadata(
       url, storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadata, path, callback));
+      base::Bind(&ComputeSpaceNeedToBeFreedAfterGetMetadata, path,
+                 base::Passed(std::move(callback))));
 }
 
 // Computes the size of space that need to be __additionally__ made available
@@ -75,12 +76,12 @@ void ComputeSpaceNeedToBeFreed(
     Profile* profile,
     scoped_refptr<storage::FileSystemContext> context,
     const storage::FileSystemURL& url,
-    const GetNecessaryFreeSpaceCallback& callback) {
+    GetNecessaryFreeSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&GetMetadataOnIOThread, profile->GetPath(), context, url,
-                     google_apis::CreateRelayCallback(callback)));
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 // Part of CreateManagedSnapshot. Runs CreateSnapshotFile method of fileapi.
@@ -129,7 +130,7 @@ SnapshotManager::~SnapshotManager() {
 
 void SnapshotManager::CreateManagedSnapshot(
     const base::FilePath& absolute_file_path,
-    const LocalPathCallback& callback) {
+    LocalPathCallback callback) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context.get());
@@ -137,28 +138,28 @@ void SnapshotManager::CreateManagedSnapshot(
   GURL url;
   if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
           profile_, absolute_file_path, kFileManagerAppId, &url)) {
-    callback.Run(base::FilePath());
+    std::move(callback).Run(base::FilePath());
     return;
   }
   storage::FileSystemURL filesystem_url = context->CrackURL(url);
 
-  ComputeSpaceNeedToBeFreed(profile_, context, filesystem_url,
-      base::Bind(&SnapshotManager::CreateManagedSnapshotAfterSpaceComputed,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 filesystem_url,
-                 callback));
+  ComputeSpaceNeedToBeFreed(
+      profile_, context, filesystem_url,
+      base::BindOnce(&SnapshotManager::CreateManagedSnapshotAfterSpaceComputed,
+                     weak_ptr_factory_.GetWeakPtr(), filesystem_url,
+                     std::move(callback)));
 }
 
 void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
     const storage::FileSystemURL& filesystem_url,
-    const LocalPathCallback& callback,
+    LocalPathCallback callback,
     int64_t needed_space) {
   scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context.get());
 
   if (needed_space < 0) {
-    callback.Run(base::FilePath());
+    std::move(callback).Run(base::FilePath());
     return;
   }
 
@@ -178,21 +179,22 @@ void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
 
   // If we still could not achieve the space requirement, abort with failure.
   if (needed_space > 0) {
-    callback.Run(base::FilePath());
+    std::move(callback).Run(base::FilePath());
     return;
   }
 
   // Start creating the snapshot.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CreateSnapshotFileOnIOThread, context, filesystem_url,
-                     google_apis::CreateRelayCallback(base::Bind(
-                         &SnapshotManager::OnCreateSnapshotFile,
-                         weak_ptr_factory_.GetWeakPtr(), callback))));
+      base::BindOnce(
+          &CreateSnapshotFileOnIOThread, context, filesystem_url,
+          google_apis::CreateRelayCallback(base::BindOnce(
+              &SnapshotManager::OnCreateSnapshotFile,
+              weak_ptr_factory_.GetWeakPtr(), std::move(callback)))));
 }
 
 void SnapshotManager::OnCreateSnapshotFile(
-    const LocalPathCallback& callback,
+    LocalPathCallback callback,
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
@@ -200,13 +202,13 @@ void SnapshotManager::OnCreateSnapshotFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result != base::File::FILE_OK) {
-    callback.Run(base::FilePath());
+    std::move(callback).Run(base::FilePath());
     return;
   }
 
   file_refs_.push_back(
       FileReferenceWithSizeInfo(std::move(file_ref), file_info.size));
-  callback.Run(platform_path);
+  std::move(callback).Run(platform_path);
 }
 
 }  // namespace file_manager
