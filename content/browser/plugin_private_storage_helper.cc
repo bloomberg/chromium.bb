@@ -308,11 +308,12 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
     }
 
     // Currently the plugin private filesystem is only used by Encrypted
-    // Media Content Decryption Modules, which are treated as pepper plugins.
-    // Each CDM gets a directory based on the mimetype (e.g. plugin
-    // application/x-ppapi-widevine-cdm uses directory
-    // application_x-ppapi-widevine-cdm). Enumerate through the set of
-    // directories so that data from any CDM used by this origin is deleted.
+    // Media Content Decryption Modules (CDM), which used to be hosted as pepper
+    // plugins. Each CDM gets a directory based on the CdmInfo::file_system_id,
+    // e.g. application/x-ppapi-widevine-cdm (same as previous plugin mimetypes
+    // to avoid data migration). See https://crbug.com/479923 for the history.
+    // Enumerate through the set of directories so that data from any CDM used
+    // by this origin is deleted.
     base::FileEnumerator file_enumerator(path, false,
                                          base::FileEnumerator::DIRECTORIES);
     for (base::FilePath plugin_path = file_enumerator.Next();
