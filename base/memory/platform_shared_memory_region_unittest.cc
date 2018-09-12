@@ -235,7 +235,9 @@ void CheckReadOnlyMapProtection(void* addr) {
                      return region.start == reinterpret_cast<uintptr_t>(addr);
                    });
   ASSERT_TRUE(it != regions.end());
-  EXPECT_EQ(it->permissions, base::debug::MappedMemoryRegion::READ);
+  // PROT_READ may imply PROT_EXEC on some architectures, so just check that
+  // permissions don't contain PROT_WRITE bit.
+  EXPECT_FALSE(it->permissions & base::debug::MappedMemoryRegion::WRITE);
 #elif defined(OS_WIN)
   MEMORY_BASIC_INFORMATION memory_info;
   size_t result = VirtualQueryEx(GetCurrentProcess(), addr, &memory_info,
@@ -271,7 +273,7 @@ bool TryToRestoreWritablePermissions(void* addr, size_t len) {
 }
 
 // Tests that protection bits are set correctly for read-only region.
-TEST_F(PlatformSharedMemoryRegionTest, DISABLED_MappingProtectionSetCorrectly) {
+TEST_F(PlatformSharedMemoryRegionTest, MappingProtectionSetCorrectly) {
   PlatformSharedMemoryRegion region =
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
