@@ -130,8 +130,6 @@ void VoiceInteractionControllerClient::NotifyFeatureAllowed() {
 void VoiceInteractionControllerClient::NotifyNotificationEnabled() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
-  // Make sure voice interaction is enabled.
-  DCHECK(prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
   bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionNotificationEnabled);
   voice_interaction_controller_->NotifyNotificationEnabled(enabled);
 }
@@ -219,10 +217,9 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   NotifySettingsEnabled();
   NotifyContextEnabled();
   NotifyLocaleChanged();
-  if (prefs->GetBoolean(prefs::kVoiceInteractionEnabled)) {
+  NotifyNotificationEnabled();
+  if (prefs->GetBoolean(prefs::kVoiceInteractionEnabled))
     NotifyHotwordEnabled();
-    NotifyNotificationEnabled();
-  }
 }
 
 void VoiceInteractionControllerClient::Observe(
