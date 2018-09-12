@@ -121,7 +121,7 @@ void FullscreenWebStateObserver::DidStartLoading(web::WebState* web_state) {
     // considered as being in the SameDocument by the NavigationContext, so the
     // toolbar isn't shown in the DidFinishNavigation. For example this is
     // needed to load AMP pages from Google Search Result Page.
-    controller_->ResetModel();
+    controller_->ExitFullscreen();
   }
 }
 
@@ -148,12 +148,12 @@ void FullscreenWebStateObserver::SetDisableFullscreenForSSL(bool disable) {
 }
 
 void FullscreenWebStateObserver::SetIsLoading(bool loading) {
-  if (IsUIRefreshPhase1Enabled())
-    return;
-
-  if (!!loading_disabler_.get() == loading)
-    return;
-  loading_disabler_ =
-      loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
-              : nullptr;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (loading)
+      controller_->ExitFullscreen();
+  } else {
+    loading_disabler_ =
+        loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
+                : nullptr;
+  }
 }
