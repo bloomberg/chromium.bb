@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,20 +67,6 @@ class HostComponentTransform : public AppendComponentTransform {
       : trim_trivial_subdomains_(trim_trivial_subdomains) {}
 
  private:
-  static bool IsTrivialSubdomain(base::StringPiece subdomain) {
-    if (subdomain == "www")
-      return true;
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    // Eliding the "m" subdomain on Desktop can be confusing, since users would
-    // generally want to know if they are unintentionally on the mobile site.
-    if (subdomain == "m")
-      return true;
-#endif
-
-    return false;
-  }
-
   base::string16 Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
@@ -102,42 +87,18 @@ class HostComponentTransform : public AppendComponentTransform {
       return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
 
     base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
-    base::StringTokenizer tokenizer(
-        component_text.begin(),
-        component_text.end() - domain_and_registry.length(), ".");
-    tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
-
-    bool reached_non_trivial_subdomain = false;
-    std::string transformed_subdomain;
-    while (tokenizer.GetNext()) {
-      // Record whether a trivial subdomain has been encountered.
-      if (!IsTrivialSubdomain(tokenizer.token_piece()))
-        reached_non_trivial_subdomain = true;
-
-      // Append delimiters and everything encountered at or after the first
-      // non-trivial subdomain.
-      if (tokenizer.token_is_delim() || reached_non_trivial_subdomain) {
-        transformed_subdomain += tokenizer.token();
-        continue;
-      }
-
-      // We found a trivial subdomain, so we add an adjustment accounting for
-      // the subdomain and the following consumed delimiter.
-      size_t trivial_subdomain_begin =
-          tokenizer.token_begin() - component_text.begin();
-      trivial_subdomains_adjustments.push_back(base::OffsetAdjuster::Adjustment(
-          trivial_subdomain_begin, tokenizer.token().length() + 1, 0));
-
-      // Consume the next token, which must be a delimiter.
-      bool next_delimiter_found = tokenizer.GetNext();
-      DCHECK(next_delimiter_found);
-      DCHECK(tokenizer.token_is_delim());
+    std::string transformed_host = component_text;
+    constexpr char kWww[] = "www.";
+    constexpr size_t kWwwLength = 4;
+    if (component_text.size() - domain_and_registry.length() >= kWwwLength &&
+        StartsWith(component_text, kWww, base::CompareCase::SENSITIVE)) {
+      transformed_host.erase(0, kWwwLength);
+      trivial_subdomains_adjustments.push_back(
+          base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
     }
 
     base::string16 unicode_result =
-        IDNToUnicodeWithAdjustments(transformed_subdomain + domain_and_registry,
-                                    adjustments)
-            .result;
+        IDNToUnicodeWithAdjustments(transformed_host, adjustments).result;
     base::OffsetAdjuster::MergeSequentialAdjustments(
         trivial_subdomains_adjustments, adjustments);
     return unicode_result;
