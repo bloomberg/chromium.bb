@@ -2,6 +2,13 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+
+# The number of lines will be reduced after 2018 update is complete and
+# the old stories are removed: https://crbug.com/878390.
+# pylint: disable=too-many-lines
+
+
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
@@ -305,6 +312,59 @@ class GoogleDesktopStory(_ArticleBrowsingStory):
 
     # Submit search query.
     action_runner.EnterText(' delivery')
+    action_runner.Wait(0.5)
+    action_runner.PressKey('Return')
+
+    # Scroll down & click next search result page.
+    action_runner.Wait(2)
+    action_runner.ScrollPageToElement(selector=self._SEARCH_PAGE_2_SELECTOR)
+    action_runner.Wait(2)
+    action_runner.ClickElement(selector=self._SEARCH_PAGE_2_SELECTOR)
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
+
+class GoogleDesktopStory2018(_ArticleBrowsingStory):
+  """
+  A typical google search story:
+    _ Start at https://www.google.com/search?q=flower
+    _ Click on the wikipedia link & navigate to
+      https://en.wikipedia.org/wiki/Flower
+    _ Scroll down the wikipedia page about flower.
+    _ Back to the search main page.
+    _ Refine the search query to 'delivery flower'.
+    _ Scroll down the page.
+    _ Click the next page result of 'delivery flower'.
+    _ Scroll the search page.
+
+  """
+  NAME = 'browse:search:google:2018'
+  URL = 'https://www.google.com/search?q=flower&hl=en'
+  _SEARCH_BOX_SELECTOR = 'input[aria-label="Search"]'
+  _SEARCH_PAGE_2_SELECTOR = 'a[aria-label="Page 2"]'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on flower Wikipedia link.
+    action_runner.Wait(2)
+    action_runner.ClickElement(text='Flower - Wikipedia')
+    action_runner.WaitForNavigate()
+
+    # Scroll the flower Wikipedia page, then navigate back.
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
+    action_runner.Wait(2)
+    action_runner.NavigateBack()
+
+    # Click on the search box.
+    action_runner.WaitForElement(selector=self._SEARCH_BOX_SELECTOR)
+    action_runner.ExecuteJavaScript(
+        'document.querySelector({{ selector }}).focus()',
+        selector=self._SEARCH_BOX_SELECTOR)
+    action_runner.Wait(2)
+
+    # Submit search query.
+    action_runner.EnterText('delivery ')
     action_runner.Wait(0.5)
     action_runner.PressKey('Return')
 
