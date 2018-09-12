@@ -10,7 +10,6 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -52,10 +51,8 @@ ProductState::~ProductState() {
 
 bool ProductState::Initialize(bool system_install) {
   static const DWORD kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
-  const BrowserDistribution* distribution =
-      BrowserDistribution::GetDistribution();
   const std::wstring clients_key(install_static::GetClientsKeyPath());
-  const std::wstring state_key(distribution->GetStateKey());
+  const std::wstring state_key(install_static::GetClientStateKeyPath());
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   base::win::RegKey key;
 

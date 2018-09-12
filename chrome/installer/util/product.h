@@ -22,9 +22,10 @@ namespace installer {
 // distribution specific functionality.
 class Product {
  public:
-  explicit Product(BrowserDistribution* distribution);
+  explicit Product(BrowserDistribution* distribution)
+      : distribution_(distribution) {}
 
-  ~Product();
+  ~Product() = default;
 
   BrowserDistribution* distribution() const {
     return distribution_;

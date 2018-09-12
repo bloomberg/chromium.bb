@@ -33,11 +33,10 @@ class AppCommands {
   ~AppCommands();
 
   // Initialize an instance from the set of commands in a given registry key
-  // (typically the "Commands" subkey of a BrowserDistribution's "version key").
-  // |key| must have been opened with at least
-  // KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE access rights.
-  // |wow64access| must be one of 0, KEY_WOW64_32KEY or KEY_WOW64_64KEY and
-  // must match the original WOW64 access used to open |key| previously.
+  // (typically the "Commands" subkey of an app's Clients key). |key| must have
+  // been opened with at least KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE access
+  // rights. |wow64access| must be one of 0, KEY_WOW64_32KEY or KEY_WOW64_64KEY
+  // and must match the original WOW64 access used to open |key| previously.
   bool Initialize(const base::win::RegKey& key, REGSAM wow64access);
 
   // Replaces the contents of this object with that of |other|.
