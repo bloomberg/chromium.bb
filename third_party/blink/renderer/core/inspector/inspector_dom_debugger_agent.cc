@@ -459,20 +459,15 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
   if (function.IsEmpty())
     return nullptr;
 
-  String script_id;
-  int line_number;
-  int column_number;
-  GetFunctionLocation(function, script_id, line_number, column_number);
-
   std::unique_ptr<protocol::DOMDebugger::EventListener> value =
       protocol::DOMDebugger::EventListener::create()
           .setType(info.event_type)
           .setUseCapture(info.use_capture)
           .setPassive(info.passive)
           .setOnce(info.once)
-          .setScriptId(script_id)
-          .setLineNumber(line_number)
-          .setColumnNumber(column_number)
+          .setScriptId(String::Number(function->ScriptId()))
+          .setLineNumber(function->GetScriptLineNumber())
+          .setColumnNumber(function->GetScriptColumnNumber())
           .build();
   if (object_group_id.length()) {
     value->setHandler(v8_session_->wrapObject(

@@ -55,10 +55,6 @@ v8::Local<v8::Object> EventListenerHandler(ExecutionContext*, EventListener*);
 v8::Local<v8::Function> EventListenerEffectiveFunction(
     v8::Isolate*,
     v8::Local<v8::Object> handler);
-void GetFunctionLocation(v8::Local<v8::Function>,
-                         String& script_id,
-                         int& line_number,
-                         int& column_number);
 std::unique_ptr<SourceLocation> GetFunctionLocation(ExecutionContext*,
                                                     EventListener*);
 
