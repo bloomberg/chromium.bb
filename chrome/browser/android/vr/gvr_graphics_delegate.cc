@@ -494,7 +494,7 @@ void GvrGraphicsDelegate::UpdateContentViewportTransforms(
 }
 
 bool GvrGraphicsDelegate::AcquireGvrFrame(int frame_index) {
-  TRACE_EVENT0("gpu", __func__);
+  TRACE_EVENT0("gpu", "Vr.AcquireGvrFrame");
   DCHECK(!acquired_frame_);
   base::TimeTicks acquire_start = base::TimeTicks::Now();
   acquired_frame_ = swap_chain_.AcquireFrame();
