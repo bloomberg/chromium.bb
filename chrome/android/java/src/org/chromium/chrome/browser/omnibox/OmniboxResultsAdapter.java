@@ -5,13 +5,19 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Adapter for providing data and views to the omnibox results list.
@@ -24,6 +30,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     private final LocationBar mLocationBar;
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private boolean mUseDarkColors = true;
+    private Set<String> mPendingAnswerRequestUrls = new HashSet<>();
 
     public OmniboxResultsAdapter(
             Context context,
@@ -61,9 +68,56 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         } else {
             suggestionView = new SuggestionView(mContext, mLocationBar);
         }
-        suggestionView.init(
-                mSuggestionItems.get(position), mSuggestionDelegate, position, mUseDarkColors);
+        OmniboxResultItem item = mSuggestionItems.get(position);
+        maybeFetchAnswerIcon(item);
+        suggestionView.init(item, mSuggestionDelegate, position, mUseDarkColors);
         return suggestionView;
+    }
+
+    private void maybeFetchAnswerIcon(OmniboxResultItem item) {
+        ThreadUtils.assertOnUiThread();
+
+        // Do not refetch an answer image if it already exists.
+        if (item.getAnswerImage() != null) return;
+        OmniboxSuggestion suggestion = item.getSuggestion();
+        final String url = getAnswerImageRequestUrl(suggestion);
+        if (url == null) return;
+
+        // Do not make duplicate answer image requests for the same URL (to avoid generating
+        // duplicate bitmaps for the same image).
+        if (mPendingAnswerRequestUrls.contains(url)) return;
+
+        mPendingAnswerRequestUrls.add(url);
+        AnswersImage.requestAnswersImage(mLocationBar.getToolbarDataProvider().getProfile(), url,
+                new AnswersImage.AnswersImageObserver() {
+                    @Override
+                    public void onAnswersImageChanged(Bitmap bitmap) {
+                        ThreadUtils.assertOnUiThread();
+
+                        onAnswerImageReceived(url, bitmap);
+                        boolean retVal = mPendingAnswerRequestUrls.remove(url);
+                        assert retVal : "Pending answer URL should exist";
+                    }
+                });
+    }
+
+    private String getAnswerImageRequestUrl(OmniboxSuggestion suggestion) {
+        if (!suggestion.hasAnswer()) return null;
+        return suggestion.getAnswer().getSecondLine().getImage();
+    }
+
+    private void onAnswerImageReceived(String url, Bitmap bitmap) {
+        boolean didUpdateImage = false;
+        for (int i = 0; i < mSuggestionItems.size(); i++) {
+            String answerUrl = getAnswerImageRequestUrl(mSuggestionItems.get(i).getSuggestion());
+            if (TextUtils.equals(answerUrl, url)) {
+                mSuggestionItems.get(i).setAnswerImage(bitmap);
+                didUpdateImage = true;
+            }
+        }
+        if (didUpdateImage) {
+            notifyDataSetChanged();
+        }
     }
 
     /**
@@ -170,6 +224,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     public static class OmniboxResultItem {
         private final OmniboxSuggestion mSuggestion;
         private final String mMatchedQuery;
+        private Bitmap mAnswerImage;
 
         public OmniboxResultItem(OmniboxSuggestion suggestion, String matchedQuery) {
             mSuggestion = suggestion;
@@ -188,6 +243,18 @@ public class OmniboxResultsAdapter extends BaseAdapter {
          */
         public String getMatchedQuery() {
             return mMatchedQuery;
+        }
+
+        /**
+         * @return The image associated with the answer for this suggestion (if applicable).
+         */
+        @Nullable
+        public Bitmap getAnswerImage() {
+            return mAnswerImage;
+        }
+
+        private void setAnswerImage(Bitmap bitmap) {
+            mAnswerImage = bitmap;
         }
 
         @Override

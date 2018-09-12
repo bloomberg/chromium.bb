@@ -292,7 +292,13 @@ class SuggestionView extends ViewGroup {
         mPosition = position;
         jumpDrawablesToCurrentState();
         boolean colorsChanged = mUseDarkColors == null || mUseDarkColors != useDarkColors;
-        if (suggestionItem.equals(mSuggestionItem) && !colorsChanged) return;
+        if (suggestionItem.equals(mSuggestionItem) && !colorsChanged) {
+            // Answer images can be lazily loaded, so update that icon regardless.
+            if (suggestionItem.getAnswerImage() != null) {
+                updateAnswerImage(suggestionItem.getAnswerImage());
+            }
+            return;
+        }
         mUseDarkColors = useDarkColors;
         if (colorsChanged) {
             mContentsView.mTextLine1.setTextColor(getStandardFontColor());
@@ -322,7 +328,7 @@ class SuggestionView extends ViewGroup {
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
         if (mSuggestion.hasAnswer()) {
-            setAnswer(mSuggestion.getAnswer());
+            setAnswer(mSuggestion.getAnswer(), suggestionItem.getAnswerImage());
             mContentsView.setSuggestionIcon(SuggestionIcon.MAGNIFIER, colorsChanged);
             mContentsView.mTextLine2.setVisibility(VISIBLE);
             setRefinable(true);
@@ -572,8 +578,9 @@ class SuggestionView extends ViewGroup {
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      *
      * @param answer The answer to be displayed.
+     * @param answerImage The image associated with the answer.
      */
-    private void setAnswer(SuggestionAnswer answer) {
+    private void setAnswer(SuggestionAnswer answer, Bitmap answerImage) {
         float density = getResources().getDisplayMetrics().density;
 
         SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
@@ -607,15 +614,14 @@ class SuggestionView extends ViewGroup {
             mContentsView.mAnswerImage.getLayoutParams().width = imageSize;
             mContentsView.mAnswerImageMaxSize = imageSize;
 
-            String url = "https:" + secondLine.getImage().replace("\\/", "/");
-            AnswersImage.requestAnswersImage(mLocationBar.getToolbarDataProvider().getProfile(),
-                    url, new AnswersImage.AnswersImageObserver() {
-                        @Override
-                        public void onAnswersImageChanged(Bitmap bitmap) {
-                            mContentsView.mAnswerImage.setImageBitmap(bitmap);
-                        }
-                    });
+            updateAnswerImage(answerImage);
         }
+    }
+
+    private void updateAnswerImage(Bitmap bitmap) {
+        if (bitmap == null) return;
+        if (mContentsView.mAnswerImage.getDrawable() != null) return;
+        mContentsView.mAnswerImage.setImageBitmap(bitmap);
     }
 
     /**
