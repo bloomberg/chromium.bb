@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.layouts.phone;
 
+import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
+
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -19,6 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -189,6 +192,8 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
     private final TabListSceneLayer mSceneLayer;
 
     private StackLayoutGestureHandler mGestureHandler;
+
+    private ChromeAnimation<Animatable> mLayoutAnimations;
 
     private class StackLayoutGestureHandler implements GestureHandler {
         @Override
@@ -628,7 +633,19 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
 
     @Override
     public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
-        boolean animationsWasDone = super.onUpdateAnimation(time, jumpToEnd);
+        boolean animationsWasDone = true;
+        if (mLayoutAnimations != null) {
+            if (jumpToEnd) {
+                animationsWasDone = mLayoutAnimations.finished();
+                mLayoutAnimations.updateAndFinish();
+            } else {
+                animationsWasDone = mLayoutAnimations.update(time);
+            }
+
+            if (animationsWasDone || jumpToEnd) {
+                mLayoutAnimations = null;
+            }
+        }
 
         boolean finishedAllViews = true;
         for (int i = 0; i < mStacks.size(); i++) {
@@ -660,14 +677,16 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
      */
     public void onSwitchToFinished() {}
 
-    @Override
+    /**
+     * Called when layout-specific actions are needed after the animation finishes.
+     */
     protected void onAnimationStarted() {
-        if (mStackAnimationCount == 0) super.onAnimationStarted();
     }
 
-    @Override
+    /**
+     * Called when layout-specific actions are needed after the animation finishes.
+     */
     protected void onAnimationFinished() {
-        if (mStackAnimationCount == 0) super.onAnimationFinished();
     }
 
     /**
@@ -1509,7 +1528,6 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
      * Called by the stacks whenever they start an animation.
      */
     public void onStackAnimationStarted() {
-        if (mStackAnimationCount == 0) super.onAnimationStarted();
         mStackAnimationCount++;
     }
 
@@ -1518,7 +1536,6 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
      */
     public void onStackAnimationFinished() {
         mStackAnimationCount--;
-        if (mStackAnimationCount == 0) super.onAnimationFinished();
     }
 
     @Override
@@ -1541,5 +1558,47 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
 
         mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
+    }
+
+    /**
+     * Creates an {@link org.chromium.chrome.browser.compositor.layouts.ChromeAnimation
+     * .AnimatableAnimation} and adds it to the animation.
+     * Automatically sets the start value at the beginning of the animation.
+     */
+    protected void addToAnimation(
+            Animatable object, int prop, float start, float end, long duration, long startTime) {
+        ChromeAnimation.Animation<Animatable> component = createAnimation(object, prop, start, end,
+                duration, startTime, false, ChromeAnimation.getDecelerateInterpolator());
+        if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
+            mLayoutAnimations = new ChromeAnimation<Animatable>();
+            mLayoutAnimations.start();
+        }
+        component.start();
+        mLayoutAnimations.add(component);
+        requestUpdate();
+    }
+
+    @Override
+    protected void forceAnimationToFinish() {
+        super.forceAnimationToFinish();
+        if (mLayoutAnimations != null) {
+            mLayoutAnimations.updateAndFinish();
+            mLayoutAnimations = null;
+        }
+    }
+
+    /**
+     * Cancels any animation for the given object and property.
+     * @param object The object being animated.
+     * @param prop   The property to search for.
+     */
+    protected void cancelAnimation(Animatable object, int prop) {
+        if (mLayoutAnimations != null) mLayoutAnimations.cancel(object, prop);
+    }
+
+    @Override
+    @VisibleForTesting
+    public boolean isLayoutAnimating() {
+        return mLayoutAnimations != null && !mLayoutAnimations.finished();
     }
 }
