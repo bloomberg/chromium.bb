@@ -7,14 +7,16 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -141,13 +143,8 @@ class ManualFillingMediator
         mKeyboardAccessory = keyboardAccessory;
         mAccessorySheet = accessorySheet;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
-        if (mActivity instanceof ChromeTabbedActivity) {
-            // This object typically lives as long as the layout manager, so there is no need to
-            // unsubscribe which would occasionally use an invalidated object.
-            ((ChromeTabbedActivity) mActivity)
-                    .getLayoutManager()
-                    .addSceneChangeObserver(mTabSwitcherObserver);
-        }
+        LayoutManager manager = getLayoutManager();
+        if (manager != null) manager.addSceneChangeObserver(mTabSwitcherObserver);
         windowAndroid.addKeyboardVisibilityListener(mVisibilityListener);
         mTabModelObserver = new TabModelSelectorTabModelObserver(mActivity.getTabModelSelector()) {
             @Override
@@ -202,9 +199,9 @@ class ManualFillingMediator
     }
 
     void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
-        if (!isInitialized()) return;
-        assert getPasswordAccessorySheet() != null : "No password sheet available!";
-        getPasswordAccessorySheet().registerItemProvider(itemProvider);
+        PasswordAccessorySheetCoordinator accessorySheet = getPasswordAccessorySheet();
+        if (accessorySheet == null) return; // Not available or initialized yet.
+        accessorySheet.registerItemProvider(itemProvider);
     }
 
     void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action> actionProvider) {
@@ -212,14 +209,17 @@ class ManualFillingMediator
         ActionProviderCacheAdapter adapter =
                 new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
-        getKeyboardAccessory().registerActionListProvider(adapter);
+        mKeyboardAccessory.registerActionListProvider(adapter);
     }
 
     void destroy() {
         if (!isInitialized()) return;
-        if (mWindowAndroid != null) {
-            mWindowAndroid.removeKeyboardVisibilityListener(mVisibilityListener);
-        }
+        pause();
+        mWindowAndroid.removeKeyboardVisibilityListener(mVisibilityListener);
+        LayoutManager manager = getLayoutManager();
+        if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
+        mWindowAndroid = null;
+        mActivity = null;
         mTabModelObserver.destroy();
     }
 
@@ -234,7 +234,8 @@ class ManualFillingMediator
     void dismiss() {
         if (!isInitialized()) return;
         pause();
-        if (getContentView() != null) UiUtils.hideKeyboard(getContentView());
+        ViewGroup contentView = getContentView();
+        if (contentView != null) UiUtils.hideKeyboard(contentView);
     }
 
     void notifyPopupOpened(DropdownPopupWindow popup) {
@@ -258,16 +259,19 @@ class ManualFillingMediator
         mAccessorySheet.setActiveTab(tabIndex);
         if (mPopup != null && mPopup.isShowing()) mPopup.dismiss();
         // If there is a keyboard, update the accessory sheet's height and hide the keyboard.
-        if (getContentView() != null && getContentView().getRootView() != null) {
-            mAccessorySheet.setHeight(
-                    calculateAccessorySheetHeight(getContentView().getRootView()));
-            UiUtils.hideKeyboard(getContentView());
-        }
+        ViewGroup contentView = getContentView();
+        if (contentView == null) return; // Apparently the tab was cleaned up already.
+        View rootView = contentView.getRootView();
+        if (rootView == null) return;
+        mAccessorySheet.setHeight(calculateAccessorySheetHeight(rootView));
+        UiUtils.hideKeyboard(contentView);
     }
 
     @Override
     public void onCloseAccessorySheet() {
-        if (getContentView() == null || UiUtils.isKeyboardShowing(mActivity, getContentView())) {
+        ViewGroup contentView = getContentView();
+        if (contentView == null || mActivity == null) return; // The tab was cleaned up already.
+        if (UiUtils.isKeyboardShowing(mActivity, contentView)) {
             return; // If the keyboard is showing or is starting to show, the sheet closes gently.
         }
         mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
@@ -312,10 +316,23 @@ class ManualFillingMediator
      * @return The content {@link View} of the held {@link ChromeActivity} or null if any part of it
      *         isn't ready to use.
      */
-    private @Nullable View getContentView() {
+    private @Nullable ViewGroup getContentView() {
         if (mActivity == null) return null;
-        if (mActivity.getActivityTab() == null) return null;
-        return mActivity.getActivityTab().getContentView();
+        Tab tab = mActivity.getActivityTab();
+        if (tab == null) return null;
+        return tab.getContentView();
+    }
+
+    /**
+     * Shorthand to check whether there is a valid {@link LayoutManager} for the current activity.
+     * If there isn't (e.g. before initialization or after destruction), return null.
+     * @return {@code null} or a {@link LayoutManager}.
+     */
+    private @Nullable LayoutManager getLayoutManager() {
+        if (mActivity == null) return null;
+        CompositorViewHolder compositorViewHolder = mActivity.getCompositorViewHolder();
+        if (compositorViewHolder == null) return null;
+        return compositorViewHolder.getLayoutManager();
     }
 
     private AccessoryState getOrCreateAccessoryState(Tab tab) {

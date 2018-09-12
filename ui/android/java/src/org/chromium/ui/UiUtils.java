@@ -19,6 +19,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -326,7 +327,10 @@ public class UiUtils {
         if (!navControlsOnSide) {
             // When available, get the root view insets.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                bottomMargin -= rootView.getRootWindowInsets().getStableInsetBottom();
+                WindowInsets insets = rootView.getRootWindowInsets();
+                if (insets != null) { // Either not supported or the rootView isn't attached.
+                    bottomMargin -= insets.getStableInsetBottom();
+                }
             } else {
                 // In the event we couldn't get the bottom nav height, use a best guess of the
                 // keyboard height. In certain cases this also means including the height of the
