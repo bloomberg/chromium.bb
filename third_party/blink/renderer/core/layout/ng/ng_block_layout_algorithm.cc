@@ -356,16 +356,28 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style()) +
                        ComputeIntrinsicPadding(ConstraintSpace(), Node());
   border_padding_ = borders + padding;
+  NGLogicalSize border_box_size = CalculateBorderBoxSize(
+      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
+
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
-
-  NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
-
   child_available_size_ =
       CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
+
+  // When the content box is smaller than the scrollbar, clamp the scrollbar.
+  if (UNLIKELY(!child_available_size_.inline_size && scrollbars.InlineSum() &&
+               ClampScrollbarToContentBox(
+                   &scrollbars,
+                   border_box_size.inline_size - border_padding_.InlineSum()) &&
+               !ConstraintSpace().IsAnonymous())) {
+    // Re-compute dependent values if scrollbar size was clamped.
+    border_scrollbar_padding_ = border_padding_ + scrollbars;
+    child_available_size_ =
+        CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
+  }
+
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), child_available_size_);
 

@@ -233,6 +233,14 @@ CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                          LayoutUnit min,
                                          LayoutUnit max);
 
+// Clamp the inline size of the scrollbar, unless it's larger than the inline
+// size of the content box, in which case we'll return that instead. Scrollbar
+// handling is quite bad in such situations, and this method here is just to
+// make sure that left-hand scrollbars don't mess up scrollWidth. For the full
+// story, visit http://crbug.com/724255.
+bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
+                                LayoutUnit content_box_inline_size);
+
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node);
