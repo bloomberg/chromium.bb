@@ -1020,6 +1020,19 @@ public class LayoutTab implements ChromeAnimation.Animatable {
                 }
             };
 
+    public static final FloatProperty<LayoutTab> SATURATION =
+            new FloatProperty<LayoutTab>("SATURATION") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setSaturation(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getSaturation();
+                }
+            };
+
     public static final FloatProperty<LayoutTab> SCALE = new FloatProperty<LayoutTab>("SCALE") {
         @Override
         public void setValue(LayoutTab layoutTab, float v) {
@@ -1031,6 +1044,19 @@ public class LayoutTab implements ChromeAnimation.Animatable {
             return layoutTab.getScale();
         }
     };
+
+    public static final FloatProperty<LayoutTab> STATIC_TO_VIEW_BLEND =
+            new FloatProperty<LayoutTab>("STATIC_TO_VIEW_BLEND") {
+                @Override
+                public void setValue(LayoutTab layoutTab, float v) {
+                    layoutTab.setStaticToViewBlend(v);
+                }
+
+                @Override
+                public Float get(LayoutTab layoutTab) {
+                    return layoutTab.getStaticToViewBlend();
+                }
+            };
 
     public static final FloatProperty<LayoutTab> X = new FloatProperty<LayoutTab>("X") {
         @Override
