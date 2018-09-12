@@ -24,7 +24,7 @@ if with_libkms
   exynos_fimg2d_test = executable(
     'exynos_fimg2d_test',
     files('exynos_fimg2d_test.c'),
-    c_args : warn_c_args,
+    c_args : libdrm_c_args,
     include_directories : [inc_root, inc_drm, inc_exynos,
                            include_directories('../../libkms')],
     link_with : [libdrm, libkms, libdrm_exynos],
@@ -36,7 +36,7 @@ endif
 exynos_fimg2d_perf = executable(
   'exynos_fimg2d_perf',
   files('exynos_fimg2d_perf.c'),
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   include_directories : [inc_root, inc_drm, inc_exynos],
   link_with : [libdrm, libdrm_exynos],
   dependencies : dep_threads,
@@ -46,7 +46,7 @@ exynos_fimg2d_perf = executable(
 exynos_fimg2d_event = executable(
   'exynos_fimg2d_event',
   files('exynos_fimg2d_event.c'),
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   include_directories : [inc_root, inc_drm, inc_exynos],
   link_with : [libdrm, libdrm_exynos],
   dependencies : dep_threads,

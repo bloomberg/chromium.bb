@@ -22,6 +22,6 @@ openclose = executable(
   'openclose',
   files('openclose.c'),
   include_directories : [inc_root, inc_drm, include_directories('../../tegra')],
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   link_with : [libdrm, libdrm_tegra],
 )

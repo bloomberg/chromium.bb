@@ -24,7 +24,7 @@ threaded = executable(
   dependencies : [dep_dl, dep_threads],
   include_directories : [inc_root, inc_drm, include_directories('../../nouveau')],
   link_with : [libdrm, libdrm_nouveau],
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )
 
 test('threaded', threaded)

@@ -31,7 +31,7 @@ libdrm_amdgpu = shared_library(
     config_file,
   ],
   c_args : [
-    warn_c_args,
+    libdrm_c_args,
     '-DAMDGPU_ASIC_ID_TABLE="@0@"'.format(join_paths(datadir_amdgpu, 'amdgpu.ids')),
   ],
   include_directories : [inc_root, inc_drm],

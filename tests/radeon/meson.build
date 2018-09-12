@@ -23,5 +23,5 @@ radeon_ttm = executable(
   files('rbo.c', 'radeon_ttm.c'),
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )

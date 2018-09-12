@@ -44,7 +44,7 @@ endif
 libkms = shared_library(
   'kms',
   [files_libkms, config_file],
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   include_directories : libkms_include,
   link_with : libdrm,
   version : '1.0.0',

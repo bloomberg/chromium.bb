@@ -211,6 +211,9 @@ foreach a : ['unused-parameter', 'attributes', 'long-long',
   endif
 endforeach
 
+# all c args:
+libdrm_c_args = warn_c_args + ['-fvisibility=hidden']
+
 
 dep_pciaccess = dependency('pciaccess', version : '>= 0.10', required : with_intel)
 dep_cunit = dependency('cunit', version : '>= 2.1', required : false)
@@ -286,7 +289,7 @@ libdrm = shared_library(
    ),
    config_file,
   ],
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   dependencies : [dep_valgrind, dep_rt, dep_m],
   include_directories : inc_drm,
   version : '2.4.0',

@@ -42,7 +42,7 @@ endif
 libdrm_freedreno = shared_library(
   'drm_freedreno',
   [files_freedreno, config_file],
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   include_directories : [inc_root, inc_drm],
   dependencies : [dep_valgrind, dep_pthread_stubs, dep_rt, dep_atomic_ops],
   link_with : libdrm,

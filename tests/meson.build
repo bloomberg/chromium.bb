@@ -53,7 +53,7 @@ drmsl = executable(
   files('drmsl.c'),
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )
 
 hash = executable(
@@ -61,7 +61,7 @@ hash = executable(
   files('hash.c'),
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )
 
 random = executable(
@@ -69,7 +69,7 @@ random = executable(
   files('random.c'),
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )
 
 drmdevice = executable(
@@ -77,7 +77,7 @@ drmdevice = executable(
   files('drmdevice.c'),
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
 )
 
 test('random', random, timeout : 240)

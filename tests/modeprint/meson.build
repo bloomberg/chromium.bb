@@ -21,7 +21,7 @@
 modeprint = executable(
   'modeprint',
   files('modeprint.c'),
-  c_args : warn_c_args,
+  c_args : libdrm_c_args,
   include_directories : [inc_root, inc_tests, inc_drm],
   link_with : libdrm,
   dependencies : dep_threads,
