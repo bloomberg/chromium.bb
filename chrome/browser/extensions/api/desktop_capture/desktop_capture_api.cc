@@ -19,11 +19,14 @@ namespace extensions {
 
 namespace {
 
-const char kNoTabIdError[] = "targetTab doesn't have id field set.";
-const char kNoUrlError[] = "targetTab doesn't have URL field set.";
-const char kInvalidOriginError[] = "targetTab.url is not a valid URL.";
-const char kInvalidTabIdError[] = "Invalid tab specified.";
-const char kTabUrlNotSecure[] =
+const char kDesktopCaptureApiNoTabIdError[] =
+    "targetTab doesn't have id field set.";
+const char kDesktopCaptureApiNoUrlError[] =
+    "targetTab doesn't have URL field set.";
+const char kDesktopCaptureApiInvalidOriginError[] =
+    "targetTab.url is not a valid URL.";
+const char kDesktopCaptureApiInvalidTabIdError[] = "Invalid tab specified.";
+const char kDesktopCaptureApiTabUrlNotSecure[] =
     "URL scheme for the specified tab is not secure.";
 }  // namespace
 
@@ -55,20 +58,20 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   GURL origin;
   if (params->target_tab) {
     if (!params->target_tab->url) {
-      error_ = kNoUrlError;
+      error_ = kDesktopCaptureApiNoUrlError;
       return false;
     }
     origin = GURL(*(params->target_tab->url)).GetOrigin();
 
     if (!origin.is_valid()) {
-      error_ = kInvalidOriginError;
+      error_ = kDesktopCaptureApiInvalidOriginError;
       return false;
     }
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             ::switches::kAllowHttpScreenCapture) &&
         !content::IsOriginSecure(origin)) {
-      error_ = kTabUrlNotSecure;
+      error_ = kDesktopCaptureApiTabUrlNotSecure;
       return false;
     }
     target_name = base::UTF8ToUTF16(content::IsOriginSecure(origin) ?
@@ -76,13 +79,13 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
 
     if (!params->target_tab->id ||
         *params->target_tab->id == api::tabs::TAB_ID_NONE) {
-      error_ = kNoTabIdError;
+      error_ = kDesktopCaptureApiNoTabIdError;
       return false;
     }
 
     if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id), GetProfile(),
                                       true, NULL, NULL, &web_contents, NULL)) {
-      error_ = kInvalidTabIdError;
+      error_ = kDesktopCaptureApiInvalidTabIdError;
       return false;
     }
     DCHECK(web_contents);
