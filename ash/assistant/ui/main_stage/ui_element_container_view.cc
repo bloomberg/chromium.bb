@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 
+#include <string>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_response.h"
@@ -363,6 +365,11 @@ void UiElementContainerView::OnAllUiElementsAdded() {
                 kUiElementAnimationFadeInDelay),
             CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
   }
+
+  // Let screen reader read the query result.
+  // NOTE: this won't read webview result, which will be triggered with HTML
+  // ARIA.
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 bool UiElementContainerView::OnAllUiElementsExitAnimationEnded(
