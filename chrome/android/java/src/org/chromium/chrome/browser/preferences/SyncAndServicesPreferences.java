@@ -472,7 +472,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     /** Enables sync if any of the data types is selected, otherwise disables sync. */
     private void updateSyncStateFromSelectedModelTypes() {
-        boolean shouldEnableSync = mUseSyncAndAllServices.isChecked()
+        boolean shouldEnableSync = UnifiedConsentServiceBridge.isUnifiedConsentGiven()
                 || !getSelectedModelTypes().isEmpty() || !canDisableSync();
         if (mIsSyncEnabled == shouldEnableSync) return;
         mIsSyncEnabled = shouldEnableSync;
@@ -525,7 +525,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         updateSyncStateFromSelectedModelTypes();
         if (!mIsSyncEnabled) return;
 
-        boolean syncEverything = mUseSyncAndAllServices.isChecked();
+        boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
         mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController = InvalidationController.get();
@@ -674,7 +674,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      * sync being turned on and the engine initialization completing.
      */
     private void updateDataTypeState() {
-        boolean syncEverything = mUseSyncAndAllServices.isChecked();
+        boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
         boolean passwordSyncConfigurable = mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isCryptographerReady();
         boolean hasCustomPassphrase = mProfileSyncService.isEngineInitialized()
