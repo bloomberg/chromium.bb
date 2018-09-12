@@ -133,34 +133,131 @@ void ClientResourceProvider::PrepareSendToParent(
 }
 
 void ClientResourceProvider::ReceiveReturnsFromParent(
-    const std::vector<ReturnedResource>& resources) {
+    std::vector<ReturnedResource> resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  for (const ReturnedResource& returned : resources) {
-    ResourceId local_id = returned.id;
+  // |imported_resources_| is a set sorted by id, so if we sort the incoming
+  // |resources| list by id also, we can walk through both structures in order,
+  // replacing  things to be removed from imported_resources_ with things that
+  // we want to keep, making the removal of all items O(N+MlogM) instead of
+  // O(N*M). This algorithm is modelled after std::remove_if() but with a
+  // parallel walk through |resources| instead of an O(logM) lookup into
+  // |resources| for each step.
+  std::sort(resources.begin(), resources.end(),
+            [](const ReturnedResource& a, const ReturnedResource& b) {
+              return a.id < b.id;
+            });
 
-    auto import_it = imported_resources_.find(local_id);
-    DCHECK(import_it != imported_resources_.end());
-    ImportedResource& imported = import_it->second;
+  auto returned_it = resources.begin();
+  auto returned_end = resources.end();
+  auto imported_keep_end_it = imported_resources_.begin();
+  auto imported_compare_it = imported_resources_.begin();
+  auto imported_end = imported_resources_.end();
+
+  std::vector<base::OnceClosure> release_callbacks;
+  release_callbacks.reserve(resources.size());
+
+  while (imported_compare_it != imported_end) {
+    if (returned_it == returned_end) {
+      // Nothing else to remove from |imported_resources_|.
+      if (imported_keep_end_it == imported_compare_it) {
+        // We didn't remove anything, so we're done.
+        break;
+      }
+      // If something was removed, we need to shift everything into the empty
+      // space that was made.
+      *imported_keep_end_it = std::move(*imported_compare_it);
+      ++imported_keep_end_it;
+      ++imported_compare_it;
+      continue;
+    }
+
+    const ResourceId returned_resource_id = returned_it->id;
+    const ResourceId imported_resource_id = imported_compare_it->first;
+
+    if (returned_resource_id != imported_resource_id) {
+      // They're both sorted, and everything being returned should already
+      // be in the imported list. So we should be able to walk through the
+      // resources list in order, and find each id in both sets when present.
+      // That means if it's not matching, we should be above it in the sorted
+      // order of the |imported_resources_|, allowing us to get to it by
+      // continuing to traverse |imported_resources_|.
+      DCHECK_GT(returned_resource_id, imported_resource_id);
+      // This means we want to keep the resource at |imported_compare_it|. So go
+      // to the next. If we removed anything previously and made empty space,
+      // fill it as we move.
+      if (imported_keep_end_it != imported_compare_it)
+        *imported_keep_end_it = std::move(*imported_compare_it);
+      ++imported_keep_end_it;
+      ++imported_compare_it;
+      continue;
+    }
+
+    const ReturnedResource& returned = *returned_it;
+    ImportedResource& imported = imported_compare_it->second;
 
     DCHECK_GE(imported.exported_count, returned.count);
     imported.exported_count -= returned.count;
     imported.returned_lost |= returned.lost;
 
-    if (imported.exported_count)
+    if (imported.exported_count) {
+      // Can't remove the imported yet so go to the next, looking for the next
+      // returned resource.
+      ++returned_it;
+      // The same ResourceId may appear multiple times (in a row) in the
+      // returned set. In that case, we do not want to increment the iterators
+      // in |imported_resources_| yet. So we don't increment them here, and let
+      // the next iteration of the loop do so.
       continue;
+    }
 
+    // Save the sync token only when the exported count is going to 0. Or IOW
+    // drop all by the last returned sync token.
     if (returned.sync_token.HasData()) {
       DCHECK(!imported.resource.is_software);
       imported.returned_sync_token = returned.sync_token;
     }
 
-    if (imported.marked_for_deletion) {
-      imported.release_callback->Run(imported.returned_sync_token,
-                                     imported.returned_lost);
-      imported_resources_.erase(import_it);
+    if (!imported.marked_for_deletion) {
+      // Not going to remove the imported yet so go to the next, looking for the
+      // next returned resource.
+      ++returned_it;
+      // If we removed anything previously and made empty space, fill it as we
+      // move.
+      if (imported_keep_end_it != imported_compare_it)
+        *imported_keep_end_it = std::move(*imported_compare_it);
+      ++imported_keep_end_it;
+      ++imported_compare_it;
+      continue;
     }
+
+    // Save the ReleaseCallback to run after iterating through internal data
+    // structures, in case it calls back into this class.
+    auto run_callback = [](std::unique_ptr<SingleReleaseCallback> cb,
+                           const gpu::SyncToken& sync_token, bool lost) {
+      cb->Run(sync_token, lost);
+      // |cb| is destroyed when leaving scope.
+    };
+    release_callbacks.push_back(
+        base::BindOnce(run_callback, base::Passed(&imported.release_callback),
+                       imported.returned_sync_token, imported.returned_lost));
+    // We don't want to keep this resource, so we leave |imported_keep_end_it|
+    // pointing to it (since it points past the end of what we're keeping). We
+    // do move |imported_compare_it| in order to move on to the next resource.
+    ++imported_compare_it;
+    // The imported iterator is pointing at the next element already, so no need
+    // to increment it, and we can move on to looking for the next returned
+    // resource.
+    ++returned_it;
   }
+
+  // Drop anything that was moved after the |imported_end| iterator in a single
+  // O(N) operation.
+  if (imported_keep_end_it != imported_compare_it)
+    imported_resources_.erase(imported_keep_end_it, imported_resources_.end());
+
+  for (auto& cb : release_callbacks)
+    std::move(cb).Run();
 }
 
 ResourceId ClientResourceProvider::ImportResource(
@@ -188,21 +285,30 @@ void ClientResourceProvider::RemoveImportedResource(ResourceId id) {
 }
 
 void ClientResourceProvider::ReleaseAllExportedResources(bool lose) {
-  std::vector<ResourceId> to_remove;
-  for (auto& pair : imported_resources_) {
-    ImportedResource& imported = pair.second;
-    if (!imported.exported_count)
-      continue;
-    imported.exported_count = 0;
-    imported.returned_lost |= lose;
-    if (imported.marked_for_deletion) {
-      imported.release_callback->Run(imported.returned_sync_token,
-                                     imported.returned_lost);
-      to_remove.push_back(pair.first);
-    }
-  }
-  for (ResourceId id : to_remove)
-    imported_resources_.erase(id);
+  auto release_and_remove =
+      [lose](std::pair<ResourceId, ImportedResource>& pair) {
+        ImportedResource& imported = pair.second;
+        if (!imported.exported_count) {
+          // Not exported, not up for consideration to be returned here.
+          return false;
+        }
+        imported.exported_count = 0;
+        imported.returned_lost |= lose;
+        if (!imported.marked_for_deletion) {
+          // Was exported, but not removed by the client, so don't return it
+          // yet.
+          return false;
+        }
+
+        imported.release_callback->Run(imported.returned_sync_token,
+                                       imported.returned_lost);
+        // Was exported and removed by the client, so return it now.
+        return true;
+      };
+
+  // This will run |release_and_remove| on each element of |imported_resources_|
+  // and drop any resources from the set that it requests.
+  base::EraseIf(imported_resources_, release_and_remove);
 }
 
 void ClientResourceProvider::ShutdownAndReleaseAllResources() {
