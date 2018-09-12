@@ -210,6 +210,9 @@ SUSPECT_REASONS = {
     SUSPECT_REASON_UNKNOWN: 6,
 }
 
+# Ts-mon related constants
+TSMON_METRIC_FIELDS = '/tmp/ts_mon_fields.txt'
+
 # Monarch metric names
 MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'

@@ -15,11 +15,13 @@ from __future__ import print_function
 import collections
 import contextlib
 import datetime
+import json
 import Queue
 import ssl
 from functools import wraps
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import constants
 
 try:
   from infra_libs import ts_mon
@@ -91,6 +93,20 @@ class ProxyMetric(object):
             self.metric)
 
     return enqueue
+
+
+def SetupMetricFields(fields=None, append=False):
+  """Writes out common ts_mon metric fields to a file for all metrics.
+
+  Args:
+    fields: Dictionary containing the common metric fields to write.
+    append: Determines whether to write a new file or append to existing.
+  """
+  fm = 'a' if append else 'w'
+
+  with open(constants.TSMON_METRIC_FIELDS, fm) as f:
+    json.dump(fields, f)
+    f.write("\n")
 
 
 def _Indirect(fn):
