@@ -25,6 +25,10 @@
 #error "This file requires ARC support."
 #endif
 
+using base::TaskShutdownBehavior;
+using base::TaskTraits;
+using web::WebThread;
+
 @interface CRWCertVerificationController () {
   // Used to remember user exceptions to invalid certs.
   scoped_refptr<web::CertificatePolicyCache> _certPolicyCache;
@@ -66,7 +70,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   DCHECK(browserState);
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   self = [super init];
   if (self) {
     _certPolicyCache =
@@ -78,12 +82,12 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 - (void)decideLoadPolicyForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                             host:(NSString*)host
                completionHandler:(web::PolicyDecisionHandler)completionHandler {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(completionHandler);
 
   [self verifyTrust:trust
       completionHandler:^(SecTrustResultType trustResult) {
-        DCHECK_CURRENTLY_ON(web::WebThread::UI);
+        DCHECK_CURRENTLY_ON(WebThread::UI);
         if (trustResult == kSecTrustResultProceed ||
             trustResult == kSecTrustResultUnspecified) {
           completionHandler(web::CERT_ACCEPT_POLICY_ALLOW, net::CertStatus());
@@ -99,7 +103,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 - (void)querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                           host:(NSString*)host
              completionHandler:(web::StatusQueryHandler)completionHandler {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(completionHandler);
 
   [self verifyTrust:trust
@@ -116,7 +120,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 - (void)allowCert:(scoped_refptr<net::X509Certificate>)cert
           forHost:(NSString*)host
            status:(net::CertStatus)status {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   // Store user decisions with the leaf cert, ignoring any intermediates.
   // This is because WKWebView returns the verified certificate chain in
   // |webView:didReceiveAuthenticationChallenge:completionHandler:|,
@@ -128,7 +132,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::IO}, base::BindOnce(^{
                              _certPolicyCache->AllowCertForHost(
                                  cert.get(), base::SysNSStringToUTF8(host),
                                  status);
@@ -163,10 +167,11 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                            serverTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
                                   host:(NSString*)host
                      completionHandler:(web::PolicyDecisionHandler)handler {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(handler);
+  TaskTraits traits{WebThread::IO, TaskShutdownBehavior::BLOCK_SHUTDOWN};
   base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+      FROM_HERE, traits, base::BindOnce(^{
         // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:| can
         // only be called on IO thread.
         net::CertStatus certStatus =
@@ -178,8 +183,8 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                                        serverTrust:trust.get()
                                               host:host];
 
-        base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                                 base::BindOnce(^{
+        TaskTraits traits{WebThread::UI, TaskShutdownBehavior::BLOCK_SHUTDOWN};
+        base::PostTaskWithTraits(FROM_HERE, traits, base::BindOnce(^{
                                    handler(policy, certStatus);
                                  }));
       }));
@@ -187,12 +192,12 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
 
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
     completionHandler:(void (^)(SecTrustResultType))completionHandler {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(completionHandler);
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
   base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskShutdownBehavior::BLOCK_SHUTDOWN}, base::BindOnce(^{
+      FROM_HERE, {TaskShutdownBehavior::BLOCK_SHUTDOWN}, base::BindOnce(^{
         SecTrustResultType trustResult = kSecTrustResultInvalid;
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;
@@ -210,7 +215,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                       certStatus:(net::CertStatus)certStatus
                      serverTrust:(SecTrustRef)trust
                             host:(NSString*)host {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
+  DCHECK_CURRENTLY_ON(WebThread::IO);
   DCHECK_NE(web::SECURITY_STYLE_AUTHENTICATED,
             web::GetSecurityStyleFromTrustResult(trustResult));
 
