@@ -293,11 +293,7 @@ void GpuHostImpl::InitOzone() {
   // https://crbug.com/608839
   // If the OzonePlatform is not created yet, defer the callback until
   // OzonePlatform instance is created.
-  bool using_mojo = true;
-#if defined(OS_CHROMEOS)
-  using_mojo = features::IsOzoneDrmMojo();
-#endif
-  if (using_mojo) {
+  if (features::IsOzoneDrmMojo()) {
     // TODO(rjkroege): Remove the legacy IPC code paths when no longer
     // necessary. https://crbug.com/806092
     auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,
