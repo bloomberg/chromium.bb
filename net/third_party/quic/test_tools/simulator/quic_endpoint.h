@@ -89,6 +89,7 @@ class QuicEndpoint : public Endpoint,
   void OnBlockedFrame(const QuicBlockedFrame& frame) override {}
   void OnRstStream(const QuicRstStreamFrame& frame) override {}
   void OnGoAway(const QuicGoAwayFrame& frame) override {}
+  void OnMessageReceived(QuicStringPiece message) override {}
   void OnConnectionClosed(QuicErrorCode error,
                           const std::string& error_details,
                           ConnectionCloseSource source) override {}

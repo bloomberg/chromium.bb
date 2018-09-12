@@ -58,6 +58,7 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override {}
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -205,6 +206,10 @@ bool ChloFramerVisitor::OnNewConnectionIdFrame(
 }
 
 bool ChloFramerVisitor::OnPaddingFrame(const QuicPaddingFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnMessageFrame(const QuicMessageFrame& frame) {
   return true;
 }
 

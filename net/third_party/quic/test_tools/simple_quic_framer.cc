@@ -156,6 +156,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnMessageFrame(const QuicMessageFrame& frame) override {
+    message_frames_.push_back(frame);
+    return true;
+  }
+
   void OnPacketComplete() override {}
 
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
@@ -197,6 +202,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return stop_waiting_frames_;
   }
   const std::vector<QuicPingFrame>& ping_frames() const { return ping_frames_; }
+  const std::vector<QuicMessageFrame>& message_frames() const {
+    return message_frames_;
+  }
   const std::vector<QuicWindowUpdateFrame>& window_update_frames() const {
     return window_update_frames_;
   }
@@ -231,6 +239,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicWindowUpdateFrame> window_update_frames_;
   std::vector<QuicBlockedFrame> blocked_frames_;
   std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
+  std::vector<QuicMessageFrame> message_frames_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
 };
 
@@ -291,6 +300,10 @@ const std::vector<QuicStopWaitingFrame>& SimpleQuicFramer::stop_waiting_frames()
 
 const std::vector<QuicPingFrame>& SimpleQuicFramer::ping_frames() const {
   return visitor_->ping_frames();
+}
+
+const std::vector<QuicMessageFrame>& SimpleQuicFramer::message_frames() const {
+  return visitor_->message_frames();
 }
 
 const std::vector<QuicWindowUpdateFrame>&

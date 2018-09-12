@@ -248,6 +248,12 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnMessageFrame(const QuicMessageFrame& frame) override {
+    ++frame_count_;
+    message_frames_.push_back(QuicMakeUnique<QuicMessageFrame>(frame));
+    return true;
+  }
+
   void OnPacketComplete() override { ++complete_packets_; }
 
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
@@ -339,6 +345,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   std::vector<std::unique_ptr<QuicStopWaitingFrame>> stop_waiting_frames_;
   std::vector<std::unique_ptr<QuicPaddingFrame>> padding_frames_;
   std::vector<std::unique_ptr<QuicPingFrame>> ping_frames_;
+  std::vector<std::unique_ptr<QuicMessageFrame>> message_frames_;
   QuicRstStreamFrame rst_stream_frame_;
   QuicConnectionCloseFrame connection_close_frame_;
   QuicApplicationCloseFrame application_close_frame_;
@@ -4545,6 +4552,56 @@ TEST_P(QuicFramerTest, PingFrame) {
   // No need to check the PING frame boundaries because it has no payload.
 }
 
+TEST_P(QuicFramerTest, MessageFrame) {
+  if (framer_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  // clang-format off
+  PacketFragments packet45 = {
+       // type (short header, 4 byte packet number)
+       {"",
+        {0x32}},
+       // connection_id
+       {"",
+        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+       // packet number
+       {"",
+        {0x12, 0x34, 0x56, 0x78}},
+       // message frame type.
+       {"",
+        { 0x21 }},
+       // message length
+       {"Unable to read message length",
+        {0x07}},
+       // message data
+       {"Unable to read message data",
+        {'m', 'e', 's', 's', 'a', 'g', 'e'}},
+        // message frame no length.
+        {"",
+         { 0x20 }},
+        // message data
+        {{},
+         {'m', 'e', 's', 's', 'a', 'g', 'e', '2'}},
+   };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet45));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  ASSERT_EQ(2u, visitor_.message_frames_.size());
+  EXPECT_EQ(7u, visitor_.message_frames_[0]->message_data.length());
+  EXPECT_EQ(8u, visitor_.message_frames_[1]->message_data.length());
+
+  CheckFramingBoundaries(packet45, QUIC_INVALID_MESSAGE_DATA);
+}
+
 TEST_P(QuicFramerTest, PublicResetPacketV33) {
   // clang-format off
   PacketFragments packet = {
@@ -7715,6 +7772,50 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
       "constructed packet", data->data(), data->length(), AsChars(p),
       framer_.transport_version() > QUIC_VERSION_43 ? QUIC_ARRAYSIZE(packet44)
                                                     : QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildMessagePacket) {
+  if (framer_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicMessageFrame frame(1, "message");
+  QuicMessageFrame frame2(2, "message2");
+  QuicFrames frames = {QuicFrame(&frame), QuicFrame(&frame2)};
+
+  // clang-format off
+  unsigned char packet45[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (message frame)
+    0x21,
+    // Length
+    0x07,
+    // Message Data
+    'm', 'e', 's', 's', 'a', 'g', 'e',
+    // frame type (message frame no length)
+    0x20,
+    // Message Data
+    'm', 'e', 's', 's', 'a', 'g', 'e', '2'
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet45),
+                                      QUIC_ARRAYSIZE(packet45));
 }
 
 // Test that the connectivity probing packet is serialized correctly as a

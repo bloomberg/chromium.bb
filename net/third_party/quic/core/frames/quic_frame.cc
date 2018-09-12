@@ -66,6 +66,9 @@ QuicFrame::QuicFrame(QuicPathChallengeFrame* frame)
 QuicFrame::QuicFrame(QuicStopSendingFrame* frame)
     : type(STOP_SENDING_FRAME), stop_sending_frame(frame) {}
 
+QuicFrame::QuicFrame(QuicMessageFrame* frame)
+    : type(MESSAGE_FRAME), message_frame(frame) {}
+
 void DeleteFrames(QuicFrames* frames) {
   for (QuicFrame& frame : *frames) {
     DeleteFrame(&frame);
@@ -118,6 +121,9 @@ void DeleteFrame(QuicFrame* frame) {
       break;
     case PATH_RESPONSE_FRAME:
       delete frame->path_response_frame;
+      break;
+    case MESSAGE_FRAME:
+      delete frame->message_frame;
       break;
 
     case NUM_FRAME_TYPES:
@@ -294,6 +300,9 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case STOP_SENDING_FRAME:
       os << "type { STOP_SENDING } " << *(frame.stop_sending_frame);
+      break;
+    case MESSAGE_FRAME:
+      os << "type { MESSAGE_FRAME }" << *(frame.message_frame);
       break;
     default: {
       QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;

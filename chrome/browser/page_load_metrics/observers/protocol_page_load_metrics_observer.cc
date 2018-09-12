@@ -66,6 +66,7 @@ void ProtocolPageLoadMetricsObserver::OnParseStart(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.ParseTiming.NavigationToParseStart",
@@ -123,6 +124,7 @@ void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.PaintTiming."
@@ -186,6 +188,7 @@ void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.Experimental.PaintTiming."
@@ -239,6 +242,7 @@ void ProtocolPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.DocumentTiming."
@@ -287,6 +291,7 @@ void ProtocolPageLoadMetricsObserver::OnLoadEventStart(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.DocumentTiming."

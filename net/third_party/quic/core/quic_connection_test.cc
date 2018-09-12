@@ -419,6 +419,10 @@ class TestPacketWriter : public QuicPacketWriter {
     return framer_.ping_frames();
   }
 
+  const std::vector<QuicMessageFrame>& message_frames() const {
+    return framer_.message_frames();
+  }
+
   const std::vector<QuicWindowUpdateFrame>& window_update_frames() const {
     return framer_.window_update_frames();
   }
@@ -7056,6 +7060,38 @@ TEST_P(QuicConnectionTest, WriteBlockedWithInvalidAck) {
   // This causes connection to be closed because packet 1 has not been sent yet.
   QuicAckFrame frame = InitAckFrame(1);
   ProcessAckPacket(1, &frame);
+}
+
+TEST_P(QuicConnectionTest, SendMessage) {
+  if (connection_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  QuicString message(connection_.GetLargestMessagePayload() * 2, 'a');
+  QuicStringPiece message_data(message);
+  {
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendStreamData3();
+    // Send a message which cannot fit into current open packet, and 2 packets
+    // get sent, one contains stream frame, and the other only contains the
+    // message frame.
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+    EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
+              connection_.SendMessage(
+                  1, QuicStringPiece(message_data.data(),
+                                     connection_.GetLargestMessagePayload())));
+  }
+  // Fail to send a message if connection is congestion control blocked.
+  EXPECT_CALL(*send_algorithm_, CanSend(_)).WillOnce(Return(false));
+  EXPECT_EQ(MESSAGE_STATUS_BLOCKED, connection_.SendMessage(2, "message"));
+
+  // Always fail to send a message which cannot fit into one packet.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  EXPECT_EQ(
+      MESSAGE_STATUS_TOO_LARGE,
+      connection_.SendMessage(
+          3, QuicStringPiece(message_data.data(),
+                             connection_.GetLargestMessagePayload() + 1)));
 }
 
 }  // namespace

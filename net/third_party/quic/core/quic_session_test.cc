@@ -1428,6 +1428,47 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
   session_.OnCanWrite();
 }
 
+TEST_P(QuicSessionTestServer, SendMessage) {
+  // Cannot send message when encryption is not established.
+  EXPECT_FALSE(session_.IsCryptoHandshakeConfirmed());
+  EXPECT_EQ(MessageResult(MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0),
+            session_.SendMessage(""));
+
+  // Finish handshake.
+  CryptoHandshakeMessage handshake_message;
+  session_.GetMutableCryptoStream()->OnHandshakeMessage(handshake_message);
+  EXPECT_TRUE(session_.IsCryptoHandshakeConfirmed());
+
+  QuicStringPiece message;
+  QuicMessageFrame frame(1, message);
+  EXPECT_CALL(*connection_, SendMessage(1, _))
+      .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
+  EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
+            session_.SendMessage(message));
+  // Verify message_id increases.
+  EXPECT_CALL(*connection_, SendMessage(2, _))
+      .WillOnce(Return(MESSAGE_STATUS_TOO_LARGE));
+  EXPECT_EQ(MessageResult(MESSAGE_STATUS_TOO_LARGE, 0),
+            session_.SendMessage(message));
+  // Verify unsent message does not consume a message_id.
+  EXPECT_CALL(*connection_, SendMessage(2, _))
+      .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
+  QuicMessageFrame frame2(2, message);
+  EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 2),
+            session_.SendMessage(message));
+
+  EXPECT_FALSE(session_.IsFrameOutstanding(QuicFrame(&frame)));
+  EXPECT_FALSE(session_.IsFrameOutstanding(QuicFrame(&frame2)));
+
+  // Lost message 2.
+  session_.OnMessageLost(2);
+  EXPECT_FALSE(session_.IsFrameOutstanding(QuicFrame(&frame2)));
+
+  // message 1 gets acked.
+  session_.OnMessageAcked(1);
+  EXPECT_FALSE(session_.IsFrameOutstanding(QuicFrame(&frame)));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic
