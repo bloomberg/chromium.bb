@@ -17,18 +17,12 @@ namespace tracing {
 // to unwind stacks based on EHABI section in Android libraries and using the
 // custom stack unwind information in Chrome. This works on top of
 // base::trace_event::CFIBacktraceAndroid, which unwinds Chrome only stacks.
-// This class does not provide any thread safety guarantees. It is also unsafe
-// to use multiple instances of this class at the same time due to signal
-// handling. So, the client must ensure synchronization between multiple
-// instances of this class.
 class TRACING_EXPORT StackUnwinderAndroid {
  public:
-  StackUnwinderAndroid();
-  ~StackUnwinderAndroid();
+  static StackUnwinderAndroid* GetInstance();
 
   // Initializes the unwinder for current process. It finds all loaded libraries
   // in current process and also initializes CFIBacktraceAndroid, with file IO.
-  // Can be called multiple times, to update the loaded modules.
   void Initialize();
 
   // Unwinds stack frames for current thread and stores the program counters in
@@ -48,9 +42,10 @@ class TRACING_EXPORT StackUnwinderAndroid {
   // process.
   bool IsAddressMapped(uintptr_t pc) const;
 
-  bool is_initialized() const { return is_initialized_; }
-
  private:
+  StackUnwinderAndroid();
+  ~StackUnwinderAndroid();
+
   bool is_initialized_ = false;
 
   // Stores all the memory mapped regions in the current process, including all

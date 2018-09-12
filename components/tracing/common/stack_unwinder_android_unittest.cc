@@ -21,18 +21,14 @@ class StackUnwinderTest : public testing::Test {
   ~StackUnwinderTest() override {}
 
   void SetUp() override {
-    unwinder_.Initialize();
+    StackUnwinderAndroid::GetInstance()->Initialize();
     base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
         ->AllocateCacheForCurrentThread();
   }
 
-  StackUnwinderAndroid* unwinder() { return &unwinder_; }
-
  private:
-  StackUnwinderAndroid unwinder_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   DISALLOW_COPY_AND_ASSIGN(StackUnwinderTest);
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 uintptr_t GetCurrentPC() {
@@ -43,7 +39,8 @@ uintptr_t GetCurrentPC() {
 
 TEST_F(StackUnwinderTest, UnwindCurrentThread) {
   const void* frames[kMaxStackFrames];
-  size_t result = unwinder()->TraceStack(frames, kMaxStackFrames);
+  size_t result =
+      StackUnwinderAndroid::GetInstance()->TraceStack(frames, kMaxStackFrames);
   EXPECT_GT(result, 0u);
 
   // Since we are starting from chrome library function (this), all the unwind
@@ -60,25 +57,25 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
   auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-  auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
+  auto callback = [](base::PlatformThreadId tid,
                      base::WaitableEvent* unwind_finished_event,
                      uintptr_t test_pc) {
     const void* frames[kMaxStackFrames];
-    size_t result = unwinder->TraceStack(tid, frames, kMaxStackFrames);
+    size_t result = StackUnwinderAndroid::GetInstance()->TraceStack(
+        tid, frames, kMaxStackFrames);
     EXPECT_GT(result, 0u);
     for (size_t i = 0; i < result; ++i) {
       uintptr_t addr = reinterpret_cast<uintptr_t>(frames[i]);
-      EXPECT_TRUE(unwinder->IsAddressMapped(addr));
+      EXPECT_TRUE(StackUnwinderAndroid::GetInstance()->IsAddressMapped(addr));
     }
 
     unwind_finished_event->Signal();
   };
 
   // Post task on background thread to unwind the current thread.
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(callback, base::Unretained(unwinder()),
-                                       base::PlatformThread::CurrentId(),
-                                       &unwind_finished_event, GetCurrentPC()));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(callback, base::PlatformThread::CurrentId(),
+                                &unwind_finished_event, GetCurrentPC()));
 
   // While the background thread is trying to unwind make some slow framework
   // calls (malloc) so that the current thread can be stopped in framework

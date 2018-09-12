@@ -58,9 +58,7 @@ class TracingSampleProfilerTest : public testing::Test {
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.
   bool IsStackUnwindingSupported() {
-#if defined(OS_MACOSX) || defined(OS_WIN) && defined(_WIN64) ||     \
-    (defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-     defined(OFFICIAL_BUILD))
+#if defined(OS_MACOSX) || defined(OS_WIN) && defined(_WIN64)
     return true;
 #else
     return false;
