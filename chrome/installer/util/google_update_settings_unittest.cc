@@ -21,8 +21,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -80,11 +78,10 @@ class GoogleUpdateSettingsTest : public testing::Test {
     RegKey key;
     HKEY root = install == SYSTEM_INSTALL ?
         HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
     base::string16 state_key =
         install == SYSTEM_INSTALL
             ? install_static::GetClientStateMediumKeyPath()
-            : chrome->GetStateKey();
+            : install_static::GetClientStateKeyPath();
 
     EXPECT_EQ(ERROR_SUCCESS,
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
@@ -527,8 +524,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsUserInstall) {
   // be a system install.
 
   // No profile count values present yet.
-  const base::string16& state_key = BrowserDistribution::GetDistribution()->
-      GetAppRegistrationData().GetStateKey();
+  base::string16 state_key = install_static::GetClientStateKeyPath();
 
   EXPECT_EQ(ERROR_FILE_NOT_FOUND,
             RegKey().Open(HKEY_CURRENT_USER,

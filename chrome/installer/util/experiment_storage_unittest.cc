@@ -8,7 +8,6 @@
 #include "base/test/test_reg_util_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/experiment.h"
 #include "chrome/installer/util/experiment_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,9 +143,8 @@ TEST_P(ExperimentStorageTest, TestLoadStoreExperiment) {
   // Verify that expeirment state is stored in correct location in registry.
   base::win::RegKey key;
   base::string16 client_state_path(
-      system_level_install_
-          ? install_static::GetClientStateMediumKeyPath()
-          : BrowserDistribution::GetDistribution()->GetStateKey());
+      system_level_install_ ? install_static::GetClientStateMediumKeyPath()
+                            : install_static::GetClientStateKeyPath());
   client_state_path.append(L"\\Retention");
   EXPECT_EQ(ERROR_SUCCESS, key.Open(root(), client_state_path.c_str(),
                                     KEY_QUERY_VALUE | KEY_WOW64_32KEY));
