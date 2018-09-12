@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -70,20 +69,11 @@ struct TestItem {
         "www.google.com/search?q=tractor+supply",
         "google.com/search?q=tractor+supply",
     },
-#if defined(OS_ANDROID)
-    {
-        GURL("https://m.google.ca/search?q=tractor+supply"),
-        "https://m.google.ca/search?q=tractor+supply",
-        "google.ca/search?q=tractor+supply",
-    },
-#else  // !defined(OS_ANDROID)
-    // 'm' is not elided on Desktop.
     {
         GURL("https://m.google.ca/search?q=tractor+supply"),
         "https://m.google.ca/search?q=tractor+supply",
         "m.google.ca/search?q=tractor+supply",
     },
-#endif
 };
 
 }  // namespace

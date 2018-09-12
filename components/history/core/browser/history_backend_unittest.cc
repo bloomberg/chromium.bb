@@ -4241,9 +4241,9 @@ TEST(FormatUrlForRedirectComparisonTest, TestUrlFormatting) {
   EXPECT_EQ(base::ASCIIToUTF16("baz.com/"),
             FormatUrlForRedirectComparison(url2));
 
-  // Tests that the formatter removes repeated trivial subdomains.
+  // Tests that the formatter only removes the first subdomain.
   GURL url3("http://www.www.baz.com/");
-  EXPECT_EQ(base::ASCIIToUTF16("baz.com/"),
+  EXPECT_EQ(base::ASCIIToUTF16("www.baz.com/"),
             FormatUrlForRedirectComparison(url3));
 }
 
