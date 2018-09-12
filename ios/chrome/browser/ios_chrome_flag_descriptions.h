@@ -83,6 +83,10 @@ extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 extern const char kAutofillManualFallbackName[];
 extern const char kAutofillManualFallbackDescription[];
 
+// Title and description for the flag to control if manual fallback is enabled.
+extern const char kAutofillManualFallbackPhaseTwoName[];
+extern const char kAutofillManualFallbackPhaseTwoDescription[];
+
 // Title and description for the flag to control if prefilled value filter
 // profiles.
 extern const char kAutofillShowAllSuggestionsOnPrefilledFormsName[];
