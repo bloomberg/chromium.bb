@@ -208,7 +208,7 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
 void RenderFrameHostManager::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& proceed_time) {
-  bool proceed_to_fire_unload;
+  bool proceed_to_fire_unload = false;
   delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
                                                 &proceed_to_fire_unload);
 
