@@ -140,7 +140,7 @@ class CiceroneClientImpl : public CiceroneClient {
       return;
     }
 
-    constexpr int kCreateLxdContainerTimeoutMs = 15 * 1000;
+    constexpr int kCreateLxdContainerTimeoutMs = 30 * 1000;
     cicerone_proxy_->CallMethod(
         &method_call, kCreateLxdContainerTimeoutMs,
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
@@ -163,7 +163,7 @@ class CiceroneClientImpl : public CiceroneClient {
       return;
     }
 
-    constexpr int kStartLxdContainerTimeoutMs = 25 * 1000;
+    constexpr int kStartLxdContainerTimeoutMs = 60 * 1000;
     cicerone_proxy_->CallMethod(
         &method_call, kStartLxdContainerTimeoutMs,
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
