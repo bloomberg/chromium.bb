@@ -260,8 +260,6 @@ class FidoCableHandshakeHandlerTest : public Test {
     connection_ = connection.get();
     device_ = std::make_unique<FidoCableDevice>(std::move(connection));
 
-    connection_->connection_status_callback() =
-        device_->GetConnectionStatusCallbackForTesting();
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 
@@ -273,8 +271,8 @@ class FidoCableHandshakeHandlerTest : public Test {
   }
 
   void ConnectWithLength(uint16_t length) {
-    EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
-      connection()->connection_status_callback().Run(true);
+    EXPECT_CALL(*connection(), ConnectPtr).WillOnce(Invoke([](auto* callback) {
+      std::move(*callback).Run(true);
     }));
 
     EXPECT_CALL(*connection(), ReadControlPointLengthPtr(_))
