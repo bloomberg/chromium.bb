@@ -936,20 +936,8 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
             entry_definition_list) {
   DCHECK(entry_definition_list);
 
-  auto entries = std::make_unique<base::ListValue>();
-
-  for (const auto& definition : *entry_definition_list) {
-    if (definition.error != base::File::FILE_OK)
-      continue;
-    auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString("fileSystemName", definition.file_system_name);
-    entry->SetString("fileSystemRoot", definition.file_system_root_url);
-    entry->SetString("fileFullPath", "/" + definition.full_path.AsUTF8Unsafe());
-    entry->SetBoolean("fileIsDirectory", definition.is_directory);
-    entries->Append(std::move(entry));
-  }
-
-  Respond(OneArgument(std::move(entries)));
+  Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
+      *entry_definition_list)));
 }
 
 }  // namespace extensions

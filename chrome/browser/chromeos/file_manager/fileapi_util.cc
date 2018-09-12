@@ -553,6 +553,28 @@ void ConvertSelectedFileInfoListToFileChooserFileInfoList(
       context, origin, selected_info_list, callback);
 }
 
+std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(
+    const EntryDefinition& entry_definition) {
+  auto entry = std::make_unique<base::DictionaryValue>();
+  entry->SetString("fileSystemName", entry_definition.file_system_name);
+  entry->SetString("fileSystemRoot", entry_definition.file_system_root_url);
+  entry->SetString(
+      "fileFullPath",
+      base::FilePath("/").Append(entry_definition.full_path).AsUTF8Unsafe());
+  entry->SetBoolean("fileIsDirectory", entry_definition.is_directory);
+  return entry;
+}
+
+std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
+    const EntryDefinitionList& entry_definition_list) {
+  auto entries = std::make_unique<base::ListValue>();
+  for (auto it = entry_definition_list.begin();
+       it != entry_definition_list.end(); ++it) {
+    entries->Append(ConvertEntryDefinitionToValue(*it));
+  }
+  return entries;
+}
+
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& directory_path,

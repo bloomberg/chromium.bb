@@ -392,20 +392,8 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   auto details = std::make_unique<base::DictionaryValue>();
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
-  auto file_entries = std::make_unique<base::ListValue>();
-
-  for (EntryDefinitionList::const_iterator iter =
-           entry_definition_list->begin();
-       iter != entry_definition_list->end();
-       ++iter) {
-    auto file_def = std::make_unique<base::DictionaryValue>();
-    file_def->SetString("fileSystemName", iter->file_system_name);
-    file_def->SetString("fileSystemRoot", iter->file_system_root_url);
-    file_def->SetString("fileFullPath",
-                        "/" + iter->full_path.AsUTF8Unsafe());
-    file_def->SetBoolean("fileIsDirectory", iter->is_directory);
-    file_entries->Append(std::move(file_def));
-  }
+  auto file_entries = file_manager::util::ConvertEntryDefinitionListToListValue(
+      *entry_definition_list);
 
   details->Set("entries", std::move(file_entries));
   event_args->Append(std::move(details));

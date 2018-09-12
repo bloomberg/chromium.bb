@@ -148,6 +148,13 @@ void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     const SelectedFileInfoList& selected_info_list,
     const FileChooserFileInfoListCallback& callback);
 
+// Converts EntryDefinition to something File API stack can understand.
+std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(
+    const EntryDefinition& entry_definition);
+
+std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
+    const EntryDefinitionList& entry_definition_list);
+
 // Checks if a directory exists at |directory_path| absolute path.
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,

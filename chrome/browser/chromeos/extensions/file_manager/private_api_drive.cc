@@ -1107,19 +1107,8 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
     std::unique_ptr<SearchResultInfoList> search_result_info_list,
     std::unique_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_EQ(search_result_info_list->size(), entry_definition_list->size());
-  auto entries = std::make_unique<base::ListValue>();
-
-  // Convert Drive files to something File API stack can understand.
-  for (EntryDefinitionList::const_iterator it = entry_definition_list->begin();
-       it != entry_definition_list->end();
-       ++it) {
-    auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString("fileSystemName", it->file_system_name);
-    entry->SetString("fileSystemRoot", it->file_system_root_url);
-    entry->SetString("fileFullPath", "/" + it->full_path.AsUTF8Unsafe());
-    entry->SetBoolean("fileIsDirectory", it->is_directory);
-    entries->Append(std::move(entry));
-  }
+  auto entries = file_manager::util::ConvertEntryDefinitionListToListValue(
+      *entry_definition_list);
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->Set("entries", std::move(entries));
@@ -1216,16 +1205,8 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
     auto result_dict = std::make_unique<base::DictionaryValue>();
 
     // FileEntry fields.
-    auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString(
-        "fileSystemName", entry_definition_list->at(i).file_system_name);
-    entry->SetString(
-        "fileSystemRoot", entry_definition_list->at(i).file_system_root_url);
-    entry->SetString(
-        "fileFullPath",
-        "/" + entry_definition_list->at(i).full_path.AsUTF8Unsafe());
-    entry->SetBoolean("fileIsDirectory",
-                      entry_definition_list->at(i).is_directory);
+    auto entry = file_manager::util::ConvertEntryDefinitionToValue(
+        entry_definition_list->at(i));
 
     result_dict->Set("entry", std::move(entry));
     result_dict->SetString(
