@@ -975,6 +975,16 @@ class FacebookScrollDesktopStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2016]
 
 
+class FacebookScrollDesktopStory2018(_InfiniteScrollStory):
+  NAME = 'browse:social:facebook_infinite_scroll:2018'
+  URL = 'https://www.facebook.com/shakira'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2018]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithDesktopSite(action_runner, 'facebook3')
+
+
 class FacebookScrollMobileStory(_InfiniteScrollStory):
   NAME = 'browse:social:facebook_infinite_scroll'
   URL = 'https://m.facebook.com/shakira'
@@ -984,6 +994,15 @@ class FacebookScrollMobileStory(_InfiniteScrollStory):
   def _Login(self, action_runner):
     facebook_login.LoginWithMobileSite(action_runner, 'facebook3')
 
+
+class FacebookScrollMobileStory2018(_InfiniteScrollStory):
+  NAME = 'browse:social:facebook_infinite_scroll:2018'
+  URL = 'https://m.facebook.com/shakira'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+  def _Login(self, action_runner):
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook3')
 
 class FlickrDesktopStory(_InfiniteScrollStory):
   NAME = 'browse:media:flickr_infinite_scroll'
