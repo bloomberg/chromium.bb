@@ -101,7 +101,7 @@ class CORE_EXPORT DocumentLoader
 
   ResourceTimingInfo* GetNavigationTimingInfo() const;
 
-  virtual void DetachFromFrame();
+  virtual void DetachFromFrame(bool flush_microtask_queue);
 
   unsigned long MainResourceIdentifier() const;
 

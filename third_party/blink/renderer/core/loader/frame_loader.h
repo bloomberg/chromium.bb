@@ -261,7 +261,8 @@ class CORE_EXPORT FrameLoader final {
 
   void ScheduleCheckCompleted();
 
-  void DetachDocumentLoader(Member<DocumentLoader>&);
+  void DetachDocumentLoader(Member<DocumentLoader>&,
+                            bool flush_microtask_queue = false);
 
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;

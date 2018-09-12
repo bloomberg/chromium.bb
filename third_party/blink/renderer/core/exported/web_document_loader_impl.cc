@@ -129,8 +129,8 @@ WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {
   DCHECK(!extra_data_);
 }
 
-void WebDocumentLoaderImpl::DetachFromFrame() {
-  DocumentLoader::DetachFromFrame();
+void WebDocumentLoaderImpl::DetachFromFrame(bool flush_microtask_queue) {
+  DocumentLoader::DetachFromFrame(flush_microtask_queue);
   extra_data_.reset();
 }
 
