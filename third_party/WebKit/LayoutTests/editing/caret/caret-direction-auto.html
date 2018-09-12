@@ -92,9 +92,8 @@ test(() => {
   assert_less_than(caretPositions[5].x, caretPositions[6].x, '4-5');
   assert_less_than(caretPositions[6].x, caretPositions[7].x, '4-6');
   assert_less_than(caretPositions[7].x, caretPositions[8].x, '4-7');
-  // TODO(editing-dev): Make the assertions below pass.
-  // assert_less_than(caretPositions[8].x, caretPositions[9].x, '4-8');
-  // assert_less_than(caretPositions[9].x, caretPositions[10].x, '4-9');
+  assert_less_than(caretPositions[8].x, caretPositions[9].x, '4-8');
+  assert_less_than(caretPositions[9].x, caretPositions[10].x, '4-9');
   assert_less_than(caretPositions[10].x, caretPositions[11].x, '4-10');
   assert_less_than(caretPositions[11].x, caretPositions[12].x, '4-11');
   assert_less_than(caretPositions[12].x, caretPositions[13].x, '4-12');

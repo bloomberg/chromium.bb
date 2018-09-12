@@ -104,14 +104,12 @@ PositionTemplate<Strategy> UpstreamIgnoringEditingBoundaries(
   return position;
 }
 
-InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
-    InlineBox* inline_box,
-    int caret_offset,
-    UnicodeBidi unicode_bidi) {
+InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox* inline_box,
+                                                          int caret_offset) {
   DCHECK(caret_offset == inline_box->CaretLeftmostOffset() ||
          caret_offset == inline_box->CaretRightmostOffset());
   return BidiAdjustment::AdjustForCaretPositionResolution(
-      InlineBoxPosition(inline_box, caret_offset), unicode_bidi);
+      InlineBoxPosition(inline_box, caret_offset));
 }
 
 // Returns true if |caret_offset| is at edge of |box| based on |affinity|.
@@ -167,8 +165,7 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
 
   if (!inline_box)
     return InlineBoxPosition();
-  return AdjustInlineBoxPositionForTextDirection(
-      inline_box, caret_offset, text_layout_object->Style()->GetUnicodeBidi());
+  return AdjustInlineBoxPositionForTextDirection(inline_box, caret_offset);
 }
 
 InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
@@ -183,8 +180,7 @@ InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
   if ((caret_offset > inline_box->CaretMinOffset() &&
        caret_offset < inline_box->CaretMaxOffset()))
     return InlineBoxPosition(inline_box, caret_offset);
-  return AdjustInlineBoxPositionForTextDirection(
-      inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi());
+  return AdjustInlineBoxPositionForTextDirection(inline_box, caret_offset);
 }
 
 template <typename Strategy>
@@ -295,8 +291,7 @@ InlineBoxPosition NextLinePositionOf(const LayoutText& layout_text) {
       continue;
 
     return AdjustInlineBoxPositionForTextDirection(
-        inline_box, inline_box->CaretMinOffset(),
-        layout_text.Style()->GetUnicodeBidi());
+        inline_box, inline_box->CaretMinOffset());
   }
   return InlineBoxPosition();
 }
