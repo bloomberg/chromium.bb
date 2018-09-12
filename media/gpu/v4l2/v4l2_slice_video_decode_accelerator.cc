@@ -194,13 +194,12 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<VideoDecodeAccelerator::Client>& client,
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-      const BitstreamBuffer* buffer,
+      scoped_refptr<DecoderBuffer> buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const std::unique_ptr<UnalignedSharedMemory> shm;
-  off_t offset;
+  scoped_refptr<DecoderBuffer> buffer;
   off_t bytes_used;
   const int32_t input_id;
 };
@@ -208,15 +207,11 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<VideoDecodeAccelerator::Client>& client,
     const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-    const BitstreamBuffer* buffer,
+    scoped_refptr<DecoderBuffer> buffer,
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
-      shm(buffer ? std::make_unique<UnalignedSharedMemory>(buffer->handle(),
-                                                           buffer->size(),
-                                                           true)
-                 : nullptr),
-      offset(buffer ? buffer->offset() : 0),
+      buffer(std::move(buffer)),
       bytes_used(0),
       input_id(input_id) {}
 
@@ -1302,47 +1297,44 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
 
 void V4L2SliceVideoDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer) {
-  DVLOGF(4) << "input_id=" << bitstream_buffer.id()
-            << ", size=" << bitstream_buffer.size();
+  Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
+}
+
+void V4L2SliceVideoDecodeAccelerator::Decode(
+    scoped_refptr<DecoderBuffer> buffer,
+    int32_t bitstream_id) {
+  DVLOGF(4) << "input_id=" << bitstream_id
+            << ", size=" << (buffer ? buffer->data_size() : 0);
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
-  if (bitstream_buffer.id() < 0) {
-    VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
-    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
-      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+  if (bitstream_id < 0) {
+    VLOGF(1) << "Invalid bitstream buffer, id: " << bitstream_id;
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
   decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DecodeTask,
-                            base::Unretained(this), bitstream_buffer));
+      FROM_HERE,
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DecodeTask,
+                     base::Unretained(this), std::move(buffer), bitstream_id));
 }
 
 void V4L2SliceVideoDecodeAccelerator::DecodeTask(
-    const BitstreamBuffer& bitstream_buffer) {
-  DVLOGF(4) << "input_id=" << bitstream_buffer.id()
-            << " size=" << bitstream_buffer.size();
+    scoped_refptr<DecoderBuffer> buffer,
+    int32_t bitstream_id) {
+  DVLOGF(4) << "input_id=" << bitstream_id
+            << " size=" << (buffer ? buffer->data_size() : 0);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (IsDestroyPending())
     return;
 
-  std::unique_ptr<BitstreamBufferRef> bitstream_record(
-      new BitstreamBufferRef(decode_client_, decode_task_runner_,
-                             &bitstream_buffer, bitstream_buffer.id()));
+  std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
+      decode_client_, decode_task_runner_, std::move(buffer), bitstream_id));
 
   // Skip empty buffer.
-  if (bitstream_buffer.size() == 0)
+  if (!bitstream_record->buffer)
     return;
-
-  if (!bitstream_record->shm->MapAt(bitstream_record->offset,
-                                    bitstream_record->shm->size())) {
-    VLOGF(1) << "Could not map bitstream_buffer";
-    NOTIFY_ERROR(UNREADABLE_INPUT);
-    return;
-  }
-  DVLOGF(4) << "mapped at=" << bitstream_record->shm->memory();
 
   decoder_input_queue_.push(std::move(bitstream_record));
 
@@ -1365,9 +1357,9 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
     return false;
   }
 
-  const uint8_t* const data = reinterpret_cast<const uint8_t*>(
-      decoder_current_bitstream_buffer_->shm->memory());
-  const size_t data_size = decoder_current_bitstream_buffer_->shm->size();
+  const uint8_t* const data = decoder_current_bitstream_buffer_->buffer->data();
+  const size_t data_size =
+      decoder_current_bitstream_buffer_->buffer->data_size();
   decoder_->SetStream(decoder_current_bitstream_buffer_->input_id, data,
                       data_size);
 

@@ -51,6 +51,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
+              int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
@@ -320,7 +322,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   const int kFlushBufferId = -2;
 
   // Handler for Decode() on decoder_thread_.
-  void DecodeTask(const BitstreamBuffer& bitstream_buffer);
+  void DecodeTask(scoped_refptr<DecoderBuffer> buffer, int32_t bitstream_id);
 
   // Schedule a new DecodeBufferTask if we are decoding.
   void ScheduleDecodeBufferTaskIfNeeded();
