@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 
 namespace autofill_assistant {
-struct ClientMemory;
+class ClientMemory;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -30,8 +30,8 @@ class ActionDelegate {
                              base::OnceCallback<void(bool)> callback) = 0;
 
   // Ask user to choose an address in personal data manager. GUID of the chosen
-  // address will be returned through callback if succeed, otherwise empty
-  // string is returned.
+  // address will be returned through callback, otherwise empty string if the
+  // user chose to continue manually.
   virtual void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
@@ -42,8 +42,8 @@ class ActionDelegate {
                                base::OnceCallback<void(bool)> callback) = 0;
 
   // Ask user to choose a card in personal data manager. GUID of the chosen card
-  // will be returned through callback if succeed, otherwise empty string is
-  // returned.
+  // will be returned through callback, otherwise empty string if the user chose
+  // to continue manually.
   virtual void ChooseCard(
       base::OnceCallback<void(const std::string&)> callback) = 0;
 
