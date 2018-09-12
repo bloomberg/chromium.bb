@@ -716,11 +716,15 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 
         let target = null;
         if (event.keyCode == customBackgrounds.KEYCODES.LEFT) {
-          target = customBackgrounds.getNextTile(-1, 0, this.dataset.tile_num);
+          target = customBackgrounds.getNextTile(
+              document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+              this.dataset.tile_num);
         } else if (event.keyCode == customBackgrounds.KEYCODES.UP) {
           target = customBackgrounds.getNextTile(0, -1, this.dataset.tile_num);
         } else if (event.keyCode == customBackgrounds.KEYCODES.RIGHT) {
-          target = customBackgrounds.getNextTile(1, 0, this.dataset.tile_num);
+          target = customBackgrounds.getNextTile(
+              document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+              this.dataset.tile_num);
         } else if (event.keyCode == customBackgrounds.KEYCODES.DOWN) {
           target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
         }
