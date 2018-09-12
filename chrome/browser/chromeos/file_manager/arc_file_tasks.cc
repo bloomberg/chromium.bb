@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,6 +27,7 @@
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -303,6 +305,12 @@ void ExecuteArcTaskAfterContentUrlsResolved(
                                             base::DoNothing());
     std::move(done).Run(
         extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Arc.UserInteraction",
+        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER,
+        arc::UserInteractionType::SIZE);
+
     return;
   }
 
@@ -322,6 +330,12 @@ void ExecuteArcTaskAfterContentUrlsResolved(
         FileTaskActionIdToArcActionType(task.action_id));
     std::move(done).Run(
         extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Arc.UserInteraction",
+        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER,
+        arc::UserInteractionType::SIZE);
+
     return;
   }
 

@@ -57,6 +57,9 @@ enum class UserInteractionType {
   // User started note-taking app from stylus tools.
   APP_STARTED_FROM_STYLUS_TOOLS = 13,
 
+  // User started an app by opening files in the file manager.
+  APP_STARTED_FROM_FILE_MANAGER = 14,
+
   // The size of this enum; keep last.
   SIZE,
 };
