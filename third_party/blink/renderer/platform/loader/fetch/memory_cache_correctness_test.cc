@@ -74,7 +74,9 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
     MockResource* resource = MockResource::Create(request);
-    resource->SetResponse(ResourceResponse(KURL(kResourceURL), "text/html"));
+    ResourceResponse response(KURL{kResourceURL});
+    response.SetMimeType("text/html");
+    resource->SetResponse(response);
     resource->FinishForTest();
     AddResourceToMemoryCache(resource);
 

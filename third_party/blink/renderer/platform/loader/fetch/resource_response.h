@@ -144,11 +144,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   };
 
   ResourceResponse();
-  explicit ResourceResponse(
-      const KURL&,
-      const AtomicString& mime_type = g_null_atom,
-      long long expected_length = 0,
-      const AtomicString& text_encoding_name = g_null_atom);
+  explicit ResourceResponse(const KURL&);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
 
@@ -433,7 +429,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   KURL url_;
   AtomicString mime_type_;
-  long long expected_content_length_;
+  long long expected_content_length_ = 0;
   AtomicString text_encoding_name_;
 
   unsigned connection_id_ = 0;

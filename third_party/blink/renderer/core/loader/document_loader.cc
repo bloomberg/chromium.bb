@@ -593,7 +593,8 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   request_.SetURL(blocked_url);
   redirect_chain_.pop_back();
   AppendRedirect(blocked_url);
-  response_ = ResourceResponse(blocked_url, "text/html");
+  response_ = ResourceResponse(blocked_url);
+  response_.SetMimeType("text/html");
   FinishedLoading(CurrentTimeTicks());
 
   return;
@@ -895,7 +896,8 @@ bool DocumentLoader::MaybeLoadEmpty() {
   if (request_.Url().IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     request_.SetURL(BlankURL());
-  response_ = ResourceResponse(request_.Url(), "text/html");
+  response_ = ResourceResponse(request_.Url());
+  response_.SetMimeType("text/html");
   response_.SetTextEncodingName("utf-8");
   FinishedLoading(CurrentTimeTicks());
   return true;

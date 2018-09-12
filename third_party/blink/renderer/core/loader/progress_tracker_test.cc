@@ -28,8 +28,10 @@ class ProgressClient : public EmptyLocalFrameClient {
 
 class ProgressTrackerTest : public PageTestBase {
  public:
-  ProgressTrackerTest()
-      : response_(KURL("http://example.com"), "text/html", 1024) {}
+  ProgressTrackerTest() : response_(KURL("http://example.com")) {
+    response_.SetMimeType("text/html");
+    response_.SetExpectedContentLength(1024);
+  }
 
   void SetUp() override {
     client_ = new ProgressClient;
