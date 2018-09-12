@@ -18,6 +18,9 @@
     <dimen name="dropdown_icon_margin">8dp</dimen>
     <dimen name="button_compat_corner_radius">4dp</dimen>
 
+    <!-- Divider Dimensions -->
+    <dimen name="divider_height">1dp</dimen>
+
     <!--
          Fallback values if the corresponding com.android.internal.R dimensions
          cannot be retrieved by name.

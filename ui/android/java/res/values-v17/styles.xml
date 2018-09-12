@@ -170,4 +170,21 @@
         <item name="android:textColor">@color/default_text_color_link</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
+
+    <!-- Dividers -->
+    <style name="HorizontalDivider"
+           tools:ignore="UnusedResources">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/divider_height</item>
+        <item name="android:background">?android:attr/listDivider</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+    <style name="VerticalDivider"
+           tools:ignore="UnusedResources">
+        <item name="android:layout_width">@dimen/divider_height</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">?android:attr/listDivider</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
 </resources>

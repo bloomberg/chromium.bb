@@ -223,21 +223,6 @@
         <item name="android:background">@color/modern_grey_600</item>
     </style>
 
-    <!-- Dividers -->
-    <style name="HorizontalDivider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@dimen/divider_height</item>
-        <item name="android:background">?android:attr/listDivider</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-    <style name="VerticalDivider">
-        <item name="android:layout_width">@dimen/divider_height</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:background">?android:attr/listDivider</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-
-
     <style name="ThemeWithActionBarBase" parent="Theme.AppCompat.Light">
         <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
         <!-- Action bar color -->

@@ -535,9 +535,6 @@
     <dimen name="context_menu_image_vertical_margin">30dp</dimen>
     <dimen name="context_menu_selectable_items_min_size">120dp</dimen>
 
-    <!-- Divider Dimensions -->
-    <dimen name="divider_height">1dp</dimen>
-
     <!-- Reader Mode dimensions -->
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>
