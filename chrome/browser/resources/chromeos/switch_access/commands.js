@@ -64,7 +64,7 @@ Commands.prototype = {
   buildCommandMap_: function() {
     return {
       'next': {
-        'defaultKeyCode': 49, /* '1' key */
+        'defaultKeyCode': 51, /* '3' key */
         'binding': this.switchAccess_.moveForward.bind(this.switchAccess_)
       },
       'previous': {
@@ -72,7 +72,11 @@ Commands.prototype = {
         'binding': this.switchAccess_.moveBackward.bind(this.switchAccess_)
       },
       'select': {
-        'defaultKeyCode': 51, /* '3' key */
+        'defaultKeyCode': 49, /* '1' key */
+        'binding': this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
+      },
+      'menu': {
+        'defaultKeyCode': 52, /* '4' key */
         'binding': this.switchAccess_.enterContextMenu.bind(this.switchAccess_)
       }
     };
