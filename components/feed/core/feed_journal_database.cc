@@ -79,6 +79,15 @@ void FeedJournalDatabase::LoadJournal(const std::string& key,
                           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void FeedJournalDatabase::DoesJournalExist(const std::string& key,
+                                           ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->GetEntry(
+      key, base::BindOnce(&FeedJournalDatabase::OnGetEntryForDoesJournalExist,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void FeedJournalDatabase::CommitJournalMutation(
     std::unique_ptr<JournalMutation> journal_mutation,
     ConfirmationCallback callback) {
@@ -108,6 +117,25 @@ void FeedJournalDatabase::CommitJournalMutation(
       base::BindOnce(&FeedJournalDatabase::OnGetEntryForCommitJournalMutation,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(journal_mutation), std::move(callback)));
+}
+
+void FeedJournalDatabase::LoadAllJournalKeys(JournalLoadCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->LoadKeys(
+      base::BindOnce(&FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedJournalDatabase::DeleteAllJournals(ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // For deleting all, filter method always return true.
+  storage_database_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<StorageEntryVector>(),
+      base::BindRepeating([](const std::string& x) { return true; }),
+      base::BindOnce(&FeedJournalDatabase::OnOperationCommitted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FeedJournalDatabase::PerformOperations(
@@ -197,6 +225,28 @@ void FeedJournalDatabase::OnGetEntryForLoadJournal(
     results.emplace_back(journal->journal_data(i));
   }
 
+  std::move(callback).Run(std::move(results));
+}
+
+void FeedJournalDatabase::OnGetEntryForDoesJournalExist(
+    ConfirmationCallback callback,
+    bool success,
+    std::unique_ptr<JournalStorageProto> journal) {
+  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
+
+  std::move(callback).Run(journal ? true : false);
+}
+
+void FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys(
+    JournalLoadCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<std::string>> keys) {
+  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal keys failed.";
+
+  std::vector<std::string> results;
+  if (keys) {
+    results = std::move(*keys);
+  }
   std::move(callback).Run(std::move(results));
 }
 

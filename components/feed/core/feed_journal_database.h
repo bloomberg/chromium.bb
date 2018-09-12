@@ -64,11 +64,22 @@ class FeedJournalDatabase {
   // Loads the journal data for the |key| and passes it to |callback|.
   void LoadJournal(const std::string& key, JournalLoadCallback callback);
 
+  // Checks if the journal for the |key| exists, and return the result to
+  // |callback|.
+  void DoesJournalExist(const std::string& key, ConfirmationCallback callback);
+
   // Commits the operations in the |journal_mutation|. |callback| will be called
   // when all the operations are committed. Or if any operation failed, database
   // will stop process any operations and passed error to |callback|.
   void CommitJournalMutation(std::unique_ptr<JournalMutation> journal_mutation,
                              ConfirmationCallback callback);
+
+  // Loads all journal keys in the storage, and passes them to |callback|.
+  void LoadAllJournalKeys(JournalLoadCallback callback);
+
+  // Delete all journals, |callback| will be called when all journals are
+  // deleted or if there is an error.
+  void DeleteAllJournals(ConfirmationCallback callback);
 
  private:
   // This method performs JournalOperation in the |journal_mutation|.
@@ -87,11 +98,19 @@ class FeedJournalDatabase {
   void OnGetEntryForLoadJournal(JournalLoadCallback callback,
                                 bool success,
                                 std::unique_ptr<JournalStorageProto> journal);
+  void OnGetEntryForDoesJournalExist(
+      ConfirmationCallback callback,
+      bool success,
+      std::unique_ptr<JournalStorageProto> journal);
   void OnGetEntryForCommitJournalMutation(
       std::unique_ptr<JournalMutation> journal_mutation,
       ConfirmationCallback callback,
       bool success,
       std::unique_ptr<JournalStorageProto> journal);
+  void OnLoadKeysForLoadAllJournalKeys(
+      JournalLoadCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<std::string>> keys);
   void OnOperationCommitted(ConfirmationCallback callback, bool success);
 
   JournalStorageProto CopyJouarnal(const std::string& new_journal_name,
