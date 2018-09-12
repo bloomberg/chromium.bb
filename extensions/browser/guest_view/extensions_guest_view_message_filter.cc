@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
@@ -38,6 +39,40 @@ using guest_view::GuestViewMessageFilter;
 
 namespace extensions {
 
+namespace {
+
+// TODO(ekaramad): Remove this once MimeHandlerViewGuest has fully migrated to
+// using cross-process-frames.
+// Returns true if |child_routing_id| corresponds to a frame which is a direct
+// child of |parent_rfh|.
+bool AreRoutingIDsConsistent(content::RenderFrameHost* parent_rfh,
+                             int32_t child_routing_id) {
+  const bool uses_cross_process_frame =
+      content::MimeHandlerViewMode::UsesCrossProcessFrame();
+  const bool is_child_routing_id_none = (child_routing_id == MSG_ROUTING_NONE);
+
+  // For cross-process-frame MimeHandlerView, |child_routing_id| cannot be none.
+  bool should_shutdown_process =
+      (is_child_routing_id_none == uses_cross_process_frame);
+
+  if (!should_shutdown_process && uses_cross_process_frame) {
+    // The |child_routing_id| is the routing ID of either a RenderFrame or a
+    // proxy in the |parent_rfh|. Therefore, to get the associated RFH we need
+    // to go through the FTN first.
+    int32_t child_ftn_id =
+        content::RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
+            parent_rfh->GetProcess()->GetID(), child_routing_id);
+    // The |child_rfh| is not really used; it is retrieved to verify whether or
+    // not what the renderer process says makes any sense.
+    auto* child_rfh = content::WebContents::FromRenderFrameHost(parent_rfh)
+                          ->UnsafeFindFrameByFrameTreeNodeId(child_ftn_id);
+    should_shutdown_process =
+        child_rfh && (child_rfh->GetParent() != parent_rfh);
+  }
+  return !should_shutdown_process;
+}
+
+}  // namespace
 const uint32_t ExtensionsGuestViewMessageFilter::kFilteredMessageClasses[] = {
     GuestViewMsgStart, ExtensionsGuestViewMsgStart};
 
@@ -128,14 +163,19 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
     int32_t plugin_frame_routing_id,
     bool is_full_page_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame() ||
-         plugin_frame_routing_id == MSG_ROUTING_NONE);
+
   auto* manager = GetOrCreateGuestViewManager();
 
   auto* rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
   auto* embedder_web_contents = WebContents::FromRenderFrameHost(rfh);
   if (!embedder_web_contents)
     return;
+
+  if (!AreRoutingIDsConsistent(rfh, plugin_frame_routing_id)) {
+    bad_message::ReceivedBadMessage(rfh->GetProcess(),
+                                    bad_message::MHVG_INVALID_PLUGIN_FRAME_ID);
+    return;
+  }
 
   GuestViewManager::WebContentsCreatedCallback callback = base::BindOnce(
       &ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback,
