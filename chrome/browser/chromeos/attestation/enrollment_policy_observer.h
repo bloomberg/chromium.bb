@@ -68,6 +68,12 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   // Reschedule an attempt to get an enrollment identifier directly.
   void RescheduleGetEnrollmentId();
 
+  // Called when an enrollment identifier upload operation completes.
+  // On success, |status| will be true. The string |enrollment_id|
+  // is the identifier that was uploaded.
+  void OnUploadEnrollmentIdComplete(const std::string& enrollment_id,
+                                    bool status);
+
   // Handles a failure to get a certificate.
   void HandleGetCertificateFailure(AttestationStatus status);
 
@@ -87,6 +93,10 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   int num_retries_;
   int retry_limit_;
   int retry_delay_;
+  // Used to remember we uploaded an empty identifier this session for
+  // devices that can't obtain the identifier until they are powerwashed or
+  // updated and rebooted (see http://crbug.com/867724).
+  bool did_upload_empty_eid_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

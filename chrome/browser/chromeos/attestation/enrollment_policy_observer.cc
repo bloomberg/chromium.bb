@@ -122,6 +122,13 @@ void EnrollmentPolicyObserver::DeviceSettingsUpdated() {
 }
 
 void EnrollmentPolicyObserver::Start() {
+  // If we already uploaded an empty identification, we are done, because
+  // we asked to compute and upload it only if the PCA refused to give
+  // us an enrollment certificate, an error that will happen again (the
+  // AIK certificate sent to request an enrollment certificate does not
+  // contain an EID).
+  if (did_upload_empty_eid_)
+    return;
   // If identification for enrollment isn't needed, there is nothing to do.
   const enterprise_management::PolicyData* policy_data =
       device_settings_service_->policy_data();
@@ -193,8 +200,9 @@ void EnrollmentPolicyObserver::HandleEnrollmentId(
   }
   policy_client_->UploadEnterpriseEnrollmentId(
       enrollment_id,
-      base::BindRepeating(&EnrollmentPolicyObserver::OnUploadComplete,
-                          weak_factory_.GetWeakPtr(), "Enrollment Identifier"));
+      base::BindRepeating(
+          &EnrollmentPolicyObserver::OnUploadEnrollmentIdComplete,
+          weak_factory_.GetWeakPtr(), enrollment_id));
 }
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
@@ -233,6 +241,16 @@ void EnrollmentPolicyObserver::UploadCertificate(
       base::BindRepeating(&EnrollmentPolicyObserver::OnUploadComplete,
                           weak_factory_.GetWeakPtr(),
                           "Enterprise Enrollment Certificate"));
+}
+
+void EnrollmentPolicyObserver::OnUploadEnrollmentIdComplete(
+    const std::string& enrollment_id,
+    bool status) {
+  if (status && enrollment_id.empty())
+    did_upload_empty_eid_ = true;
+  OnUploadComplete(enrollment_id.empty() ? "Empty Enrollment Identifier"
+                                         : "Enrollment Identifier",
+                   status);
 }
 
 void EnrollmentPolicyObserver::OnUploadComplete(const std::string& what,
