@@ -187,25 +187,21 @@ void P2PSocketUdp::Init(const net::IPEndPoint& local_address,
 }
 
 void P2PSocketUdp::DoRead() {
-  int result;
   do {
-    result = socket_->RecvFrom(
+    int result = socket_->RecvFrom(
         recv_buffer_.get(), kUdpReadBufferSize, &recv_address_,
         base::BindOnce(&P2PSocketUdp::OnRecv, base::Unretained(this)));
-    if (result == net::ERR_IO_PENDING)
+    if (result == net::ERR_IO_PENDING || !HandleReadResult(result))
       return;
-    HandleReadResult(result);
   } while (state_ == STATE_OPEN);
 }
 
 void P2PSocketUdp::OnRecv(int result) {
-  HandleReadResult(result);
-  if (state_ == STATE_OPEN) {
+  if (HandleReadResult(result))
     DoRead();
-  }
 }
 
-void P2PSocketUdp::HandleReadResult(int result) {
+bool P2PSocketUdp::HandleReadResult(int result) {
   DCHECK_EQ(STATE_OPEN, state_);
 
   if (result > 0) {
@@ -222,7 +218,7 @@ void P2PSocketUdp::HandleReadResult(int result) {
         LOG(ERROR) << "Received unexpected data packet from "
                    << recv_address_.ToString()
                    << " before STUN binding is finished.";
-        return;
+        return true;
       }
     }
 
@@ -234,10 +230,13 @@ void P2PSocketUdp::HandleReadResult(int result) {
   } else if (result < 0 && !IsTransientError(result)) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();
+    return false;
   }
+
+  return true;
 }
 
-void P2PSocketUdp::DoSend(const PendingPacket& packet) {
+bool P2PSocketUdp::DoSend(const PendingPacket& packet) {
   base::TimeTicks send_time = base::TimeTicks::Now();
 
   // The peer is considered not connected until the first incoming STUN
@@ -254,7 +253,7 @@ void P2PSocketUdp::DoSend(const PendingPacket& packet) {
       LOG(ERROR) << "Page tried to send a data packet to "
                  << packet.to.ToString() << " before STUN binding is finished.";
       OnError();
-      return;
+      return false;
     }
 
     if (throttler_->DropNextPacket(packet.size)) {
@@ -265,7 +264,7 @@ void P2PSocketUdp::DoSend(const PendingPacket& packet) {
       client_->SendComplete(P2PSendPacketMetrics(
           packet.id, packet.packet_options.packet_id, send_time));
       // Do not reset the socket.
-      return;
+      return true;
     }
   }
 
@@ -314,14 +313,18 @@ void P2PSocketUdp::DoSend(const PendingPacket& packet) {
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
-    HandleSendResult(packet.id, packet.packet_options.packet_id, send_time,
-                     result);
+    if (!HandleSendResult(packet.id, packet.packet_options.packet_id, send_time,
+                          result)) {
+      return false;
+    }
   }
 
   delegate_->DumpPacket(
       base::make_span(reinterpret_cast<const uint8_t*>(packet.data->data()),
                       packet.size),
       false);
+
+  return true;
 }
 
 void P2PSocketUdp::OnSend(uint64_t packet_id,
@@ -333,18 +336,22 @@ void P2PSocketUdp::OnSend(uint64_t packet_id,
 
   send_pending_ = false;
 
-  HandleSendResult(packet_id, transport_sequence_number, send_time, result);
+  if (!HandleSendResult(packet_id, transport_sequence_number, send_time,
+                        result)) {
+    return;
+  }
 
   // Send next packets if we have them waiting in the buffer.
   while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
     PendingPacket packet = send_queue_.front();
     send_queue_.pop_front();
-    DoSend(packet);
+    if (!DoSend(packet))
+      return;
     DecrementDelayedBytes(packet.size);
   }
 }
 
-void P2PSocketUdp::HandleSendResult(uint64_t packet_id,
+bool P2PSocketUdp::HandleSendResult(uint64_t packet_id,
                                     int32_t transport_sequence_number,
                                     base::TimeTicks send_time,
                                     int result) {
@@ -355,7 +362,7 @@ void P2PSocketUdp::HandleSendResult(uint64_t packet_id,
     if (!IsTransientError(result)) {
       LOG(ERROR) << "Error when sending data in UDP socket: " << result;
       OnError();
-      return;
+      return false;
     }
     VLOG(0) << "sendto() has failed twice returning a "
                " transient error "
@@ -369,6 +376,8 @@ void P2PSocketUdp::HandleSendResult(uint64_t packet_id,
 
   client_->SendComplete(
       P2PSendPacketMetrics(packet_id, transport_sequence_number, send_time));
+
+  return true;
 }
 
 void P2PSocketUdp::Send(
