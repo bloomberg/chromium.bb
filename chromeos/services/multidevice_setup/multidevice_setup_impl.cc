@@ -197,12 +197,7 @@ void MultiDeviceSetupImpl::SetFeatureEnabledState(
     bool enabled,
     const base::Optional<std::string>& auth_token,
     SetFeatureEnabledStateCallback callback) {
-  // TODO(crbug.com/876377): If kBetterTogetherSuite is being enabled, only
-  // require password if Smartlock pref is enabled.
-  bool is_auth_token_required =
-      enabled && (feature == mojom::Feature::kSmartLock ||
-                  feature == mojom::Feature::kBetterTogetherSuite);
-  if (is_auth_token_required &&
+  if (IsAuthTokenRequiredForFeatureStateChange(feature, enabled) &&
       (!auth_token || !auth_token_validator_->IsAuthTokenValid(*auth_token))) {
     std::move(callback).Run(false /* success */);
     return;
@@ -297,6 +292,35 @@ void MultiDeviceSetupImpl::OnFeatureStatesChange(
       [&feature_states_map](mojom::FeatureStateObserver* observer) {
         observer->OnFeatureStatesChanged(feature_states_map);
       });
+}
+
+bool MultiDeviceSetupImpl::IsAuthTokenRequiredForFeatureStateChange(
+    mojom::Feature feature,
+    bool enabled) {
+  // Disabling a feature never requires authentication.
+  if (!enabled)
+    return false;
+
+  // Enabling SmartLock always requires authentication.
+  if (feature == mojom::Feature::kSmartLock)
+    return true;
+
+  // Enabling any feature besides SmartLock and the Better Together suite does
+  // not require authentication.
+  if (feature != mojom::Feature::kBetterTogetherSuite)
+    return false;
+
+  mojom::FeatureState smart_lock_state =
+      feature_state_manager_->GetFeatureStates()[mojom::Feature::kSmartLock];
+
+  // If the user is enabling the Better Together suite and this change would
+  // result in SmartLock being implicitly enabled, authentication is required.
+  // SmartLock is implicitly enabled if it is only currently not enabled due
+  // to the suite being disabled or due to the SmartLock host device not
+  // having a lock screen set.
+  return smart_lock_state == mojom::FeatureState::kUnavailableSuiteDisabled ||
+         smart_lock_state ==
+             mojom::FeatureState::kUnavailableInsufficientSecurity;
 }
 
 void MultiDeviceSetupImpl::FlushForTesting() {

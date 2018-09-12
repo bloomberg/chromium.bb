@@ -111,6 +111,9 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   void OnFeatureStatesChange(
       const FeatureStateManager::FeatureStatesMap& feature_states_map) override;
 
+  bool IsAuthTokenRequiredForFeatureStateChange(mojom::Feature feature,
+                                                bool enabled);
+
   void FlushForTesting();
 
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
