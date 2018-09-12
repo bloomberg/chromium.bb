@@ -52,6 +52,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   LayoutTextSelectionStatus ComputeSelectionStatus(const LayoutText&) const;
   LayoutSelectionStatus ComputeSelectionStatus(const NGPaintFragment&) const;
+  static bool IsSelected(const LayoutObject&);
 
   void OnDocumentShutdown();
 
@@ -76,11 +77,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   // This is true if at least one LayoutObject has a valid SelectionState.
   bool has_selection_;
 };
-
-void CORE_EXPORT PrintLayoutObjectForSelection(std::ostream&, LayoutObject*);
-#ifndef NDEBUG
-void ShowLayoutObjectForSelection(LayoutObject*);
-#endif
 
 }  // namespace blink
 
