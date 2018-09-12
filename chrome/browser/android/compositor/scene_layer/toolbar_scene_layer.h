@@ -41,8 +41,7 @@ class ToolbarSceneLayer : public SceneLayer {
       jfloat y_offset,
       jfloat view_height,
       bool visible,
-      bool show_shadow,
-      bool modern_design_enabled);
+      bool show_shadow);
 
   // Update the progress bar.
   void UpdateProgressBar(

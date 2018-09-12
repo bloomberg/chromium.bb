@@ -1138,11 +1138,6 @@ public class CustomTabActivity extends ChromeActivity {
         }
     }
 
-    @Override
-    public boolean supportsModernDesign() {
-        return true;
-    }
-
     private void recordClientConnectionStatus() {
         String packageName =
                 (getActivityTab() == null) ? null : getActivityTab().getAppAssociatedWith();

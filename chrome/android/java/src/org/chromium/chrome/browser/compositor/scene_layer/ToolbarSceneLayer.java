@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.RectF;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -22,7 +21,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -95,11 +93,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         boolean showShadow = fullscreenManager.drawControlsAsTexture()
                 || forceHideAndroidBrowserControls;
 
-        int textBoxColor = Color.WHITE;
-        int textBoxResourceId = R.drawable.card_single;
-
         boolean isLocationBarShownInNtp = false;
-        boolean useModern = false;
         Tab currentTab = fullscreenManager.getTab();
         if (currentTab != null) {
             boolean isNtp =
@@ -108,20 +102,16 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 isLocationBarShownInNtp =
                         ((NewTabPage) currentTab.getNativePage()).isLocationBarShownInNTP();
             }
-            useModern = currentTab.getActivity().supportsModernDesign()
-                    && FeatureUtilities.isChromeModernDesignEnabled();
         }
 
-        if (useModern) {
-            textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
-                    isLocationBarShownInNtp, browserControlsBackgroundColor, true);
-            textBoxResourceId = R.drawable.modern_location_bar;
-        }
+        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                isLocationBarShownInNtp, browserControlsBackgroundColor, true);
+        int textBoxResourceId = R.drawable.modern_location_bar;
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
                 browserControlsBackgroundColor, textBoxResourceId, browserControlsUrlBarAlpha,
                 textBoxColor, fullscreenManager.getTopControlOffset(), windowHeight, useTexture,
-                showShadow, useModern);
+                showShadow);
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr, mProgressBarDrawingInfo.progressBarRect.left,
@@ -170,8 +160,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
         // In Chrome modern design, the url bar is always opaque since it is drawn in the
         // compositor.
-        float alpha = mRenderHost.getBrowserControlsUrlBarAlpha();
-        if (FeatureUtilities.isChromeModernDesignEnabled()) alpha = 1;
+        float alpha = 1;
 
         update(mRenderHost.getBrowserControlsBackgroundColor(), alpha,
                 mLayoutProvider.getFullscreenManager(), resourceManager,
@@ -261,19 +250,10 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     private native void nativeSetContentTree(
             long nativeToolbarSceneLayer,
             SceneLayer contentTree);
-    private native void nativeUpdateToolbarLayer(
-            long nativeToolbarSceneLayer,
-            ResourceManager resourceManager,
-            int resourceId,
-            int toolbarBackgroundColor,
-            int urlBarResourceId,
-            float urlBarAlpha,
-            int urlBarColor,
-            float topOffset,
-            float viewHeight,
-            boolean visible,
-            boolean showShadow,
-            boolean browserControlsAtBottom);
+    private native void nativeUpdateToolbarLayer(long nativeToolbarSceneLayer,
+            ResourceManager resourceManager, int resourceId, int toolbarBackgroundColor,
+            int urlBarResourceId, float urlBarAlpha, int urlBarColor, float topOffset,
+            float viewHeight, boolean visible, boolean showShadow);
     private native void nativeUpdateProgressBar(
             long nativeToolbarSceneLayer,
             int progressBarX,

@@ -912,12 +912,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
         if (UiUtils.isSystemUiThemingDisabled()) return;
 
-        boolean useModernDesign =
-                supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled();
         int statusBarColor = color;
         boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
         View root = getWindow().getDecorView().getRootView();
-        if (useModernDesign && supportsDarkStatusIcons) {
+        if (supportsDarkStatusIcons) {
             mBaseStatusBarColor = color;
 
             if (mScrimColor == 0) {
@@ -2471,13 +2469,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * enters fullscreen.
      */
     public boolean supportsFullscreenActivity() {
-        return false;
-    }
-
-    /**
-     * @return Whether this Activity supports modern design.
-     */
-    public boolean supportsModernDesign() {
         return false;
     }
 

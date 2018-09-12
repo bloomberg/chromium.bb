@@ -2229,8 +2229,7 @@ public class ChromeTabbedActivity
         }
 
         boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-        if (!supportsDarkStatusIcons || !supportsModernDesign()
-                || !FeatureUtilities.isChromeModernDesignEnabled()) {
+        if (!supportsDarkStatusIcons) {
             super.setStatusBarColor(tab, Color.BLACK);
             return;
         }
@@ -2407,11 +2406,6 @@ public class ChromeTabbedActivity
     @Override
     public boolean supportsFullscreenActivity() {
         return !VrModuleProvider.getDelegate().isInVr();
-    }
-
-    @Override
-    public boolean supportsModernDesign() {
-        return true;
     }
 
     @Override

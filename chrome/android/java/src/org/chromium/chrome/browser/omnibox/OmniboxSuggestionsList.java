@@ -31,10 +31,8 @@ import java.util.ArrayList;
  */
 @VisibleForTesting
 public class OmniboxSuggestionsList extends ListView {
-    private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
-    private static final int OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR = 0xFFFFFFFF;
-    private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
-    private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR = 0xFF3C4043;
+    private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFFFFFFF;
+    private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF3C4043;
 
     private final OmniboxSuggestionListEmbedder mEmbedder;
     private final int mSuggestionHeight;
@@ -64,9 +62,6 @@ public class OmniboxSuggestionsList extends ListView {
         /** Return the delegate used to interact with the Window. */
         WindowDelegate getWindowDelegate();
 
-        /** Return whether modern design should be used when styling the popup. */
-        boolean useModernDesign();
-
         /** Return whether the suggestions are being rendered in the tablet UI. */
         boolean isTablet();
 
@@ -94,13 +89,9 @@ public class OmniboxSuggestionsList extends ListView {
         mSuggestionDefinitionHeight = context.getResources().getDimensionPixelOffset(
                 R.dimen.omnibox_suggestion_definition_height);
 
-        int paddingTop = mEmbedder.useModernDesign()
-                ? 0
-                : context.getResources().getDimensionPixelOffset(
-                          R.dimen.omnibox_suggestion_list_padding_top);
         int paddingBottom = context.getResources().getDimensionPixelOffset(
                 R.dimen.omnibox_suggestion_list_padding_bottom);
-        ViewCompat.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
+        ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
 
         refreshPopupBackground();
         getBackground().getPadding(mTempRect);
@@ -135,12 +126,6 @@ public class OmniboxSuggestionsList extends ListView {
     private Drawable getSuggestionPopupBackground() {
         int omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_BG_COLOR;
         int omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_BG_COLOR;
-        if (mEmbedder.useModernDesign()) {
-            omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR;
-            if (!mEmbedder.isTablet()) {
-                omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR;
-            }
-        }
 
         int color = mEmbedder.isIncognito() ? omniboxResultsColorForIncognito
                                             : omniboxResultsColorForNonIncognito;
@@ -250,9 +235,8 @@ public class OmniboxSuggestionsList extends ListView {
                 Math.min(mTempRect.height(), decorHeight) + additionalHeightForBottomNavMenu;
         int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
         // The suggestions should consume all available space in Modern on phone.
-        int desiredHeight = mEmbedder.useModernDesign() && !mEmbedder.isTablet()
-                ? availableListHeight
-                : Math.min(availableListHeight, getIdealHeight());
+        int desiredHeight = !mEmbedder.isTablet() ? availableListHeight
+                                                  : Math.min(availableListHeight, getIdealHeight());
         if (layoutParams.height != desiredHeight) {
             layoutParams.height = desiredHeight;
             updateLayout = true;

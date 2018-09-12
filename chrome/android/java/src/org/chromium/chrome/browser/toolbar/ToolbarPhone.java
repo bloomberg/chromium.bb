@@ -842,7 +842,7 @@ public class ToolbarPhone extends ToolbarLayout
                 return Color.TRANSPARENT;
             default:
                 assert false;
-                return ApiCompatibilityUtils.getColor(res, R.color.default_primary_color);
+                return ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color);
         }
     }
 
