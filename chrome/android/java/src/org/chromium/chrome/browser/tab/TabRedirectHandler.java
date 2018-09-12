@@ -91,8 +91,12 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      */
     public static TabRedirectHandler swapFor(Tab tab, @Nullable TabRedirectHandler newHandler) {
         UserDataHost host = tab.getUserDataHost();
-        TabRedirectHandler oldHandler = host.getUserData(TabRedirectHandler.class);
-        if (newHandler != null) host.setUserData(TabRedirectHandler.class, newHandler);
+        TabRedirectHandler oldHandler = host.getUserData(USER_DATA_KEY);
+        if (newHandler != null) {
+            host.setUserData(USER_DATA_KEY, newHandler);
+        } else {
+            host.removeUserData(USER_DATA_KEY);
+        }
         return oldHandler;
     }
 
