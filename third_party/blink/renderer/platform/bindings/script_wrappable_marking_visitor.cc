@@ -178,6 +178,7 @@ void ScriptWrappableMarkingVisitor::RegisterV8References(
 }
 
 bool ScriptWrappableMarkingVisitor::AdvanceTracing(double deadline_in_ms) {
+  constexpr int kObjectsBeforeInterrupt = 100;
   // Do not drain the marking deque in a state where we can generally not
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
@@ -187,11 +188,13 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(double deadline_in_ms) {
   base::AutoReset<bool>(&advancing_tracing_, true);
   TimeTicks deadline =
       TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
-  while (WTF::CurrentTimeTicks() < deadline) {
-    if (marking_deque_.IsEmpty()) {
-      return true;
+  while (deadline.is_max() || WTF::CurrentTimeTicks() < deadline) {
+    for (int objects = 0; objects++ < kObjectsBeforeInterrupt;) {
+      if (marking_deque_.IsEmpty()) {
+        return true;
+      }
+      marking_deque_.TakeFirst().Trace(this);
     }
-    marking_deque_.TakeFirst().Trace(this);
   }
   return false;
 }
