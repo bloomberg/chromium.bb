@@ -1454,6 +1454,7 @@ class CORE_EXPORT Document : public ContainerNode,
 #endif
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
+  bool IsLazyLoadPolicyEnforced() const;
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 

@@ -757,5 +757,10 @@
     "prefix": "intersection-observer-v2",
     "base": "http/tests/intersection-observer",
     "args": ["--enable-blink-features=IntersectionObserverV2"]
+  },
+  {
+    "prefix" : "lazyload-policy",
+    "base": "external/wpt/feature-policy/experimental-features/lazyload",
+    "args": ["--enable-blink-features=LazyFrameLoading"]
   }
 ]
