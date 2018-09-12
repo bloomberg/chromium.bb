@@ -132,6 +132,8 @@ source_set("unit_tests") {
 js_compile_bundle("chrome_bundle_all_frames") {
   closure_entry_point = "__crWeb.chromeBundleAllFrames"
   sources = [
+    "//components/autofill/ios/browser/resources/autofill_controller.js",
+    "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
     "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
@@ -142,8 +144,6 @@ js_compile_bundle("chrome_bundle_all_frames") {
 js_compile_bundle("chrome_bundle_main_frame") {
   closure_entry_point = "__crWeb.chromeBundleMainFrame"
   sources = [
-    "//components/autofill/ios/browser/resources/autofill_controller.js",
-    "//components/autofill/ios/form_util/resources/fill.js",
     "//components/password_manager/ios/resources/password_controller.js",
     "resources/chrome_bundle_main_frame.js",
     "resources/image_fetch.js",
