@@ -130,9 +130,13 @@ static int mediatek_bo_unmap(struct bo *bo, struct vma *vma)
 {
 	if (vma->priv) {
 		struct mediatek_private_map_data *priv = vma->priv;
-		vma->addr = priv->gem_addr;
+
+		if (priv->cached_addr) {
+			vma->addr = priv->gem_addr;
+			free(priv->cached_addr);
+		}
+
 		close(priv->prime_fd);
-		free(priv->cached_addr);
 		free(priv);
 		vma->priv = NULL;
 	}
