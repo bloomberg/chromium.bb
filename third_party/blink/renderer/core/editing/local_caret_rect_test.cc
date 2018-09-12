@@ -958,4 +958,17 @@ TEST_P(ParameterizedLocalCaretRectTest, RtlMeterNoCrash) {
             local_caret_rect.layout_object);
 }
 
+// https://crbug.com/883044
+TEST_P(ParameterizedLocalCaretRectTest, AfterCollapsedWhiteSpaceInRTLText) {
+  LoadAhem();
+  InsertStyleElement(
+      "bdo { display: block; font: 10px/10px Ahem; width: 100px }");
+  const Position position =
+      SetCaretTextToBody("<bdo dir=rtl>AAA  |BBB<span>CCC</span></bdo>");
+  const Node* text = position.AnchorNode();
+  EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), LayoutRect(60, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                PositionWithAffinity(position, TextAffinity::kDownstream)));
+}
+
 }  // namespace blink

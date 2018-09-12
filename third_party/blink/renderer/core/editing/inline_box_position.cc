@@ -154,8 +154,12 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
 
     candidate = box;
   }
+
+  // TODO(editing-dev): The fixup below seems hacky. It may also be incorrect in
+  // non-ltr text. Make it saner.
   if (candidate && candidate == text_layout_object->LastTextBox() &&
-      affinity == TextAffinity::kDownstream) {
+      affinity == TextAffinity::kDownstream &&
+      caret_offset == candidate->CaretMaxOffset()) {
     inline_box = SearchAheadForBetterMatch(text_layout_object);
     if (inline_box)
       caret_offset = inline_box->CaretMinOffset();
