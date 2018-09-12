@@ -35,6 +35,7 @@ import java.util.Set;
 /**
  * A wrapper around a RemoteMediaPlayer, used in remote playback.
  */
+// Migrated to RemotingSessionController. See https://crbug.com/711860.
 public class RemotingCastSession
         implements MediaNotificationListener, CastSession, Cast.MessageReceivedCallback {
     private static final String TAG = "MediaRouter";

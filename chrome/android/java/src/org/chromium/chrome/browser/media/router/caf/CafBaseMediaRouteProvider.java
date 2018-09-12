@@ -217,7 +217,7 @@ public abstract class CafBaseMediaRouteProvider
     public void onSessionStarted(CastSession session, String sessionId) {
         Log.d(TAG, "onSessionStarted");
         mSessionController.attachToCastSession(session);
-        sessionController().getNotificationController().onSessionStarted();
+        sessionController().onSessionStarted();
 
         MediaSink sink = mPendingCreateRouteRequestInfo.sink;
         MediaSource source = mPendingCreateRouteRequestInfo.source;
@@ -269,7 +269,6 @@ public abstract class CafBaseMediaRouteProvider
             // sure the listener is not unregistered during a session relaunch.
             return;
         }
-        mSessionController.getNotificationController().onSessionEnded();
         mSessionController.detachFromCastSession();
         mSessionController.onSessionEnded();
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
