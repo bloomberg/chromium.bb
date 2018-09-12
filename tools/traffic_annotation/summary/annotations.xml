@@ -103,7 +103,7 @@ Refer to README.md for content description and update process.
  <item id="favicon_loader" hash_code="112189210" type="0" content_hash_code="70773116" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="feed_image_fetcher" hash_code="87439531" type="0" content_hash_code="26756208" os_list="linux,windows" file_path="components/feed/core/feed_image_manager.cc"/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" type="0" content_hash_code="57347000" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
- <item id="gaia_auth_exchange_cookies" hash_code="134289752" type="0" content_hash_code="66433230" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
+ <item id="gaia_auth_exchange_cookies" hash_code="134289752" type="0" deprecated="2018-09-11" content_hash_code="66433230" file_path=""/>
  <item id="gaia_auth_exchange_device_id" hash_code="39877119" type="0" content_hash_code="61857947" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_fetch_for_uber" hash_code="97978464" type="0" content_hash_code="28006265" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_get_user_info" hash_code="82167736" type="0" content_hash_code="4695017" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>

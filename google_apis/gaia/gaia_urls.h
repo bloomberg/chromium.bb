@@ -41,7 +41,6 @@ class GaiaUrls {
 
   const std::string& oauth2_chrome_client_id() const;
   const std::string& oauth2_chrome_client_secret() const;
-  const GURL& deprecated_client_login_to_oauth2_url() const;
   const GURL& oauth2_auth_url() const;
   const GURL& oauth2_token_url() const;
   const GURL& oauth2_issue_token_url() const;
@@ -95,7 +94,6 @@ class GaiaUrls {
   std::string oauth2_chrome_client_id_;
   std::string oauth2_chrome_client_secret_;
 
-  GURL deprecated_client_login_to_oauth2_url_;
   GURL oauth2_auth_url_;
   GURL oauth2_token_url_;
   GURL oauth2_issue_token_url_;

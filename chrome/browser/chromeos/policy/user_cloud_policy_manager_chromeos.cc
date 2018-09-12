@@ -531,9 +531,12 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
         g_browser_process->system_network_context_manager()
             ->GetSharedURLLoaderFactory();
   }
-  const std::string& refresh_token = chromeos::UserSessionManager::GetInstance()
-                                         ->user_context()
-                                         .GetRefreshToken();
+
+  std::string refresh_token = user_context_refresh_token_for_tests_.value_or(
+      chromeos::UserSessionManager::GetInstance()
+          ->user_context()
+          .GetRefreshToken());
+
   if (!refresh_token.empty()) {
     token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
     token_fetcher_->StartWithRefreshToken(
@@ -543,22 +546,17 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
     return;
   }
 
-  scoped_refptr<network::SharedURLLoaderFactory> signin_url_loader_factory =
-      signin_url_loader_factory_for_tests_;
-  if (!signin_url_loader_factory)
-    signin_url_loader_factory = chromeos::login::GetSigninURLLoaderFactory();
-  if (!signin_url_loader_factory) {
-    LOG(ERROR) << "No signin URLLoaderfactory for policy oauth token fetch!";
-    OnOAuth2PolicyTokenFetched(
-        std::string(), GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kWaitForInitialPolicyFetchForTest)) {
+    // Some tests don't want to complete policy initialization until they have
+    // manually injected policy. Do not treat this as a policy fetch error.
     return;
   }
 
-  token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
-  token_fetcher_->StartWithSigninURLLoaderFactory(
-      signin_url_loader_factory, system_url_loader_factory,
-      base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
-                 base::Unretained(this)));
+  LOG(ERROR) << "No refresh token for policy oauth token fetch!";
+  OnOAuth2PolicyTokenFetched(
+      std::string(),
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 
 void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
@@ -702,6 +700,13 @@ void UserCloudPolicyManagerChromeOS::ProfileShutdown() {
   invalidator_->Shutdown();
   invalidator_.reset();
   shutdown_notifier_.reset();
+}
+
+void UserCloudPolicyManagerChromeOS::SetUserContextRefreshTokenForTests(
+    const std::string& refresh_token) {
+  DCHECK(!refresh_token.empty());
+  DCHECK(!user_context_refresh_token_for_tests_);
+  user_context_refresh_token_for_tests_ = base::make_optional(refresh_token);
 }
 
 }  // namespace policy
