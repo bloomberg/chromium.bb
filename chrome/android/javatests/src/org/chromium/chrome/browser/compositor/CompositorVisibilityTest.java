@@ -64,11 +64,6 @@ public class CompositorVisibilityTest {
         }
 
         @Override
-        public float getBrowserControlsUrlBarAlpha() {
-            return 0;
-        }
-
-        @Override
         public ResourceManager getResourceManager() {
             return null;
         }

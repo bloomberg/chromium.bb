@@ -72,7 +72,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -1250,11 +1249,6 @@ public class LocationBarLayout extends FrameLayout
         return mSuggestionList;
     }
 
-    @Override
-    public boolean useModernDesign() {
-        return FeatureUtilities.isChromeModernDesignEnabled();
-    }
-
     /**
      * Initiates the mSuggestionListPopup.  Done on demand to not slow down
      * the initial inflation of the location bar.
@@ -1265,7 +1259,6 @@ public class LocationBarLayout extends FrameLayout
         assert mNativeInitialized || mShowCachedZeroSuggestResults
                 : "Trying to initialize native suggestions list before native init";
         if (mSuggestionList != null) return;
-        mSuggestionListAdapter.setUseModernDesign(useModernDesign());
 
         OnLayoutChangeListener suggestionListResizer = new OnLayoutChangeListener() {
             @Override
@@ -1286,11 +1279,6 @@ public class LocationBarLayout extends FrameLayout
 
         OmniboxSuggestionsList.OmniboxSuggestionListEmbedder embedder =
                 new OmniboxSuggestionsList.OmniboxSuggestionListEmbedder() {
-                    @Override
-                    public boolean useModernDesign() {
-                        return LocationBarLayout.this.useModernDesign();
-                    }
-
                     @Override
                     public boolean isTablet() {
                         return mIsTablet;

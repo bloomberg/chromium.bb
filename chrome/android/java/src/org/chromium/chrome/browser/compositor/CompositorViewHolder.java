@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -839,13 +838,6 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public int getBrowserControlsBackgroundColor() {
         return mTabVisible == null ? Color.WHITE : mTabVisible.getThemeColor();
-    }
-
-    @Override
-    public float getBrowserControlsUrlBarAlpha() {
-        return mTabVisible == null
-                ? 1.f
-                : ColorUtils.getTextBoxAlphaForToolbarBackground(mTabVisible);
     }
 
     @Override

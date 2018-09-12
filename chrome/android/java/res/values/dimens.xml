@@ -288,7 +288,6 @@
     <dimen name="omnibox_suggestion_height">60dp</dimen>
     <dimen name="omnibox_suggestion_answer_height">72dp</dimen>
     <dimen name="omnibox_suggestion_definition_height">95dp</dimen>
-    <dimen name="omnibox_suggestion_list_padding_top">8dp</dimen>
     <dimen name="omnibox_suggestion_list_padding_bottom">8dp</dimen>
     <dimen name="omnibox_suggestion_first_line_text_size">16sp</dimen>
     <dimen name="omnibox_suggestion_second_line_text_size">14sp</dimen>

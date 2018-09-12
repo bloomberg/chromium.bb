@@ -153,11 +153,6 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public float getBrowserControlsUrlBarAlpha() {
-        return 1f;
-    }
-
-    @Override
     public void hideKeyboard(Runnable postHideTask) {
     }
 }

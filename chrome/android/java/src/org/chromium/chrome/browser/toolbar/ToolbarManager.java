@@ -238,8 +238,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
 
-        mToolbarModel = new ToolbarModel(activity, activity.getBottomSheet(),
-                activity.supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled());
+        mToolbarModel = new ToolbarModel(activity, activity.getBottomSheet());
         mControlContainer = controlContainer;
         assert mControlContainer != null;
         mUrlFocusChangedCallback = urlFocusChangedCallback;
@@ -1564,8 +1563,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 }
                 if (tab != null) tab.addObserver(mTabObserver);
             }
-            int defaultPrimaryColor = ColorUtils.getDefaultThemeColor(mToolbar.getResources(),
-                    FeatureUtilities.isChromeModernDesignEnabled(), isIncognito);
+            int defaultPrimaryColor =
+                    ColorUtils.getDefaultThemeColor(mToolbar.getResources(), true, isIncognito);
             int primaryColor = tab != null ? tab.getThemeColor() : defaultPrimaryColor;
             updatePrimaryColor(primaryColor, false);
 

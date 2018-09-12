@@ -24,7 +24,6 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     private final LocationBar mLocationBar;
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private boolean mUseDarkColors = true;
-    private boolean mUseModernDesign;
 
     public OmniboxResultsAdapter(
             Context context,
@@ -62,8 +61,8 @@ public class OmniboxResultsAdapter extends BaseAdapter {
         } else {
             suggestionView = new SuggestionView(mContext, mLocationBar);
         }
-        suggestionView.init(mSuggestionItems.get(position), mSuggestionDelegate, position,
-                mUseDarkColors, mUseModernDesign);
+        suggestionView.init(
+                mSuggestionItems.get(position), mSuggestionDelegate, position, mUseDarkColors);
         return suggestionView;
     }
 
@@ -90,14 +89,6 @@ public class OmniboxResultsAdapter extends BaseAdapter {
      */
     public void setUseDarkColors(boolean useDarkColors) {
         mUseDarkColors = useDarkColors;
-    }
-
-    /**
-     * Specifies whether suggestions should use the modern design.
-     * @param useModernDesign Whether modern design should be used for suggestion views.
-     */
-    public void setUseModernDesign(boolean useModernDesign) {
-        mUseModernDesign = useModernDesign;
     }
 
     /**

@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -163,8 +162,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setBackground(new ColorDrawable(ColorUtils.getDefaultThemeColor(
-                getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false)));
+        setBackground(
+                new ColorDrawable(ColorUtils.getDefaultThemeColor(getResources(), true, false)));
         mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
         mUrlBar.setEnabled(false);
@@ -823,11 +822,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public boolean isSuggestionsListShown() {
         // Custom tabs do not support suggestions.
         return false;
-    }
-
-    @Override
-    public boolean useModernDesign() {
-        return true;
     }
 
     @Override

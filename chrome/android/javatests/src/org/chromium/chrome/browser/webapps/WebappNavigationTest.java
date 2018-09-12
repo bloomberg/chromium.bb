@@ -187,7 +187,7 @@ public class WebappNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
 
         Assert.assertEquals(
-                getDefaultPrimaryColorForCct(), customTab.getToolbarManager().getPrimaryColor());
+                getDefaultPrimaryColor(), customTab.getToolbarManager().getPrimaryColor());
     }
 
     /**
@@ -228,7 +228,7 @@ public class WebappNavigationTest {
         CustomTabActivity customTab = ChromeActivityTestRule.waitFor(CustomTabActivity.class);
         ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
         Assert.assertEquals(
-                getDefaultPrimaryColorForCct(), customTab.getToolbarManager().getPrimaryColor());
+                getDefaultPrimaryColor(), customTab.getToolbarManager().getPrimaryColor());
     }
 
     /**
@@ -421,11 +421,6 @@ public class WebappNavigationTest {
     }
 
     private long getDefaultPrimaryColor() {
-        return ApiCompatibilityUtils.getColor(
-                mActivityTestRule.getActivity().getResources(), R.color.default_primary_color);
-    }
-
-    private long getDefaultPrimaryColorForCct() {
         return ColorUtils.getDefaultThemeColor(
                 mActivityTestRule.getActivity().getResources(), true, false);
     }

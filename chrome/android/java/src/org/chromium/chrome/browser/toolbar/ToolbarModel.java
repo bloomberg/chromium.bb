@@ -54,17 +54,11 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     private final Context mContext;
     private final BottomSheet mBottomSheet;
-    private final boolean mUseModernDesign;
 
     private Tab mTab;
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
-    private String mPreviousUrl;
-    @ConnectionSecurityLevel
-    private int mPreviousSecurityLevel;
-    private String mCachedSearchTerms;
-    private boolean mIgnoreSecurityLevelForSearchTerms;
     private boolean mIsNativeLibraryReady;
 
     private long mNativeToolbarModelAndroid;
@@ -73,16 +67,11 @@ public class ToolbarModel implements ToolbarDataProvider {
      * Default constructor for this class.
      * @param context The Context used for styling the toolbar visuals.
      * @param bottomSheet The {@link BottomSheet} for the activity displaying this toolbar.
-     * @param useModernDesign Whether the modern design should be used for the toolbar represented
-     *                        by this model.
      */
-    public ToolbarModel(
-            Context context, @Nullable BottomSheet bottomSheet, boolean useModernDesign) {
+    public ToolbarModel(Context context, @Nullable BottomSheet bottomSheet) {
         mContext = context;
         mBottomSheet = bottomSheet;
-        mUseModernDesign = useModernDesign;
-        mPrimaryColor =
-                ColorUtils.getDefaultThemeColor(context.getResources(), useModernDesign, false);
+        mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), true, false);
     }
 
     /**
@@ -311,7 +300,7 @@ public class ToolbarModel implements ToolbarDataProvider {
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
                         != ColorUtils.getDefaultThemeColor(
-                                   context.getResources(), mUseModernDesign, isIncognito())
+                                   context.getResources(), true, isIncognito())
                 && hasTab() && !mTab.isNativePage();
     }
 
