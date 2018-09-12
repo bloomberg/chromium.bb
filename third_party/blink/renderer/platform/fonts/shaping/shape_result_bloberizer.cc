@@ -174,23 +174,6 @@ inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
              text.CodepointAt(character_index));
 }
 
-inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
-                                 float advance,
-                                 hb_direction_t direction,
-                                 CanvasRotationInVertical canvas_rotation,
-                                 const SimpleFontData* font_data,
-                                 const HarfBuzzRunGlyphData& glyph_data,
-                                 const StringView& text,
-                                 unsigned character_index) {
-  FloatPoint start_offset = HB_DIRECTION_IS_HORIZONTAL(direction)
-                                ? FloatPoint(advance, 0)
-                                : FloatPoint(0, advance);
-  if (!IsSkipInkException(bloberizer, text, character_index)) {
-    bloberizer.Add(glyph_data.glyph, font_data, canvas_rotation,
-                   start_offset + glyph_data.offset);
-  }
-}
-
 inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
                             const GlyphData& emphasis_data,
                             CanvasRotationInVertical canvas_rotation,
@@ -239,6 +222,52 @@ inline unsigned CountGraphemesInCluster(const UChar* str,
   return std::max(0, num_graphemes);
 }
 
+class GlyphCallbackContext {
+  WTF_MAKE_NONCOPYABLE(GlyphCallbackContext);
+  STACK_ALLOCATED();
+
+ public:
+  ShapeResultBloberizer* bloberizer;
+  const StringView& text;
+};
+
+void AddGlyphToBloberizer(void* context,
+                          unsigned character_index,
+                          Glyph glyph,
+                          FloatSize glyph_offset,
+                          float advance,
+                          bool is_horizontal,
+                          CanvasRotationInVertical rotation,
+                          const SimpleFontData* font_data) {
+  GlyphCallbackContext* parsed_context =
+      static_cast<GlyphCallbackContext*>(context);
+  ShapeResultBloberizer* bloberizer = parsed_context->bloberizer;
+  const StringView& text = parsed_context->text;
+
+  if (IsSkipInkException(*bloberizer, text, character_index))
+    return;
+  FloatPoint start_offset =
+      is_horizontal ? FloatPoint(advance, 0) : FloatPoint(0, advance);
+  bloberizer->Add(glyph, font_data, rotation, start_offset + glyph_offset);
+}
+
+void AddFastHorizontalGlyphToBloberizer(
+    void* context,
+    unsigned,
+    Glyph glyph,
+    FloatSize glyph_offset,
+    float advance,
+    bool is_horizontal,
+    CanvasRotationInVertical canvas_rotation,
+    const SimpleFontData* font_data) {
+  ShapeResultBloberizer* bloberizer =
+      static_cast<ShapeResultBloberizer*>(context);
+  DCHECK(!glyph_offset.Height());
+  DCHECK(is_horizontal);
+  bloberizer->Add(glyph, font_data, canvas_rotation,
+                  advance + glyph_offset.Width());
+}
+
 }  // namespace
 
 float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
@@ -247,22 +276,10 @@ float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
                                                  unsigned to,
                                                  float initial_advance,
                                                  unsigned run_offset) {
-  auto total_advance = initial_advance;
-
-  for (const auto& run : result->runs_) {
-    total_advance = run->ForEachGlyphInRange(
-        total_advance, from, to, run_offset,
-        [&](const HarfBuzzRunGlyphData& glyph_data, float total_advance,
-            uint16_t character_index) -> bool {
-
-          AddGlyphToBloberizer(*this, total_advance, run->direction_,
-                               run->canvas_rotation_, run->font_data_.get(),
-                               glyph_data, text, character_index);
-          return true;
-        });
-  }
-
-  return total_advance;
+  GlyphCallbackContext context = {this, text};
+  return result->ForEachGlyph(initial_advance, from, to, run_offset,
+                              AddGlyphToBloberizer,
+                              static_cast<void*>(&context));
 }
 
 bool ShapeResultBloberizer::CanUseFastPath(unsigned from,
@@ -300,29 +317,14 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   return advance;
 }
 
-float ShapeResultBloberizer::FillFastHorizontalGlyphs(
-    const ShapeResult* shape_result,
-    float advance) {
-  DCHECK(!shape_result->HasVerticalOffsets());
+float ShapeResultBloberizer::FillFastHorizontalGlyphs(const ShapeResult* result,
+                                                      float initial_advance) {
+  DCHECK(!result->HasVerticalOffsets());
   DCHECK_NE(GetType(), ShapeResultBloberizer::Type::kTextIntercepts);
 
-  for (const auto& run : shape_result->runs_) {
-    DCHECK(run);
-    DCHECK(HB_DIRECTION_IS_HORIZONTAL(run->direction_));
-
-    advance =
-        run->ForEachGlyph(advance,
-                          [&](const HarfBuzzRunGlyphData& glyph_data,
-                              float total_advance) -> bool {
-                            DCHECK(!glyph_data.offset.Height());
-                            Add(glyph_data.glyph, run->font_data_.get(),
-                                run->CanvasRotation(),
-                                total_advance + glyph_data.offset.Width());
-                            return true;
-                          });
-  }
-
-  return advance;
+  return result->ForEachGlyph(initial_advance,
+                              &AddFastHorizontalGlyphToBloberizer,
+                              static_cast<void*>(this));
 }
 
 float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(

@@ -197,60 +197,6 @@ struct ShapeResult::RunInfo {
     return run;
   }
 
-  // Iterates over, and applies the functor to all the glyphs in this run.
-  // Also tracks (and returns) a seeded total advance.
-  //
-  // Functor signature:
-  //
-  //   bool func(const HarfBuzzRunGlyphData& glyphData, float totalAdvance)
-  //
-  // where the returned bool signals whether iteration should continue (true)
-  // or stop (false).
-  template <typename Func>
-  float ForEachGlyph(float initial_advance, Func func) const {
-    float total_advance = initial_advance;
-
-    for (const auto& glyph_data : glyph_data_) {
-      if (!func(glyph_data, total_advance))
-        break;
-      total_advance += glyph_data.advance;
-    }
-
-    return total_advance;
-  }
-
-  // Same as the above, except it only applies the functor to glyphs in the
-  // specified range, and stops after the range.
-  template <typename Func>
-  float ForEachGlyphInRange(float initial_advance,
-                            unsigned from,
-                            unsigned to,
-                            unsigned index_offset,
-                            Func func) const {
-    return ForEachGlyph(
-        initial_advance,
-        [&](const HarfBuzzRunGlyphData& glyph_data,
-            float total_advance) -> bool {
-          const unsigned character_index =
-              start_index_ + glyph_data.character_index + index_offset;
-
-          if (character_index < from) {
-            // Glyph out-of-range; before the range (and must continue
-            // accumulating advance) in LTR.
-            return !Rtl();
-          }
-
-          if (character_index >= to) {
-            // Glyph out-of-range; before the range (and must continue
-            // accumulating advance) in RTL.
-            return Rtl();
-          }
-
-          // Glyph in range; apply functor.
-          return func(glyph_data, total_advance, character_index);
-        });
-  }
-
   void ExpandRangeToIncludePartialGlyphs(int offset, int* from, int* to) const {
     int start = !Rtl() ? offset : (offset + num_characters_);
     int end = offset + num_characters_;
