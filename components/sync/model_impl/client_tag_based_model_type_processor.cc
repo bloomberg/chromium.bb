@@ -470,11 +470,15 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     }
   }
   if (!entities_requiring_data.empty()) {
+    // Make a copy for the callback so that we can check if everything was
+    // loaded successfully.
+    std::unordered_set<std::string> storage_keys_to_load(
+        entities_requiring_data.begin(), entities_requiring_data.end());
     bridge_->GetData(
         std::move(entities_requiring_data),
         base::BindOnce(&ClientTagBasedModelTypeProcessor::OnPendingDataLoaded,
                        weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries,
-                       std::move(callback)));
+                       std::move(callback), std::move(storage_keys_to_load)));
   } else {
     // All commit data can be availbale in memory for those entries passed in
     // the .put() method.
@@ -947,6 +951,7 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
     size_t max_entries,
     GetLocalChangesCallback callback,
+    std::unordered_set<std::string> storage_keys_to_load,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -954,22 +959,35 @@ void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
   if (model_error_)
     return;
 
-  ConsumeDataBatch(std::move(data_batch));
+  ConsumeDataBatch(std::move(storage_keys_to_load), std::move(data_batch));
 
   ConnectIfReady();
   CommitLocalChanges(max_entries, std::move(callback));
 }
 
 void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
+    std::unordered_set<std::string> storage_keys_to_load,
     std::unique_ptr<DataBatch> data_batch) {
   while (data_batch->HasNext()) {
     KeyAndData data = data_batch->Next();
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
+    const std::string& storage_key = data.first;
+
+    storage_keys_to_load.erase(storage_key);
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
       // SetCommitData will update EntityData's fields with values from
       // metadata.
       entity->SetCommitData(data.second.get());
+    }
+  }
+
+  // Report failed loading of entities to UMA (if they are still tracked here).
+  for (const std::string& storage_key : storage_keys_to_load) {
+    if (GetEntityForStorageKey(storage_key)) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
+                                ModelTypeToHistogramInt(type_),
+                                static_cast<int>(MODEL_TYPE_COUNT));
     }
   }
 }

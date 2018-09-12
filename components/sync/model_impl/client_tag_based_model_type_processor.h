@@ -152,10 +152,14 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // GetLocalChanges call.
   void OnPendingDataLoaded(size_t max_entries,
                            GetLocalChangesCallback callback,
+                           std::unordered_set<std::string> storage_keys_to_load,
                            std::unique_ptr<DataBatch> data_batch);
 
-  // Caches EntityData from the |data_batch| in the entity trackers.
-  void ConsumeDataBatch(std::unique_ptr<DataBatch> data_batch);
+  // Caches EntityData from the |data_batch| in the entity trackers and checks
+  // that every entity in |storage_keys_to_load| was successfully loaded (or is
+  // not tracked by the processor any more). Reports failed checks to UMA.
+  void ConsumeDataBatch(std::unordered_set<std::string> storage_keys_to_load,
+                        std::unique_ptr<DataBatch> data_batch);
 
   // Prepares Commit requests and passes them to the GetLocalChanges callback.
   void CommitLocalChanges(size_t max_entries, GetLocalChangesCallback callback);
