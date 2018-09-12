@@ -897,6 +897,7 @@ test("content_browsertests") {
     "../browser/webrtc/webrtc_stress_source_switch_browsertest.cc",
     "../browser/webrtc/webrtc_video_capture_browsertest.cc",
     "../browser/webrtc/webrtc_video_capture_service_browsertest.cc",
+    "../browser/webrtc/webrtc_video_capture_service_enumeration_browsertest.cc",
     "../browser/webrtc/webrtc_webcam_browsertest.cc",
     "../browser/webrtc/webrtc_webcam_browsertest.h",
     "../browser/webui/web_ui_mojo_browsertest.cc",
