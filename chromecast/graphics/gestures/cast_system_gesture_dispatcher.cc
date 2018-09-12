@@ -60,7 +60,8 @@ void CastSystemGestureDispatcher::HandleSideSwipe(
   // from getting stuck, route new gesture events to the main UI when this
   // happens.
   base::TimeTicks now = tick_clock_->NowTicks();
-  if (event == CastSideSwipeEvent::BEGIN) {
+  if (event == CastSideSwipeEvent::BEGIN &&
+      swipe_origin == CastSideSwipeOrigin::LEFT) {
     recent_events_.push({now, swipe_origin});
     // Flush events which are older than the prescribed time.
     while (!recent_events_.empty() &&
@@ -70,6 +71,11 @@ void CastSystemGestureDispatcher::HandleSideSwipe(
     // If there are too many recent swipes, then this gesture should go to the
     // root UI.
     send_gestures_to_root_ = recent_events_.size() >= kMaxSwipes;
+    if (send_gestures_to_root_) {
+      LOG(INFO) << "User swiped " << kMaxSwipes << " times within "
+                << kExpirationTime
+                << ", sending next swipe gesture to root UI.";
+    }
   }
   CastGestureHandler* best_handler = nullptr;
   Priority highest_priority = Priority::NONE;
@@ -89,6 +95,12 @@ void CastSystemGestureDispatcher::HandleSideSwipe(
   }
   if (best_handler)
     best_handler->HandleSideSwipe(event, swipe_origin, touch_location);
+  if (send_gestures_to_root_ && event == CastSideSwipeEvent::END) {
+    // Reset the recent events.
+    std::queue<GestureEvent> empty;
+    std::swap(recent_events_, empty);
+    send_gestures_to_root_ = false;
+  }
 }
 
 void CastSystemGestureDispatcher::HandleTapDownGesture(
