@@ -40,10 +40,11 @@ StreamBufferManager::StreamBufferManager(
     std::unique_ptr<StreamCaptureInterface> capture_interface,
     CameraDeviceContext* device_context,
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
-    base::RepeatingCallback<mojom::BlobPtr(
-        const uint8_t* buffer,
-        const uint32_t bytesused,
-        const VideoCaptureFormat& capture_format)> blobify_callback,
+    base::RepeatingCallback<
+        mojom::BlobPtr(const uint8_t* buffer,
+                       const uint32_t bytesused,
+                       const VideoCaptureFormat& capture_format,
+                       int screen_rotation)> blobify_callback,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
     : callback_ops_(this, std::move(callback_ops_request)),
       capture_interface_(std::move(capture_interface)),
@@ -808,9 +809,11 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
             FROM_HERE, "Invalid JPEG blob");
         return;
       }
+      // Still capture result from HALv3 already has orientation info in EXIF,
+      // so just provide 0 as screen rotation in |blobify_callback_| parameters.
       mojom::BlobPtr blob = blobify_callback_.Run(
           reinterpret_cast<uint8_t*>(buffer->memory(0)), header->jpeg_size,
-          stream_context_[stream_type]->capture_format);
+          stream_context_[stream_type]->capture_format, 0);
       if (blob) {
         std::move(pending_result.still_capture_callback).Run(std::move(blob));
       } else {

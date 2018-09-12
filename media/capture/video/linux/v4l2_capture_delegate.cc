@@ -897,7 +897,8 @@ void V4L2CaptureDelegate::DoCapture() {
       take_photo_callbacks_.pop();
 
       mojom::BlobPtr blob =
-          Blobify(buffer_tracker->start(), buffer.bytesused, capture_format_);
+          RotateAndBlobify(buffer_tracker->start(), buffer.bytesused,
+                           capture_format_, rotation_);
       if (blob)
         std::move(cb).Run(std::move(blob));
     }
