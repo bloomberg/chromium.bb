@@ -126,4 +126,22 @@ suite('Multidevice', function() {
         assertTrue(!!getSubpage());
         assertFalse(!!getSubpage().$$('settings-multidevice-feature-item'));
       });
+
+  test('button is attached but disabled when waiting for server', function() {
+    setPageContentData(
+        settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+        HOST_DEVICE);
+    let verificationButton = multidevicePage.$$('paper-button');
+    assertTrue(!!verificationButton);
+    // Button should be active because UI is not waiting on server.
+    assertFalse(verificationButton.disabled);
+
+    setPageContentData(
+        settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+        HOST_DEVICE);
+    verificationButton = multidevicePage.$$('paper-button');
+    assertTrue(!!verificationButton);
+    // Button should be disabled because UI is waiting on server.
+    assertTrue(verificationButton.disabled);
+  });
 });
