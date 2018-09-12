@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -261,7 +262,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
-      jank_tracker_(this) {
+      jank_tracker_(std::make_unique<JankTracker>(this)) {
   // Propagate the marginwidth/height and scrolling modes to the view.
   if (frame_->Owner() &&
       frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
@@ -404,7 +405,7 @@ void LocalFrameView::Dispose() {
   ClearPrintContext();
 
   ukm_time_aggregator_.reset();
-  jank_tracker_.Dispose();
+  jank_tracker_->Dispose();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;

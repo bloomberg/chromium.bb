@@ -35,44 +35,52 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
-#include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
-#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
-#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
-#include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class AXObjectCache;
+class ChromeClient;
+class CompositorAnimationHost;
+class CompositorAnimationTimeline;
 class Cursor;
+class DisplayItemClient;
 class Document;
 class DocumentLifecycle;
 class Element;
 class ElementVisibilityObserver;
-class Frame;
+class FloatRect;
 class FloatSize;
+class Frame;
 class FrameViewAutoSizeInfo;
-class IntRect;
 class JSONObject;
-class LayoutEmbeddedContent;
-class LocalFrame;
+class JankTracker;
 class KURL;
-class Node;
 class LayoutAnalyzer;
 class LayoutBox;
+class LayoutEmbeddedContent;
 class LayoutEmbeddedObject;
 class LayoutObject;
+class LayoutRect;
 class LayoutSVGRoot;
 class LayoutView;
+class LocalFrame;
+class Node;
+class Page;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
-class Page;
 class PrintContext;
 class RootFrameViewport;
+class ScrollableArea;
+class Scrollbar;
 class ScrollingCoordinator;
 class ScrollingCoordinatorContext;
 class TracedValue;
@@ -84,6 +92,8 @@ struct IntrinsicSizingInfo;
 struct WebScrollIntoViewParams;
 
 typedef unsigned long long DOMTimeStamp;
+using LayerTreeFlags = unsigned;
+using MainThreadScrollingReasons = uint32_t;
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
@@ -662,7 +672,7 @@ class CORE_EXPORT LocalFrameView final
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
   void ScrollAndFocusFragmentAnchor();
-  JankTracker& GetJankTracker() { return jank_tracker_; }
+  JankTracker& GetJankTracker() { return *jank_tracker_; }
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();
@@ -963,7 +973,7 @@ class CORE_EXPORT LocalFrameView final
   size_t paint_frame_count_;
 
   UniqueObjectId unique_id_;
-  JankTracker jank_tracker_;
+  std::unique_ptr<JankTracker> jank_tracker_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
