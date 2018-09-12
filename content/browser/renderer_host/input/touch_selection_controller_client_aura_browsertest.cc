@@ -178,7 +178,6 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         new TestTouchSelectionControllerClientAura(rwhva);
     rwhva->SetSelectionControllerClientForTest(
         base::WrapUnique(selection_controller_client_));
-    rwhva->event_handler()->disable_input_event_router_for_testing();
   }
 
  protected:

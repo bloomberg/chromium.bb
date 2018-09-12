@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include <algorithm>
+#include <deque>
 #include <vector>
 
 #include "base/debug/crash_logging.h"
@@ -82,6 +84,142 @@ bool IsMouseButtonDown(const blink::WebMouseEvent& event) {
 
 namespace content {
 
+// A class to implement a queue for tracking outbound TouchEvents, and making
+// sure that their acks are returned to the appropriate root view in order.
+// This is important to ensure proper operation of the GestureProvider.
+// Some challenges include:
+// * differentiating between native and emulated TouchEvents, as the latter ack
+//   to the TouchEmulator's GestureProvider,
+// * making sure all events from destroyed renderers are acked properly, and
+//   without delaying acks from other renderers, and
+// * making sure events are only acked if the root_view (at the time of the
+//   out-bound event) is still valid.
+// Some of this logic, e.g. the last item above, is shared with
+// RenderWidgetHostViewBase.
+class TouchEventAckQueue {
+ public:
+  enum class TouchEventAckStatus { TouchEventNotAcked, TouchEventAcked };
+  enum class TouchEventSource { SystemTouchEvent, EmulatedTouchEvent };
+  struct AckData {
+    uint32_t touch_event_id;
+    RenderWidgetHostViewBase* target_view;
+    RenderWidgetHostViewBase* root_view;
+    TouchEventSource touch_event_source;
+    TouchEventAckStatus touch_event_ack_status;
+    InputEventAckState ack_result;
+  };
+
+  TouchEventAckQueue() {}
+
+  void Add(uint32_t touch_event_id,
+           RenderWidgetHostViewBase* target_view,
+           RenderWidgetHostViewBase* root_view,
+           TouchEventSource touch_event_source,
+           TouchEventAckStatus touch_event_ack_status,
+           InputEventAckState ack_result);
+
+  void Add(uint32_t touch_event_id,
+           RenderWidgetHostViewBase* target_view,
+           RenderWidgetHostViewBase* root_view,
+           TouchEventSource touch_event_source);
+
+  void MarkAcked(uint32_t touch_event_id,
+                 InputEventAckState ack_result,
+                 RenderWidgetHostViewBase* target_view);
+
+  void UpdateQueueAfterTargetDestroyed(RenderWidgetHostViewBase* target_view);
+
+ private:
+  void ProcessAckedTouchEvents();
+  void ReportTouchEventAckQueueUmaStats();
+
+  std::deque<AckData> ack_queue_;
+};
+
+void TouchEventAckQueue::Add(uint32_t touch_event_id,
+                             RenderWidgetHostViewBase* target_view,
+                             RenderWidgetHostViewBase* root_view,
+                             TouchEventSource touch_event_source,
+                             TouchEventAckStatus touch_event_ack_status,
+                             InputEventAckState ack_result) {
+  AckData data = {
+      touch_event_id, target_view, root_view, touch_event_source,
+      touch_event_ack_status, ack_result};
+  ack_queue_.push_back(data);
+  if (touch_event_ack_status == TouchEventAckStatus::TouchEventAcked)
+    ProcessAckedTouchEvents();
+  ReportTouchEventAckQueueUmaStats();
+}
+
+void TouchEventAckQueue::Add(uint32_t touch_event_id,
+                             RenderWidgetHostViewBase* target_view,
+                             RenderWidgetHostViewBase* root_view,
+                             TouchEventSource touch_event_source) {
+  Add(touch_event_id, target_view, root_view, touch_event_source,
+      TouchEventAckStatus::TouchEventNotAcked, INPUT_EVENT_ACK_STATE_UNKNOWN);
+}
+
+void TouchEventAckQueue::MarkAcked(uint32_t touch_event_id,
+                                   InputEventAckState ack_result,
+                                   RenderWidgetHostViewBase* target_view) {
+  auto it = find_if(ack_queue_.begin(), ack_queue_.end(),
+                    [touch_event_id](AckData data) {
+                      return data.touch_event_id == touch_event_id;
+                    });
+  if (it == ack_queue_.end())
+    return;
+  DCHECK(it->touch_event_ack_status != TouchEventAckStatus::TouchEventAcked);
+  DCHECK(target_view && target_view == it->target_view);
+  it->touch_event_ack_status = TouchEventAckStatus::TouchEventAcked;
+  it->ack_result = ack_result;
+  ProcessAckedTouchEvents();
+}
+
+void TouchEventAckQueue::ProcessAckedTouchEvents() {
+  if (ack_queue_.empty())
+    return;
+
+  // TODO(wjmaclean): modify the following loop to actually forward the acks
+  // to the root_view. Must verify that the root_view at the time the event
+  // was registered still exists.
+  while (!ack_queue_.empty() && ack_queue_.front().touch_event_ack_status ==
+                                    TouchEventAckStatus::TouchEventAcked) {
+    // TODO(wjmaclean): We will eventually ack touch events to the root_view
+    // here. Each ack will require confirmation that the touch event's root
+    // view (at the time of event dispatch) is still valid, otherwise we just
+    // discard the ack.
+    ack_queue_.pop_front();
+  }
+}
+
+void TouchEventAckQueue::ReportTouchEventAckQueueUmaStats() {
+  size_t count = ack_queue_.size();
+  UMA_HISTOGRAM_COUNTS_10000("Event.FrameEventRouting.TouchEventAckQueueSize",
+                             count);
+  // TODO(wjmaclean): is it worth also recording how many different renderers
+  // are waiting on touch event acks at the time of reporting?
+}
+
+void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
+    RenderWidgetHostViewBase* target_view) {
+  // If a queue entry's root view is being destroyed, just delete it.
+  ack_queue_.erase(remove_if(ack_queue_.begin(), ack_queue_.end(),
+                             [target_view](AckData data) {
+                               return data.root_view == target_view;
+                             }),
+                   ack_queue_.end());
+
+  // Otherwise, mark its status accordingly.
+  for_each(ack_queue_.begin(), ack_queue_.end(), [target_view](AckData data) {
+    if (data.target_view == target_view) {
+      data.touch_event_ack_status = TouchEventAckStatus::TouchEventAcked;
+      data.ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+    }
+  });
+
+  ProcessAckedTouchEvents();
+}
+
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     RenderWidgetHostViewBase* view) {
   // RenderWidgetHostViewBase::RemoveObserver() should only ever be called
@@ -106,6 +244,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     touch_target_.target = nullptr;
     active_touches_ = 0;
   }
+  touch_event_ack_queue_->UpdateQueueAfterTargetDestroyed(view);
 
   if (view == wheel_target_.target)
     wheel_target_.target = nullptr;
@@ -199,6 +338,7 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
       gesture_pinch_did_send_scroll_begin_(false),
       event_targeter_(std::make_unique<RenderWidgetTargeter>(this)),
       use_viz_hit_test_(features::IsVizHitTestingEnabled()),
+      touch_event_ack_queue_(new TouchEventAckQueue),
       weak_ptr_factory_(this) {}
 
 RenderWidgetHostInputEventRouter::~RenderWidgetHostInputEventRouter() {
@@ -561,7 +701,8 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     RenderWidgetHostViewBase* target,
     const blink::WebTouchEvent& touch_event,
     const ui::LatencyInfo& latency,
-    const base::Optional<gfx::PointF>& target_location) {
+    const base::Optional<gfx::PointF>& target_location,
+    bool is_emulated_touchevent) {
   DCHECK(blink::WebInputEvent::IsTouchEventType(touch_event.GetType()) &&
          touch_event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
 
@@ -604,7 +745,15 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     base::debug::DumpWithoutCrashing();
   }
 
+  TouchEventAckQueue::TouchEventSource event_source =
+      is_emulated_touchevent
+          ? TouchEventAckQueue::TouchEventSource::EmulatedTouchEvent
+          : TouchEventAckQueue::TouchEventSource::SystemTouchEvent;
   if (!touch_target_.target) {
+    touch_event_ack_queue_->Add(
+        touch_event.unique_touch_event_id, nullptr, root_view, event_source,
+        TouchEventAckQueue::TouchEventAckStatus::TouchEventAcked,
+        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
     root_view->ProcessAckedTouchEvent(touch_with_latency,
                                       INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -619,6 +768,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     }
   }
 
+  touch_event_ack_queue_->Add(touch_event.unique_touch_event_id,
+                              touch_target_.target, root_view, event_source);
+
   blink::WebTouchEvent event(touch_event);
   TransformEventTouchPositions(&event, touch_target_.delta);
   touch_target_.target->ProcessTouchEvent(event, latency);
@@ -631,6 +783,8 @@ void RenderWidgetHostInputEventRouter::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result,
     RenderWidgetHostViewBase* view) {
+  touch_event_ack_queue_->MarkAcked(event.event.unique_touch_event_id,
+                                    ack_result, view);
   // TODO(wjmaclean): Eventually we will keep track of which outgoing touch
   // events are emulated and which aren't, so the decision to hand off to the
   // touch emulator won't just rely on the existence of the touch emulator.
@@ -1441,8 +1595,8 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
                                         INPUT_EVENT_ACK_STATE_CONSUMED);
       return;
     }
-    DispatchTouchEvent(root_view, target, touch_event, latency,
-                       target_location);
+    DispatchTouchEvent(root_view, target, touch_event, latency, target_location,
+                       false /* not emulated */);
     return;
   }
   if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
@@ -1503,7 +1657,7 @@ void RenderWidgetHostInputEventRouter::ForwardEmulatedTouchEvent(
   gfx::PointF transformed_point = target->TransformRootPointToViewCoordSpace(
       gfx::PointF(position_in_widget.x, position_in_widget.y));
   DispatchTouchEvent(last_emulated_event_root_view_, target, event,
-                     ui::LatencyInfo(), transformed_point);
+                     ui::LatencyInfo(), transformed_point, true /* emulated */);
 }
 
 void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
