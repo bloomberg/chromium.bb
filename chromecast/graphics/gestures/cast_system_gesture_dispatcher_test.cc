@@ -138,7 +138,7 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleHandlersByPriority) {
   gesture_dispatcher_->RemoveGestureHandler(&handler_1);
 }
 
-TEST_F(CastSystemGestureDispatcherTest, MultipleSwipesToRootUi) {
+TEST_F(CastSystemGestureDispatcherTest, MultipleBackSwipesToRootUi) {
   MockCastGestureHandler handler_1;
   MockCastGestureHandler handler_2;
   ON_CALL(handler_1, GetPriority())
@@ -156,6 +156,16 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleSwipesToRootUi) {
   CastSideSwipeOrigin origin = CastSideSwipeOrigin::TOP;
   gfx::Point point(0, 0);
 
+  // Swipe gestures from any other edge but LEFT will always hit the main target
+  // handler.
+  for (size_t i = 0; i < 2 * kMaxSwipesWithinTimeout; ++i) {
+    EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
+    EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
+    gesture_dispatcher_->HandleSideSwipe(event, origin, point);
+  }
+
+  // Now test LEFT events.
+  origin = CastSideSwipeOrigin::LEFT;
   // Trigger N - 1 events within the recent events timeout window.
   for (size_t i = 0; i < kMaxSwipesWithinTimeout - 1; ++i) {
     EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
@@ -182,9 +192,6 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleSwipesToRootUi) {
   EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
   gesture_dispatcher_->HandleSideSwipe(event, origin, point);
 
-  // We are now outside the timeout window.
-  test_clock_->Advance(kTimeoutWindow);
-
   // All events will go to the root UI until the next BEGIN event after the
   // 3-event timeout.
   event = CastSideSwipeEvent::CONTINUE;
@@ -197,7 +204,8 @@ TEST_F(CastSystemGestureDispatcherTest, MultipleSwipesToRootUi) {
   EXPECT_CALL(handler_2, HandleSideSwipe(_, _, _)).Times(0);
   gesture_dispatcher_->HandleSideSwipe(event, origin, point);
 
-  // Timeout has elapsed, next BEGIN event will go to the main handler.
+  // The next event will behave as normal; the timeout period restarts after
+  // the END swipe event.
   event = CastSideSwipeEvent::BEGIN;
   EXPECT_CALL(handler_1, HandleSideSwipe(_, _, _)).Times(0);
   EXPECT_CALL(handler_2, HandleSideSwipe(event, origin, point));
