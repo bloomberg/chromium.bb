@@ -1122,6 +1122,20 @@ TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDown) {
   EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionAuto);
 }
 
+TEST_F(TouchActionFilterTest, ScrollBeginWithoutTapDownWithKnownTouchAction) {
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ScrollingTouchAction().has_value());
+  EXPECT_FALSE(filter_.allowed_touch_action().has_value());
+
+  filter_.OnSetTouchAction(cc::kTouchActionPan);
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(5, 0, kSourceDevice);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPan);
+  EXPECT_EQ(filter_.allowed_touch_action().value(), cc::kTouchActionPan);
+}
+
 TEST_F(TouchActionFilterTest, TouchpadScroll) {
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(
