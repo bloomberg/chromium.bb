@@ -1269,23 +1269,13 @@ const FeatureEntry::FeatureVariation kGamepadPollingRateVariations[] = {
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentList = {
     features::kNewNetErrorPageUIAlternateParameterName,
     features::kNewNetErrorPageUIAlternateContentList};
-const FeatureEntry::FeatureParam kNewNetErrorPageUIContentListAutoDL = {
-    features::kNewNetErrorPageUIAlternateParameterName,
-    features::kNewNetErrorPageUIAlternateContentListAutoDownload};
 const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreview = {
     features::kNewNetErrorPageUIAlternateParameterName,
     features::kNewNetErrorPageUIAlternateContentPreview};
-const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreviewAutoDL = {
-    features::kNewNetErrorPageUIAlternateParameterName,
-    features::kNewNetErrorPageUIAlternateContentPreviewAutoDownload};
 
 const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
     {"Content List", &kNewNetErrorPageUIContentList, 1, nullptr},
-    {"Content List + Auto download", &kNewNetErrorPageUIContentListAutoDL, 1,
-     nullptr},
-    {"Content Preview", &kNewNetErrorPageUIContentPreview, 1, nullptr},
-    {"Content Preview + Auto download", &kNewNetErrorPageUIContentPreviewAutoDL,
-     1, nullptr}};
+    {"Content Preview", &kNewNetErrorPageUIContentPreview, 1, nullptr}};
 
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
@@ -3726,6 +3716,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kNewNetErrorPageUI,
                                     kNewNetErrorPageUIVariations,
                                     "NewNetErrorPageUI")},
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"auto-fetch-on-net-error-page",
+     flag_descriptions::kAutoFetchOnNetErrorPageName,
+     flag_descriptions::kAutoFetchOnNetErrorPageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAutoFetchOnNetErrorPage)},
 #endif  // defined(OS_ANDROID)
 
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,

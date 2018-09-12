@@ -1331,6 +1331,9 @@ extern const char kAppNotificationStatusMessagingDescription[];
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 
+extern const char kAutoFetchOnNetErrorPageName[];
+extern const char kAutoFetchOnNetErrorPageDescription[];
+
 extern const char kAutofillAccessoryViewName[];
 extern const char kAutofillAccessoryViewDescription[];
 

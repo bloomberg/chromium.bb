@@ -55,6 +55,11 @@ extern const base::Feature kAssetDownloadSuggestionsFeature;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAutoFetchOnNetErrorPage;
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAutomaticTabDiscarding;
@@ -267,11 +272,7 @@ extern const char kNewNetErrorPageUIAlternateParameterName[];
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kNewNetErrorPageUIAlternateContentList[];
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentListAutoDownload[];
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kNewNetErrorPageUIAlternateContentPreview[];
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[];
 #endif
 
 #if defined(OS_POSIX)
