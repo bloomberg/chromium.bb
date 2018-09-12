@@ -89,8 +89,8 @@ public class ToolbarTablet
         super(context, attrs);
         mStartPaddingWithButtons = getResources().getDimensionPixelOffset(
                 R.dimen.tablet_toolbar_start_padding);
-        mStartPaddingWithoutButtons = getResources().getDimensionPixelOffset(
-                R.dimen.tablet_toolbar_start_padding_no_buttons);
+        mStartPaddingWithoutButtons =
+                getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
     }
 
     @Override
