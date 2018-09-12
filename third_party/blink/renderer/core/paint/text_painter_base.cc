@@ -288,17 +288,23 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   // vertical text.
   switch (baseline_type) {
     case kAlphabeticBaseline:
-      if (style.TextUnderlinePosition() == kTextUnderlinePositionAuto) {
+      if (!(style.TextUnderlinePosition() & kTextUnderlinePositionUnder)) {
         return ResolvedUnderlinePosition::kRoman;
       }
-      // TODO(https://crbug.com/313888) Support left, right.
       return ResolvedUnderlinePosition::kUnder;
     case kIdeographicBaseline:
       // Compute language-appropriate default underline position.
       // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
       UScriptCode script = style.GetFontDescription().GetScript();
-      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL)
+      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL) {
+        if (style.TextUnderlinePosition() & kTextUnderlinePositionLeft) {
+          return ResolvedUnderlinePosition::kUnder;
+        }
         return ResolvedUnderlinePosition::kOver;
+      }
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionRight) {
+        return ResolvedUnderlinePosition::kOver;
+      }
       return ResolvedUnderlinePosition::kUnder;
   }
   NOTREACHED();
