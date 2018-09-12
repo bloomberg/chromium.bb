@@ -38,7 +38,9 @@ class ThreadPool final : public GarbageCollected<ThreadPool>,
 
   friend ThreadPoolMessagingProxy;
   ThreadPoolMessagingProxy* GetProxyForTaskType(TaskType);
-  void TaskCompleted(size_t task_id, scoped_refptr<SerializedScriptValue>);
+  void TaskCompleted(size_t task_id,
+                     bool was_rejected,
+                     scoped_refptr<SerializedScriptValue> result);
   void AbortTask(size_t task_id, TaskType task_type);
 
   Member<Document> document_;
