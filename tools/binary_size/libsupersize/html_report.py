@@ -17,14 +17,16 @@ import models
 import path_util
 
 
-_COMPACT_FILE_PATH_KEY = 'p'
+# These must match |_KEYS| in shared.js.
 _COMPACT_FILE_COMPONENT_INDEX_KEY = 'c'
+_COMPACT_FILE_PATH_KEY = 'p'
 _COMPACT_FILE_SYMBOLS_KEY = 's'
-_COMPACT_SYMBOL_NAME_KEY = 'n'
 _COMPACT_SYMBOL_BYTE_SIZE_KEY = 'b'
-_COMPACT_SYMBOL_TYPE_KEY = 't'
 _COMPACT_SYMBOL_COUNT_KEY = 'u'
 _COMPACT_SYMBOL_FLAGS_KEY = 'f'
+_COMPACT_SYMBOL_NAME_KEY = 'n'
+_COMPACT_SYMBOL_NUM_ALIASES_KEY = 'a'
+_COMPACT_SYMBOL_TYPE_KEY = 't'
 
 # Always emit this many distict symbols (if present), even when small.
 # No need to optimize file size at this point).
@@ -132,10 +134,13 @@ def _MakeTreeViewList(symbols, include_all_symbols):
 
     is_dex_method = symbol.section_name == models.SECTION_DEX_METHOD
     symbol_entry = {
+      _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
       _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
       _COMPACT_SYMBOL_TYPE_KEY: symbol.section,
-      _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
     }
+    if symbol.num_aliases != 1:
+      symbol_entry[_COMPACT_SYMBOL_NUM_ALIASES_KEY] = symbol.num_aliases
+
     # We use symbol count for the method count mode in the diff mode report.
     # Negative values are used to indicate a symbol was removed, so it should
     # count as -1 rather than the default, 1.
