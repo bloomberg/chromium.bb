@@ -245,6 +245,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
           "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
+      default_feature_name_map.Set("lazyload",
+                                   mojom::FeaturePolicyFeature::kLazyLoad);
       default_feature_name_map.Set(
           "legacy-image-formats",
           mojom::FeaturePolicyFeature::kLegacyImageFormats);

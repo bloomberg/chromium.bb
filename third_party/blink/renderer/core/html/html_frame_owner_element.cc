@@ -342,10 +342,13 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   // Update the |should_lazy_load_children_| value according to the "lazyload"
   // attribute immediately, so that it still gets respected even if the "src"
   // attribute gets parsed in ParseAttribute() before the "lazyload" attribute
-  // does.
+  // does. Note that when the *feature policy* for "lazyload" is disabled, the
+  // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+  // "auto" instead).
   if (should_lazy_load_children_ &&
       EqualIgnoringASCIICase(FastGetAttribute(HTMLNames::lazyloadAttr),
-                             "off")) {
+                             "off") &&
+      !GetDocument().IsLazyLoadPolicyEnforced()) {
     should_lazy_load_children_ = false;
   }
 
@@ -444,7 +447,11 @@ bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
 void HTMLFrameOwnerElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == HTMLNames::lazyloadAttr) {
-    if (EqualIgnoringASCIICase(params.new_value, "off")) {
+    // Note that when the *feature policy* for "lazyload" is disabled, the
+    // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
+    // "auto" instead).
+    if (EqualIgnoringASCIICase(params.new_value, "off") &&
+        !GetDocument().IsLazyLoadPolicyEnforced()) {
       should_lazy_load_children_ = false;
       if (lazy_load_frame_observer_ &&
           lazy_load_frame_observer_->IsLazyLoadPending()) {

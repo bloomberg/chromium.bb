@@ -7588,6 +7588,12 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
   return false;
 }
 
+bool Document::IsLazyLoadPolicyEnforced() const {
+  return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+         !GetFeaturePolicy()->IsFeatureEnabled(
+             mojom::FeaturePolicyFeature::kLazyLoad);
+}
+
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   if (!lazy_load_image_observer_)
     lazy_load_image_observer_ = new LazyLoadImageObserver();

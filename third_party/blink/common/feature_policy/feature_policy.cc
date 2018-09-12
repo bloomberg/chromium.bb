@@ -263,6 +263,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             FeaturePolicy::FeatureDefault::EnableForSelf},
                            {mojom::FeaturePolicyFeature::kImageCompression,
                             FeaturePolicy::FeatureDefault::EnableForAll},
+                           {mojom::FeaturePolicyFeature::kLazyLoad,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kLegacyImageFormats,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kMagnetometer,
