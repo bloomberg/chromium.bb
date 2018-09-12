@@ -17,6 +17,10 @@
 
 void StoreURLInPasteboard(const GURL& URL) {
   DCHECK(URL.is_valid());
+  if (!URL.is_valid()) {
+    return;
+  }
+
   NSData* plainText = [base::SysUTF8ToNSString(URL.spec())
       dataUsingEncoding:NSUTF8StringEncoding];
   NSDictionary* copiedItem = @{
