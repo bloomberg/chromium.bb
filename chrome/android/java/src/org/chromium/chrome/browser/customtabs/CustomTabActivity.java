@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -46,6 +47,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -195,6 +197,19 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
+
+    private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
+
+    /**
+     * Return true when the activity has been launched in a separate task. The default behavior is
+     * to reuse the same task and put the activity on top of the previous one (i.e hiding it). A
+     * separate task creates a new entry in the Android recent screen.
+     **/
+    private boolean useSeparateTask() {
+        final int separateTaskFlags =
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+        return (getIntent().getFlags() & separateTaskFlags) != 0;
+    }
 
     private TabModelObserver mCloseActivityWhenEmptyTabModelObserver = new EmptyTabModelObserver() {
         @Override
@@ -669,6 +684,11 @@ public class CustomTabActivity extends ChromeActivity {
             mTrustedWebActivityUi.initialShowSnackbarIfNeeded();
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {
+            mTaskDescriptionHelper = new ActivityTabTaskDescriptionHelper(this,
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
+        }
+
         super.finishNativeInitialization();
     }
 
@@ -911,6 +931,8 @@ public class CustomTabActivity extends ChromeActivity {
         if (mIncognitoTabHost != null) {
             IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
         }
+
+        if (mTaskDescriptionHelper != null) mTaskDescriptionHelper.destroy();
     }
 
     @Override
@@ -1080,8 +1102,11 @@ public class CustomTabActivity extends ChromeActivity {
      * recents.
      */
     protected void handleFinishAndClose() {
-        // When on top of another app, finish is all that is required.
-        finish();
+        if (useSeparateTask()) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+        } else {
+            finish();
+        }
     }
 
     @Override
