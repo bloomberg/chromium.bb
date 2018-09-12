@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,7 +38,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     // The details of the contact shown.
     private ContactDetails mContactDetails;
 
-    // The image view containing the abbreviated letters of the name.
+    // The image view containing the profile image of the contact, or the abbreviated letters of the
+    // contact's name.
     private ImageView mImage;
 
     // The control that signifies the contact has been selected.
@@ -123,9 +126,17 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
         mDetailsView.setText(contactDetails.getContactDetailsAsString());
-        Bitmap icon = mCategoryView.getIconGenerator().generateIconForText(
-                contactDetails.getDisplayNameAbbreviation(), 2);
-        mImage.setImageBitmap(icon);
+        Bitmap icon = contactDetails.getContactImage();
+        if (icon == null) {
+            icon = mCategoryView.getIconGenerator().generateIconForText(
+                    contactDetails.getDisplayNameAbbreviation(), 2);
+            mImage.setImageBitmap(icon);
+        } else {
+            Resources resources = mContext.getResources();
+            RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
+            drawable.setCircular(true);
+            mImage.setImageDrawable(drawable);
+        }
 
         updateSelectionState();
     }
