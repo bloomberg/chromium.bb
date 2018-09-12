@@ -15,9 +15,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2572
