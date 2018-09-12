@@ -90,8 +90,9 @@ std::string BrowserDMTokenStorageLinux::InitClientId() {
   base::StringPiece machine_id_trimmed =
       base::TrimWhitespaceASCII(machine_id, base::TRIM_TRAILING);
   if (machine_id_trimmed.size() != machine_id_size) {
-    SYSLOG(ERROR) << "Error: /etc/machine-id contains " << machine_id_size
-                  << " characters (" << machine_id_size << " were expected).";
+    SYSLOG(ERROR) << "Error: /etc/machine-id contains "
+                  << machine_id_trimmed.size() << " characters ("
+                  << machine_id_size << " were expected).";
     return std::string();
   }
 
