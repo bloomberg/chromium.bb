@@ -643,9 +643,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param incognito Whether or not the affected model was incognito.
      */
     public void onTabSelected(long time, int tabId, int prevId, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabSelected(time, incognito, tabId, prevId);
-        }
     }
 
     /**
@@ -666,9 +663,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param incognito Whether or not the affected model was incognito.
      */
     public void onTabClosed(long time, int tabId, int nextTabId, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabClosed(time, incognito, tabId);
-        }
     }
 
     /**
@@ -731,76 +725,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     public void onTabModelSwitched(boolean incognito) {
         for (int i = 0; i < mSceneOverlays.size(); i++) {
             mSceneOverlays.get(i).tabModelSwitched(incognito);
-        }
-    }
-
-    /**
-     * Called when a tab has been moved in the tabModel.
-     * @param time      The current time of the app in ms.
-     * @param tabId     The id of the Tab.
-     * @param oldIndex  The old index of the tab in the tabModel.
-     * @param newIndex  The new index of the tab in the tabModel.
-     * @param incognito True if the tab is incognito.
-     */
-    public void onTabMoved(long time, int tabId, int oldIndex, int newIndex, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabMoved(time, incognito, tabId, oldIndex, newIndex);
-        }
-    }
-
-    /**
-     * Called when a tab has started loading.
-     * @param id        The id of the Tab.
-     * @param incognito True if the tab is incognito.
-     */
-    public void onTabPageLoadStarted(int id, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabPageLoadStarted(id, incognito);
-        }
-    }
-
-    /**
-     * Called when a tab has finished loading.
-     * @param id        The id of the Tab.
-     * @param incognito True if the tab is incognito.
-     */
-    public void onTabPageLoadFinished(int id, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabPageLoadFinished(id, incognito);
-        }
-    }
-
-    /**
-     * Called when a tab has started loading resources.
-     * @param id        The id of the Tab.
-     * @param incognito True if the tab is incognito.
-     */
-    public void onTabLoadStarted(int id, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabLoadStarted(id, incognito);
-        }
-    }
-
-    /**
-     * Called when a tab has stopped loading resources.
-     * @param id        The id of the Tab.
-     * @param incognito True if the tab is incognito.
-     */
-    public void onTabLoadFinished(int id, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabLoadFinished(id, incognito);
-        }
-    }
-
-    /**
-     * Called when a tab close has been undone and the tab has been restored.
-     * @param time      The current time of the app in ms.
-     * @param id        The id of the Tab.
-     * @param incognito True if the tab is incognito
-     */
-    public void onTabClosureCancelled(long time, int id, boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabClosureCancelled(time, incognito, id);
         }
     }
 

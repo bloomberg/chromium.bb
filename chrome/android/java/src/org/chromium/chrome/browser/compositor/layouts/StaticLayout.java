@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.Arrays;
@@ -138,9 +140,14 @@ public class StaticLayout extends Layout {
     }
 
     @Override
-    public void onTabPageLoadFinished(int id, boolean incognito) {
-        super.onTabPageLoadFinished(id, incognito);
-        unstallImmediately(id);
+    public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
+        super.setTabModelSelector(modelSelector, manager);
+        new TabModelSelectorTabObserver(mTabModelSelector) {
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                if (isActive()) unstallImmediately(tab.getId());
+            }
+        };
     }
 
     private void setPreHideState() {

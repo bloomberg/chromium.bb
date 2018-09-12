@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -439,7 +440,23 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
         super.setTabModelSelector(modelSelector, manager);
         mSceneLayer.setTabModelSelector(modelSelector);
         resetScrollData();
+
+        new TabModelSelectorTabModelObserver(mTabModelSelector) {
+            @Override
+            public void tabClosureUndone(Tab tab) {
+                if (!isActive()) return;
+                onTabClosureCancelled(LayoutManager.time(), tab.getId(), tab.isIncognito());
+            }
+        };
     }
+
+    /**
+     * Called when a tab close has been undone and the tab has been restored.
+     * @param time      The current time of the app in ms.
+     * @param id        The id of the Tab.
+     * @param incognito True if the tab is incognito
+     */
+    public void onTabClosureCancelled(long time, int id, boolean incognito) {}
 
     /**
      * Get the tab stack at the specified index.
@@ -527,11 +544,6 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
     @Override
     public void onTabsAllClosing(long time, boolean incognito) {
         super.onTabsAllClosing(time, incognito);
-    }
-
-    @Override
-    public void onTabClosureCancelled(long time, int id, boolean incognito) {
-        super.onTabClosureCancelled(time, id, incognito);
     }
 
     @Override

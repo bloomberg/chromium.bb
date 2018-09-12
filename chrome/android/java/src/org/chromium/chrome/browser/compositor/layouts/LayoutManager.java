@@ -182,18 +182,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         }
 
         @Override
-        public void tabClosureUndone(Tab tab) {
-            tabClosureCancelled(tab.getId(), tab.isIncognito());
-        }
-
-        @Override
         public void tabClosureCommitted(Tab tab) {
             LayoutManager.this.tabClosureCommitted(tab.getId(), tab.isIncognito());
-        }
-
-        @Override
-        public void didMoveTab(Tab tab, int newIndex, int curIndex) {
-            tabMoved(tab.getId(), curIndex, newIndex, tab.isIncognito());
         }
 
         @Override
@@ -417,36 +407,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             public void onDidChangeThemeColor(Tab tab, int color) {
                 initLayoutTabFromHost(tab.getId());
             }
-
-            @Override
-            public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
-                tabLoadStarted(tab.getId(), tab.isIncognito());
-            }
-
-            @Override
-            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
-                tabLoadFinished(tab.getId(), tab.isIncognito());
-            }
-
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                tabPageLoadStarted(tab.getId(), tab.isIncognito());
-            }
-
-            @Override
-            public void onPageLoadFinished(Tab tab) {
-                tabPageLoadFinished(tab.getId(), tab.isIncognito());
-            }
-
-            @Override
-            public void onPageLoadFailed(Tab tab, int errorCode) {
-                tabPageLoadFinished(tab.getId(), tab.isIncognito());
-            }
-
-            @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                tabPageLoadFinished(tab.getId(), tab.isIncognito());
-            }
         };
 
         mContentContainer = androidContentContainer;
@@ -629,34 +589,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     protected void tabModelSwitched(boolean incognito) {
         if (getActiveLayout() != null) getActiveLayout().onTabModelSwitched(incognito);
-    }
-
-    private void tabMoved(int id, int oldIndex, int newIndex, boolean incognito) {
-        if (getActiveLayout() != null) {
-            getActiveLayout().onTabMoved(time(), id, oldIndex, newIndex, incognito);
-        }
-    }
-
-    private void tabPageLoadStarted(int id, boolean incognito) {
-        if (getActiveLayout() != null) getActiveLayout().onTabPageLoadStarted(id, incognito);
-    }
-
-    private void tabPageLoadFinished(int id, boolean incognito) {
-        if (getActiveLayout() != null) getActiveLayout().onTabPageLoadFinished(id, incognito);
-    }
-
-    private void tabLoadStarted(int id, boolean incognito) {
-        if (getActiveLayout() != null) getActiveLayout().onTabLoadStarted(id, incognito);
-    }
-
-    private void tabLoadFinished(int id, boolean incognito) {
-        if (getActiveLayout() != null) getActiveLayout().onTabLoadFinished(id, incognito);
-    }
-
-    private void tabClosureCancelled(int id, boolean incognito) {
-        if (getActiveLayout() != null) {
-            getActiveLayout().onTabClosureCancelled(time(), id, incognito);
-        }
     }
 
     @Override
