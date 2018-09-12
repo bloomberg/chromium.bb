@@ -97,9 +97,6 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
                            : ash::kShellWindowId_LockActionHandlerContainer;
     ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
   }
-  init_params->mus_properties
-      [ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
   if (HasFrameColor()) {
     init_params
         ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
