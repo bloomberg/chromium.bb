@@ -8,7 +8,7 @@
         "tab_background_text": [0,255,0],
         "background_tab_inactive": [0,0,0],
         "background_tab_incognito": [0,0,0],
-		"tab_background_text_incognito": [0,0,255],
+        "tab_background_text_incognito": [0,0,255],
         "background_tab_incognito_inactive": [0,0,0]
       }
    },

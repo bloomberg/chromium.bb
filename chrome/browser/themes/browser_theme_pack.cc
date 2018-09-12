@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/crx_file/id_util.h"
@@ -58,7 +59,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 58;
+const int kThemePackVersion = 59;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -231,7 +232,7 @@ const StringToIntTable kTintTable[] = {
 const size_t kTintTableLength = arraysize(kTintTable);
 
 // Strings used by themes to identify colors in the JSON.
-const StringToIntTable kColorTable[] = {
+constexpr StringToIntTable kOverwritableColorTable[] = {
     {"frame", TP::COLOR_FRAME},
     {"frame_inactive", TP::COLOR_FRAME_INACTIVE},
     {"frame_incognito", TP::COLOR_FRAME_INCOGNITO},
@@ -255,7 +256,23 @@ const StringToIntTable kColorTable[] = {
     {"ntp_header", TP::COLOR_NTP_HEADER},
     {"button_background", TP::COLOR_BUTTON_BACKGROUND},
 };
-const size_t kColorTableLength = arraysize(kColorTable);
+constexpr size_t kOverwritableColorTableLength =
+    base::size(kOverwritableColorTable);
+
+// Colors generated based on the theme, but not overwritable in the theme file.
+constexpr int kNonOverwritableColorTable[] = {
+    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+};
+constexpr size_t kNonOverwritableColorTableLength =
+    base::size(kNonOverwritableColorTable);
+
+// The maximum number of colors we may need to store (includes ones that can be
+// specified by the theme, and ones that we calculate but can't be specified).
+constexpr size_t kColorsArrayLength =
+    kOverwritableColorTableLength + kNonOverwritableColorTableLength;
 
 // Strings used by themes to identify display properties keys in JSON.
 const StringToIntTable kDisplayProperties[] = {
@@ -515,6 +532,32 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(TabBackgroundImageSource);
 };
 
+class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
+ public:
+  ControlButtonBackgroundImageSource(SkColor background_color,
+                                     const gfx::ImageSkia& bg_image)
+      : gfx::CanvasImageSource(
+            bg_image.isNull() ? gfx::Size(1, 1) : bg_image.size(),
+            false),
+        background_color_(background_color),
+        bg_image_(bg_image) {}
+
+  ~ControlButtonBackgroundImageSource() override = default;
+
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->DrawColor(background_color_);
+
+    if (!bg_image_.isNull())
+      canvas->TileImageInt(bg_image_, 0, 0, size().width(), size().height());
+  }
+
+ private:
+  const SkColor background_color_;
+  const gfx::ImageSkia bg_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlButtonBackgroundImageSource);
+};
+
 }  // namespace
 
 BrowserThemePack::~BrowserThemePack() {
@@ -531,7 +574,7 @@ void BrowserThemePack::SetColor(int id, SkColor color) {
   DCHECK(colors_);
 
   int first_available_color = -1;
-  for (size_t i = 0; i < kColorTableLength; ++i) {
+  for (size_t i = 0; i < kColorsArrayLength; ++i) {
     if (colors_[i].id == id) {
       colors_[i].color = color;
       return;
@@ -594,6 +637,11 @@ void BrowserThemePack::BuildFromExtension(
   // colors from the frame images, so only colors with no matching images are
   // generated.
   pack->GenerateFrameColors();
+
+  // Generate background color information for window control buttons.  This
+  // must be done after frame colors are set, since they are used when
+  // determining window control button colors.
+  pack->GenerateWindowControlButtonColor(&pack->images_);
 
   // Create the tab background images, and generate colors where relevant.  This
   // must be done after all frame colors are set, since they are used when
@@ -731,9 +779,9 @@ bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   resources[kTintsID] = base::StringPiece(
       reinterpret_cast<const char*>(tints_),
       sizeof(TintEntry[kTintTableLength]));
-  resources[kColorsID] = base::StringPiece(
-      reinterpret_cast<const char*>(colors_),
-      sizeof(ColorPair[kColorTableLength]));
+  resources[kColorsID] =
+      base::StringPiece(reinterpret_cast<const char*>(colors_),
+                        sizeof(ColorPair[kColorsArrayLength]));
   resources[kDisplayPropertiesID] = base::StringPiece(
       reinterpret_cast<const char*>(display_properties_),
       sizeof(DisplayPropertyPair[kDisplayPropertiesSize]));
@@ -798,7 +846,7 @@ bool BrowserThemePack::GetColor(int id, SkColor* color) const {
           }));
 
   if (colors_) {
-    for (size_t i = 0; i < kColorTableLength; ++i) {
+    for (size_t i = 0; i < kColorsArrayLength; ++i) {
       if (colors_[i].id == id) {
         *color = colors_[i].color;
         if (base::ContainsKey(*kOpaqueColors, id))
@@ -958,8 +1006,8 @@ void BrowserThemePack::BuildTintsFromJSON(
 
 void BrowserThemePack::BuildColorsFromJSON(
     const base::DictionaryValue* colors_value) {
-  colors_ = new ColorPair[kColorTableLength];
-  for (size_t i = 0; i < kColorTableLength; ++i) {
+  colors_ = new ColorPair[kColorsArrayLength];
+  for (size_t i = 0; i < kColorsArrayLength; ++i) {
     colors_[i].id = -1;
     colors_[i].color = SkColorSetRGB(0, 0, 0);
   }
@@ -971,7 +1019,8 @@ void BrowserThemePack::BuildColorsFromJSON(
   // Copy data from the intermediary data structure to the array.
   size_t count = 0;
   for (std::map<int, SkColor>::const_iterator it = temp_colors.begin();
-       it != temp_colors.end() && count < kColorTableLength; ++it, ++count) {
+       it != temp_colors.end() && count < kOverwritableColorTableLength;
+       ++it, ++count) {
     colors_[count].id = it->first;
     colors_[count].color = it->second;
   }
@@ -1014,7 +1063,8 @@ void BrowserThemePack::ReadColorsFromJSON(
           if (!temp_colors->count(TP::COLOR_NTP_HEADER))
             (*temp_colors)[TP::COLOR_NTP_HEADER] = color;
         } else {
-          int id = GetIntForString(iter.key(), kColorTable, kColorTableLength);
+          int id = GetIntForString(iter.key(), kOverwritableColorTable,
+                                   kOverwritableColorTableLength);
           if (id != -1)
             (*temp_colors)[id] = color;
         }
@@ -1301,6 +1351,70 @@ void BrowserThemePack::GenerateFrameColors() {
   }
 }
 
+void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
+  static constexpr struct ControlBGValue {
+    // The color to compute and store.
+    int color_id;
+
+    // The frame color to use as the base of this button background.
+    int frame_color_id;
+  } kControlButtonBackgroundMap[] = {
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE, TP::COLOR_FRAME},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+       TP::COLOR_FRAME_INACTIVE},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+       TP::COLOR_FRAME_INCOGNITO},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+       TP::COLOR_FRAME_INCOGNITO_INACTIVE},
+  };
+
+  // Get data related to the control button background image and color first,
+  // since they are shared by all variants.
+  gfx::ImageSkia bg_image;
+  ImageCache::const_iterator bg_img_it =
+      images->find(PRS_THEME_WINDOW_CONTROL_BACKGROUND);
+  if (bg_img_it != images->end())
+    bg_image = bg_img_it->second.AsImageSkia();
+
+  SkColor button_bg_color;
+  SkAlpha button_bg_alpha = SK_AlphaTRANSPARENT;
+  if (GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color))
+    button_bg_alpha = SkColorGetA(button_bg_color);
+
+  button_bg_alpha =
+      WindowFrameUtil::CalculateWindows10GlassCaptionButtonBackgroundAlpha(
+          button_bg_alpha);
+
+  // Determine what portion of the image to use in our calculations (we won't
+  // use more along the X-axis than the width of the caption buttons).  This
+  // should theoretically be the maximum of the size of the caption button area
+  // on the glass frame and opaque frame, but it would be rather complicated to
+  // determine the size of the opaque frame's caption button area at pack
+  // processing time (as it is determined by the size of icons, which we don't
+  // have easy access to here), so we use the glass frame area as an
+  // approximation.
+  gfx::Size dest_size =
+      WindowFrameUtil::GetWindows10GlassCaptionButtonAreaSize();
+
+  for (const ControlBGValue& bg_pair : kControlButtonBackgroundMap) {
+    SkColor frame_color;
+    GetColor(bg_pair.frame_color_id, &frame_color);
+    SkColor base_color =
+        color_utils::AlphaBlend(button_bg_color, frame_color, button_bg_alpha);
+
+    if (bg_image.isNull()) {
+      SetColor(bg_pair.color_id, base_color);
+      continue;
+    }
+
+    auto source = std::make_unique<ControlButtonBackgroundImageSource>(
+        base_color, bg_image);
+    const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
+
+    ComputeColorFromImage(bg_pair.color_id, dest_size.height(), dest_image);
+  }
+}
+
 void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
   static constexpr struct TabValues {
     // The background image to create/update.
@@ -1367,7 +1481,8 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
           frame_color, image_to_tint, overlay,
           GetTintInternal(TP::TINT_BACKGROUND_TAB), TP::kFrameHeightAboveTabs);
       gfx::Size dest_size = image_to_tint.size();
-      dest_size.SetToMax(gfx::Size(0, kTallestTabHeight));
+      dest_size.SetToMax(overlay.size());
+      dest_size.set_height(kTallestTabHeight);
       const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
       temp_output[tab_id] = dest_image;
 

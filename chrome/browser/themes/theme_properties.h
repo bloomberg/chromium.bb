@@ -137,6 +137,13 @@ class ThemeProperties {
     COLOR_TAB_PIP_PLAYING,
     COLOR_TAB_ALERT_CAPTURING,
 
+    // Calculated representative colors for the background of window control
+    // buttons.
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,

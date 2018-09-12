@@ -28,6 +28,11 @@ class Windows10CaptionButton : public views::Button {
   // buttons to avoid the sliver of deadspace that would result.
   int GetBetweenButtonSpacing() const;
 
+  // Returns the order in which this button will be displayed (with 0 being
+  // drawn farthest to the left, and larger indices being drawn to the right of
+  // smaller indices).
+  int GetButtonDisplayOrderIndex() const;
+
   // The base color to use for the button symbols and background blending. Uses
   // the more readable of black and white.
   SkColor GetBaseColor() const;
