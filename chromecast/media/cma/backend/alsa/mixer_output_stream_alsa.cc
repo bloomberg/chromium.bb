@@ -126,15 +126,7 @@ MixerOutputStreamAlsa::MixerOutputStreamAlsa() {
 }
 
 MixerOutputStreamAlsa::~MixerOutputStreamAlsa() {
-  if (pcm_) {
-    LOG(INFO) << "snd_pcm_close: handle=" << pcm_;
-    int err = alsa_->PcmClose(pcm_);
-    if (err < 0) {
-      LOG(ERROR) << "snd_pcm_close error, leaking handle: "
-                 << alsa_->StrError(err);
-    }
-    pcm_ = nullptr;
-  }
+  Stop();
 }
 
 void MixerOutputStreamAlsa::SetAlsaWrapperForTest(
@@ -270,6 +262,14 @@ void MixerOutputStreamAlsa::Stop() {
       LOG(ERROR) << "snd_pcm_drop error: " << alsa_->StrError(err);
     }
   }
+
+  LOG(INFO) << "snd_pcm_close: handle=" << pcm_;
+  int err = alsa_->PcmClose(pcm_);
+  if (err < 0) {
+   LOG(ERROR) << "snd_pcm_close error, leaking handle: "
+              << alsa_->StrError(err);
+  }
+  pcm_ = nullptr;
 }
 
 int MixerOutputStreamAlsa::SetAlsaPlaybackParams(int requested_sample_rate) {
