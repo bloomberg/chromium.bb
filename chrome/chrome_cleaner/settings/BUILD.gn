@@ -62,7 +62,6 @@ source_set("unittest_sources") {
 
   sources = [
     "cleaner_settings_unittest.cc",
-    "other_settings_definitions.cc",
     "reporter_settings_unittest.cc",
     "settings_unittest.cc",
   ]
