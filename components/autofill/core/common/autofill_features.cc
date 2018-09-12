@@ -117,9 +117,13 @@ const base::Feature kAutofillLocalCardMigrationShowFeedback{
     "AutofillLocalCardMigrationShowFeedback",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the manual fill fallback will be present.
+// Controls whether the manual fallback will be present.
 const base::Feature kAutofillManualFallback{"AutofillManualFallback",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the manual fallback will include addresses and cards.
+const base::Feature kAutofillManualFallbackPhaseTwo{
+    "AutofillManualFallbackPhaseTwo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillPreferServerNamePredictions{
     "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};

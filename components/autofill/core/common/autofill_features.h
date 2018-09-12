@@ -43,6 +43,7 @@ extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillManualFallback;
+extern const base::Feature kAutofillManualFallbackPhaseTwo;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillPrefilledFields;

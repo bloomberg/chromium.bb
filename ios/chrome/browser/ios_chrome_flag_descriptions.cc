@@ -103,10 +103,15 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
-const char kAutofillManualFallbackName[] = "Enable autofill manual fallback";
+const char kAutofillManualFallbackName[] = "Enable Autofill Manual Fallback";
 const char kAutofillManualFallbackDescription[] =
     "When enabled, it shows the autofill UI with manual fallback when filling "
     "forms.";
+
+const char kAutofillManualFallbackPhaseTwoName[] = "Enable Addresses and Cards";
+const char kAutofillManualFallbackPhaseTwoDescription[] =
+    "When enabled, it shows the credit cards and addresses buttons in manual "
+    "fallback.";
 
 const char kAutofillShowAllSuggestionsOnPrefilledFormsName[] =
     "Enable showing all suggestions when focusing prefilled field";
