@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
-#define CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
+#ifndef CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_
+#define CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_
 
 #include <string>
 #include <vector>
@@ -14,8 +14,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
 
-#define IPC_MESSAGE_START AppShimMsgStart
-
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimLaunchType,
                           apps::APP_SHIM_LAUNCH_NUM_TYPES - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimLaunchResult,
@@ -25,4 +23,4 @@ IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimFocusType,
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimAttentionType,
                           apps::APP_SHIM_ATTENTION_NUM_TYPES - 1)
 
-#endif  // CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
+#endif  // CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_

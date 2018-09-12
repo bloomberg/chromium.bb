@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chrome/common/mac/app_shim_messages.h"
+#include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

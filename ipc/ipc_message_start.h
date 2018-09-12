@@ -42,7 +42,6 @@ enum IPCMessageStart {
   MediaPlayerMsgStart,
   TracingMsgStart,
   PeerConnectionTrackerMsgStart,
-  AppShimMsgStart,
   WebRtcLoggingMsgStart,
   TtsMsgStart,
   NaClHostMsgStart,
