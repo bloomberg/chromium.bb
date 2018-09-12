@@ -956,6 +956,7 @@ void AccessibilityManager::OnActiveOutputNodeChanged() {
   if (device.type == AudioDeviceType::AUDIO_TYPE_OTHER)
     return;
 
+  CrasAudioHandler::Get()->RemoveAudioObserver(this);
   if (GetStartupSoundEnabled()) {
     PlayEarcon(SOUND_STARTUP, PlaySoundOption::ALWAYS);
     return;
