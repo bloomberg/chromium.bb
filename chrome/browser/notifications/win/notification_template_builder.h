@@ -130,6 +130,13 @@ class NotificationTemplateBuilder {
   void WriteContextMenuElement(const std::string& content,
                                const std::string& arguments);
 
+  // Ensures that every reminder has at least one button, as the Action Center
+  // does not respect the Reminder setting on notifications with no buttons, so
+  // we must add a Dismiss button to the notification for those cases. For more
+  // details, see issue https://crbug.com/781792.
+  void EnsureReminderHasButton(const message_center::Notification& notification,
+                               NotificationLaunchId copied_launch_id);
+
   // Label to override context menu items in tests.
   static const char* context_menu_label_override_;
 

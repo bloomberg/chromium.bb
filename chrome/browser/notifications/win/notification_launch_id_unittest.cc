@@ -36,6 +36,16 @@ TEST(NotificationLaunchIdTest, SerializationTests) {
     EXPECT_EQ("2|0|Default|1|https://example.com/|notification_id",
               id.Serialize());
   }
+
+  {
+    NotificationLaunchId id(NotificationHandler::Type::WEB_PERSISTENT,
+                            "notification_id", "Default", true,
+                            GURL("https://example.com"));
+    id.set_is_for_dismiss_button();
+    ASSERT_TRUE(id.is_valid());
+    EXPECT_EQ("3|0|Default|1|https://example.com/|notification_id",
+              id.Serialize());
+  }
 }
 
 TEST(NotificationLaunchIdTest, ParsingTests) {
@@ -47,6 +57,7 @@ TEST(NotificationLaunchIdTest, ParsingTests) {
     ASSERT_TRUE(id.is_valid());
     EXPECT_EQ(-1, id.button_index());
     EXPECT_FALSE(id.is_for_context_menu());
+    EXPECT_FALSE(id.is_for_dismiss_button());
     EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
               id.notification_type());
     EXPECT_TRUE(id.incognito());
@@ -63,6 +74,7 @@ TEST(NotificationLaunchIdTest, ParsingTests) {
     ASSERT_TRUE(id.is_valid());
     EXPECT_EQ(-1, id.button_index());
     EXPECT_FALSE(id.is_for_context_menu());
+    EXPECT_FALSE(id.is_for_dismiss_button());
     EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
               id.notification_type());
     EXPECT_TRUE(id.incognito());
@@ -79,6 +91,7 @@ TEST(NotificationLaunchIdTest, ParsingTests) {
     ASSERT_TRUE(id.is_valid());
     EXPECT_EQ(0, id.button_index());
     EXPECT_FALSE(id.is_for_context_menu());
+    EXPECT_FALSE(id.is_for_dismiss_button());
     EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
               id.notification_type());
     EXPECT_TRUE(id.incognito());
@@ -96,6 +109,7 @@ TEST(NotificationLaunchIdTest, ParsingTests) {
     ASSERT_TRUE(id.is_valid());
     EXPECT_EQ(0, id.button_index());
     EXPECT_FALSE(id.is_for_context_menu());
+    EXPECT_FALSE(id.is_for_dismiss_button());
     EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
               id.notification_type());
     EXPECT_TRUE(id.incognito());
@@ -111,6 +125,23 @@ TEST(NotificationLaunchIdTest, ParsingTests) {
     ASSERT_TRUE(id.is_valid());
     EXPECT_EQ(-1, id.button_index());
     EXPECT_TRUE(id.is_for_context_menu());
+    EXPECT_FALSE(id.is_for_dismiss_button());
+    EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
+              id.notification_type());
+    EXPECT_TRUE(id.incognito());
+    EXPECT_EQ("Default", id.profile_id());
+    EXPECT_EQ("notification_id", id.notification_id());
+  }
+
+  // Input string for when the context menu item is selected.
+  {
+    std::string encoded = "3|0|Default|1|https://example.com/|notification_id";
+    NotificationLaunchId id(encoded);
+
+    ASSERT_TRUE(id.is_valid());
+    EXPECT_EQ(-1, id.button_index());
+    EXPECT_FALSE(id.is_for_context_menu());
+    EXPECT_TRUE(id.is_for_dismiss_button());
     EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT,
               id.notification_type());
     EXPECT_TRUE(id.incognito());
@@ -142,6 +173,8 @@ TEST(NotificationLaunchIdTest, ParsingErrorCases) {
       {"1"},
       // Missing all but the component type (type CONTEXT_MENU).
       {"2"},
+      // Missing all but the component type (type DISMISS_BUTTON).
+      {"3"},
   };
 
   for (const auto& test_case : cases) {

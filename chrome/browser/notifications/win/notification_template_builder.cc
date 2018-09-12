@@ -18,6 +18,7 @@
 #include "chrome/browser/notifications/win/notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +35,7 @@ const char kActivationType[] = "activationType";
 const char kArguments[] = "arguments";
 const char kAttribution[] = "attribution";
 const char kAudioElement[] = "audio";
+const char kBackground[] = "background";
 const char kBindingElement[] = "binding";
 const char kBindingElementTemplateAttribute[] = "template";
 const char kContent[] = "content";
@@ -129,6 +131,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   builder->StartActionsElement();
   if (!notification.buttons().empty())
     builder->AddActions(notification, launch_id);
+  builder->EnsureReminderHasButton(notification, launch_id);
   builder->AddContextMenu(launch_id);
   builder->EndActionsElement();
 
@@ -371,6 +374,23 @@ void NotificationTemplateBuilder::WriteContextMenuElement(
   xml_writer_->AddAttribute(kPlacement, kContextMenu);
   xml_writer_->AddAttribute(kActivationType, kForeground);
   xml_writer_->AddAttribute(kArguments, arguments);
+  xml_writer_->EndElement();
+}
+
+void NotificationTemplateBuilder::EnsureReminderHasButton(
+    const message_center::Notification& notification,
+    NotificationLaunchId copied_launch_id) {
+  if (!notification.never_timeout() || !notification.buttons().empty())
+    return;
+
+  xml_writer_->StartElement(kActionElement);
+  xml_writer_->AddAttribute(kActivationType, kBackground);
+  // TODO(finnur): Add our own string here (we're past string-freeze so we're
+  // re-using the already translated "Close" from elsewhere).
+  xml_writer_->AddAttribute(
+      kContent, l10n_util::GetStringUTF8(IDS_MD_HISTORY_CLOSE_MENU_PROMO));
+  copied_launch_id.set_is_for_dismiss_button();
+  xml_writer_->AddAttribute(kArguments, copied_launch_id.Serialize());
   xml_writer_->EndElement();
 }
 

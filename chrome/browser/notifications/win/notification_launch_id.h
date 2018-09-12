@@ -45,6 +45,11 @@ class NotificationLaunchId {
     is_for_context_menu_ = true;
   }
 
+  void set_is_for_dismiss_button() {
+    DCHECK_EQ(-1, button_index_);
+    is_for_dismiss_button_ = true;
+  }
+
   NotificationHandler::Type notification_type() const {
     DCHECK(is_valid());
     return notification_type_;
@@ -80,6 +85,11 @@ class NotificationLaunchId {
     return is_for_context_menu_;
   }
 
+  bool is_for_dismiss_button() const {
+    DCHECK(is_valid());
+    return is_for_dismiss_button_;
+  }
+
  private:
   // The notification type this launch ID is associated with.
   NotificationHandler::Type notification_type_;
@@ -100,8 +110,11 @@ class NotificationLaunchId {
   // The button index this launch ID is associated with.
   int button_index_ = -1;
 
-  // A flag indicating if this launch ID is targeting for context menu or not.
+  // A flag indicating if this launch ID is targeting the context menu or not.
   bool is_for_context_menu_ = false;
+
+  // A flag indicating if this launch ID is targeting the dismiss button or not.
+  bool is_for_dismiss_button_ = false;
 
   // A flag indicating if this launch ID is valid.
   bool is_valid_ = false;
