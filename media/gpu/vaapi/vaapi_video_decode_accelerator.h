@@ -65,6 +65,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
+              int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
 #if defined(USE_OZONE)
   void ImportBufferForPicture(
@@ -100,7 +102,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   void NotifyError(Error error);
 
   // Queue a input buffer for decode.
-  void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer);
+  void QueueInputBuffer(scoped_refptr<DecoderBuffer> buffer,
+                        int32_t bitstream_id);
 
   // Gets a new |current_input_buffer_| from |input_buffers_| and sets it up in
   // |decoder_|. This method will sleep if no |input_buffers_| are available.

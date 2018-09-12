@@ -104,6 +104,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Note: Initialize() and Destroy() are synchronous.
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
+              int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
@@ -215,10 +217,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Task to finish initialization on decoder_thread_.
   void InitializeTask();
 
-  // Enqueue a BitstreamBuffer to decode.  This will enqueue a buffer to the
+  // Enqueue a buffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
   // the buffer.
-  void DecodeTask(const BitstreamBuffer& bitstream_buffer);
+  void DecodeTask(scoped_refptr<DecoderBuffer> buffer, int32_t bitstream_id);
 
   // Decode from the buffers queued in decoder_input_queue_.  Calls
   // DecodeBufferInitial() or DecodeBufferContinue() as appropriate.
