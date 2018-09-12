@@ -24,6 +24,11 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSName[];
 extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 
+// Title and description for the flag to control the usage of iframe messaging
+// for autofill on iOS.
+extern const char kAutofillEnableIFrameSupportOniOSName[];
+extern const char kAutofillEnableIFrameSupportOniOSDescription[];
+
 // Title and description for the flag to control the updated prompt explanation
 // when offering credit card upload.
 extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
