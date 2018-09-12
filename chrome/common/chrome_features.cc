@@ -80,6 +80,11 @@ const base::Feature kAsyncDns {
 #endif
 };
 
+#if defined(OS_ANDROID)
+const base::Feature kAutoFetchOnNetErrorPage{"AutoFetchOnNetErrorPage",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
@@ -400,11 +405,7 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
 const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
 
 const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
-const char kNewNetErrorPageUIAlternateContentListAutoDownload[] =
-    "content_list_auto_download";
 const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
-const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[] =
-    "content_preview_auto_download";
 #endif  // OS_ANDROID
 
 const base::Feature kNetworkPrediction{"NetworkPrediction",

@@ -2201,6 +2201,11 @@ const char kAndroidPaymentAppsDescription[] =
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 
+const char kAutoFetchOnNetErrorPageName[] = "AutoFetchOnNetErrorPage";
+const char kAutoFetchOnNetErrorPageDescription[] =
+    "When enabled, and navigation fails with an offline error, schedule a "
+    "fetch of the page when online again.";
+
 const char kAutofillAccessoryViewName[] =
     "Autofill suggestions as keyboard accessory view";
 const char kAutofillAccessoryViewDescription[] =
