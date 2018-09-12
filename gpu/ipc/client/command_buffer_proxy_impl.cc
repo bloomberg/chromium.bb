@@ -98,9 +98,12 @@ ContextResult CommandBufferProxyImpl::Initialize(
   base::UnsafeSharedMemoryRegion region =
       channel->ShareToGpuProcess(shared_state_shm_);
   if (!region.IsValid()) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
+    // TODO(piman): ShareToGpuProcess should alert if it is failing due to
+    // being out of file descriptors, in which case this is a fatal error
+    // that won't be recovered from.
+    LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Shared memory region is not valid";
-    return ContextResult::kFatalFailure;
+    return ContextResult::kTransientFailure;
   }
 
   // Route must be added before sending the message, otherwise messages sent
