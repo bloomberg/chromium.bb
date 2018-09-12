@@ -4,10 +4,12 @@
 
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 
 namespace crash_reporter {
@@ -148,6 +150,12 @@ void CrashMetricsReporter::CrashDumpProcessed(
 
   if (info.process_type == content::PROCESS_TYPE_GPU && app_foreground &&
       android_oom_kill) {
+    constexpr int kCrashDumpFrequency = 20;
+    if (base::RandInt(1, kCrashDumpFrequency) == kCrashDumpFrequency) {
+      // Diagnostic crash dump to investigate crbug.com/879259.
+      base::debug::DumpWithoutCrashing();
+    }
+
     ReportCrashCount(ProcessedCrashCounts::kGpuForegroundOom, &reported_counts);
   }
 
