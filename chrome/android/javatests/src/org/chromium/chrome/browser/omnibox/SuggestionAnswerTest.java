@@ -110,7 +110,7 @@ public class SuggestionAnswerTest {
                 + "            'at': { 't': 'hi there', 'tt': 7 } } }, "
                 + "  { 'il': { 't': [{ 't': 'ftw', 'tt': 6006 }], "
                 + "            'st': { 't': 'shop S-Mart', 'tt': 666 }, "
-                + "            'i': { 'd': 'Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj' } } } "
+                + "            'i': { 'd': '//Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj' } } } "
                 + "] }";
         SuggestionAnswer answer = SuggestionAnswer.parseAnswerContents(json);
 
@@ -127,6 +127,7 @@ public class SuggestionAnswerTest {
         Assert.assertEquals(6006, secondLine.getTextFields().get(0).getType());
         Assert.assertEquals("shop S-Mart", secondLine.getStatusText().getText());
         Assert.assertEquals(666, secondLine.getStatusText().getType());
-        Assert.assertEquals("Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj", secondLine.getImage());
+        Assert.assertEquals(
+                "https://Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGlj", secondLine.getImage());
     }
 }
