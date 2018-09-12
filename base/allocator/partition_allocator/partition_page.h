@@ -209,13 +209,9 @@ ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
   PartitionCookieCheckValue(ptr);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
-#endif
 
-  // Perhaps surprisingly, this does not measurably regress performance. See
-  // https://crbug.com/680657 for history. We formerly did this in
-  // |PartitionFree|, and in `DCHECK_IS_ON()` builds we redundantly did it
-  // here, too. Now we only do it here, unconditionally.
   memset(ptr, kFreedByte, slot_size);
+#endif
 
   DCHECK(this->num_allocated_slots);
   // TODO(palmer): See if we can afford to make this a CHECK.
