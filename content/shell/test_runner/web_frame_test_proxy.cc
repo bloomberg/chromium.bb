@@ -210,7 +210,7 @@ blink::WebNavigationPolicy WebFrameTestProxy::DecidePolicyForNavigation(
 }
 
 void WebFrameTestProxy::PostAccessibilityEvent(const blink::WebAXObject& object,
-                                               blink::WebAXEvent event) {
+                                               ax::mojom::Event event) {
   test_client_->PostAccessibilityEvent(object, event);
   // Guard against the case where |this| was deleted as a result of an
   // accessibility listener detaching a frame. If that occurs, the

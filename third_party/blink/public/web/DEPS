@@ -16,6 +16,7 @@ include_rules = [
     "+services/ws/public/mojom/ime/ime.mojom-shared.h",
     "+third_party/blink/public/platform",
     "+third_party/blink/public/web",
+    "+ui/accessibility/ax_enums.mojom-shared.h",
 
     # Allowed only inside INSIDE_BLINK
     "+third_party/blink/renderer/core",

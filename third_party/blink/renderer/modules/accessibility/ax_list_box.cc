@@ -84,8 +84,8 @@ void AXListBox::ActiveIndexChanged() {
   if (!select->IsFocused())
     return;
 
-  AXObjectCache().PostNotification(
-      this, AXObjectCacheImpl::kAXActiveDescendantChanged);
+  AXObjectCache().PostNotification(this,
+                                   ax::mojom::Event::kActiveDescendantChanged);
 }
 
 }  // namespace blink

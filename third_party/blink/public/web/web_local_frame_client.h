@@ -74,6 +74,7 @@
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -733,7 +734,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Accessibility -------------------------------------------------------
 
   // Notifies embedder about an accessibility event.
-  virtual void PostAccessibilityEvent(const WebAXObject&, WebAXEvent) {}
+  virtual void PostAccessibilityEvent(const WebAXObject&, ax::mojom::Event) {}
 
   // Provides accessibility information about a find in page result.
   virtual void HandleAccessibilityFindInPageResult(int identifier,

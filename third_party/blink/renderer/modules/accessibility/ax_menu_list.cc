@@ -127,7 +127,7 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
   }
 
   AXObjectCache().PostNotification(this,
-                                   AXObjectCacheImpl::kAXMenuListValueChanged);
+                                   ax::mojom::Event::kMenuListValueChanged);
 }
 
 void AXMenuList::DidShowPopup() {
@@ -146,8 +146,7 @@ void AXMenuList::DidHidePopup() {
   popup->DidHide();
 
   if (GetNode() && GetNode()->IsFocused())
-    AXObjectCache().PostNotification(
-        this, AXObjectCacheImpl::kAXFocusedUIElementChanged);
+    AXObjectCache().PostNotification(this, ax::mojom::Event::kFocus);
 }
 
 }  // namespace blink

@@ -2926,7 +2926,7 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      AXObjectCacheImpl::kAXLocationChanged);
+      ax::mojom::Event::kLocationChanged);
   return true;
 }
 
@@ -2952,7 +2952,7 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      AXObjectCacheImpl::kAXLocationChanged);
+      ax::mojom::Event::kLocationChanged);
   return true;
 }
 
@@ -2971,7 +2971,7 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
-      AXObjectCacheImpl::kAXLocationChanged);
+      ax::mojom::Event::kLocationChanged);
   return true;
 }
 

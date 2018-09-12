@@ -2454,7 +2454,7 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
       AXObjectCache().HandleAriaSelectedChanged(active_descendant->GetNode());
     }
     AXObjectCache().PostNotification(
-        GetLayoutObject(), AXObjectCacheImpl::kAXActiveDescendantChanged);
+        GetLayoutObject(), ax::mojom::Event::kActiveDescendantChanged);
   }
 }
 
@@ -2483,9 +2483,10 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   }
 
   // Post that the row count changed.
-  if (container_parent)
+  if (container_parent) {
     AXObjectCache().PostNotification(container_parent,
-                                     AXObjectCacheImpl::kAXRowCountChanged);
+                                     ax::mojom::Event::kRowCountChanged);
+  }
 
   // Post that the specific row either collapsed or expanded.
   AccessibilityExpanded expanded = IsExpanded();
@@ -2493,15 +2494,13 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
     return;
 
   if (RoleValue() == kRowRole || RoleValue() == kTreeItemRole) {
-    AXObjectCacheImpl::AXNotification notification =
-        AXObjectCacheImpl::kAXRowExpanded;
+    ax::mojom::Event notification = ax::mojom::Event::kRowExpanded;
     if (expanded == kExpandedCollapsed)
-      notification = AXObjectCacheImpl::kAXRowCollapsed;
+      notification = ax::mojom::Event::kRowCollapsed;
 
     AXObjectCache().PostNotification(this, notification);
   } else {
-    AXObjectCache().PostNotification(this,
-                                     AXObjectCacheImpl::kAXExpandedChanged);
+    AXObjectCache().PostNotification(this, ax::mojom::Event::kExpandedChanged);
   }
 }
 
@@ -2511,7 +2510,7 @@ void AXLayoutObject::HandleAutofillStateChanged(bool is_available) {
     // Reusing the value change event in order to invalidate, even though the
     // value did not necessarily change.
     // TODO(dmazzoni) change to using a MarkDirty() API.
-    AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXValueChanged);
+    AXObjectCache().PostNotification(this, ax::mojom::Event::kValueChanged);
   }
 }
 

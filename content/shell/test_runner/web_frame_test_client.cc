@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -216,7 +217,7 @@ bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
 }
 
 void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
-                                                blink::WebAXEvent event) {
+                                                ax::mojom::Event event) {
   // Only hook the accessibility events occured during the test run.
   // This check prevents false positives in BlinkLeakDetector.
   // The pending tasks in browser/renderer message queue may trigger
@@ -228,94 +229,85 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
 
   const char* event_name = nullptr;
   switch (event) {
-    case blink::kWebAXEventActiveDescendantChanged:
+    case ax::mojom::Event::kActiveDescendantChanged:
       event_name = "ActiveDescendantChanged";
       break;
-    case blink::kWebAXEventAriaAttributeChanged:
+    case ax::mojom::Event::kAriaAttributeChanged:
       event_name = "AriaAttributeChanged";
       break;
-    case blink::kWebAXEventAutocorrectionOccured:
+    case ax::mojom::Event::kAutocorrectionOccured:
       event_name = "AutocorrectionOccured";
       break;
-    case blink::kWebAXEventBlur:
+    case ax::mojom::Event::kBlur:
       event_name = "Blur";
       break;
-    case blink::kWebAXEventCheckedStateChanged:
+    case ax::mojom::Event::kCheckedStateChanged:
       event_name = "CheckedStateChanged";
       break;
-    case blink::kWebAXEventChildrenChanged:
+    case ax::mojom::Event::kChildrenChanged:
       event_name = "ChildrenChanged";
       break;
-    case blink::kWebAXEventClicked:
+    case ax::mojom::Event::kClicked:
       event_name = "Clicked";
       break;
-    case blink::kWebAXEventDocumentSelectionChanged:
+    case ax::mojom::Event::kDocumentSelectionChanged:
       event_name = "DocumentSelectionChanged";
       break;
-    case blink::kWebAXEventDocumentTitleChanged:
+    case ax::mojom::Event::kDocumentTitleChanged:
       event_name = "DocumentTitleChanged";
       break;
-    case blink::kWebAXEventFocus:
+    case ax::mojom::Event::kFocus:
       event_name = "Focus";
       break;
-    case blink::kWebAXEventHide:
-      event_name = "Hide";
-      break;
-    case blink::kWebAXEventHover:
+    case ax::mojom::Event::kHover:
       event_name = "Hover";
       break;
-    case blink::kWebAXEventInvalidStatusChanged:
+    case ax::mojom::Event::kInvalidStatusChanged:
       event_name = "InvalidStatusChanged";
       break;
-    case blink::kWebAXEventLayoutComplete:
+    case ax::mojom::Event::kLayoutComplete:
       event_name = "LayoutComplete";
       break;
-    case blink::kWebAXEventLiveRegionChanged:
+    case ax::mojom::Event::kLiveRegionChanged:
       event_name = "LiveRegionChanged";
       break;
-    case blink::kWebAXEventLoadComplete:
+    case ax::mojom::Event::kLoadComplete:
       event_name = "LoadComplete";
       break;
-    case blink::kWebAXEventLocationChanged:
+    case ax::mojom::Event::kLocationChanged:
       event_name = "LocationChanged";
       break;
-    case blink::kWebAXEventMenuListItemSelected:
+    case ax::mojom::Event::kMenuListItemSelected:
       event_name = "MenuListItemSelected";
       break;
-    case blink::kWebAXEventMenuListItemUnselected:
-      event_name = "MenuListItemUnselected";
-      break;
-    case blink::kWebAXEventMenuListValueChanged:
+    case ax::mojom::Event::kMenuListValueChanged:
       event_name = "MenuListValueChanged";
       break;
-    case blink::kWebAXEventRowCollapsed:
+    case ax::mojom::Event::kRowCollapsed:
       event_name = "RowCollapsed";
       break;
-    case blink::kWebAXEventRowCountChanged:
+    case ax::mojom::Event::kRowCountChanged:
       event_name = "RowCountChanged";
       break;
-    case blink::kWebAXEventRowExpanded:
+    case ax::mojom::Event::kRowExpanded:
       event_name = "RowExpanded";
       break;
-    case blink::kWebAXEventScrollPositionChanged:
+    case ax::mojom::Event::kScrollPositionChanged:
       event_name = "ScrollPositionChanged";
       break;
-    case blink::kWebAXEventScrolledToAnchor:
+    case ax::mojom::Event::kScrolledToAnchor:
       event_name = "ScrolledToAnchor";
       break;
-    case blink::kWebAXEventSelectedChildrenChanged:
+    case ax::mojom::Event::kSelectedChildrenChanged:
       event_name = "SelectedChildrenChanged";
       break;
-    case blink::kWebAXEventSelectedTextChanged:
+    case ax::mojom::Event::kTextSelectionChanged:
       event_name = "SelectedTextChanged";
       break;
-    case blink::kWebAXEventShow:
-      event_name = "Show";
-      break;
-    case blink::kWebAXEventTextChanged:
+    case ax::mojom::Event::kTextChanged:
       event_name = "TextChanged";
       break;
-    case blink::kWebAXEventValueChanged:
+    case ax::mojom::Event::kValueChanged:
       event_name = "ValueChanged";
       break;
     default:
