@@ -103,6 +103,9 @@ static INLINE __m128i half_btf_0_sse4_1(const __m128i *w0, const __m128i *n0,
 typedef void (*transform_1d_sse4_1)(__m128i *in, __m128i *out, int bit,
                                     int do_cols, int bd, int out_shift);
 
+typedef void (*fwd_transform_1d_sse4_1)(__m128i *in, __m128i *out, int bit,
+                                        const int num_cols);
+
 void av1_highbd_inv_txfm2d_add_universe_sse4_1(const int32_t *input,
                                                uint8_t *output, int stride,
                                                TX_TYPE tx_type, TX_SIZE tx_size,
