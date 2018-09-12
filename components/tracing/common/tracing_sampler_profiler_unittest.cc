@@ -126,10 +126,13 @@ class TracingSampleProfilerTest : public testing::Test {
 }  // namespace
 
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
-  TracingSamplerProfiler profiler;
+  TracingSamplerProfiler profiler(base::PlatformThread::CurrentId());
+  profiler.OnMessageLoopStarted();
   BeginTrace();
+  base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
+  base::RunLoop().RunUntilIdle();
   if (IsStackUnwindingSupported())
     EXPECT_GT(events_received_count(), 0U);
   else
@@ -138,9 +141,12 @@ TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
 
 TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   BeginTrace();
-  TracingSamplerProfiler profiler;
+  TracingSamplerProfiler profiler(base::PlatformThread::CurrentId());
+  profiler.OnMessageLoopStarted();
+  base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
+  base::RunLoop().RunUntilIdle();
   if (IsStackUnwindingSupported())
     EXPECT_GT(events_received_count(), 0U);
   else

@@ -17,6 +17,8 @@ component("tracing") {
     "common/graphics_memory_dump_provider_android.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
+    "common/tracing_sampler_profiler.cc",
+    "common/tracing_sampler_profiler.h",
     "tracing_export.h",
   ]
 
@@ -50,8 +52,6 @@ component("startup_tracing") {
     "common/trace_startup_config.h",
     "common/trace_to_console.cc",
     "common/trace_to_console.h",
-    "common/tracing_sampler_profiler.cc",
-    "common/tracing_sampler_profiler.h",
     "common/tracing_switches.cc",
     "common/tracing_switches.h",
     "tracing_export.h",
