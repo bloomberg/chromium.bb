@@ -4818,7 +4818,7 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
 void LayoutBlockFlow::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
   // them to form a single irregular shape).
@@ -4848,7 +4848,7 @@ void LayoutBlockFlow::AddOutlineRects(
   LayoutBlock::AddOutlineRects(rects, additional_offset,
                                include_block_overflows);
 
-  if (include_block_overflows == kIncludeBlockVisualOverflow &&
+  if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {
     for (RootInlineBox* curr = FirstRootBox(); curr;
          curr = curr->NextRootBox()) {

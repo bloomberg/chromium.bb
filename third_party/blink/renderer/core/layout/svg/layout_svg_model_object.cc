@@ -89,10 +89,9 @@ void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
 
 // This method is called from inside PaintOutline(), and since we call
 // PaintOutline() while transformed to our coord system, return local coords.
-void LayoutSVGModelObject::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint&,
-    IncludeBlockVisualOverflowOrNot) const {
+void LayoutSVGModelObject::AddOutlineRects(Vector<LayoutRect>& rects,
+                                           const LayoutPoint&,
+                                           NGOutlineType) const {
   rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
 }
 

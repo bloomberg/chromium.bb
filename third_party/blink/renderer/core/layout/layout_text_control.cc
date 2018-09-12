@@ -301,7 +301,7 @@ void LayoutTextControl::ComputePreferredLogicalWidths() {
 
 void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
                                         const LayoutPoint& additional_offset,
-                                        IncludeBlockVisualOverflowOrNot) const {
+                                        NGOutlineType) const {
   rects.push_back(LayoutRect(additional_offset, Size()));
 }
 

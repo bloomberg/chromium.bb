@@ -536,7 +536,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const override;
+                       NGOutlineType) const override;
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;

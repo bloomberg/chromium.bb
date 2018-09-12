@@ -190,16 +190,16 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
+                       NGOutlineType) const final;
   // The following methods are called from the container if it has already added
   // outline rects for line boxes and/or children of this LayoutInline.
   void AddOutlineRectsForChildrenAndContinuations(
       Vector<LayoutRect>&,
       const LayoutPoint& additional_offset,
-      IncludeBlockVisualOverflowOrNot) const;
+      NGOutlineType) const;
   void AddOutlineRectsForContinuations(Vector<LayoutRect>&,
                                        const LayoutPoint& additional_offset,
-                                       IncludeBlockVisualOverflowOrNot) const;
+                                       NGOutlineType) const;
 
   using LayoutBoxModelObject::Continuation;
   using LayoutBoxModelObject::SetContinuation;

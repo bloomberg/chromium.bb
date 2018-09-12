@@ -149,8 +149,7 @@ template <typename Base>
 void LayoutNGMixin<Base>::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    LayoutObject::IncludeBlockVisualOverflowOrNot include_block_overflows)
-    const {
+    NGOutlineType include_block_overflows) const {
   Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   if (CurrentFragment()) {
     CurrentFragment()->AddSelfOutlineRects(&rects, additional_offset);

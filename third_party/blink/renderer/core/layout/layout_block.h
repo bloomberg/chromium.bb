@@ -450,7 +450,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const override;
+                       NGOutlineType) const override;
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);

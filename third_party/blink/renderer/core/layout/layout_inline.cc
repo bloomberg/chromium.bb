@@ -1589,7 +1589,7 @@ class AbsoluteLayoutRectsGeneratorContext {
 void LayoutInline::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   AbsoluteLayoutRectsGeneratorContext context(rects, additional_offset);
   GenerateLineBoxRects(context);
   AddOutlineRectsForChildrenAndContinuations(rects, additional_offset,
@@ -1599,7 +1599,7 @@ void LayoutInline::AddOutlineRects(
 void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   AddOutlineRectsForNormalChildren(rects, additional_offset,
                                    include_block_overflows);
   AddOutlineRectsForContinuations(rects, additional_offset,
@@ -1609,7 +1609,7 @@ void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
 void LayoutInline::AddOutlineRectsForContinuations(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   if (LayoutBoxModelObject* continuation = Continuation()) {
     if (continuation->NeedsLayout()) {
       // TODO(mstensho): Prevent this from happening. Before we can get the
@@ -1634,7 +1634,8 @@ void LayoutInline::AddOutlineRectsForContinuations(
 
 FloatRect LayoutInline::LocalBoundingBoxRectForAccessibility() const {
   Vector<LayoutRect> rects;
-  AddOutlineRects(rects, LayoutPoint(), kIncludeBlockVisualOverflow);
+  AddOutlineRects(rects, LayoutPoint(),
+                  NGOutlineType::kIncludeBlockVisualOverflow);
   return FloatRect(UnionRect(rects));
 }
 

@@ -456,7 +456,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const override;
+                       NGOutlineType) const override;
 
   // Use this with caution! No type checking is done!
   LayoutBox* PreviousSiblingBox() const;

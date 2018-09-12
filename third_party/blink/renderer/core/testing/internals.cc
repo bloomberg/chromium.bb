@@ -3356,17 +3356,19 @@ String Internals::unscopableMethod() {
 
 DOMRectList* Internals::focusRingRects(Element* element) {
   Vector<LayoutRect> rects;
-  if (element && element->GetLayoutObject())
+  if (element && element->GetLayoutObject()) {
     element->GetLayoutObject()->AddOutlineRects(
-        rects, LayoutPoint(), LayoutObject::kIncludeBlockVisualOverflow);
+        rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+  }
   return DOMRectList::Create(rects);
 }
 
 DOMRectList* Internals::outlineRects(Element* element) {
   Vector<LayoutRect> rects;
-  if (element && element->GetLayoutObject())
+  if (element && element->GetLayoutObject()) {
     element->GetLayoutObject()->AddOutlineRects(
-        rects, LayoutPoint(), LayoutObject::kDontIncludeBlockVisualOverflow);
+        rects, LayoutPoint(), NGOutlineType::kDontIncludeBlockVisualOverflow);
+  }
   return DOMRectList::Create(rects);
 }
 

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_state.h"
@@ -1707,22 +1708,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Collects rectangles that the outline of this object would be drawing along
   // the outside of, even if the object isn't styled with a outline for now. The
   // rects also cover continuations.
-  enum IncludeBlockVisualOverflowOrNot {
-    kDontIncludeBlockVisualOverflow,
-    kIncludeBlockVisualOverflow,
-  };
   virtual void AddOutlineRects(Vector<LayoutRect>&,
                                const LayoutPoint& additional_offset,
-                               IncludeBlockVisualOverflowOrNot) const {}
+                               NGOutlineType) const {}
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
   // Focus rings enclose block visual overflows (of line boxes and descendants),
   // while normal outlines don't.
-  IncludeBlockVisualOverflowOrNot OutlineRectsShouldIncludeBlockVisualOverflow()
-      const {
-    return StyleRef().OutlineStyleIsAuto() ? kIncludeBlockVisualOverflow
-                                           : kDontIncludeBlockVisualOverflow;
+  NGOutlineType OutlineRectsShouldIncludeBlockVisualOverflow() const {
+    return StyleRef().OutlineStyleIsAuto()
+               ? NGOutlineType::kIncludeBlockVisualOverflow
+               : NGOutlineType::kDontIncludeBlockVisualOverflow;
   }
 
   // Collects rectangles enclosing visual overflows of the DOM subtree under
@@ -1734,7 +1731,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void AddElementVisualOverflowRects(
       Vector<LayoutRect>& rects,
       const LayoutPoint& additional_offset) const {
-    AddOutlineRects(rects, additional_offset, kIncludeBlockVisualOverflow);
+    AddOutlineRects(rects, additional_offset,
+                    NGOutlineType::kIncludeBlockVisualOverflow);
   }
 
   // Compute a list of hit-test rectangles per layer rooted at this
