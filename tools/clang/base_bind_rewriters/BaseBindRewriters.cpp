@@ -92,7 +92,7 @@ class PassedToMoveRewriter : public MatchFinder::MatchCallback,
       //   base::Passed(std::move(bar));
       // In these cases, we can just remove base::Passed.
       auto left = clang::CharSourceRange::getTokenRange(
-          result.SourceManager->getSpellingLoc(target->getLocStart()),
+          result.SourceManager->getSpellingLoc(target->getBeginLoc()),
           result.SourceManager->getSpellingLoc(target->getArg(0)->getExprLoc())
               .getLocWithOffset(-1));
       auto r_paren = clang::CharSourceRange::getTokenRange(
@@ -111,7 +111,7 @@ class PassedToMoveRewriter : public MatchFinder::MatchCallback,
       if (unary->getOpcode() == clang::UO_AddrOf) {
         // base::Passed(&xxx) -> std::move(xxx).
         auto left = clang::CharSourceRange::getTokenRange(
-            result.SourceManager->getSpellingLoc(target->getLocStart()),
+            result.SourceManager->getSpellingLoc(target->getBeginLoc()),
             result.SourceManager->getSpellingLoc(
                 target->getArg(0)->getExprLoc()));
         replacements_->emplace_back(*result.SourceManager, left, "std::move(");
@@ -121,7 +121,7 @@ class PassedToMoveRewriter : public MatchFinder::MatchCallback,
 
     // base::Passed(xxx) -> std::move(*xxx)
     auto left = clang::CharSourceRange::getTokenRange(
-        result.SourceManager->getSpellingLoc(target->getLocStart()),
+        result.SourceManager->getSpellingLoc(target->getBeginLoc()),
         result.SourceManager->getSpellingLoc(target->getArg(0)->getExprLoc())
             .getLocWithOffset(-1));
     replacements_->emplace_back(*result.SourceManager, left, "std::move(*");
@@ -169,8 +169,8 @@ class BindOnceRewriter : public MatchFinder::MatchCallback, public Rewriter {
     auto* target = result.Nodes.getNodeAs<clang::CallExpr>("target");
     auto* callee = target->getCallee();
     auto range = clang::CharSourceRange::getTokenRange(
-        result.SourceManager->getSpellingLoc(callee->getLocEnd()),
-        result.SourceManager->getSpellingLoc(callee->getLocEnd()));
+        result.SourceManager->getSpellingLoc(callee->getEndLoc()),
+        result.SourceManager->getSpellingLoc(callee->getEndLoc()));
     replacements_->emplace_back(*result.SourceManager, range, "BindOnce");
   }
 
@@ -213,11 +213,11 @@ class PassByValueRewriter : public MatchFinder::MatchCallback, public Rewriter {
     // Remove the leading `const` and the following `&`.
     auto type_loc = target->getTypeSourceInfo()->getTypeLoc();
     auto const_keyword = clang::CharSourceRange::getTokenRange(
-        result.SourceManager->getSpellingLoc(target->getLocStart()),
-        result.SourceManager->getSpellingLoc(target->getLocStart()));
+        result.SourceManager->getSpellingLoc(target->getBeginLoc()),
+        result.SourceManager->getSpellingLoc(target->getBeginLoc()));
     auto lvalue_ref = clang::CharSourceRange::getTokenRange(
-        result.SourceManager->getSpellingLoc(type_loc.getLocEnd()),
-        result.SourceManager->getSpellingLoc(type_loc.getLocEnd()));
+        result.SourceManager->getSpellingLoc(type_loc.getEndLoc()),
+        result.SourceManager->getSpellingLoc(type_loc.getEndLoc()));
     replacements_->emplace_back(*result.SourceManager, const_keyword, " ");
     replacements_->emplace_back(*result.SourceManager, lvalue_ref, " ");
   }
@@ -481,11 +481,11 @@ class AddStdMoveRewriter : public MatchFinder::MatchCallback, public Rewriter {
 
     replacements_->emplace_back(
         *result.SourceManager,
-        result.SourceManager->getSpellingLoc(target->getLocStart()), 0,
+        result.SourceManager->getSpellingLoc(target->getBeginLoc()), 0,
         "std::move(");
     replacements_->emplace_back(
         *result.SourceManager,
-        clang::Lexer::getLocForEndOfToken(target->getLocEnd(), 0,
+        clang::Lexer::getLocForEndOfToken(target->getEndLoc(), 0,
                                           *result.SourceManager,
                                           result.Context->getLangOpts()),
         0, ")");
@@ -620,7 +620,7 @@ class AdaptCallbackForRepeatingRewriter : public MatchFinder::MatchCallback,
     auto* target = result.Nodes.getNodeAs<clang::CallExpr>("target");
 
     auto left = clang::CharSourceRange::getTokenRange(
-        result.SourceManager->getSpellingLoc(target->getLocStart()),
+        result.SourceManager->getSpellingLoc(target->getBeginLoc()),
         result.SourceManager->getSpellingLoc(target->getArg(0)->getExprLoc())
             .getLocWithOffset(-1));
 
