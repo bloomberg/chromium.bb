@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -441,6 +442,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
     UMA_HISTOGRAM_ENUMERATION("CrosDisksClient.MountCompletedError",
                               entry.error_code(), MOUNT_ERROR_COUNT);
+    // Flatten MountType and MountError into a single dimension.
+    constexpr int kMaxMountErrors = 100;
+    static_assert(MOUNT_ERROR_COUNT <= kMaxMountErrors,
+                  "CrosDisksClient.MountErrorMountType histogram must be "
+                  "updated.");
+    const int type_and_error =
+        (entry.mount_type() * kMaxMountErrors) + entry.error_code();
+    base::UmaHistogramSparse("CrosDisksClient.MountErrorMountType",
+                             type_and_error);
     for (auto& observer : observer_list_)
       observer.OnMountCompleted(entry);
   }

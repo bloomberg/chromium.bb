@@ -8746,6 +8746,77 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="UDF"/>
 </enum>
 
+<enum name="CrosDisksMountTypeError">
+  <int value="0" label="Invalid - Success"/>
+  <int value="1" label="Invalid - Unknown"/>
+  <int value="2" label="Invalid - Internal"/>
+  <int value="3" label="Invalid - Invalid argument"/>
+  <int value="4" label="Invalid - Invalid path"/>
+  <int value="5" label="Invalid - Path already mounted"/>
+  <int value="6" label="Invalid - Path not mounted"/>
+  <int value="7" label="Invalid - Directory creation failed"/>
+  <int value="8" label="Invalid - Invalid mount options"/>
+  <int value="9" label="Invalid - Invalid unmount options"/>
+  <int value="10" label="Invalid - Insufficient permissions"/>
+  <int value="11" label="Invalid - Mount program not found"/>
+  <int value="12" label="Invalid - Mount program failed"/>
+  <int value="13" label="Invalid - Invalid device path"/>
+  <int value="14" label="Invalid - Unknown filesystem"/>
+  <int value="15" label="Invalid - Unsupported filesystem"/>
+  <int value="16" label="Invalid - Invalid archive"/>
+  <int value="100" label="Device - Success"/>
+  <int value="101" label="Device - Unknown"/>
+  <int value="102" label="Device - Internal"/>
+  <int value="103" label="Device - Invalid argument"/>
+  <int value="104" label="Device - Invalid path"/>
+  <int value="105" label="Device - Path already mounted"/>
+  <int value="106" label="Device - Path not mounted"/>
+  <int value="107" label="Device - Directory creation failed"/>
+  <int value="108" label="Device - Invalid mount options"/>
+  <int value="109" label="Device - Invalid unmount options"/>
+  <int value="110" label="Device - Insufficient permissions"/>
+  <int value="111" label="Device - Mount program not found"/>
+  <int value="112" label="Device - Mount program failed"/>
+  <int value="113" label="Device - Invalid device path"/>
+  <int value="114" label="Device - Unknown filesystem"/>
+  <int value="115" label="Device - Unsupported filesystem"/>
+  <int value="116" label="Device - Invalid archive"/>
+  <int value="200" label="Archive - Success"/>
+  <int value="201" label="Archive - Unknown"/>
+  <int value="202" label="Archive - Internal"/>
+  <int value="203" label="Archive - Invalid argument"/>
+  <int value="204" label="Archive - Invalid path"/>
+  <int value="205" label="Archive - Path already mounted"/>
+  <int value="206" label="Archive - Path not mounted"/>
+  <int value="207" label="Archive - Directory creation failed"/>
+  <int value="208" label="Archive - Invalid mount options"/>
+  <int value="209" label="Archive - Invalid unmount options"/>
+  <int value="210" label="Archive - Insufficient permissions"/>
+  <int value="211" label="Archive - Mount program not found"/>
+  <int value="212" label="Archive - Mount program failed"/>
+  <int value="213" label="Archive - Invalid device path"/>
+  <int value="214" label="Archive - Unknown filesystem"/>
+  <int value="215" label="Archive - Unsupported filesystem"/>
+  <int value="216" label="Archive - Invalid archive"/>
+  <int value="300" label="Network - Success"/>
+  <int value="301" label="Network - Unknown"/>
+  <int value="302" label="Network - Internal"/>
+  <int value="303" label="Network - Invalid argument"/>
+  <int value="304" label="Network - Invalid path"/>
+  <int value="305" label="Network - Path already mounted"/>
+  <int value="306" label="Network - Path not mounted"/>
+  <int value="307" label="Network - Directory creation failed"/>
+  <int value="308" label="Network - Invalid mount options"/>
+  <int value="309" label="Network - Invalid unmount options"/>
+  <int value="310" label="Network - Insufficient permissions"/>
+  <int value="311" label="Network - Mount program not found"/>
+  <int value="312" label="Network - Mount program failed"/>
+  <int value="313" label="Network - Invalid device path"/>
+  <int value="314" label="Network - Unknown filesystem"/>
+  <int value="315" label="Network - Unsupported filesystem"/>
+  <int value="316" label="Network - Invalid archive"/>
+</enum>
+
 <enum name="CrosEnableDriveOfflineOutcome">
   <int value="0" label="Success: Offline mode enabled"/>
   <int value="1" label="Failure: Hosted app page timed out"/>
