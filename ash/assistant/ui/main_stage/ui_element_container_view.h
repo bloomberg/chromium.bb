@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
