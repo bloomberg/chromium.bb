@@ -17,6 +17,7 @@ config("webrunner_implementation") {
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
+  sandbox_policy = "app/sandbox_policy"
 }
 
 fuchsia_package_runner("webrunner") {
@@ -47,6 +48,7 @@ executable("webrunner_exe") {
 fuchsia_package("service_pkg") {
   binary = ":service_exe"
   package_name_override = "chromium"
+  sandbox_policy = "service/sandbox_policy"
 }
 
 executable("service_exe") {
