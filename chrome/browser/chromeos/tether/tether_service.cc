@@ -382,9 +382,9 @@ void TetherService::UpdateEnabledState() {
       network_state_handler_->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether());
 
-  // If |was_tether_setting_enabled| differs from the new Tether
-  // TechnologyState, the settings toggle has been changed. Update the
-  // kInstantTetheringEnabled user pref accordingly.
+  // If |was_pref_enabled| differs from the new Tether TechnologyState, the
+  // settings toggle has been changed. Update the kInstantTetheringEnabled user
+  // pref accordingly.
   bool is_enabled;
   if (was_pref_enabled && tether_technology_state ==
                               chromeos::NetworkStateHandler::TechnologyState::
@@ -399,9 +399,17 @@ void TetherService::UpdateEnabledState() {
   }
 
   if (is_enabled != was_pref_enabled) {
-    profile_->GetPrefs()->SetBoolean(
-        chromeos::multidevice_setup::kInstantTetheringEnabledPrefName,
-        is_enabled);
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+      multidevice_setup_client_->SetFeatureEnabledState(
+          chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+          is_enabled, base::nullopt /* auth_token */, base::DoNothing());
+    } else {
+      profile_->GetPrefs()->SetBoolean(
+          chromeos::multidevice_setup::kInstantTetheringEnabledPrefName,
+          is_enabled);
+    }
+
     UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
                           is_enabled);
     PA_LOG(INFO) << "Tether user preference changed. New value: " << is_enabled;

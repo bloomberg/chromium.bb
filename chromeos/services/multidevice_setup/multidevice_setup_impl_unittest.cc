@@ -797,11 +797,9 @@ TEST_F(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {
                     ->num_existing_user_chromebook_added_events_handled());
 }
 
+// The feature mojom::Feature::kInstantTethering is used throughout this test
+// because it never requires authentication for either enabling or disabling.
 TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges_NoAuthTokenRequired) {
-  // The feature mojom::Feature::kInstantTethering is used throughout this
-  // test because it never requires authentication for either enabling or
-  // disabling.
-
   auto observer = std::make_unique<FakeFeatureStateObserver>();
   multidevice_setup()->AddFeatureStateObserver(
       observer->GenerateInterfacePtr());
@@ -833,11 +831,9 @@ TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges_NoAuthTokenRequired) {
   EXPECT_EQ(3u, observer->feature_state_updates().size());
 }
 
+// mojom::Feature::kSmartLock requires authentication when attempting to enable.
 TEST_F(MultiDeviceSetupImplTest,
        FeatureStateChanges_AuthTokenRequired_SmartLock) {
-  // mojom::Feature::kSmartLock requires authentication when attempting to
-  // enable.
-
   auto observer = std::make_unique<FakeFeatureStateObserver>();
   multidevice_setup()->AddFeatureStateObserver(
       observer->GenerateInterfacePtr());
@@ -878,14 +874,10 @@ TEST_F(MultiDeviceSetupImplTest,
   EXPECT_EQ(3u, observer->feature_state_updates().size());
 }
 
+// mojom::Feature::kBetterTogetherSuite requires authentication when attempting
+// to enable, but only if the Smart Lock pref is enabled.
 TEST_F(MultiDeviceSetupImplTest,
        FeatureStateChanges_AuthTokenRequired_BetterTogetherSuite) {
-  // mojom::Feature::kBetterTogetherSuite requires authentication when
-  // attempting to enable, but only if the Smart Lock pref is enabled.
-
-  // TODO(crbug.com/876377): If kBetterTogetherSuite is being enabled, only
-  // require password if Smartlock pref is enabled.
-
   auto observer = std::make_unique<FakeFeatureStateObserver>();
   multidevice_setup()->AddFeatureStateObserver(
       observer->GenerateInterfacePtr());
@@ -910,14 +902,18 @@ TEST_F(MultiDeviceSetupImplTest,
             CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
   EXPECT_EQ(2u, observer->feature_state_updates().size());
 
-  // However, authentication is required to enable the feature.
+  // Authentication is required to enable the feature if SmartLock's state is
+  // kUnavailableInsufficientSecurity.
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kSmartLock,
+      mojom::FeatureState::kUnavailableInsufficientSecurity);
   EXPECT_FALSE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
                                           true /* enabled */,
                                           "invalidAuthToken"));
   SendPendingObserverMessages();
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
-  EXPECT_EQ(2u, observer->feature_state_updates().size());
+  EXPECT_EQ(3u, observer->feature_state_updates().size());
 
   // Now, send a valid auth token; it should successfully enable.
   EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
@@ -925,7 +921,37 @@ TEST_F(MultiDeviceSetupImplTest,
   SendPendingObserverMessages();
   EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
             CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
-  EXPECT_EQ(3u, observer->feature_state_updates().size());
+  EXPECT_EQ(4u, observer->feature_state_updates().size());
+
+  // Disable one more time.
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                         false /* enabled */,
+                                         base::nullopt /* auth_token */));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(5u, observer->feature_state_updates().size());
+
+  // Authentication is required to enable the feature if SmartLock's state is
+  // kUnavailableSuiteDisabled.
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kSmartLock,
+      mojom::FeatureState::kUnavailableSuiteDisabled);
+  EXPECT_FALSE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                          true /* enabled */,
+                                          "invalidAuthToken"));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(6u, observer->feature_state_updates().size());
+
+  // Now, send a valid auth token; it should successfully enable.
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                         true /* enabled */, kValidAuthToken));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(7u, observer->feature_state_updates().size());
 }
 
 TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
