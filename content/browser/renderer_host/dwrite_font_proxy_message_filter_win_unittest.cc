@@ -19,9 +19,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/win/direct_write.h"
-
-namespace mswr = Microsoft::WRL;
+#include "third_party/blink/public/common/dwrite_rasterizer_support/dwrite_rasterizer_support.h"
 
 namespace content {
 
@@ -32,18 +30,6 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
   DWriteFontProxyImplUnitTest()
       : binding_(&impl_, mojo::MakeRequest(&dwrite_font_proxy_)) {}
 
-  bool IsDWrite2Available() {
-    mswr::ComPtr<IDWriteFactory> factory;
-    gfx::win::CreateDWriteFactory(&factory);
-    mswr::ComPtr<IDWriteFactory2> factory2;
-    factory.As<IDWriteFactory2>(&factory2);
-
-    if (!factory2.Get()) {
-      // IDWriteFactory2 is expected to not be available before Win8.1
-      EXPECT_LT(base::win::GetVersion(), base::win::VERSION_WIN8_1);
-    }
-    return factory2.Get();
-  }
   mojom::DWriteFontProxy& dwrite_font_proxy() { return *dwrite_font_proxy_; }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -119,7 +105,7 @@ TEST_F(DWriteFontProxyImplUnitTest, GetFontFilesIndexOutOfBounds) {
 }
 
 TEST_F(DWriteFontProxyImplUnitTest, MapCharacter) {
-  if (!IsDWrite2Available())
+  if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
   mojom::MapCharactersResultPtr result;
@@ -140,7 +126,7 @@ TEST_F(DWriteFontProxyImplUnitTest, MapCharacter) {
 }
 
 TEST_F(DWriteFontProxyImplUnitTest, MapCharacterInvalidCharacter) {
-  if (!IsDWrite2Available())
+  if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
   mojom::MapCharactersResultPtr result;
@@ -157,7 +143,7 @@ TEST_F(DWriteFontProxyImplUnitTest, MapCharacterInvalidCharacter) {
 }
 
 TEST_F(DWriteFontProxyImplUnitTest, MapCharacterInvalidAfterValid) {
-  if (!IsDWrite2Available())
+  if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return;
 
   mojom::MapCharactersResultPtr result;
