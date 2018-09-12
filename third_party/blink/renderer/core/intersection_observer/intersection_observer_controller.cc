@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -81,21 +82,11 @@ void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
                  "computeTrackedIntersectionObservations");
-    bool should_report_implicit_root_bounds = false;
-    if (LocalFrame* target_frame = document->GetFrame()) {
-      Frame& root_frame = target_frame->Tree().Top();
-      if (&root_frame == target_frame) {
-        should_report_implicit_root_bounds = true;
-      } else {
-        should_report_implicit_root_bounds =
-            target_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
-                root_frame.GetSecurityContext()->GetSecurityOrigin());
-      }
-    }
-    for (auto& element : tracked_observation_targets_) {
-      element->ComputeIntersectionObservations(
-          should_report_implicit_root_bounds);
-    }
+    unsigned flags;
+    if (LocalFrameView* target_view = document->View())
+      flags = target_view->GetIntersectionObservationFlags();
+    for (auto& element : tracked_observation_targets_)
+      element->ComputeIntersectionObservations(flags);
   }
 }
 

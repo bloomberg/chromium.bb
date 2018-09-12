@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,21 @@ class IntersectionObserver;
 class IntersectionObservation final
     : public GarbageCollected<IntersectionObservation> {
  public:
+  // Flags that drive the behavior of the Compute() methods. For an explanation
+  // of implicit vs. explicit root, see intersection_observer.h.
+  enum ComputeFlags {
+    // If this bit is set, and observer_->RootIsImplicit() is true, then the
+    // root bounds (i.e., size of the top document's viewport) should be
+    // included in any IntersectionObserverEntry objects created by Compute().
+    kReportImplicitRootBounds = 1 << 0,
+    // If this bit is set, and observer_->RootIsImplicit() is false, then
+    // Compute() should update the observation.
+    kExplicitRootObserversNeedUpdate = 1 << 1,
+    // If this bit is set, and observer_->RootIsImplicit() is true, then
+    // Compute() should update the observation.
+    kImplicitRootObserversNeedUpdate = 1 << 2,
+  };
+
   IntersectionObservation(IntersectionObserver&, Element&);
 
   IntersectionObserver* Observer() const { return observer_.Get(); }
@@ -28,7 +43,7 @@ class IntersectionObservation final
   unsigned LastThresholdIndex() const { return last_threshold_index_; }
   // If the parameter is true and the observer doesn't have an explicit root,
   // then any notifications generated will contain root bounds geometry.
-  void Compute(bool should_report_implicit_root_bounds);
+  void Compute(unsigned flags);
   void TakeRecords(HeapVector<Member<IntersectionObserverEntry>>&);
   void Disconnect();
 

@@ -1309,7 +1309,7 @@ void LocalFrame::SetViewportIntersectionFromParent(
     remote_viewport_intersection_ = viewport_intersection;
     occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
     if (View()) {
-      View()->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
+      View()->SetIntersectionObservationState(LocalFrameView::kRequired);
       View()->ScheduleAnimation();
     }
   }

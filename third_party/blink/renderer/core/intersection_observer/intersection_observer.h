@@ -68,9 +68,9 @@ class CORE_EXPORT IntersectionObserver final
 
   // An observer can either track intersections with an explicit root Element,
   // or with the the top-level frame's viewport (the "implicit root").  When
-  // tracking the implicit root, m_root will be null, but because m_root is a
+  // tracking the implicit root, root_ will be null, but because root_ is a
   // weak pointer, we cannot surmise that this observer tracks the implicit
-  // root just because m_root is null.  Hence m_rootIsImplicit.
+  // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
 
   DOMHighResTimeStamp GetTimeStamp() const;

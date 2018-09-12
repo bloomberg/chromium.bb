@@ -50,9 +50,14 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
       // different sentinel value.
       last_threshold_index_(kMaxThresholdIndex - 1) {}
 
-void IntersectionObservation::Compute(bool should_report_implicit_root_bounds) {
+void IntersectionObservation::Compute(unsigned flags) {
   DCHECK(Observer());
   if (!target_ || !observer_->RootIsValid() | !observer_->GetExecutionContext())
+    return;
+  bool needs_update =
+      flags & (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
+                                           : kExplicitRootObserversNeedUpdate);
+  if (!needs_update)
     return;
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
   if (timestamp == -1)
@@ -67,10 +72,10 @@ void IntersectionObservation::Compute(bool should_report_implicit_root_bounds) {
   root_margin[1] = observer_->RightMargin();
   root_margin[2] = observer_->BottomMargin();
   root_margin[3] = observer_->LeftMargin();
-  bool should_report_root_bounds =
-      should_report_implicit_root_bounds || !observer_->RootIsImplicit();
+  bool report_root_bounds =
+      (flags & kReportImplicitRootBounds) || !observer_->RootIsImplicit();
   IntersectionGeometry geometry(observer_->root(), *Target(), root_margin,
-                                should_report_root_bounds);
+                                report_root_bounds);
   geometry.ComputeGeometry();
 
   // Some corner cases for threshold index:
@@ -120,7 +125,7 @@ void IntersectionObservation::Compute(bool should_report_implicit_root_bounds) {
       last_is_visible_ != is_visible) {
     FloatRect snapped_root_bounds(geometry.RootRect());
     FloatRect* root_bounds_pointer =
-        should_report_root_bounds ? &snapped_root_bounds : nullptr;
+        report_root_bounds ? &snapped_root_bounds : nullptr;
     IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
         timestamp, new_visible_ratio, FloatRect(geometry.TargetRect()),
         root_bounds_pointer, FloatRect(geometry.IntersectionRect()),

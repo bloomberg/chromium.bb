@@ -264,13 +264,15 @@ void IntersectionObserver::observe(Element* target,
     if (LocalFrameView* frame_view = target_frame->View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.
-      frame_view->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
+      frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
       frame_view->ScheduleAnimation();
     }
   } else {
     // The IntersectionObsever spec requires that at least one observation
     // be recorded after observe() is called, even if the target is detached.
-    observation->Compute(false);
+    observation->Compute(
+        IntersectionObservation::kImplicitRootObserversNeedUpdate |
+        IntersectionObservation::kExplicitRootObserversNeedUpdate);
   }
 }
 

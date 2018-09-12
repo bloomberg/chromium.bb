@@ -32,10 +32,9 @@ void ElementIntersectionObserverData::RemoveObservation(
   intersection_observations_.erase(&observer);
 }
 
-void ElementIntersectionObserverData::ComputeObservations(
-    bool should_report_implicit_root_bounds) {
+void ElementIntersectionObserverData::ComputeObservations(unsigned flags) {
   for (auto& observation : intersection_observations_)
-    observation.value->Compute(should_report_implicit_root_bounds);
+    observation.value->Compute(flags);
 }
 
 void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {

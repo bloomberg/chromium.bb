@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
@@ -250,6 +251,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       past_layout_lifecycle_update_(false),
       suppress_adjust_view_size_(false),
       intersection_observation_state_(kNotNeeded),
+      descendant_needs_intersection_observation_update_(false),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
       tracked_object_paint_invalidations_(
@@ -2393,13 +2395,15 @@ bool LocalFrameView::UpdateLifecyclePhases(
   UpdateLifecyclePhasesInternal(target_state);
 
   // Update intersection observations if needed.
-  if (intersection_observation_state_ != kNotNeeded &&
+  if ((intersection_observation_state_ != kNotNeeded ||
+       descendant_needs_intersection_observation_update_) &&
       target_state == DocumentLifecycle::kPaintClean) {
     TRACE_EVENT0("blink,benchmark",
                  "LocalFrameView::UpdateViewportIntersectionsForSubtree");
     SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
                              UkmMetricNames::kIntersectionObservation);
     UpdateViewportIntersectionsForSubtree();
+    descendant_needs_intersection_observation_update_ = false;
   }
 
   UpdateThrottlingStatusForSubtree();
@@ -4137,13 +4141,45 @@ void LocalFrameView::SetNeedsForcedCompositingUpdate() {
     parent->SetNeedsForcedCompositingUpdate();
 }
 
-void LocalFrameView::SetNeedsIntersectionObservation(
+void LocalFrameView::SetIntersectionObservationState(
     IntersectionObservationState state) {
   if (intersection_observation_state_ >= state)
     return;
   intersection_observation_state_ = state;
-  if (LocalFrameView* parent = ParentFrameView())
-    parent->SetNeedsIntersectionObservation(state);
+  if (LocalFrameView* root_view = GetFrame().LocalFrameRoot().View())
+    root_view->SetDescendantNeedsIntersectionObservationUpdate();
+}
+
+unsigned LocalFrameView::GetIntersectionObservationFlags() const {
+  unsigned flags = 0;
+
+  const LocalFrame& target_frame = GetFrame();
+  const Frame& root_frame = target_frame.Tree().Top();
+  if (&root_frame == &target_frame ||
+      target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+          root_frame.GetSecurityContext()->GetSecurityOrigin())) {
+    flags |= IntersectionObservation::kReportImplicitRootBounds;
+  }
+
+  // Observers with explicit roots only need to be checked on the same frame,
+  // since in this case target and root must be in the same document.
+  if (intersection_observation_state_ != kNotNeeded)
+    flags |= IntersectionObservation::kExplicitRootObserversNeedUpdate;
+
+  // For observers with implicit roots, we need to check state on the whole
+  // local frame tree.
+  const LocalFrameView* local_root_view = target_frame.LocalFrameRoot().View();
+  for (const LocalFrameView* view = this; view;
+       view = view->ParentFrameView()) {
+    if (view->intersection_observation_state_ != kNotNeeded) {
+      flags |= IntersectionObservation::kImplicitRootObserversNeedUpdate;
+      break;
+    }
+    if (view == local_root_view)
+      break;
+  }
+
+  return flags;
 }
 
 bool LocalFrameView::ShouldThrottleRendering() const {
