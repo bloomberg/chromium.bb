@@ -60,7 +60,10 @@ android_resources("remoting_android_client_java_resources") {
 }
 
 remoting_android_client_java_tmpl("remoting_android_client_java") {
-  play_services_package = "//third_party/android_tools"
+  # This should always be the public play services libraries since it is only
+  # used by non-_google apks. Explicitly use the string literal rather than
+  # google_play_services_package to ensure this.
+  play_services_package = "//third_party/android_deps"
 }
 
 remoting_apk_tmpl("remoting_apk") {

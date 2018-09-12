@@ -120,7 +120,7 @@ if (is_android || is_chromeos) {
     if (is_chromecast && chromecast_branding != "public") {
       google_play_services_package = "//chromecast/internal/android/prebuilt/google-play-services-first-party"
     } else {
-      google_play_services_package = "//third_party/android_tools"
+      google_play_services_package = "//third_party/android_deps"
     }
   }
 

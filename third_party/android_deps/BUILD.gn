@@ -109,6 +109,81 @@ java_group("android_support_vector_drawable_java") {
     ":com_android_support_support_vector_drawable_java",
   ]
 }
+java_group("google_play_services_basement_java") {
+  deps = [
+    ":com_google_android_gms_play_services_basement_java",
+  ]
+}
+java_group("google_play_services_tasks_java") {
+  deps = [
+    ":com_google_android_gms_play_services_tasks_java",
+  ]
+}
+java_group("google_play_services_base_java") {
+  deps = [
+    ":com_google_android_gms_play_services_base_java",
+  ]
+}
+java_group("google_play_services_auth_base_java") {
+  deps = [
+    ":com_google_android_gms_play_services_auth_base_java",
+  ]
+}
+java_group("google_play_services_auth_api_phone_java") {
+  deps = [
+    ":com_google_android_gms_play_services_auth_api_phone_java",
+  ]
+}
+java_group("google_play_services_auth_java") {
+  deps = [
+    ":com_google_android_gms_play_services_auth_java",
+  ]
+}
+java_group("google_play_services_cast_java") {
+  deps = [
+    ":com_google_android_gms_play_services_cast_java",
+  ]
+}
+java_group("google_play_services_cast_framework_java") {
+  deps = [
+    ":com_google_android_gms_play_services_cast_framework_java",
+  ]
+}
+java_group("google_play_services_iid_java") {
+  deps = [
+    ":com_google_android_gms_play_services_iid_java",
+  ]
+}
+java_group("google_play_services_instantapps_java") {
+  deps = [
+    ":com_google_android_gms_play_services_instantapps_java",
+  ]
+}
+java_group("google_play_services_gcm_java") {
+  deps = [
+    ":com_google_android_gms_play_services_gcm_java",
+  ]
+}
+java_group("google_play_services_location_java") {
+  deps = [
+    ":com_google_android_gms_play_services_location_java",
+  ]
+}
+java_group("google_play_services_vision_java") {
+  deps = [
+    ":com_google_android_gms_play_services_vision_java",
+  ]
+}
+java_group("google_play_services_vision_common_java") {
+  deps = [
+    ":com_google_android_gms_play_services_vision_common_java",
+  ]
+}
+java_group("google_play_services_fido_java") {
+  deps = [
+    ":com_google_android_gms_play_services_fido_java",
+  ]
+}
 
 # The dependencies below don't seem to be used but break downstream builds
 # when not defined.
