@@ -1706,7 +1706,8 @@ HitTestResult LayoutObject::HitTestForOcclusion(
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly |
       HitTestRequest::kIgnoreClipping |
-      HitTestRequest::kIgnoreZeroOpacityObjects;
+      HitTestRequest::kIgnoreZeroOpacityObjects |
+      HitTestRequest::kHitTestVisualOverflow;
   HitTestLocation location(hit_rect);
   return frame->GetEventHandler().HitTestResultAtLocation(location, hit_type,
                                                           this, true);

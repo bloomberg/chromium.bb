@@ -525,8 +525,11 @@ void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
 
-  if (Layer() && VisualOverflowRect() != previous_visual_overflow_rect)
-    Layer()->SetNeedsCompositingInputsUpdate();
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 void LayoutBlock::AddOverflowFromBlockChildren() {
