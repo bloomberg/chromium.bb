@@ -648,6 +648,68 @@ void ShapeResult::GetRunFontData(Vector<RunFontData>* font_data) const {
   }
 }
 
+float ShapeResult::ForEachGlyph(float initial_advance,
+                                GlyphCallback glyph_callback,
+                                void* context) const {
+  auto total_advance = initial_advance;
+
+  for (const auto& run : runs_) {
+    bool is_horizontal = HB_DIRECTION_IS_HORIZONTAL(run->direction_);
+    for (const auto& glyph_data : run->glyph_data_) {
+      glyph_callback(context, run->start_index_ + glyph_data.character_index,
+                     glyph_data.glyph, glyph_data.offset, total_advance,
+                     is_horizontal, run->canvas_rotation_,
+                     run->font_data_.get());
+      total_advance += glyph_data.advance;
+    }
+  }
+
+  return total_advance;
+}
+
+float ShapeResult::ForEachGlyph(float initial_advance,
+                                unsigned from,
+                                unsigned to,
+                                unsigned index_offset,
+                                GlyphCallback glyph_callback,
+                                void* context) const {
+  auto total_advance = initial_advance;
+
+  for (const auto& run : runs_) {
+    unsigned run_start = run->start_index_ + index_offset;
+    bool is_horizontal = HB_DIRECTION_IS_HORIZONTAL(run->direction_);
+    const SimpleFontData* font_data = run->font_data_.get();
+
+    if (!run->Rtl()) {  // Left-to-right
+      for (const auto& glyph_data : run->glyph_data_) {
+        const unsigned character_index = run_start + glyph_data.character_index;
+        if (character_index >= to)
+          break;
+        if (character_index >= from) {
+          glyph_callback(context, character_index, glyph_data.glyph,
+                         glyph_data.offset, total_advance, is_horizontal,
+                         run->canvas_rotation_, font_data);
+        }
+        total_advance += glyph_data.advance;
+      }
+
+    } else {  // Right-to-left
+      for (const auto& glyph_data : run->glyph_data_) {
+        const unsigned character_index = run_start + glyph_data.character_index;
+        if (character_index < from)
+          break;
+        if (character_index < to) {
+          glyph_callback(context, character_index, glyph_data.glyph,
+                         glyph_data.offset, total_advance, is_horizontal,
+                         run->canvas_rotation_, font_data);
+        }
+        total_advance += glyph_data.advance;
+      }
+    }
+  }
+  return total_advance;
+}
+
 // TODO(kojii): VC2015 fails to explicit instantiation of a member function.
 // Typed functions + this private function are to instantiate instances.
 template <typename TextContainerType>

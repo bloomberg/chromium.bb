@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
+#include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -84,6 +85,17 @@ enum BreakGlyphsOption {
   DontBreakGlyphs,
   BreakGlyphs,
 };
+
+// std::function is forbidden in Chromium and base::Callback is way too
+// expensive so we resort to a good old function pointer instead.
+typedef void (*GlyphCallback)(void* context,
+                              unsigned character_index,
+                              Glyph,
+                              FloatSize glyph_offset,
+                              float total_advance,
+                              bool is_horizontal,
+                              CanvasRotationInVertical,
+                              const SimpleFontData*);
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
@@ -227,6 +239,24 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     size_t glyph_count_;
   };
   void GetRunFontData(Vector<RunFontData>* font_data) const;
+
+  // Iterates over, and calls the specified callback function, for all the
+  // glyphs. Also tracks (and returns) a seeded total advance.
+  // The second version of the method only invokes the callback for glyphs in
+  // the specified range and stops after the range.
+  // The context parameter will be given as the first parameter for the callback
+  // function.
+  //
+  // TODO(eae): Remove the initial_advance and index_offset parameters once
+  // ShapeResultBuffer has been removed as they're only used in cases where
+  // multiple ShapeResult are combined in a ShapeResultBuffer.
+  float ForEachGlyph(float initial_advance, GlyphCallback, void* context) const;
+  float ForEachGlyph(float initial_advance,
+                     unsigned from,
+                     unsigned to,
+                     unsigned index_offset,
+                     GlyphCallback,
+                     void* context) const;
 
   String ToString() const;
   void ToString(StringBuilder*) const;
