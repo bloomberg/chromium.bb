@@ -71,6 +71,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint& paint_offset);
+  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
+                                            const LayoutRect&);
+  bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
+
   void PaintAllPhasesAtomically(const PaintInfo&,
                                 bool is_self_painting);
   void PaintBlockChildren(const PaintInfo&);
