@@ -35,11 +35,8 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
   if (!delegate)
     return;
 
-  delegate_ = static_cast<BackgroundFetchDelegateImpl*>(
-                  browser_context_->GetBackgroundFetchDelegate())
-                  ->GetWeakPtr();
+  delegate_ = static_cast<BackgroundFetchDelegateImpl*>(delegate)->GetWeakPtr();
   DCHECK(delegate_);
-  delegate_->ResumeActiveJobs();
 }
 
 void BackgroundFetchDownloadClient::OnServiceUnavailable() {}

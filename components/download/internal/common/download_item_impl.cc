@@ -2307,7 +2307,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   ResumeMode mode = GetResumeMode();
   if (mode == ResumeMode::IMMEDIATE_RESTART ||
       mode == ResumeMode::USER_RESTART) {
-    DCHECK(GetFullPath().empty());
+    LOG_IF(ERROR, !GetFullPath().empty())
+        << "Download full path should be empty before resumption";
     destination_info_.received_bytes = 0;
     last_modified_time_.clear();
     etag_.clear();
