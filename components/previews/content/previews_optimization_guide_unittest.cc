@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -117,7 +118,16 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void DoExperimentFlagTest(base::Optional<std::string> experiment_name,
                             bool expect_enabled);
 
-  void InitializeResourceLoadingHints();
+  // This is a helper function for initializing fixed number of ResourceLoading
+  // hints.
+  void InitializeFixedCountResourceLoadingHints();
+
+  // This is a helper function for initializing multiple ResourceLoading hints.
+  // The generated hint proto contains hints for |key_count| keys.
+  // |page_patterns_per_key| page patterns are specified per key.
+  // For each page pattern, 2 resource loading hints are specified in the proto.
+  void InitializeMultipleResourceLoadingHints(size_t key_count,
+                                              size_t page_patterns_per_key);
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -598,8 +608,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
   EXPECT_FALSE(guide()->IsWhitelisted(*request5, PreviewsType::NOSCRIPT));
 }
 
-// This is a helper function for initializing some ResourceLoading hints.
-void PreviewsOptimizationGuideTest::InitializeResourceLoadingHints() {
+void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
@@ -630,6 +639,51 @@ void PreviewsOptimizationGuideTest::InitializeResourceLoadingHints() {
   resource_loading_hint2->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   resource_loading_hint2->set_resource_pattern("football_cruft.js");
+
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint3 =
+      optimization2->add_resource_loading_hints();
+  resource_loading_hint3->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint3->set_resource_pattern("barball_cruft.js");
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+}
+
+void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
+    size_t key_count,
+    size_t page_patterns_per_key) {
+  optimization_guide::proto::Configuration config;
+
+  for (size_t key_index = 0; key_index < key_count; ++key_index) {
+    optimization_guide::proto::Hint* hint = config.add_hints();
+    hint->set_key("somedomain" + base::NumberToString(key_index) + ".org");
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+    for (size_t page_pattern_index = 0;
+         page_pattern_index < page_patterns_per_key; ++page_pattern_index) {
+      // Page hint for "/news/"
+      optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+      page_hint->set_page_pattern("/news/" +
+                                  base::NumberToString(page_pattern_index));
+      optimization_guide::proto::Optimization* optimization1 =
+          page_hint->add_whitelisted_optimizations();
+      optimization1->set_optimization_type(
+          optimization_guide::proto::RESOURCE_LOADING);
+
+      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_1 =
+          optimization1->add_resource_loading_hints();
+      resource_loading_hint_1->set_loading_optimization_type(
+          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+      resource_loading_hint_1->set_resource_pattern("news_cruft_1.js");
+
+      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_2 =
+          optimization1->add_resource_loading_hints();
+      resource_loading_hint_2->set_loading_optimization_type(
+          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+      resource_loading_hint_2->set_resource_pattern("news_cruft_2.js");
+    }
+  }
   ProcessHints(config, "2.0.0");
 
   RunUntilIdle();
@@ -640,7 +694,7 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
-  InitializeResourceLoadingHints();
+  InitializeFixedCountResourceLoadingHints();
 
   EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
       *CreateRequestWithURL(GURL("https://somedomain.org/")),
@@ -657,6 +711,10 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
   RunUntilIdle();
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.PageHints.ProcessedCount", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourceHints.TotalReceived", 3, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
 
   // Verify loaded hint data for www.somedomain.org
   EXPECT_EQ(GURL("https://www.somedomain.org/news/football"),
@@ -678,6 +736,132 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
       PreviewsType::RESOURCE_LOADING_HINTS));
 }
 
+// Test that optimization hints with multiple page patterns is processed
+// correctly.
+TEST_F(PreviewsOptimizationGuideTest,
+       LoadManyResourceLoadingOptimizationHints) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
+  const size_t key_count = 20;
+  const size_t page_patterns_per_key = 25;
+
+  ASSERT_EQ(previews::params::GetMaxPageHintsInMemoryThreshhold(),
+            key_count * page_patterns_per_key);
+
+  // Count of page patterns is within the threshold.
+  ASSERT_LE(key_count * page_patterns_per_key,
+            previews::params::GetMaxPageHintsInMemoryThreshhold());
+
+  InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain0.org/")),
+      base::DoNothing()));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.somedomain0.org/news0/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain0.org/news499/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain0.org/news500/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain19.org/")),
+      base::DoNothing()));
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain20.org/")),
+      base::DoNothing()));
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.unknown.com")),
+      base::DoNothing()));
+
+  RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.PageHints.ProcessedCount", page_patterns_per_key,
+      key_count);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourceHints.TotalReceived",
+      key_count * page_patterns_per_key * 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.PageHints.TotalReceived",
+      key_count * page_patterns_per_key, 1);
+}
+
+// Test that only up to GetMaxPageHintsInMemoryThreshhold() page hints
+// are loaded to the memory.
+TEST_F(PreviewsOptimizationGuideTest,
+       LoadTooManyResourceLoadingOptimizationHints) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
+  const size_t key_count = 21;
+  const size_t page_patterns_per_key = 25;
+
+  ASSERT_EQ(previews::params::GetMaxPageHintsInMemoryThreshhold(),
+            20u * page_patterns_per_key);
+
+  // Provide more page patterns than the threshold.
+  ASSERT_GT(key_count * page_patterns_per_key,
+            previews::params::GetMaxPageHintsInMemoryThreshhold());
+
+  InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain0.org/")),
+      base::DoNothing()));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://www.somedomain0.org/news0/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain19.org/")),
+      base::DoNothing()));
+  EXPECT_TRUE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain19.org/news0/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+
+  // The last page pattern should be dropped since it exceeds the threshold
+  // count.
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(GURL("https://somedomain20.org/")),
+      base::DoNothing()));
+  EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
+      *CreateRequestWithURL(
+          GURL("https://www.somedomain20.org/news0/football")),
+      base::BindOnce(
+          &PreviewsOptimizationGuideTest::MaybeLoadOptimizationHintsCallback,
+          base::Unretained(this))));
+
+  RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.PageHints.ProcessedCount", page_patterns_per_key,
+      key_count);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourceHints.TotalReceived",
+      key_count * page_patterns_per_key * 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.PageHints.TotalReceived",
+      key_count * page_patterns_per_key, 1);
+}
+
 TEST_F(PreviewsOptimizationGuideTest,
        MaybeLoadOptimizationHintsWithoutEnabledPageHintsFeature) {
   // Without PageHints-oriented feature enabled, never see
@@ -685,7 +869,7 @@ TEST_F(PreviewsOptimizationGuideTest,
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndDisableFeature(features::kResourceLoadingHints);
 
-  InitializeResourceLoadingHints();
+  InitializeFixedCountResourceLoadingHints();
 
   EXPECT_FALSE(guide()->MaybeLoadOptimizationHints(
       *CreateRequestWithURL(GURL("https://www.somedomain.org")),
