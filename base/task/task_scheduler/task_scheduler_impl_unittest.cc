@@ -94,8 +94,8 @@ void VerifyTaskEnvironment(const TaskTraits& traits) {
   EXPECT_NE(std::string::npos, current_thread_name.find("TaskScheduler"));
 
   if (current_thread_name.find("SingleThread") != std::string::npos) {
-    // For now, single-threaded background tasks run on their own threads.
-    // TODO(fdoray): Run single-threaded background tasks on foreground workers
+    // For now, single-threaded best-effort tasks run on their own threads.
+    // TODO(fdoray): Run single-threaded best-effort tasks on foreground workers
     // on platforms that don't support background thread priority.
     EXPECT_NE(
         std::string::npos,

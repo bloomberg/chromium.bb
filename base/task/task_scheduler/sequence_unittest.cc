@@ -95,30 +95,31 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
 }
 
 // Verifies the sort key of a sequence that contains one BEST_EFFORT task.
-TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
+TEST(TaskSchedulerSequenceTest, GetSortKeyBestEffort) {
   // Create a sequence with a BEST_EFFORT task.
-  Task background_task(FROM_HERE, DoNothing(), {TaskPriority::BEST_EFFORT},
-                       TimeDelta());
-  scoped_refptr<Sequence> background_sequence = MakeRefCounted<Sequence>();
-  background_sequence->PushTask(std::move(background_task));
+  Task best_effort_task(FROM_HERE, DoNothing(), {TaskPriority::BEST_EFFORT},
+                        TimeDelta());
+  scoped_refptr<Sequence> best_effort_sequence = MakeRefCounted<Sequence>();
+  best_effort_sequence->PushTask(std::move(best_effort_task));
 
   // Get the sort key.
-  const SequenceSortKey background_sort_key = background_sequence->GetSortKey();
+  const SequenceSortKey best_effort_sort_key =
+      best_effort_sequence->GetSortKey();
 
   // Take the task from the sequence, so that its sequenced time is available
   // for the check below.
-  auto take_background_task = background_sequence->TakeTask();
+  auto take_best_effort_task = best_effort_sequence->TakeTask();
 
   // Verify the sort key.
-  EXPECT_EQ(TaskPriority::BEST_EFFORT, background_sort_key.priority());
-  EXPECT_EQ(take_background_task->sequenced_time,
-            background_sort_key.next_task_sequenced_time());
+  EXPECT_EQ(TaskPriority::BEST_EFFORT, best_effort_sort_key.priority());
+  EXPECT_EQ(take_best_effort_task->sequenced_time,
+            best_effort_sort_key.next_task_sequenced_time());
 
   // Pop for correctness.
-  background_sequence->Pop();
+  best_effort_sequence->Pop();
 }
 
-// Same as TaskSchedulerSequenceTest.GetSortKeyBackground, but with a
+// Same as TaskSchedulerSequenceTest.GetSortKeyBestEffort, but with a
 // USER_VISIBLE task.
 TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
   // Create a sequence with a USER_VISIBLE task.

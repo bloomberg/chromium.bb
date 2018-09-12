@@ -1504,13 +1504,13 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   task_tracker_.FlushForTesting();
 }
 
-// Verify that the maximum number of background tasks that can run concurrently
+// Verify that the maximum number of best-effort tasks that can run concurrently
 // is honored.
-TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
-  constexpr int kMaxBackgroundTasks = kMaxTasks / 2;
+TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBestEffortTasks) {
+  constexpr int kMaxBestEffortTasks = kMaxTasks / 2;
   worker_pool_->Start(
       SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
-      kMaxBackgroundTasks, service_thread_.task_runner(), nullptr,
+      kMaxBestEffortTasks, service_thread_.task_runner(), nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   const scoped_refptr<TaskRunner> foreground_runner =
       worker_pool_->CreateTaskRunnerWithTraits({MayBlock()});
@@ -1518,30 +1518,30 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
       worker_pool_->CreateTaskRunnerWithTraits(
           {TaskPriority::BEST_EFFORT, MayBlock()});
 
-  // It should be possible to have |kMaxBackgroundTasks|
+  // It should be possible to have |kMaxBestEffortTasks|
   // TaskPriority::BEST_EFFORT tasks running concurrently.
-  WaitableEvent background_tasks_running;
-  WaitableEvent unblock_background_tasks;
-  RepeatingClosure background_tasks_running_barrier = BarrierClosure(
-      kMaxBackgroundTasks,
-      BindOnce(&WaitableEvent::Signal, Unretained(&background_tasks_running)));
+  WaitableEvent best_effort_tasks_running;
+  WaitableEvent unblock_best_effort_tasks;
+  RepeatingClosure best_effort_tasks_running_barrier = BarrierClosure(
+      kMaxBestEffortTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&best_effort_tasks_running)));
 
-  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+  for (int i = 0; i < kMaxBestEffortTasks; ++i) {
     background_runner->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          background_tasks_running_barrier.Run();
-          WaitWithoutBlockingObserver(&unblock_background_tasks);
+          best_effort_tasks_running_barrier.Run();
+          WaitWithoutBlockingObserver(&unblock_best_effort_tasks);
         }));
   }
-  background_tasks_running.Wait();
+  best_effort_tasks_running.Wait();
 
   // No more TaskPriority::BEST_EFFORT task should run.
-  AtomicFlag extra_background_task_can_run;
-  WaitableEvent extra_background_task_running;
+  AtomicFlag extra_best_effort_task_can_run;
+  WaitableEvent extra_best_effort_task_running;
   background_runner->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
-        EXPECT_TRUE(extra_background_task_can_run.IsSet());
-        extra_background_task_running.Signal();
+        EXPECT_TRUE(extra_best_effort_task_can_run.IsSet());
+        extra_best_effort_task_running.Signal();
       }));
 
   // An extra foreground task should be able to run.
@@ -1553,9 +1553,9 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
 
   // Completion of the TaskPriority::BEST_EFFORT tasks should allow the extra
   // TaskPriority::BEST_EFFORT task to run.
-  extra_background_task_can_run.Set();
-  unblock_background_tasks.Signal();
-  extra_background_task_running.Wait();
+  extra_best_effort_task_can_run.Set();
+  unblock_best_effort_tasks.Signal();
+  extra_best_effort_task_running.Wait();
 
   // Tear down.
   task_tracker_.FlushForTesting();
@@ -1563,19 +1563,19 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, MaxBackgroundTasks) {
 
 namespace {
 
-class TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest
+class TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest
     : public TaskSchedulerWorkerPoolImplTestBase,
       public testing::TestWithParam<BlockingType> {
  public:
-  static constexpr int kMaxBackgroundTasks = kMaxTasks / 2;
+  static constexpr int kMaxBestEffortTasks = kMaxTasks / 2;
 
-  TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest() = default;
+  TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest() = default;
 
   void SetUp() override {
     CreateWorkerPool();
     worker_pool_->Start(
         SchedulerWorkerPoolParams(kMaxTasks, base::TimeDelta::Max()),
-        kMaxBackgroundTasks, service_thread_.task_runner(), nullptr,
+        kMaxBestEffortTasks, service_thread_.task_runner(), nullptr,
         SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   }
 
@@ -1585,68 +1585,68 @@ class TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
-      TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest);
+      TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest);
 };
 
 }  // namespace
 
-TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
-       BlockingCallAndMaxBackgroundTasksTest) {
+TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
+       BlockingCallAndMaxBestEffortTasksTest) {
   const scoped_refptr<TaskRunner> background_runner =
       worker_pool_->CreateTaskRunnerWithTraits(
           {TaskPriority::BEST_EFFORT, MayBlock()});
 
-  // Post |kMaxBackgroundTasks| TaskPriority::BEST_EFFORT tasks that block in a
+  // Post |kMaxBestEffortTasks| TaskPriority::BEST_EFFORT tasks that block in a
   // ScopedBlockingCall.
-  WaitableEvent blocking_background_tasks_running;
-  WaitableEvent unblock_blocking_background_tasks;
-  RepeatingClosure blocking_background_tasks_running_barrier =
-      BarrierClosure(kMaxBackgroundTasks,
+  WaitableEvent blocking_best_effort_tasks_running;
+  WaitableEvent unblock_blocking_best_effort_tasks;
+  RepeatingClosure blocking_best_effort_tasks_running_barrier =
+      BarrierClosure(kMaxBestEffortTasks,
                      BindOnce(&WaitableEvent::Signal,
-                              Unretained(&blocking_background_tasks_running)));
-  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+                              Unretained(&blocking_best_effort_tasks_running)));
+  for (int i = 0; i < kMaxBestEffortTasks; ++i) {
     background_runner->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          blocking_background_tasks_running_barrier.Run();
+          blocking_best_effort_tasks_running_barrier.Run();
           ScopedBlockingCall scoped_blocking_call(GetParam());
-          WaitWithoutBlockingObserver(&unblock_blocking_background_tasks);
+          WaitWithoutBlockingObserver(&unblock_blocking_best_effort_tasks);
         }));
   }
-  blocking_background_tasks_running.Wait();
+  blocking_best_effort_tasks_running.Wait();
 
-  // Post an extra |kMaxBackgroundTasks| TaskPriority::BEST_EFFORT tasks. They
+  // Post an extra |kMaxBestEffortTasks| TaskPriority::BEST_EFFORT tasks. They
   // should be able to run, because the existing TaskPriority::BEST_EFFORT tasks
   // are blocked within a ScopedBlockingCall.
   //
   // Note: We block the tasks until they have all started running to make sure
-  // that it is possible to run an extra |kMaxBackgroundTasks| concurrently.
-  WaitableEvent background_tasks_running;
-  WaitableEvent unblock_background_tasks;
-  RepeatingClosure background_tasks_running_barrier = BarrierClosure(
-      kMaxBackgroundTasks,
-      BindOnce(&WaitableEvent::Signal, Unretained(&background_tasks_running)));
-  for (int i = 0; i < kMaxBackgroundTasks; ++i) {
+  // that it is possible to run an extra |kMaxBestEffortTasks| concurrently.
+  WaitableEvent best_effort_tasks_running;
+  WaitableEvent unblock_best_effort_tasks;
+  RepeatingClosure best_effort_tasks_running_barrier = BarrierClosure(
+      kMaxBestEffortTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&best_effort_tasks_running)));
+  for (int i = 0; i < kMaxBestEffortTasks; ++i) {
     background_runner->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
-          background_tasks_running_barrier.Run();
-          WaitWithoutBlockingObserver(&unblock_background_tasks);
+          best_effort_tasks_running_barrier.Run();
+          WaitWithoutBlockingObserver(&unblock_best_effort_tasks);
         }));
   }
-  background_tasks_running.Wait();
+  best_effort_tasks_running.Wait();
 
   // Unblock all tasks and tear down.
-  unblock_blocking_background_tasks.Signal();
-  unblock_background_tasks.Signal();
+  unblock_blocking_best_effort_tasks.Signal();
+  unblock_best_effort_tasks.Signal();
   task_tracker_.FlushForTesting();
 }
 
 INSTANTIATE_TEST_CASE_P(
     MayBlock,
-    TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
+    TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     ::testing::Values(BlockingType::MAY_BLOCK));
 INSTANTIATE_TEST_CASE_P(
     WillBlock,
-    TaskSchedulerWorkerPoolBlockingCallAndMaxBackgroundTasksTest,
+    TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     ::testing::Values(BlockingType::WILL_BLOCK));
 
 // Verify that worker detachement doesn't race with worker cleanup, regression

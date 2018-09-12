@@ -1050,14 +1050,14 @@ TEST_F(TaskSchedulerTaskTrackerTest,
 
 namespace {
 
-void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
-    int max_num_scheduled_background_sequences,
+void TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
+    int max_num_scheduled_best_effort_sequences,
     TaskTracker& tracker) {
-  // Simulate posting |max_num_scheduled_background_sequences| background tasks
-  // and scheduling the associated sequences. This should succeed.
+  // Simulate posting |max_num_scheduled_best_effort_sequences| best-effort
+  // tasks and scheduling the associated sequences. This should succeed.
   std::vector<scoped_refptr<Sequence>> scheduled_sequences;
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_best_effort_sequences; ++i) {
     Task task(FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
               TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(&task));
@@ -1068,15 +1068,15 @@ void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
     scheduled_sequences.push_back(std::move(sequence));
   }
 
-  // Simulate posting extra background tasks and scheduling the associated
-  // sequences. This should fail because the maximum number of background
+  // Simulate posting extra best-effort tasks and scheduling the associated
+  // sequences. This should fail because the maximum number of best-effort
   // sequences that can be scheduled concurrently is already reached.
   std::vector<std::unique_ptr<bool>> extra_tasks_did_run;
   std::vector<
       std::unique_ptr<testing::StrictMock<MockCanScheduleSequenceObserver>>>
       extra_observers;
   std::vector<scoped_refptr<Sequence>> extra_sequences;
-  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_best_effort_sequences; ++i) {
     extra_tasks_did_run.push_back(std::make_unique<bool>());
     Task extra_task(
         FROM_HERE,
@@ -1097,7 +1097,7 @@ void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
   // Run the sequences scheduled at the beginning of the test. Expect an
   // observer from |extra_observer| to be notified every time a task finishes to
   // run.
-  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_best_effort_sequences; ++i) {
     EXPECT_CALL(*extra_observers[i].get(),
                 MockOnCanScheduleSequence(extra_sequences[i].get()));
     EXPECT_FALSE(tracker.RunAndPopNextTask(scheduled_sequences[i],
@@ -1106,7 +1106,7 @@ void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
   }
 
   // Run the extra sequences.
-  for (int i = 0; i < max_num_scheduled_background_sequences; ++i) {
+  for (int i = 0; i < max_num_scheduled_best_effort_sequences; ++i) {
     EXPECT_FALSE(*extra_tasks_did_run[i]);
     EXPECT_FALSE(tracker.RunAndPopNextTask(extra_sequences[i],
                                            &never_notified_observer));
@@ -1117,28 +1117,28 @@ void TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
 }  // namespace
 
 // Verify that WillScheduleSequence() returns nullptr when it receives a
-// background sequence and the maximum number of background sequences that can
+// best-effort sequence and the maximum number of best-effort sequences that can
 // be scheduled concurrently is reached. Verify that an observer is notified
-// when a background sequence can be scheduled (i.e. when one of the previously
-// scheduled background sequences has run).
+// when a best-effort sequence can be scheduled (i.e. when one of the previously
+// scheduled best-effort sequences has run).
 TEST_F(TaskSchedulerTaskTrackerTest,
-       WillScheduleBackgroundSequenceWithMaxBackgroundSequences) {
-  constexpr int kMaxNumScheduledBackgroundSequences = 2;
-  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
-  TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
-      kMaxNumScheduledBackgroundSequences, tracker);
+       WillScheduleBestEffortSequenceWithMaxBestEffortSequences) {
+  constexpr int kMaxNumScheduledBestEffortSequences = 2;
+  TaskTracker tracker("Test", kMaxNumScheduledBestEffortSequences);
+  TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
+      kMaxNumScheduledBestEffortSequences, tracker);
 }
 
 // Verify that providing a cap for the number of BEST_EFFORT tasks to the
 // constructor of TaskTracker is compatible with using an execution fence.
 TEST_F(TaskSchedulerTaskTrackerTest,
-       WillScheduleBackgroundSequenceWithMaxBackgroundSequencesAndFence) {
-  constexpr int kMaxNumScheduledBackgroundSequences = 2;
-  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+       WillScheduleBestEffortSequenceWithMaxBestEffortSequencesAndFence) {
+  constexpr int kMaxNumScheduledBestEffortSequences = 2;
+  TaskTracker tracker("Test", kMaxNumScheduledBestEffortSequences);
   tracker.SetExecutionFenceEnabled(true);
   tracker.SetExecutionFenceEnabled(false);
-  TestWillScheduleBackgroundSequenceWithMaxBackgroundSequences(
-      kMaxNumScheduledBackgroundSequences, tracker);
+  TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
+      kMaxNumScheduledBestEffortSequences, tracker);
 }
 
 namespace {
@@ -1243,17 +1243,17 @@ TEST_F(TaskSchedulerTaskTrackerTest,
                             sequence_d, &never_notified_observer));
 }
 
-// Verify that RunAndPopNextTask() doesn't reschedule the background sequence it
-// was assigned if there is a preempted background sequence with an earlier
+// Verify that RunAndPopNextTask() doesn't reschedule the best-effort sequence
+// it was assigned if there is a preempted best-effort sequence with an earlier
 // sequence time (compared to the next task in the sequence assigned to
 // RunAndPopNextTask()).
 TEST_F(TaskSchedulerTaskTrackerTest,
-       RunNextBackgroundTaskWithEarlierPendingBackgroundTask) {
-  constexpr int kMaxNumScheduledBackgroundSequences = 1;
-  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+       RunNextBestEffortTaskWithEarlierPendingBestEffortTask) {
+  constexpr int kMaxNumScheduledBestEffortSequences = 1;
+  TaskTracker tracker("Test", kMaxNumScheduledBestEffortSequences);
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
 
-  // Simulate posting a background task and scheduling the associated sequence.
+  // Simulate posting a best-effort task and scheduling the associated sequence.
   // This should succeed.
   bool task_a_1_did_run = false;
   Task task_a_1(FROM_HERE, BindOnce(&SetBool, Unretained(&task_a_1_did_run)),
@@ -1264,8 +1264,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   EXPECT_EQ(sequence_a,
             tracker.WillScheduleSequence(sequence_a, &never_notified_observer));
 
-  // Simulate posting an extra background task and scheduling the associated
-  // sequence. This should fail because the maximum number of background
+  // Simulate posting an extra best-effort task and scheduling the associated
+  // sequence. This should fail because the maximum number of best-effort
   // sequences that can be scheduled concurrently is already reached.
   bool task_b_1_did_run = false;
   Task task_b_1(FROM_HERE, BindOnce(&SetBool, Unretained(&task_b_1_did_run)),
@@ -1280,7 +1280,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // time of |task_b_1|.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
-  // Post an extra background task in |sequence_a|.
+  // Post an extra best-effort task in |sequence_a|.
   bool task_a_2_did_run = false;
   Task task_a_2(FROM_HERE, BindOnce(&SetBool, Unretained(&task_a_2_did_run)),
                 TaskTraits(TaskPriority::BEST_EFFORT), TimeDelta());
@@ -1312,12 +1312,12 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   EXPECT_TRUE(task_a_2_did_run);
 }
 
-// Verify that preempted background sequences are scheduled when shutdown
+// Verify that preempted best-effort sequences are scheduled when shutdown
 // starts.
 TEST_F(TaskSchedulerTaskTrackerTest,
-       SchedulePreemptedBackgroundSequencesOnShutdown) {
-  constexpr int kMaxNumScheduledBackgroundSequences = 0;
-  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+       SchedulePreemptedBestEffortSequencesOnShutdown) {
+  constexpr int kMaxNumScheduledBestEffortSequences = 0;
+  TaskTracker tracker("Test", kMaxNumScheduledBestEffortSequences);
   testing::StrictMock<MockCanScheduleSequenceObserver> observer;
 
   // Simulate scheduling sequences. TaskTracker should prevent this.
