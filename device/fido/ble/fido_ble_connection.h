@@ -27,7 +27,6 @@ namespace device {
 class BluetoothGattConnection;
 class BluetoothGattNotifySession;
 class BluetoothRemoteGattCharacteristic;
-class BluetoothRemoteGattService;
 
 // A connection to the Fido service of an authenticator over BLE. Detailed
 // specification of the BLE device can be found here:
@@ -47,7 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   // connection. This class makes an initial connection attempt on construction,
   // which result in returned via this callback. Future invocations happen if
   // devices connect or disconnect from the adapter.
-  using ConnectionStatusCallback = base::RepeatingCallback<void(bool)>;
+  using ConnectionCallback = base::OnceCallback<void(bool)>;
   using WriteCallback = base::OnceCallback<void(bool)>;
   using ReadCallback = base::RepeatingCallback<void(std::vector<uint8_t>)>;
   using ControlPointLengthCallback =
@@ -55,14 +54,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
 
   FidoBleConnection(BluetoothAdapter* adapter,
                     std::string device_address,
-                    ConnectionStatusCallback connection_status_callback,
                     ReadCallback read_callback);
   ~FidoBleConnection() override;
 
   const std::string& address() const { return address_; }
+
+  BluetoothDevice* GetBleDevice();
   const BluetoothDevice* GetBleDevice() const;
 
-  virtual void Connect();
+  virtual void Connect(ConnectionCallback callback);
   virtual void ReadControlPointLength(ControlPointLengthCallback callback);
   virtual void WriteControlPoint(const std::vector<uint8_t>& data,
                                  WriteCallback callback);
@@ -73,17 +73,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
 
   scoped_refptr<BluetoothAdapter> adapter_;
   std::string address_;
-  ConnectionStatusCallback connection_status_callback_;
   ReadCallback read_callback_;
 
  private:
   // BluetoothAdapter::Observer:
-  void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
-  void DeviceAddressChanged(BluetoothAdapter* adapter,
-                            BluetoothDevice* device,
-                            const std::string& old_address) override;
-  void DeviceChanged(BluetoothAdapter* adapter,
-                     BluetoothDevice* device) override;
   void GattCharacteristicValueChanged(
       BluetoothAdapter* adapter,
       BluetoothRemoteGattCharacteristic* characteristic,
@@ -96,7 +89,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   void OnCreateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);
 
-  void ConnectToU2fService();
+  void ConnectToFidoService();
   void OnReadServiceRevisions(std::vector<ServiceRevision> service_revisions);
 
   void WriteServiceRevision(ServiceRevision service_revision);
@@ -108,10 +101,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   void OnStartNotifySessionError(
       BluetoothGattService::GattErrorCode error_code);
 
-  void OnConnectionError();
-
-  const BluetoothRemoteGattService* GetFidoService() const;
-
   static void OnReadControlPointLength(ControlPointLengthCallback callback,
                                        const std::vector<uint8_t>& value);
   static void OnReadControlPointLengthError(
@@ -121,7 +110,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleConnection
   std::unique_ptr<BluetoothGattConnection> connection_;
   std::unique_ptr<BluetoothGattNotifySession> notify_session_;
 
-  base::Optional<std::string> u2f_service_id_;
+  ConnectionCallback pending_connection_callback_;
+  bool waiting_for_gatt_discovery_ = false;
+
   base::Optional<std::string> control_point_length_id_;
   base::Optional<std::string> control_point_id_;
   base::Optional<std::string> status_id_;

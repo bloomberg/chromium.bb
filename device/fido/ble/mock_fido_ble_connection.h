@@ -22,21 +22,18 @@ class MockFidoBleConnection : public FidoBleConnection {
   MockFidoBleConnection(BluetoothAdapter* adapter, std::string device_address);
   ~MockFidoBleConnection() override;
 
-  MOCK_METHOD0(Connect, void());
   // GMock cannot mock a method taking a move-only type.
   // TODO(https://crbug.com/729950): Remove these workarounds once support for
   // move-only types is added to GMock.
+  MOCK_METHOD1(ConnectPtr, void(ConnectionCallback* cb));
   MOCK_METHOD1(ReadControlPointLengthPtr, void(ControlPointLengthCallback* cb));
   MOCK_METHOD2(WriteControlPointPtr,
                void(const std::vector<uint8_t>& data, WriteCallback* cb));
 
+  void Connect(ConnectionCallback cb) override;
   void ReadControlPointLength(ControlPointLengthCallback cb) override;
   void WriteControlPoint(const std::vector<uint8_t>& data,
                          WriteCallback cb) override;
-
-  ConnectionStatusCallback& connection_status_callback() {
-    return connection_status_callback_;
-  }
 
   ReadCallback& read_callback() { return read_callback_; }
 

@@ -76,29 +76,6 @@ BluetoothDevice* GetMockDevice(MockBluetoothAdapter* adapter,
   return found != devices.end() ? *found : nullptr;
 }
 
-class TestConnectionStatusCallback {
- public:
-  void OnStatus(bool status) {
-    status_ = status;
-    run_loop_->Quit();
-  }
-
-  bool WaitForResult() {
-    run_loop_->Run();
-    run_loop_.emplace();
-    return status_;
-  }
-
-  FidoBleConnection::ConnectionStatusCallback GetCallback() {
-    return base::BindRepeating(&TestConnectionStatusCallback::OnStatus,
-                               base::Unretained(this));
-  }
-
- private:
-  bool status_ = false;
-  base::Optional<base::RunLoop> run_loop_{base::in_place};
-};
-
 class TestReadCallback {
  public:
   void OnRead(std::vector<uint8_t> value) {
@@ -122,6 +99,8 @@ class TestReadCallback {
   base::Optional<base::RunLoop> run_loop_{base::in_place};
 };
 
+using TestConnectionCallbackReceiver = test::ValueCallbackReceiver<bool>;
+
 using TestReadControlPointLengthCallback =
     test::ValueCallbackReceiver<base::Optional<uint16_t>>;
 
@@ -143,27 +122,28 @@ class FidoBleConnectionTest : public ::testing::Test {
   }
 
   BluetoothAdapter* adapter() { return adapter_.get(); }
+  MockBluetoothDevice* device() { return fido_device_; }
 
-  void AddU2Device(const std::string& device_address) {
-    auto u2f_device = std::make_unique<NiceMockBluetoothDevice>(
+  void AddFidoDevice(const std::string& device_address) {
+    auto fido_device = std::make_unique<NiceMockBluetoothDevice>(
         adapter_.get(), /* bluetooth_class */ 0u,
         BluetoothTest::kTestDeviceNameU2f, device_address, /* paired */ true,
         /* connected */ false);
-    u2f_device_ = u2f_device.get();
-    adapter_->AddMockDevice(std::move(u2f_device));
+    fido_device_ = fido_device.get();
+    adapter_->AddMockDevice(std::move(fido_device));
 
-    ON_CALL(*u2f_device_, GetGattServices())
+    ON_CALL(*fido_device_, GetGattServices())
         .WillByDefault(
-            Invoke(u2f_device_, &MockBluetoothDevice::GetMockServices));
+            Invoke(fido_device_, &MockBluetoothDevice::GetMockServices));
 
-    ON_CALL(*u2f_device_, GetGattService(_))
+    ON_CALL(*fido_device_, GetGattService(_))
         .WillByDefault(
-            Invoke(u2f_device_, &MockBluetoothDevice::GetMockService));
-    AddU2fService();
+            Invoke(fido_device_, &MockBluetoothDevice::GetMockService));
+    AddFidoService();
   }
 
-  void SetupConnectingU2fDevice(const std::string& device_address) {
-    ON_CALL(*u2f_device_, CreateGattConnection)
+  void SetupConnectingFidoDevice(const std::string& device_address) {
+    ON_CALL(*fido_device_, CreateGattConnection)
         .WillByDefault(
             Invoke([this, &device_address](const auto& callback, auto&&) {
               connection_ =
@@ -171,10 +151,10 @@ class FidoBleConnectionTest : public ::testing::Test {
               callback.Run(std::move(base::WrapUnique(connection_)));
             }));
 
-    ON_CALL(*u2f_device_, IsGattServicesDiscoveryComplete)
+    ON_CALL(*fido_device_, IsGattServicesDiscoveryComplete)
         .WillByDefault(Return(true));
 
-    ON_CALL(*u2f_service_revision_bitfield_, ReadRemoteCharacteristic)
+    ON_CALL(*fido_service_revision_bitfield_, ReadRemoteCharacteristic)
         .WillByDefault(Invoke([=](auto&& callback, auto&&) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
@@ -182,57 +162,56 @@ class FidoBleConnectionTest : public ::testing::Test {
                              std::vector<uint8_t>({kDefaultServiceRevision})));
         }));
 
-    ON_CALL(*u2f_service_revision_bitfield_, WriteRemoteCharacteristic)
+    ON_CALL(*fido_service_revision_bitfield_, WriteRemoteCharacteristic)
         .WillByDefault(Invoke([=](auto&&, auto&& callback, auto&&) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
         }));
 
-    ON_CALL(*u2f_status_, StartNotifySession(_, _))
+    ON_CALL(*fido_status_, StartNotifySession(_, _))
         .WillByDefault(Invoke([this](const auto& callback, auto&&) {
-          notify_session_ =
-              new NiceMockBluetoothGattNotifySession(u2f_status_->GetWeakPtr());
+          notify_session_ = new NiceMockBluetoothGattNotifySession(
+              fido_status_->GetWeakPtr());
           callback.Run(base::WrapUnique(notify_session_));
         }));
   }
 
-  void SimulateDisconnect(const std::string& device_address) {
-    if (u2f_device_->GetAddress() != device_address)
-      return;
-
-    u2f_device_->SetConnected(false);
-    adapter_->NotifyDeviceChanged(u2f_device_);
+  void SimulateGattDiscoveryComplete(bool complete) {
+    EXPECT_CALL(*fido_device_, IsGattServicesDiscoveryComplete)
+        .WillOnce(Return(complete));
   }
 
-  void SimulateDeviceAddressChange(const std::string& old_address,
-                                   const std::string& new_address) {
-    if (!u2f_device_ || u2f_device_->GetAddress() != old_address)
-      return;
-
-    ON_CALL(*u2f_device_, GetAddress()).WillByDefault(Return(new_address));
-
-    adapter_->NotifyDeviceChanged(u2f_device_);
-    for (auto& observer : adapter_->GetObservers())
-      observer.DeviceAddressChanged(adapter_.get(), u2f_device_, old_address);
+  void SimulateGattConnectionError() {
+    EXPECT_CALL(*fido_device_, CreateGattConnection)
+        .WillOnce(Invoke([](auto&&, auto&& error_callback) {
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::BindOnce(error_callback, BluetoothDevice::ERROR_FAILED));
+        }));
   }
 
-  void NotifyDeviceAdded(const std::string& device_address) {
-    auto* device = adapter_->GetDevice(device_address);
-    if (!device)
-      return;
-
-    for (auto& observer : adapter_->GetObservers())
-      observer.DeviceAdded(adapter_.get(), device);
+  void SimulateGattNotifySessionStartError() {
+    EXPECT_CALL(*fido_status_, StartNotifySession(_, _))
+        .WillOnce(Invoke([](auto&&, auto&& error_callback) {
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::BindOnce(error_callback,
+                             BluetoothGattService::GATT_ERROR_FAILED));
+        }));
   }
 
   void NotifyStatusChanged(const std::vector<uint8_t>& value) {
     for (auto& observer : adapter_->GetObservers())
-      observer.GattCharacteristicValueChanged(adapter_.get(), u2f_status_,
+      observer.GattCharacteristicValueChanged(adapter_.get(), fido_status_,
                                               value);
+  }
+
+  void NotifyGattServicesDiscovered() {
+    adapter_->NotifyGattServicesDiscovered(fido_device_);
   }
 
   void SetNextReadControlPointLengthReponse(bool success,
                                             const std::vector<uint8_t>& value) {
-    EXPECT_CALL(*u2f_control_point_length_, ReadRemoteCharacteristic(_, _))
+    EXPECT_CALL(*fido_control_point_length_, ReadRemoteCharacteristic(_, _))
         .WillOnce(Invoke([success, value](const auto& callback,
                                           const auto& error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -246,7 +225,7 @@ class FidoBleConnectionTest : public ::testing::Test {
 
   void SetNextReadServiceRevisionResponse(bool success,
                                           const std::vector<uint8_t>& value) {
-    EXPECT_CALL(*u2f_service_revision_, ReadRemoteCharacteristic(_, _))
+    EXPECT_CALL(*fido_service_revision_, ReadRemoteCharacteristic(_, _))
         .WillOnce(Invoke([success, value](const auto& callback,
                                           const auto& error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -261,7 +240,8 @@ class FidoBleConnectionTest : public ::testing::Test {
   void SetNextReadServiceRevisionBitfieldResponse(
       bool success,
       const std::vector<uint8_t>& value) {
-    EXPECT_CALL(*u2f_service_revision_bitfield_, ReadRemoteCharacteristic(_, _))
+    EXPECT_CALL(*fido_service_revision_bitfield_,
+                ReadRemoteCharacteristic(_, _))
         .WillOnce(Invoke([success, value](const auto& callback,
                                           const auto& error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -276,15 +256,15 @@ class FidoBleConnectionTest : public ::testing::Test {
   void SetNextWriteControlPointResponse(bool success) {
 // For performance reasons we try writes without responses first on macOS.
 #if defined(OS_MACOSX)
-    EXPECT_CALL(*u2f_control_point_, WriteWithoutResponse)
+    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse)
         .WillOnce(Return(success));
     if (success)
       return;
 #else
-    EXPECT_CALL(*u2f_control_point_, WriteWithoutResponse).Times(0);
+    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse).Times(0);
 #endif  // defined(OS_MACOSX)
 
-    EXPECT_CALL(*u2f_control_point_, WriteRemoteCharacteristic(_, _, _))
+    EXPECT_CALL(*fido_control_point_, WriteRemoteCharacteristic(_, _, _))
         .WillOnce(Invoke([success](const auto& data, const auto& callback,
                                    const auto& error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -298,7 +278,7 @@ class FidoBleConnectionTest : public ::testing::Test {
 
   void SetNextWriteServiceRevisionResponse(std::vector<uint8_t> expected_data,
                                            bool success) {
-    EXPECT_CALL(*u2f_service_revision_bitfield_,
+    EXPECT_CALL(*fido_service_revision_bitfield_,
                 WriteRemoteCharacteristic(expected_data, _, _))
         .WillOnce(Invoke([success](const auto& data, const auto& callback,
                                    const auto& error_callback) {
@@ -311,71 +291,68 @@ class FidoBleConnectionTest : public ::testing::Test {
         }));
   }
 
-  void AddU2fService() {
-    auto u2f_service = std::make_unique<NiceMockBluetoothGattService>(
-        u2f_device_, "u2f_service", BluetoothUUID(kFidoServiceUUID),
+  void AddFidoService() {
+    auto fido_service = std::make_unique<NiceMockBluetoothGattService>(
+        fido_device_, "fido_service", BluetoothUUID(kFidoServiceUUID),
         /* is_primary */ true, /* is_local */ false);
-    u2f_service_ = u2f_service.get();
-    u2f_device_->AddMockService(std::move(u2f_service));
+    fido_service_ = fido_service.get();
+    fido_device_->AddMockService(std::move(fido_service));
 
-    AddU2fCharacteristics();
-  }
-
-  void AddU2fCharacteristics() {
-    const bool is_local = false;
+    static constexpr bool kIsLocal = false;
     {
-      auto u2f_control_point =
+      auto fido_control_point =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
-              u2f_service_, "u2f_control_point",
-              BluetoothUUID(kFidoControlPointUUID), is_local,
+              fido_service_, "fido_control_point",
+              BluetoothUUID(kFidoControlPointUUID), kIsLocal,
               BluetoothGattCharacteristic::PROPERTY_WRITE,
               BluetoothGattCharacteristic::PERMISSION_NONE);
-      u2f_control_point_ = u2f_control_point.get();
-      u2f_service_->AddMockCharacteristic(std::move(u2f_control_point));
+      fido_control_point_ = fido_control_point.get();
+      fido_service_->AddMockCharacteristic(std::move(fido_control_point));
     }
 
     {
-      auto u2f_status = std::make_unique<NiceMockBluetoothGattCharacteristic>(
-          u2f_service_, "u2f_status", BluetoothUUID(kFidoStatusUUID), is_local,
-          BluetoothGattCharacteristic::PROPERTY_NOTIFY,
+      auto fido_status = std::make_unique<NiceMockBluetoothGattCharacteristic>(
+          fido_service_, "fido_status", BluetoothUUID(kFidoStatusUUID),
+          kIsLocal, BluetoothGattCharacteristic::PROPERTY_NOTIFY,
           BluetoothGattCharacteristic::PERMISSION_NONE);
-      u2f_status_ = u2f_status.get();
-      u2f_service_->AddMockCharacteristic(std::move(u2f_status));
+      fido_status_ = fido_status.get();
+      fido_service_->AddMockCharacteristic(std::move(fido_status));
     }
 
     {
-      auto u2f_control_point_length =
+      auto fido_control_point_length =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
-              u2f_service_, "u2f_control_point_length",
-              BluetoothUUID(kFidoControlPointLengthUUID), is_local,
+              fido_service_, "fido_control_point_length",
+              BluetoothUUID(kFidoControlPointLengthUUID), kIsLocal,
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
-      u2f_control_point_length_ = u2f_control_point_length.get();
-      u2f_service_->AddMockCharacteristic(std::move(u2f_control_point_length));
+      fido_control_point_length_ = fido_control_point_length.get();
+      fido_service_->AddMockCharacteristic(
+          std::move(fido_control_point_length));
     }
 
     {
-      auto u2f_service_revision =
+      auto fido_service_revision =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
-              u2f_service_, "u2f_service_revision",
-              BluetoothUUID(kFidoServiceRevisionUUID), is_local,
+              fido_service_, "fido_service_revision",
+              BluetoothUUID(kFidoServiceRevisionUUID), kIsLocal,
               BluetoothGattCharacteristic::PROPERTY_READ,
               BluetoothGattCharacteristic::PERMISSION_NONE);
-      u2f_service_revision_ = u2f_service_revision.get();
-      u2f_service_->AddMockCharacteristic(std::move(u2f_service_revision));
+      fido_service_revision_ = fido_service_revision.get();
+      fido_service_->AddMockCharacteristic(std::move(fido_service_revision));
     }
 
     {
-      auto u2f_service_revision_bitfield =
+      auto fido_service_revision_bitfield =
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
-              u2f_service_, "u2f_service_revision_bitfield",
-              BluetoothUUID(kFidoServiceRevisionBitfieldUUID), is_local,
+              fido_service_, "fido_service_revision_bitfield",
+              BluetoothUUID(kFidoServiceRevisionBitfieldUUID), kIsLocal,
               BluetoothGattCharacteristic::PROPERTY_READ |
                   BluetoothGattCharacteristic::PROPERTY_WRITE,
               BluetoothGattCharacteristic::PERMISSION_NONE);
-      u2f_service_revision_bitfield_ = u2f_service_revision_bitfield.get();
-      u2f_service_->AddMockCharacteristic(
-          std::move(u2f_service_revision_bitfield));
+      fido_service_revision_bitfield_ = fido_service_revision_bitfield.get();
+      fido_service_->AddMockCharacteristic(
+          std::move(fido_service_revision_bitfield));
     }
   }
 
@@ -385,14 +362,14 @@ class FidoBleConnectionTest : public ::testing::Test {
   scoped_refptr<MockBluetoothAdapter> adapter_ =
       base::MakeRefCounted<NiceMockBluetoothAdapter>();
 
-  MockBluetoothDevice* u2f_device_;
-  MockBluetoothGattService* u2f_service_;
+  MockBluetoothDevice* fido_device_;
+  MockBluetoothGattService* fido_service_;
 
-  MockBluetoothGattCharacteristic* u2f_control_point_;
-  MockBluetoothGattCharacteristic* u2f_status_;
-  MockBluetoothGattCharacteristic* u2f_control_point_length_;
-  MockBluetoothGattCharacteristic* u2f_service_revision_;
-  MockBluetoothGattCharacteristic* u2f_service_revision_bitfield_;
+  MockBluetoothGattCharacteristic* fido_control_point_;
+  MockBluetoothGattCharacteristic* fido_status_;
+  MockBluetoothGattCharacteristic* fido_control_point_length_;
+  MockBluetoothGattCharacteristic* fido_service_revision_;
+  MockBluetoothGattCharacteristic* fido_service_revision_bitfield_;
 
   MockBluetoothGattConnection* connection_;
   MockBluetoothGattNotifySession* notify_session_;
@@ -400,75 +377,121 @@ class FidoBleConnectionTest : public ::testing::Test {
 
 TEST_F(FidoBleConnectionTest, Address) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  FidoBleConnection connection(adapter(), device_address, base::DoNothing(),
-                               base::DoNothing());
-  connection.Connect();
+  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+  connection.Connect(base::DoNothing());
   EXPECT_EQ(device_address, connection.address());
-  AddU2Device(device_address);
-
-  SimulateDeviceAddressChange(device_address, "new_device_address");
-  EXPECT_EQ("new_device_address", connection.address());
 }
 
 TEST_F(FidoBleConnectionTest, DeviceNotPresent) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
 }
 
 TEST_F(FidoBleConnectionTest, PreConnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
-  FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
-                               base::DoNothing());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
 }
 
-TEST_F(FidoBleConnectionTest, PostConnected) {
+TEST_F(FidoBleConnectionTest, NoConnectionWithoutCompletedGattDiscovery) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-  FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
-                               base::DoNothing());
-  connection.Connect();
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
 
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
-  NotifyDeviceAdded(device_address);
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+  SimulateGattDiscoveryComplete(false);
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(connection_callback_receiver.was_called());
+
+  NotifyGattServicesDiscovered();
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
 }
 
-TEST_F(FidoBleConnectionTest, DeviceDisconnect) {
+TEST_F(FidoBleConnectionTest, GattServicesDiscoveredIgnoredBeforeConnection) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+  NotifyGattServicesDiscovered();
 
-  SimulateDisconnect(device_address);
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+  SimulateGattDiscoveryComplete(false);
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(connection_callback_receiver.was_called());
+
+  NotifyGattServicesDiscovered();
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
+}
+
+TEST_F(FidoBleConnectionTest, GattServicesDiscoveredAgain) {
+  const std::string device_address = BluetoothTest::kTestDeviceAddress1;
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address,
+                               base::DoNothing());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  NotifyGattServicesDiscovered();
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
+
+  // A second call to the event handler should not trigger another attempt to
+  // obtain Gatt Services.
+  EXPECT_CALL(*device(), GetGattServices).Times(0);
+  EXPECT_CALL(*device(), GetGattService).Times(0);
+  NotifyGattServicesDiscovered();
+}
+
+TEST_F(FidoBleConnectionTest, SimulateGattConnectionError) {
+  const std::string device_address = BluetoothTest::kTestDeviceAddress1;
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address, base::DoNothing());
+
+  SimulateGattConnectionError();
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
+}
+
+TEST_F(FidoBleConnectionTest, SimulateGattNotifySessionStartError) {
+  const std::string device_address = BluetoothTest::kTestDeviceAddress1;
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
+  FidoBleConnection connection(adapter(), device_address,
+                               base::DoNothing());
+
+  SimulateGattNotifySessionStartError();
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
 }
 
 TEST_F(FidoBleConnectionTest, MultipleServiceRevisions) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
 
   static constexpr struct {
     std::bitset<8> supported_revisions;
@@ -507,19 +530,18 @@ TEST_F(FidoBleConnectionTest, MultipleServiceRevisions) {
         {test_case.selected_revision.to_ulong()}, true);
 
     FidoBleConnection connection(adapter(), device_address,
-                                 connection_status_callback.GetCallback(),
                                  base::DoNothing());
-    connection.Connect();
-    EXPECT_TRUE(connection_status_callback.WaitForResult());
+    TestConnectionCallbackReceiver connection_callback_receiver;
+    connection.Connect(connection_callback_receiver.callback());
+    connection_callback_receiver.WaitForCallback();
+    EXPECT_TRUE(connection_callback_receiver.value());
   }
 }
 
 TEST_F(FidoBleConnectionTest, UnsupportedServiceRevisions) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
 
   // Test failure cases.
   static constexpr struct {
@@ -540,56 +562,58 @@ TEST_F(FidoBleConnectionTest, UnsupportedServiceRevisions) {
         true, {test_case.supported_revisions.to_ulong()});
 
     FidoBleConnection connection(adapter(), device_address,
-                                 connection_status_callback.GetCallback(),
                                  base::DoNothing());
-    connection.Connect();
-    EXPECT_FALSE(connection_status_callback.WaitForResult());
+    TestConnectionCallbackReceiver connection_callback_receiver;
+    connection.Connect(connection_callback_receiver.callback());
+    connection_callback_receiver.WaitForCallback();
+    EXPECT_FALSE(connection_callback_receiver.value());
   }
 }
 
 TEST_F(FidoBleConnectionTest, ReadServiceRevisionsFails) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
 
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   SetNextReadServiceRevisionBitfieldResponse(false, {});
 
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
 }
 
 TEST_F(FidoBleConnectionTest, WriteServiceRevisionsFails) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
 
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   SetNextReadServiceRevisionBitfieldResponse(true, {kDefaultServiceRevision});
   SetNextWriteServiceRevisionResponse({kDefaultServiceRevision}, false);
 
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
 }
 
 TEST_F(FidoBleConnectionTest, ReadStatusNotifications) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
   TestReadCallback read_callback;
 
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                read_callback.GetCallback());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
 
   std::vector<uint8_t> payload = ToByteVector("foo");
   NotifyStatusChanged(payload);
@@ -602,14 +626,15 @@ TEST_F(FidoBleConnectionTest, ReadStatusNotifications) {
 
 TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
 
   {
     TestReadControlPointLengthCallback length_callback;
@@ -656,14 +681,15 @@ TEST_F(FidoBleConnectionTest, ReadControlPointLength) {
 
 TEST_F(FidoBleConnectionTest, WriteControlPoint) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
+
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_TRUE(connection_callback_receiver.value());
 
   {
     TestWriteCallback write_callback;
@@ -684,18 +710,17 @@ TEST_F(FidoBleConnectionTest, WriteControlPoint) {
 
 TEST_F(FidoBleConnectionTest, ReadsAndWriteFailWhenDisconnected) {
   const std::string device_address = BluetoothTest::kTestDeviceAddress1;
-  TestConnectionStatusCallback connection_status_callback;
 
-  AddU2Device(device_address);
-  SetupConnectingU2fDevice(device_address);
+  AddFidoDevice(device_address);
+  SetupConnectingFidoDevice(device_address);
   FidoBleConnection connection(adapter(), device_address,
-                               connection_status_callback.GetCallback(),
                                base::DoNothing());
-  connection.Connect();
-  EXPECT_TRUE(connection_status_callback.WaitForResult());
 
-  SimulateDisconnect(device_address);
-  EXPECT_FALSE(connection_status_callback.WaitForResult());
+  SimulateGattConnectionError();
+  TestConnectionCallbackReceiver connection_callback_receiver;
+  connection.Connect(connection_callback_receiver.callback());
+  connection_callback_receiver.WaitForCallback();
+  EXPECT_FALSE(connection_callback_receiver.value());
 
   // Reads should always fail on a disconnected device.
   TestReadControlPointLengthCallback length_callback;
