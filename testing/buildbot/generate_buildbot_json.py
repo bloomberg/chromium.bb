@@ -787,7 +787,8 @@ class BBJSONGenerator(object):
           if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
             # TODO(thakis): Remove this once these bots move to luci.
             continue  # pragma: no cover
-          if waterfall['name'] in ['tryserver.webrtc']:
+          if waterfall['name'] in ['tryserver.webrtc',
+                                   'webrtc.chromium.fyi.experimental']:
             # These waterfalls have their bot configs in a different repo.
             # so we don't know about their bot names.
             continue  # pragma: no cover

@@ -3437,47 +3437,37 @@
   {
     'name': 'chromium.webrtc.fyi.experimental',
     'machines': {
-      'Android Builder': {
+      'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Android Builder (dbg)': {
+      'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Android Builder ARM64 (dbg)': {
+      'WebRTC Chromium FYI Linux Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Linux Builder': {
+      'WebRTC Chromium FYI Mac Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Linux Builder (dbg)': {
+      'WebRTC Chromium FYI Win10 Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Mac Builder': {
+      'WebRTC Chromium FYI Win7 Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
       },
-      'Mac Builder (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-        },
-      },
-      'Win Builder': {
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-        },
-      },
-      'Win Builder (dbg)': {
+      'WebRTC Chromium FYI Win8 Tester': {
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
         },
