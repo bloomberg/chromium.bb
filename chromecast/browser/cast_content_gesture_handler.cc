@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_gesture_dispatcher.h"
+#include "chromecast/browser/cast_content_gesture_handler.h"
 
 #include "chromecast/base/chromecast_switches.h"
 
@@ -13,7 +13,7 @@ namespace {
 constexpr int kDefaultBackGestureHorizontalThreshold = 80;
 }  // namespace
 
-CastGestureDispatcher::CastGestureDispatcher(
+CastContentGestureHandler::CastContentGestureHandler(
     CastContentWindow::Delegate* delegate,
     bool enable_top_drag_gesture)
     : priority_(Priority::NONE),
@@ -25,25 +25,27 @@ CastGestureDispatcher::CastGestureDispatcher(
   DCHECK(delegate_);
 }
 
-CastGestureDispatcher::CastGestureDispatcher(
+CastContentGestureHandler::CastContentGestureHandler(
     CastContentWindow::Delegate* delegate)
-    : CastGestureDispatcher(
+    : CastContentGestureHandler(
           delegate,
           GetSwitchValueBoolean(switches::kEnableTopDragGesture, false)) {}
 
-void CastGestureDispatcher::SetPriority(CastGestureHandler::Priority priority) {
+void CastContentGestureHandler::SetPriority(
+    CastGestureHandler::Priority priority) {
   priority_ = priority;
 }
 
-CastGestureHandler::Priority CastGestureDispatcher::GetPriority() {
+CastGestureHandler::Priority CastContentGestureHandler::GetPriority() {
   return priority_;
 }
 
-bool CastGestureDispatcher::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
+bool CastContentGestureHandler::CanHandleSwipe(
+    CastSideSwipeOrigin swipe_origin) {
   return delegate_->CanHandleGesture(GestureForSwipeOrigin(swipe_origin));
 }
 
-GestureType CastGestureDispatcher::GestureForSwipeOrigin(
+GestureType CastContentGestureHandler::GestureForSwipeOrigin(
     CastSideSwipeOrigin swipe_origin) {
   switch (swipe_origin) {
     case CastSideSwipeOrigin::LEFT:
@@ -56,9 +58,10 @@ GestureType CastGestureDispatcher::GestureForSwipeOrigin(
   }
 }
 
-void CastGestureDispatcher::HandleSideSwipe(CastSideSwipeEvent event,
-                                            CastSideSwipeOrigin swipe_origin,
-                                            const gfx::Point& touch_location) {
+void CastContentGestureHandler::HandleSideSwipe(
+    CastSideSwipeEvent event,
+    CastSideSwipeOrigin swipe_origin,
+    const gfx::Point& touch_location) {
   if (!CanHandleSwipe(swipe_origin)) {
     return;
   }
@@ -96,7 +99,7 @@ void CastGestureDispatcher::HandleSideSwipe(CastSideSwipeEvent event,
   }
 }
 
-void CastGestureDispatcher::HandleTapDownGesture(
+void CastContentGestureHandler::HandleTapDownGesture(
     const gfx::Point& touch_location) {
   if (!delegate_->CanHandleGesture(GestureType::TAP_DOWN)) {
     return;
@@ -104,7 +107,8 @@ void CastGestureDispatcher::HandleTapDownGesture(
   delegate_->ConsumeGesture(GestureType::TAP_DOWN);
 }
 
-void CastGestureDispatcher::HandleTapGesture(const gfx::Point& touch_location) {
+void CastContentGestureHandler::HandleTapGesture(
+    const gfx::Point& touch_location) {
   if (!delegate_->CanHandleGesture(GestureType::TAP)) {
     return;
   }
