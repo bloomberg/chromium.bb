@@ -152,6 +152,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'contextMenus': {
           'channel': 'stable'
         },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
+        },
         'events': {
           'channel': 'stable'
         },
@@ -327,6 +330,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'browserAction': {
           'channel': 'stable'
         },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
+        },
         'events': {
           'channel': 'master'
         },
@@ -465,6 +471,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         },
         'browserAction': {
           'channel': 'stable'
+        },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
         },
         'events': {
           'channel': 'master'
@@ -605,6 +614,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'browserAction': {
           'channel': 'stable'
         },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
+        },
         'events': {
           'channel': 'master'
         },
@@ -741,6 +753,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         'browserAction': {
           'channel': 'stable'
         },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
+        },
         'events': {
           'channel': 'master'
         },
@@ -876,6 +891,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         },
         'browserAction': {
           'channel': 'stable'
+        },
+        'declarativeNetRequest': {
+          'channel' : 'trunk'
         },
         'events': {
           'channel': 'dev'
