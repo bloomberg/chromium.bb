@@ -236,7 +236,6 @@ ProfileSyncService::~ProfileSyncService() {
 
 void ProfileSyncService::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_client_->Initialize();
 
   syncer::ModelTypeStoreService* model_type_store_service =
       sync_client_->GetModelTypeStoreService();

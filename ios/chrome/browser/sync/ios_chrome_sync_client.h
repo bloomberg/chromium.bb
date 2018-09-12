@@ -38,7 +38,6 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   ~IOSChromeSyncClient() override;
 
   // SyncClient implementation.
-  void Initialize() override;
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;

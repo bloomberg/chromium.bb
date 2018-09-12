@@ -33,7 +33,6 @@ class WebViewSyncClient : public syncer::SyncClient {
   ~WebViewSyncClient() override;
 
   // SyncClient implementation.
-  void Initialize() override;
   syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;

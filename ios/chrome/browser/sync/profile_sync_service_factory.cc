@@ -146,8 +146,6 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.channel = ::GetChannel();
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
-
-  // Will also initialize the sync client.
   pss->Initialize();
   return pss;
 }

@@ -16,7 +16,6 @@ class SyncClientMock : public SyncClient {
   SyncClientMock();
   ~SyncClientMock() override;
 
-  MOCK_METHOD0(Initialize, void());
   MOCK_METHOD0(GetSyncService, SyncService*());
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
