@@ -833,15 +833,12 @@ input:checked + .toggle::before {
   margin: 0 auto;
   opacity: 1;
   padding: 0;
+  position: relative;
   width: fit-content;
 }
 
 #error-notice.notice-hide {
   display: none;
-}
-
-#error-notice-icon-container {
-  position: relative;
 }
 
 #error-notice-icon {
@@ -853,13 +850,25 @@ input:checked + .toggle::before {
   width: 18px;
 }
 
+.rtl #error-notice-icon {
+  margin-right: 8px;
+}
+
 #error-notice-msg {
   cursor: default;
   padding: 0 16px 0 36px;
 }
 
+.rtl #error-notice-msg {
+  padding: 0 36px 0 16px;
+}
+
 #error-notice.has-link #error-notice-msg {
   padding-right: 0;
+}
+
+.rtl #error-notice.has-link #error-notice-msg {
+  padding: 0 36px 0 0;
 }
 
 #error-notice span:not(#error-notice-icon-container) {
