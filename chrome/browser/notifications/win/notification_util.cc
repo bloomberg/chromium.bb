@@ -77,12 +77,26 @@ NotificationLaunchId GetNotificationLaunchId(
     return NotificationLaunchId();
   }
 
+  if (!leaf) {
+    LogGetNotificationLaunchIdStatus(
+        GetNotificationLaunchIdStatus::GET_NAMED_ITEM_NULL);
+    DLOG(ERROR) << "GetNamedItem returned null querying for 'launch' attribute";
+    return NotificationLaunchId();
+  }
+
   mswr::ComPtr<winxml::Dom::IXmlNode> child;
   hr = leaf->get_FirstChild(&child);
   if (FAILED(hr)) {
     LogGetNotificationLaunchIdStatus(
         GetNotificationLaunchIdStatus::GET_FIRST_CHILD_FAILED);
     DLOG(ERROR) << "Failed to get content of launch attribute";
+    return NotificationLaunchId();
+  }
+
+  if (!child) {
+    LogGetNotificationLaunchIdStatus(
+        GetNotificationLaunchIdStatus::GET_FIRST_CHILD_NULL);
+    DLOG(ERROR) << "Launch attribute is a null node";
     return NotificationLaunchId();
   }
 
