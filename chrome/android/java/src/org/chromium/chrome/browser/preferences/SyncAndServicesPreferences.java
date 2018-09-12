@@ -860,6 +860,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             getPreferenceScreen().addPreference(mUseSyncAndAllServices);
 
             mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
+            boolean hasCustomPassphrase = mProfileSyncService.isEngineInitialized()
+                    && mProfileSyncService.getPassphraseType() == PassphraseType.CUSTOM_PASSPHRASE;
+            mUseSyncAndAllServices.setEnabled(!hasCustomPassphrase);
             mSyncGroup.setEnabled(true);
 
             mGoogleActivityControls.setOnPreferenceClickListener(
