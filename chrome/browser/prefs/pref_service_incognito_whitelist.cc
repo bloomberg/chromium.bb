@@ -118,6 +118,12 @@ const char* const kPersistentPrefNames[] = {
     prefs::kClipboardLastModifiedTime,
 #endif
 
+    // Default browser bar's status is aggregated between regular and incognito
+    // modes.
+    prefs::kBrowserSuppressDefaultBrowserPrompt,
+    prefs::kDefaultBrowserLastDeclined, prefs::kDefaultBrowserSettingEnabled,
+    prefs::kResetCheckDefaultBrowser,
+
     // Devtools preferences are stored cross profiles as they are not storing
     // user data and just keep debugging environment settings.
     prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
@@ -137,6 +143,12 @@ const char* const kPersistentPrefNames[] = {
 
 #if defined(OS_MACOSX)
     prefs::kShowFullscreenToolbar,
+#endif
+
+// Toggleing custom frames affects all open windows in the profile, hence
+// should be written to the regular profile when changed in incognito mode.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    prefs::kUseCustomChromeFrame,
 #endif
 
     // Rappor preferences are not used in incognito mode, but they are written
@@ -187,42 +199,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // !defined(OS_ANDROID)
 
     // chrome/common/pref_names.h
-    prefs::kImportantSitesDialogHistory, prefs::kSiteEngagementLastUpdateTime,
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    prefs::kUsesSystemTheme,
-#endif
-    prefs::kCurrentThemePackFilename, prefs::kCurrentThemeID,
-    prefs::kCurrentThemeImages, prefs::kCurrentThemeColors,
-    prefs::kCurrentThemeTints, prefs::kCurrentThemeDisplayProperties,
-    prefs::kPluginsLastInternalDirectory, prefs::kPluginsPluginsList,
-    prefs::kPluginsDisabledPlugins, prefs::kPluginsDisabledPluginsExceptions,
-    prefs::kPluginsEnabledPlugins, prefs::kPluginsAlwaysOpenPdfExternally,
-#if BUILDFLAG(ENABLE_PLUGINS)
-    prefs::kPluginsShowDetails,
-#endif
-    prefs::kPluginsAllowOutdated, prefs::kRunAllFlashInAllowMode,
-#if BUILDFLAG(ENABLE_PLUGINS)
-    prefs::kPluginsMetadata, prefs::kPluginsResourceCacheUpdate,
-#endif
-    prefs::kDefaultBrowserLastDeclined, prefs::kResetCheckDefaultBrowser,
-    prefs::kDefaultBrowserSettingEnabled,
-#if defined(OS_MACOSX)
-    prefs::kShowUpdatePromotionInfoBar,
-#endif
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    prefs::kUseCustomChromeFrame,
-#endif
-#if BUILDFLAG(ENABLE_PLUGINS)
-    prefs::kContentSettingsPluginWhitelist,
-#endif
-#if !defined(OS_ANDROID)
-    prefs::kPartitionDefaultZoomLevel, prefs::kPartitionPerHostZoomLevels,
-
-    prefs::kPinnedTabs,
-#endif  // !defined(OS_ANDROID)
-
-    prefs::kDisable3DAPIs, prefs::kEnableDeprecatedWebPlatformFeatures,
     prefs::kEnableHyperlinkAuditing,
 
     // TODO(https://crbug.com/861722): Check with code owners why this pref is
@@ -267,8 +243,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kStabilityPluginLaunches, prefs::kStabilityPluginInstances,
     prefs::kStabilityPluginCrashes, prefs::kStabilityPluginLoadingErrors,
 
-    prefs::kBrowserSuppressDefaultBrowserPrompt,
-
     // prefs::kBrowserWindowPlacement, prefs::kBrowserWindowPlacementPopup,
     prefs::kTaskManagerWindowPlacement, prefs::kTaskManagerColumnVisibility,
     prefs::kTaskManagerEndProcessEnabled, prefs::kAppWindowPlacement,
@@ -280,14 +254,11 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // prefs::kSaveFileDefaultDirectory, prefs::kSaveFileType,
     prefs::kTrustedDownloadSources,
 
-    prefs::kAllowFileSelectionDialogs, prefs::kDefaultTasksByMimeType,
-    prefs::kDefaultTasksBySuffix,
+    prefs::kDefaultTasksByMimeType, prefs::kDefaultTasksBySuffix,
 
     prefs::kSelectFileLastDirectory,
 
     prefs::kExcludedSchemes,
-
-    prefs::kOptionsWindowLastTabIndex,
 
     prefs::kLastKnownIntranetRedirectOrigin,
 
