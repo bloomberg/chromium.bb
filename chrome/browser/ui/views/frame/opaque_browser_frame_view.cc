@@ -34,9 +34,12 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -58,6 +61,50 @@ using content::WebContents;
 namespace {
 
 constexpr SkColor kTitleBarFeatureColor = SK_ColorWHITE;
+
+class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
+ public:
+  CaptionButtonBackgroundImageSource(const gfx::ImageSkia& bg_image,
+                                     int source_x,
+                                     int source_y,
+                                     int dest_width,
+                                     int dest_height,
+                                     bool draw_mirrored)
+      : gfx::CanvasImageSource(
+            bg_image.isNull() ? gfx::Size(1, 1) : bg_image.size(),
+            false),
+        bg_image_(bg_image),
+        source_x_(source_x),
+        source_y_(source_y),
+        dest_width_(dest_width),
+        dest_height_(dest_height),
+        draw_mirrored_(draw_mirrored) {}
+
+  ~CaptionButtonBackgroundImageSource() override = default;
+
+  void Draw(gfx::Canvas* canvas) override {
+    if (bg_image_.isNull())
+      return;
+
+    gfx::ScopedCanvas scoped_canvas(canvas);
+
+    if (draw_mirrored_) {
+      canvas->Translate(gfx::Vector2d(dest_width_, 0));
+      canvas->Scale(-1, 1);
+    }
+
+    canvas->TileImageInt(bg_image_, source_x_, source_y_, 0, 0, dest_width_,
+                         dest_height_);
+  }
+
+ private:
+  const gfx::ImageSkia bg_image_;
+  int source_x_, source_y_;
+  int dest_width_, dest_height_;
+  bool draw_mirrored_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptionButtonBackgroundImageSource);
+};
 
 }  // namespace
 
@@ -577,16 +624,82 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
   button->SetImage(views::Button::STATE_PRESSED,
                    tp->GetImageSkiaNamed(pushed_image_id));
   if (browser_view()->IsBrowserTypeNormal()) {
+    // Get a custom processed version of the theme's background image so that it
+    // appears to draw contiguously across all of the caption buttons.
+    const gfx::Size normal_image_size = GetThemeImageSize(normal_image_id);
+    const gfx::ImageSkia processed_bg_image =
+        GetProcessedBackgroundImageForCaptionButon(view_id, normal_image_size);
+
+    // SetBackgroundImage immediately uses the provided ImageSkia pointer
+    // (&processed_bg_image) to create a local copy, so it's safe for this to be
+    // locally scoped.
     button->SetBackgroundImage(
         tp->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND),
-        tp->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
+        (processed_bg_image.isNull() ? nullptr : &processed_bg_image),
         tp->GetImageSkiaNamed(mask_image_id));
   }
-  button->SetAccessibleName(
-      l10n_util::GetStringUTF16(accessibility_string_id));
+  button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
   button->set_id(view_id);
   AddChildView(button);
   return button;
+}
+
+gfx::Size OpaqueBrowserFrameView::GetThemeImageSize(int image_id) {
+  const ui::ThemeProvider* tp = frame()->GetThemeProvider();
+  const gfx::ImageSkia* image = tp->GetImageSkiaNamed(image_id);
+
+  return (image ? image->size() : gfx::Size());
+}
+
+int OpaqueBrowserFrameView::CalculateCaptionButtonBackgroundXOffset(
+    ViewID view_id) {
+  const int minimize_width = GetThemeImageSize(IDR_MINIMIZE).width();
+  const int maximize_restore_width = GetThemeImageSize(IDR_MAXIMIZE).width();
+  const int close_width = GetThemeImageSize(IDR_CLOSE).width();
+
+  const bool is_rtl = base::i18n::IsRTL();
+
+  switch (view_id) {
+    case VIEW_ID_MINIMIZE_BUTTON:
+      return (is_rtl ? close_width + maximize_restore_width : 0);
+    case VIEW_ID_MAXIMIZE_BUTTON:
+    case VIEW_ID_RESTORE_BUTTON:
+      return (is_rtl ? close_width : minimize_width);
+    case VIEW_ID_CLOSE_BUTTON:
+      return (is_rtl ? 0 : minimize_width + maximize_restore_width);
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+gfx::ImageSkia
+OpaqueBrowserFrameView::GetProcessedBackgroundImageForCaptionButon(
+    ViewID view_id,
+    const gfx::Size& desired_size) {
+  // We want the background image to tile contiguously across all of the
+  // caption buttons, so we need to draw a subset of the background image,
+  // with source offsets based on where this button is located relative to the
+  // other caption buttons.  We also have to account for the image mirroring
+  // that happens in RTL mode.  This is accomplished using a custom
+  // ImageSource (defined at the top of the file).
+
+  const ui::ThemeProvider* tp = frame()->GetThemeProvider();
+  const gfx::ImageSkia* bg_image =
+      tp->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+
+  if (!bg_image)
+    return gfx::ImageSkia();
+
+  const bool is_rtl = base::i18n::IsRTL();
+  const int bg_x_offset = CalculateCaptionButtonBackgroundXOffset(view_id);
+  const int bg_y_offset = 0;
+  std::unique_ptr<CaptionButtonBackgroundImageSource> source =
+      std::make_unique<CaptionButtonBackgroundImageSource>(
+          *bg_image, bg_x_offset, bg_y_offset, desired_size.width(),
+          desired_size.height(), is_rtl);
+
+  return gfx::ImageSkia(std::move(source), desired_size);
 }
 
 int OpaqueBrowserFrameView::FrameBorderThickness(bool restored) const {

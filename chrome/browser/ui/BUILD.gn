@@ -2197,6 +2197,8 @@ jumbo_split_static_library("ui") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [
+      "frame/window_frame_util.cc",
+      "frame/window_frame_util.h",
       "signin_view_controller.cc",
       "signin_view_controller.h",
       "signin_view_controller_delegate.cc",

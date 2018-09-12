@@ -138,6 +138,24 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                               int accessibility_string_id,
                                               ViewID view_id);
 
+  // Returns the size of the custom image specified by |image_id| in the frame's
+  // ThemeProvider.
+  gfx::Size GetThemeImageSize(int image_id);
+
+  // Returns the amount by which the background image of a caption button
+  // (specified by |view_id|) should be offset on the X-axis.
+  int CalculateCaptionButtonBackgroundXOffset(ViewID view_id);
+
+  // Returns an image to be used as the background image for the caption button
+  // specified by |view_id|.  The returned image is based on the control button
+  // background image specified by the current theme, and processed to handle
+  // size, source offset, tiling, and mirroring for the specified caption
+  // button.  This is done to provide the effect that the background image
+  // appears to draw contiguously across all 3 caption buttons.
+  gfx::ImageSkia GetProcessedBackgroundImageForCaptionButon(
+      ViewID view_id,
+      const gfx::Size& desired_size);
+
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.  If |restored| is true, this is
   // calculated as if the window was restored, regardless of its current
