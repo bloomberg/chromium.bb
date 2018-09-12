@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_gesture_dispatcher.h"
+#include "chromecast/browser/cast_content_gesture_handler.h"
 
 #include "chromecast/base/chromecast_switches.h"
 #include "content/public/test/browser_test.h"
@@ -51,18 +51,18 @@ class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
   std::string GetId() override { return "mockContentWindowDelegate"; }
 };
 
-class CastGestureDispatcherTest : public testing::Test {
+class CastContentGestureHandlerTest : public testing::Test {
  public:
-  CastGestureDispatcherTest() : dispatcher_(&delegate_, true) {}
+  CastContentGestureHandlerTest() : dispatcher_(&delegate_, true) {}
 
  protected:
   MockCastContentWindowDelegate delegate_;
-  CastGestureDispatcher dispatcher_;
+  CastContentGestureHandler dispatcher_;
 };
 
 // Verify the simple case of a left swipe with the right horizontal leads to
 // back.
-TEST_F(CastGestureDispatcherTest, VerifySimpleBackSuccess) {
+TEST_F(CastContentGestureHandlerTest, VerifySimpleBackSuccess) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -84,7 +84,7 @@ TEST_F(CastGestureDispatcherTest, VerifySimpleBackSuccess) {
 }
 
 // Verify that if the finger is not lifted, that's not a back gesture.
-TEST_F(CastGestureDispatcherTest, VerifyNoDispatchOnNoLift) {
+TEST_F(CastContentGestureHandlerTest, VerifyNoDispatchOnNoLift) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -107,7 +107,7 @@ TEST_F(CastGestureDispatcherTest, VerifyNoDispatchOnNoLift) {
 
 // Verify that multiple 'continue' events still only lead to one back
 // invocation.
-TEST_F(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
+TEST_F(CastContentGestureHandlerTest, VerifyOnlySingleDispatch) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -133,7 +133,7 @@ TEST_F(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
 
 // Verify that if the delegate says it doesn't handle back that we won't try to
 // ask them to consume it.
-TEST_F(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
+TEST_F(CastContentGestureHandlerTest, VerifyDelegateDoesNotConsumeUnwanted) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -150,7 +150,7 @@ TEST_F(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
 }
 
 // Verify that a not-left gesture doesn't lead to a swipe.
-TEST_F(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
+TEST_F(CastContentGestureHandlerTest, VerifyNotLeftSwipeIsNotBack) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -164,7 +164,7 @@ TEST_F(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
 
 // Verify that if the gesture doesn't go far enough horizontally that we will
 // not consider it a swipe.
-TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
+TEST_F(CastContentGestureHandlerTest, VerifyNotFarEnoughRightIsNotBack) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -187,7 +187,7 @@ TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
 
 // Verify that if the gesture ends before going far enough, that's also not a
 // swipe.
-TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
+TEST_F(CastContentGestureHandlerTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(false));
 
@@ -209,7 +209,7 @@ TEST_F(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
 }
 
 // Verify simple top-down drag.
-TEST_F(CastGestureDispatcherTest, VerifySimpleTopSuccess) {
+TEST_F(CastContentGestureHandlerTest, VerifySimpleTopSuccess) {
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::GO_BACK)))

@@ -74,7 +74,8 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
 CastContentWindowAura::CastContentWindowAura(
     const CastContentWindow::CreateParams& params)
     : delegate_(params.delegate),
-      gesture_dispatcher_(std::make_unique<CastGestureDispatcher>(delegate_)),
+      gesture_dispatcher_(
+          std::make_unique<CastContentGestureHandler>(delegate_)),
       gesture_priority_(params.gesture_priority),
       is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),

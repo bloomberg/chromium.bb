@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
-#define CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
+#ifndef CHROMECAST_BROWSER_CAST_CONTENT_GESTURE_HANDLER_H_
+#define CHROMECAST_BROWSER_CAST_CONTENT_GESTURE_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -14,11 +14,11 @@ namespace chromecast {
 
 namespace shell {
 
-// Receives root window level gestures, interprets them, and dispatches them to
-// the CastContentWindow::Delegate.
-class CastGestureDispatcher : public CastGestureHandler {
+// Receives root window level gestures, interprets them, and hands them to the
+// CastContentWindow::Delegate.
+class CastContentGestureHandler : public CastGestureHandler {
  public:
-  explicit CastGestureDispatcher(CastContentWindow::Delegate* delegate);
+  explicit CastContentGestureHandler(CastContentWindow::Delegate* delegate);
 
   // CastGestureHandler implementation:
   Priority GetPriority() override;
@@ -32,9 +32,9 @@ class CastGestureDispatcher : public CastGestureHandler {
   void SetPriority(Priority priority);
 
  private:
-  friend class CastGestureDispatcherTest;
-  CastGestureDispatcher(CastContentWindow::Delegate* delegate,
-                        bool enable_top_drag_gesture);
+  friend class CastContentGestureHandlerTest;
+  CastContentGestureHandler(CastContentWindow::Delegate* delegate,
+                            bool enable_top_drag_gesture);
   GestureType GestureForSwipeOrigin(CastSideSwipeOrigin swipe_origin);
 
   Priority priority_;
@@ -50,4 +50,4 @@ class CastGestureDispatcher : public CastGestureHandler {
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
+#endif  // CHROMECAST_BROWSER_CAST_CONTENT_GESTURE_HANDLER_H_
