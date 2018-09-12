@@ -1043,13 +1043,11 @@ class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
                     HKEY root_key,
                     const base::string16& reg_key);
 
-  BrowserDistribution* const dist_;
   registry_util::RegistryOverrideManager override_manager_;
   std::unique_ptr<install_static::ScopedInstallDetails> scoped_install_details_;
 };
 
-CollectStatsConsent::CollectStatsConsent()
-    : dist_(BrowserDistribution::GetDistribution()) {}
+CollectStatsConsent::CollectStatsConsent() = default;
 
 // Install the registry override and apply the settings to the registry.
 void CollectStatsConsent::SetUp() {
@@ -1065,7 +1063,8 @@ void CollectStatsConsent::SetUp() {
           stats_state.system_level(), 0 /* install_mode_index */);
   const HKEY root_key = stats_state.root_key();
   ASSERT_NO_FATAL_FAILURE(
-      ApplySetting(stats_state.state_value(), root_key, dist_->GetStateKey()));
+      ApplySetting(stats_state.state_value(), root_key,
+                   install_static::GetClientStateKeyPath()));
   ASSERT_NO_FATAL_FAILURE(
       ApplySetting(stats_state.state_medium_value(), root_key,
                    install_static::GetClientStateMediumKeyPath()));
@@ -1086,19 +1085,16 @@ void CollectStatsConsent::ApplySetting(StatsState::StateSetting setting,
 }
 
 // Test that stats consent can be read.
-TEST_P(CollectStatsConsent, GetCollectStatsConsentAtLevel) {
-  if (GetParam().is_consent_granted()) {
-    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
-                    GetParam().system_level()));
-  } else {
-    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
-                     GetParam().system_level()));
-  }
+TEST_P(CollectStatsConsent, GetCollectStatsConsent) {
+  if (GetParam().is_consent_granted())
+    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsent());
+  else
+    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsent());
 }
 
 // Test that stats consent can be flipped to the opposite setting, that the new
 // setting takes affect, and that the correct registry location is modified.
-TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
+TEST_P(CollectStatsConsent, SetCollectStatsConsent) {
   // When testing revoking consent, verify that backup client info is cleared.
   // To do so, first add some backup client info.
   if (GetParam().is_consent_granted()) {
@@ -1109,13 +1105,12 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
     GoogleUpdateSettings::StoreMetricsClientInfo(client_info);
   }
 
-  EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsentAtLevel(
-                  GetParam().system_level(),
-                  !GetParam().is_consent_granted()));
+  EXPECT_TRUE(GoogleUpdateSettings::SetCollectStatsConsent(
+      !GetParam().is_consent_granted()));
 
   const base::string16 reg_key =
       GetParam().system_level() ? install_static::GetClientStateMediumKeyPath()
-                                : dist_->GetStateKey();
+                                : install_static::GetClientStateKeyPath();
   DWORD value = 0;
   EXPECT_EQ(
       ERROR_SUCCESS,
@@ -1123,12 +1118,10 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsentAtLevel) {
              KEY_QUERY_VALUE).ReadValueDW(google_update::kRegUsageStatsField,
                                           &value));
   if (GetParam().is_consent_granted()) {
-    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
-                     GetParam().system_level()));
+    EXPECT_FALSE(GoogleUpdateSettings::GetCollectStatsConsent());
     EXPECT_EQ(0UL, value);
   } else {
-    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsentAtLevel(
-                    GetParam().system_level()));
+    EXPECT_TRUE(GoogleUpdateSettings::GetCollectStatsConsent());
     EXPECT_EQ(1UL, value);
     // Verify that backup client info has been cleared.
     EXPECT_FALSE(GoogleUpdateSettings::LoadMetricsClientInfo());

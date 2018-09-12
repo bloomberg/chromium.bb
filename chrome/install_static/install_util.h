@@ -88,6 +88,11 @@ std::wstring GetClientStateKeyPath();
 // for system-wide installs to hold values written by the browser.
 std::wstring GetClientStateMediumKeyPath();
 
+// Returns the path to the ClientState{,Medium} key for the deprecated Chrome
+// binaries.
+std::wstring GetClientStateKeyPathForBinaries();
+std::wstring GetClientStateMediumKeyPathForBinaries();
+
 // Returns the path
 // "Software\Microsoft\Windows\CurrentVersion\Uninstall\[kCompanyPathName ]
 // kProductPathName[install_suffix]. This is the key used for the browser's

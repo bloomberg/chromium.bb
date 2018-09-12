@@ -421,8 +421,7 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
   BrowserDistribution* chrome_dist = installer_state.product().distribution();
 
   google_update::Tristate consent =
-      GoogleUpdateSettings::GetCollectStatsConsentForApp(
-          installer_state.system_install(), *MakeBinariesRegistrationData());
+      GoogleUpdateSettings::GetCollectStatsConsentForBinaries();
   if (consent == google_update::TRISTATE_NONE) {
     VLOG(1) << "No consent value found to migrate to single-install.";
     // Delete any stale value in Chrome's ClientState key.
