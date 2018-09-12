@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -87,17 +86,9 @@ void DefaultKeyboardExtensionBrowserTest::RunTest(
   EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, resource_ids));
 }
 
-void DefaultKeyboardExtensionBrowserTest::ShowVirtualKeyboard() {
-  aura::Window* window = ash::Shell::GetPrimaryRootWindow();
-  ui::InputMethod* input_method = window->GetHost()->GetInputMethod();
-  ASSERT_TRUE(input_method);
-  input_method->ShowVirtualKeyboardIfEnabled();
-}
-
 content::WebContents*
 DefaultKeyboardExtensionBrowserTest::GetKeyboardWebContents(
     const std::string& id) {
-  ShowVirtualKeyboard();
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
