@@ -4,11 +4,26 @@
 
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 
+#include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 
 namespace content {
+
+// TODO(crbug.com/638081): Like in ProcessedLocalAudioSource::GetBufferSize(),
+// we should re-evaluate whether Android needs special treatment here. Or,
+// perhaps we should just DCHECK_GT(device...frames_per_buffer, 0)?
+#if defined(OS_ANDROID)
+static constexpr int kFallbackAudioLatencyMs = 20;
+#else
+static constexpr int kFallbackAudioLatencyMs = 10;
+#endif
+
+static_assert(kFallbackAudioLatencyMs >= 0,
+              "Audio latency has to be non-negative.");
+static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
+              "Audio latency can cause overflow.");
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
@@ -27,15 +42,8 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
   // If the device buffer size was not provided, use a default.
   int frames_per_buffer = device.input.frames_per_buffer();
   if (frames_per_buffer <= 0) {
-// TODO(miu): Like in ProcessedLocalAudioSource::GetBufferSize(), we should
-// re-evaluate whether Android needs special treatment here. Or, perhaps we
-// should just DCHECK_GT(device...frames_per_buffer, 0)?
-// http://crbug.com/638081
-#if defined(OS_ANDROID)
-    frames_per_buffer = device.input.sample_rate() / 50;  // 20 ms
-#else
-    frames_per_buffer = device.input.sample_rate() / 100;  // 10 ms
-#endif
+    frames_per_buffer =
+        (device.input.sample_rate() * kFallbackAudioLatencyMs) / 1000;
   }
 
   SetFormat(media::AudioParameters(
