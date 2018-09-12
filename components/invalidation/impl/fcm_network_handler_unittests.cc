@@ -61,10 +61,11 @@ class MockInstanceID : public InstanceID {
 
   MOCK_METHOD1(GetID, void(const GetIDCallback& callback));
   MOCK_METHOD1(GetCreationTime, void(const GetCreationTimeCallback& callback));
-  MOCK_METHOD4(GetToken,
+  MOCK_METHOD5(GetToken,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
+                    bool is_lazy,
                     const GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,
@@ -230,9 +231,9 @@ class FCMNetworkHandlerTest : public testing::Test {
       MessageCallback mock_on_message_callback) {
     std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
     handler->SetMessageReceiver(mock_on_message_callback);
-    EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+    EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
         .WillOnce(
-            InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+            InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
     handler->StartListening();
     return handler;
   }
@@ -268,9 +269,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceRecieved) {
   handler->SetTokenReceiver(mock_on_token_callback.Get());
 
   // Check that the handler gets the token through GetToken.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
 }
@@ -281,9 +282,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldPassTheTokenOnceSubscribed) {
   MockOnTokenCallback mock_on_token_callback;
 
   // Check that the handler gets the token through GetToken.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run(_)).Times(0);
   handler->StartListening();
   base::RunLoop().RunUntilIdle();
@@ -298,9 +299,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldNotInvokeMessageCallbackOnEmptyMessage) {
   std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
   EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
   handler->SetMessageReceiver(mock_on_message_callback.Get());
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
 
   handler->StartListening();
   handler->OnMessage(kInvalidationsAppId, gcm::IncomingMessage());
@@ -394,9 +395,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
   handler->SetTokenReceiver(mock_on_token_callback.Get());
 
   // Check that after StartListening we receive the token and store it.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
   handler->StopListening();
@@ -409,9 +410,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
 
   // Check that after StartListening the token will be requested, depite we have
   // saved token.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token_new", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token_new", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run("token_new")).Times(1);
   handler->StartListening();
   task_runner->RunUntilIdle();
@@ -426,9 +427,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
 
   // Checking that after start listening the token will be requested
   // and passed to the appropriate token receiver.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
@@ -440,9 +441,9 @@ TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
   task_runner->FastForwardBy(time_to_validation -
                              base::TimeDelta::FromSeconds(1));
   // But when it is time, validation happens.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token_new", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token_new", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run("token_new")).Times(1);
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
@@ -457,9 +458,9 @@ TEST_F(FCMNetworkHandlerTest,
 
   // Checking that after start listening the token will be requested
   // and passed to the appropriate token receiver
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
   handler->StartListening();
@@ -472,9 +473,9 @@ TEST_F(FCMNetworkHandlerTest,
                              base::TimeDelta::FromSeconds(1));
 
   // But when it is time, validation happens.
-  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _))
       .WillOnce(
-          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+          InvokeCallbackArgument<4>("token", InstanceID::Result::SUCCESS));
   EXPECT_CALL(mock_on_token_callback, Run(_)).Times(0);
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
