@@ -7,6 +7,8 @@
 # non-component build. This needs to match the GYP build which was likely an
 # attempt to make larger components to help with loading.
 
+import("//build/config/jumbo.gni")
+
 group("common") {
   if (is_component_build) {
     public_deps = [
@@ -49,7 +51,7 @@ group("webgpu") {
   ]
 }
 
-source_set("common_sources") {
+jumbo_source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [

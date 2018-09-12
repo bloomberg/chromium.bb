@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
+import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
-import("//build/config/ui.gni")
 import("//ui/gl/features.gni")
 
 config("gpu_implementation") {
@@ -140,7 +141,7 @@ if (!use_static_angle) {
   }
 }  # if (!use_static_angle)
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "command_buffer/client/client_test_helper.cc",
