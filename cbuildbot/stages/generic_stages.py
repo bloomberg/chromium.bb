@@ -256,7 +256,8 @@ class BuilderStage(object):
         self._build_stage_id is not None):
       failed_metrics_fields = copy.deepcopy(common_metrics_fields)
       failed_metrics_fields.update({'failed_stage': self.name,
-                                    'category': self.category})
+                                    'category': self.category,
+                                    'important': self._run.config.important})
       _, db = self._run.GetCIDBHandle()
       if db:
         failures_lib.ReportStageFailure(db, self._build_stage_id, stage_result,
