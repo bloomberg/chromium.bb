@@ -4236,9 +4236,6 @@
     <message name="IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT" desc="Text to tell user that their Chromebook needs to verify that it can connect with their phone.">
       Waiting for verification. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more.<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_COULD_NOT_CONNECT" desc="Text to tell user that their Chromebook could not connect to their phone while it was trying to set up multidevice features.">
-      Couldn't connect to phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more.<ph name="LINK_END">&lt;/a&gt;</ph>
-    </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON" desc="Label of the button that opens a menu to the user that allows them to set up a connection between the user's phone and their Chromebook to give them access to special features.">
       Set up
     </message>
