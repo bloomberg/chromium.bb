@@ -8,6 +8,5 @@ goog.provide('__crWeb.allFramesWebBundle');
 goog.require('__crWeb.allFramesContextMenu');
 goog.require('__crWeb.base');
 goog.require('__crWeb.common');
-goog.require('__crWeb.frameMessaging');
 goog.require('__crWeb.message');
 

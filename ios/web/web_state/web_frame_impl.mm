@@ -116,7 +116,7 @@ bool WebFrameImpl::CallJavaScriptFunction(
   std::string encoded_message;
   base::Base64Encode(ciphertext, &encoded_message);
   std::string script = base::StringPrintf(
-      "__gCrWeb.frameMessaging.routeMessage('%s', '%s', '%s')",
+      "__gCrWeb.message.routeMessage('%s', '%s', '%s')",
       encoded_message.c_str(), encoded_iv.c_str(), frame_id_.c_str());
   GetWebState()->ExecuteJavaScript(base::UTF8ToUTF16(script));
 

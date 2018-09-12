@@ -102,7 +102,7 @@ TEST_F(WebFrameImplTest, CreateWebFrameForIFrame) {
 }
 
 // Tests that |CallJavaScriptFunction| encrypts the message and passes it to
-// __gCrWeb.frameMessaging.routeMessage in the main frame.
+// __gCrWeb.message.routeMessage in the main frame.
 TEST_F(WebFrameImplTest, CallJavaScriptFunction) {
   TestWebState test_web_state;
   GURL security_origin;
@@ -117,7 +117,7 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunction) {
 
   NSString* last_script =
       base::SysUTF16ToNSString(test_web_state.GetLastExecutedJavascript());
-  EXPECT_TRUE([last_script hasPrefix:@"__gCrWeb.frameMessaging.routeMessage"]);
+  EXPECT_TRUE([last_script hasPrefix:@"__gCrWeb.message.routeMessage"]);
   // Verify the message does not contain the plaintext function name or
   // parameters.
   EXPECT_FALSE([last_script containsString:@"functionName"]);

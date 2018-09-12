@@ -14,16 +14,16 @@
 
 namespace {
 // JavaScript to return a frame's frameId.
-NSString* const kGetFrameIdJs = @"__gCrWeb.frameMessaging.getFrameId();";
+NSString* const kGetFrameIdJs = @"__gCrWeb.message.getFrameId();";
 }  // namespace
 
 namespace web {
 
-// Test fixture to test frame_messaging.js.
-typedef web::WebTestWithWebState FrameMessagingJsTest;
+// Test fixture to test message.js.
+typedef web::WebTestWithWebState MessageJsTest;
 
 // Tests that a frameId is created.
-TEST_F(FrameMessagingJsTest, FrameId) {
+TEST_F(MessageJsTest, FrameId) {
   ASSERT_TRUE(LoadHtml("<p>"));
 
   NSString* frame_id = ExecuteJavaScript(kGetFrameIdJs);
@@ -34,7 +34,7 @@ TEST_F(FrameMessagingJsTest, FrameId) {
 }
 
 // Tests that the frameId is unique between two page loads.
-TEST_F(FrameMessagingJsTest, UniqueFrameID) {
+TEST_F(MessageJsTest, UniqueFrameID) {
   ASSERT_TRUE(LoadHtml("<p>"));
   NSString* frame_id = ExecuteJavaScript(kGetFrameIdJs);
 
