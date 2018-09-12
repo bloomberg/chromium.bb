@@ -12,6 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
+
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+#include "components/tracing/common/native_stack_sampler_android.h"
+#endif
 
 namespace tracing {
 
@@ -95,8 +102,15 @@ void TracingSamplerProfiler::OnTraceLogEnabled() {
   params.sampling_interval = base::TimeDelta::FromMilliseconds(50);
 
   // Create and start the stack sampling profiler.
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+  profiler_ = std::make_unique<base::StackSamplingProfiler>(
+      sampled_thread_id_, params, std::make_unique<TracingProfileBuilder>(),
+      std::make_unique<NativeStackSamplerAndroid>(sampled_thread_id_));
+#else
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_id_, params, std::make_unique<TracingProfileBuilder>());
+#endif
   profiler_->Start();
 }
 
