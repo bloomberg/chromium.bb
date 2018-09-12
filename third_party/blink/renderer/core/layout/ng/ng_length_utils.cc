@@ -884,6 +884,21 @@ LayoutUnit ConstrainByMinMax(LayoutUnit length,
   return std::max(min, std::min(length, max));
 }
 
+bool ClampScrollbarToContentBox(NGBoxStrut* scrollbars,
+                                LayoutUnit content_box_inline_size) {
+  DCHECK(scrollbars->InlineSum());
+  if (scrollbars->InlineSum() <= content_box_inline_size)
+    return false;
+  if (scrollbars->inline_end) {
+    DCHECK(!scrollbars->inline_start);
+    scrollbars->inline_end = content_box_inline_size;
+  } else {
+    DCHECK(scrollbars->inline_start);
+    scrollbars->inline_start = content_box_inline_size;
+  }
+  return true;
+}
+
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node) {
