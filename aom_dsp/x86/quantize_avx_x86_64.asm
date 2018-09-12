@@ -431,5 +431,5 @@ DEFINE_ARGS coeff, ncoeff, zbin, round, quant, shift, \
 %endmacro
 
 INIT_XMM avx
-QUANTIZE_FN b, 7
-QUANTIZE_FN b_32x32, 7
+QUANTIZE_FN b, 9
+QUANTIZE_FN b_32x32, 9
