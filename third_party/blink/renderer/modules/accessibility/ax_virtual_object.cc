@@ -35,7 +35,7 @@ void AXVirtualObject::AddChildren() {
 
 void AXVirtualObject::ChildrenChanged() {
   ClearChildren();
-  AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
+  AXObjectCache().PostNotification(this, ax::mojom::Event::kChildrenChanged);
 }
 
 const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(

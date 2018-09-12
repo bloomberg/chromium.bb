@@ -33,43 +33,6 @@
 
 namespace blink {
 
-// Accessibility events sent from Blink to the embedder.
-// These values must match blink::AXObjectCache::AXNotification values.
-// Enforced in AssertMatchingEnums.cpp.
-enum WebAXEvent {
-  kWebAXEventActiveDescendantChanged,
-  kWebAXEventAriaAttributeChanged,
-  kWebAXEventAutocorrectionOccured,
-  kWebAXEventBlur,
-  kWebAXEventCheckedStateChanged,
-  kWebAXEventChildrenChanged,
-  kWebAXEventClicked,
-  kWebAXEventDocumentSelectionChanged,
-  kWebAXEventDocumentTitleChanged,
-  kWebAXEventExpandedChanged,
-  kWebAXEventFocus,
-  kWebAXEventHide,
-  kWebAXEventHover,
-  kWebAXEventInvalidStatusChanged,
-  kWebAXEventLayoutComplete,
-  kWebAXEventLiveRegionChanged,
-  kWebAXEventLoadComplete,
-  kWebAXEventLocationChanged,
-  kWebAXEventMenuListItemSelected,
-  kWebAXEventMenuListItemUnselected,
-  kWebAXEventMenuListValueChanged,
-  kWebAXEventRowCollapsed,
-  kWebAXEventRowCountChanged,
-  kWebAXEventRowExpanded,
-  kWebAXEventScrollPositionChanged,
-  kWebAXEventScrolledToAnchor,
-  kWebAXEventSelectedChildrenChanged,
-  kWebAXEventSelectedTextChanged,
-  kWebAXEventShow,
-  kWebAXEventTextChanged,
-  kWebAXEventValueChanged
-};
-
 // Accessibility roles.
 // These values must match blink::AccessibilityRole values.
 // Enforced in AssertMatchingEnums.cpp.

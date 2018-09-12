@@ -80,7 +80,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // Called when an accessibility notification occurs in Blink.
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                   blink::WebAXEvent event);
+                                   ax::mojom::Event event);
 
   // Called when a new find in page result is highlighted.
   void HandleAccessibilityFindInPageResult(

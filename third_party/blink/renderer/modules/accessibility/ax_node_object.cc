@@ -113,8 +113,7 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
   value += increase ? step : -step;
 
   OnNativeSetValueAction(String::Number(value));
-  AXObjectCache().PostNotification(GetNode(),
-                                   AXObjectCacheImpl::kAXValueChanged);
+  AXObjectCache().PostNotification(GetNode(), ax::mojom::Event::kValueChanged);
 }
 
 AXObject* AXNodeObject::ActiveDescendant() {
@@ -2408,7 +2407,7 @@ void AXNodeObject::ChildrenChanged() {
   if (IsDetached())
     return;
 
-  AXObjectCache().PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
+  AXObjectCache().PostNotification(this, ax::mojom::Event::kChildrenChanged);
 
   // Go up the accessibility parent chain, but only if the element already
   // exists. This method is called during layout, minimal work should be done.
@@ -2424,16 +2423,16 @@ void AXNodeObject::ChildrenChanged() {
 
     // If this element supports ARIA live regions, then notify the AT of
     // changes.
-    if (parent->IsLiveRegion())
+    if (parent->IsLiveRegion()) {
       AXObjectCache().PostNotification(parent,
-                                       AXObjectCacheImpl::kAXLiveRegionChanged);
+                                       ax::mojom::Event::kLiveRegionChanged);
+    }
 
     // If this element is an ARIA text box or content editable, post a "value
     // changed" notification on it so that it behaves just like a native input
     // element or textarea.
     if (IsNonNativeTextControl())
-      AXObjectCache().PostNotification(parent,
-                                       AXObjectCacheImpl::kAXValueChanged);
+      AXObjectCache().PostNotification(parent, ax::mojom::Event::kValueChanged);
   }
 }
 
@@ -2450,11 +2449,11 @@ void AXNodeObject::SelectionChanged() {
   // or the web area if the selection is just in the document somewhere.
   if (IsFocused() || IsWebArea()) {
     AXObjectCache().PostNotification(this,
-                                     AXObjectCacheImpl::kAXSelectedTextChanged);
+                                     ax::mojom::Event::kTextSelectionChanged);
     if (GetDocument()) {
       AXObject* document_object = AXObjectCache().GetOrCreate(GetDocument());
       AXObjectCache().PostNotification(
-          document_object, AXObjectCacheImpl::kAXDocumentSelectionChanged);
+          document_object, ax::mojom::Event::kDocumentSelectionChanged);
     }
   } else {
     AXObject::SelectionChanged();  // Calls selectionChanged on parent.
@@ -2472,14 +2471,13 @@ void AXNodeObject::TextChanged() {
       continue;
 
     if (parent->IsLiveRegion())
-      cache.PostNotification(parent_node,
-                             AXObjectCacheImpl::kAXLiveRegionChanged);
+      cache.PostNotification(parent_node, ax::mojom::Event::kLiveRegionChanged);
 
     // If this element is an ARIA text box or content editable, post a "value
     // changed" notification on it so that it behaves just like a native input
     // element or textarea.
     if (parent->IsNonNativeTextControl())
-      cache.PostNotification(parent_node, AXObjectCacheImpl::kAXValueChanged);
+      cache.PostNotification(parent_node, ax::mojom::Event::kValueChanged);
   }
 }
 

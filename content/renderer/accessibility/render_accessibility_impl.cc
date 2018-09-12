@@ -201,8 +201,9 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
-    const blink::WebAXObject& obj, blink::WebAXEvent event) {
-  HandleAXEvent(obj, AXEventFromBlink(event));
+    const blink::WebAXObject& obj,
+    ax::mojom::Event event) {
+  HandleAXEvent(obj, event);
 }
 
 void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
