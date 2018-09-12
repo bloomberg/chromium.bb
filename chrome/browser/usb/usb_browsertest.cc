@@ -258,8 +258,6 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDevice) {
   EXPECT_EQ("123456", result);
 
   RemoveMockDevice();
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "if (deviceRemoved === null) {"
@@ -271,8 +269,6 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDevice) {
   EXPECT_EQ("123456", result);
 
   AddMockDevice("123456");
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "if (deviceAdded === null) {"
@@ -291,7 +287,6 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
   // Replace the default mock device with one that has no serial number.
   RemoveMockDevice();
   AddMockDevice("");
-  base::RunLoop().RunUntilIdle();
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -309,8 +304,6 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, AddRemoveDeviceEphemeral) {
   EXPECT_EQ("", result);
 
   RemoveMockDevice();
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
       "if (deviceRemoved === null) {"
