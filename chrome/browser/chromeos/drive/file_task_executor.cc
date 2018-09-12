@@ -78,10 +78,10 @@ FileTaskExecutor::~FileTaskExecutor() = default;
 
 void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
-    const file_manager::file_tasks::FileTaskFinishedCallback& done) {
+    file_manager::file_tasks::FileTaskFinishedCallback done) {
   DCHECK(!file_urls.empty());
 
-  done_ = done;
+  done_ = std::move(done);
 
   std::vector<base::FilePath> paths;
   for (size_t i = 0; i < file_urls.size(); ++i) {
@@ -154,10 +154,11 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
 
 void FileTaskExecutor::Done(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!done_.is_null())
-    done_.Run(success
-                  ? extensions::api::file_manager_private::TASK_RESULT_OPENED
-                  : extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  if (done_) {
+    std::move(done_).Run(
+        success ? extensions::api::file_manager_private::TASK_RESULT_OPENED
+                : extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  }
   delete this;
 }
 

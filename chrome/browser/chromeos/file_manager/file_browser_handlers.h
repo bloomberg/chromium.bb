@@ -47,7 +47,7 @@ bool ExecuteFileBrowserHandler(
     const extensions::Extension* extension,
     const std::string& action_id,
     const std::vector<storage::FileSystemURL>& file_urls,
-    const file_tasks::FileTaskFinishedCallback& done);
+    file_tasks::FileTaskFinishedCallback done);
 
 }  // namespace file_browser_handlers
 }  // namespace file_manager
