@@ -84,6 +84,9 @@
         "browse:social:facebook_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
+        "browse:social:facebook_infinite_scroll:2018": {
+            "DEFAULT": "system_health_mobile_065.wprgo"
+        },
         "browse:social:instagram": {
             "DEFAULT": "system_health_mobile_060.wprgo"
         },
