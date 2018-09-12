@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
+#include "chromecast/media/cma/backend/audio_resampler.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
@@ -97,6 +98,10 @@ class BufferingMixerSource : public MixerInput::Source,
   // be removed from the mixer once it has faded out appropriately.
   void Remove();
 
+  // This allows for very small changes in the rate of audio playback that are
+  // (supposedly) imperceptible.
+  float SetAvSyncPlaybackRate(float rate);
+
  private:
   enum class State {
     kUninitialized,   // Not initialized by the mixer yet.
@@ -137,6 +142,7 @@ class BufferingMixerSource : public MixerInput::Source,
       // INT64_MAX indicates playback should start at a specified timestamp,
       // but we don't know what that timestamp is.
       int64_t playback_start_timestamp_;
+      AudioResampler audio_resampler_;
 
      private:
       DISALLOW_COPY_AND_ASSIGN(Members);

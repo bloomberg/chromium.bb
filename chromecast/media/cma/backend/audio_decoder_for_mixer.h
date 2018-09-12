@@ -58,6 +58,10 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   bool SetVolume(float multiplier) override;
   RenderingDelay GetRenderingDelay() override;
 
+  // This allows for very small changes in the rate of audio playback that are
+  // (supposedly) imperceptible.
+  float SetAvSyncPlaybackRate(float rate);
+
  private:
   friend class MockAudioDecoderForMixer;
   friend class AvSyncTest;

@@ -221,6 +221,10 @@ float AudioDecoderForMixer::SetPlaybackRate(float rate) {
   return rate;
 }
 
+float AudioDecoderForMixer::SetAvSyncPlaybackRate(float rate) {
+  return mixer_input_->SetAvSyncPlaybackRate(rate);
+}
+
 bool AudioDecoderForMixer::GetTimestampedPts(int64_t* timestamp,
                                              int64_t* pts) const {
   if (last_push_timestamp_ == kInvalidTimestamp ||
