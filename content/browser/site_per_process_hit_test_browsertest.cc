@@ -1506,7 +1506,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(TouchActionBubbling);
 }
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
+#if defined(OS_ANDROID)
 namespace {
 // This function is used in TouchActionAckTimeout and
 // SubframeGestureEventRouting, which is defined either under Android or Aura.
@@ -1516,17 +1516,15 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
   runner->Quit();
 }
 
-#if defined(OS_ANDROID)
 void GiveItSomeTime(int t) {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(t));
   run_loop.Run();
 }
-#endif  // defined(OS_ANDROID)
 
 }  // namespace
-#endif  // defined(OS_ANDROID) || defined(USE_AURA)
+#endif  // defined(OS_ANDROID)
 
 // Regression test for https://crbug.com/851644. The test passes as long as it
 // doesn't crash.
@@ -3419,9 +3417,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
             render_widget_host->input_router()->AllowedTouchAction());
 }
 
-// https://crbug.com/592320
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_SubframeGestureEventRouting) {
+                       SubframeGestureEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3459,15 +3456,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   RenderWidgetHostImpl* render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
-  // TODO(wjmaclean): Convert the call to base::Bind() to a lambda someday.
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::BindOnce(OnSyntheticGestureCompleted, runner));
+  InputEventAckWaiter ack_waiter(child_frame_host->GetRenderWidgetHost(),
+                                 blink::WebInputEvent::kGestureTap);
 
-  // We need to run the message loop while we wait for the synthetic gesture
-  // to be processed; the callback registered above will get us out of the
-  // message loop when that happens.
-  runner->Run();
-  runner = nullptr;
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::BindOnce([](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+      }));
+
+  // We must wait for the kGestureTap ack to come back before querying the click
+  // handler in the subframe.
+  ack_waiter.Wait();
 
   // Verify click handler in subframe was invoked
   {
