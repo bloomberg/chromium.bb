@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.text.TextUtils;
 
@@ -17,6 +18,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,6 +98,26 @@ public class SigninPromoUtil {
         // Don't show if no new accounts have been added after the last time promo was shown.
         Set<String> previousAccountNames = preferenceManager.getSigninPromoLastAccountNames();
         return previousAccountNames == null || !previousAccountNames.containsAll(accountNames);
+    }
+
+    /**
+     * @param signinPromoController The {@link SigninPromoController} that maintains the view.
+     * @param profileDataCache The {@link ProfileDataCache} that stores profile data.
+     * @param view The {@link PersonalizedSigninPromoView} that should be set up.
+     * @param listener The {@link SigninPromoController.OnDismissListener} to be set to the view.
+     */
+    public static void setupPromoViewFromCache(SigninPromoController signinPromoController,
+            ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
+            SigninPromoController.OnDismissListener listener) {
+        DisplayableProfileData profileData = null;
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        if (accounts.length > 0) {
+            String defaultAccountName = accounts[0].name;
+            profileDataCache.update(Collections.singletonList(defaultAccountName));
+            profileData = profileDataCache.getProfileDataOrDefault(defaultAccountName);
+        }
+        signinPromoController.detach();
+        signinPromoController.setupPromoView(view.getContext(), view, profileData, listener);
     }
 
     /**

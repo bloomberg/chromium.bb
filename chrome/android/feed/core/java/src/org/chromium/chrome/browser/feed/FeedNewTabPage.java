@@ -15,11 +15,13 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
+import com.google.android.libraries.feed.api.stream.Header;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
 import com.google.android.libraries.feed.host.action.ActionApi;
@@ -41,6 +43,7 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -57,6 +60,8 @@ import java.util.Arrays;
  */
 public class FeedNewTabPage extends NewTabPage {
     private final FeedNewTabPageMediator mMediator;
+    private final int mDefaultMargin;
+    private final int mWideMargin;
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
@@ -67,6 +72,7 @@ public class FeedNewTabPage extends NewTabPage {
     private @Nullable FeedImageLoader mImageLoader;
     private @Nullable StreamLifecycleManager mStreamLifecycleManager;
     private @Nullable SectionHeaderView mSectionHeaderView;
+    private @Nullable PersonalizedSigninPromoView mSigninPromoView;
 
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
@@ -158,6 +164,23 @@ public class FeedNewTabPage extends NewTabPage {
         }
     }
 
+    private class SignInPromoHeader implements Header {
+        @Override
+        public View getView() {
+            return getSigninPromoView();
+        }
+
+        @Override
+        public boolean isDismissible() {
+            return true;
+        }
+
+        @Override
+        public void onDismissed() {
+            mMediator.onSignInPromoDismissed();
+        }
+    }
+
     /**
      * Provides the additional capabilities needed for the {@link FeedNewTabPage} container view.
      */
@@ -189,6 +212,11 @@ public class FeedNewTabPage extends NewTabPage {
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost, tabModelSelector);
+
+        Resources resources = activity.getResources();
+        mDefaultMargin =
+                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
+        mWideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
@@ -293,14 +321,7 @@ public class FeedNewTabPage extends NewTabPage {
         LayoutInflater inflater = LayoutInflater.from(activity);
         mSectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, null);
-
-        // TODO(huayinz): Add MarginResizer for sign-in promo under issue 860051 or 860043,
-        // depending on which one lands first.
-        Resources resources = mSectionHeaderView.getResources();
-        int defaultMargin =
-                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
-        int wideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
-        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, defaultMargin, wideMargin);
+        MarginResizer.createAndAttach(mSectionHeaderView, mUiConfig, mDefaultMargin, mWideMargin);
 
         View view = mStream.getView();
         view.setBackgroundColor(Color.WHITE);
@@ -308,6 +329,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         UiUtils.removeViewFromParent(mNewTabPageLayout);
         UiUtils.removeViewFromParent(mSectionHeaderView);
+        if (mSigninPromoView != null) UiUtils.removeViewFromParent(mSigninPromoView);
         mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                 new NonDismissibleHeader(mSectionHeaderView)));
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
@@ -353,6 +375,32 @@ public class FeedNewTabPage extends NewTabPage {
     /** @return The {@link SectionHeaderView} for the Feed section header. */
     SectionHeaderView getSectionHeaderView() {
         return mSectionHeaderView;
+    }
+
+    /** @return The {@link PersonalizedSigninPromoView} for this class. */
+    PersonalizedSigninPromoView getSigninPromoView() {
+        if (mSigninPromoView == null) {
+            LayoutInflater inflater = LayoutInflater.from(mRootView.getContext());
+            mSigninPromoView = (PersonalizedSigninPromoView) inflater.inflate(
+                    R.layout.personalized_signin_promo_view_modern_content_suggestions, null);
+
+            ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.bottomMargin = mDefaultMargin;
+            mSigninPromoView.setLayoutParams(lp);
+            MarginResizer.createAndAttach(mSigninPromoView, mUiConfig, mDefaultMargin, mWideMargin);
+        }
+        return mSigninPromoView;
+    }
+
+    /** Update header views in the Stream. */
+    void updateHeaderViews(boolean isPromoVisible) {
+        mStream.setHeaderViews(isPromoVisible
+                        ? Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                                  new SignInPromoHeader(),
+                                  new NonDismissibleHeader(mSectionHeaderView))
+                        : Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
+                                  new NonDismissibleHeader(mSectionHeaderView)));
     }
 
     /**

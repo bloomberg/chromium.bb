@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
+import android.view.View;
 import android.widget.ScrollView;
 
 import com.google.android.libraries.feed.api.stream.ContentChangedListener;
@@ -18,10 +20,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
+import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.signin.SigninPromoUtil;
 
 /**
  * A mediator for the {@link FeedNewTabPage} responsible for interacting with the
@@ -37,6 +42,7 @@ class FeedNewTabPageMediator
     private ContentChangedListener mStreamContentChangedListener;
     private SectionHeader mSectionHeader;
     private MemoryPressureCallback mMemoryPressureCallback;
+    private @Nullable SignInPromo mSignInPromo;
 
     private boolean mFeedEnabled;
     private boolean mTouchEnabled = true;
@@ -116,15 +122,22 @@ class FeedNewTabPageMediator
         mStreamContentChangedListener = () -> mStreamContentChanged = true;
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
+        boolean suggestionsVisible =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
         Resources res = mCoordinator.getSectionHeaderView().getResources();
         mSectionHeader =
                 new SectionHeader(res.getString(R.string.ntp_article_suggestions_section_header),
-                        PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE),
-                        this::onSectionHeaderToggled);
-        mPrefChangeRegistrar.addObserver(
-                Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
+                        suggestionsVisible, this::onSectionHeaderToggled);
+        mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
         mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
         stream.setStreamContentVisibility(mSectionHeader.isExpanded());
+
+        if (SignInPromo.shouldCreatePromo()) {
+            mSignInPromo = new FeedSignInPromo();
+            mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
+        }
+
+        mCoordinator.updateHeaderViews(mSignInPromo != null && mSignInPromo.isVisible());
 
         mMemoryPressureCallback = pressure -> mCoordinator.getStream().trim();
         MemoryPressureListener.addCallback(mMemoryPressureCallback);
@@ -138,10 +151,12 @@ class FeedNewTabPageMediator
         stream.removeScrollListener(mStreamScrollListener);
         stream.removeOnContentChangedListener(mStreamContentChangedListener);
         MemoryPressureListener.removeCallback(mMemoryPressureCallback);
+        if (mSignInPromo != null) mSignInPromo.destroy();
         mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
         mStreamScrollListener = null;
         mStreamContentChangedListener = null;
         mMemoryPressureCallback = null;
+        mSignInPromo = null;
     }
 
     /**
@@ -154,9 +169,11 @@ class FeedNewTabPageMediator
 
     /** Update whether the section header should be expanded. */
     private void updateSectionHeader() {
-        if (mSectionHeader.isExpanded()
-                != PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
-            mSectionHeader.toggleHeader();
+        boolean suggestionsVisible =
+                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
+        if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
+        if (mSignInPromo != null) {
+            mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
         }
     }
 
@@ -170,6 +187,16 @@ class FeedNewTabPageMediator
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateVisuals();
+    }
+
+    /**
+     * Callback on sign-in promo is dismissed.
+     */
+    void onSignInPromoDismissed() {
+        View view = mCoordinator.getSigninPromoView();
+        mSignInPromo.dismiss(removedItemTitle
+                -> view.announceForAccessibility(view.getResources().getString(
+                        R.string.ntp_accessibility_item_removed, removedItemTitle)));
     }
 
     /** Whether a new thumbnail should be captured. */
@@ -258,6 +285,35 @@ class FeedNewTabPageMediator
             mCoordinator.getStream().smoothScrollBy(0, scrollTo - initialScroll);
         } else {
             mCoordinator.getScrollViewForPolicy().smoothScrollBy(0, scrollTo - initialScroll);
+        }
+    }
+
+    /**
+     * The {@link SignInPromo} for the Feed.
+     * TODO(huayinz): Update content and visibility through a ModelChangeProcessor.
+     */
+    private class FeedSignInPromo extends SignInPromo {
+        FeedSignInPromo() {
+            updateSignInPromo();
+        }
+
+        @Override
+        protected void setVisibilityInternal(boolean visible) {
+            if (isVisible() == visible) return;
+
+            super.setVisibilityInternal(visible);
+            mCoordinator.updateHeaderViews(visible);
+        }
+
+        @Override
+        protected void notifyDataChanged() {
+            updateSignInPromo();
+        }
+
+        /** Update the content displayed in {@link PersonalizedSigninPromoView}. */
+        private void updateSignInPromo() {
+            SigninPromoUtil.setupPromoViewFromCache(mSigninPromoController, mProfileDataCache,
+                    mCoordinator.getSigninPromoView(), null);
         }
     }
 }
