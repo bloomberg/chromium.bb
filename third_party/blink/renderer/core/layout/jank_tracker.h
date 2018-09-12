@@ -22,7 +22,7 @@ class WebInputEvent;
 // Tracks "jank" from layout objects changing their visual location between
 // animation frames.
 class CORE_EXPORT JankTracker {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(JankTracker);
 
  public:
   JankTracker(LocalFrameView*);
