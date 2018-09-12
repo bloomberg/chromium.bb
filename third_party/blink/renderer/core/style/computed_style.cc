@@ -932,7 +932,10 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       HasBlendMode() || HasIsolation() || HasViewportConstrainedPosition() ||
       GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
-      ContainsPaint() || ContainsLayout()) {
+      /* TODO(882625): This becomes unnecessary when will-change correctly takes
+      into account active animations. */
+      ShouldCompositeForCurrentAnimations() || ContainsPaint() ||
+      ContainsLayout()) {
     SetIsStackingContext(true);
   }
 }
