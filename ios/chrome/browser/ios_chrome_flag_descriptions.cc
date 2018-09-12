@@ -34,6 +34,11 @@ const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
     "When enabled, shows the Google Pay logo animation when showing payments"
     "credit card suggestions in downstream keyboard accessory";
 
+const char kAutofillEnableIFrameSupportOniOSName[] =
+    "Enable iFrame messaging for autofill.";
+const char kAutofillEnableIFrameSupportOniOSDescription[] =
+    "When enabled, autofill is available in secure iframes.";
+
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
     "Enable updated prompt explanation when offering credit card upload";
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
