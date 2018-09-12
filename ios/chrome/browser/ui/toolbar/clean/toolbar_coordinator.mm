@@ -377,7 +377,7 @@ initWithToolsMenuConfigurationProvider:
 
 #pragma mark - FakeboxFocuser
 
-- (void)focusFakebox {
+- (void)fakeboxFocused {
   if (IsIPadIdiom()) {
     // On iPhone there is no visible omnibox, so there's no need to indicate
     // interaction was initiated from the fakebox.

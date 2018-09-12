@@ -122,6 +122,10 @@
 // Shows the consent bump if it is required.
 - (void)showConsentBumpIfNeeded;
 
+// Animates the NTP fakebox to the focused position and focuses the real
+// omnibox.
+- (void)focusFakebox;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
