@@ -139,12 +139,12 @@ arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
 void OnArcHandlerList(
     Profile* profile,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers);
 
 void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons);
 
@@ -152,14 +152,14 @@ void OnArcIconLoaded(
 void OnArcHandlerList(
     Profile* profile,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
   if (!intent_helper_bridge) {
-    callback.Run(std::move(result_list));
+    std::move(callback).Run(std::move(result_list));
     return;
   }
 
@@ -170,14 +170,15 @@ void OnArcHandlerList(
     activity_names.emplace_back(handler->package_name, handler->activity_name);
 
   intent_helper_bridge->GetActivityIcons(
-      activity_names, base::BindOnce(&OnArcIconLoaded, std::move(result_list),
-                                     callback, std::move(handlers_filtered)));
+      activity_names,
+      base::BindOnce(&OnArcIconLoaded, std::move(result_list),
+                     std::move(callback), std::move(handlers_filtered)));
 }
 
 // Called after icon data for ARC apps are loaded. Proceeds to OnArcIconEncoded.
 void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::vector<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<arc::ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -205,14 +206,14 @@ void OnArcIconLoaded(
         name, handler_verb, icon_url, false /* is_default */,
         action != arc::kIntentActionView /* is_generic */));
   }
-  callback.Run(std::move(result_list));
+  std::move(callback).Run(std::move(result_list));
 }
 
 void FindArcTasksAfterContentUrlsResolved(
     Profile* profile,
     const std::vector<extensions::EntryInfo>& entries,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     const std::vector<GURL>& content_urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(entries.size(), content_urls.size());
@@ -228,7 +229,7 @@ void FindArcTasksAfterContentUrlsResolved(
     }
   }
   if (!arc_intent_helper) {
-    callback.Run(std::move(result_list));
+    std::move(callback).Run(std::move(result_list));
     return;
   }
 
@@ -238,12 +239,12 @@ void FindArcTasksAfterContentUrlsResolved(
     const GURL& content_url = content_urls[i];
 
     if (entry.is_directory) {  // ARC apps don't support directories.
-      callback.Run(std::move(result_list));
+      std::move(callback).Run(std::move(result_list));
       return;
     }
 
     if (!content_url.is_valid()) {
-      callback.Run(std::move(result_list));
+      std::move(callback).Run(std::move(result_list));
       return;
     }
 
@@ -255,35 +256,39 @@ void FindArcTasksAfterContentUrlsResolved(
   }
   // The callback will be invoked on UI thread, so |profile| should be alive.
   arc_intent_helper->RequestUrlListHandlerList(
-      std::move(urls), base::Bind(&OnArcHandlerList, base::Unretained(profile),
-                                  base::Passed(&result_list), callback));
+      std::move(urls),
+      base::BindOnce(&OnArcHandlerList, base::Unretained(profile),
+                     std::move(result_list), std::move(callback)));
 }
 
 void ExecuteArcTaskAfterContentUrlsResolved(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<std::string>& mime_types,
-    const FileTaskFinishedCallback& done,
+    FileTaskFinishedCallback done,
     const std::vector<GURL>& content_urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(content_urls.size(), mime_types.size());
 
   for (size_t i = 0; i < content_urls.size(); ++i) {
     if (!content_urls[i].is_valid()) {
-      done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_FAILED);
       return;
     }
   }
 
   // File manager in secondary profile cannot access ARC.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+    std::move(done).Run(
+        extensions::api::file_manager_private::TASK_RESULT_FAILED);
     return;
   }
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+    std::move(done).Run(
+        extensions::api::file_manager_private::TASK_RESULT_FAILED);
     return;
   }
 
@@ -296,7 +301,8 @@ void ExecuteArcTaskAfterContentUrlsResolved(
         ConstructOpenUrlsRequest(task, content_urls, mime_types);
     arc_file_system->OpenUrlsWithPermission(std::move(request),
                                             base::DoNothing());
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+    std::move(done).Run(
+        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
     return;
   }
 
@@ -314,11 +320,13 @@ void ExecuteArcTaskAfterContentUrlsResolved(
         ConstructUrlWithMimeTypeList(content_urls, mime_types),
         AppIdToActivityName(task.app_id),
         FileTaskActionIdToArcActionType(task.action_id));
-    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+    std::move(done).Run(
+        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
     return;
   }
 
-  done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  std::move(done).Run(
+      extensions::api::file_manager_private::TASK_RESULT_FAILED);
 }
 
 }  // namespace
@@ -327,7 +335,7 @@ void FindArcTasks(Profile* profile,
                   const std::vector<extensions::EntryInfo>& entries,
                   const std::vector<GURL>& file_urls,
                   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-                  const FindTasksCallback& callback) {
+                  FindTasksCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(entries.size(), file_urls.size());
 
@@ -342,25 +350,26 @@ void FindArcTasks(Profile* profile,
   // Using base::Unretained(profile) is safe because callback will be invoked on
   // UI thread, where |profile| should be alive.
   file_manager::util::ConvertToContentUrls(
-      file_system_urls, base::BindOnce(&FindArcTasksAfterContentUrlsResolved,
-                                       base::Unretained(profile), entries,
-                                       base::Passed(&result_list), callback));
+      file_system_urls,
+      base::BindOnce(&FindArcTasksAfterContentUrlsResolved,
+                     base::Unretained(profile), entries, std::move(result_list),
+                     std::move(callback)));
 }
 
 void ExecuteArcTask(Profile* profile,
                     const TaskDescriptor& task,
                     const std::vector<storage::FileSystemURL>& file_system_urls,
                     const std::vector<std::string>& mime_types,
-                    const FileTaskFinishedCallback& done) {
+                    FileTaskFinishedCallback done) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(file_system_urls.size(), mime_types.size());
 
   // Using base::Unretained(profile) is safe because callback will be invoked on
   // UI thread, where |profile| should be alive.
   file_manager::util::ConvertToContentUrls(
-      file_system_urls,
-      base::BindOnce(&ExecuteArcTaskAfterContentUrlsResolved,
-                     base::Unretained(profile), task, mime_types, done));
+      file_system_urls, base::BindOnce(&ExecuteArcTaskAfterContentUrlsResolved,
+                                       base::Unretained(profile), task,
+                                       mime_types, std::move(done)));
 }
 
 }  // namespace file_tasks

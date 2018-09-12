@@ -174,22 +174,22 @@ void ExecuteByArcAfterMimeTypesCollected(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<FileSystemURL>& file_urls,
-    const FileTaskFinishedCallback& done,
+    FileTaskFinishedCallback done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
-  ExecuteArcTask(profile, task, file_urls, *mime_types, done);
+  ExecuteArcTask(profile, task, file_urls, *mime_types, std::move(done));
 }
 
 void PostProcessFoundTasks(
     Profile* profile,
     const std::vector<extensions::EntryInfo>& entries,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(entries))
     KeepOnlyFileManagerInternalTasks(result_list.get());
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
-  callback.Run(std::move(result_list));
+  std::move(callback).Run(std::move(result_list));
 }
 
 }  // namespace
@@ -328,7 +328,7 @@ bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
-                     const FileTaskFinishedCallback& done) {
+                     FileTaskFinishedCallback done) {
   UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType", task.task_type,
                             NUM_TASK_TYPE);
 
@@ -337,15 +337,15 @@ bool ExecuteFileTask(Profile* profile,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
         new extensions::app_file_handler_util::MimeTypeCollector(profile);
     mime_collector->CollectForURLs(
-        file_urls,
-        base::Bind(&ExecuteByArcAfterMimeTypesCollected, profile, task,
-                   file_urls, done, base::Owned(mime_collector)));
+        file_urls, base::Bind(&ExecuteByArcAfterMimeTypesCollected, profile,
+                              task, file_urls, base::Passed(std::move(done)),
+                              base::Owned(mime_collector)));
     return true;
   }
 
   if (task.task_type == TASK_TYPE_CROSTINI_APP) {
     DCHECK_EQ(kCrostiniAppActionID, task.action_id);
-    ExecuteCrostiniTask(profile, task, file_urls, done);
+    ExecuteCrostiniTask(profile, task, file_urls, std::move(done));
     return true;
   }
 
@@ -354,7 +354,7 @@ bool ExecuteFileTask(Profile* profile,
     DCHECK_EQ(kDriveAppActionID, task.action_id);
     drive::FileTaskExecutor* executor =
         new drive::FileTaskExecutor(profile, task.app_id);
-    executor->Execute(file_urls, done);
+    executor->Execute(file_urls, std::move(done));
     return true;
   }
 
@@ -370,7 +370,8 @@ bool ExecuteFileTask(Profile* profile,
   // Execute the task.
   if (task.task_type == TASK_TYPE_FILE_BROWSER_HANDLER) {
     return file_browser_handlers::ExecuteFileBrowserHandler(
-        extension_task_profile, extension, task.action_id, file_urls, done);
+        extension_task_profile, extension, task.action_id, file_urls,
+        std::move(done));
   } else if (task.task_type == TASK_TYPE_FILE_HANDLER) {
     std::vector<base::FilePath> paths;
     for (size_t i = 0; i != file_urls.size(); ++i)
@@ -378,7 +379,8 @@ bool ExecuteFileTask(Profile* profile,
     apps::LaunchPlatformAppWithFileHandler(extension_task_profile, extension,
                                            task.action_id, paths);
     if (!done.is_null())
-      done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
     return true;
   }
   NOTREACHED();
@@ -608,7 +610,7 @@ void FindExtensionAndAppTasks(
     Profile* profile,
     const std::vector<extensions::EntryInfo>& entries,
     const std::vector<GURL>& file_urls,
-    const FindTasksCallback& callback,
+    FindTasksCallback callback,
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   std::vector<FullTaskDescriptor>* result_list_ptr = result_list.get();
 
@@ -621,17 +623,18 @@ void FindExtensionAndAppTasks(
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
   // 5. Find and append Crostini tasks.
-  FindCrostiniTasks(profile, entries, result_list_ptr,
-                    // Done. Apply post-filtering and callback.
-                    base::BindOnce(PostProcessFoundTasks, profile, entries,
-                                   callback, std::move(result_list)));
+  FindCrostiniTasks(
+      profile, entries, result_list_ptr,
+      // Done. Apply post-filtering and callback.
+      base::BindOnce(PostProcessFoundTasks, profile, entries,
+                     std::move(callback), std::move(result_list)));
 }
 
 void FindAllTypesOfTasks(Profile* profile,
                          const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
-                         const FindTasksCallback& callback) {
+                         FindTasksCallback callback) {
   DCHECK(profile);
   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list(
       new std::vector<FullTaskDescriptor>);
@@ -642,8 +645,8 @@ void FindAllTypesOfTasks(Profile* profile,
 
   // 2. Find and append ARC handler tasks.
   FindArcTasks(profile, entries, file_urls, std::move(result_list),
-               base::Bind(&FindExtensionAndAppTasks, profile, entries,
-                          file_urls, callback));
+               base::BindOnce(&FindExtensionAndAppTasks, profile, entries,
+                              file_urls, std::move(callback)));
 }
 
 void ChooseAndSetDefaultTask(const PrefService& pref_service,

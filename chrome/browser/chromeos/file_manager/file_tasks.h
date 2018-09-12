@@ -257,8 +257,9 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task);
 
 // The callback is used for ExecuteFileTask(). Will be called with true if
 // the file task execution is successful, or false if unsuccessful.
-typedef base::Callback<void(extensions::api::file_manager_private::TaskResult
-                                result)> FileTaskFinishedCallback;
+typedef base::OnceCallback<void(
+    extensions::api::file_manager_private::TaskResult result)>
+    FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.
 // Returns |false| if the execution cannot be initiated. Otherwise returns
@@ -277,7 +278,7 @@ bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const TaskDescriptor& task,
                      const std::vector<storage::FileSystemURL>& file_urls,
-                     const FileTaskFinishedCallback& done);
+                     FileTaskFinishedCallback done);
 
 // Finds the Drive app tasks that can be used with the given |entries|
 // from |drive_app_registry|, and append them to the |result_list|.
@@ -307,7 +308,7 @@ void FindFileBrowserHandlerTasks(
     std::vector<FullTaskDescriptor>* result_list);
 
 // Callback function type for FindAllTypesOfTasks.
-typedef base::Callback<void(
+typedef base::OnceCallback<void(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result)>
     FindTasksCallback;
 
@@ -326,7 +327,7 @@ void FindAllTypesOfTasks(Profile* profile,
                          const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
-                         const FindTasksCallback& callback);
+                         FindTasksCallback callback);
 
 // Chooses the default task in |tasks| and sets it as default, if the default
 // task is found (i.e. the default task may not exist in |tasks|). No tasks

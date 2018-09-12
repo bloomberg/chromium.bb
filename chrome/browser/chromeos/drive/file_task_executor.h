@@ -47,7 +47,7 @@ class FileTaskExecutor {
 
   // Executes file tasks, runs |done| and deletes |this|.
   void Execute(const std::vector<storage::FileSystemURL>& file_urls,
-               const file_manager::file_tasks::FileTaskFinishedCallback& done);
+               file_manager::file_tasks::FileTaskFinishedCallback done);
 
  private:
   ~FileTaskExecutor();
