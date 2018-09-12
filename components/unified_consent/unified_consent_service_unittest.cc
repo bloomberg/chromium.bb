@@ -17,6 +17,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/scoped_unified_consent.h"
+#include "components/unified_consent/unified_consent_metrics.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -288,6 +289,8 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
 }
 
 TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
+  base::HistogramTester histogram_tester;
+
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
@@ -304,11 +307,16 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
 
   // Setting a custom passphrase forces off unified consent given.
   EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.RevokeReason",
+      metrics::UnifiedConsentRevokeReason::kCustomPassphrase, 1);
 }
 
 // Test whether unified consent is disabled when any of its dependent services
 // gets disabled.
 TEST_F(UnifiedConsentServiceTest, DisableUnfiedConsentWhenServiceIsDisabled) {
+  base::HistogramTester histogram_tester;
+
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
@@ -325,6 +333,9 @@ TEST_F(UnifiedConsentServiceTest, DisableUnfiedConsentWhenServiceIsDisabled) {
   pref_service_.SetBoolean(kSpellCheckDummyEnabled, false);
   EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.RevokeReason",
+      metrics::UnifiedConsentRevokeReason::kServiceWasDisabled, 1);
 }
 
 // Test whether unified consent is disabled when any of its dependent services
@@ -475,6 +486,8 @@ TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
+  base::HistogramTester histogram_tester;
+
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
 
@@ -486,6 +499,9 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   // non-personalized services.
   identity_test_environment_.ClearPrimaryAccount();
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  histogram_tester.ExpectUniqueSample(
+      "UnifiedConsent.RevokeReason",
+      metrics::UnifiedConsentRevokeReason::kUserSignedOut, 1);
   EXPECT_FALSE(AreAllNonPersonalizedServicesEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
