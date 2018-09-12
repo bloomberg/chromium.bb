@@ -92,8 +92,16 @@ void TransportListView::AddViewForListItem(size_t index,
                                            AuthenticatorTransport transport) {
   std::unique_ptr<HoverButton> list_item_view =
       CreateTransportListItemView(transport, this);
+  if (index == 0u)
+    first_list_item_view_ = list_item_view.get();
   AddChildView(list_item_view.release());
   AddSeparatorAsChild(this);
+}
+
+void TransportListView::RequestFocus() {
+  if (!first_list_item_view_)
+    return;
+  first_list_item_view_->RequestFocus();
 }
 
 void TransportListView::OnModelDestroyed() {

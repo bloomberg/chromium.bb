@@ -172,6 +172,33 @@ bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(
   return false;
 }
 
+views::View* AuthenticatorRequestDialogView::GetInitiallyFocusedView() {
+  // Need to provide a custom implementation, as most dialog sheets will not
+  // have a default button which gets initial focus. The focus priority is:
+  //  1. Step-specific content, e.g. transport selection list, if any.
+  //  2. Accept button, if visible and enabled.
+  //  3. Other transport selection button, if visible.
+  //  4. `Cancel` / `Close` button.
+
+  views::View* intially_focused_sheet_control =
+      sheet()->GetInitiallyFocusedView();
+  if (intially_focused_sheet_control)
+    return intially_focused_sheet_control;
+
+  if (sheet()->model()->IsAcceptButtonVisible() &&
+      sheet()->model()->IsAcceptButtonEnabled()) {
+    return GetDialogClientView()->ok_button();
+  }
+
+  if (ShouldOtherTransportsButtonBeVisible())
+    return other_transports_button_;
+
+  if (sheet()->model()->IsCancelButtonVisible())
+    return GetDialogClientView()->cancel_button();
+
+  return nullptr;
+}
+
 ui::ModalType AuthenticatorRequestDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
@@ -283,6 +310,10 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents())
           ->delegate()
           ->GetWebContentsModalDialogHost());
+
+  // Reset focus to the highest priority control on the new/updated sheet.
+  if (GetInitiallyFocusedView())
+    GetInitiallyFocusedView()->RequestFocus();
 }
 
 void AuthenticatorRequestDialogView::ToggleOtherTransportsButtonVisibility() {
@@ -290,8 +321,11 @@ void AuthenticatorRequestDialogView::ToggleOtherTransportsButtonVisibility() {
   if (!other_transports_button_)
     return;
 
-  bool has_other_transports_menu =
-      sheet_->model()->GetOtherTransportsMenuModel() &&
-      sheet_->model()->GetOtherTransportsMenuModel()->GetItemCount();
-  other_transports_button_->SetVisible(has_other_transports_menu);
+  other_transports_button_->SetVisible(ShouldOtherTransportsButtonBeVisible());
+}
+
+bool AuthenticatorRequestDialogView::ShouldOtherTransportsButtonBeVisible()
+    const {
+  return sheet_->model()->GetOtherTransportsMenuModel() &&
+         sheet_->model()->GetOtherTransportsMenuModel()->GetItemCount();
 }
