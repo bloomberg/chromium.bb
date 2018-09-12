@@ -19,10 +19,19 @@ namespace media_router {
 namespace {
 
 // Returns true if |issue| is associated with |ui_sink|.
-bool IssueMatches(const Issue& issue, const UIMediaSink ui_sink) {
+bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
   return issue.info().sink_id == ui_sink.id ||
          (!issue.info().route_id.empty() &&
           issue.info().route_id == ui_sink.route_id);
+}
+
+base::string16 GetSinkFriendlyName(const MediaSink& sink) {
+  // Use U+2010 (HYPHEN) instead of ASCII hyphen to avoid problems with RTL
+  // languages.
+  const char* separator = u8" \u2010 ";
+  return base::UTF8ToUTF16(sink.description() ? sink.name() + separator +
+                                                    sink.description().value()
+                                              : sink.name());
 }
 
 }  // namespace
@@ -121,7 +130,7 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
     const base::Optional<Issue>& issue) {
   UIMediaSink ui_sink;
   ui_sink.id = sink.sink.id();
-  ui_sink.friendly_name = base::UTF8ToUTF16(sink.sink.name());
+  ui_sink.friendly_name = GetSinkFriendlyName(sink.sink);
   ui_sink.icon_type = sink.sink.icon_type();
 
   if (route) {
