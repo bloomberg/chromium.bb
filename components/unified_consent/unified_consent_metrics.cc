@@ -28,6 +28,10 @@ void RecordConsentBumpEligibility(bool eligible) {
                         eligible);
 }
 
+void RecordUnifiedConsentRevoked(UnifiedConsentRevokeReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.RevokeReason", reason);
+}
+
 }  // namespace metrics
 
 }  // namespace unified_consent
