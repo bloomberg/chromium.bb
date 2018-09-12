@@ -85,13 +85,15 @@
       <include name="IDR_STORAGE_AREA_JS" file="storage_area.js" type="BINDATA" />
 
       <!-- Platform app support. -->
-      <include name="IDR_PLATFORM_APP_CSS" file="platform_app.css" type="BINDATA" />
       <include name="IDR_PLATFORM_APP_JS" file="platform_app.js" type="BINDATA" />
 
       <!-- Extension styles. -->
       <include name="IDR_EXTENSION_FONTS_CSS" file="extension_fonts.css" type="BINDATA"/>
     </includes>
     <structures>
+      <!-- Platform app support. -->
+      <structure name="IDR_PLATFORM_APP_CSS" file="platform_app.css" type="chrome_html" preprocess="true" />
+
       <!-- Extension styles. -->
       <structure name="IDR_EXTENSION_CSS" file="extension.css" type="chrome_html" flattenhtml="true" />
     </structures>
