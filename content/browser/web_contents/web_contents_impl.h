@@ -1049,6 +1049,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            BeforeUnloadDialogRequiresGesture);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            CancelBeforeUnloadResetsURL);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BeforeUnloadDialogSuppressedForDiscard);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           PendingDialogMakesDiscardUnloadReturnFalse);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogNotifications);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogInterop);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, BeforeUnloadDialog);

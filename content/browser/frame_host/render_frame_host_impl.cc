@@ -564,6 +564,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       is_waiting_for_swapout_ack_(false),
       render_frame_created_(false),
       is_waiting_for_beforeunload_ack_(false),
+      beforeunload_dialog_request_cancels_unload_(false),
       unload_ack_is_for_navigation_(false),
       beforeunload_timeout_delay_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
@@ -2318,6 +2319,15 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   // Allow at most one attempt to show a beforeunload dialog per navigation.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
   if (beforeunload_initiator) {
+    // If the running beforeunload handler wants to display a dialog and the
+    // before-unload type wants to ignore it, then short-circuit the request and
+    // respond as if the user decided to stay on the page, canceling the unload.
+    if (beforeunload_initiator->beforeunload_dialog_request_cancels_unload_) {
+      SendJavaScriptDialogReply(reply_msg, false /* success */,
+                                base::string16());
+      return;
+    }
+
     if (beforeunload_initiator->has_shown_beforeunload_dialog_) {
       // TODO(alexmos): Pass enough data back to renderer to record histograms
       // for Document.BeforeUnloadDialog and add the intervention console
@@ -3692,8 +3702,9 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
       type == BeforeUnloadType::RENDERER_INITIATED_NAVIGATION;
   DCHECK(for_navigation || !is_reload);
 
-  // Tab close should only dispatch beforeunload on main frames.
-  DCHECK(type != BeforeUnloadType::TAB_CLOSE ||
+  // TAB_CLOSE and DISCARD should only dispatch beforeunload on main frames.
+  DCHECK(type == BeforeUnloadType::BROWSER_INITIATED_NAVIGATION ||
+         type == BeforeUnloadType::RENDERER_INITIATED_NAVIGATION ||
          frame_tree_node_->IsMainFrame());
 
   if (!for_navigation) {
@@ -3750,13 +3761,16 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
     is_waiting_for_beforeunload_ack_ = true;
+    beforeunload_dialog_request_cancels_unload_ = false;
     unload_ack_is_for_navigation_ = for_navigation;
     send_before_unload_start_time_ = base::TimeTicks::Now();
     if (render_view_host_->GetDelegate()->IsJavaScriptDialogShowing()) {
       // If there is a JavaScript dialog up, don't bother sending the renderer
       // the unload event because it is known unresponsive, waiting for the
-      // reply from the dialog.
-      SimulateBeforeUnloadAck();
+      // reply from the dialog. If this incoming request is for a DISCARD be
+      // sure to reply with |proceed = false|, because the presence of a dialog
+      // indicates that the page can't be discarded.
+      SimulateBeforeUnloadAck(type != BeforeUnloadType::DISCARD);
     } else {
       // Start a timer that will be shared by all frames that need to run
       // beforeunload in the current frame's subtree.
@@ -3764,6 +3778,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         beforeunload_timeout_->Start(beforeunload_timeout_delay_);
 
       beforeunload_pending_replies_.clear();
+      beforeunload_dialog_request_cancels_unload_ =
+          (type == BeforeUnloadType::DISCARD);
 
       // Run beforeunload in this frame and its cross-process descendant
       // frames, in parallel.
@@ -3856,7 +3872,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
   return found_beforeunload;
 }
 
-void RenderFrameHostImpl::SimulateBeforeUnloadAck() {
+void RenderFrameHostImpl::SimulateBeforeUnloadAck(bool proceed) {
   DCHECK(is_waiting_for_beforeunload_ack_);
   base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
 
@@ -3864,7 +3880,7 @@ void RenderFrameHostImpl::SimulateBeforeUnloadAck() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&RenderFrameHostImpl::ProcessBeforeUnloadACK,
-                     weak_ptr_factory_.GetWeakPtr(), true /* proceed */,
+                     weak_ptr_factory_.GetWeakPtr(), proceed,
                      true /* treat_as_final_ack */, approx_renderer_start_time,
                      base::TimeTicks::Now()));
 }
@@ -5276,7 +5292,7 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
   if (render_view_host_->GetDelegate()->ShouldIgnoreUnresponsiveRenderer())
     return;
 
-  SimulateBeforeUnloadAck();
+  SimulateBeforeUnloadAck(true /* proceed */);
 }
 
 void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
