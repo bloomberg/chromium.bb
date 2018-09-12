@@ -251,11 +251,18 @@ void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {
   }
 
   v8::HandleScope handle_scope(isolate);
+  // Update the install functions for V8Window and V8Document to work for their
+  // partial interfaces.
   SnapshotInterface& snapshot_window = g_snapshot_interfaces[0];
   DCHECK(V8Window::wrapperTypeInfo.Equals(snapshot_window.wrapper_type_info));
-  // Update the install function for V8Window to work for partial interfaces.
   snapshot_window.install_function =
       V8Window::install_runtime_enabled_features_on_template_function_;
+
+  SnapshotInterface& snapshot_document = g_snapshot_interfaces[4];
+  DCHECK(
+      V8Document::wrapperTypeInfo.Equals(snapshot_document.wrapper_type_info));
+  snapshot_document.install_function =
+      V8Document::install_runtime_enabled_features_on_template_function_;
 
   EnsureInterfaceTemplatesForWorld(isolate, DOMWrapperWorld::MainWorld());
   // Any world types other than |kMain| are acceptable for this.
