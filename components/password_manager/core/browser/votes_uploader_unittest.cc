@@ -273,4 +273,36 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_OneCharacterPassword) {
   EXPECT_EQ(1u, reported_length);
 }
 
+TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_AllAsciiCharacters) {
+  autofill::FormData form;
+  autofill::FormStructure form_structure(form);
+  VotesUploader votes_uploader(&client_, true);
+  votes_uploader.GeneratePasswordAttributesVote(
+      base::UTF8ToUTF16("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr"
+                        "stuvwxyz!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"),
+      &form_structure);
+  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+      form_structure.get_password_attributes_vote_for_testing();
+  EXPECT_TRUE(vote.has_value());
+}
+
+TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_NonAsciiPassword) {
+  // Checks that password attributes vote is not generated if the password has
+  // non-ascii characters.
+  for (const auto* password :
+       {"пароль1", "パスワード", "münchen", "סיסמה-A", "Σ-12345",
+        "գաղտնաբառըTTT", "Slaptažodis", "密碼", "كلمهالسر", "mậtkhẩu!",
+        "ລະຫັດຜ່ານ-l", "စကားဝှက်ကို3", "პაროლი", "पारण शब्द"}) {
+    autofill::FormData form;
+    autofill::FormStructure form_structure(form);
+    VotesUploader votes_uploader(&client_, true);
+    votes_uploader.GeneratePasswordAttributesVote(base::UTF8ToUTF16(password),
+                                                  &form_structure);
+    base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+        form_structure.get_password_attributes_vote_for_testing();
+
+    EXPECT_FALSE(vote.has_value()) << password;
+  }
+}
+
 }  // namespace password_manager
