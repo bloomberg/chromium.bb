@@ -2932,6 +2932,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/UsedByReflection.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForM.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForN.java",
+      "android/java/src/org/chromium/base/compat/ApiHelperForO.java",
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/Linker.java",
       "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",

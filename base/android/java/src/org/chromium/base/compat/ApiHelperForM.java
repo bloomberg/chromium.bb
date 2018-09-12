@@ -5,6 +5,7 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -59,5 +60,23 @@ public final class ApiHelperForM {
     public static NetworkInfo getNetworkInfo(
             ConnectivityManager connectivityManager, Network network) {
         return connectivityManager.getNetworkInfo(network);
+    }
+
+    /** See {@link Activity#requestPermissions(String[], int)}. */
+    public static void requestActivityPermissions(
+            Activity activity, String[] permissions, int requestCode) {
+        activity.requestPermissions(permissions, requestCode);
+    }
+
+    /** See {@link Activity#shouldShowRequestPermissionRationale(String)}. */
+    public static boolean shouldShowRequestPermissionRationale(
+            Activity activity, String permission) {
+        return activity.shouldShowRequestPermissionRationale(permission);
+    }
+
+    /** See {@link PackageManager#isPermissionRevokedByPolicy(String, String)}. */
+    public static boolean isPermissionRevokedByPolicy(Activity activity, String permission) {
+        return activity.getPackageManager().isPermissionRevokedByPolicy(
+                permission, activity.getPackageName());
     }
 }

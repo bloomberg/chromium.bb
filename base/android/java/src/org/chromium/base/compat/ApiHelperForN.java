@@ -7,7 +7,12 @@ package org.chromium.base.compat;
 import android.annotation.TargetApi;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
+import android.content.ClipData;
+import android.graphics.Bitmap;
 import android.os.Build;
+import android.view.PointerIcon;
+import android.view.View;
+import android.view.View.DragShadowBuilder;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -36,5 +41,21 @@ public final class ApiHelperForN {
     /** See {@link JobScheduler#getPendingJob(int)}. */
     public static JobInfo getPendingJob(JobScheduler scheduler, int jobId) {
         return scheduler.getPendingJob(jobId);
+    }
+
+    /** See {@link View#startDragAndDrop(ClipData, DragShadowBuilder, Object, int)}. */
+    public static boolean startDragAndDrop(View view, ClipData data,
+            DragShadowBuilder shadowBuilder, Object myLocalState, int flags) {
+        return view.startDragAndDrop(data, shadowBuilder, myLocalState, flags);
+    }
+
+    /** See {@link View#setPointerIcon(PointerIcon)}. */
+    public static void setPointerIcon(View view, PointerIcon icon) {
+        view.setPointerIcon(icon);
+    }
+
+    /** See {@link PointerIcon#create(Bitmap, float, float)}. */
+    public static PointerIcon createPointerIcon(Bitmap bitmap, float width, float height) {
+        return PointerIcon.create(bitmap, width, height);
     }
 }

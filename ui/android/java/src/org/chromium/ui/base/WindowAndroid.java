@@ -35,6 +35,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.display.DisplayAndroid;
@@ -245,7 +246,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !Build.VERSION.RELEASE.equals("8.0.0")
                 && activityFromContext(context) != null) {
             Configuration configuration = context.getResources().getConfiguration();
-            boolean isScreenWideColorGamut = configuration.isScreenWideColorGamut();
+            boolean isScreenWideColorGamut = ApiHelperForO.isScreenWideColorGamut(configuration);
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
         }
     }
