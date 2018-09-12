@@ -69,8 +69,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -915,31 +913,28 @@ public class NewTabPageAdapterTest {
         assertItemsFor(sectionWithStatusCard().withProgress(), signinPromo());
         assertTrue(isSignInPromoVisible());
 
-        // Note: As currently implemented, these variables should point to the same object, a
-        // SignInPromo.SigninObserver
         List<DestructionObserver> observers = getDestructionObserver(mUiDelegate);
-        SignInStateObserver signInStateObserver =
-                findFirstInstanceOf(observers, SignInStateObserver.class);
-        assertNotNull(signInStateObserver);
-        SignInAllowedObserver signInAllowedObserver =
-                findFirstInstanceOf(observers, SignInAllowedObserver.class);
-        assertNotNull(signInAllowedObserver);
         SuggestionsSource.Observer suggestionsObserver =
                 findFirstInstanceOf(observers, SuggestionsSource.Observer.class);
         assertNotNull(suggestionsObserver);
 
-        signInStateObserver.onSignedIn();
+        SignInPromo signInPromo = mAdapter.getSignInPromoForTesting();
+        assertNotNull(signInPromo);
+        SigninObserver signinObserver = signInPromo.getSigninObserverForTesting();
+        assertNotNull(signinObserver);
+
+        signinObserver.onSignedIn();
         assertFalse(isSignInPromoVisible());
 
-        signInStateObserver.onSignedOut();
+        signinObserver.onSignedOut();
         assertTrue(isSignInPromoVisible());
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(false);
-        signInAllowedObserver.onSignInAllowedChanged();
+        signinObserver.onSignInAllowedChanged();
         assertFalse(isSignInPromoVisible());
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        signInAllowedObserver.onSignInAllowedChanged();
+        signinObserver.onSignInAllowedChanged();
         assertTrue(isSignInPromoVisible());
 
         mSource.setRemoteSuggestionsEnabled(false);
@@ -1018,8 +1013,9 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testAllDismissedVisibility() {
-        SigninObserver signinObserver =
-                findFirstInstanceOf(getDestructionObserver(mUiDelegate), SigninObserver.class);
+        SignInPromo signInPromo = mAdapter.getSignInPromoForTesting();
+        assertNotNull(signInPromo);
+        SigninObserver signinObserver = signInPromo.getSigninObserverForTesting();
         assertNotNull(signinObserver);
 
         @SuppressWarnings("unchecked")
@@ -1092,7 +1088,7 @@ public class NewTabPageAdapterTest {
 
         // Disabling remote suggestions should remove both the promo and the AllDismissed item
         mSource.setRemoteSuggestionsEnabled(false);
-        signinObserver.onCategoryStatusChanged(
+        mAdapter.getSuggestionsSourceObserverForTesting().onCategoryStatusChanged(
                 KnownCategories.REMOTE_CATEGORIES_OFFSET + TEST_CATEGORY,
                 CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
         // Adapter content:
@@ -1110,7 +1106,7 @@ public class NewTabPageAdapterTest {
         // Prepare some suggestions. They should not load because the category is dismissed on
         // the current NTP.
         mSource.setRemoteSuggestionsEnabled(true);
-        signinObserver.onCategoryStatusChanged(
+        mAdapter.getSuggestionsSourceObserverForTesting().onCategoryStatusChanged(
                 KnownCategories.REMOTE_CATEGORIES_OFFSET + TEST_CATEGORY, CategoryStatus.AVAILABLE);
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(TEST_CATEGORY, createDummySuggestions(1, TEST_CATEGORY));

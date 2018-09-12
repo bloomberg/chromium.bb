@@ -55,6 +55,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private final AllDismissedItem mAllDismissed;
     private final Footer mFooter;
 
+    private final RemoteSuggestionsStatusObserver mRemoteSuggestionsStatusObserver;
+
     /**
      * Creates the adapter that will manage all the cards to display on the NTP.
      * @param uiDelegate used to interact with the rest of the system.
@@ -75,8 +77,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mUiConfig = uiConfig;
         mRoot = new InnerNode<>();
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
-        mSigninPromo = SignInPromo.maybeCreatePromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
+
+        if (SignInPromo.shouldCreatePromo()) {
+            mSigninPromo = new SignInPromo();
+            mSigninPromo.setCanShowPersonalizedSuggestions(
+                    mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled());
+        } else {
+            mSigninPromo = null;
+        }
 
         if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
 
@@ -96,8 +105,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         mOfflinePageBridge = offlinePageBridge;
 
-        RemoteSuggestionsStatusObserver suggestionsObserver = new RemoteSuggestionsStatusObserver();
-        mUiDelegate.addDestructionObserver(suggestionsObserver);
+        mRemoteSuggestionsStatusObserver = new RemoteSuggestionsStatusObserver();
+        mUiDelegate.addDestructionObserver(mRemoteSuggestionsStatusObserver);
 
         updateAllDismissedVisibility();
         mRoot.addObserver(this);
@@ -135,7 +144,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                         mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
 
             case ItemViewType.PROMO:
-                return mSigninPromo.createViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);
+                return new PersonalizedPromoViewHolder(
+                        mRecyclerView, mContextMenuManager, mUiConfig);
 
             case ItemViewType.FOOTER:
                 return new Footer.ViewHolder(mRecyclerView, mUiDelegate.getNavigationDelegate());
@@ -304,6 +314,16 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return mRoot;
     }
 
+    @VisibleForTesting
+    SuggestionsSource.Observer getSuggestionsSourceObserverForTesting() {
+        return mRemoteSuggestionsStatusObserver;
+    }
+
+    @VisibleForTesting
+    SignInPromo getSignInPromoForTesting() {
+        return mSigninPromo;
+    }
+
     private class RemoteSuggestionsStatusObserver
             extends SuggestionsSource.EmptyObserver implements DestructionObserver {
         public RemoteSuggestionsStatusObserver() {
@@ -316,11 +336,20 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             if (!SnippetsBridge.isCategoryRemote(category)) return;
 
             updateAllDismissedVisibility();
+
+            // Checks whether the category is enabled first to avoid unnecessary
+            // calls across JNI.
+            if (mSigninPromo != null) {
+                mSigninPromo.setCanShowPersonalizedSuggestions(
+                        SnippetsBridge.isCategoryEnabled(newStatus)
+                        || mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled());
+            }
         }
 
         @Override
         public void onDestroy() {
             mUiDelegate.getSuggestionsSource().removeObserver(this);
+            if (mSigninPromo != null) mSigninPromo.destroy();
         }
     }
 }

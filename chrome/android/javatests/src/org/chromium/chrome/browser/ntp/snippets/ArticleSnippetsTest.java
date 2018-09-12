@@ -18,6 +18,7 @@ import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,8 +38,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.SignInPromo;
+import org.chromium.chrome.browser.ntp.cards.PersonalizedPromoViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
@@ -99,7 +99,7 @@ public class ArticleSnippetsTest {
     private ContextMenuManager mContextMenuManager;
     private FrameLayout mContentView;
     private SnippetArticleViewHolder mSuggestion;
-    private NewTabPageViewHolder mSigninPromo;
+    private PersonalizedPromoViewHolder mSigninPromo;
 
     private UiConfig mUiConfig;
 
@@ -142,6 +142,11 @@ public class ArticleSnippetsTest {
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
                     mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);
         });
+    }
+
+    @After
+    public void tearDown() {
+        if (mSigninPromo != null) mSigninPromo.setSigninPromoControllerForTests(null);
     }
 
     @Test
@@ -343,10 +348,9 @@ public class ArticleSnippetsTest {
     private void createPersonalizedSigninPromo(@Nullable DisplayableProfileData profileData) {
         SigninPromoController signinPromoController =
                 new SigninPromoController(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
-        mSigninPromo = new SignInPromo.PersonalizedPromoViewHolder(
-                mRecyclerView, mUiConfig, null, null, signinPromoController);
-        ((SignInPromo.PersonalizedPromoViewHolder) mSigninPromo)
-                .bindAndConfigureViewForTests(profileData);
+        mSigninPromo = new PersonalizedPromoViewHolder(mRecyclerView, null, mUiConfig);
+        mSigninPromo.setSigninPromoControllerForTests(signinPromoController);
+        mSigninPromo.bindAndConfigureViewForTests(profileData);
     }
 
     private DisplayableProfileData getTestProfileData() {
