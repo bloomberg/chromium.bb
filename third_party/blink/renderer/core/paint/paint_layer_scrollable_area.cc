@@ -1867,8 +1867,10 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
       if (sticky_layer->GetLayoutObject().StyleRef().GetPosition() ==
-          EPosition::kSticky)
+          EPosition::kSticky) {
         sticky_layer->SetNeedsCompositingInputsUpdate();
+        sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+      }
     }
     d->sticky_constraints_map_.clear();
   }
@@ -1880,8 +1882,10 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     d->sticky_constraints_map_.erase(layer);
     if (needs_compositing_update &&
-        layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
+        layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
       layer->SetNeedsCompositingInputsUpdate();
+      layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    }
   }
 }
 
@@ -1904,7 +1908,7 @@ bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
-      sticky_layer->GetLayoutObject().SetShouldCheckForPaintInvalidation();
+      sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 

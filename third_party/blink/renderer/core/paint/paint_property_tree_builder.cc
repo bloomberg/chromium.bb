@@ -134,6 +134,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateForObjectLocationAndSize(
       base::Optional<IntPoint>& paint_offset_translation);
   ALWAYS_INLINE void UpdateClipPathCache();
+  ALWAYS_INLINE void UpdateStickyTranslation();
   ALWAYS_INLINE void UpdateTransform();
   ALWAYS_INLINE void UpdateTransformForNonRootSVG();
   ALWAYS_INLINE void UpdateEffect();
@@ -379,6 +380,96 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
   } else {
     OnClear(properties_->ClearPaintOffsetTranslation());
   }
+}
+
+static bool NeedsStickyTranslation(const LayoutObject& object) {
+  if (!object.IsBoxModelObject())
+    return false;
+
+  return object.StyleRef().HasStickyConstrainedPosition();
+}
+
+void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
+  DCHECK(properties_);
+
+  if (NeedsPaintPropertyUpdate()) {
+    if (NeedsStickyTranslation(object_)) {
+      const auto& box_model = ToLayoutBoxModelObject(object_);
+      FloatSize sticky_offset(box_model.StickyPositionOffset());
+      TransformPaintPropertyNode::State state{AffineTransform::Translation(
+          sticky_offset.Width(), sticky_offset.Height())};
+
+      state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+          box_model.UniqueId(),
+          CompositorElementIdNamespace::kStickyTranslation);
+
+      auto* layer = box_model.Layer();
+      const auto* scroller_properties = layer->AncestorOverflowLayer()
+                                            ->GetLayoutObject()
+                                            .FirstFragment()
+                                            .PaintProperties();
+      // A scroll node is only created if an object can be scrolled manually,
+      // while sticky position attaches to anything that clips overflow.
+      // No need to (actually can't) setup composited sticky constraint if
+      // the clipping ancestor we attach to doesn't have a scroll node.
+      // TODO(crbug.com/881555): If the clipping ancestor does have a scroll
+      // node, this really should be a DCHECK the current scrolll node
+      // matches it. i.e.
+      // if (scroller_properties && scroller_properties->Scroll()) {
+      //   DCHECK_EQ(scroller_properties->Scroll(), context_.current.scroll);
+      // However there is a bug that AncestorOverflowLayer() may be computed
+      // incorrectly with clip escaping involved.
+      if (scroller_properties &&
+          scroller_properties->Scroll() == context_.current.scroll) {
+        const StickyPositionScrollingConstraints& layout_constraint =
+            layer->AncestorOverflowLayer()
+                ->GetScrollableArea()
+                ->GetStickyConstraintsMap()
+                .at(layer);
+        CompositorStickyConstraint& constraint = state.sticky_constraint;
+        constraint.is_sticky = true;
+        constraint.is_anchored_left = layout_constraint.is_anchored_left;
+        constraint.is_anchored_right = layout_constraint.is_anchored_right;
+        constraint.is_anchored_top = layout_constraint.is_anchored_top;
+        constraint.is_anchored_bottom = layout_constraint.is_anchored_bottom;
+        constraint.left_offset = layout_constraint.left_offset;
+        constraint.right_offset = layout_constraint.right_offset;
+        constraint.top_offset = layout_constraint.top_offset;
+        constraint.bottom_offset = layout_constraint.bottom_offset;
+        constraint.constraint_box_rect =
+            box_model.ComputeStickyConstrainingRect();
+        constraint.scroll_container_relative_sticky_box_rect = RoundedIntRect(
+            layout_constraint.scroll_container_relative_sticky_box_rect);
+        constraint
+            .scroll_container_relative_containing_block_rect = RoundedIntRect(
+            layout_constraint.scroll_container_relative_containing_block_rect);
+        if (PaintLayer* sticky_box_shifting_ancestor =
+                layout_constraint.nearest_sticky_layer_shifting_sticky_box) {
+          constraint.nearest_element_shifting_sticky_box =
+              CompositorElementIdFromUniqueObjectId(
+                  sticky_box_shifting_ancestor->GetLayoutObject().UniqueId(),
+                  CompositorElementIdNamespace::kStickyTranslation);
+        }
+        if (PaintLayer* containing_block_shifting_ancestor =
+                layout_constraint
+                    .nearest_sticky_layer_shifting_containing_block) {
+          constraint.nearest_element_shifting_containing_block =
+              CompositorElementIdFromUniqueObjectId(
+                  containing_block_shifting_ancestor->GetLayoutObject()
+                      .UniqueId(),
+                  CompositorElementIdNamespace::kStickyTranslation);
+        }
+      }
+
+      OnUpdate(properties_->UpdateStickyTranslation(*context_.current.transform,
+                                                    std::move(state)));
+    } else {
+      OnClear(properties_->ClearStickyTranslation());
+    }
+  }
+
+  if (properties_->StickyTranslation())
+    context_.current.transform = properties_->StickyTranslation();
 }
 
 static bool NeedsTransformForNonRootSVG(const LayoutObject& object) {
@@ -1740,8 +1831,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         break;
       }
       case EPosition::kSticky:
-        context_.current.paint_offset +=
-            box_model_object.OffsetForInFlowPosition();
         break;
       case EPosition::kFixed: {
         DCHECK(full_context_.container_for_fixed_position ==
@@ -1917,6 +2006,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 #endif
 
   if (properties_) {
+    UpdateStickyTranslation();
     UpdateTransform();
     UpdateClipPathClip(false);
     UpdateEffect();
@@ -2578,8 +2668,9 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
   // until the paint offset and border box has been computed.
   bool needs_paint_properties =
       object_.StyleRef().ClipPath() || NeedsPaintOffsetTranslation(object_) ||
-      NeedsTransform(object_) || NeedsClipPathClip(object_) ||
-      NeedsEffect(object_) || NeedsLinkHighlightEffect(object_) ||
+      NeedsStickyTranslation(object_) || NeedsTransform(object_) ||
+      NeedsClipPathClip(object_) || NeedsEffect(object_) ||
+      NeedsLinkHighlightEffect(object_) ||
       NeedsTransformForNonRootSVG(object_) || NeedsFilter(object_) ||
       NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
       NeedsOverflowClip(object_) || NeedsPerspective(object_) ||

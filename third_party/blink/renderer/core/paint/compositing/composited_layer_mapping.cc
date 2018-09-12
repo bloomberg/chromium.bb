@@ -337,6 +337,11 @@ void CompositedLayerMapping::UpdateBackdropFilters() {
 
 void CompositedLayerMapping::UpdateStickyConstraints(
     const ComputedStyle& style) {
+  // Sticky offsets will be applied by property tree instead,
+  // see PaintArtifactCompositor/PropertyTreeManager.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   cc::LayerStickyPositionConstraint constraint;
   if (!UsesCompositedStickyPosition(owning_layer_)) {
     // Clear the previous sticky position constraint - if set.

@@ -100,6 +100,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // [ PaintOffsetTranslation ]
   // |   Normally paint offset is accumulated without creating a node until
   // |   we see, for example, transform or position:fixed.
+  // +-[ StickyTranslation ]
+  //  /    This applies the sticky offset induced by position:sticky.
+  // |
   // +-[ Transform ]
   //   |   The space created by CSS transform. This is the local border box
   //   |   space.
@@ -118,6 +121,7 @@ class CORE_EXPORT ObjectPaintProperties {
   //         or InlineBox's PhysicalLocation()) in this space, we should add
   //         ScrollOrigin() to the offset.
   ADD_TRANSFORM(PaintOffsetTranslation, paint_offset_translation_);
+  ADD_TRANSFORM(StickyTranslation, sticky_translation_);
   ADD_TRANSFORM(Transform, transform_);
   ADD_TRANSFORM(Perspective, perspective_);
   ADD_TRANSFORM(ReplacedContentTransform, replaced_content_transform_);
