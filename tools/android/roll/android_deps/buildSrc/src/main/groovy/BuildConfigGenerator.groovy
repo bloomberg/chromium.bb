@@ -76,11 +76,11 @@ class BuildConfigGenerator extends DefaultTask {
             new File("${absoluteDepDir}/README.chromium").write(makeReadme(dependency))
             new File("${absoluteDepDir}/cipd.yaml").write(makeCipdYaml(dependency, repositoryPath))
             new File("${absoluteDepDir}/OWNERS").write(makeOwners())
-            if (!dependency.licenseUrl?.trim()?.isEmpty()) {
-                downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
-            } else if (!dependency.licensePath?.isEmpty()) {
+            if (!dependency.licensePath?.trim()?.isEmpty()) {
                 new File("${absoluteDepDir}/LICENSE").write(
                         new File("${normalisedRepoPath}/${dependency.licensePath}").text)
+            } else if (!dependency.licenseUrl?.trim()?.isEmpty()) {
+                downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
             }
         }
 
@@ -265,7 +265,7 @@ class BuildConfigGenerator extends DefaultTask {
         # To create CIPD package run the following command.
         # cipd create --pkg-def cipd.yaml -tag version:${cipdVersion}
         package: chromium/${repoPath}/${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}
-        description: ${dependency.displayName}
+        description: "${dependency.displayName}"
         data:
         - file: ${dependency.fileName}
         """.stripIndent()
