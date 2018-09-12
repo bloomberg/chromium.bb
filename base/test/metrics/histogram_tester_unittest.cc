@@ -22,6 +22,7 @@ const char kHistogram2[] = "Test2";
 const char kHistogram3[] = "Test3";
 const char kHistogram4[] = "Test4";
 const char kHistogram5[] = "Test5";
+const char kHistogram6[] = "Test6";
 
 }  // namespace
 
@@ -130,7 +131,7 @@ TEST_F(HistogramTesterTest, TestGetTotalCountsForPrefix) {
 
 TEST_F(HistogramTesterTest, TestGetAllChangedHistograms) {
   // Record into a sample twice, once before the tester creation.
-  UMA_HISTOGRAM_COUNTS_100(kHistogram1, true);
+  UMA_HISTOGRAM_COUNTS_100(kHistogram6, true);
   UMA_HISTOGRAM_COUNTS_100(kHistogram4, 4);
 
   HistogramTester tester;
