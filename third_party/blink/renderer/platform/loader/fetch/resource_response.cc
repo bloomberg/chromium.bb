@@ -77,18 +77,10 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
       signature_data_.IsolatedCopy());
 }
 
-ResourceResponse::ResourceResponse()
-    : expected_content_length_(0), is_null_(true) {}
+ResourceResponse::ResourceResponse() : is_null_(true) {}
 
-ResourceResponse::ResourceResponse(const KURL& url,
-                                   const AtomicString& mime_type,
-                                   long long expected_length,
-                                   const AtomicString& text_encoding_name)
-    : url_(url),
-      mime_type_(mime_type),
-      expected_content_length_(expected_length),
-      text_encoding_name_(text_encoding_name),
-      is_null_(false) {}
+ResourceResponse::ResourceResponse(const KURL& url)
+    : url_(url), is_null_(false) {}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
