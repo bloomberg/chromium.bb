@@ -223,6 +223,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_accurate_subpel_search = 1;
     sf->reuse_inter_intra_mode = 1;
     sf->prune_comp_search_by_single_result = 1;
+    sf->skip_repeated_newmv = 1;
     sf->obmc_full_pixel_search_level = 1;
   }
 
@@ -474,6 +475,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->skip_repeat_interpolation_filter_search = 0;
   sf->use_hash_based_trellis = 0;
   sf->prune_comp_search_by_single_result = 0;
+  sf->skip_repeated_newmv = 0;
 
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;

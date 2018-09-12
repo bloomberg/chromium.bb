@@ -548,6 +548,9 @@ typedef struct SPEED_FEATURES {
   // 0: obmc_full_pixel_diamond
   // 1: obmc_refining_search_sad (faster)
   int obmc_full_pixel_search_level;
+
+  // flag to skip NEWMV mode in drl if the motion search result is the same
+  int skip_repeated_newmv;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
