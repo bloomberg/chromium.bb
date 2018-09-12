@@ -26,6 +26,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_types.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
@@ -241,7 +242,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
   if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile: " << config.profile
-             << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
+             << " fourcc: " << FourccToString(input_format_fourcc_);
     return false;
   }
 

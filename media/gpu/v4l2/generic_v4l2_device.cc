@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
@@ -154,7 +155,7 @@ bool GenericV4L2Device::Open(Type type, uint32_t v4l2_pixfmt) {
   std::string path = GetDevicePathFor(type, v4l2_pixfmt);
 
   if (path.empty()) {
-    VLOGF(1) << "No devices supporting " << std::hex << "0x" << v4l2_pixfmt
+    VLOGF(1) << "No devices supporting " << FourccToString(v4l2_pixfmt)
              << " for type: " << static_cast<int>(type);
     return false;
   }

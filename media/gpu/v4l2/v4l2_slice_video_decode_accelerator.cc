@@ -30,6 +30,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/scoped_binders.h"
@@ -534,7 +535,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile: " << config.profile
-             << " fourcc: " << std::hex << "0x" << input_format_fourcc_;
+             << " fourcc: " << FourccToString(input_format_fourcc_);
     return false;
   }
 

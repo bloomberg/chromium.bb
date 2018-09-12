@@ -15,9 +15,9 @@
 
 #include "base/bind.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
@@ -117,12 +117,6 @@ void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer, int count) {
   request_buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   request_buffer->memory = V4L2_MEMORY_MMAP;
   request_buffer->count = count;
-}
-
-// Returns the input |fourcc| as a std::string four char representation.
-std::string FourccToString(uint32_t fourcc) {
-  return base::StringPrintf("%c%c%c%c", fourcc & 0xFF, (fourcc >> 8) & 0xFF,
-                            (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
 }
 
 // Determines if |control_id| is special, i.e. controls another one's state.

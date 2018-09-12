@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_VIDEO_TYPES_H_
 #define MEDIA_BASE_VIDEO_TYPES_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "build/build_config.h"
@@ -86,6 +87,12 @@ enum ColorSpace {
 
 // Returns the name of a Format as a string.
 MEDIA_EXPORT std::string VideoPixelFormatToString(VideoPixelFormat format);
+
+// Returns human readable fourcc string.
+// If any of the four characters is non-printable, it outputs
+// "0x<32-bit integer in hex>", e.g. FourccToString(0x66616b00) returns
+// "0x66616b00".
+MEDIA_EXPORT std::string FourccToString(uint32_t fourcc);
 
 // Returns true if |format| is a YUV format with multiple planes.
 MEDIA_EXPORT bool IsYuvPlanar(VideoPixelFormat format);
