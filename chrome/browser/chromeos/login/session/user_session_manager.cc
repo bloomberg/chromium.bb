@@ -374,6 +374,11 @@ UserSessionManager::RlzInitParams CollectRlzParams() {
 }
 #endif
 
+bool IsOnlineSignin(const UserContext& user_context) {
+  return user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML ||
+         user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML;
+}
+
 }  // namespace
 
 UserSessionManagerDelegate::~UserSessionManagerDelegate() {}
@@ -966,10 +971,8 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   // Otherwise, auth token dependent code would be in an invalid state.
   // Important piece such as policy code might be broken because of this and
   // subject to an exploit. See http://crbug.com/677312.
-  const bool is_online_signin =
-      user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML ||
-      user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML;
-  if (is_online_signin && state == OAuth2LoginManager::SESSION_RESTORE_FAILED) {
+  if (IsOnlineSignin(user_context_) &&
+      state == OAuth2LoginManager::SESSION_RESTORE_FAILED) {
     LOG(ERROR)
         << "Session restore failed for online sign-in, terminating session.";
     chrome::AttemptUserExit();
@@ -1235,11 +1238,17 @@ void UserSessionManager::InitProfilePreferences(
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
     DCHECK(is_child ==
            (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
-    AccountTrackerServiceFactory::GetForProfile(profile)->SetIsChildAccount(
-        account_id, is_child);
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile);
+    account_tracker->SetIsChildAccount(account_id, is_child);
     VLOG(1) << "Seed IdentityManager and SigninManagerBase with the "
             << "authenticated account info, success="
             << SigninManagerFactory::GetForProfile(profile)->IsAuthenticated();
+
+    if (IsOnlineSignin(user_context)) {
+      account_tracker->SetIsAdvancedProtectionAccount(
+          account_id, user_context.IsUnderAdvancedProtection());
+    }
 
     // Backfill GAIA ID in user prefs stored in Local State.
     std::string tmp_gaia_id;
