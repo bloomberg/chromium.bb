@@ -507,7 +507,7 @@ int av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
   int32_t *buf = (int32_t *)aom_memalign(
       16, 4 * sizeof(*buf) * RESTORATION_PROC_UNIT_PELS);
   if (!buf) return -1;
-  memset(buf, 0, 4 * RESTORATION_PROC_UNIT_PELS);
+  memset(buf, 0, 4 * sizeof(*buf) * RESTORATION_PROC_UNIT_PELS);
 
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
