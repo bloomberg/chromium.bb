@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.util.JsonWriter;
 
@@ -27,19 +28,26 @@ public class ContactDetails implements Comparable<ContactDetails> {
     // The list of phone numbers registered for this contact.
     private List<String> mPhoneNumbers;
 
+    // The image associated with this contact.
+    private Bitmap mBitmap;
+
     /**
      * The ContactDetails constructor.
      * @param id The unique identifier of this contact.
      * @param displayName The display name of this contact.
      * @param emails The emails registered for this contact.
      * @param phoneNumbers The phone numbers registered for this contact.
+     * @param bitmap The image associated with this contact.
      */
-    public ContactDetails(
-            String id, String displayName, List<String> emails, List<String> phoneNumbers) {
+    public ContactDetails(String id, String displayName, List<String> emails,
+            List<String> phoneNumbers, Bitmap bitmap) {
         mDisplayName = displayName;
         mEmails = emails;
         mPhoneNumbers = phoneNumbers;
         mId = id;
+        // TODO(finnur): Investigate LRU caching for bitmaps.
+        // TODO(finnur): Investigate a changed approach for handling bitmaps.
+        mBitmap = bitmap;
     }
 
     /**
@@ -48,6 +56,14 @@ public class ContactDetails implements Comparable<ContactDetails> {
      */
     public String getDisplayName() {
         return mDisplayName;
+    }
+
+    /**
+     * Accessor for the contact image.
+     * @return The image as bitmap.
+     */
+    public Bitmap getContactImage() {
+        return mBitmap;
     }
 
     /**

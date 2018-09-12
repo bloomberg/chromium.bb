@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -14,6 +18,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,7 +93,7 @@ public class PickerAdapter extends Adapter<ViewHolder> {
                     mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
             String name = mContactsCursor.getString(
                     mContactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            contacts.add(new ContactDetails(id, name, getEmails(), getPhoneNumbers()));
+            contacts.add(new ContactDetails(id, name, getEmails(), getPhoneNumbers(), getPhoto()));
         } while (mContactsCursor.moveToNext());
 
         return contacts;
@@ -116,7 +121,8 @@ public class PickerAdapter extends Adapter<ViewHolder> {
         }
 
         ((ContactView) holder.itemView)
-                .initialize(new ContactDetails(id, name, getEmails(), getPhoneNumbers()));
+                .initialize(
+                        new ContactDetails(id, name, getEmails(), getPhoneNumbers(), getPhoto()));
     }
 
     private ArrayList<String> getEmails() {
@@ -151,6 +157,29 @@ public class PickerAdapter extends Adapter<ViewHolder> {
         }
         phoneNumberCursor.close();
         return phoneNumbers;
+    }
+
+    private Bitmap getPhoto() {
+        String id = mContactsCursor.getString(
+                mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
+        Uri contactUri = ContentUris.withAppendedId(
+                ContactsContract.Contacts.CONTENT_URI, Long.parseLong(id));
+        Uri photoUri =
+                Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        Cursor cursor = mContentResolver.query(
+                photoUri, new String[] {ContactsContract.Contacts.Photo.PHOTO}, null, null, null);
+        if (cursor == null) return null;
+        try {
+            if (cursor.moveToFirst()) {
+                byte[] data = cursor.getBlob(0);
+                if (data != null) {
+                    return BitmapFactory.decodeStream(new ByteArrayInputStream(data));
+                }
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
     }
 
     @Override
