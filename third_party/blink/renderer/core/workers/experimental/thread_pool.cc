@@ -174,9 +174,10 @@ class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
   }
 
   void TaskCompleted(size_t task_id,
+                     bool was_rejected,
                      scoped_refptr<SerializedScriptValue> result) {
     if (thread_pool_)
-      thread_pool_->TaskCompleted(task_id, std::move(result));
+      thread_pool_->TaskCompleted(task_id, was_rejected, std::move(result));
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -196,21 +197,23 @@ void ThreadPoolObjectProxy::ProcessTask(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(global_scope_->IsContextThread());
 
+  v8::Isolate* isolate = ToIsolate(global_scope_.Get());
+  ScriptState::Scope scope(global_scope_->ScriptController()->GetScriptState());
   if (cancelled_tasks_.Contains(task_id)) {
     cancelled_tasks_.erase(task_id);
     PostCrossThreadTask(
         *GetParentExecutionContextTaskRunners()->Get(TaskType::kPostedMessage),
         FROM_HERE,
         CrossThreadBind(&ThreadPoolMessagingProxy::TaskCompleted,
-                        messaging_proxy_, task_id, nullptr));
+                        messaging_proxy_, task_id, true,
+                        SerializedScriptValue::SerializeAndSwallowExceptions(
+                            isolate, V8String(isolate, "Task aborted"))));
     return;
   }
 
-  v8::Isolate* isolate = ToIsolate(global_scope_.Get());
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   debugger->ExternalAsyncTaskStarted(stack_id);
 
-  ScriptState::Scope scope(global_scope_->ScriptController()->GetScriptState());
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   String core_script =
       "(" + ToCoreString(task->Deserialize(isolate).As<v8::String>()) + ")";
@@ -224,12 +227,19 @@ void ThreadPoolObjectProxy::ProcessTask(
     params[i] = arguments[i]->Deserialize(isolate);
   }
 
+  v8::TryCatch block(isolate);
   v8::MaybeLocal<v8::Value> ret = script_function->Call(
       context, script_function, params.size(), params.data());
-  scoped_refptr<SerializedScriptValue> result =
-      ret.IsEmpty() ? nullptr
-                    : SerializedScriptValue::SerializeAndSwallowExceptions(
-                          isolate, ret.ToLocalChecked());
+  DCHECK_EQ(ret.IsEmpty(), block.HasCaught());
+
+  v8::Local<v8::Value> return_value;
+  if (!ret.IsEmpty()) {
+    return_value = ret.ToLocalChecked();
+    if (return_value->IsPromise())
+      return_value = return_value.As<v8::Promise>()->Result();
+  } else {
+    return_value = block.Exception()->ToString(isolate);
+  }
 
   debugger->ExternalAsyncTaskFinished(stack_id);
   // TODO(japhet): Is it ok to always send the completion notification back on
@@ -238,7 +248,9 @@ void ThreadPoolObjectProxy::ProcessTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kPostedMessage),
       FROM_HERE,
       CrossThreadBind(&ThreadPoolMessagingProxy::TaskCompleted,
-                      messaging_proxy_, task_id, std::move(result)));
+                      messaging_proxy_, task_id, block.HasCaught(),
+                      SerializedScriptValue::SerializeAndSwallowExceptions(
+                          isolate, return_value)));
 }
 
 service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -333,17 +345,20 @@ void ThreadPool::AbortTask(size_t task_id, TaskType task_type) {
 }
 
 void ThreadPool::TaskCompleted(size_t task_id,
+                               bool was_rejected,
                                scoped_refptr<SerializedScriptValue> result) {
   DCHECK(document_->IsContextThread());
   DCHECK(resolvers_.Contains(task_id));
+  DCHECK(result);
   ScriptPromiseResolver* resolver = resolvers_.Take(task_id);
-  if (!result) {
-    resolver->Reject();
-    return;
-  }
+  // Need a ScriptState::Scope for Deserialize()
   ScriptState::Scope scope(resolver->GetScriptState());
-  resolver->Resolve(
-      result->Deserialize(resolver->GetScriptState()->GetIsolate()));
+  v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+  v8::Local<v8::Value> v8_result = result->Deserialize(isolate);
+  if (was_rejected)
+    resolver->Reject(v8::Exception::Error(v8_result.As<v8::String>()));
+  else
+    resolver->Resolve(v8_result);
 }
 
 void ThreadPool::Trace(blink::Visitor* visitor) {
