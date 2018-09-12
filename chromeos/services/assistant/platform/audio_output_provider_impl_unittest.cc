@@ -4,6 +4,9 @@
 
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -98,8 +101,8 @@ TEST_F(AudioDeviceOwnerTest, BufferFilling) {
 
   delegate.set_num_of_bytes_to_fill(200);
   delegate.Reset();
-  auto owner =
-      std::make_unique<AudioDeviceOwner>(base::ThreadTaskRunnerHandle::Get());
+  auto owner = std::make_unique<AudioDeviceOwner>(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
   // Upon start, it will start to fill the buffer.
   owner->StartOnMainThread(&delegate, nullptr, format);
   delegate.Wait();

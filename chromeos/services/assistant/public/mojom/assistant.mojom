@@ -134,26 +134,6 @@ interface Client {
     ax.mojom.AssistantTree? structure);
 };
 
-// Interface for assistant to call into browser for audio input related
-// functions.
-interface AudioInput {
-  // Registers audio input observer. We assume dual-channel, 16kHz and signed
-  // 32-bit int interleaved format. Audio stream starts recording as soon as
-  // the first observer is added. And will stop recording if last observer is
-  // closed.
-  AddObserver(AudioInputObserver observer);
-};
-
-// Observer for assistant to receive audio input data.
-interface AudioInputObserver {
-  // Notifies that audio frames are available.
-  // TODO(muyuanli): Use data pipe.
-  OnAudioInputFramesAvailable(array<int32> buffer, uint32 frame_count,
-                              mojo_base.mojom.TimeTicks timestamp);
-  // Notifies that audio input stream is closed.
-  OnAudioInputClosed();
-};
-
 // Interface for assistant to call into browser to perform device actions.
 interface DeviceActions {
   // Enables or disables WiFi.
