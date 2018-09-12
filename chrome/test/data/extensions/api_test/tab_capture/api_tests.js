@@ -174,28 +174,4 @@ var testsToRun = [
   }
 ];
 
-if (window.location.search.indexOf("includeLegacyUnmuteTest=true") != -1) {
-  testsToRun.push(function tabIsUnmutedWhenTabCaptured() {
-    var stream1 = null;
-
-    chrome.tabs.getCurrent(function(tab) {
-      var stopListener = chrome.test.listenForever(chrome.tabs.onUpdated,
-          function(tabId, changeInfo, updatedTab) {
-        if ((changeInfo.mutedInfo.muted === true)) {
-          tabCapture.capture({audio: true}, function(stream) {
-            stream1 = stream;
-          });
-        }
-        else if ((changeInfo.mutedInfo.reason == "capture") &&
-                 (changeInfo.mutedInfo.muted === false)) {
-          stream1.getAudioTracks()[0].stop();
-          stopListener();
-        }
-      });
-
-      chrome.tabs.update(tab.id, {muted: true});
-    });
-  });
-}
-
 chrome.test.runTests(testsToRun);
