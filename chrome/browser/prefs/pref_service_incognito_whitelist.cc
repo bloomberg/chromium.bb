@@ -16,7 +16,6 @@
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/pref_names.h"
-#include "components/web_resource/web_resource_pref_names.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
@@ -58,6 +57,9 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     ash::prefs::kShouldAlwaysShowAccessibilityMenu,
 #endif  // defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
+    kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
+#endif  // !defined(OS_ANDROID)
 
     // Bookmark preferences are common between incognito and regular mode.
     bookmarks::prefs::kBookmarkEditorExpandedNodes,
@@ -193,11 +195,6 @@ const char* const kPersistentPrefNames[] = {
 // audited, checked with owners, and removed or transfered to
 // |kPersistentPrefNames|.
 const char* const kTemporaryIncognitoWhitelist[] = {
-// chrome/browser/accessibility/animation_policy_prefs.h
-#if !defined(OS_ANDROID)
-    kAnimationPolicyAllowed, kAnimationPolicyOnce, kAnimationPolicyNone,
-#endif  // !defined(OS_ANDROID)
-
     // chrome/common/pref_names.h
     prefs::kEnableHyperlinkAuditing,
 
@@ -206,13 +203,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kEnableReferrers, prefs::kEnableDoNotTrack,
     prefs::kEnableEncryptedMedia,
 
-    prefs::kInvertNotificationShown,
-
-    prefs::kMessageCenterDisabledExtensionIds,
-    prefs::kMessageCenterDisabledSystemComponentIds,
-
-    prefs::kLocalDiscoveryNotificationsEnabled,
-
 #if defined(OS_ANDROID)
     prefs::kMigratedToSiteNotificationChannels,
     prefs::kClearedBlockedSiteNotificationChannels,
@@ -220,14 +210,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kPushMessagingAppIdentifierMap,
 
-    prefs::kGCMProductCategoryForSubtypes,
-
     prefs::kWebRTCMultipleRoutesEnabled, prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy, prefs::kWebRTCUDPPortRange,
-
-#if !defined(OS_ANDROID)
-    prefs::kHasSeenWelcomePage,
-#endif
 
 #if defined(OS_WIN)
     prefs::kHasSeenWin10PromoPage,
@@ -236,29 +220,13 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
-    prefs::kStabilityOtherUserCrashCount, prefs::kStabilityKernelCrashCount,
-    prefs::kStabilitySystemUncleanShutdownCount,
-
-    prefs::kStabilityPluginStats, prefs::kStabilityPluginName,
-    prefs::kStabilityPluginLaunches, prefs::kStabilityPluginInstances,
-    prefs::kStabilityPluginCrashes, prefs::kStabilityPluginLoadingErrors,
-
-    // prefs::kBrowserWindowPlacement, prefs::kBrowserWindowPlacementPopup,
-    prefs::kTaskManagerWindowPlacement, prefs::kTaskManagerColumnVisibility,
-    prefs::kTaskManagerEndProcessEnabled, prefs::kAppWindowPlacement,
-
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
     prefs::kOpenPdfDownloadInSystemReader,
 #endif
 
-    // prefs::kSaveFileDefaultDirectory, prefs::kSaveFileType,
     prefs::kTrustedDownloadSources,
 
     prefs::kDefaultTasksByMimeType, prefs::kDefaultTasksBySuffix,
-
-    prefs::kSelectFileLastDirectory,
-
-    prefs::kExcludedSchemes,
 
     prefs::kLastKnownIntranetRedirectOrigin,
 
@@ -393,9 +361,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kComponentUpdatesEnabled,
 
     prefs::kMediaEngagementSchemaVersion,
-
-    // components/web_resource/web_resource_pref_names.h
-    prefs::kEulaAccepted,
 };
 
 }  // namespace
