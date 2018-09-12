@@ -32,13 +32,17 @@ if (use_gnome_keyring) {
 
 component("os_crypt") {
   sources = [
+    "encryption_key_creation_util_ios.cc",
+    "encryption_key_creation_util_ios.h",
+    "encryption_key_creation_util_mac.cc",
+    "encryption_key_creation_util_mac.h",
     "ie7_password_win.cc",
     "ie7_password_win.h",
-    "key_creation_util_mac.cc",
-    "key_creation_util_mac.h",
     "keychain_password_mac.h",
     "keychain_password_mac.mm",
     "os_crypt.h",
+    "os_crypt_features_mac.cc",
+    "os_crypt_features_mac.h",
     "os_crypt_mac.mm",
     "os_crypt_pref_names_mac.cc",
     "os_crypt_pref_names_mac.h",
@@ -71,6 +75,10 @@ component("os_crypt") {
       "os_crypt_mac.mm",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (is_ios || is_mac) {
+    sources += [ "encryption_key_creation_util.h" ]
   }
 
   if (is_win) {
@@ -163,10 +171,17 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//crypto",
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    set_sources_assignment_filter([])
+    sources += [ "keychain_password_mac_unittest.mm" ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  }
 
   if (is_desktop_linux && !is_chromecast) {
     sources += [
