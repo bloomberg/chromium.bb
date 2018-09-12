@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/run_loop.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -19,6 +20,8 @@
 using device::MockUsbDevice;
 using device::UsbDevice;
 
+namespace {
+
 class UsbChooserContextTest : public testing::Test {
  public:
   UsbChooserContextTest() {}
@@ -33,6 +36,20 @@ class UsbChooserContextTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
+
+void ExpectDevicesAndThen(
+    const std::set<std::string>& expected_guids,
+    base::OnceClosure continuation,
+    std::vector<device::mojom::UsbDeviceInfoPtr> results) {
+  EXPECT_EQ(expected_guids.size(), results.size());
+  std::set<std::string> actual_guids;
+  for (size_t i = 0; i < results.size(); ++i)
+    actual_guids.insert(results[i]->guid);
+  EXPECT_EQ(expected_guids, actual_guids);
+  std::move(continuation).Run();
+}
+
+}  // namespace
 
 TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   GURL origin("https://www.google.com");
@@ -123,6 +140,16 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
 
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  {
+    // Call GetDevices once to make sure the connection with DeviceManager has
+    // been set up, so that it can be notified when device is removed.
+    std::set<std::string> guids;
+    guids.insert(device->guid());
+    base::RunLoop loop;
+    store->GetDevices(
+        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   store->GrantDevicePermission(origin, origin, *device_info);
@@ -135,6 +162,8 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   EXPECT_EQ(1u, all_origin_objects.size());
 
   device_client_.usb_service()->RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
@@ -165,6 +194,16 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
   device_client_.usb_service()->AddDevice(device);
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  {
+    // Call GetDevices once to make sure the connection with DeviceManager has
+    // been set up, so that it can be notified when device is removed.
+    std::set<std::string> guids;
+    guids.insert(device->guid());
+    base::RunLoop loop;
+    store->GetDevices(
+        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+    loop.Run();
+  }
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   store->GrantDevicePermission(origin, origin, *device_info);
@@ -177,6 +216,8 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   EXPECT_EQ(1u, all_origin_objects.size());
 
   device_client_.usb_service()->RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   objects = store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(0u, objects.size());
