@@ -331,6 +331,15 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     force_new_tab = true;
   }
 
+  ProfileSyncService* service = GetSyncService();
+  if (service && service->HasUnrecoverableError()) {
+    // When the user has an unrecoverable error, they first have to sign out and
+    // then sign in again.
+    SigninManagerFactory::GetForProfile(browser->profile())
+        ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                  signin_metrics::SignoutDelete::IGNORE_METRIC);
+  }
+
   // If the signin manager already has an authenticated username, this is a
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
@@ -622,18 +631,14 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   ProfileSyncService* service = GetSyncService();
 
-  // Just let the page open for now, even when the user's not signed in or sync
-  // is disabled.
-  // TODO(scottchen): finish the UI for signed-out users
-  //    (https://crbug.com/800972).
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
 
-    // Preemptively mark login UI as active, because the user could potentially
-    // sign-in directly from this UI without triggering handleShowSetupUI again.
     GetLoginUIService()->SetLoginUI(this);
-    FireWebUIListener("sync-prefs-changed", base::DictionaryValue());
+
+    PushSyncPrefs();
+    // Always let the page open when unified consent is enabled.
     return;
   }
 
