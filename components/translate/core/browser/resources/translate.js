@@ -162,8 +162,6 @@ cr.googleTranslate = (function() {
   function invokeReadyCallback() {
     if (readyCallback) {
       readyCallback();
-      // Don't notify ready if already notified.
-      readyCallback = null;
     }
   }
 
