@@ -66,18 +66,12 @@ class AvSyncVideo : public AvSync {
   // linear regression / the number of samples (which are unique frames).
   int GetContentFrameRate();
 
-  void SoftCorrection(int64_t now,
-                      int64_t current_vpts,
-                      int64_t current_apts,
-                      double apts_slope,
-                      double vpts_slope,
-                      int64_t difference);
-  void InSyncCorrection(int64_t now,
-                        int64_t current_vpts,
-                        int64_t current_apts,
-                        double apts_slope,
-                        double vpts_slope,
-                        int64_t difference);
+  void AudioRateUpkeep(int64_t now,
+                       int64_t new_raw_vpts,
+                       int64_t new_raw_apts,
+                       double apts_slope,
+                       double vpts_slope,
+                       int64_t linear_regression_difference);
 
   Delegate* delegate_ = nullptr;
 
@@ -86,8 +80,6 @@ class AvSyncVideo : public AvSync {
 
   base::RepeatingTimer upkeep_av_sync_timer_;
   base::RepeatingTimer playback_statistics_timer_;
-  bool in_soft_correction_ = false;
-  int64_t difference_at_start_of_correction_ = 0;
 
   // TODO(almasrymina): having a linear regression for the audio pts is
   // dangerous, because glitches in the audio or intentional changes in the
@@ -102,13 +94,10 @@ class AvSyncVideo : public AvSync {
   int64_t last_gather_timestamp_us_ = 0;
   int64_t last_repeated_frames_ = 0;
   int64_t last_dropped_frames_ = 0;
-  int64_t number_of_hard_corrections_ = 0;
-  int64_t number_of_soft_corrections_ = 0;
   int64_t last_vpts_value_recorded_ = 0;
 
   // Those are initialized to INT64_MIN as not to be confused with 0 timestamp
   // and 0 pts.
-  int64_t last_correction_timestamp_us = INT64_MIN;
   int64_t playback_start_pts_us_ = INT64_MIN;
 
   // This is initialized to INT64_MAX as AV sync will start upkeeping the AV

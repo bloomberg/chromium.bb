@@ -196,6 +196,14 @@ void BufferingMixerSource::StartPlaybackAt(int64_t playback_start_timestamp) {
   locked->playback_start_timestamp_ = playback_start_timestamp;
 }
 
+float BufferingMixerSource::SetAvSyncPlaybackRate(float rate) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << __func__ << " rate=" << rate;
+
+  auto locked = locked_members_.Lock();
+  return locked->audio_resampler_.SetMediaClockRate(rate);
+}
+
 BufferingMixerSource::~BufferingMixerSource() {
   LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
 }
@@ -259,9 +267,12 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
           << "Queueing pts diff=" << data->timestamp() - playback_start_pts_
           << " current buffered data=" << GetCurrentBufferedDataInUs() / 1000;
 
-      const int frames = DataToFrames(data->data_size());
+      scoped_refptr<DecoderBufferBase> buffer =
+          locked->audio_resampler_.ResampleBuffer(std::move(data));
+
+      const int frames = DataToFrames(buffer->data_size());
       locked->queued_frames_ += frames;
-      locked->queue_.push_back(std::move(data));
+      locked->queue_.push_back(std::move(buffer));
 
       if (!locked->started_ && GetCurrentBufferedDataInUs() >=
                                    kAudioReadyForPlaybackThresholdMs * 1000) {
