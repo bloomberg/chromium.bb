@@ -457,12 +457,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   enum class BeforeUnloadType {
     BROWSER_INITIATED_NAVIGATION,
     RENDERER_INITIATED_NAVIGATION,
-    TAB_CLOSE,
-    // This reason is used before a tab is discarded in order to free up
-    // resources. When this is used and the handler returns a non-empty string,
-    // the confirmation dialog will not be displayed and the discard will
-    // automatically be canceled.
-    DISCARD,
+    TAB_CLOSE
   };
 
   // Runs the beforeunload handler for this frame and its subframes. |type|
@@ -473,7 +468,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DispatchBeforeUnload(BeforeUnloadType type, bool is_reload);
 
   // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
-  void SimulateBeforeUnloadAck(bool proceed);
+  void SimulateBeforeUnloadAck();
 
   // Returns true if a call to DispatchBeforeUnload will actually send the
   // BeforeUnload IPC.  This can be called on a main frame or subframe.  If
@@ -1386,11 +1381,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(clamy): Remove this boolean and add one more state to the state
   // machine.
   bool is_waiting_for_beforeunload_ack_;
-
-  // Valid only when |is_waiting_for_beforeunload_ack_| is true. This indicates
-  // whether a subsequent request to launch a modal dialog should be honored or
-  // whether it should implicitly cause the unload to be canceled.
-  bool beforeunload_dialog_request_cancels_unload_;
 
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // IsWaitingForUnloadACK is true.  This tells us if the unload request
