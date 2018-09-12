@@ -19,6 +19,10 @@ extern const char kAlarmAudioDeviceId[];
 // ::media::AudioDeviceDescription::kCommunicationsDeviceId.
 extern const char kTtsAudioDeviceId[];
 
+// Local-only audio (don't send over multiroom) that should not be affected by
+// post-processors.
+extern const char kBypassAudioDeviceId[];
+
 }  // namespace media
 }  // namespace chromecast
 

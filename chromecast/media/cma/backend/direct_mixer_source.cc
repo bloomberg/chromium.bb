@@ -17,13 +17,18 @@ namespace {
 
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
+    case media::AudioContentType::kMedia:
+      return "media";
     case media::AudioContentType::kAlarm:
       return "alarm";
     case media::AudioContentType::kCommunication:
       return "communication";
-    default:
-      return "media";
+    case media::AudioContentType::kOther:
+      return "other";
+    case media::AudioContentType::kNumTypes:
+      NOTREACHED();
   }
+  return std::string();
 }
 
 }  // namespace

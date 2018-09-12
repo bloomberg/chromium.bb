@@ -123,7 +123,7 @@ bool IsOutputDeviceId(const std::string& device) {
          device == ::media::AudioDeviceDescription::kCommunicationsDeviceId ||
          device == kLocalAudioDeviceId || device == kAlarmAudioDeviceId ||
          device == kPlatformAudioDeviceId /* e.g. bluetooth and aux */ ||
-         device == kTtsAudioDeviceId;
+         device == kTtsAudioDeviceId || device == kBypassAudioDeviceId;
 }
 
 std::unique_ptr<FilterGroup> CreateFilterGroup(
