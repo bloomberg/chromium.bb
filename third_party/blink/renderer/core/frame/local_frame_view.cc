@@ -2416,9 +2416,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     DocumentLifecycle::LifecycleState target_state) {
   bool run_more_lifecycle_phases =
       RunStyleAndLayoutLifecyclePhases(target_state);
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
   if (!run_more_lifecycle_phases)
     return;
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
   if (!GetLayoutView())
     return;
@@ -2506,7 +2506,12 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
 
     NotifyFrameRectsChangedIfNeededRecursive();
   }
-  return true;
+  // If we exceed the number of re-layouts during ResizeObserver notifications,
+  // then we shouldn't continue with the lifecycle updates. At that time, we
+  // have scheduled an animation and we'll try again.
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean ||
+         Lifecycle().GetState() == DocumentLifecycle::kVisualUpdatePending);
+  return Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean;
 }
 
 bool LocalFrameView::RunCompositingLifecyclePhase(
