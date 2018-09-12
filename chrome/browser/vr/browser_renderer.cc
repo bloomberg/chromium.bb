@@ -284,7 +284,7 @@ void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
 
 void BrowserRenderer::ProcessControllerInputForWebXr(
     base::TimeTicks current_time) {
-  TRACE_EVENT0("gpu", __func__);
+  TRACE_EVENT0("gpu", "Vr.ProcessControllerInputForWebXr");
   DCHECK(input_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
@@ -310,7 +310,7 @@ void BrowserRenderer::ConnectPresentingService(
 base::TimeDelta BrowserRenderer::ProcessControllerInput(
     const RenderInfo& render_info,
     base::TimeTicks current_time) {
-  TRACE_EVENT0("gpu", __func__);
+  TRACE_EVENT0("gpu", "Vr.ProcessControllerInput");
   DCHECK(input_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();

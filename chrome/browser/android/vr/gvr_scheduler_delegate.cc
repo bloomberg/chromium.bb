@@ -411,7 +411,7 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
                                      base::TimeTicks current_time) {
   // TODO(acondor): Move this logic to BrowserRenderer::Draw.
-  TRACE_EVENT1("gpu", __func__, "frame", frame_index);
+  TRACE_EVENT1("gpu", "Vr.DrawFrame", "frame", frame_index);
   bool is_webxr_frame = frame_index >= 0;
   if (!webxr_delayed_gvr_submit_.IsCancelled()) {
     // The last submit to GVR didn't complete, we have an acquired frame. This
@@ -610,8 +610,7 @@ void GvrSchedulerDelegate::AddWebVrRenderTimeEstimate(
 
 void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
                                               const gfx::Transform& head_pose) {
-  TRACE_EVENT1("gpu", "GvrSchedulerDelegate::DrawFrameSubmitNow", "frame_type",
-               frame_type);
+  TRACE_EVENT1("gpu", "Vr.SubmitFrameNow", "frame_type", frame_type);
   {
     std::unique_ptr<ScopedGpuTrace> browser_gpu_trace;
     if (gl::GLFence::IsGpuFenceSupported() && frame_type == kWebXrFrame) {
@@ -621,8 +620,8 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
       // complete. Doing this in two steps avoids a race condition - a fence
       // that was inserted after Submit may not be complete yet when the next
       // Submit finishes.
-      browser_gpu_trace = std::make_unique<ScopedGpuTrace>(
-          "gpu", "GvrSchedulerDelegate::PostSubmitDrawOnGpu");
+      browser_gpu_trace =
+          std::make_unique<ScopedGpuTrace>("gpu", "Vr.PostSubmitDrawOnGpu");
     }
     graphics_->SubmitToGvr(head_pose);
 
