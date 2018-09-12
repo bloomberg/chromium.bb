@@ -30577,6 +30577,265 @@ from previous Chrome versions.
   <int value="4" label="ClosedAbort"/>
 </enum>
 
+<enum name="MachKernReturn">
+  <summary>
+    Mach kern return values defined in
+    https://opensource.apple.com/source/xnu/xnu-4570.41.2/osfmk/mach/kern_return.h
+    and
+    https://opensource.apple.com/source/xnu/xnu-4570.41.2/osfmk/mach/message.h
+  </summary>
+  <int value="0" label="KERN_SUCCESS"/>
+  <int value="1" label="KERN_INVALID_ADDRESS">
+    Specified address is not currently valid.
+  </int>
+  <int value="2" label="KERN_PROTECTION_FAILURE">
+    Specified memory is valid, but does not permit the required forms of access.
+  </int>
+  <int value="3" label="KERN_NO_SPACE">
+    The address range specified is already in use, or no address range of the
+    size specified could be found.
+  </int>
+  <int value="4" label="KERN_INVALID_ARGUMENT">
+    The function requested was not applicable to this type of argument, or an
+    argument is invalid
+  </int>
+  <int value="5" label="KERN_FAILURE">
+    The function could not be performed. A catch-all.
+  </int>
+  <int value="6" label="KERN_RESOURCE_SHORTAGE">
+    A system resource could not be allocated to fulfill this request. This
+    failure may not be permanent.
+  </int>
+  <int value="7" label="KERN_NOT_RECEIVER">
+    The task in question does not hold receive rights for the port argument.
+  </int>
+  <int value="8" label="KERN_NO_ACCESS">Bogus access restriction.</int>
+  <int value="9" label="KERN_MEMORY_FAILURE">
+    During a page fault, the target address refers to a memory object that has
+    been destroyed. This failure is permanent.
+  </int>
+  <int value="10" label="KERN_MEMORY_ERROR">
+    During a page fault, the memory object indicated that the data could not be
+    returned. This failure may be temporary; future attempts to access this same
+    data may succeed, as defined by the memory object.
+  </int>
+  <int value="12" label="KERN_NOT_IN_SET">
+    The receive right is not a member of a port set.
+  </int>
+  <int value="13" label="KERN_NAME_EXISTS">
+    The name already denotes a right in the task.
+  </int>
+  <int value="14" label="KERN_ABORTED">
+    The operation was aborted. Ipc code will catch this and reflect it as a
+    message error.
+  </int>
+  <int value="15" label="KERN_INVALID_NAME">
+    The name doesn't denote a right in the task.
+  </int>
+  <int value="17" label="KERN_INVALID_RIGHT">
+    The name denotes a right, but not an appropriate right.
+  </int>
+  <int value="18" label="KERN_INVALID_VALUE">A blatant range error.</int>
+  <int value="21" label="KERN_RIGHT_EXISTS">
+    The task already has send or receive rights for the port under another name.
+  </int>
+  <int value="23" label="KERN_MEMORY_PRESENT">
+    An attempt was made to supply &quot;precious&quot; data for memory that is
+    already present in a memory object.
+  </int>
+  <int value="24" label="KERN_MEMORY_DATA_MOVED">
+    A page was requested of a memory manager via memory_object_data_request for
+    an object using a MEMORY_OBJECT_COPY_CALL strategy, with the
+    VM_PROT_WANTS_COPY flag being used to specify that the page desired is for a
+    copy of the object, and the memory manager has detected the page was pushed
+    into a copy of the object while the kernel was walking the shadow chain from
+    the copy to the object. This error code is delivered via
+    memory_object_data_error and is handled by the kernel (it forces the kernel
+    to restart the fault). It will not be seen by users.
+  </int>
+  <int value="25" label="KERN_MEMORY_RESTART_COPY">
+    A strategic copy was attempted of an object upon which a quicker copy is now
+    possible. The caller should retry the copy using vm_object_copy_quickly.
+    This error code is seen only by the kernel.
+  </int>
+  <int value="26" label="KERN_INVALID_PROCESSOR_SET">
+    An argument applied to assert processor set privilege was not a processor
+    set control port.
+  </int>
+  <int value="27" label="KERN_POLICY_LIMIT">
+    The specified scheduling attributes exceed the thread's limits.
+  </int>
+  <int value="28" label="KERN_INVALID_POLICY">
+    The specified scheduling policy is not currently enabled for the processor
+    set.
+  </int>
+  <int value="29" label="KERN_INVALID_OBJECT">
+    The external memory manager failed to initialize the memory object.
+  </int>
+  <int value="30" label="KERN_ALREADY_WAITING">
+    A thread is attempting to wait for an event for which there is already a
+    waiting thread.
+  </int>
+  <int value="31" label="KERN_DEFAULT_SET">
+    An attempt was made to destroy the default processor set.
+  </int>
+  <int value="32" label="KERN_EXCEPTION_PROTECTED">
+    An attempt was made to fetch an exception port that is protected, or to
+    abort a thread while processing a protected exception.
+  </int>
+  <int value="33" label="KERN_INVALID_LEDGER">
+    A ledger was required but not supplied.
+  </int>
+  <int value="34" label="KERN_INVALID_MEMORY_CONTROL">
+    The port was not a memory cache control port.
+  </int>
+  <int value="35" label="KERN_INVALID_SECURITY">
+    An argument supplied to assert security privilege was not a host security
+    port.
+  </int>
+  <int value="36" label="KERN_NOT_DEPRESSED">
+    thread_depress_abort was called on a thread which was not currently
+    depressed.
+  </int>
+  <int value="37" label="KERN_TERMINATED">
+    Object has been terminated and is no longer available
+  </int>
+  <int value="38" label="KERN_LOCK_SET_DESTROYED">
+    Lock set has been destroyed and is no longer available.
+  </int>
+  <int value="39" label="KERN_LOCK_UNSTABLE">
+    The thread holding the lock terminated before releasing the lock
+  </int>
+  <int value="40" label="KERN_LOCK_OWNED">
+    The lock is already owned by another thread
+  </int>
+  <int value="41" label="KERN_LOCK_OWNED_SELF">
+    The lock is already owned by the calling thread
+  </int>
+  <int value="42" label="KERN_SEMAPHORE_DESTROYED">
+    Semaphore has been destroyed and is no longer available.
+  </int>
+  <int value="43" label="KERN_RPC_SERVER_TERMINATED">
+    Return from RPC indicating the target server was terminated before it
+    successfully replied
+  </int>
+  <int value="44" label="KERN_RPC_TERMINATE_ORPHAN">
+    Terminate an orphaned activation.
+  </int>
+  <int value="45" label="KERN_RPC_CONTINUE_ORPHAN">
+    Allow an orphaned activation to continue executing.
+  </int>
+  <int value="48" label="KERN_NOT_WAITING">
+    A signalled thread was not actually waiting. */
+  </int>
+  <int value="50" label="KERN_CODESIGN_ERROR">
+    During a page fault, indicates that the page was rejected as a result of a
+    signature check.
+  </int>
+  <int value="51" label="KERN_POLICY_STATIC">
+    The requested property cannot be changed at this time.
+  </int>
+  <int value="52" label="KERN_INSUFFICIENT_BUFFER_SIZE">
+    The provided buffer is of insufficient size for the requested data.
+  </int>
+  <int value="1024" label="MACH_MSG_VM_KERNEL">
+    Kernel resource shortage handling out-of-line memory.
+  </int>
+  <int value="2048" label="MACH_MSG_IPC_KERNEL">
+    Kernel resource shortage handling an IPC capability.
+  </int>
+  <int value="4096" label="MACH_MSG_VM_SPACE">
+    No room in VM address space for out-of-line memory.
+  </int>
+  <int value="8192" label="MACH_MSG_IPC_SPACE">
+    No room in IPC name space for another capability name.
+  </int>
+  <int value="268435458" label="MACH_SEND_INVALID_DATA">
+    Bogus in-line data.
+  </int>
+  <int value="268435459" label="MACH_SEND_INVALID_DEST">
+    Bogus destination port.
+  </int>
+  <int value="268435460" label="MACH_SEND_TIMED_OUT">
+    Message not sent before timeout expired.
+  </int>
+  <int value="268435461" label="MACH_SEND_INVALID_VOUCHER">
+    Bogus voucher port.
+  </int>
+  <int value="268435463" label="MACH_SEND_INTERRUPTED">Software interrupt.</int>
+  <int value="268435464" label="MACH_SEND_MSG_TOO_SMALL">
+    Data doesn't contain a complete message.
+  </int>
+  <int value="268435465" label="MACH_SEND_INVALID_REPLY">Bogus reply port.</int>
+  <int value="268435466" label="MACH_SEND_INVALID_RIGHT">
+    Bogus port rights in the message body.
+  </int>
+  <int value="268435467" label="MACH_SEND_INVALID_NOTIFY">
+    Bogus notify port argument.
+  </int>
+  <int value="268435468" label="MACH_SEND_INVALID_MEMORY">
+    Invalid out-of-line memory pointer.
+  </int>
+  <int value="268435469" label="MACH_SEND_NO_BUFFER">
+    No message buffer is available.
+  </int>
+  <int value="268435470" label="MACH_SEND_TOO_LARGE">
+    Send is too large for port
+  </int>
+  <int value="268435471" label="MACH_SEND_INVALID_TYPE">
+    Invalid msg-type specification.
+  </int>
+  <int value="268435472" label="MACH_SEND_INVALID_HEADER">
+    A field in the header had a bad value.
+  </int>
+  <int value="268435473" label="MACH_SEND_INVALID_TRAILER">
+    The trailer to be sent does not match kernel format.
+  </int>
+  <int value="268435477" label="MACH_SEND_INVALID_RT_OOL_SIZE">
+    compatibility: no longer a returned error
+  </int>
+  <int value="268451842" label="MACH_RCV_INVALID_NAME">
+    Bogus name for receive port/port-set.
+  </int>
+  <int value="268451843" label="MACH_RCV_TIMED_OUT">
+    Didn't get a message within the timeout value.
+  </int>
+  <int value="268451844" label="MACH_RCV_TOO_LARGE">
+    Message buffer is not large enough for inline data.
+  </int>
+  <int value="268451845" label="MACH_RCV_INTERRUPTED">Software interrupt.</int>
+  <int value="268451846" label="MACH_RCV_PORT_CHANGED">
+    compatibility: no longer a returned error
+  </int>
+  <int value="268451847" label="MACH_RCV_INVALID_NOTIFY">
+    Bogus notify port argument.
+  </int>
+  <int value="268451848" label="MACH_RCV_INVALID_DATA">
+    Bogus message buffer for inline data.
+  </int>
+  <int value="268451849" label="MACH_RCV_PORT_DIED">
+    Port/set was sent away/died during receive.
+  </int>
+  <int value="268451850" label="MACH_RCV_IN_SET">
+    compatibility: no longer a returned error
+  </int>
+  <int value="268451851" label="MACH_RCV_HEADER_ERROR">
+    Error receiving message header. See special bits.
+  </int>
+  <int value="268451852" label="MACH_RCV_BODY_ERROR">
+    Error receiving message body. See special bits.
+  </int>
+  <int value="268451853" label="MACH_RCV_INVALID_TYPE">
+    Invalid msg-type specification in scatter list.
+  </int>
+  <int value="268451854" label="MACH_RCV_SCATTER_SMALL">
+    Out-of-line overwrite region is not large enough
+  </int>
+  <int value="268451855" label="MACH_RCV_INVALID_TRAILER">
+    trailer type or number of trailer elements not supported
+  </int>
+</enum>
+
 <enum name="MacOSBluetoothOperationsResult">
   <int value="-2" label="Unknown error domain"/>
   <int value="-1" label="No error"/>
