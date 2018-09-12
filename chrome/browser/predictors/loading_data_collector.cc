@@ -191,9 +191,7 @@ void LoadingDataCollector::RecordResourceLoadComplete(
     return;
 
   auto& page_request_summary = *nav_it->second;
-
-  if (config_.is_origin_learning_enabled)
-    page_request_summary.UpdateOrAddToOrigins(resource_load_info);
+  page_request_summary.UpdateOrAddToOrigins(resource_load_info);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(

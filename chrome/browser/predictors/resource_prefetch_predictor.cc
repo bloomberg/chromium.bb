@@ -136,9 +136,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       history_service_observer_(this),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Some form of learning has to be enabled.
-  DCHECK(config_.IsLearningEnabled());
 }
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
@@ -200,9 +197,7 @@ void ResourcePrefetchPredictor::RecordPageRequestSummary(
 
   const std::string& host = summary->main_frame_url.host();
   LearnRedirect(summary->initial_url.host(), host, host_redirect_data_.get());
-
-  if (config_.is_origin_learning_enabled)
-    LearnOrigins(host, summary->main_frame_url.GetOrigin(), summary->origins);
+  LearnOrigins(host, summary->main_frame_url.GetOrigin(), summary->origins);
 
   if (observer_)
     observer_->OnNavigationLearned(*summary);

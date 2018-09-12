@@ -64,9 +64,7 @@ PreconnectManager::PreconnectManager(base::WeakPtr<Delegate> delegate,
   DCHECK(profile_);
 }
 
-PreconnectManager::~PreconnectManager() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-}
+PreconnectManager::~PreconnectManager() = default;
 
 void PreconnectManager::Start(const GURL& url,
                               std::vector<PreconnectRequest> requests) {

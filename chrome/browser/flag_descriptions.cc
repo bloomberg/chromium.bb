@@ -1756,20 +1756,6 @@ const char kSoundContentSettingName[] = "Sound content setting";
 const char kSoundContentSettingDescription[] =
     "Enable site-wide muting in content settings and tab strip context menu.";
 
-const char kSpeculativePreconnectName[] = "Enable new preconnect predictor";
-const char kSpeculativePreconnectDescription[] =
-    "Enable the new implementation of preconnect and DNS preresolve. "
-    "\"Learning\" means that only database construction is enabled, "
-    "\"Preconnect\" enables both learning and preconnect and disables the "
-    "existing implementation. \"No preconnect\" disables both implementations.";
-
-const char kSpeculativePrefetchName[] = "Speculative Prefetch";
-const char kSpeculativePrefetchDescription[] =
-    R"*("Speculative Prefetch" fetches likely resources early to improve )*"
-    R"*(load times, based on a local database (see chrome://predictors). )*"
-    R"*("Learning" means that only the database construction is enabled, )*"
-    R"*("Prefetching" that learning and prefetching are enabled.)*";
-
 const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
     "Enable speculative start of a service worker when a search is predicted.";
 const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
