@@ -140,7 +140,7 @@ static_library("common") {
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/app_shim_launch.h",
-    "mac/app_shim_messages.h",
+    "mac/app_shim_param_traits.h",
     "mac/cfbundle_blocker.h",
     "mac/cfbundle_blocker.mm",
     "mac/launchd.h",
