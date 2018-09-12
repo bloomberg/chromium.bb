@@ -155,7 +155,9 @@ TEST(UrlPatternTest, MatchesUrl) {
     SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
                                     << "; URL: " << GURL(test_case.url));
 
-    const bool is_match = test_case.url_pattern.MatchesUrl(GURL(test_case.url));
+    GURL url(test_case.url);
+    const bool is_match =
+        test_case.url_pattern.MatchesUrl(UrlPattern::UrlInfo(url));
     EXPECT_EQ(test_case.expect_match, is_match);
   }
 }

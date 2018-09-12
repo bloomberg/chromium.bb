@@ -8,8 +8,10 @@
 #include <iosfwd>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 class GURL;
 
@@ -26,6 +28,31 @@ class UrlPattern {
   enum class MatchCase {
     kTrue,
     kFalse,
+  };
+
+  // A wrapper over a GURL to reduce redundant computation.
+  class UrlInfo {
+   public:
+    // The |url| must outlive this instance.
+    UrlInfo(const GURL& url);
+    ~UrlInfo();
+
+    base::StringPiece spec() const { return spec_; }
+    base::StringPiece lower_case_spec() const {
+      return lower_case_spec_ ? *lower_case_spec_ : spec_;
+    }
+    url::Component host() const { return host_; }
+
+   private:
+    // The url spec.
+    const base::StringPiece spec_;
+    // Lower-cased url spec. Only populated if |spec_| contains upper case
+    // characters.
+    const base::Optional<std::string> lower_case_spec_;
+    // The url host component.
+    const url::Component host_;
+
+    DISALLOW_COPY_AND_ASSIGN(UrlInfo);
   };
 
   UrlPattern();
@@ -58,7 +85,7 @@ class UrlPattern {
   // greedily finds each of them in the spec of the |url|. Respects anchors at
   // either end of the pattern, and '^' separator placeholders when comparing a
   // subpattern to a subtring of the spec.
-  bool MatchesUrl(const GURL& url) const;
+  bool MatchesUrl(const UrlInfo& url) const;
 
  private:
   // TODO(pkalinnikov): Store flat:: types instead of proto::, in order to avoid

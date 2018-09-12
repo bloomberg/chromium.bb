@@ -606,7 +606,7 @@ bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
 // |sorted_candidates| or null if no rule matches.
 const flat::UrlRule* FindMatchAmongCandidates(
     const FlatUrlRuleList* sorted_candidates,
-    const GURL& url,
+    const UrlPattern::UrlInfo& url,
     const url::Origin& document_origin,
     flat::ElementType element_type,
     flat::ActivationType activation_type,
@@ -642,7 +642,7 @@ const flat::UrlRule* FindMatchAmongCandidates(
 // between |url| and |document_origin|.
 const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
     const flat::UrlPatternIndex& index,
-    const GURL& url,
+    const UrlPattern::UrlInfo& url,
     const url::Origin& document_origin,
     flat::ElementType element_type,
     flat::ActivationType activation_type,
@@ -657,14 +657,10 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
 
   NGramHashTableProber prober;
 
-  // |hash_table| contains lower-cased n-grams. Lower case the url if necessary
-  // to find possible matches.
-  base::Optional<std::string> lower_case_url;
-  if (!HasNoUpperAscii(url.spec()))
-    lower_case_url = base::ToLowerASCII(url.spec());
+  // |hash_table| contains lower-cased n-grams. Use lower-cased url to find
+  // prospective matches.
   auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
-      lower_case_url ? *lower_case_url : url.spec(),
-      [](char) { return false; });
+      url.lower_case_spec(), [](char) { return false; });
 
   auto get_max_priority_rule = [](const flat::UrlRule* lhs,
                                   const flat::UrlRule* rhs) {
@@ -766,8 +762,8 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
   }
 
   return FindMatchInFlatUrlPatternIndex(
-      *flat_index_, url, first_party_origin, element_type, activation_type,
-      is_third_party, disable_generic_rules, strategy);
+      *flat_index_, UrlPattern::UrlInfo(url), first_party_origin, element_type,
+      activation_type, is_third_party, disable_generic_rules, strategy);
 }
 
 }  // namespace url_pattern_index
