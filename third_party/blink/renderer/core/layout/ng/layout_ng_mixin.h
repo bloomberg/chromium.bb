@@ -89,10 +89,9 @@ class LayoutNGMixin : public Base {
                         scoped_refptr<NGPaintFragment>);
 
  protected:
-  void AddOutlineRects(
-      Vector<LayoutRect>&,
-      const LayoutPoint& additional_offset,
-      LayoutObject::IncludeBlockVisualOverflowOrNot) const override;
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
+                       NGOutlineType) const override;
 
   const NGPhysicalBoxFragment* CurrentFragment() const override;
 

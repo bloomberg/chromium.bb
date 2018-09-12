@@ -94,7 +94,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
+                       NGOutlineType) const final;
 
   bool CanBeProgramaticallyScrolled() const final { return true; }
 };

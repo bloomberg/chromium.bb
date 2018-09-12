@@ -102,7 +102,7 @@ class LayoutSVGModelObject : public LayoutObject {
                    HitTestAction) final;
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
+                       NGOutlineType) const final;
 
  protected:
   FloatRect local_visual_rect_;

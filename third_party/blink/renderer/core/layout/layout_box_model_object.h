@@ -475,11 +475,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
                                         const LayoutPoint& additional_offset,
-                                        IncludeBlockVisualOverflowOrNot) const;
+                                        NGOutlineType) const;
   void AddOutlineRectsForDescendant(const LayoutObject& descendant,
                                     Vector<LayoutRect>&,
                                     const LayoutPoint& additional_offset,
-                                    IncludeBlockVisualOverflowOrNot) const;
+                                    NGOutlineType) const;
 
   void AddLayerHitTestRects(LayerHitTestRects&,
                             const PaintLayer*,

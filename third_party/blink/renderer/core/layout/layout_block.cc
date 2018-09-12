@@ -1853,14 +1853,13 @@ LayoutRect LayoutBlock::LocalCaretRect(
   return caret_rect;
 }
 
-void LayoutBlock::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+void LayoutBlock::AddOutlineRects(Vector<LayoutRect>& rects,
+                                  const LayoutPoint& additional_offset,
+                                  NGOutlineType include_block_overflows) const {
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
     rects.push_back(LayoutRect(additional_offset, Size()));
 
-  if (include_block_overflows == kIncludeBlockVisualOverflow &&
+  if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {
     AddOutlineRectsForNormalChildren(rects, additional_offset,
                                      include_block_overflows);

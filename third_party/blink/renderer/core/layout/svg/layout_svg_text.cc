@@ -401,7 +401,7 @@ FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
 
 void LayoutSVGText::AddOutlineRects(Vector<LayoutRect>& rects,
                                     const LayoutPoint&,
-                                    IncludeBlockVisualOverflowOrNot) const {
+                                    NGOutlineType) const {
   rects.push_back(LayoutRect(ObjectBoundingBox()));
 }
 
