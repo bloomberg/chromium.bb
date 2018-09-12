@@ -276,6 +276,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
                bool(const QuicStreamIdBlockedFrame& frame));
   MOCK_METHOD1(OnWindowUpdateFrame, bool(const QuicWindowUpdateFrame& frame));
   MOCK_METHOD1(OnBlockedFrame, bool(const QuicBlockedFrame& frame));
+  MOCK_METHOD1(OnMessageFrame, bool(const QuicMessageFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
   MOCK_CONST_METHOD1(IsValidStatelessResetToken, bool(QuicUint128));
   MOCK_METHOD1(OnAuthenticatedIetfStatelessResetPacket,
@@ -319,6 +320,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override {}
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -338,6 +340,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnBlockedFrame, void(const QuicBlockedFrame& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
+  MOCK_METHOD1(OnMessageReceived, void(QuicStringPiece message));
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,
                     const QuicString& error_details,
@@ -481,6 +484,7 @@ class MockQuicConnection : public QuicConnection {
 
   MOCK_METHOD2(OnStreamReset, void(QuicStreamId, QuicRstStreamErrorCode));
   MOCK_METHOD1(SendControlFrame, bool(const QuicFrame& frame));
+  MOCK_METHOD2(SendMessage, MessageStatus(QuicMessageId, QuicStringPiece));
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   void QuicConnection_OnError(QuicFramer* framer) {

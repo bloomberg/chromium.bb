@@ -53,7 +53,8 @@ QuicSession::QuicSession(QuicConnection* connection,
       goaway_sent_(false),
       goaway_received_(false),
       faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
-      control_frame_manager_(this) {
+      control_frame_manager_(this),
+      last_message_id_(0) {
   if (faster_get_stream_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
   }
@@ -157,6 +158,11 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
 
 void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
   goaway_received_ = true;
+}
+
+void QuicSession::OnMessageReceived(QuicStringPiece message) {
+  QUIC_DVLOG(1) << ENDPOINT << "Received message, length: " << message.length()
+                << ", " << message;
 }
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error,
@@ -1056,6 +1062,10 @@ QuicStream* QuicSession::GetStream(QuicStreamId id) const {
 
 bool QuicSession::OnFrameAcked(const QuicFrame& frame,
                                QuicTime::Delta ack_delay_time) {
+  if (frame.type == MESSAGE_FRAME) {
+    OnMessageAcked(frame.message_frame->message_id);
+    return true;
+  }
   if (frame.type != STREAM_FRAME) {
     return control_frame_manager_.OnControlFrameAcked(frame);
   }
@@ -1089,6 +1099,10 @@ void QuicSession::OnStreamFrameRetransmitted(const QuicStreamFrame& frame) {
 }
 
 void QuicSession::OnFrameLost(const QuicFrame& frame) {
+  if (frame.type == MESSAGE_FRAME) {
+    OnMessageLost(frame.message_frame->message_id);
+    return;
+  }
   if (frame.type != STREAM_FRAME) {
     control_frame_manager_.OnControlFrameLost(frame);
     return;
@@ -1114,6 +1128,10 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
       connection_, QuicConnection::NO_ACK);
   SetTransmissionType(type);
   for (const QuicFrame& frame : frames) {
+    if (frame.type == MESSAGE_FRAME) {
+      // Do not retransmit MESSAGE frames.
+      continue;
+    }
     if (frame.type != STREAM_FRAME) {
       if (!control_frame_manager_.RetransmitControlFrame(frame)) {
         break;
@@ -1131,6 +1149,9 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
 }
 
 bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
+  if (frame.type == MESSAGE_FRAME) {
+    return false;
+  }
   if (frame.type != STREAM_FRAME) {
     return control_frame_manager_.IsControlFrameOutstanding(frame);
   }
@@ -1238,8 +1259,36 @@ void QuicSession::SetTransmissionType(TransmissionType type) {
   connection_->SetTransmissionType(type);
 }
 
+MessageResult QuicSession::SendMessage(QuicStringPiece message) {
+  if (!IsEncryptionEstablished()) {
+    return {MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0};
+  }
+  if (connection_->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
+    connection_->SetLongHeaderType(ZERO_RTT_PROTECTED);
+  }
+  MessageStatus result =
+      connection_->SendMessage(last_message_id_ + 1, message);
+  if (result == MESSAGE_STATUS_SUCCESS) {
+    return {result, ++last_message_id_};
+  }
+  return {result, 0};
+}
+
+void QuicSession::OnMessageAcked(QuicMessageId message_id) {
+  QUIC_DVLOG(1) << ENDPOINT << "message " << message_id << " gets acked.";
+}
+
+void QuicSession::OnMessageLost(QuicMessageId message_id) {
+  QUIC_DVLOG(1) << ENDPOINT << "message " << message_id
+                << " is considered lost";
+}
+
 bool QuicSession::session_decides_what_to_write() const {
   return connection_->session_decides_what_to_write();
+}
+
+QuicPacketLength QuicSession::GetLargestMessagePayload() const {
+  return connection_->GetLargestMessagePayload();
 }
 
 #undef ENDPOINT  // undef for jumbo builds

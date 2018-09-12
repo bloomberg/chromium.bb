@@ -19,6 +19,7 @@ namespace quic {
 typedef uint16_t QuicPacketLength;
 typedef uint32_t QuicControlFrameId;
 typedef uint32_t QuicHeaderId;
+typedef uint32_t QuicMessageId;
 typedef uint32_t QuicStreamId;
 typedef uint64_t QuicByteCount;
 typedef uint64_t QuicConnectionId;
@@ -182,6 +183,7 @@ enum QuicFrameType : uint8_t {
   PATH_RESPONSE_FRAME,
   PATH_CHALLENGE_FRAME,
   STOP_SENDING_FRAME,
+  MESSAGE_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -215,6 +217,10 @@ enum QuicIetfFrameType : uint8_t {
   // whether the frame is a stream frame or not, and then examine each
   // bit specifically when/as needed.
   IETF_STREAM = 0x10,
+  // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
+  // stream frame some wiggle room.
+  IETF_EXTENSION_MESSAGE_NO_LENGTH = 0x20,
+  IETF_EXTENSION_MESSAGE = 0x21,
 };
 // Masks for the bits that indicate the frame is a Stream frame vs the
 // bits used as flags.
@@ -481,6 +487,35 @@ enum QuicPacketHeaderTypeFlags : uint8_t {
   FLAGS_KEY_PHASE_BIT = 1 << 6,
   // Bit 7: Indicates the header is long or short header.
   FLAGS_LONG_HEADER = 1 << 7,
+};
+
+enum MessageStatus {
+  MESSAGE_STATUS_SUCCESS,
+  MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED,  // Failed to send message because
+                                              // encryption is not established
+                                              // yet.
+  MESSAGE_STATUS_UNSUPPORTED,  // Failed to send message because MESSAGE frame
+                               // is not supported by the connection.
+  MESSAGE_STATUS_BLOCKED,      // Failed to send message because connection is
+                           // congestion control blocked or underlying socket is
+                           // write blocked.
+  MESSAGE_STATUS_TOO_LARGE,  // Failed to send message because the message is
+                             // too large to fit into a single packet.
+  MESSAGE_STATUS_INTERNAL_ERROR,  // Failed to send message because connection
+                                  // reaches an invalid state.
+};
+
+// Used to return the result of SendMessage calls
+struct QUIC_EXPORT_PRIVATE MessageResult {
+  MessageResult(MessageStatus status, QuicMessageId message_id);
+
+  bool operator==(const MessageResult& other) const {
+    return status == other.status && message_id == other.message_id;
+  }
+
+  MessageStatus status;
+  // Only valid when status is MESSAGE_STATUS_SUCCESS.
+  QuicMessageId message_id;
 };
 
 }  // namespace quic

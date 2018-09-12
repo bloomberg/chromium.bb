@@ -112,7 +112,9 @@ QuicSentPacketManager::QuicSentPacketManager(
       rtt_updated_(false),
       acked_packets_iter_(last_ack_frame_.packets.rbegin()),
       aggregate_acked_stream_frames_(
-          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames)) {
+          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames)),
+      fix_mark_for_loss_retransmission_(
+          GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission)) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -385,20 +387,26 @@ void QuicSentPacketManager::MarkForRetransmission(
   QuicTransmissionInfo* transmission_info =
       unacked_packets_.GetMutableTransmissionInfo(packet_number);
   // When session decides what to write, a previous RTO retransmission may cause
-  // connection close.
-  QUIC_BUG_IF(!unacked_packets_.HasRetransmittableFrames(*transmission_info) &&
-              (!session_decides_what_to_write() ||
-               transmission_type != RTO_RETRANSMISSION))
+  // connection close; packets without retransmittable frames can be marked for
+  // loss retransmissions.
+  QUIC_BUG_IF((transmission_type != LOSS_RETRANSMISSION &&
+               (!session_decides_what_to_write() ||
+                transmission_type != RTO_RETRANSMISSION)) &&
+              !unacked_packets_.HasRetransmittableFrames(*transmission_info))
       << "transmission_type: "
       << QuicUtils::TransmissionTypeToString(transmission_type);
   // Handshake packets should never be sent as probing retransmissions.
   DCHECK(!transmission_info->has_crypto_handshake ||
          transmission_type != PROBING_RETRANSMISSION);
   if (!RetransmissionLeavesBytesInFlight(transmission_type)) {
-    unacked_packets_.RemoveFromInFlight(packet_number);
+    unacked_packets_.RemoveFromInFlight(transmission_info);
   }
 
   if (!session_decides_what_to_write()) {
+    if (fix_mark_for_loss_retransmission_ &&
+        !unacked_packets_.HasRetransmittableFrames(*transmission_info)) {
+      return;
+    }
     if (!QuicContainsKey(pending_retransmissions_, packet_number)) {
       pending_retransmissions_[packet_number] = transmission_type;
     }
@@ -415,6 +423,7 @@ void QuicSentPacketManager::MarkForRetransmission(
 void QuicSentPacketManager::HandleRetransmission(
     TransmissionType transmission_type,
     QuicTransmissionInfo* transmission_info) {
+  DCHECK(session_decides_what_to_write());
   if (ShouldForceRetransmission(transmission_type)) {
     // TODO(fayang): Consider to make RTO and PROBING retransmission
     // strategies be configurable by applications. Today, TLP, RTO and PROBING
@@ -429,7 +438,8 @@ void QuicSentPacketManager::HandleRetransmission(
   }
 
   unacked_packets_.NotifyFramesLost(*transmission_info, transmission_type);
-  if (!unacked_packets_.fix_is_useful_for_retransmission()) {
+  if (!unacked_packets_.fix_is_useful_for_retransmission() ||
+      transmission_info->retransmittable_frames.empty()) {
     return;
   }
 
@@ -808,8 +818,12 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
                                     time);
     }
 
-    // TODO(ianswett): This could be optimized.
-    if (unacked_packets_.HasRetransmittableFrames(packet.packet_number)) {
+    if (fix_mark_for_loss_retransmission_ ||
+        unacked_packets_.HasRetransmittableFrames(packet.packet_number)) {
+      if (fix_mark_for_loss_retransmission_) {
+        QUIC_FLAG_COUNT(
+            quic_reloadable_flag_quic_fix_mark_for_loss_retransmission);
+      }
       MarkForRetransmission(packet.packet_number, LOSS_RETRANSMISSION);
     } else {
       // Since we will not retransmit this, we need to remove it from

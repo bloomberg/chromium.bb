@@ -1337,6 +1337,8 @@ component("net") {
       "third_party/quic/core/frames/quic_goaway_frame.h",
       "third_party/quic/core/frames/quic_max_stream_id_frame.cc",
       "third_party/quic/core/frames/quic_max_stream_id_frame.h",
+      "third_party/quic/core/frames/quic_message_frame.cc",
+      "third_party/quic/core/frames/quic_message_frame.h",
       "third_party/quic/core/frames/quic_mtu_discovery_frame.h",
       "third_party/quic/core/frames/quic_new_connection_id_frame.cc",
       "third_party/quic/core/frames/quic_new_connection_id_frame.h",

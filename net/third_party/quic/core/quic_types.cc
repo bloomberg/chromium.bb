@@ -47,4 +47,7 @@ std::ostream& operator<<(std::ostream& os, const WriteResult& s) {
   return os;
 }
 
+MessageResult::MessageResult(MessageStatus status, QuicMessageId message_id)
+    : status(status), message_id(message_id) {}
+
 }  // namespace quic

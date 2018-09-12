@@ -567,6 +567,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Latched value of quic_reloadable_flag_quic_aggregate_acked_stream_frames.
   const bool aggregate_acked_stream_frames_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_fix_mark_for_loss_retransmission.
+  const bool fix_mark_for_loss_retransmission_;
 };
 
 }  // namespace quic

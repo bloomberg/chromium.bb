@@ -160,6 +160,11 @@ bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
                                            offset, true, data_size);
 }
 
+bool QuicPacketCreator::HasRoomForMessageFrame(QuicByteCount length) {
+  return BytesFree() >= QuicFramer::GetMessageFrameSize(
+                            framer_->transport_version(), true, length);
+}
+
 // TODO(fkastenholz): this method should not use constant values for
 // the last-frame-in-packet and data-length parameters to
 // GetMinStreamFrameSize.  Proper values should be plumbed in from
@@ -418,9 +423,17 @@ bool QuicPacketCreator::HasPendingStreamFramesOfStream(QuicStreamId id) const {
 }
 
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
+  // If the last frame in the packet is a message frame, then it will expand to
+  // include the varint message length when a new frame is added.
+  const bool has_trailing_message_frame =
+      !queued_frames_.empty() && queued_frames_.back().type == MESSAGE_FRAME;
+  if (has_trailing_message_frame) {
+    return QuicDataWriter::GetVarInt62Len(
+        queued_frames_.back().message_frame->message_data.length());
+  }
   // If the last frame in the packet is a stream frame, then it will expand to
   // include the stream_length field when a new frame is added.
-  bool has_trailing_stream_frame =
+  const bool has_trailing_stream_frame =
       !queued_frames_.empty() && queued_frames_.back().type == STREAM_FRAME;
   if (!has_trailing_stream_frame) {
     return 0;
@@ -742,6 +755,20 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
 
 void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {
   long_header_type_ = type;
+}
+
+QuicPacketLength QuicPacketCreator::GetLargestMessagePayload() const {
+  if (framer_->transport_version() <= QUIC_VERSION_44) {
+    return 0;
+  }
+  const size_t packet_header_size = GetPacketHeaderSize(
+      framer_->transport_version(), GetDestinationConnectionIdLength(),
+      GetSourceConnectionIdLength(), IncludeVersionInHeader(),
+      IncludeNonceInPublicHeader(), GetPacketNumberLength());
+  // This is the largest possible message payload when the length field is
+  // omitted.
+  return max_plaintext_size_ -
+         std::min(max_plaintext_size_, packet_header_size + kQuicFrameTypeSize);
 }
 
 bool QuicPacketCreator::HasIetfLongHeader() const {

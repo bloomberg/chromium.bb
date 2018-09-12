@@ -110,6 +110,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection is going away according to the peer.
   virtual void OnGoAway(const QuicGoAwayFrame& frame) = 0;
 
+  // Called when |message| has been received.
+  virtual void OnMessageReceived(QuicStringPiece message) = 0;
+
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
   virtual void OnConnectionClosed(QuicErrorCode error,
@@ -254,6 +257,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when a BlockedFrame has been parsed.
   virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}
+
+  // Called when a MessageFrame has been parsed.
+  virtual void OnMessageFrame(const QuicMessageFrame& frame) {}
 
   // Called when a public reset packet has been received.
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
@@ -485,6 +491,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override;
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -712,6 +719,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Set long header type of next sending packets.
   void SetLongHeaderType(QuicLongHeaderType type);
+
+  // Tries to send |message| and returns the message status.
+  virtual MessageStatus SendMessage(QuicMessageId message_id,
+                                    QuicStringPiece message);
+
+  // Returns the largest payload that will fit into a single MESSAGE frame.
+  QuicPacketLength GetLargestMessagePayload() const;
 
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }

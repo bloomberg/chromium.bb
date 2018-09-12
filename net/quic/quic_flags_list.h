@@ -229,3 +229,12 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
           false)
+
+// If true, mark packets for loss retransmission even they do not contain
+// retransmittable frames.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_mark_for_loss_retransmission,
+          false)
+
+// If true, enable version 45.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_45, false)

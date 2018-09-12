@@ -1179,6 +1179,21 @@ bool QuicConnection::OnNewConnectionIdFrame(
   return true;
 }
 
+bool QuicConnection::OnMessageFrame(const QuicMessageFrame& frame) {
+  DCHECK(connected_);
+
+  // Since a message frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnMessageFrame(frame);
+  }
+  visitor_->OnMessageReceived(frame.message_data);
+  should_last_packet_instigate_acks_ = true;
+  return connected_;
+}
+
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DCHECK(connected_);
 
@@ -3203,6 +3218,27 @@ void QuicConnection::UpdateReleaseTimeIntoFuture() {
               GetQuicFlag(FLAGS_quic_max_pace_time_into_future_ms)),
           sent_packet_manager_.GetRttStats()->SmoothedOrInitialRtt() *
               GetQuicFlag(FLAGS_quic_pace_time_into_future_srtt_fraction)));
+}
+
+MessageStatus QuicConnection::SendMessage(QuicMessageId message_id,
+                                          QuicStringPiece message) {
+  if (transport_version() <= QUIC_VERSION_44) {
+    QUIC_BUG << "MESSAGE frame is not supported for version "
+             << transport_version();
+    return MESSAGE_STATUS_UNSUPPORTED;
+  }
+  if (message.length() > GetLargestMessagePayload()) {
+    return MESSAGE_STATUS_TOO_LARGE;
+  }
+  if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+    return MESSAGE_STATUS_BLOCKED;
+  }
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
+  return packet_generator_.AddMessageFrame(message_id, message);
+}
+
+QuicPacketLength QuicConnection::GetLargestMessagePayload() const {
+  return packet_generator_.GetLargestMessagePayload();
 }
 
 #undef ENDPOINT  // undef for jumbo builds

@@ -267,6 +267,10 @@ bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return true;
 }
 
+bool NoOpFramerVisitor::OnMessageFrame(const QuicMessageFrame& frame) {
+  return true;
+}
+
 bool NoOpFramerVisitor::IsValidStatelessResetToken(QuicUint128 token) const {
   return false;
 }

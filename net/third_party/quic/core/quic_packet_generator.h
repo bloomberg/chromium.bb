@@ -194,6 +194,13 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Allow/Disallow setting transmission type of next constructed packets.
   void SetCanSetTransmissionType(bool can_set_transmission_type);
 
+  // Tries to add a message frame containing |message| and returns the status.
+  MessageStatus AddMessageFrame(QuicMessageId message_id,
+                                QuicStringPiece message);
+
+  // Returns the largest payload that will fit into a single MESSAGE frame.
+  QuicPacketLength GetLargestMessagePayload() const;
+
   void set_debug_delegate(QuicPacketCreator::DebugDelegate* debug_delegate) {
     packet_creator_.set_debug_delegate(debug_delegate);
   }

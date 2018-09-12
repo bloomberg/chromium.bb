@@ -165,6 +165,9 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnNewConnectionIdFrame(
       const QuicNewConnectionIdFrame& frame) = 0;
 
+  // Called when a message frame has been parsed.
+  virtual bool OnMessageFrame(const QuicMessageFrame& frame) = 0;
+
   // Called when a packet has been completely processed.
   virtual void OnPacketComplete() = 0;
 
@@ -245,6 +248,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                       QuicStreamOffset offset,
                                       bool last_frame_in_packet,
                                       QuicPacketLength data_length);
+  static size_t GetMessageFrameSize(QuicTransportVersion version,
+                                    bool last_frame_in_packet,
+                                    QuicByteCount length);
   // Size in bytes of all ack frame fields without the missing packets or ack
   // blocks.
   static size_t GetMinAckFrameSize(
@@ -549,6 +555,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                 QuicWindowUpdateFrame* frame);
   bool ProcessBlockedFrame(QuicDataReader* reader, QuicBlockedFrame* frame);
   void ProcessPaddingFrame(QuicDataReader* reader, QuicPaddingFrame* frame);
+  bool ProcessMessageFrame(QuicDataReader* reader,
+                           bool no_message_length,
+                           QuicMessageFrame* frame);
 
   bool DecryptPayload(QuicDataReader* encrypted_reader,
                       const QuicPacketHeader& header,
@@ -646,6 +655,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                           QuicDataWriter* writer);
   bool AppendPaddingFrame(const QuicPaddingFrame& frame,
                           QuicDataWriter* writer);
+  bool AppendMessageFrameAndTypeByte(const QuicMessageFrame& frame,
+                                     bool last_frame_in_packet,
+                                     QuicDataWriter* writer);
 
   // IETF frame processing methods.
   bool ProcessIetfStreamFrame(QuicDataReader* reader,

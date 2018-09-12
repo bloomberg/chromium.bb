@@ -125,6 +125,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnPingFrame(const QuicPingFrame& frame) override { return true; }
 
+  bool OnMessageFrame(const QuicMessageFrame& frame) override { return true; }
+
   void OnPacketComplete() override {}
 
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {

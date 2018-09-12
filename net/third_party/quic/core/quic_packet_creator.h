@@ -103,6 +103,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
                              QuicStreamOffset offset,
                              size_t data_size);
 
+  // Returns true if current open packet can accomoodate a message frame of
+  // |length|.
+  bool HasRoomForMessageFrame(QuicByteCount length);
+
   // Re-serializes frames with the original packet's packet number length.
   // Used for retransmitting packets to ensure they aren't too long.
   void ReserializeAllFrames(const QuicPendingRetransmission& retransmission,
@@ -214,6 +218,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Sets long header type of next constructed packets.
   void SetLongHeaderType(QuicLongHeaderType type);
+
+  // Returns the largest payload that will fit into a single MESSAGE frame.
+  QuicPacketLength GetLargestMessagePayload() const;
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;
