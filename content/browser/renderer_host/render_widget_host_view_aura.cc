@@ -755,9 +755,11 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(bool editable) {
     return;
   auto* controller = input_method->GetInputMethodKeyboardController();
   if (editable && host()->GetView() && host()->delegate()) {
-    keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
-    if (!controller->DisplayVirtualKeyboard())
-      keyboard_observer_.reset(nullptr);
+    keyboard_observer_.reset(nullptr);
+    if (last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH &&
+        controller->DisplayVirtualKeyboard()) {
+      keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
+    }
     virtual_keyboard_requested_ = keyboard_observer_.get();
   } else {
     virtual_keyboard_requested_ = false;
@@ -2349,9 +2351,16 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   const TextInputState* state = text_input_manager_->GetTextInputState();
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
+    bool show_virtual_keyboard = true;
+#if defined(OS_WIN)
+    show_virtual_keyboard =
+        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
+#endif
     if (state->show_ime_if_needed &&
-        GetInputMethod()->GetTextInputClient() == this)
+        GetInputMethod()->GetTextInputClient() == this &&
+        show_virtual_keyboard) {
       GetInputMethod()->ShowVirtualKeyboardIfEnabled();
+    }
     // Ensure that accessibility events are fired when the selection location
     // moves from UI back to content.
     text_input_manager->NotifySelectionBoundsChanged(updated_view);

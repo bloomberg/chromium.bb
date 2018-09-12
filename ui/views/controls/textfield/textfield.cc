@@ -662,7 +662,9 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())) {
     if (!had_focus)
       RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
+#if !defined(OS_WIN)
     ShowVirtualKeyboardIfEnabled();
+#endif
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -739,10 +741,16 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
+  bool show_virtual_keyboard = true;
+#if defined(OS_WIN)
+  show_virtual_keyboard = event->details().primary_pointer_type() ==
+                          ui::EventPointerType::POINTER_TYPE_TOUCH;
+#endif
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       RequestFocusWithPointer(event->details().primary_pointer_type());
-      ShowVirtualKeyboardIfEnabled();
+      if (show_virtual_keyboard)
+        ShowVirtualKeyboardIfEnabled();
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:

@@ -1154,6 +1154,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   // Set |TextInputState.show_ime_if_needed| to true. Expect IME.
   sender.SetShowVirtualKeyboardIfEnabled(true);
+#if defined(OS_WIN)
+  sender.SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
+#endif
   EXPECT_TRUE(send_and_check_show_ime());
 
   // Send the same message. Expect IME (no change).
@@ -1170,6 +1173,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   // Set |TextInputState.show_ime_if_needed|. Expect IME.
   sender.SetShowVirtualKeyboardIfEnabled(true);
   EXPECT_TRUE(send_and_check_show_ime());
+
+#if defined(OS_WIN)
+  // Set input type to mouse. Expect no IME.
+  sender.SetLastPointerType(ui::EventPointerType::POINTER_TYPE_MOUSE);
+  EXPECT_FALSE(send_and_check_show_ime());
+#endif
 
   // Set |TextInputState.type| to ui::TEXT_INPUT_TYPE_NONE. Expect no IME.
   sender.SetType(ui::TEXT_INPUT_TYPE_NONE);

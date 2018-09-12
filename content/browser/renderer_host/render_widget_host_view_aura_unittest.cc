@@ -6781,11 +6781,26 @@ class RenderWidgetHostViewAuraKeyboardTest
 };
 
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
+  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
   parent_view_->FocusedNodeTouched(true);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   // Detach the RenderWidgetHostViewAura from the IME.
   parent_view_->DetachFromInputMethod();
+  EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 0u);
+}
+
+TEST_F(RenderWidgetHostViewAuraKeyboardTest,
+       KeyboardObserverForOnlyTouchInput) {
+  // Show virtual keyboard for touch inputs.
+  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
+  parent_view_->FocusedNodeTouched(true);
+  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+  // Do not show virtual keyboard for mouse inputs.
+  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_MOUSE);
+  parent_view_->FocusedNodeTouched(true);
   EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
