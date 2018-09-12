@@ -92,7 +92,7 @@
   var timelineController = PerformanceTestRunner.createTimelineController();
   timelineController._addCpuProfile(SDK.targetManager.mainTarget().id(), cpuProfile);
   timelineController.traceEventsCollected(rawTraceEvents);
-  timelineController._finalizeTrace();
+  await timelineController._finalizeTrace();
   var events = UI.panels.timeline._performanceModel.timelineModel().inspectedTargetEvents();
   events.forEach(
       e => TestRunner.addResult(
