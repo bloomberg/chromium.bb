@@ -125,7 +125,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   Controller* controller_;
 };
 
-TEST_F(ControllerTest, FetchAndRunScripts) {
+// Temporarily disabled because of http://crbug/882901
+TEST_F(ControllerTest, DISABLED_FetchAndRunScripts) {
   // Going to the URL triggers a whole flow:
   // 1. loading scripts
   SupportsScriptResponseProto script_response;
@@ -159,7 +160,8 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
-TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
+// Temporarily disabled because of http://crbug/882901
+TEST_F(ControllerTest, DISABLED_RefreshScriptWhenDomainChanges) {
   EXPECT_CALL(*mock_service_,
               OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _))
       .WillOnce(RunOnceCallback<1>(true, ""));
