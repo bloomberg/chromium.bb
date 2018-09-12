@@ -6,6 +6,7 @@
 #define BASE_TASK_TASK_SCHEDULER_DELAYED_TASK_MANAGER_H_
 
 #include <memory>
+#include <queue>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
+#include "base/task/task_scheduler/task.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 
@@ -47,29 +49,56 @@ class BASE_EXPORT DelayedTaskManager {
   void Start(scoped_refptr<TaskRunner> service_thread_task_runner);
 
   // Schedules a call to |post_task_now_callback| with |task| as argument when
-  // |task| is ripe for execution and Start() has been called.
+  // |task| is ripe for execution.
   void AddDelayedTask(Task task, PostTaskNowCallback post_task_now_callback);
 
  private:
-  // Schedules a call to |post_task_now_callback| with |task| as argument when
-  // |delay| expires. Start() must have been called before this.
-  void AddDelayedTaskNow(Task task,
-                         TimeDelta delay,
-                         PostTaskNowCallback post_task_now_callback);
+  using DelayedTask = std::pair<Task, PostTaskNowCallback>;
+
+  // Pop and post all the ripe tasks in the delayed task queue.
+  void ProcessRipeTasks();
+
+  // Return the run time of the delayed task that needs to be processed the
+  // soonest.
+  const TimeTicks GetNextDelayedTaskRunTimeLockRequired();
+
+  // Return the run time of the soonest scheduled `ProcessRipeTasks` call.
+  const TimeTicks GetNextProcessRipeTaskTimeLockRequired();
+
+  // Schedule the ProcessRipeTasks method on the service thread to be executed
+  // in the given |next_delayed_task_run_time|.
+  void ScheduleProcessRipeTasksOnServiceThread(
+      TimeTicks next_delayed_task_run_time);
+
+  const RepeatingClosure process_ripe_tasks_closure_;
 
   const std::unique_ptr<const TickClock> tick_clock_;
 
-  AtomicFlag started_;
-
-  // Synchronizes access to all members below before |started_| is set. Once
-  // |started_| is set:
-  // - |service_thread_task_runner| doest not change, so it can be read without
-  //   holding the lock.
-  // - |tasks_added_before_start_| isn't accessed anymore.
-  SchedulerLock lock_;
-
   scoped_refptr<TaskRunner> service_thread_task_runner_;
-  std::vector<std::pair<Task, PostTaskNowCallback>> tasks_added_before_start_;
+
+  struct TaskDelayedRuntimeComparator {
+    inline bool operator()(const DelayedTask& lhs,
+                           const DelayedTask& rhs) const {
+      return lhs.first.delayed_run_time > rhs.first.delayed_run_time;
+    }
+  };
+
+  std::priority_queue<DelayedTask,
+                      std::vector<DelayedTask>,
+                      TaskDelayedRuntimeComparator>
+      delayed_task_queue_;
+
+  std::
+      priority_queue<TimeTicks, std::vector<TimeTicks>, std::greater<TimeTicks>>
+          process_ripe_tasks_time_queue_;
+
+  // Synchronizes access to |delayed_task_queue_|,
+  // |process_ripe_task_time_queue_| and the setting of
+  // |service_thread_task_runner|. Once |service_thread_task_runner_| is set,
+  // it is never modified. It is therefore safe to access
+  // |service_thread_task_runner_| without synchronization once it is observed
+  // that it is non-null.
+  SchedulerLock queue_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedTaskManager);
 };
