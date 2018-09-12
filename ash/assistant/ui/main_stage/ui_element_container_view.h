@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
-#include "ash/assistant/ui/assistant_scroll_view.h"
+#include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
 #include "ui/views/view_observer.h"
 

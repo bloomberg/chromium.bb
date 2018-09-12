@@ -11,7 +11,7 @@
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/assistant_scroll_view.h"
+#include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
