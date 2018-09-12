@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_
 
+#include "cc/layers/layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -15,6 +16,8 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
+
+using CompositorStickyConstraint = cc::LayerStickyPositionConstraint;
 
 // A transform (e.g., created by css "transform" or "perspective", or for
 // internal positioning such as paint offset or scrolling) along with a
@@ -50,6 +53,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositorElementId compositor_element_id;
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
     bool affected_by_outer_viewport_bounds_delta = false;
+    CompositorStickyConstraint sticky_constraint;
 
     bool operator==(const State& o) const {
       return matrix == o.matrix && origin == o.origin &&
@@ -60,7 +64,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
              compositor_element_id == o.compositor_element_id &&
              scroll == o.scroll &&
              affected_by_outer_viewport_bounds_delta ==
-                 o.affected_by_outer_viewport_bounds_delta;
+                 o.affected_by_outer_viewport_bounds_delta &&
+             sticky_constraint == o.sticky_constraint;
     }
   };
 
@@ -111,6 +116,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // screen in the presence of URL bar movement.
   bool IsAffectedByOuterViewportBoundsDelta() const {
     return state_.affected_by_outer_viewport_bounds_delta;
+  }
+
+  const cc::LayerStickyPositionConstraint& GetStickyConstraint() const {
+    return state_.sticky_constraint;
   }
 
   // If this is a scroll offset translation (i.e., has an associated scroll

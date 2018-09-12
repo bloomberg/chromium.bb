@@ -6043,4 +6043,107 @@ TEST_P(PaintPropertyTreeBuilderTest, SkipEmptyClipFragments) {
       flow_thread->FirstFragment().NextFragment()->LogicalTopInFlowThread());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
+  // This test verifies the property tree builder set up sticky constraint
+  // chain properly in case of nested sticky positioned elements.
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="overflow:scroll; width:300px; height:200px;">
+      <div id="outer" style="position:sticky; top:10px;">
+        <div style="height:300px;">
+          <span id="middle" style="position:sticky; top:25px;">
+            <span id="inner" style="position:sticky; top:45px;"></span>
+          </span>
+        </div>
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+  GetDocument().getElementById("scroller")->setScrollTop(50);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* outer_properties = PaintPropertiesForElement("outer");
+  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
+            outer_properties->StickyTranslation()->Matrix());
+  EXPECT_TRUE(
+      outer_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(CompositorElementId(), outer_properties->StickyTranslation()
+                                       ->GetStickyConstraint()
+                                       .nearest_element_shifting_sticky_box);
+  EXPECT_EQ(CompositorElementId(),
+            outer_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                .nearest_element_shifting_containing_block);
+
+  const auto* middle_properties = PaintPropertiesForElement("middle");
+  ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
+            middle_properties->StickyTranslation()->Matrix());
+  EXPECT_TRUE(
+      middle_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(CompositorElementId(), middle_properties->StickyTranslation()
+                                       ->GetStickyConstraint()
+                                       .nearest_element_shifting_sticky_box);
+  EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
+            middle_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                .nearest_element_shifting_containing_block);
+
+  const auto* inner_properties = PaintPropertiesForElement("inner");
+  ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
+            inner_properties->StickyTranslation()->Matrix());
+  EXPECT_TRUE(
+      inner_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+  EXPECT_EQ(middle_properties->StickyTranslation()->GetCompositorElementId(),
+            inner_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                .nearest_element_shifting_sticky_box);
+  EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
+            inner_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                .nearest_element_shifting_containing_block);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
+  // This test verifies the property tree builder applies sticky offset
+  // correctly when the clipping container cannot be scrolled, and
+  // does not emit sticky constraints.
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="overflow:hidden; width:300px; height:200px;">
+      <div id="outer" style="position:sticky; top:10px;">
+        <div style="height:300px;">
+          <span id="middle" style="position:sticky; top:25px;">
+            <span id="inner" style="position:sticky; top:45px;"></span>
+          </span>
+        </div>
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+  GetDocument().getElementById("scroller")->setScrollTop(50);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* outer_properties = PaintPropertiesForElement("outer");
+  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
+            outer_properties->StickyTranslation()->Matrix());
+  EXPECT_FALSE(
+      outer_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+
+  const auto* middle_properties = PaintPropertiesForElement("middle");
+  ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
+            middle_properties->StickyTranslation()->Matrix());
+  EXPECT_FALSE(
+      middle_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+
+  const auto* inner_properties = PaintPropertiesForElement("inner");
+  ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
+            inner_properties->StickyTranslation()->Matrix());
+  EXPECT_FALSE(
+      inner_properties->StickyTranslation()->GetStickyConstraint().is_sticky);
+}
+
 }  // namespace blink

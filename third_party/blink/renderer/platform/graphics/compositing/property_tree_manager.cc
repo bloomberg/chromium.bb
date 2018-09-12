@@ -174,8 +174,14 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   FloatPoint3D origin = transform_node->Origin();
   compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
                                                   -origin.Z());
-  compositor_node.local.matrix() =
-      TransformationMatrix::ToSkMatrix44(transform_node->Matrix());
+  // The sticky offset on the blink transform node is pre-computed and stored
+  // to the local matrix. Cc applies sticky offset dynamically on top of the
+  // local matrix. We should not set the local matrix on cc node if it is a
+  // sticky node because the sticky offset would be applied twice otherwise.
+  if (!transform_node->GetStickyConstraint().is_sticky) {
+    compositor_node.local.matrix() =
+        TransformationMatrix::ToSkMatrix44(transform_node->Matrix());
+  }
   compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
                                                    origin.Z());
   compositor_node.needs_local_transform_update = true;
@@ -186,6 +192,35 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (transform_node->IsAffectedByOuterViewportBoundsDelta()) {
     compositor_node.moved_by_outer_viewport_bounds_delta_y = true;
     GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
+  }
+
+  if (transform_node->GetStickyConstraint().is_sticky) {
+    cc::StickyPositionNodeData* sticky_data =
+        GetTransformTree().StickyPositionData(id);
+    sticky_data->constraints = transform_node->GetStickyConstraint();
+    // TODO(pdr): This could be a performance issue because it crawls up the
+    // transform tree for each pending layer. If this is on profiles, we should
+    // cache a lookup of transform node to scroll translation transform node.
+    const auto& scroll_ancestor =
+        transform_node->NearestScrollTranslationNode();
+    sticky_data->scroll_ancestor = EnsureCompositorScrollNode(&scroll_ancestor);
+    if (scroll_ancestor.ScrollNode()->ScrollsOuterViewport())
+      GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
+    if (CompositorElementId shifting_sticky_box_element_id =
+            sticky_data->constraints.nearest_element_shifting_sticky_box) {
+      sticky_data->nearest_node_shifting_sticky_box =
+          GetTransformTree()
+              .FindNodeFromElementId(shifting_sticky_box_element_id)
+              ->id;
+    }
+    if (CompositorElementId shifting_containing_block_element_id =
+            sticky_data->constraints
+                .nearest_element_shifting_containing_block) {
+      sticky_data->nearest_node_shifting_containing_block =
+          GetTransformTree()
+              .FindNodeFromElementId(shifting_containing_block_element_id)
+              ->id;
+    }
   }
 
   CompositorElementId compositor_element_id =
