@@ -5450,7 +5450,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Exit fullscreen if needed.
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
-      ->ResetModel();
+      ->ExitFullscreen();
   const CGFloat kAnimatedViewSize = 50;
   BackgroundTabAnimationView* animatedView = [[BackgroundTabAnimationView alloc]
       initWithFrame:CGRectMake(0, 0, kAnimatedViewSize, kAnimatedViewSize)];

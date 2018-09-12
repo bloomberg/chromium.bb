@@ -36,15 +36,12 @@ void FullscreenMediator::SetWebState(web::WebState* webState) {
   resizer_.webState = webState;
 }
 
-void FullscreenMediator::ScrollToTop() {
-  AnimateWithStyle(FullscreenAnimatorStyle::EXIT_FULLSCREEN);
+void FullscreenMediator::EnterFullscreen() {
+  if (model_->enabled())
+    AnimateWithStyle(FullscreenAnimatorStyle::ENTER_FULLSCREEN);
 }
 
-void FullscreenMediator::WillEnterForeground() {
-  AnimateWithStyle(FullscreenAnimatorStyle::EXIT_FULLSCREEN);
-}
-
-void FullscreenMediator::AnimateModelReset() {
+void FullscreenMediator::ExitFullscreen() {
   // Instruct the model to ignore the remainder of the current scroll when
   // starting this animator.  This prevents the toolbar from immediately being
   // hidden if AnimateModelReset() is called while a scroll view is
@@ -95,7 +92,7 @@ void FullscreenMediator::FullscreenModelScrollEventStarted(
   if (model_->is_scrolled_to_bottom() &&
       AreCGFloatsEqual(model_->progress(), 0.0) &&
       model_->can_collapse_toolbar()) {
-    AnimateModelReset();
+    ExitFullscreen();
   }
 }
 

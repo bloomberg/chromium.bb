@@ -56,8 +56,8 @@ void FullscreenWebStateListObserver::WebStateInsertedAt(
     int index,
     bool activating) {
   DCHECK_EQ(web_state_list_, web_state_list);
-  if (activating && controller_->IsEnabled())
-    controller_->ResetModel();
+  if (activating)
+    controller_->ExitFullscreen();
 }
 
 void FullscreenWebStateListObserver::WebStateReplacedAt(

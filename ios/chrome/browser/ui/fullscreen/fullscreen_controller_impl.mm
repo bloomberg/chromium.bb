@@ -85,8 +85,12 @@ CGFloat FullscreenControllerImpl::GetProgress() const {
   return model_.progress();
 }
 
-void FullscreenControllerImpl::ResetModel() {
-  mediator_.AnimateModelReset();
+void FullscreenControllerImpl::EnterFullscreen() {
+  mediator_.EnterFullscreen();
+}
+
+void FullscreenControllerImpl::ExitFullscreen() {
+  mediator_.ExitFullscreen();
 }
 
 void FullscreenControllerImpl::Shutdown() {

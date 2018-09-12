@@ -171,7 +171,7 @@
 - (void)exitFullscreen {
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(self.browserState)
-      ->ResetModel();
+      ->ExitFullscreen();
 }
 
 #pragma mark - FakeboxFocuser
