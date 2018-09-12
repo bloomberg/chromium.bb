@@ -1747,7 +1747,7 @@ void av1_fwd_txfm2d_16x8_sse4_1(const int16_t *input, int32_t *coeff,
 
   for (int i = 0; i < 2; i++) {
     transpose_8x8(out + i * 16, in);
-    av1_round_shift_rect_array_32_sse4_1(in, in, 16, -shift[2]);
+    av1_round_shift_rect_array_32_sse4_1(in, in, 16, -shift[2], NewSqrt2);
     write_buffer_16x8(in, coeff + i * 8, 16);
   }
 
@@ -1775,7 +1775,7 @@ void av1_fwd_txfm2d_8x16_sse4_1(const int16_t *input, int32_t *coeff,
   for (int i = 0; i < 2; i++) {
     row_txfm(out + i * 16, out, bit, 0);
     transpose_8x8(out, in);
-    av1_round_shift_rect_array_32_sse4_1(in, in, 16, -shift[2]);
+    av1_round_shift_rect_array_32_sse4_1(in, in, 16, -shift[2], NewSqrt2);
     write_buffer_8x8(in, coeff + i * 64);
   }
 
