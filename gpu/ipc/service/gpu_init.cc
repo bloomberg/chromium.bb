@@ -365,12 +365,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-#if defined(OS_CHROMEOS)
-  params.using_mojo =
-      features::IsMultiProcessMash() || features::IsOzoneDrmMojo();
-#else
   params.using_mojo = features::IsOzoneDrmMojo();
-#endif
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
