@@ -97,16 +97,9 @@ ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
-  // |info->options->script_type| is never accessed anywhere, so just set it to
-  // kClassic.
-  // TODO(asamidoi, nhiroki): Remove |options| from
-  // ServiceWorkerRegistrationObjectInfo, since |script_type| is a
-  // non-per-registration property.
-  blink::mojom::ScriptType script_type = blink::mojom::ScriptType::kClassic;
-
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
-      registration_->pattern(), script_type, registration_->update_via_cache());
+      registration_->pattern(), registration_->update_via_cache());
   info->registration_id = registration_->id();
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   info->request = mojo::MakeRequest(&remote_registration_);

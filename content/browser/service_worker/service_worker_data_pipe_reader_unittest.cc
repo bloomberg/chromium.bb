@@ -86,8 +86,7 @@ class ServiceWorkerDataPipeReaderTest
     registration_ = new ServiceWorkerRegistration(
         options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_.get(), GURL("https://example.com/service_worker.js"),
-        blink::mojom::ScriptType::kClassic, 1L,
+        registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(

@@ -307,8 +307,8 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
       options, 1l /* dummy registration id */, context()->AsWeakPtr());
 
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-      registration.get(), script_url, blink::mojom::ScriptType::kClassic,
-      2l /* dummy version id */, context()->AsWeakPtr());
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
 
   ServiceWorkerRemoteProviderEndpoint endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host =
@@ -341,8 +341,8 @@ TEST_F(ServiceWorkerContextTest, VersionActivatedObserver) {
       options, 1l /* dummy registration id */, context()->AsWeakPtr());
 
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-      registration.get(), script_url, blink::mojom::ScriptType::kClassic,
-      2l /* dummy version id */, context()->AsWeakPtr());
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
 
   TestServiceWorkerContextObserver observer(context_wrapper());
 
@@ -368,8 +368,8 @@ TEST_F(ServiceWorkerContextTest, VersionRedundantObserver) {
       options, 1l /* dummy registration id */, context()->AsWeakPtr());
 
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-      registration.get(), script_url, blink::mojom::ScriptType::kClassic,
-      2l /* dummy version id */, context()->AsWeakPtr());
+      registration.get(), script_url, 2l /* dummy version id */,
+      context()->AsWeakPtr());
 
   TestServiceWorkerContextObserver observer(context_wrapper());
 
@@ -850,8 +850,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration.get(),
           GURL("https://another-origin.example.net/test/script_url"),
-          blink::mojom::ScriptType::kClassic, 1L /* version_id */,
-          helper_->context()->AsWeakPtr());
+          1L /* version_id */, helper_->context()->AsWeakPtr());
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host4 =
       CreateProviderHostForServiceWorkerContext(

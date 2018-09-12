@@ -1537,11 +1537,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (registration)
     return registration;
 
-  blink::mojom::ServiceWorkerRegistrationOptions options(
-      data.scope,
-      // TODO(crbug.com/824647): Add script_type attribute to
-      // ServiceWorkerDatabase::RegistrationData
-      blink::mojom::ScriptType::kClassic, data.update_via_cache);
+  blink::mojom::ServiceWorkerRegistrationOptions options(data.scope,
+                                                         data.update_via_cache);
   registration =
       new ServiceWorkerRegistration(options, data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
@@ -1554,10 +1551,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
       context_->GetLiveVersion(data.version_id);
   if (!version) {
     version = new ServiceWorkerVersion(
-        registration.get(), data.script,
-        // TODO(crbug.com/824647): Replace data.script_type after add worker
-        // type attribute to ServiceWorkerDatabase::RegistrationData
-        blink::mojom::ScriptType::kClassic, data.version_id, context_);
+        registration.get(), data.script, data.version_id, context_);
     version->set_fetch_handler_existence(
         data.has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS

@@ -41,7 +41,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       job_type_(REGISTRATION_JOB),
       pattern_(options.scope),
       script_url_(script_url),
-      worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -60,12 +59,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     : context_(context),
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
-      // TODO(crbug.com/824647): Change |worker_script_type_| based on the
-      // current version's type. This constructor is called when ServiceWorker
-      // scripts have already been installed. |worker_script_type_| will be set
-      // in ContinueWithUpdate().
-      // (https://w3c.github.io/ServiceWorker/#soft-update-algorithm)
-      worker_script_type_(blink::mojom::ScriptType::kClassic),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -337,8 +330,8 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
     return;
   }
 
-  blink::mojom::ServiceWorkerRegistrationOptions options(
-      pattern_, worker_script_type_, update_via_cache_);
+  blink::mojom::ServiceWorkerRegistrationOptions options(pattern_,
+                                                         update_via_cache_);
   set_registration(
       new ServiceWorkerRegistration(options, registration_id, context_));
   AddRegistrationToMatchingProviderHosts(registration());
@@ -399,8 +392,8 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
   // "Let worker be a new ServiceWorker object..." and start
   // the worker.
-  set_new_version(new ServiceWorkerVersion(
-      registration(), script_url_, worker_script_type_, version_id, context_));
+  set_new_version(new ServiceWorkerVersion(registration(), script_url_,
+                                           version_id, context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
   if (registration()->has_installed_version() && !skip_script_comparison_) {
     new_version()->SetToPauseAfterDownload(

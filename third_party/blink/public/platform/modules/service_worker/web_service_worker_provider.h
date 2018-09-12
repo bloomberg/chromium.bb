@@ -108,7 +108,6 @@ class WebServiceWorkerProvider {
   virtual void RegisterServiceWorker(
       const WebURL& pattern,
       const WebURL& script_url,
-      blink::mojom::ScriptType script_type,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) {}
   // For ServiceWorkerContainer#getRegistration(). Requests the embedder to
