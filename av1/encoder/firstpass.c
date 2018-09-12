@@ -1585,6 +1585,12 @@ void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
             gf_group->arf_src_offset[i], gf_group->arf_pos_in_gf[i],
             gf_group->arf_update_idx[i], gf_group->pyramid_level[i]);
   }
+
+  fprintf(fid, "number of nodes in each level: \n");
+  for (int i = 0; i < MAX_PYRAMID_LVL; ++i) {
+    fprintf(fid, "lvl %d: %d ", i, gf_group->pyramid_lvl_nodes[i]);
+  }
+  fprintf(fid, "\n");
   fclose(fid);
 }
 #endif  // CHCEK_GF_PARAMETER
@@ -1612,7 +1618,8 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
       gf_group->arf_src_offset[*frame_ind] = 0;
       gf_group->arf_pos_in_gf[*frame_ind] = 0;
       gf_group->arf_update_idx[*frame_ind] = arf_ind;
-      gf_group->pyramid_level[*frame_ind] = level;
+      gf_group->pyramid_level[*frame_ind] = 0;
+      ++gf_group->pyramid_lvl_nodes[0];
       ++(*frame_ind);
     }
   } else {
@@ -1624,6 +1631,7 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
     gf_group->arf_pos_in_gf[*frame_ind] = 0;
     gf_group->arf_update_idx[*frame_ind] = 1;  // mark all internal ARF 1
     gf_group->pyramid_level[*frame_ind] = level;
+    ++gf_group->pyramid_lvl_nodes[level];
     ++(*frame_ind);
 
     // set parameters for frames displayed before this frame
@@ -1654,6 +1662,12 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
                                               const int gf_interval) {
   int frame_index = 0;
   gf_group->pyramid_height = get_pyramid_height(gf_interval);
+
+  assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL);
+
+  for (int lvl = 0; lvl < MAX_PYRAMID_LVL; ++lvl) {
+    gf_group->pyramid_lvl_nodes[lvl] = 0;
+  }
 
   // At the beginning of each GF group it will be a key or overlay frame,
   gf_group->update_type[frame_index] = OVERLAY_UPDATE;
@@ -2113,6 +2127,18 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   gf_group->brf_src_offset[frame_index] = 0;
 }
 
+#if USE_SYMM_MULTI_LAYER
+#define LEAF_REDUCTION_FACTOR 0.75f
+#define LVL_3_BOOST_FACTOR 0.8f
+#define LVL_2_BOOST_FACTOR 0.3f
+
+static float_t lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
+  { 1, 0, 0 },
+  { LVL_3_BOOST_FACTOR, 0, 0 },  // Leaking budget works better
+  { LVL_3_BOOST_FACTOR, (1 - LVL_3_BOOST_FACTOR) * LVL_2_BOOST_FACTOR,
+    (1 - LVL_3_BOOST_FACTOR) * (1 - LVL_2_BOOST_FACTOR) }
+};
+#endif  // USE_SYMM_MULTI_LAYER
 static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
                                    double group_error, int gf_arf_bits) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -2201,15 +2227,25 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #if USE_SYMM_MULTI_LAYER
     } else if (cpi->new_bwdref_update_rule &&
                gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
+      assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
+             gf_group->pyramid_height >= 0 &&
+             "non-valid height for a pyramid structure");
+
       int arf_pos = gf_group->arf_pos_in_gf[frame_index];
       gf_group->bit_allocation[frame_index] = 0;
 
       gf_group->bit_allocation[arf_pos] = target_frame_size;
 #if MULTI_LVL_BOOST_VBR_CQ
-      if (gf_group->pyramid_level[arf_pos] == (gf_group->pyramid_height - 1))
-        gf_group->bit_allocation[arf_pos] += target_frame_size;
-      else
-        gf_group->bit_allocation[arf_pos] += (target_frame_size >> 1);
+      const int pyr_h = gf_group->pyramid_height - 2;
+      const int this_lvl = gf_group->pyramid_level[arf_pos];
+      const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
+
+      const float_t budget =
+          LEAF_REDUCTION_FACTOR * gf_group->pyramid_lvl_nodes[0];
+      const float_t lvl_boost = budget * lvl_budget_factor[pyr_h][dist2top] /
+                                gf_group->pyramid_lvl_nodes[this_lvl];
+
+      gf_group->bit_allocation[arf_pos] += (int)(target_frame_size * lvl_boost);
 #endif  // MULTI_LVL_BOOST_VBR_CQ
 #endif  // USE_SYMM_MULTI_LAYER
     } else {
@@ -2217,9 +2253,12 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
 #if MULTI_LVL_BOOST_VBR_CQ
-      if (cpi->new_bwdref_update_rule)
-        gf_group->bit_allocation[frame_index] -= (target_frame_size >> 1);
-#endif
+      if (cpi->new_bwdref_update_rule) {
+        float_t reduced_factor = LEAF_REDUCTION_FACTOR;
+        gf_group->bit_allocation[frame_index] -=
+            (int)(target_frame_size * reduced_factor);
+      }
+#endif  // MULTI_LVL_BOOST_VBR_CQ
     }
 
     ++frame_index;

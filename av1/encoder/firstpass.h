@@ -118,6 +118,7 @@ typedef struct {
   unsigned char arf_pos_in_gf[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char pyramid_level[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char pyramid_height;
+  unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
 #endif
   unsigned char brf_src_offset[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char bidir_pred_enabled[(MAX_LAG_BUFFERS * 2) + 1];
