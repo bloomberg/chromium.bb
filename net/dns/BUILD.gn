@@ -353,7 +353,6 @@ if (enable_net_mojo) {
     deps = [
       "//base",
       "//net",
-      "//net:net_with_v8",
     ]
 
     public_deps = [

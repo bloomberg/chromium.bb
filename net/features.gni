@@ -42,5 +42,5 @@ declare_args() {
 }
 
 declare_args() {
-  enable_net_mojo = !is_ios && !is_proto_quic
+  enable_net_mojo = !is_proto_quic
 }

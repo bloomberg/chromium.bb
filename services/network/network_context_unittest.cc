@@ -3748,13 +3748,6 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
 
   EXPECT_EQ(0u, request_errors.size());
 
-// TODO(https://crbug.com/881124): Mocking proxy resolution doesn't work
-//                                 on iOS.
-#if defined(OS_IOS)
-  if (pac_errors.empty())
-    return;
-#endif
-
   ASSERT_EQ(1u, pac_errors.size());
   EXPECT_EQ(pac_errors[0].line, 42);
   EXPECT_EQ(pac_errors[0].details,
