@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_ASSISTANT_SCROLL_VIEW_H_
-#define ASH_ASSISTANT_UI_ASSISTANT_SCROLL_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_BASE_ASSISTANT_SCROLL_VIEW_H_
+#define ASH_ASSISTANT_UI_BASE_ASSISTANT_SCROLL_VIEW_H_
 
 #include "base/macros.h"
 #include "ui/views/controls/scroll_view.h"
@@ -41,4 +41,4 @@ class AssistantScrollView : public views::ScrollView, views::ViewObserver {
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_ASSISTANT_SCROLL_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_BASE_ASSISTANT_SCROLL_VIEW_H_
