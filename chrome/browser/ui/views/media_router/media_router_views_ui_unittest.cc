@@ -28,6 +28,7 @@ namespace {
 
 constexpr char kPseudoSinkId[] = "pseudo:sink";
 constexpr char kRouteId[] = "route1";
+constexpr char kSinkDescription[] = "description";
 constexpr char kSinkId[] = "sink1";
 constexpr char kSinkName[] = "sink name";
 constexpr char kSourceId[] = "source1";
@@ -120,6 +121,24 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
 
   EXPECT_CALL(observer, OnControllerInvalidated());
   ui_.reset();
+}
+
+TEST_F(MediaRouterViewsUITest, SinkFriendlyName) {
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
+  sink.set_description(kSinkDescription);
+  MediaSinkWithCastModes sink_with_cast_modes(sink);
+  const char* separator = u8" \u2010 ";
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(Invoke([&](const CastDialogModel& model) {
+        EXPECT_EQ(base::UTF8ToUTF16(sink.name() + separator +
+                                    sink.description().value()),
+                  model.media_sinks()[0].friendly_name);
+      }));
+  ui_->OnResultsUpdated({sink_with_cast_modes});
+  ui_->RemoveObserver(&observer);
 }
 
 TEST_F(MediaRouterViewsUITest, StartCasting) {
