@@ -12,13 +12,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_restrictions.h"
+#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/image_util/image_util.h"
-#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,32 +45,28 @@
   return self;
 }
 
-- (void)saveImageAtURL:(const GURL&)url
-              referrer:(const web::Referrer&)referrer
-              webState:(web::WebState*)webState {
-  ImageFetchTabHelper* tabHelper = ImageFetchTabHelper::FromWebState(webState);
-  DCHECK(tabHelper);
+- (void)saveImageData:(NSData*)data
+         withMetadata:(const image_fetcher::RequestMetadata&)metadata {
+  DCHECK(data);
 
-  __weak ImageSaver* weakSelf = self;
-  tabHelper->GetImageData(url, referrer, ^(NSData* data) {
-    ImageSaver* strongSelf = weakSelf;
-    if (!strongSelf)
-      return;
+  if ([data length] == 0) {
+    [self
+        displayPrivacyErrorAlertOnMainQueue:
+            l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
+    return;
+  }
 
-    if (data.length == 0) {
-      [strongSelf displayPrivacyErrorAlertOnMainQueue:
-                      l10n_util::GetNSString(
-                          IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
-      return;
-    }
+  base::FilePath::StringType extension;
 
-    NSString* extension = GetImageExtensionFromData(data);
-    NSString* fileExtension =
-        [@"." stringByAppendingString:extension ? extension : @"png"];
+  bool extensionSuccess =
+      net::GetPreferredExtensionForMimeType(metadata.mime_type, &extension);
+  if (!extensionSuccess || extension.length() == 0) {
+    extension = "png";
+  }
 
-    [strongSelf managePermissionAndSaveImage:data
-                           withFileExtension:fileExtension];
-  });
+  NSString* fileExtension =
+      [@"." stringByAppendingString:base::SysUTF8ToNSString(extension)];
+  [self managePermissionAndSaveImage:data withFileExtension:fileExtension];
 }
 
 // Saves the image or display error message, based on privacy settings.
