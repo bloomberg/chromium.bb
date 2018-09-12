@@ -101,6 +101,26 @@ bool IsWholeSampleEncrypted(const DecryptConfig& decrypt_config,
          subsamples.front().cypher_bytes == sample_size;
 }
 
+// Checks whether |device1| is the same component as |device2|.
+// Note that comparing COM pointers require using their IUnknowns.
+// https://docs.microsoft.com/en-us/windows/desktop/api/unknwn/nf-unknwn-iunknown-queryinterface(q_)
+bool SameDevices(Microsoft::WRL::ComPtr<ID3D11Device> device1,
+                 Microsoft::WRL::ComPtr<ID3D11Device> device2) {
+  // For the case where both are nullptrs, they aren't devices, so returning
+  // false here.
+  if (!device1 || !device2)
+    return false;
+  Microsoft::WRL::ComPtr<IUnknown> device1_iunknown;
+  Microsoft::WRL::ComPtr<IUnknown> device2_iunknown;
+  HRESULT hr = device1.CopyTo(device1_iunknown.ReleaseAndGetAddressOf());
+  if (FAILED(hr))
+    return false;
+  hr = device2.CopyTo(device2_iunknown.ReleaseAndGetAddressOf());
+  if (FAILED(hr))
+    return false;
+  return device1_iunknown == device2_iunknown;
+}
+
 }  // namespace
 
 D3D11Decryptor::D3D11Decryptor(CdmProxyContext* cdm_proxy_context)
@@ -217,9 +237,16 @@ void D3D11Decryptor::DeinitializeDecoder(StreamType stream_type) {
 
 bool D3D11Decryptor::InitializeDecryptionBuffer(
     const CdmProxyContext::D3D11DecryptContext& decrypt_context) {
-  // TODO(crbug.com/877667): Check whether the crypto session's device is the
-  // same as device_, if so there is no reason to recreate buffers.
-  decrypt_context.crypto_session->GetDevice(device_.ReleaseAndGetAddressOf());
+  ComPtr<ID3D11Device> crypto_session_device;
+  decrypt_context.crypto_session->GetDevice(
+      crypto_session_device.ReleaseAndGetAddressOf());
+
+  // If they are the same devices, then there is no reason to reinitialize the
+  // buffers.
+  if (SameDevices(crypto_session_device, device_))
+    return true;
+
+  device_ = crypto_session_device;
   device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hresult =
