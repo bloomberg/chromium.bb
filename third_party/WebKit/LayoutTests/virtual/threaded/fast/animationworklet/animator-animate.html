@@ -14,7 +14,7 @@ registerAnimator("test_animator", class {
   animate(currentTime, effect) {
     if (!this.animated)
         console.log("test animator animate called.");
-
+    effect.localTime = 0;
     this.animated = true;
   }
 });
