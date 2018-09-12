@@ -61,67 +61,6 @@ if (enable_java_templates) {
     include_java_resources = true
   }
 
-  template("android_deps_alias") {
-    java_group(target_name) {
-      deps = [
-        "//third_party/android_deps:${invoker.android_deps_target_name}",
-      ]
-    }
-  }
-  android_deps_alias("google_play_services_basement_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_basement_java"
-  }
-  android_deps_alias("google_play_services_tasks_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_tasks_java"
-  }
-  android_deps_alias("google_play_services_base_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_base_java"
-  }
-  android_deps_alias("google_play_services_auth_base_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_auth_base_java"
-  }
-  android_deps_alias("google_play_services_auth_api_phone_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_auth_api_phone_java"
-  }
-  android_deps_alias("google_play_services_auth_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_auth_java"
-  }
-  android_deps_alias("google_play_services_cast_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_cast_java"
-  }
-  android_deps_alias("google_play_services_cast_framework_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_cast_framework_java"
-  }
-  android_deps_alias("google_play_services_iid_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_iid_java"
-  }
-  android_deps_alias("google_play_services_instantapps_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_instantapps_java"
-  }
-  android_deps_alias("google_play_services_gcm_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_gcm_java"
-  }
-  android_deps_alias("google_play_services_location_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_location_java"
-  }
-  android_deps_alias("google_play_services_vision_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_vision_java"
-  }
-  android_deps_alias("google_play_services_vision_common_java") {
-    android_deps_target_name =
-        "com_google_android_gms_play_services_vision_common_java"
-  }
-  android_deps_alias("google_play_services_fido_java") {
-    android_deps_target_name = "com_google_android_gms_play_services_fido_java"
-  }
-
   # The current version of //third_party/byte_buddy relies on an older
   # version of dx.
   java_prebuilt("dx_25_0_2_java") {
