@@ -39,7 +39,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.ActionModeController;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.NumberRollView;
@@ -201,8 +200,7 @@ public class SelectableListToolbar<E>
 
         normalBackgroundColorResId = normalBackgroundColorResId != null
                 ? normalBackgroundColorResId
-                : ColorUtils.getDefaultThemeColor(
-                          getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
+                : ColorUtils.getDefaultThemeColor(getResources(), false);
         mNormalBackgroundColor =
                 ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
         setBackgroundColor(mNormalBackgroundColor);
@@ -225,10 +223,6 @@ public class SelectableListToolbar<E>
                 getContext(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
         mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.ic_arrow_back_white_24dp);
-
-        if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-            setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
-        }
 
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
@@ -308,13 +302,6 @@ public class SelectableListToolbar<E>
                 mSearchEditText.setText("");
             }
         });
-
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            mClearTextButton.setPadding(ViewCompat.getPaddingStart(mClearTextButton),
-                    mClearTextButton.getPaddingTop(),
-                    getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
-                    mClearTextButton.getPaddingBottom());
-        }
     }
 
     @Override
@@ -528,8 +515,7 @@ public class SelectableListToolbar<E>
         int padding =
                 SelectableListLayout.getPaddingForDisplayStyle(newDisplayStyle, getResources());
         int paddingStartOffset = 0;
-        boolean isModernSearchViewEnabled = mIsSearching && !mIsSelectionEnabled
-                && FeatureUtilities.isChromeModernDesignEnabled();
+        boolean isSearchViewShowing = mIsSearching && !mIsSelectionEnabled;
         MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
 
         if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE
@@ -541,8 +527,7 @@ public class SelectableListToolbar<E>
 
         // The margin instead of padding will be set to adjust the modern search view background
         // in search mode.
-        if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE
-                && isModernSearchViewEnabled) {
+        if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE && isSearchViewShowing) {
             params.setMargins(padding, params.topMargin, padding, params.bottomMargin);
             padding = 0;
         } else {
@@ -632,12 +617,8 @@ public class SelectableListToolbar<E>
         mSearchView.setVisibility(View.VISIBLE);
 
         setNavigationButton(NAVIGATION_BUTTON_BACK);
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            setBackgroundResource(R.drawable.search_toolbar_modern_bg);
-            updateStatusBarColor(mSearchBackgroundColor);
-        } else {
-            setBackgroundColor(mSearchBackgroundColor);
-        }
+        setBackgroundResource(R.drawable.search_toolbar_modern_bg);
+        updateStatusBarColor(mSearchBackgroundColor);
 
         updateDisplayStyleIfNecessary();
     }

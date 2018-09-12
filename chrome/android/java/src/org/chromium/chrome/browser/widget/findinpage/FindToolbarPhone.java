@@ -14,7 +14,6 @@ import android.view.View;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * A phone specific version of the {@link FindToolbar}.
@@ -46,8 +45,7 @@ public class FindToolbarPhone extends FindToolbar {
     protected void updateVisualsForTabModel(boolean isIncognito) {
         int queryTextColorId;
         if (isIncognito) {
-            setBackgroundColor(ColorUtils.getDefaultThemeColor(
-                    getResources(), FeatureUtilities.isChromeModernDesignEnabled(), true));
+            setBackgroundColor(ColorUtils.getDefaultThemeColor(getResources(), true));
             ColorStateList white =
                     AppCompatResources.getColorStateList(getContext(), R.color.light_mode_tint);
             mFindNextButton.setTint(white);

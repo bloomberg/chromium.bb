@@ -399,6 +399,8 @@
     <dimen name="default_favicon_corner_radius">3dp</dimen>
     <dimen name="default_favicon_icon_text_size">10dp</dimen>
     <dimen name="default_favicon_min_size">16px</dimen>
+    <dimen name="circular_monogram_size">20dp</dimen>
+    <dimen name="circular_monogram_text_size">14dp</dimen>
 
     <!-- Photo Picker dimensions -->
     <dimen name="photo_picker_selected_padding">12dp</dimen>

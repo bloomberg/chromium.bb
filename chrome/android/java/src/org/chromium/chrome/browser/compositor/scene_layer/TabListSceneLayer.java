@@ -73,7 +73,7 @@ public class TabListSceneLayer extends SceneLayer {
             float shadowAlpha = decoration / 2;
             int urlBarBackgroundId = R.drawable.modern_location_bar;
 
-            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, true, t.isIncognito());
+            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, t.isIncognito());
 
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = 1.f;

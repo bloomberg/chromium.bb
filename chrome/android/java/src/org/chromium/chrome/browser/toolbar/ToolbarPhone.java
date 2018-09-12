@@ -441,8 +441,7 @@ public class ToolbarPhone extends ToolbarLayout
      * @return The location bar color.
      */
     private int getLocationBarColorForToolbarColor(int toolbarColor) {
-        return ColorUtils.getTextBoxColorForToolbarBackground(
-                getResources(), false, toolbarColor, true);
+        return ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, toolbarColor);
     }
 
     private void inflateTabSwitchingResources() {
@@ -821,13 +820,13 @@ public class ToolbarPhone extends ToolbarLayout
                     // When the location bar reaches the top of the screen, the background needs
                     // to change back to the default, solid color so that the NTP content is
                     // not visible beneath the toolbar.
-                    return ColorUtils.getDefaultThemeColor(getResources(), true, false);
+                    return ColorUtils.getDefaultThemeColor(getResources(), false);
                 }
                 return Color.TRANSPARENT;
             case VisualState.NORMAL:
-                return ColorUtils.getDefaultThemeColor(getResources(), true, false);
+                return ColorUtils.getDefaultThemeColor(getResources(), false);
             case VisualState.INCOGNITO:
-                return ColorUtils.getDefaultThemeColor(getResources(), true, true);
+                return ColorUtils.getDefaultThemeColor(getResources(), true);
             case VisualState.BRAND_COLOR:
                 return getToolbarDataProvider().getPrimaryColor();
             case VisualState.TAB_SWITCHER_NORMAL:
@@ -1068,7 +1067,7 @@ public class ToolbarPhone extends ToolbarLayout
         // Only transition theme colors if in static tab mode that is not the NTP. In practice this
         // only runs when you focus the omnibox on a web page.
         if (!isLocationBarShownInNTP() && mTabSwitcherState == STATIC_TAB) {
-            int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), true, isIncognito());
+            int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), isIncognito());
             int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
             int primaryColor = getToolbarDataProvider().getPrimaryColor();
             int themedLocationBarColor = getLocationBarColorForToolbarColor(primaryColor);

@@ -287,7 +287,7 @@ public class NewTabPage
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modern_primary_color);
-        mThemeColor = ColorUtils.getDefaultThemeColor(activity.getResources(), true, false);
+        mThemeColor = ColorUtils.getDefaultThemeColor(activity.getResources(), false);
         mIsTablet = activity.isTablet();
         TemplateUrlService.getInstance().addObserver(this);
 
