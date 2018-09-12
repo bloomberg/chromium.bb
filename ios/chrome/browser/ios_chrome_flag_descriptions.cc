@@ -251,6 +251,11 @@ const char kTabSwitcherPresentsBVCDescription[] =
     "BVC is visible, the tab switcher will remain in the VC hierarchy "
     "underneath it.";
 
+const char kToolbarContainerName[] = "Use Toolbar Containers";
+const char kToolbarContainerDescription[] =
+    "When enabled, the toolbars and their fullscreen animations will be "
+    "managed by the toolbar container coordinator rather than BVC.";
+
 const char kUIRefreshLocationBarName[] = "UI Refresh Location Bar";
 const char kUIRefreshLocationBarDescription[] =
     "When enabled, the UI Refresh location bar with a custom steady-state will "

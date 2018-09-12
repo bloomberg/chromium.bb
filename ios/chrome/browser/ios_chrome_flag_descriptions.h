@@ -208,6 +208,11 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kTabSwitcherPresentsBVCName[];
 extern const char kTabSwitcherPresentsBVCDescription[];
 
+// Title and description for the flag to enable the toolbar container
+// implementation.
+extern const char kToolbarContainerName[];
+extern const char kToolbarContainerDescription[];
+
 // Title and description for the flag to enable the UI Refresh location bar.
 extern const char kUIRefreshLocationBarName[];
 extern const char kUIRefreshLocationBarDescription[];

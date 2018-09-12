@@ -53,6 +53,7 @@
 #import "ios/chrome/browser/ui/history/features.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -388,6 +389,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillManualFallbackPhaseTwoDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillManualFallbackPhaseTwo)},
+    {"toolbar-container", flag_descriptions::kToolbarContainerName,
+     flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
 };
 
 // Add all switches from experimental flags to |command_line|.
