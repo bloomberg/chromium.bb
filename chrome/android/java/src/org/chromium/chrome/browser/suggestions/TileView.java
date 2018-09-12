@@ -23,13 +23,11 @@ import java.lang.annotation.RetentionPolicy;
  * large icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
 public class TileView extends FrameLayout {
-    @IntDef({Style.CLASSIC, Style.CLASSIC_CONDENSED, Style.MODERN, Style.MODERN_CONDENSED})
+    @IntDef({Style.MODERN, Style.MODERN_CONDENSED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Style {
-        int CLASSIC = 0;
-        int CLASSIC_CONDENSED = 1;
-        int MODERN = 2;
-        int MODERN_CONDENSED = 3;
+        int MODERN = 1;
+        int MODERN_CONDENSED = 2;
     }
 
     /** The url currently associated to this tile. */
@@ -89,7 +87,6 @@ public class TileView extends FrameLayout {
      */
     public void renderIcon(Tile tile) {
         mIconView.setImageDrawable(tile.getIcon());
-        if (!SuggestionsConfig.useModernLayout()) return;
 
         // Slightly enlarge the monogram in the modern layout.
         MarginLayoutParams params = (MarginLayoutParams) mIconView.getLayoutParams();

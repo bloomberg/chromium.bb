@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
@@ -14,9 +13,7 @@ import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -28,14 +25,8 @@ public class PersonalizedPromoViewHolder extends CardViewHolder {
 
     public PersonalizedPromoViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, UiConfig config) {
-        super(SuggestionsConfig.useModernLayout()
-                        ? R.layout.personalized_signin_promo_view_modern_content_suggestions
-                        : R.layout.personalized_signin_promo_view_ntp_content_suggestions,
-                parent, config, contextMenuManager);
-        if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-            getParams().topMargin = parent.getResources().getDimensionPixelSize(
-                    R.dimen.ntp_sign_in_promo_margin_top);
-        }
+        super(R.layout.personalized_signin_promo_view_modern_content_suggestions, parent, config,
+                contextMenuManager);
     }
 
     public void onBindViewHolder(
@@ -54,14 +45,6 @@ public class PersonalizedPromoViewHolder extends CardViewHolder {
         }
         mProfileDataCache = null;
         super.recycle();
-    }
-
-    @DrawableRes
-    @Override
-    protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
-        // Modern does not update the card background.
-        assert !SuggestionsConfig.useModernLayout();
-        return R.drawable.ntp_signin_promo_card_single;
     }
 
     /**

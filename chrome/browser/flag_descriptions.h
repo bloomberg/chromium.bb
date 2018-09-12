@@ -1354,9 +1354,6 @@ extern const char kChromeHomeSwipeLogicDescription[];
 extern const char kChromeHomeSwipeLogicRestrictArea[];
 extern const char kChromeHomeSwipeLogicVelocity[];
 
-extern const char kChromeModernAlternateCardLayoutName[];
-extern const char kChromeModernAlternateCardLayoutDescription[];
-
 extern const char kChromeModernFullRollName[];
 extern const char kChromeModernFullRollDescription[];
 
@@ -1530,12 +1527,6 @@ extern const char kNoCreditCardAbortDescription[];
 
 extern const char kNtpButtonName[];
 extern const char kNtpButtonDescription[];
-
-extern const char kNtpModernLayoutName[];
-extern const char kNtpModernLayoutDescription[];
-
-extern const char kNtpGoogleGInOmniboxName[];
-extern const char kNtpGoogleGInOmniboxDescription[];
 
 extern const char kOfflineBookmarksName[];
 extern const char kOfflineBookmarksDescription[];

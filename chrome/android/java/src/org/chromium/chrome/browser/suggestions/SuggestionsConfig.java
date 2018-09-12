@@ -11,7 +11,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -49,9 +48,7 @@ public final class SuggestionsConfig {
      * @return The background color for the suggestions sheet content.
      */
     public static int getBackgroundColor(Resources resources) {
-        return useModernLayout()
-                ? ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg)
-                : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
+        return ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg);
     }
 
     /**
@@ -59,26 +56,14 @@ public final class SuggestionsConfig {
      */
     @TileView.Style
     public static int getTileStyle(UiConfig uiConfig) {
-        boolean small = uiConfig.getCurrentDisplayStyle().isSmall();
-        if (useModernLayout()) {
-            return small ? TileView.Style.MODERN_CONDENSED : TileView.Style.MODERN;
-        }
-        if (useCondensedTileLayout(small)) return TileView.Style.CLASSIC_CONDENSED;
-        return TileView.Style.CLASSIC;
+        return uiConfig.getCurrentDisplayStyle().isSmall() ? TileView.Style.MODERN_CONDENSED
+                                                           : TileView.Style.MODERN;
     }
 
     private static boolean useCondensedTileLayout(boolean isScreenSmall) {
         if (isScreenSmall) return true;
 
         return false;
-    }
-
-    /**
-     * @return Whether the modern layout should be used for suggestions.
-     */
-    public static boolean useModernLayout() {
-        return FeatureUtilities.isChromeModernDesignEnabled()
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MODERN_LAYOUT);
     }
 
     /** @return The value of referrer URL to use with content suggestions. */

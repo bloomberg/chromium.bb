@@ -8,6 +8,5 @@
     <item type="fraction" format="fraction" name="menu_animation_pivot_x">5%</item>
 
     <!-- Value for scaleX to mirror drawables correctly for LTR / RTL layouts. -->
-    <integer name="automirror_scale_x">-1</integer>
     <integer name="automirror_scale_x_reverse">1</integer>
 </resources>

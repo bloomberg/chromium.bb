@@ -64,7 +64,6 @@
     <string name="manage_space_activity"></string>
 
     <!-- Value for scaleX to mirror drawables correctly for LTR / RTL layouts. -->
-    <integer name="automirror_scale_x">1</integer>
     <integer name="automirror_scale_x_reverse">-1</integer>
 
     <!-- Modern List Item -->
