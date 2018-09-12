@@ -64,34 +64,6 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
 #     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
-    'OBBS Mac 10.12 Perf': {
-      'tests': [
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac1012_5_shard_map.json',
-          ],
-          'num_shards': 5
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Mac-10.12',
-        'gpu': '8086:0a2e'
-      },
-    },
     'One Buildbot Step Test Builder': {
       'tests': [
         {
