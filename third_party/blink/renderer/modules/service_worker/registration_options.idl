@@ -5,6 +5,5 @@
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 dictionary RegistrationOptions {
     USVString scope;
-    WorkerType type = "classic";
     ServiceWorkerUpdateViaCache updateViaCache = "imports";
 };

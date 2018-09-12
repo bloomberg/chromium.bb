@@ -39,7 +39,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
  public:
   GlobalScopeCreationParams(
       const KURL& script_url,
-      // TODO(asamidoi): Replace ScriptType to mojom::ScriptType
       ScriptType script_type,
       const String& user_agent,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,

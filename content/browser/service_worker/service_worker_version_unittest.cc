@@ -155,7 +155,6 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
-        blink::mojom::ScriptType::kClassic,
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
     EXPECT_EQ(url::Origin::Create(pattern_), version_->script_origin());
@@ -1313,7 +1312,6 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
-      blink::mojom::ScriptType::kClassic,
       helper_->context()->storage()->NewVersionId(),
       helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;

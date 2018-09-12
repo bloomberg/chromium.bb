@@ -107,8 +107,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     options.scope = scope;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(registration_.get(), script_url,
-                                        blink::mojom::ScriptType::kClassic, 1L,
+    version_ = new ServiceWorkerVersion(registration_.get(), script_url, 1L,
                                         context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(

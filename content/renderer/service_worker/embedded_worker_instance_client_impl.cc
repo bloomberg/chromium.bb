@@ -165,7 +165,6 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
   start_data.script_url = params->script_url;
   start_data.user_agent =
       blink::WebString::FromUTF8(GetContentClient()->GetUserAgent());
-  start_data.script_type = params->script_type;
   start_data.wait_for_debugger_mode =
       params->wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger

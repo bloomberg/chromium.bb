@@ -391,13 +391,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
 
-  // TODO(https://crbug.com/824647): Use blink::mojom::ScriptType everywhere
-  // and deprecate blink::ScriptType.
-  // Remove this line after removed all blink::ScriptType.
-  ScriptType script_type =
-      (worker_start_data_.script_type == mojom::ScriptType::kModule)
-          ? ScriptType::kModule
-          : ScriptType::kClassic;
+  // TODO(nhiroki); Set |script_type| to ScriptType::kModule for module fetch.
+  // (https://crbug.com/824647)
+  ScriptType script_type = ScriptType::kClassic;
 
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
@@ -462,33 +458,13 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);
 
-  // > Switching on job’s worker type, run these substeps with the following
-  // > options:
-  // https://w3c.github.io/ServiceWorker/#update-algorithm
-  if (script_type == ScriptType::kClassic) {
-    // > "classic": Fetch a classic worker script given job’s serialized script
-    // > url, job’s client, "serviceworker", and the to-be-created environment
-    // > settings object for this service worker.
-    worker_thread_->EvaluateClassicScript(
-        worker_start_data_.script_url, source_code, std::move(cached_meta_data),
-        v8_inspector::V8StackTraceId());
-  } else {
-    // > "module": Fetch a module worker script graph given job’s serialized
-    // > script url, job’s client, "serviceworker", "omit", and the
-    // > to-be-created environment settings object for this service worker.
-
-    // TODO(asamidoi): Currently, we use the shadow page's Document as an
-    // outside_settings_object as a workaround. This should be the Document that
-    // called navigator.ServiceWorker.register(). To do it, we need to make a
-    // way to pass the settings object over mojo IPCs.
-    auto* outside_settings_object =
-        document->CreateFetchClientSettingsObjectSnapshot();
-    network::mojom::FetchCredentialsMode credentials_mode =
-        network::mojom::FetchCredentialsMode::kOmit;
-    worker_thread_->ImportModuleScript(worker_start_data_.script_url,
-                                       outside_settings_object,
-                                       credentials_mode);
-  }
+  // TODO(nhiroki): Support module workers (https://crbug.com/680046).
+  // Note that this doesn't really start the script evaluation until
+  // ReadyToEvaluateScript() is called on the WebServiceWorkerContextProxy
+  // on the worker thread.
+  worker_thread_->EvaluateClassicScript(
+      worker_start_data_.script_url, source_code, std::move(cached_meta_data),
+      v8_inspector::V8StackTraceId());
 }
 
 }  // namespace blink

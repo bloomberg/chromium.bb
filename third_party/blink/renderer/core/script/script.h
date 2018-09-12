@@ -16,8 +16,6 @@ namespace blink {
 class LocalFrame;
 class SecurityOrigin;
 
-// TODO(asamidoi, nhiroki): Remove this enum in favor of
-// blink::mojom::ScriptType.
 enum class ScriptType { kClassic, kModule };
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script
