@@ -34,7 +34,7 @@ void GetOperationRequest::OnCompleted(
     const std::string& assigned_operation_name,
     PrefetchRequestStatus status,
     const std::string& data) {
-  if (status != PrefetchRequestStatus::SUCCESS) {
+  if (status != PrefetchRequestStatus::kSuccess) {
     std::move(callback_).Run(status, assigned_operation_name,
                              std::vector<RenderPageInfo>());
     return;
@@ -43,13 +43,13 @@ void GetOperationRequest::OnCompleted(
   std::vector<RenderPageInfo> pages;
   std::string found_operation_name = ParseOperationResponse(data, &pages);
   if (found_operation_name.empty()) {
-    std::move(callback_).Run(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+    std::move(callback_).Run(PrefetchRequestStatus::kShouldRetryWithBackoff,
                              assigned_operation_name,
                              std::vector<RenderPageInfo>());
     return;
   }
 
-  std::move(callback_).Run(PrefetchRequestStatus::SUCCESS,
+  std::move(callback_).Run(PrefetchRequestStatus::kSuccess,
                            assigned_operation_name, pages);
 }
 

@@ -118,7 +118,7 @@ TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
   RespondWithData("");
   RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }
@@ -137,7 +137,7 @@ TEST_F(GeneratePageBundleRequestTest, InvalidResponse) {
   RespondWithData("Some invalid data");
   RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }

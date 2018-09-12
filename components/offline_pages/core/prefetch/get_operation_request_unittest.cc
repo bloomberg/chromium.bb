@@ -101,7 +101,7 @@ TEST_F(GetOperationRequestTest, EmptyResponse) {
   RespondWithData("");
   RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_EQ(std::string(kTestOperationName), operation_name);
   EXPECT_TRUE(pages.empty());
 }
@@ -119,7 +119,7 @@ TEST_F(GetOperationRequestTest, InvalidResponse) {
   RespondWithData("Some invalid data");
   RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_EQ(std::string(kTestOperationName), operation_name);
   EXPECT_TRUE(pages.empty());
 }

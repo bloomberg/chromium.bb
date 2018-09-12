@@ -283,7 +283,7 @@ typedef testing::Types<GeneratePageBundleRequestDoneOperationBuilder,
 TYPED_TEST_CASE(PrefetchRequestOperationResponseTest, MyTypes);
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             // No error is set for OK. Thus this will cause the operation
             // being filled with only done flag.
             this->SendWithErrorResponse(proto::OK, ""));
@@ -292,21 +292,21 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, ErrorValue) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithErrorResponse(proto::UNKNOWN, kErrorMessage));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidTypeUrl) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithAnyResponse("foo", ""));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
 }
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidValue) {
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithAnyResponse(kPageBundleTypeURL, "foo"));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -314,7 +314,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, InvalidValue) {
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyPageBundle) {
   proto::PageBundle bundle;
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -323,7 +323,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyPageBundle) {
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyArchive) {
   proto::PageBundle bundle;
   bundle.add_archives();
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -334,7 +334,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, NoPageInfo) {
   proto::Archive* archive = bundle.add_archives();
   archive->set_body_name(kTestBodyName);
   archive->set_body_length(kTestBodyLength);
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -345,7 +345,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, MissingPageInfoUrl) {
   proto::Archive* archive = bundle.add_archives();
   proto::PageInfo* page_info = archive->add_page_infos();
   page_info->set_redirect_url(kTestURL);
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(this->operation_name(), this->expected_operation_name());
   EXPECT_TRUE(this->pages().empty());
@@ -365,7 +365,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, SinglePage) {
   page_info->mutable_render_time()->set_seconds(ms_since_epoch / 1000);
   page_info->mutable_render_time()->set_nanos((ms_since_epoch % 1000) *
                                               1000000);
-  EXPECT_EQ(PrefetchRequestStatus::SUCCESS,
+  EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(kTestOperationName, this->operation_name());
   ASSERT_EQ(1u, this->pages().size());
@@ -411,7 +411,7 @@ TYPED_TEST(PrefetchRequestOperationResponseTest, MultiplePages) {
   page_info->mutable_render_time()->set_nanos((ms_since_epoch % 1000) *
                                               1000000);
 
-  EXPECT_EQ(PrefetchRequestStatus::SUCCESS,
+  EXPECT_EQ(PrefetchRequestStatus::kSuccess,
             this->SendWithPageBundleResponse(bundle));
   EXPECT_EQ(kTestOperationName, this->operation_name());
   ASSERT_EQ(4u, this->pages().size());
