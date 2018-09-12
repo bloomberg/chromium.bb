@@ -898,7 +898,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
-  void ComputeIntersectionObservations(bool);
+  void ComputeIntersectionObservations(unsigned flags);
 
   HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
   ResizeObserverData() const;

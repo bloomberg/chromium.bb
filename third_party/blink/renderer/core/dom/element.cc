@@ -2050,6 +2050,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
         rare_data->IntersectionObserverData()->HasObservations()) {
       GetDocument().EnsureIntersectionObserverController().AddTrackedTarget(
           *this);
+      if (LocalFrameView* frame_view = GetDocument().View())
+        frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
     }
   }
 
@@ -2152,6 +2154,9 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       element_animations->CssAnimations().Cancel();
 
     if (data->IntersectionObserverData()) {
+      data->IntersectionObserverData()->ComputeObservations(
+          IntersectionObservation::kExplicitRootObserversNeedUpdate |
+          IntersectionObservation::kImplicitRootObserversNeedUpdate);
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedTarget(
           *this);
     }
@@ -3651,10 +3656,9 @@ ElementIntersectionObserverData& Element::EnsureIntersectionObserverData() {
   return EnsureElementRareData().EnsureIntersectionObserverData();
 }
 
-void Element::ComputeIntersectionObservations(
-    bool should_report_implicit_root_bounds) {
+void Element::ComputeIntersectionObservations(unsigned flags) {
   if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    data->ComputeObservations(should_report_implicit_root_bounds);
+    data->ComputeObservations(flags);
 }
 
 HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
