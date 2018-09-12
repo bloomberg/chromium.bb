@@ -9,7 +9,11 @@
  * @suppress {checkTypes, checkVars}
  */
 
-(function() {
+/**
+ * Defines function to install callbacks on cr.googleTranslate.
+ * See translate_script.cc for usage.
+ */
+var installTranslateCallbacks = function() {
 /**
  * Sets a callback to inform host of the ready state of the translate element.
  */
@@ -32,4 +36,4 @@ cr.googleTranslate.resultCallback = function() {
       'translationTime': cr.googleTranslate.translationTime});
 }
 
-}());  // anonymous function
+}  // installTranslateCallbacks

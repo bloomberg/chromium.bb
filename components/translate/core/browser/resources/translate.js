@@ -317,8 +317,7 @@ cr.googleTranslate = (function() {
      */
     onTranslateElementError: function(error) {
       errorCode = ERROR['UNEXPECTED_SCRIPT_ERROR'];
-      // Delayed so |readyCallback| has time to be defined.
-      setTimeout(invokeReadyCallback, 100);
+      invokeReadyCallback();
     },
 
     /**
