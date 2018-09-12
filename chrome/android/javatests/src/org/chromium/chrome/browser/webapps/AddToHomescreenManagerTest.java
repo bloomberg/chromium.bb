@@ -35,7 +35,6 @@ import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
@@ -348,8 +347,10 @@ public class AddToHomescreenManagerTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                WebContentsUtils.evaluateJavaScript(mTab.getWebContents(),
-                        "(function() { window.open('" + url + "'); })()", null);
+                mTab.getWebContents().evaluateJavaScriptForTests("(function() {"
+                                + "window.open('" + url + "');"
+                                + "})()",
+                        null);
             }
         });
 

@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -61,7 +62,7 @@ public class UkmTest {
     public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mSyncTestRule.loadUrlInTab(
                 DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
-        return JsUtils.executeJavaScriptAndWaitForResult(normalTab.getWebContents(),
+        return JavaScriptUtils.executeJavaScriptAndWaitForResult(normalTab.getWebContents(),
                 "document.getElementById('" + elementId + "').textContent");
     }
 

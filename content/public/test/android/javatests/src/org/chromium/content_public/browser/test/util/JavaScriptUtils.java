@@ -63,7 +63,7 @@ public class JavaScriptUtils {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                WebContentsUtils.evaluateJavaScript(webContents, code, null);
+                webContents.evaluateJavaScriptForTests(code, null);
             }
         });
     }

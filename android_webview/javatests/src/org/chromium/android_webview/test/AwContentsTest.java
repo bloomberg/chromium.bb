@@ -430,7 +430,7 @@ public class AwContentsTest {
             AwSettings awSettings = awContents.getSettings();
             awSettings.setJavaScriptEnabled(true);
             awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
-            awContents.evaluateJavaScript("window.bridge.run();", null);
+            awContents.evaluateJavaScriptForTests("window.bridge.run();", null);
         });
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
