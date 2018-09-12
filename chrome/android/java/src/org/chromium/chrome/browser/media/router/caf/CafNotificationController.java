@@ -21,9 +21,9 @@ import org.chromium.content_public.common.MediaMetadata;
 /** Controller for updating media notification for Casting and MediaFling. */
 public class CafNotificationController implements MediaNotificationListener {
     private MediaNotificationInfo.Builder mNotificationBuilder;
-    private final CastSessionController mSessionController;
+    private final BaseSessionController mSessionController;
 
-    public CafNotificationController(CastSessionController sessionController) {
+    public CafNotificationController(BaseSessionController sessionController) {
         mSessionController = sessionController;
     }
 

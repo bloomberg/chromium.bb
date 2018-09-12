@@ -494,8 +494,6 @@ public class CafMessageHandler {
      */
     @VisibleForTesting
     void onMediaMessage(String message, RequestRecord request) {
-        mSessionController.updateRemoteMediaClient(message);
-
         if (isMediaStatusMessage(message)) {
             // MEDIA_STATUS needs to be sent to all the clients.
             for (String clientId : mRouteProvider.getClientIdToRecords().keySet()) {
