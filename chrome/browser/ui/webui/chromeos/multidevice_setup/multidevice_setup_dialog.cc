@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
 #include "chrome/common/url_constants.h"
@@ -13,6 +14,7 @@
 #include "chrome/grit/multidevice_setup_resources.h"
 #include "chrome/grit/multidevice_setup_resources_map.h"
 #include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -77,7 +79,9 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
           base::ASCIIToUTF16(kFootnoteMarker),
-          base::ASCIIToUTF16(chrome::kMultiDeviceLearnMoreURL)));
+          base::UTF8ToUTF16(
+              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
+                  .spec())));
   html_source->AddString(
       "startSetupPageFootnote",
       l10n_util::GetStringFUTF16(
