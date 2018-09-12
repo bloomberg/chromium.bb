@@ -59,7 +59,7 @@ class KeysetMock(keys.Keyset):
       CreateDummyKeys(key)
 
 
-class TestKeyPair(cros_test_lib.TempDirTestCase):
+class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
   """Test KeyPair class."""
 
   def testInitSimple(self):
@@ -166,6 +166,31 @@ class TestKeyPair(cros_test_lib.TempDirTestCase):
     k1 = keys.KeyPair('key1', self.tempdir)
     CreateDummyKeyblock(k1)
     self.assertTrue(k1.KeyblockExists())
+
+  def testGetSha1sumEmpty(self):
+    """"Test GetSha1sum with bad cmd output."""
+    k1 = keys.KeyPair('key1', self.tempdir)
+
+    with self.assertRaises(keys.SignerKeyError):
+      k1.GetSHA1sum()
+
+  def testGetSha1sumMockCmd(self):
+    """Test GetSha1sum with mock cmd output."""
+    k1 = keys.KeyPair('firmware_data_key', self.tempdir)
+
+    sha1sum = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
+
+    cmd_output = ('Public Key file:   firmware_data_key.vbpubk'
+                  '\nAlgorithm:         7 RSA4096 SHA256'
+                  '\nKey Version:       1'
+                  '\nKey sha1sum:       ' + sha1sum)
+
+    self.rc.SetDefaultCmdResult(output=cmd_output)
+
+    k1sum = k1.GetSHA1sum()
+    self.assertEqual(k1sum, sha1sum)
+    self.assertCommandCalled(['vbutil_key', '--unpack', k1.public],
+                             error_code_ok=True)
 
 
 class TestKeyset(cros_test_lib.TempDirTestCase):

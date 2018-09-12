@@ -11,6 +11,7 @@ import ConfigParser
 import os
 import re
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 
 
@@ -115,6 +116,23 @@ class KeyPair(object):
       return True
     else:
       return os.path.exists(self.keyblock)
+
+  def GetSHA1sum(self):
+    """Returns key's sha1sum returns.
+
+    Raises:
+      SignerKeyError: If error getting sha1sum from public key
+      RunCommandError: if vbutil_key fails
+    """
+    res = cros_build_lib.RunCommand(['vbutil_key', '--unpack', self.public],
+                                    error_code_ok=True)
+
+    # Match line that looks like: 'Key sha1sum: <sha1sum>'.
+    match = re.search(r'Key sha1sum: +(\w+)', res.output)
+    if match:
+      return match.group(1)
+    else:
+      raise SignerKeyError('Unable to get sha1sum for %s' % self.public)
 
 
 class Keyset(object):
