@@ -72,8 +72,7 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnMainFrame) {
   __block bool called = false;
   std::vector<base::Value> params;
   main_frame->CallJavaScriptFunction(
-      "frameMessaging.getFrameId", params,
-      base::BindOnce(^(const base::Value* value) {
+      "message.getFrameId", params, base::BindOnce(^(const base::Value* value) {
         ASSERT_TRUE(value->is_string());
         EXPECT_EQ(value->GetString(), main_frame->GetFrameId());
         called = true;
@@ -108,8 +107,7 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnIframe) {
   __block bool called = false;
   std::vector<base::Value> params;
   iframe->CallJavaScriptFunction(
-      "frameMessaging.getFrameId", params,
-      base::BindOnce(^(const base::Value* value) {
+      "message.getFrameId", params, base::BindOnce(^(const base::Value* value) {
         ASSERT_TRUE(value->is_string());
         EXPECT_EQ(value->GetString(), iframe->GetFrameId());
         called = true;
@@ -174,12 +172,12 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
   // the iframe.
   ExecuteJavaScript(
       @"var sensitiveValue = 0;"
-       "__gCrWeb.frameMessaging.incrementSensitiveValue = function() {"
+       "__gCrWeb.message.incrementSensitiveValue = function() {"
        "  sensitiveValue = sensitiveValue + 1;"
        "  return sensitiveValue;"
        "};"
 
-       "var originalRouteMessage = __gCrWeb.frameMessaging.routeMessage;"
+       "var originalRouteMessage = __gCrWeb.message.routeMessage;"
        "var interceptedMessagePayload = '';"
        "var interceptedMessageIv = '';"
        "var interceptedMessageFrameId = '';"
@@ -192,7 +190,7 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
        "  );"
        "};"
 
-       "__gCrWeb.frameMessaging.routeMessage ="
+       "__gCrWeb.message.routeMessage ="
        "    function(payload, iv, target_frame_id) {"
        "  interceptedMessagePayload = payload;"
        "  interceptedMessageIv = iv;"
@@ -207,7 +205,7 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
   __block bool called = false;
   std::vector<base::Value> params;
   main_frame->CallJavaScriptFunction(
-      "frameMessaging.incrementSensitiveValue", params,
+      "message.incrementSensitiveValue", params,
       base::BindOnce(^(const base::Value* value) {
         ASSERT_TRUE(value->is_double());
         EXPECT_EQ(1, static_cast<int>(value->GetDouble()));
