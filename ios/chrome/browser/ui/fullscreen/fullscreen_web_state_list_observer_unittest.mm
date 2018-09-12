@@ -55,7 +55,8 @@ class FullscreenWebStateListObserverTest : public PlatformTest {
         controller_(&model_),
         mediator_(&controller_, &model_),
         web_state_list_(&web_state_list_delegate_),
-        observer_(&controller_, &model_, &web_state_list_, &mediator_) {
+        observer_(&controller_, &model_, &mediator_) {
+    observer_.SetWebStateList(&web_state_list_);
   }
 
   ~FullscreenWebStateListObserverTest() override {
