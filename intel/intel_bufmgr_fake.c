@@ -764,7 +764,7 @@ drm_intel_fake_bo_wait_rendering(drm_intel_bo *bo)
  *  -- just evict everything
  *  -- and wait for idle
  */
-void
+drm_public void
 drm_intel_bufmgr_fake_contended_lock_take(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_fake *bufmgr_fake = (drm_intel_bufmgr_fake *) bufmgr;
@@ -860,7 +860,7 @@ drm_intel_fake_bo_alloc_tiled(drm_intel_bufmgr * bufmgr,
 				       4096);
 }
 
-drm_intel_bo *
+drm_public drm_intel_bo *
 drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 			       const char *name,
 			       unsigned long offset,
@@ -1532,7 +1532,7 @@ drm_intel_fake_check_aperture_space(drm_intel_bo ** bo_array, int count)
  * Used by the X Server on LeaveVT, when the card memory is no longer our
  * own.
  */
-void
+drm_public void
 drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_fake *bufmgr_fake = (drm_intel_bufmgr_fake *) bufmgr;
@@ -1567,7 +1567,7 @@ drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
 	pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
-void
+drm_public void
 drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
 					volatile unsigned int
 					*last_dispatch)
@@ -1577,7 +1577,7 @@ drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
 	bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
 }
 
-drm_intel_bufmgr *
+drm_public drm_intel_bufmgr *
 drm_intel_bufmgr_fake_init(int fd, unsigned long low_offset,
 			   void *low_virtual, unsigned long size,
 			   volatile unsigned int *last_dispatch)

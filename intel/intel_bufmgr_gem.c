@@ -1075,7 +1075,7 @@ check_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
  * This can be used when one application needs to pass a buffer object
  * to another.
  */
-drm_intel_bo *
+drm_public drm_intel_bo *
 drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 				  const char *name,
 				  unsigned int handle)
@@ -1562,7 +1562,7 @@ map_gtt(drm_intel_bo *bo)
 	return 0;
 }
 
-int
+drm_public int
 drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -1621,7 +1621,7 @@ drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
  * undefined).
  */
 
-int
+drm_public int
 drm_intel_gem_bo_map_unsynchronized(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -1710,7 +1710,7 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	return ret;
 }
 
-int
+drm_public int
 drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
 {
 	return drm_intel_gem_bo_unmap(bo);
@@ -1835,7 +1835,7 @@ drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
  * Note that some kernels have broken the inifite wait for negative values
  * promise, upgrade to latest stable kernels if this is the case.
  */
-int
+drm_public int
 drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -1871,7 +1871,7 @@ drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns)
  * In combination with drm_intel_gem_bo_pin() and manual fence management, we
  * can do tiled pixmaps this way.
  */
-void
+drm_public void
 drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -2098,7 +2098,7 @@ drm_intel_gem_bo_emit_reloc_fence(drm_intel_bo *bo, uint32_t offset,
 				read_domains, write_domain, true);
 }
 
-int
+drm_public int
 drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -2121,7 +2121,7 @@ drm_intel_gem_bo_get_reloc_count(drm_intel_bo *bo)
  *
  * This also removes all softpinned targets being referenced by the BO.
  */
-void
+drm_public void
 drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -2277,7 +2277,7 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
-void
+drm_public void
 drm_intel_gem_bo_aub_dump_bmp(drm_intel_bo *bo,
 			      int x1, int y1, int width, int height,
 			      enum aub_dump_bmp_format format,
@@ -2479,14 +2479,14 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 			-1, NULL, flags);
 }
 
-int
+drm_public int
 drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 			      int used, unsigned int flags)
 {
 	return do_exec2(bo, used, ctx, NULL, 0, 0, -1, NULL, flags);
 }
 
-int
+drm_public int
 drm_intel_gem_bo_fence_exec(drm_intel_bo *bo,
 			    drm_intel_context *ctx,
 			    int used,
@@ -2627,7 +2627,7 @@ drm_intel_gem_bo_set_softpin_offset(drm_intel_bo *bo, uint64_t offset)
 	return 0;
 }
 
-drm_intel_bo *
+drm_public drm_intel_bo *
 drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int size)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
@@ -2710,7 +2710,7 @@ err:
 	return NULL;
 }
 
-int
+drm_public int
 drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -2762,7 +2762,7 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
  * size is only bounded by how many buffers of that size we've managed to have
  * in flight at once.
  */
-void
+drm_public void
 drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
@@ -2784,7 +2784,7 @@ drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
  * which can be checked using drm_intel_bufmgr_can_disable_implicit_sync,
  * or subsequent execbufs involving the bo will generate EINVAL.
  */
-void
+drm_public void
 drm_intel_gem_bo_disable_implicit_sync(drm_intel_bo *bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -2803,7 +2803,7 @@ drm_intel_gem_bo_disable_implicit_sync(drm_intel_bo *bo)
  * function can be used to restore the implicit sync before subsequent
  * rendering.
  */
-void
+drm_public void
 drm_intel_gem_bo_enable_implicit_sync(drm_intel_bo *bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -2815,7 +2815,7 @@ drm_intel_gem_bo_enable_implicit_sync(drm_intel_bo *bo)
  * Query whether the kernel supports disabling of its implicit synchronisation
  * before execbuf. See drm_intel_gem_bo_disable_implicit_sync()
  */
-int
+drm_public int
 drm_intel_bufmgr_gem_can_disable_implicit_sync(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
@@ -2830,7 +2830,7 @@ drm_intel_bufmgr_gem_can_disable_implicit_sync(drm_intel_bufmgr *bufmgr)
  * allocation.  If this option is not enabled, all relocs will have fence
  * register allocated.
  */
-void
+drm_public void
 drm_intel_bufmgr_gem_enable_fenced_relocs(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
@@ -3109,7 +3109,7 @@ init_cache_buckets(drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
-void
+drm_public void
 drm_intel_bufmgr_gem_set_vma_cache_size(drm_intel_bufmgr *bufmgr, int limit)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
@@ -3178,7 +3178,7 @@ get_pci_device_id(drm_intel_bufmgr_gem *bufmgr_gem)
 	return devid;
 }
 
-int
+drm_public int
 drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
@@ -3192,7 +3192,7 @@ drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr)
  * This function has to be called before drm_intel_bufmgr_gem_set_aub_dump()
  * for it to have any effect.
  */
-void
+drm_public void
 drm_intel_bufmgr_gem_set_aub_filename(drm_intel_bufmgr *bufmgr,
 				      const char *filename)
 {
@@ -3206,7 +3206,7 @@ drm_intel_bufmgr_gem_set_aub_filename(drm_intel_bufmgr *bufmgr,
  * You can set up a GTT and upload your objects into the referenced
  * space, then send off batchbuffers and get BMPs out the other end.
  */
-void
+drm_public void
 drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 {
 	fprintf(stderr, "libdrm aub dumping is deprecated.\n\n"
@@ -3216,7 +3216,7 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 		"See the intel_aubdump man page for more details.\n");
 }
 
-drm_intel_context *
+drm_public drm_intel_context *
 drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
@@ -3243,7 +3243,7 @@ drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr)
 	return context;
 }
 
-int
+drm_public int
 drm_intel_gem_context_get_id(drm_intel_context *ctx, uint32_t *ctx_id)
 {
 	if (ctx == NULL)
@@ -3254,7 +3254,7 @@ drm_intel_gem_context_get_id(drm_intel_context *ctx, uint32_t *ctx_id)
 	return 0;
 }
 
-void
+drm_public void
 drm_intel_gem_context_destroy(drm_intel_context *ctx)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem;
@@ -3277,7 +3277,7 @@ drm_intel_gem_context_destroy(drm_intel_context *ctx)
 	free(ctx);
 }
 
-int
+drm_public int
 drm_intel_get_reset_stats(drm_intel_context *ctx,
 			  uint32_t *reset_count,
 			  uint32_t *active,
@@ -3311,7 +3311,7 @@ drm_intel_get_reset_stats(drm_intel_context *ctx,
 	return ret;
 }
 
-int
+drm_public int
 drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
 		   uint32_t offset,
 		   uint64_t *result)
@@ -3329,7 +3329,7 @@ drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
 	return ret;
 }
 
-int
+drm_public int
 drm_intel_get_subslice_total(int fd, unsigned int *subslice_total)
 {
 	drm_i915_getparam_t gp;
@@ -3345,7 +3345,7 @@ drm_intel_get_subslice_total(int fd, unsigned int *subslice_total)
 	return 0;
 }
 
-int
+drm_public int
 drm_intel_get_eu_total(int fd, unsigned int *eu_total)
 {
 	drm_i915_getparam_t gp;
@@ -3361,7 +3361,7 @@ drm_intel_get_eu_total(int fd, unsigned int *eu_total)
 	return 0;
 }
 
-int
+drm_public int
 drm_intel_get_pooled_eu(int fd)
 {
 	drm_i915_getparam_t gp;
@@ -3376,7 +3376,7 @@ drm_intel_get_pooled_eu(int fd)
 	return ret;
 }
 
-int
+drm_public int
 drm_intel_get_min_eu_in_pool(int fd)
 {
 	drm_i915_getparam_t gp;
@@ -3412,8 +3412,7 @@ drm_intel_get_min_eu_in_pool(int fd)
  * default state (no annotations), call this function with a \c count
  * of zero.
  */
-void
-drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
+drm_public void drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
 					 drm_intel_aub_annotation *annotations,
 					 unsigned count)
 {
@@ -3454,7 +3453,7 @@ drm_intel_bufmgr_gem_unref(drm_intel_bufmgr *bufmgr)
 	}
 }
 
-void *drm_intel_gem_bo_map__gtt(drm_intel_bo *bo)
+drm_public void *drm_intel_gem_bo_map__gtt(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -3502,7 +3501,7 @@ void *drm_intel_gem_bo_map__gtt(drm_intel_bo *bo)
 	return bo_gem->gtt_virtual;
 }
 
-void *drm_intel_gem_bo_map__cpu(drm_intel_bo *bo)
+drm_public void *drm_intel_gem_bo_map__cpu(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -3546,7 +3545,7 @@ void *drm_intel_gem_bo_map__cpu(drm_intel_bo *bo)
 	return bo_gem->mem_virtual;
 }
 
-void *drm_intel_gem_bo_map__wc(drm_intel_bo *bo)
+drm_public void *drm_intel_gem_bo_map__wc(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -3595,7 +3594,7 @@ void *drm_intel_gem_bo_map__wc(drm_intel_bo *bo)
  *
  * \param fd File descriptor of the opened DRM device.
  */
-drm_intel_bufmgr *
+drm_public drm_intel_bufmgr *
 drm_intel_bufmgr_gem_init(int fd, int batch_size)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem;
