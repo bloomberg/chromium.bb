@@ -105,6 +105,10 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // Local data deletion.
   void DeleteItem(const std::string& key);
 
+  // Deletes local data without notifying the processor (useful for modeling
+  // faulty bridges).
+  void MimicBugToLooseItemWithoutNotifyingProcessor(const std::string& key);
+
   // ModelTypeSyncBridge implementation
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(

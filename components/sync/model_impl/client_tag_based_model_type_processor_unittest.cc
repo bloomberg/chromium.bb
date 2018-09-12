@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -1872,6 +1873,107 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   // Upon a mismatch, metadata should have been cleared.
   EXPECT_EQ(0U, db().metadata_count());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldReportOrphanMetadataInGetLocalChangesWhenDataIsMissing) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+
+  // Loose the entity in the bridge (keeping the metadata around as an orphan).
+  bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
+
+  // Reset "the browser" so that the processor looses the copy of the data.
+  ResetState(/*keep_db=*/true);
+
+  // Initializing the processor will trigger it to commit again. It does not
+  // have a copy of the data so it will ask the bridge.
+  base::HistogramTester histogram_tester;
+  bridge()->ExpectSynchronousDataCallback();
+  InitializeToReadyState();
+
+  // Do it again, explicitly. The processor cannot return the entity as a
+  // LocalChange (because it cannot load its data) so it needs to ask the
+  // bridge.
+  CommitRequestDataList commit_request;
+  bridge()->ExpectSynchronousDataCallback();
+  type_processor()->GetLocalChanges(
+      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
+  EXPECT_EQ(0U, commit_request.size());
+
+  // The processor reports the same orphan to UMA on both calls, so the total
+  // count is 2.
+  histogram_tester.ExpectBucketCount(
+      "Sync.ModelTypeOrphanMetadata",
+      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/2);
+}
+
+TEST_F(
+    ClientTagBasedModelTypeProcessorTest,
+    ShouldNotReportOrphanMetadataInGetLocalChangesWhenDataIsAlreadyUntracked) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+
+  // Loose the entity in the bridge (keeping the metadata around as an orphan).
+  bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
+
+  // Reset "the browser" so that the processor looses the copy of the data.
+  ResetState(/*keep_db=*/true);
+
+  // Initializing the processor will trigger it to commit again. It does not
+  // have a copy of the data so it will ask the bridge. And it will report an
+  // orphan.
+  base::HistogramTester histogram_tester;
+  bridge()->ExpectSynchronousDataCallback();
+  InitializeToReadyState();
+
+  histogram_tester.ExpectBucketCount(
+      "Sync.ModelTypeOrphanMetadata",
+      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+
+  // Do it again, explicitly. The processor cannot return the entity as a
+  // LocalChange (because it cannot load its data) so it needs to ask the
+  // bridge.
+  CommitRequestDataList commit_request;
+  type_processor()->GetLocalChanges(
+      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
+
+  // The bridge has not passed the data back to the processor, we untrack the
+  // entity.
+  type_processor()->UntrackEntityForStorageKey(kKey1);
+
+  // Make the bridge pass the data back to the processor. Because the entity is
+  // already deleted in the processor, no further orphan gets reported.
+  std::move(bridge()->GetDataCallback()).Run();
+  EXPECT_EQ(0U, commit_request.size());
+  histogram_tester.ExpectBucketCount(
+      "Sync.ModelTypeOrphanMetadata",
+      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldNotReportOrphanMetadataInGetLocalChangesWhenDataIsPresent) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+
+  // Reset "the browser" so that the processor looses the copy of the data.
+  ResetState(/*keep_db=*/true);
+
+  // Initializing the processor will trigger it to commit again. It does not
+  // have a copy of the data so it will ask the bridge.
+  base::HistogramTester histogram_tester;
+  bridge()->ExpectSynchronousDataCallback();
+  InitializeToReadyState();
+
+  // Now everything is committed and GetLocalChanges is empty again.
+  CommitRequestDataList commit_request;
+  type_processor()->GetLocalChanges(
+      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
+  EXPECT_EQ(0U, commit_request.size());
+
+  // The processor never reports any orphan.
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
+                                    /*count=*/0);
 }
 
 class CommitOnlyClientTagBasedModelTypeProcessorTest
