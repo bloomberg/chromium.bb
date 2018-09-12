@@ -143,13 +143,11 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   if (speed >= 3) {
     if (is_720p_or_larger) {
       sf->disable_split_mask = DISABLE_ALL_SPLIT;
-      sf->schedule_mode_search = cm->base_qindex < 220 ? 1 : 0;
       sf->partition_search_breakout_dist_thr = (1 << 25);
       sf->partition_search_breakout_rate_thr = 200;
     } else {
       sf->max_intra_bsize = BLOCK_32X32;
       sf->disable_split_mask = DISABLE_ALL_INTER_SPLIT;
-      sf->schedule_mode_search = cm->base_qindex < 175 ? 1 : 0;
       sf->partition_search_breakout_dist_thr = (1 << 23);
       sf->partition_search_breakout_rate_thr = 120;
     }
@@ -232,7 +230,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->selective_ref_frame = 2;
     sf->fast_cdef_search = 1;
 
-    sf->use_rd_breakout = 1;
     sf->adaptive_rd_thresh = 1;
     sf->mv.auto_mv_step_size = 1;
     sf->mv.subpel_iters_per_step = 1;
@@ -251,7 +248,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 3) {
     sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
     sf->less_rectangular_check_level = 2;
-    sf->mode_skip_start = 10;
     sf->adaptive_pred_interp_filter = 1;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
@@ -277,10 +273,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
     sf->cb_partition_search = !boosted;
-    sf->cb_pred_filter_search = 1;
     sf->alt_ref_search_fp = 1;
-    sf->mode_skip_start = 6;
-    sf->adaptive_interp_filter_search = 1;
   }
 
   if (speed >= 5) {
@@ -303,7 +296,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
                   FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
                   FLAG_EARLY_TERMINATE;
     sf->disable_filter_search_var_thresh = 200;
-    sf->use_fast_coef_updates = ONE_LOOP_REDUCED;
     sf->use_fast_coef_costing = 1;
     sf->partition_search_breakout_rate_thr = 300;
     sf->use_transform_domain_distortion = 2;
@@ -323,33 +315,17 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->simple_model_rd_from_var = 1;
   }
   if (speed >= 7) {
-    const int is_keyframe = cm->frame_type == KEY_FRAME;
-    const int frames_since_key = is_keyframe ? 0 : cpi->rc.frames_since_key;
     sf->default_max_partition_size = BLOCK_32X32;
     sf->default_min_partition_size = BLOCK_8X8;
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
     sf->frame_parameter_update = 0;
     sf->mv.search_method = FAST_HEX;
-    sf->inter_mode_mask[BLOCK_32X32] = INTER_NEAREST_NEAR_NEW;
-    sf->inter_mode_mask[BLOCK_32X64] = INTER_NEAREST;
-    sf->inter_mode_mask[BLOCK_64X32] = INTER_NEAREST;
-    sf->inter_mode_mask[BLOCK_64X64] = INTER_NEAREST;
-    sf->inter_mode_mask[BLOCK_64X128] = INTER_NEAREST;
-    sf->inter_mode_mask[BLOCK_128X64] = INTER_NEAREST;
-    sf->inter_mode_mask[BLOCK_128X128] = INTER_NEAREST;
     sf->partition_search_type = REFERENCE_PARTITION;
-    sf->reuse_inter_pred_sby = 1;
-    sf->force_frame_boost =
-        is_keyframe ||
-        (frames_since_key % (sf->last_partitioning_redo_frequency << 1) == 1);
-    sf->max_delta_qindex = is_keyframe ? 20 : 15;
-    sf->coeff_prob_appx_step = 4;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
   }
   if (speed >= 8) {
     sf->mv.search_method = FAST_DIAMOND;
-    sf->mv.fullpel_search_step_param = 10;
     sf->mv.subpel_force_stop = 2;
     sf->lpf_pick = LPF_PICK_MINIMAL_LPF;
   }
@@ -411,9 +387,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 #endif  // DISABLE_TRELLISQ_SEARCH
   sf->gm_erroradv_type = GM_ERRORADV_TR_0;
   sf->mv.reduce_first_step_size = 0;
-  sf->coeff_prob_appx_step = 1;
   sf->mv.auto_mv_step_size = 0;
-  sf->mv.fullpel_search_step_param = 6;
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
   sf->tx_size_search_method = USE_FULL_RD;
@@ -429,7 +403,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->adaptive_motion_search = 0;
   sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;
-  sf->cb_pred_filter_search = 0;
   sf->cb_partition_search = 0;
   sf->alt_ref_search_fp = 0;
   sf->partition_search_type = SEARCH_PARTITION;
@@ -448,13 +421,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->default_max_partition_size = BLOCK_LARGEST;
   sf->default_min_partition_size = BLOCK_4X4;
   sf->adjust_partitioning_from_last_frame = 0;
-  sf->last_partitioning_redo_frequency = 4;
   sf->disable_split_mask = 0;
   sf->mode_search_skip_flags = 0;
-  sf->force_frame_boost = 0;
-  sf->max_delta_qindex = 0;
   sf->disable_filter_search_var_thresh = 0;
-  sf->adaptive_interp_filter_search = 0;
   sf->allow_partition_search_skip = 0;
   sf->use_accurate_subpel_search = 2;
   sf->disable_wedge_search_var_thresh = 0;
@@ -477,22 +446,14 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
     sf->intra_uv_mode_mask[i] = UV_INTRA_ALL;
   }
-  sf->use_rd_breakout = 0;
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;
-  sf->use_fast_coef_updates = TWO_LOOP;
   sf->use_fast_coef_costing = 0;
-  sf->mode_skip_start = MAX_MODES;  // Mode index at which mode skip mask set
-  sf->schedule_mode_search = 0;
-  for (i = 0; i < BLOCK_SIZES_ALL; ++i) sf->inter_mode_mask[i] = INTER_ALL;
   sf->max_intra_bsize = BLOCK_LARGEST;
-  sf->reuse_inter_pred_sby = 0;
   // This setting only takes effect when partition_search_type is set
   // to FIXED_PARTITION.
   sf->always_this_block_size = BLOCK_16X16;
-  sf->search_type_check_frequency = 50;
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
-  sf->default_interp_filter = SWITCHABLE;
   sf->partition_search_breakout_dist_thr = 0;
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
@@ -581,10 +542,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   x->min_partition_size = sf->default_min_partition_size;
   x->max_partition_size = sf->default_max_partition_size;
-
-  if (!cpi->oxcf.frame_periodic_boost) {
-    sf->max_delta_qindex = 0;
-  }
 
   // This is only used in motion vector unit test.
   if (cpi->oxcf.motion_vector_unit_test == 1)

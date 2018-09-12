@@ -2427,11 +2427,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   rc->worst_quality = cpi->oxcf.worst_allowed_q;
   rc->best_quality = cpi->oxcf.best_allowed_q;
 
-  if (!oxcf->large_scale_tile)
-    cm->interp_filter = cpi->sf.default_interp_filter;
-  else
-    cm->interp_filter = EIGHTTAP_REGULAR;
-
+  cm->interp_filter = oxcf->large_scale_tile ? EIGHTTAP_REGULAR : SWITCHABLE;
   cm->switchable_motion_mode = 1;
 
   if (cpi->oxcf.render_width > 0 && cpi->oxcf.render_height > 0) {
@@ -3769,7 +3765,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
-  cpi->common.interp_filter = cpi->sf.default_interp_filter;
+  cpi->common.interp_filter = SWITCHABLE;
   cpi->common.switchable_motion_mode = 1;
 }
 
@@ -4728,47 +4724,6 @@ static void set_ext_overrides(AV1_COMP *cpi) {
       cpi->ext_use_error_resilient && cpi->common.frame_type != KEY_FRAME;
 }
 
-static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
-  InterpFilter ifilter;
-  int ref_total[REF_FRAMES] = { 0 };
-  MV_REFERENCE_FRAME ref;
-  int mask = 0;
-  int arf_idx = ALTREF_FRAME;
-
-  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
-      cpi->refresh_alt2_ref_frame)
-    return mask;
-
-  for (ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref)
-    for (ifilter = EIGHTTAP_REGULAR; ifilter < SWITCHABLE_FILTERS; ++ifilter)
-      ref_total[ref] += cpi->interp_filter_selected[ref][ifilter];
-
-  for (ifilter = EIGHTTAP_REGULAR; ifilter < SWITCHABLE_FILTERS; ++ifilter) {
-    if ((ref_total[LAST_FRAME] &&
-         cpi->interp_filter_selected[LAST_FRAME][ifilter] == 0) &&
-        (ref_total[LAST2_FRAME] == 0 ||
-         cpi->interp_filter_selected[LAST2_FRAME][ifilter] * 50 <
-             ref_total[LAST2_FRAME]) &&
-        (ref_total[LAST3_FRAME] == 0 ||
-         cpi->interp_filter_selected[LAST3_FRAME][ifilter] * 50 <
-             ref_total[LAST3_FRAME]) &&
-        (ref_total[GOLDEN_FRAME] == 0 ||
-         cpi->interp_filter_selected[GOLDEN_FRAME][ifilter] * 50 <
-             ref_total[GOLDEN_FRAME]) &&
-        (ref_total[BWDREF_FRAME] == 0 ||
-         cpi->interp_filter_selected[BWDREF_FRAME][ifilter] * 50 <
-             ref_total[BWDREF_FRAME]) &&
-        (ref_total[ALTREF2_FRAME] == 0 ||
-         cpi->interp_filter_selected[ALTREF2_FRAME][ifilter] * 50 <
-             ref_total[ALTREF2_FRAME]) &&
-        (ref_total[ALTREF_FRAME] == 0 ||
-         cpi->interp_filter_selected[arf_idx][ifilter] * 50 <
-             ref_total[ALTREF_FRAME]))
-      mask |= 1 << ifilter;
-  }
-  return mask;
-}
-
 #define DUMP_RECON_FRAMES 0
 
 #if DUMP_RECON_FRAMES == 1
@@ -4995,9 +4950,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // Set default state for segment based loop filter update flags.
   cm->lf.mode_ref_delta_update = 0;
-
-  if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
-    cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
 
   // Set various flags etc to special state if it is a key frame.
   if (frame_is_intra_only(cm) || frame_is_sframe(cm)) {
