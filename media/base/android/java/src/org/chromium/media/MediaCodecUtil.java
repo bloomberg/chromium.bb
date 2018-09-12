@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.compat.ApiHelperForN;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -673,7 +674,7 @@ class MediaCodecUtil {
      */
     static void setPatternIfSupported(CryptoInfo cryptoInfo, int encrypt, int skip) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            cryptoInfo.setPattern(new CryptoInfo.Pattern(encrypt, skip));
+            ApiHelperForN.setCryptoInfoPattern(cryptoInfo, encrypt, skip);
         }
     }
 }

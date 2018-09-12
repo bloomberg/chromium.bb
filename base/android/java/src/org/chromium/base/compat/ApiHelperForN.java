@@ -9,6 +9,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ClipData;
 import android.graphics.Bitmap;
+import android.media.MediaCodec.CryptoInfo;
 import android.os.Build;
 import android.view.PointerIcon;
 import android.view.View;
@@ -57,5 +58,10 @@ public final class ApiHelperForN {
     /** See {@link PointerIcon#create(Bitmap, float, float)}. */
     public static PointerIcon createPointerIcon(Bitmap bitmap, float width, float height) {
         return PointerIcon.create(bitmap, width, height);
+    }
+
+    /** See {@link CryptoInfo#setPattern(Pattern)}. */
+    public static void setCryptoInfoPattern(CryptoInfo cryptoInfo, int encrypt, int skip) {
+        cryptoInfo.setPattern(new CryptoInfo.Pattern(encrypt, skip));
     }
 }
