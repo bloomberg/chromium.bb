@@ -58,6 +58,9 @@ class OpenVRRenderLoop : public base::Thread,
                          const gfx::Size& source_size) override;
   void GetFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback) override;
+  void GetControllerDataAndSendFrameData(
+      XRFrameDataProvider::GetFrameDataCallback callback,
+      mojom::XRFrameDataPtr frame_data);
 
   void RequestGamepadProvider(mojom::IsolatedXRGamepadProviderRequest request);
 
