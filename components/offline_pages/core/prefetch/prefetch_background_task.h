@@ -19,6 +19,7 @@ class PrefetchBackgroundTask {
 
   // Tells the system how to reschedule the running of next background task when
   // this background task completes.
+  // Overridden for testing only.
   virtual void SetReschedule(PrefetchBackgroundTaskRescheduleType type);
 
   PrefetchBackgroundTaskRescheduleType reschedule_type() const {
