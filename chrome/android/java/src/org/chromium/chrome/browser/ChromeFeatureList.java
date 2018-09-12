@@ -169,8 +169,6 @@ public abstract class ChromeFeatureList {
     // TODO(mdjones): Remove CHROME_HOME_SWIPE_VELOCITY_FEATURE or rename.
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
-    public static final String CHROME_MODERN_ALTERNATE_CARD_LAYOUT =
-            "ChromeModernAlternateCardLayout";
     public static final String CHROME_MODERN_FULL_ROLL = "ChromeModernFullRoll";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
@@ -243,7 +241,6 @@ public abstract class ChromeFeatureList {
     public static final String NTP_BUTTON = "NTPButton";
     public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
-    public static final String NTP_MODERN_LAYOUT = "NTPModernLayout";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_ALWAYS_HTTP_PROBE =

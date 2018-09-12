@@ -67,7 +67,6 @@ public class SuggestionsBinder {
     private final ImageView mThumbnailView;
     private final @Nullable ImageView mVideoBadge;
     private final ImageView mOfflineBadge;
-    private final @Nullable ImageView mOfflineBadgePublisherRow;
     private final View mPublisherBar;
     private final int mThumbnailSize;
     private final int mSmallThumbnailCornerRadius;
@@ -102,8 +101,6 @@ public class SuggestionsBinder {
         mAgeTextView = mCardContainerView.findViewById(R.id.article_age);
         mVideoBadge = mCardContainerView.findViewById(R.id.video_badge);
         mOfflineBadge = mCardContainerView.findViewById(R.id.offline_icon);
-        mOfflineBadgePublisherRow =
-                mCardContainerView.findViewById(R.id.offline_icon_publisher_row);
         mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
 
         if (mIsContextual) {
@@ -186,14 +183,7 @@ public class SuggestionsBinder {
                     mHasVideoBadge && !mHasOfflineBadge ? View.VISIBLE : View.GONE);
         }
 
-        boolean showPublisherRowOfflineBadge =
-                mOfflineBadgePublisherRow != null && mHasOfflineBadge && !mShowThumbnail;
-        mOfflineBadge.setVisibility(
-                mHasOfflineBadge && !showPublisherRowOfflineBadge ? View.VISIBLE : View.GONE);
-        if (mOfflineBadgePublisherRow != null) {
-            mOfflineBadgePublisherRow.setVisibility(
-                    showPublisherRowOfflineBadge ? View.VISIBLE : View.GONE);
-        }
+        mOfflineBadge.setVisibility(mHasOfflineBadge ? View.VISIBLE : View.GONE);
     }
 
     private void setFavicon() {
@@ -251,8 +241,7 @@ public class SuggestionsBinder {
             mThumbnailView.setImageResource(mUseContextualAlternateCardLayout
                             ? R.drawable.contextual_suggestions_placeholder_thumbnail_alternate
                             : R.drawable.contextual_suggestions_placeholder_thumbnail);
-        } else if (SuggestionsConfig.useModernLayout()
-                && ChromeFeatureList.isEnabled(
+        } else if (ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
             ColorDrawable colorDrawable =
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null

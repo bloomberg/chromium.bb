@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -43,8 +42,7 @@ public class TileRenderer {
 
     private static final int ICON_CORNER_RADIUS_DP = 4;
     private static final int ICON_TEXT_SIZE_DP = 20;
-    private static final int ICON_MIN_SIZE_PX = 48;
-    private static final int ICON_DECREASED_MIN_SIZE_PX = 24;
+    private static final int ICON_MIN_SIZE_PX = 24;
 
     private final Resources mResources;
     private final ImageFetcher mImageFetcher;
@@ -71,26 +69,15 @@ public class TileRenderer {
                 Math.round(mDesiredIconSize / mResources.getDisplayMetrics().density);
 
         // On ldpi devices, mDesiredIconSize could be even smaller than the global limit.
-        mMinIconSize = Math.min(mDesiredIconSize,
-                useDecreasedMinSize() ? ICON_DECREASED_MIN_SIZE_PX : ICON_MIN_SIZE_PX);
+        mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
 
         mLayout = getLayout();
 
-        int cornerRadiusDp;
-        if (style == TileView.Style.MODERN || style == TileView.Style.MODERN_CONDENSED) {
-            cornerRadiusDp = desiredIconSizeDp / 2;
-        } else {
-            cornerRadiusDp = ICON_CORNER_RADIUS_DP;
-        }
-
+        int cornerRadiusDp = desiredIconSizeDp / 2;
         int iconColor = ApiCompatibilityUtils.getColor(
                 mResources, R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mResources, desiredIconSizeDp, desiredIconSizeDp,
                 cornerRadiusDp, iconColor, ICON_TEXT_SIZE_DP);
-    }
-
-    private static boolean useDecreasedMinSize() {
-        return FeatureUtilities.isChromeModernDesignEnabled();
     }
 
     /**
@@ -217,10 +204,6 @@ public class TileRenderer {
     @LayoutRes
     private int getLayout() {
         switch (mStyle) {
-            case TileView.Style.CLASSIC:
-                return R.layout.tile_view_classic;
-            case TileView.Style.CLASSIC_CONDENSED:
-                return R.layout.tile_view_classic_condensed;
             case TileView.Style.MODERN:
                 return R.layout.tile_view_modern;
             case TileView.Style.MODERN_CONDENSED:

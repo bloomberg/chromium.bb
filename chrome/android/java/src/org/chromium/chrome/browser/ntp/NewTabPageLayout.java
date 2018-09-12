@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.suggestions.Tile;
 import org.chromium.chrome.browser.suggestions.TileGridLayout;
 import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.suggestions.TileRenderer;
-import org.chromium.chrome.browser.suggestions.TileView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -243,8 +242,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                 mManager.getNavigationDelegate(), mSearchProviderLogoView, profile);
 
         mSearchBoxView = findViewById(R.id.search_box);
-        if (SuggestionsConfig.useModernLayout()
-                && !DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
+        if (!DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
             mSearchBoxBoundsVerticalInset = getResources().getDimensionPixelSize(
                     R.dimen.ntp_search_box_bounds_vertical_inset_modern);
         }
@@ -310,12 +308,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         final TextView searchBoxTextView = mSearchBoxView.findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_web_address);
-        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
-                || SuggestionsConfig.useModernLayout()) {
-            searchBoxTextView.setHint(hintText);
-        } else {
-            searchBoxTextView.setContentDescription(hintText);
-        }
+        searchBoxTextView.setHint(hintText);
+
         searchBoxTextView.setOnClickListener(v -> mManager.focusSearchBox(false, null));
         searchBoxTextView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -564,12 +558,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             // If the shortcuts view is visible, padding will be built into that view.
             paddingTop = 0;
         } else {
-            int paddingWithLogoId = SuggestionsConfig.useModernLayout()
-                    ? R.dimen.tile_grid_layout_modern_padding_top
-                    : R.dimen.tile_grid_layout_padding_top;
             // Set a bit more top padding on the tile grid if there is no logo.
             paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
-                            ? paddingWithLogoId
+                            ? R.dimen.tile_grid_layout_padding_top
                             : R.dimen.tile_grid_layout_no_logo_padding_top);
         }
 
@@ -798,10 +789,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * may not be enough space to fit all of them.
      */
     private int getMaxTileColumns() {
-        if (!mUiConfig.getCurrentDisplayStyle().isSmall()
-                && SuggestionsConfig.getTileStyle(mUiConfig) == TileView.Style.CLASSIC_CONDENSED) {
-            return 5;
-        }
         return 4;
     }
 

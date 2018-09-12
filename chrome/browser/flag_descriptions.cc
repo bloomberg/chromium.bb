@@ -2237,11 +2237,6 @@ const char kChromeHomeSwipeLogicDescription[] =
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
 const char kChromeHomeSwipeLogicVelocity[] = "Velocity suppression model";
 
-const char kChromeModernAlternateCardLayoutName[] =
-    "Chrome Modern Alternate Card Layout";
-const char kChromeModernAlternateCardLayoutDescription[] =
-    "Enable the alternate card layout for Chrome Modern Design.";
-
 const char kChromeModernFullRollName[] = "Chrome Modern Full-Roll";
 const char kChromeModernFullRollDescription[] =
     "Enable modern full-roll animation for Chrome.";
@@ -2531,14 +2526,6 @@ const char kNoCreditCardAbortDescription[] =
 const char kNtpButtonName[] = "Enable NTP Button";
 const char kNtpButtonDescription[] =
     "Displays a New Tab Page button in the toolbar if enabled.";
-
-const char kNtpModernLayoutName[] = "Modern NTP layout";
-const char kNtpModernLayoutDescription[] =
-    "Show a modern layout on the New Tab Page.";
-
-const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
-const char kNtpGoogleGInOmniboxDescription[] =
-    "Show a Google G in the omnibox on the New Tab Page.";
 
 const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =

@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SyncPromoView;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -160,9 +159,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 viewHolder.domainView = (TextView) childView.findViewById(R.id.domain_row);
                 viewHolder.imageView = (ImageView) childView.findViewById(R.id.recent_tabs_favicon);
                 viewHolder.imageView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-                if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-                    viewHolder.imageView.getBackground().setAlpha(0);
-                }
                 viewHolder.itemLayout = childView.findViewById(R.id.recent_tabs_list_item_layout);
                 childView.setTag(viewHolder);
             }
@@ -681,8 +677,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mDefaultFaviconHelper = new DefaultFaviconHelper();
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(
-                FeatureUtilities.isChromeModernDesignEnabled());
+        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(true);
 
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
                 OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.NUM_ENTRIES);

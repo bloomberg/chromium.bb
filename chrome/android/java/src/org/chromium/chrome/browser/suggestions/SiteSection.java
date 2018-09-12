@@ -115,9 +115,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     @LayoutRes
     private static int getLayout() {
-        if (SuggestionsConfig.useModernLayout()) {
-            return R.layout.suggestions_site_tile_grid_modern;
-        }
-        return R.layout.suggestions_site_tile_grid;
+        return R.layout.suggestions_site_tile_grid_modern;
     }
 }

@@ -115,14 +115,12 @@ public class ThumbnailGradient {
      */
     @GradientDirection
     private static int getGradientDirection() {
-        // The drawable is set up correctly for the modern layout, but needs to be flipped for the
-        // large thumbnail layout.
-        boolean modern = SuggestionsConfig.useModernLayout();
-
         // The drawable resource does not get flipped automatically if we are in RTL, so we must
         // flip it ourselves.
         boolean rtl = LocalizationUtils.isLayoutRtl();
 
-        return modern == rtl ? GradientDirection.TOP_RIGHT : GradientDirection.TOP_LEFT;
+        // The thumbnail is at the end of the suggestions card, so the gradient should be applied
+        // to the top right corner in LTR and top left in RTL.
+        return rtl ? GradientDirection.TOP_LEFT : GradientDirection.TOP_RIGHT;
     }
 }
