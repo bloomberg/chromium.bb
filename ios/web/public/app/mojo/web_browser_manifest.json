@@ -3,7 +3,8 @@
   "display_name": "Web",
   "options": {
     "can_connect_to_other_services_as_any_user": true,
-    "can_connect_to_other_services_with_any_instance_name": true
+    "can_connect_to_other_services_with_any_instance_name": true,
+    "can_create_other_service_instances": true
   },
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -15,7 +16,6 @@
       "requires": {
         "*": [ "app" ],
         "service_manager": [
-          "service_manager:client_process",
           "service_manager:service_manager"
         ]
       }

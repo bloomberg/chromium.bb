@@ -52,8 +52,3 @@ source_set("service_manager") {
     "//services/service_manager/sandbox",
   ]
 }
-
-service_manifest("manifest") {
-  name = "service_manager"
-  source = "manifest.json"
-}

@@ -78,7 +78,7 @@ TEST_F(EntryTest, Options) {
   EXPECT_TRUE(entry->options().can_connect_to_other_services_as_any_user);
   EXPECT_TRUE(
       entry->options().can_connect_to_other_services_with_any_instance_name);
-  EXPECT_TRUE(entry->options().instance_for_client_process);
+  EXPECT_TRUE(entry->options().can_create_other_service_instances);
 
   EXPECT_EQ("", entry->sandbox_type());
 }

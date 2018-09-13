@@ -47,7 +47,6 @@ namespace service_manager {
 
 namespace {
 
-const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
@@ -575,12 +574,11 @@ class ServiceManager::Instance
       const Identity& target) {
     if (service && pid_receiver_request &&
         (service->is_bound() || pid_receiver_request->is_pending())) {
-      if (!HasCapability(GetConnectionSpec(), kCapability_ClientProcess)) {
+      if (!options_.can_create_other_service_instances) {
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
-                   << "service_manager{client_process} capability "
-                   << "class.";
+                   << "'can_create_other_service_instances' option.";
         return mojom::ConnectResult::ACCESS_DENIED;
       }
 
