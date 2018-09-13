@@ -321,3 +321,65 @@ class SignerConfigsFromCSVTest(cros_test_lib.TestCase):
     signer_configs = firmware.SignerConfigsFromCSV(csv_file)
 
     self.assertListEqual(orig_boards, signer_configs)
+
+
+class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
+  """Test WriteSignerNotes function."""
+
+  SHA1SUM = '0000000000000000000000000000000000000000'
+
+  def setUp(self):
+
+    # Use the same sha1sum for all keys
+    self.rc.SetDefaultCmdResult(output='Key sha1sum: ' + self.SHA1SUM)
+
+  def testSingleKey(self):
+    """Test function's output with fixed sha1sum."""
+    recovery_key = keys.KeyPair('recovery_key', self.tempdir)
+    root_key = keys.KeyPair('root_key', self.tempdir)
+
+    keyset = keys.Keyset()
+    keyset.AddKey(recovery_key)
+    keyset.AddKey(root_key)
+
+    expected_output = ['Signed with keyset in ' + self.tempdir,
+                       'recovery: ' + self.SHA1SUM,
+                       'root: ' + self.SHA1SUM]
+
+    version_signer = io.BytesIO()
+    firmware.WriteSignerNotes(keyset, version_signer)
+    self.assertListEqual(expected_output,
+                         version_signer.getvalue().splitlines())
+
+  def testLoemKeys(self):
+    """Test function's output with multiple loem keys."""
+    recovery_key = keys.KeyPair('recovery_key', self.tempdir)
+    root_key = keys.KeyPair('root_key', self.tempdir)
+    root_key.AddSubkey('loem1')
+    root_key.AddSubkey('loem2')
+    root_key.AddSubkey('loem3')
+
+    keyset = keys.Keyset()
+    keyset.AddKey(recovery_key)
+    keyset.AddKey(root_key)
+
+    expected_header = ['Signed with keyset in ' + self.tempdir,
+                       'recovery: ' + self.SHA1SUM,
+                       'List sha1sum of all loem/model\'s signatures:']
+
+    expected_loems = ['loem1: ' + self.SHA1SUM,
+                      'loem2: ' + self.SHA1SUM,
+                      'loem3: ' + self.SHA1SUM]
+
+    version_signer = io.BytesIO()
+    firmware.WriteSignerNotes(keyset, version_signer)
+
+    output = version_signer.getvalue().splitlines()
+
+    output_header = output[:len(expected_header)]
+    output_loem = output[len(expected_header):]
+
+    output_loem.sort() # loem's can be out of order, so sort first.
+
+    self.assertListEqual(expected_header, output_header)
+    self.assertListEqual(expected_loems, output_loem)

@@ -357,7 +357,9 @@ def ResignImageFirmware(image_file, keyset):
             raise signer.SigningFailedError('Signing Firmware Image Failed: %s'
                                             % sb_file)
 
-          # TODO (chingcodes) add VERSION.signer file generation
+          version_signer_path = os.path.join(sb_dir, 'VERSION.signer')
+          with open(version_signer_path, 'w') as version_signer:
+            WriteSignerNotes(keyset, version_signer)
       else:
         logging.warning("No firmware found in image. Not signing firmware")
 
@@ -377,3 +379,23 @@ def SignerConfigsFromCSV(signer_config_file):
       raise csv.Error('Missing field: ' + field)
 
   return list(csv_reader)
+
+
+def WriteSignerNotes(keyset, outfile):
+  """Writes signer notes (a.k.a. VERSION.signer) to file.
+
+  Args:
+    keyset: keyset used for generating signer file.
+    outfile: file object that signer notes are written to.
+  """
+  recovery_key = keyset.keys['recovery_key']
+  outfile.write('Signed with keyset in %s\n' % recovery_key.keydir)
+  outfile.write('recovery: %s\n' % recovery_key.GetSHA1sum())
+
+  root_key = keyset.keys['root_key']
+  if root_key.subkeys:
+    outfile.write('List sha1sum of all loem/model\'s signatures:\n')
+    for key_id, key in root_key.subkeys.items():
+      outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))
+  else:
+    outfile.write('root: %s\n' % root_key.GetSHA1sum())
