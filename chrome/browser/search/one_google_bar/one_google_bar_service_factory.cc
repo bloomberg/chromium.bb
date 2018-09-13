@@ -16,7 +16,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader_impl.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -41,8 +41,8 @@ OneGoogleBarServiceFactory::OneGoogleBarServiceFactory()
           "OneGoogleBarService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(CookieSettingsFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(GoogleURLTrackerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 OneGoogleBarServiceFactory::~OneGoogleBarServiceFactory() = default;
@@ -51,8 +51,8 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 
   Profile* profile = Profile::FromBrowserContext(context);
-  GaiaCookieManagerService* cookie_service =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   GoogleURLTracker* google_url_tracker =
       GoogleURLTrackerFactory::GetForProfile(profile);
   content_settings::CookieSettings* cookie_settings =
@@ -61,7 +61,7 @@ KeyedService* OneGoogleBarServiceFactory::BuildServiceInstanceFor(
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
   return new OneGoogleBarService(
-      cookie_service,
+      identity_manager,
       std::make_unique<OneGoogleBarLoaderImpl>(
           url_loader_factory, google_url_tracker,
           g_browser_process->GetApplicationLocale(),
