@@ -247,7 +247,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                   bool user_gesture);
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int route_id);
-  void OnRenderProcessGone(int status, int error_code);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnRequestSetBounds(const gfx::Rect& bounds);

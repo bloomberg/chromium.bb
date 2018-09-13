@@ -775,7 +775,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
@@ -836,13 +835,6 @@ void RenderViewHostImpl::OnShowWidget(int route_id,
 void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
   delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(), route_id);
   Send(new ViewMsg_SetBounds_ACK(route_id));
-}
-
-void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // Do nothing, otherwise RenderWidgetHostImpl will assume it is not a
-  // RenderViewHostImpl and destroy itself.
-  // TODO(nasko): Remove this hack once RenderViewHost and RenderWidgetHost are
-  // decoupled.
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
