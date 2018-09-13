@@ -682,6 +682,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_texture_sRGB_decode",
           "GL_EXT_texture_storage",
           "GL_EXT_unpack_subimage",
+          "GL_KHR_parallel_shader_compile",
           "GL_KHR_texture_compression_astc_hdr",
           "GL_KHR_texture_compression_astc_ldr",
           "GL_NV_pack_subimage",

@@ -3696,4 +3696,12 @@ void GLES2Implementation::FramebufferTextureMultiviewLayeredANGLE(
   CheckGLError();
 }
 
+void GLES2Implementation::MaxShaderCompilerThreadsKHR(GLuint count) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMaxShaderCompilerThreadsKHR("
+                     << count << ")");
+  helper_->MaxShaderCompilerThreadsKHR(count);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

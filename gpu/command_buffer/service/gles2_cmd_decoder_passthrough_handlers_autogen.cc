@@ -4746,5 +4746,23 @@ GLES2DecoderPassthroughImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleMaxShaderCompilerThreadsKHR(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MaxShaderCompilerThreadsKHR& c =
+      *static_cast<const volatile gles2::cmds::MaxShaderCompilerThreadsKHR*>(
+          cmd_data);
+  if (!features().khr_parallel_shader_compile) {
+    return error::kUnknownCommand;
+  }
+
+  GLuint count = static_cast<GLuint>(c.count);
+  error::Error error = DoMaxShaderCompilerThreadsKHR(count);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

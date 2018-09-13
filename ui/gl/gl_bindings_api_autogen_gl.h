@@ -868,6 +868,7 @@ void* glMapBufferRangeFn(GLenum target,
                          GLbitfield access) override;
 void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) override;
 void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override;
+void glMaxShaderCompilerThreadsKHRFn(GLuint count) override;
 void glMemoryBarrierByRegionFn(GLbitfield barriers) override;
 void glMemoryBarrierEXTFn(GLbitfield barriers) override;
 void glMinSampleShadingFn(GLfloat value) override;

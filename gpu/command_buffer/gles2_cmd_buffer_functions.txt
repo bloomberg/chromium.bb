@@ -403,3 +403,6 @@ GL_APICALL void         GL_APIENTRY glSetReadbackBufferShadowAllocationINTERNAL 
 
 // Extension ANGLE_multiview
 GL_APICALL void         GL_APIENTRY glFramebufferTextureMultiviewLayeredANGLE (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint baseViewIndex, GLsizei numViews);
+
+// Extension KHR_parallel_shader_compile
+GL_APICALL void         GL_APIENTRY glMaxShaderCompilerThreadsKHR (GLuint count);

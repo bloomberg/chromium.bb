@@ -1245,4 +1245,5 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
     GLint /* level */,
     GLint /* baseViewIndex */,
     GLsizei /* numViews */) {}
+void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

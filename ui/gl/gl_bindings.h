@@ -413,6 +413,12 @@
 #define GL_FRAMEBUFFER_FLIP_Y_MESA 0x8BBB
 #endif /* GL_MESA_framebuffer_flip_y */
 
+#ifndef GL_KHR_parallel_shader_compile
+#define GL_KHR_parallel_shader_compile 1
+#define GL_MAX_SHADER_COMPILER_THREADS_KHR 0x91B0
+#define GL_COMPLETION_STATUS_KHR 0x91B1
+#endif /* GL_KHR_parallel_shader_compile */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

@@ -2942,6 +2942,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMatrixLoadfEXT(GLenum matrixMode,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glMaxShaderCompilerThreadsKHR(GLuint count) {
+  MakeGlMockFunctionUnique("glMaxShaderCompilerThreadsKHR");
+  interface_->MaxShaderCompilerThreadsKHR(count);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glMemoryBarrier(GLbitfield barriers) {
   MakeGlMockFunctionUnique("glMemoryBarrier");
   interface_->MemoryBarrierEXT(barriers);
@@ -5650,6 +5656,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfCHROMIUM);
   if (strcmp(name, "glMatrixLoadfEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfEXT);
+  if (strcmp(name, "glMaxShaderCompilerThreadsKHR") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMaxShaderCompilerThreadsKHR);
   if (strcmp(name, "glMemoryBarrier") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrier);
   if (strcmp(name, "glMemoryBarrierByRegion") == 0)

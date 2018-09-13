@@ -697,7 +697,6 @@ _NAMED_TYPE_INFO = {
   },
   'ProgramParameter': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_DELETE_STATUS',
       'GL_LINK_STATUS',
@@ -794,7 +793,6 @@ _NAMED_TYPE_INFO = {
   },
   'ShaderParameter': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_SHADER_TYPE',
       'GL_DELETE_STATUS',
@@ -4106,6 +4104,13 @@ _FUNCTION_INFO = {
     'trace_level': 1,
     'es3': True
   },
+  'MaxShaderCompilerThreadsKHR': {
+    'cmd_args': 'GLuint count',
+    'unit_test': False,
+    'client_test': False,
+    'extension': 'KHRParallelShaderCompile',
+    'extension_flag': 'khr_parallel_shader_compile',
+  }
 }
 
 

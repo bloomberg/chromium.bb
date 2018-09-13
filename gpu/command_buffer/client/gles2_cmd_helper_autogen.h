@@ -3388,4 +3388,12 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
   }
 }
 
+void MaxShaderCompilerThreadsKHR(GLuint count) {
+  gles2::cmds::MaxShaderCompilerThreadsKHR* c =
+      GetCmdSpace<gles2::cmds::MaxShaderCompilerThreadsKHR>();
+  if (c) {
+    c->Init(count);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

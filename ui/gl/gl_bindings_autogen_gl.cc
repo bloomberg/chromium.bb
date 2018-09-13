@@ -400,6 +400,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_KHR_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_KHR_blend_equation_advanced");
   ext.b_GL_KHR_debug = gfx::HasExtension(extensions, "GL_KHR_debug");
+  ext.b_GL_KHR_parallel_shader_compile =
+      gfx::HasExtension(extensions, "GL_KHR_parallel_shader_compile");
   ext.b_GL_KHR_robustness = gfx::HasExtension(extensions, "GL_KHR_robustness");
   ext.b_GL_NV_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_NV_blend_equation_advanced");
@@ -1837,6 +1839,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glMatrixLoadIdentityEXTFn =
         reinterpret_cast<glMatrixLoadIdentityEXTProc>(
             GetGLProcAddress("glMatrixLoadIdentityCHROMIUM"));
+  }
+
+  if (ext.b_GL_KHR_parallel_shader_compile) {
+    fn.glMaxShaderCompilerThreadsKHRFn =
+        reinterpret_cast<glMaxShaderCompilerThreadsKHRProc>(
+            GetGLProcAddress("glMaxShaderCompilerThreadsKHR"));
   }
 
   if (ver->IsAtLeastGLES(3u, 1u) || ver->IsAtLeastGL(4u, 5u)) {
@@ -4476,6 +4484,10 @@ void GLApiBase::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 
 void GLApiBase::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   driver_->fn.glMatrixLoadIdentityEXTFn(matrixMode);
+}
+
+void GLApiBase::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  driver_->fn.glMaxShaderCompilerThreadsKHRFn(count);
 }
 
 void GLApiBase::glMemoryBarrierByRegionFn(GLbitfield barriers) {
@@ -7834,6 +7846,12 @@ void TraceGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 void TraceGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadIdentityEXT")
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
+}
+
+void TraceGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glMaxShaderCompilerThreadsKHR")
+  gl_api_->glMaxShaderCompilerThreadsKHRFn(count);
 }
 
 void TraceGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
@@ -12094,6 +12112,12 @@ void DebugGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
+void DebugGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  GL_SERVICE_LOG("glMaxShaderCompilerThreadsKHR"
+                 << "(" << count << ")");
+  gl_api_->glMaxShaderCompilerThreadsKHRFn(count);
+}
+
 void DebugGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {
   GL_SERVICE_LOG("glMemoryBarrierByRegion"
                  << "(" << barriers << ")");
@@ -15738,6 +15762,10 @@ void NoContextGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 
 void NoContextGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   NoContextHelper("glMatrixLoadIdentityEXT");
+}
+
+void NoContextGLApi::glMaxShaderCompilerThreadsKHRFn(GLuint count) {
+  NoContextHelper("glMaxShaderCompilerThreadsKHR");
 }
 
 void NoContextGLApi::glMemoryBarrierByRegionFn(GLbitfield barriers) {

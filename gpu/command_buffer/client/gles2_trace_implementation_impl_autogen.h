@@ -2659,4 +2659,10 @@ void GLES2TraceImplementation::FramebufferTextureMultiviewLayeredANGLE(
                                                level, baseViewIndex, numViews);
 }
 
+void GLES2TraceImplementation::MaxShaderCompilerThreadsKHR(GLuint count) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::MaxShaderCompilerThreadsKHR");
+  gl_->MaxShaderCompilerThreadsKHR(count);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_
