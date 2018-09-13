@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "components/arc/arc_util.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -2645,22 +2646,30 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       "multideviceVerificationText",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT,
-          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+          base::UTF8ToUTF16(
+              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
+                  .spec())));
   html_source->AddString(
       "multideviceCouldNotConnect",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_COULD_NOT_CONNECT,
-          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+          base::UTF8ToUTF16(
+              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
+                  .spec())));
   html_source->AddString(
       "multideviceSetupSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,
-          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+          base::UTF8ToUTF16(
+              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
+                  .spec())));
   html_source->AddString(
       "multideviceNoHostText",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_NO_ELIGIBLE_HOSTS,
-          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+          base::UTF8ToUTF16(
+              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
+                  .spec())));
   html_source->AddString(
       "multideviceSmartLockItemSummary",
       l10n_util::GetStringFUTF16(

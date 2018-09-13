@@ -52,6 +52,18 @@ source_set("prefs") {
   ]
 }
 
+source_set("url_provider") {
+  sources = [
+    "url_provider.cc",
+    "url_provider.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/common",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 
