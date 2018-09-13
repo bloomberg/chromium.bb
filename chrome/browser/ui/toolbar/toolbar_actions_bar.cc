@@ -568,6 +568,10 @@ void ToolbarActionsBar::ShowToolbarActionBubbleAsync(
                      weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
 }
 
+bool ToolbarActionsBar::CloseOverflowMenuIfOpen() {
+  return delegate_->CloseOverflowMenuIfOpen();
+}
+
 void ToolbarActionsBar::MaybeShowExtensionBubble() {
   std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
       model_->GetExtensionMessageBubbleController(browser_);

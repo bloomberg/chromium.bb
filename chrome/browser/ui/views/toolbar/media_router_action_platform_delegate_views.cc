@@ -4,11 +4,9 @@
 
 #include "chrome/browser/ui/views/toolbar/media_router_action_platform_delegate_views.h"
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 
 // static
@@ -30,18 +28,4 @@ MediaRouterActionPlatformDelegateViews::MediaRouterActionPlatformDelegateViews(
 
 MediaRouterActionPlatformDelegateViews::
     ~MediaRouterActionPlatformDelegateViews() {
-}
-
-bool MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
-  // TODO(mgiuca): Use button_provider() instead of toolbar(), so this also
-  // works for hosted app windows.
-  AppMenuButton* app_menu_button =
-      BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar()
-          ->app_menu_button();
-  if (!app_menu_button || !app_menu_button->IsMenuShowing())
-    return false;
-
-  app_menu_button->CloseMenu();
-  return true;
 }

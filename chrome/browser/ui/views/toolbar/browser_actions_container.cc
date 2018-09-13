@@ -307,15 +307,18 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
   bubble->Show();
 }
 
-void BrowserActionsContainer::CloseOverflowMenuIfOpen() {
+bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {
   // TODO(mgiuca): Use toolbar_button_provider() instead of toolbar(), so this
   // also works for hosted app windows.
   BrowserAppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()
           ->app_menu_button();
-  if (app_menu_button && app_menu_button->IsMenuShowing())
-    app_menu_button->CloseMenu();
+  if (!app_menu_button || !app_menu_button->IsMenuShowing())
+    return false;
+
+  app_menu_button->CloseMenu();
+  return true;
 }
 
 void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {

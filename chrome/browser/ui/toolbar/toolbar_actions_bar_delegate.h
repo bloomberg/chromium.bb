@@ -59,8 +59,9 @@ class ToolbarActionsBarDelegate {
   virtual void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
 
-  // Closes the overflow menu if it's open.
-  virtual void CloseOverflowMenuIfOpen() = 0;
+  // Closes the overflow menu, if it was open. Returns whether or not the
+  // overflow menu was closed.
+  virtual bool CloseOverflowMenuIfOpen() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_

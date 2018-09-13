@@ -29,7 +29,6 @@ class ExtensionActionPlatformDelegateCocoa
       std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) override;
-  void CloseOverflowMenu() override;
   void ShowContextMenu() override;
 
   // content::NotificationObserver:
