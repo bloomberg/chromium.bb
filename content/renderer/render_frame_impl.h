@@ -721,6 +721,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURL& url) override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,
                               ax::mojom::Event event) override;
+  void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
+                            bool subtree) override;
   void HandleAccessibilityFindInPageResult(int identifier,
                                            int match_index,
                                            const blink::WebNode& start_node,

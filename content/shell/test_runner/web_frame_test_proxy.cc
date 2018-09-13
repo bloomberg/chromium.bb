@@ -220,6 +220,17 @@ void WebFrameTestProxy::PostAccessibilityEvent(const blink::WebAXObject& object,
   RenderFrameImpl::PostAccessibilityEvent(object, event);
 }
 
+void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
+                                             bool subtree) {
+  test_client_->MarkWebAXObjectDirty(object, subtree);
+  // Guard against the case where |this| was deleted as a result of an
+  // accessibility listener detaching a frame. If that occurs, the
+  // WebAXObject will be detached.
+  if (object.IsDetached())
+    return;  // |this| is invalid.
+  RenderFrameImpl::MarkWebAXObjectDirty(object, subtree);
+}
+
 void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
     blink::WebSetSinkIdCallbacks* web_callbacks) {

@@ -1097,15 +1097,26 @@ bool IsNodeAriaVisible(Node* node) {
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
     ax::mojom::Event notification) {
-  if (!obj || !obj->GetDocument() || !obj->DocumentFrameView() ||
-      !obj->DocumentFrameView()->GetFrame().GetPage())
+  if (!document_ || !document_->View() ||
+      !document_->View()->GetFrame().GetPage())
     return;
-  // Send via WebLocalFrameClient
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
-      obj->GetDocument()->AXObjectCacheOwner().GetFrame());
+
+  WebLocalFrameImpl* webframe =
+      WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {
     webframe->Client()->PostAccessibilityEvent(WebAXObject(obj), notification);
   }
+}
+
+void AXObjectCacheImpl::MarkAXObjectDirty(AXObject* obj, bool subtree) {
+  if (!document_ || !document_->View() ||
+      !document_->View()->GetFrame().GetPage())
+    return;
+
+  WebLocalFrameImpl* webframe =
+      WebLocalFrameImpl::FromFrame(document_->AXObjectCacheOwner().GetFrame());
+  if (webframe && webframe->Client())
+    webframe->Client()->MarkWebAXObjectDirty(WebAXObject(obj), subtree);
 }
 
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,

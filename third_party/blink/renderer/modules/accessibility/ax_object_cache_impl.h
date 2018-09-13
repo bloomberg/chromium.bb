@@ -189,6 +189,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void PostNotification(LayoutObject*, ax::mojom::Event);
   void PostNotification(Node*, ax::mojom::Event);
   void PostNotification(AXObject*, ax::mojom::Event);
+  void MarkAXObjectDirty(AXObject*, bool subtree);
 
   //
   // Aria-owns support.

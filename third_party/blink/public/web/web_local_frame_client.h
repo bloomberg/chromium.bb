@@ -736,6 +736,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notifies embedder about an accessibility event.
   virtual void PostAccessibilityEvent(const WebAXObject&, ax::mojom::Event) {}
 
+  // Notifies embedder that a WebAXObject is dirty and its state needs
+  // to be serialized again. If |subtree| is true, the entire subtree is
+  // dirty.
+  virtual void MarkWebAXObjectDirty(const WebAXObject&, bool subtree) {}
+
   // Provides accessibility information about a find in page result.
   virtual void HandleAccessibilityFindInPageResult(int identifier,
                                                    int match_index,

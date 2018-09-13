@@ -59,14 +59,14 @@
         var widget = document.getElementById(widgetId);
         var axWidget = accessibilityController.accessibleElementById(widgetId);
         var focusChangedEventCount = 0;
-        var activeDescendantChangedEventCount = 0;
+        var markDirtyEventCount = 0;
         axWidget.addNotificationListener(function(notification)
         {
             if (notification == "Focus")
                 ++focusChangedEventCount;
-            if (notification == "ActiveDescendantChanged")
-                ++activeDescendantChangedEventCount;
-            if (focusChangedEventCount == 1 && activeDescendantChangedEventCount == 3) {
+            if (notification == "MarkDirty")
+                ++markDirtyEventCount;
+            if (focusChangedEventCount == 1 && markDirtyEventCount == 3) {
                 widget.style.display = "none";
                 listbox.style.display = "none";
                 t.done();
