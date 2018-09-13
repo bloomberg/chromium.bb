@@ -17,12 +17,19 @@
 
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
+#include <dlfcn.h>
+
+#include "base/trace_event/cfi_backtrace_android.h"
 #include "components/tracing/common/native_stack_sampler_android.h"
 #endif
 
 namespace tracing {
 
 namespace {
+
+std::string GetFrameNameFromOffsetAddr(uintptr_t offset_from_module_base) {
+  return base::StringPrintf("off:0x%" PRIxPTR, offset_from_module_base);
+}
 
 // This class will receive the sampling profiler stackframes and output them
 // to the chrome trace via an event.
@@ -34,27 +41,57 @@ class TracingProfileBuilder
     if (frames.empty())
       return;
     // Insert an event with the frames rendered as a string with the following
-    // format:
+    // formats:
     //   offset - module [debugid]
+    //  [OR]
+    //   symbol - module []
     // The offset is difference between the load module address and the
     // frame address.
     //
     // Example:
     //
-    //   "7ffb3d439164 - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
-    //    7ffb3f991b2d - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
-    //    7ffaf3e26201 - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
-    //    7ffaf3e26008 - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
-    //    7ffaf3e25afe - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
-    //    7ffaf3e436e1 - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+    //   "malloc             - libc.so    []
+    //    std::string::alloc - stdc++.so  []
+    //    off:7ffb3f991b2d   - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
+    //    off:7ffb3d439164   - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
+    //    off:7ffaf3e26201   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+    //    off:7ffaf3e26008   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
     //    [...] "
     std::string result;
     for (const auto& frame : frames) {
-      base::StringAppendF(
-          &result, "0x%" PRIxPTR " - %s [%s]\n",
-          frame.instruction_pointer - frame.module.base_address,
-          frame.module.filename.BaseName().MaybeAsASCII().c_str(),
-          frame.module.id.c_str());
+      std::string frame_name;
+      std::string module_name;
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+      Dl_info info = {};
+      // For chrome address we do not have symbols on the binary. So, just write
+      // the offset address. For addresses on framework libraries, symbolize
+      // and write the function name.
+      if (base::trace_event::CFIBacktraceAndroid::is_chrome_address(
+              frame.instruction_pointer)) {
+        frame_name = GetFrameNameFromOffsetAddr(
+            frame.instruction_pointer -
+            base::trace_event::CFIBacktraceAndroid::executable_start_addr());
+      } else if (dladdr(reinterpret_cast<void*>(frame.instruction_pointer),
+                        &info) != 0) {
+        // TODO(ssid): Add offset and module debug id if symbol was not resolved
+        // in case this might be useful to send report to vendors.
+        if (info.dli_sname)
+          frame_name = info.dli_sname;
+        if (info.dli_fname)
+          module_name = info.dli_fname;
+      }
+      // If no module is available, then name it unknown. Adding PC would be
+      // useless anyway.
+      if (frame_name.empty())
+        frame_name = "Unknown";
+#else
+      module_name = frame.module.filename.BaseName().MaybeAsASCII();
+      frame_name = GetFrameNameFromOffsetAddr(frame.instruction_pointer -
+                                              frame.module.base_address);
+#endif
+      base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
+                          module_name.c_str(), frame.module.id.c_str());
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
