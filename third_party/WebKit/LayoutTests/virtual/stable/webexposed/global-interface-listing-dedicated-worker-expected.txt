@@ -2579,6 +2579,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
+[Worker]     attribute globalThis
 [Worker]     attribute internals
 [Worker]     getter name
 [Worker]     getter onmessage
