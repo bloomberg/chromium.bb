@@ -12,21 +12,31 @@ class GURL;
 
 namespace browser_switcher {
 
-// Manages the sitelist configured by the administrator for
-// BrowserSwitcher. Decides whether a navigation should trigger a browser
+// Interface that decides whether a navigation should trigger a browser
 // switch.
 class BrowserSwitcherSitelist {
  public:
-  explicit BrowserSwitcherSitelist(PrefService* prefs);
-  ~BrowserSwitcherSitelist();
+  virtual ~BrowserSwitcherSitelist();
 
   // Returns true if the given URL should be open in an alternative browser.
-  bool ShouldSwitch(const GURL& url) const;
+  virtual bool ShouldSwitch(const GURL& url) const = 0;
+};
+
+// Manages the sitelist configured by the administrator for
+// BrowserSwitcher. Decides whether a navigation should trigger a browser
+// switch.
+class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
+ public:
+  explicit BrowserSwitcherSitelistImpl(PrefService* prefs);
+  ~BrowserSwitcherSitelistImpl() override;
+
+  // BrowserSwitcherSitelist
+  bool ShouldSwitch(const GURL& url) const override;
 
  private:
   PrefService* const prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherSitelist);
+  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherSitelistImpl);
 };
 
 }  // namespace browser_switcher

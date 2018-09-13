@@ -70,6 +70,7 @@ const char* kFinalStatusNames[] = {
     "Credential Manager API",
     "NoStatePrefetch Finished",
     "Low-End Device",
+    "BrowserSwitcher Switch",
     "Max",
 };
 static_assert(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

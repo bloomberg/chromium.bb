@@ -123,7 +123,7 @@ void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
     return;
   }
   for (const auto& mapping : kBrowserVarMappings) {
-    if (browser_path_.compare(mapping.var_name)) {
+    if (!browser_path_.compare(mapping.var_name)) {
       browser_path_ = GetBrowserLocation(mapping.registry_key);
       dde_host_ = mapping.dde_host;
     }
@@ -145,6 +145,9 @@ bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
 }
 
 bool AlternativeBrowserDriverImpl::TryLaunchWithDde(const GURL& url) {
+  if (dde_host_.empty())
+    return false;
+
   DWORD dde_instance = 0;
   if (DdeInitialize(&dde_instance, DdeCallback, CBF_FAIL_ALLSVRXACTIONS, 0) !=
       DMLERR_NO_ERROR) {

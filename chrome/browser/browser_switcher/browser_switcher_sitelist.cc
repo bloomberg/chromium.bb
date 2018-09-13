@@ -78,14 +78,16 @@ bool UrlListMatches(const GURL& url,
 
 }  // namespace
 
-BrowserSwitcherSitelist::BrowserSwitcherSitelist(PrefService* prefs)
+BrowserSwitcherSitelist::~BrowserSwitcherSitelist() {}
+
+BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(PrefService* prefs)
     : prefs_(prefs) {
   DCHECK(prefs_);
 }
 
-BrowserSwitcherSitelist::~BrowserSwitcherSitelist() {}
+BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() {}
 
-bool BrowserSwitcherSitelist::ShouldSwitch(const GURL& url) const {
+bool BrowserSwitcherSitelistImpl::ShouldSwitch(const GURL& url) const {
   // Translated from the LBS extension:
   // https://github.com/LegacyBrowserSupport/legacy-browser-support/blob/8caa623692b94dc0154074ce904de8f60ee8a404/chrome_extension/js/extension_logic.js#L205
   if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile()) {

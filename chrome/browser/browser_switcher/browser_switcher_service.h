@@ -26,6 +26,10 @@ class BrowserSwitcherService : public KeyedService {
   AlternativeBrowserLauncher* launcher();
   BrowserSwitcherSitelist* sitelist();
 
+  void SetLauncherForTesting(
+      std::unique_ptr<AlternativeBrowserLauncher> launcher);
+  void SetSitelistForTesting(std::unique_ptr<BrowserSwitcherSitelist> sitelist);
+
  private:
   std::unique_ptr<AlternativeBrowserLauncher> launcher_;
   std::unique_ptr<BrowserSwitcherSitelist> sitelist_;

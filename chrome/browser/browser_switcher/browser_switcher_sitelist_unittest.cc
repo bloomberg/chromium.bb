@@ -32,7 +32,7 @@ class BrowserSwitcherSitelistTest : public testing::Test {
     prefs_.registry()->RegisterListPref(prefs::kUrlGreylist);
     prefs_.Set(prefs::kUrlList, StringArrayToValue(url_list));
     prefs_.Set(prefs::kUrlGreylist, StringArrayToValue(url_greylist));
-    sitelist_ = std::make_unique<BrowserSwitcherSitelist>(&prefs_);
+    sitelist_ = std::make_unique<BrowserSwitcherSitelistImpl>(&prefs_);
   }
 
   BrowserSwitcherSitelist* sitelist() { return sitelist_.get(); }

@@ -12,12 +12,15 @@
 
 namespace browser_switcher {
 
-AlternativeBrowserLauncher::AlternativeBrowserLauncher(PrefService* prefs)
-    : AlternativeBrowserLauncher(
+AlternativeBrowserLauncher::~AlternativeBrowserLauncher() {}
+
+AlternativeBrowserLauncherImpl::AlternativeBrowserLauncherImpl(
+    PrefService* prefs)
+    : AlternativeBrowserLauncherImpl(
           prefs,
           std::make_unique<AlternativeBrowserDriverImpl>()) {}
 
-AlternativeBrowserLauncher::AlternativeBrowserLauncher(
+AlternativeBrowserLauncherImpl::AlternativeBrowserLauncherImpl(
     PrefService* prefs,
     std::unique_ptr<AlternativeBrowserDriver> driver)
     : prefs_(prefs), driver_(std::move(driver)) {
@@ -26,34 +29,35 @@ AlternativeBrowserLauncher::AlternativeBrowserLauncher(
   change_registrar_.Init(prefs);
   change_registrar_.Add(
       prefs::kAlternativeBrowserPath,
-      base::BindRepeating(&AlternativeBrowserLauncher::OnAltBrowserPathChanged,
-                          base::Unretained(this)));
+      base::BindRepeating(
+          &AlternativeBrowserLauncherImpl::OnAltBrowserPathChanged,
+          base::Unretained(this)));
   change_registrar_.Add(
       prefs::kAlternativeBrowserParameters,
       base::BindRepeating(
-          &AlternativeBrowserLauncher::OnAltBrowserParametersChanged,
+          &AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged,
           base::Unretained(this)));
   // Ensure |alt_browser_| is initialized.
   OnAltBrowserPathChanged();
   OnAltBrowserParametersChanged();
 }
 
-AlternativeBrowserLauncher::~AlternativeBrowserLauncher() {}
+AlternativeBrowserLauncherImpl::~AlternativeBrowserLauncherImpl() {}
 
-void AlternativeBrowserLauncher::OnAltBrowserPathChanged() {
+void AlternativeBrowserLauncherImpl::OnAltBrowserPathChanged() {
   // This string could be a variable, e.g. "${ie}". Let the driver decide what
   // to do with it.
   driver_->SetBrowserPath(prefs_->GetString(prefs::kAlternativeBrowserPath));
 }
 
-void AlternativeBrowserLauncher::OnAltBrowserParametersChanged() {
+void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
   // This string could contain a placeholder, e.g. "${url}". Let the driver
   // decide what to do with it.
   driver_->SetBrowserParameters(
       prefs_->GetString(prefs::kAlternativeBrowserParameters));
 }
 
-bool AlternativeBrowserLauncher::Launch(const GURL& url) const {
+bool AlternativeBrowserLauncherImpl::Launch(const GURL& url) const {
   return driver_->TryLaunch(url);
 }
 
