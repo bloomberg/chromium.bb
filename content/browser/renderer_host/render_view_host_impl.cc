@@ -780,7 +780,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestSetBounds, OnRequestSetBounds)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -851,12 +850,6 @@ void RenderViewHostImpl::OnClose() {
   ClosePageIgnoringUnloadEvents();
 }
 
-void RenderViewHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
-  if (is_active_)
-    delegate_->RequestSetBounds(bounds);
-  Send(new ViewMsg_SetBounds_ACK(GetRoutingID()));
-}
-
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {
   delegate_->DocumentAvailableInMainFrame(this);
@@ -919,6 +912,11 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
 
 bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
   return is_active_;
+}
+
+void RenderViewHostImpl::RequestSetBounds(const gfx::Rect& bounds) {
+  if (is_active_)
+    delegate_->RequestSetBounds(bounds);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {

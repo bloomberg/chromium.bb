@@ -2160,10 +2160,12 @@ void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
 }
 
 void RenderWidgetHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
-  if (view_) {
+  if (owner_delegate_) {
+    owner_delegate_->RequestSetBounds(bounds);
+  } else if (view_) {
     view_->SetBounds(bounds);
-    Send(new ViewMsg_SetBounds_ACK(routing_id_));
   }
+  Send(new ViewMsg_SetBounds_ACK(routing_id_));
 }
 
 void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
