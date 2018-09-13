@@ -209,6 +209,8 @@ class CORE_EXPORT ObjectPaintProperties {
     DCHECK(!ScrollTranslation() || !ReplacedContentTransform())
         << "Replaced elements don't scroll so there should never be both a "
            "scroll translation and a replaced content transform.";
+    DCHECK(!ClipPathClip() || !ClipPath())
+        << "ClipPathClip and ClipPathshould be mutually exclusive.";
   }
 #endif
 
