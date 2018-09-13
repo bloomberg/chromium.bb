@@ -23,7 +23,8 @@ std::string DevToolsManagerDelegate::GetTargetDescription(WebContents* wc) {
   return std::string();
 }
 
-bool DevToolsManagerDelegate::AllowInspectingWebContents(WebContents* wc) {
+bool DevToolsManagerDelegate::AllowInspectingRenderFrameHost(
+    RenderFrameHost* rfh) {
   return true;
 }
 
