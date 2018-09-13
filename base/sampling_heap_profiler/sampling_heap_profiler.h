@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
 
 namespace base {
 
@@ -64,7 +63,6 @@ class BASE_EXPORT SamplingHeapProfiler
                    const char* context) override;
   void SampleRemoved(void* address) override;
 
-  ThreadLocalBoolean entered_;
   Lock mutex_;
   std::unordered_map<void*, Sample> samples_;
   uint32_t last_sample_ordinal_ = 1;

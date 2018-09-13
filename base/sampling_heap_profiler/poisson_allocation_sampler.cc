@@ -224,6 +224,16 @@ ThreadLocalStorage::Slot& AccumulatedBytesTLS() {
 
 }  // namespace
 
+PoissonAllocationSampler::MuteThreadSamplesScope::MuteThreadSamplesScope() {
+  CHECK(!Get()->entered_.Get());
+  Get()->entered_.Set(true);
+}
+
+PoissonAllocationSampler::MuteThreadSamplesScope::~MuteThreadSamplesScope() {
+  CHECK(Get()->entered_.Get());
+  Get()->entered_.Set(false);
+}
+
 PoissonAllocationSampler* PoissonAllocationSampler::instance_;
 
 PoissonAllocationSampler::PoissonAllocationSampler() {
@@ -365,19 +375,16 @@ void PoissonAllocationSampler::DoRecordAlloc(size_t total_allocated,
                                              const char* context) {
   if (entered_.Get())
     return;
-  entered_.Set(true);
-  {
-    AutoLock lock(mutex_);
-    // TODO(alph): Sometimes RecordAlloc is called twice in a row without
-    // a RecordFree in between. Investigate it.
-    if (!sampled_addresses_set().Contains(address)) {
-      sampled_addresses_set().Insert(address);
-      for (auto* observer : observers_)
-        observer->SampleAdded(address, size, total_allocated, type, context);
-    }
+  MuteThreadSamplesScope no_reentrancy_scope;
+  AutoLock lock(mutex_);
+  // TODO(alph): Sometimes RecordAlloc is called twice in a row without
+  // a RecordFree in between. Investigate it.
+  if (!sampled_addresses_set().Contains(address)) {
+    sampled_addresses_set().Insert(address);
     BalanceAddressesHashSet();
+    for (auto* observer : observers_)
+      observer->SampleAdded(address, size, total_allocated, type, context);
   }
-  entered_.Set(false);
 }
 
 // static
@@ -393,14 +400,11 @@ void PoissonAllocationSampler::DoRecordFree(void* address) {
     return;
   if (entered_.Get())
     return;
-  entered_.Set(true);
-  {
-    AutoLock lock(mutex_);
-    for (auto* observer : observers_)
-      observer->SampleRemoved(address);
-    sampled_addresses_set().Remove(address);
-  }
-  entered_.Set(false);
+  MuteThreadSamplesScope no_reentrancy_scope;
+  AutoLock lock(mutex_);
+  for (auto* observer : observers_)
+    observer->SampleRemoved(address);
+  sampled_addresses_set().Remove(address);
 }
 
 void PoissonAllocationSampler::BalanceAddressesHashSet() {
@@ -444,26 +448,18 @@ void PoissonAllocationSampler::SuppressRandomnessForTest(bool suppress) {
 }
 
 void PoissonAllocationSampler::AddSamplesObserver(SamplesObserver* observer) {
-  CHECK(!entered_.Get());
-  entered_.Set(true);
-  {
-    AutoLock lock(mutex_);
-    observers_.push_back(observer);
-  }
-  entered_.Set(false);
+  MuteThreadSamplesScope no_reentrancy_scope;
+  AutoLock lock(mutex_);
+  observers_.push_back(observer);
 }
 
 void PoissonAllocationSampler::RemoveSamplesObserver(
     SamplesObserver* observer) {
-  CHECK(!entered_.Get());
-  entered_.Set(true);
-  {
-    AutoLock lock(mutex_);
-    auto it = std::find(observers_.begin(), observers_.end(), observer);
-    CHECK(it != observers_.end());
-    observers_.erase(it);
-  }
-  entered_.Set(false);
+  MuteThreadSamplesScope no_reentrancy_scope;
+  AutoLock lock(mutex_);
+  auto it = std::find(observers_.begin(), observers_.end(), observer);
+  CHECK(it != observers_.end());
+  observers_.erase(it);
 }
 
 }  // namespace base
