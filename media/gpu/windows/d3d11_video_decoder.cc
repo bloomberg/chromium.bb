@@ -113,6 +113,12 @@ void D3D11VideoDecoder::Initialize(
   // seems to be difficult.
   // TODO(liberato): take |device_| as input.
   device_ = gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!device_) {
+    // This happens if, for example, if chrome is configured to use
+    // D3D9 for ANGLE.
+    NotifyError("ANGLE did not provide D3D11 device");
+    return;
+  }
   device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hr;
@@ -585,6 +591,9 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
 
   // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
   // it could run on the client side and save the IPC hop.
+
+  // TODO(liberato): It would be nice to QueryD3D11DeviceObjectFromANGLE, but
+  // we don't know what thread we're on.
 
   // Make sure that we support at least 11.1.
   D3D_FEATURE_LEVEL levels[] = {
