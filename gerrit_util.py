@@ -32,9 +32,10 @@ import subprocess2
 from third_party import httplib2
 
 LOGGER = logging.getLogger()
-# With a starting sleep time of 1 second, 2^n exponential backoff, and six
-# total tries, the sleep time between the first and last tries will be 31s.
-TRY_LIMIT = 6
+# With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
+# total tries, the sleep time between the first and last tries will be 94.5 sec.
+# TODO(crbug.com/881860): Lower this when crbug.com/877717 is fixed.
+TRY_LIMIT = 7
 
 
 # Controls the transport protocol used to communicate with gerrit.
@@ -379,7 +380,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                      Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
-  sleep_time = 1
+  sleep_time = 1.5
   for idx in range(TRY_LIMIT):
     response, contents = conn.request(**conn.req_params)
 
