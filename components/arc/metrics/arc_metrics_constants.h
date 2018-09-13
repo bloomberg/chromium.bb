@@ -44,8 +44,8 @@ enum class UserInteractionType {
   // User started an app from settings.
   APP_STARTED_FROM_SETTINGS = 9,
 
-  // User interacted with an ARC++ notification.
-  // TODO(crbug.com/862001): Record this.
+  // User interacted with an ARC++ notification. Dismissal of notifications such
+  // as closing and swiping out are not being considered.
   NOTIFICATION_INTERACTION = 10,
 
   // User interacted with the content window.

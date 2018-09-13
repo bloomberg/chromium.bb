@@ -9,6 +9,8 @@
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
 #include "ash/wm/window_util.h"  // nogncheck
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -140,6 +142,21 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         }
 
         widget->OnGestureEvent(located_event->AsGestureEvent());
+      }
+
+      // Records UMA when user clicks/taps on the notification surface. Note
+      // that here we cannot determine which actions are performed since
+      // mouse/gesture events are directly forwarded to Android side.
+      // Interactions with the notification itself e.g. toggling notification
+      // settings are being captured as well, while clicks/taps on the close
+      // button won't reach this. Interactions from keyboard are handled
+      // separately in ArcNotificationItemImpl.
+      if (event->type() == ui::ET_MOUSE_RELEASED ||
+          event->type() == ui::ET_GESTURE_TAP) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Arc.UserInteraction",
+            arc::UserInteractionType::NOTIFICATION_INTERACTION,
+            arc::UserInteractionType::SIZE);
       }
     }
 
