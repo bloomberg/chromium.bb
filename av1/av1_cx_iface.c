@@ -105,34 +105,34 @@ struct av1_extracfg {
 };
 
 static struct av1_extracfg default_extra_cfg = {
-  0,                 // cpu_used
-  1,                 // enable_auto_alt_ref
-  0,                 // enable_auto_bwd_ref
-  0,                 // noise_sensitivity
-  0,                 // sharpness
-  0,                 // static_thresh
-  0,                 // row_mt
-  0,                 // tile_columns
-  0,                 // tile_rows
-  7,                 // arnr_max_frames
-  5,                 // arnr_strength
-  0,                 // min_gf_interval; 0 -> default decision
-  0,                 // max_gf_interval; 0 -> default decision
-  AOM_TUNE_PSNR,     // tuning
-  10,                // cq_level
-  0,                 // rc_max_intra_bitrate_pct
-  0,                 // rc_max_inter_bitrate_pct
-  0,                 // gf_cbr_boost_pct
-  0,                 // lossless
-  1,                 // enable_cdef
-  1,                 // enable_restoration
-  0,                 // disable_trellis_quant
-  0,                 // enable_qm
-  DEFAULT_QM_Y,      // qm_y
-  DEFAULT_QM_U,      // qm_u
-  DEFAULT_QM_V,      // qm_v
-  DEFAULT_QM_FIRST,  // qm_min
-  DEFAULT_QM_LAST,   // qm_max
+  0,                       // cpu_used
+  1,                       // enable_auto_alt_ref
+  0,                       // enable_auto_bwd_ref
+  0,                       // noise_sensitivity
+  CONFIG_SHARP_SETTINGS,   // sharpness
+  0,                       // static_thresh
+  0,                       // row_mt
+  0,                       // tile_columns
+  0,                       // tile_rows
+  7,                       // arnr_max_frames
+  5,                       // arnr_strength
+  0,                       // min_gf_interval; 0 -> default decision
+  0,                       // max_gf_interval; 0 -> default decision
+  AOM_TUNE_PSNR,           // tuning
+  10,                      // cq_level
+  0,                       // rc_max_intra_bitrate_pct
+  0,                       // rc_max_inter_bitrate_pct
+  0,                       // gf_cbr_boost_pct
+  0,                       // lossless
+  !CONFIG_SHARP_SETTINGS,  // enable_cdef
+  1,                       // enable_restoration
+  0,                       // disable_trellis_quant
+  0,                       // enable_qm
+  DEFAULT_QM_Y,            // qm_y
+  DEFAULT_QM_U,            // qm_u
+  DEFAULT_QM_V,            // qm_v
+  DEFAULT_QM_FIRST,        // qm_min
+  DEFAULT_QM_LAST,         // qm_max
 #if CONFIG_DIST_8X8
   0,
 #endif

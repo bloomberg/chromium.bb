@@ -135,6 +135,8 @@ set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_RD_DEBUG 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_2PASS_PARTITION_SEARCH_LVL 1 NUMBER
                    "AV1 experiment flag.")
+set_aom_config_var(CONFIG_SHARP_SETTINGS 0 NUMBER
+                   "Use sharper encoding settings")
 
 #
 # Variables in this section control optional features of the build system.
