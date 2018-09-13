@@ -104,7 +104,6 @@ import org.chromium.components.navigation_interception.InterceptNavigationDelega
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureListenerManager;
-import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -194,9 +193,6 @@ public class Tab
 
     /** {@link WebContents} showing the current page, or {@code null} if the tab is frozen. */
     private WebContents mWebContents;
-
-    /** Listens to gesture events fired by the content layer. */
-    private GestureStateListener mGestureStateListener;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
     private ViewGroup mContentView;
@@ -412,42 +408,6 @@ public class Tab
 
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
-
-    private GestureStateListener createGestureStateListener() {
-        return new GestureStateListener() {
-            @Override
-            public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {
-                onScrollingStateChanged();
-            }
-
-            @Override
-            public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
-                onScrollingStateChanged();
-            }
-
-            @Override
-            public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-                onScrollingStateChanged();
-            }
-
-            @Override
-            public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
-                onScrollingStateChanged();
-            }
-
-            private void onScrollingStateChanged() {
-                FullscreenManager fullscreenManager = getFullscreenManager();
-                if (fullscreenManager == null) return;
-                fullscreenManager.onContentViewScrollingStateChanged(isScrollInProgress());
-            }
-
-            private boolean isScrollInProgress() {
-                WebContents webContents = getWebContents();
-                if (webContents == null) return false;
-                return GestureListenerManager.fromWebContents(webContents).isScrollInProgress();
-            }
-        };
-    }
 
     // TODO(dtrainor): Port more methods to the observer.
     private final TabObserver mTabObserver = new EmptyTabObserver() {
@@ -1817,7 +1777,13 @@ public class Tab
                 }
             }
 
-            initNativeWebContents(mWebContents, parentId);
+            assert mNativeTabAndroid != 0;
+            nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents, parentId,
+                    mWebContentsDelegate,
+                    new TabContextMenuPopulator(
+                            mDelegateFactory.createContextMenuPopulator(this), this));
+
+            TabGestureStateListener.init(this);
 
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
@@ -1859,19 +1825,6 @@ public class Tab
         } finally {
             TraceEvent.end("ChromeTab.initBrowserComponents");
         }
-    }
-
-    private void initNativeWebContents(WebContents webContents, int parentTabId) {
-        assert mNativeTabAndroid != 0;
-        nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents, parentTabId,
-                mWebContentsDelegate,
-                new TabContextMenuPopulator(
-                        mDelegateFactory.createContextMenuPopulator(this), this));
-
-        if (mGestureStateListener == null) {
-            mGestureStateListener = createGestureStateListener();
-        }
-        GestureListenerManager.fromWebContents(webContents).addListener(mGestureStateListener);
     }
 
     private static WebContentsAccessibility getWebContentsAccessibility(WebContents webContents) {
@@ -2031,6 +1984,8 @@ public class Tab
 
         hideMediaDownloadInProductHelp();
 
+        mUserDataHost.destroy();
+
         NativePage currentNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(currentNativePage);
@@ -2043,8 +1998,6 @@ public class Tab
         assert mNativeTabAndroid != 0;
         nativeDestroy(mNativeTabAndroid);
         assert mNativeTabAndroid == 0;
-
-        mUserDataHost.destroy();
     }
 
     /**
@@ -2410,11 +2363,6 @@ public class Tab
         mContentView.removeOnAttachStateChangeListener(mAttachStateChangeListener);
         mContentView = null;
         updateInteractableState();
-
-        if (mGestureStateListener != null) {
-            GestureListenerManager manager = GestureListenerManager.fromWebContents(mWebContents);
-            manager.removeListener(mGestureStateListener);
-        }
 
         mWebContents = null;
         mWebContentsDelegate = null;
