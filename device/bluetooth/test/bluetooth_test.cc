@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/test/bluetooth_test.h"
 
+#include <iterator>
 #include <memory>
 
 #include "base/bind.h"
@@ -28,6 +29,7 @@ const char BluetoothTestBase::kTestAdapterAddress[] = "A1:B2:C3:D4:E5:F6";
 const char BluetoothTestBase::kTestDeviceName[] = "FakeBluetoothDevice";
 const char BluetoothTestBase::kTestDeviceNameEmpty[] = "";
 const char BluetoothTestBase::kTestDeviceNameU2f[] = "U2F FakeDevice";
+const char BluetoothTestBase::kTestDeviceNameCable[] = "Cable FakeDevice";
 
 const char BluetoothTestBase::kTestDeviceAddress1[] = "01:00:00:90:1E:BE";
 const char BluetoothTestBase::kTestDeviceAddress2[] = "02:00:00:8B:74:63";
@@ -66,8 +68,15 @@ const char BluetoothTestBase::kTestUUIDServerCharacteristicConfiguration[] =
     "00002903-0000-1000-8000-00805f9b34fb";
 const char BluetoothTestBase::kTestUUIDCharacteristicPresentationFormat[] =
     "00002904-0000-1000-8000-00805f9b34fb";
+const char BluetoothTestBase::kTestUUIDCableAdvertisement[] =
+    "0000fde2-0000-1000-8000-00805f9b34fb";
 // Manufacturer kTestAdapterAddress
 const uint16_t BluetoothTestBase::kTestManufacturerId = 0x00E0;
+const uint8_t BluetoothTestBase::kTestCableEid[] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
+const char BluetoothTestBase::kTestUuidFormattedClientEid[] =
+    "00010203-0405-0607-0809-101112131415";
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 
@@ -545,6 +554,25 @@ BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
       device_data.advertised_uuids = {BluetoothUUID(kTestUUIDU2f)};
       device_data.service_data = {
           {BluetoothUUID(kTestUUIDU2fControlPointLength), {0, 20}}};
+      break;
+    case 8:
+      device_data.name = kTestDeviceNameCable;
+      device_data.address = kTestDeviceAddress1;
+      device_data.flags = 0x07;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
+      device_data.service_data = {
+          {BluetoothUUID(kTestUUIDCableAdvertisement),
+           std::vector<uint8_t>(std::begin(kTestCableEid),
+                                std::end(kTestCableEid))}};
+      break;
+    case 9:
+      device_data.name = kTestDeviceNameCable;
+      device_data.address = kTestDeviceAddress2;
+      device_data.flags = 0x07;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
+      device_data.advertised_uuids = {
+          BluetoothUUID(kTestUUIDCableAdvertisement),
+          BluetoothUUID(kTestUuidFormattedClientEid)};
       break;
     default:
       NOTREACHED();

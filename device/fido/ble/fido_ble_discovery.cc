@@ -34,7 +34,8 @@ void FidoBleDiscovery::OnSetPowered() {
   VLOG(2) << "Adapter " << adapter()->GetAddress() << " is powered on.";
 
   for (BluetoothDevice* device : adapter()->GetDevices()) {
-    if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+    if (!CheckForExcludedDeviceAndCacheAddress(device) &&
+        base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
       VLOG(2) << "U2F BLE device: " << device->GetAddress();
       AddDevice(
           std::make_unique<FidoBleDevice>(adapter(), device->GetAddress()));
@@ -57,7 +58,8 @@ void FidoBleDiscovery::OnSetPowered() {
 
 void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                    BluetoothDevice* device) {
-  if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
+  if (!CheckForExcludedDeviceAndCacheAddress(device) &&
+      base::ContainsKey(device->GetUUIDs(), FidoServiceUUID())) {
     VLOG(2) << "Discovered U2F BLE device: " << device->GetAddress();
     AddDevice(std::make_unique<FidoBleDevice>(adapter, device->GetAddress()));
   }
@@ -65,7 +67,8 @@ void FidoBleDiscovery::DeviceAdded(BluetoothAdapter* adapter,
 
 void FidoBleDiscovery::DeviceChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
-  if (base::ContainsKey(device->GetUUIDs(), FidoServiceUUID()) &&
+  if (!CheckForExcludedDeviceAndCacheAddress(device) &&
+      base::ContainsKey(device->GetUUIDs(), FidoServiceUUID()) &&
       !GetDevice(FidoBleDevice::GetId(device->GetAddress()))) {
     VLOG(2) << "Discovered U2F service on existing BLE device: "
             << device->GetAddress();
@@ -88,6 +91,28 @@ void FidoBleDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
   // invocation of OnSetPowered().
   if (powered)
     OnSetPowered();
+}
+
+bool FidoBleDiscovery::CheckForExcludedDeviceAndCacheAddress(
+    const BluetoothDevice* device) {
+  std::string device_address = device->GetAddress();
+  auto address_position =
+      excluded_cable_device_addresses_.lower_bound(device_address);
+  if (address_position != excluded_cable_device_addresses_.end() &&
+      *address_position == device_address) {
+    return true;
+  }
+
+  // IsCableDevice() is not stable, and can change throughout the lifetime. As
+  // so, cache device address for known Cable devices so that we do not attempt
+  // to connect to these devices.
+  if (IsCableDevice(device)) {
+    excluded_cable_device_addresses_.insert(address_position,
+                                            std::move(device_address));
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace device

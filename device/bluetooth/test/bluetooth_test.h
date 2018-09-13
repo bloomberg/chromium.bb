@@ -88,6 +88,7 @@ class BluetoothTestBase : public testing::Test {
   static const char kTestDeviceName[];
   static const char kTestDeviceNameEmpty[];
   static const char kTestDeviceNameU2f[];
+  static const char kTestDeviceNameCable[];
 
   static const char kTestDeviceAddress1[];
   static const char kTestDeviceAddress2[];
@@ -129,8 +130,12 @@ class BluetoothTestBase : public testing::Test {
   static const char kTestUUIDClientCharacteristicConfiguration[];
   static const char kTestUUIDServerCharacteristicConfiguration[];
   static const char kTestUUIDCharacteristicPresentationFormat[];
+  static const char kTestUUIDCableAdvertisement[];
   // Manufacturer data
   static const uint16_t kTestManufacturerId;
+  // Test ephemeral ID for BLE devices that support cloud-assisted BLE protocol.
+  static const uint8_t kTestCableEid[];
+  static const char kTestUuidFormattedClientEid[];
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;
@@ -249,6 +254,23 @@ class BluetoothTestBase : public testing::Test {
   //      Service Data:     {kTestUUIDU2fControlPointLength: [0, 20]}
   //      No Manufacturer Data
   //      No Tx Power
+  //   8: Name: kTestDeviceNameCable;
+  //      Address: kTestDeviceAddress1;
+  //      Flags: 0x07;
+  //      RSSI: static_cast<int>(TestRSSI::LOWEST);
+  //      Advertised UUIDs: {BluetoothUUID(kTestUUIDU2f)};
+  //      Service Data: {
+  //                      {BluetoothUUID(kTestUUIDCableAdvertisement128),
+  //                       std::vector<uint8_t>(std::begin(kTestCableEid),
+  //                                            std::end(kTestCableEid))}};
+  //   9: Name: kTestDeviceNameCable;
+  //      Address: kTestDeviceAddress2;
+  //      Flags: = 0x07;
+  //      RSSI: static_cast<int>(TestRSSI::LOWEST);
+  //      Advertised UUIDs: {
+  //                          BluetoothUUID(kTestUUIDCableAdvertisement16),
+  //                          BluetoothUUID(kTestUuidFormattedClientEid)};
+
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
 
   // Simulates a connected low energy device. Used before starting a low energy

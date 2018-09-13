@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/fido/fido_discovery.h"
 
 namespace device {
@@ -26,6 +27,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
   ~FidoBleDiscoveryBase() override;
 
  protected:
+  static const BluetoothUUID& CableAdvertisementUUID();
+
   virtual void OnSetPowered() = 0;
   virtual void OnStartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoverySession>);
@@ -34,6 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDiscoveryBase
   void OnStartDiscoverySessionError();
   void SetDiscoverySession(
       std::unique_ptr<BluetoothDiscoverySession> discovery_session);
+  bool IsCableDevice(const BluetoothDevice* device) const;
 
   BluetoothAdapter* adapter() { return adapter_.get(); }
 
