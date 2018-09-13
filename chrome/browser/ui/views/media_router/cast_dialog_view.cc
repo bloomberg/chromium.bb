@@ -270,6 +270,19 @@ void CastDialogView::ShowScrollView() {
 }
 
 void CastDialogView::RestoreSinkListState() {
+  if (selected_sink_index_ &&
+      selected_sink_index_.value() < sink_buttons_.size()) {
+    CastDialogSinkButton* sink_button =
+        sink_buttons_.at(selected_sink_index_.value());
+    // Focus on the sink so that the screen reader reads its label, which has
+    // likely been updated.
+    sink_button->RequestFocus();
+    // If the state became AVAILABLE, the screen reader no longer needs to read
+    // the label until the user selects a sink again.
+    if (sink_button->sink().state == UIMediaSinkState::AVAILABLE)
+      selected_sink_index_.reset();
+  }
+
   views::ScrollBar* scroll_bar =
       const_cast<views::ScrollBar*>(scroll_view_->vertical_scroll_bar());
   if (scroll_bar) {
@@ -318,6 +331,7 @@ void CastDialogView::SinkPressed(size_t index) {
   if (!controller_)
     return;
 
+  selected_sink_index_ = index;
   const UIMediaSink& sink = sink_buttons_.at(index)->sink();
   if (sink.route_id.empty()) {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
