@@ -462,6 +462,8 @@ extern __typeof (FcUcs4ToUtf8) FcUcs4ToUtf8 __attribute((alias("IA__FcUcs4ToUtf8
 extern __typeof (FcUtf16ToUcs4) FcUtf16ToUcs4 __attribute((alias("IA__FcUtf16ToUcs4"))) FC_ATTRIBUTE_VISIBILITY_EXPORT;
 # undef FcUtf16Len
 extern __typeof (FcUtf16Len) FcUtf16Len __attribute((alias("IA__FcUtf16Len"))) FC_ATTRIBUTE_VISIBILITY_EXPORT;
+# undef FcStrBuildFilename
+extern __typeof (FcStrBuildFilename) FcStrBuildFilename __attribute((alias("IA__FcStrBuildFilename"))) FC_ATTRIBUTE_VISIBILITY_EXPORT;
 # undef FcStrDirname
 extern __typeof (FcStrDirname) FcStrDirname __attribute((alias("IA__FcStrDirname"))) FC_ATTRIBUTE_VISIBILITY_EXPORT;
 # undef FcStrBasename

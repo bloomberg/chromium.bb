@@ -264,13 +264,13 @@
 #define PACKAGE "fontconfig"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "https://bugs.freedesktop.org/enter_bug.cgi?product=fontconfig"
+#define PACKAGE_BUGREPORT "https://gitlab.freedesktop.org/fontconfig/fontconfig/issues/new"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "fontconfig"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "fontconfig 2.13.0"
+#define PACKAGE_STRING "fontconfig 2.13.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "fontconfig"
@@ -279,7 +279,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.13.0"
+#define PACKAGE_VERSION "2.13.1"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -332,7 +332,7 @@
 
 
 /* Version number of package */
-#define VERSION "2.13.0"
+#define VERSION "2.13.1"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
