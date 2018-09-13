@@ -455,7 +455,6 @@ const char kTypeDHCP6[] = "dhcp6";
 const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
-const char kError4WayTimeout[] = "4way-handshake-timeout";
 const char kErrorAaaFailed[] = "aaa-failed";
 const char kErrorActivationFailed[] = "activation-failed";
 const char kErrorBadPassphrase[] = "bad-passphrase";
