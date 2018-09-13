@@ -10,9 +10,7 @@
 namespace app_list {
 
 FolderBackgroundView::FolderBackgroundView(AppListFolderView* folder_view)
-    : folder_view_(folder_view) {
-  SetPaintToLayer();
-}
+    : folder_view_(folder_view) {}
 
 FolderBackgroundView::~FolderBackgroundView() = default;
 
