@@ -18,13 +18,13 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPaintFragment",
-          "rect": [11, 35, 74, 19],
+          "object": "NGPhysicalTextFragment 'Second cell'",
+          "rect": [11, 35, 74, 20],
           "reason": "selection"
         },
         {
-          "object": "NGPaintFragment",
-          "rect": [11, 11, 55, 19],
+          "object": "NGPhysicalTextFragment 'First cell'",
+          "rect": [11, 11, 58, 20],
           "reason": "selection"
         }
       ]
