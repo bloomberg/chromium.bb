@@ -5041,6 +5041,26 @@
             ]
         }
     ],
+    "WebRtcHybridAgc": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "WebRtcHybridAgc",
+                    "enable_features": [
+                        "WebRtcHybridAgc"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRtcUseEchoCanceller3": [
         {
             "platforms": [
