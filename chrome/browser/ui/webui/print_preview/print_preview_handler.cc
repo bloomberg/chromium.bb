@@ -62,6 +62,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/printing/common/print_messages.h"
+#include "components/printing/common/printer_capabilities.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -1148,6 +1149,14 @@ void PrintPreviewHandler::SendPrinterSetup(
       destination_info->Remove(printing::kSettingCapabilities, &caps_value) &&
       caps_value->is_dict()) {
     caps = base::DictionaryValue::From(std::move(caps_value));
+    base::Value* printer = destination_info->FindKeyOfType(
+        printing::kPrinter, base::Value::Type::DICTIONARY);
+    if (printer) {
+      base::Value* policies_value = printer->FindKeyOfType(
+          printing::kSettingPolicies, base::Value::Type::DICTIONARY);
+      if (policies_value)
+        response->SetKey("policies", std::move(*policies_value));
+    }
   } else {
     LOG(WARNING) << "Printer setup failed";
     success = false;

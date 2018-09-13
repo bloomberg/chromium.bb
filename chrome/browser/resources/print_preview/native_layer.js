@@ -75,6 +75,7 @@ print_preview.CapabilitiesResponse;
  *   printerId: string,
  *   success: boolean,
  *   capabilities: !print_preview.Cdd,
+ *   policies: (print_preview.Policies | undefined),
  * }}
  */
 print_preview.PrinterSetupResponse;
