@@ -45,11 +45,13 @@ class AutofillAction : public Action {
                       ProcessActionCallback callback,
                       const std::string& guid);
 
+  void OnFillForm(ProcessActionCallback callback, bool status);
+
   // Fill the form using data with GUID |guid|. Return whether filling succeeded
   // or not through |callback|.
   void FillFormWithData(std::string guid,
                         ActionDelegate* delegate,
-                        base::OnceCallback<void(bool)> callback);
+                        ProcessActionCallback callback);
 
   Data data_;
   base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;

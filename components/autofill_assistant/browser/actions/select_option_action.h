@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace autofill_assistant {
 // An action to select an option on a given element on Web.
@@ -24,6 +25,10 @@ class SelectOptionAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnSelectOption(ProcessActionCallback callback, bool status);
+
+  base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(SelectOptionAction);
 };
 

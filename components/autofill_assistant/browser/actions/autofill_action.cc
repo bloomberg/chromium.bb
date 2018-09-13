@@ -41,7 +41,8 @@ AutofillAction::~AutofillAction() = default;
 
 void AutofillAction::ProcessAction(ActionDelegate* delegate,
                                    ProcessActionCallback action_callback) {
-  // Check if user already selected the data in a previous action.
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+  // Check data already selected in a previous action.
   base::Optional<std::string> selected_data;
   if (data_.is_autofill_card) {
     selected_data = delegate->GetClientMemory()->selected_card();
@@ -55,13 +56,15 @@ void AutofillAction::ProcessAction(ActionDelegate* delegate,
       // User selected 'Fill manually'.
       // TODO(crbug.com/806868): We need to differentiate between action failure
       // and stopping an action to let the user fill a form (expected stop).
-      std::move(action_callback).Run(false);
+      UpdateProcessedAction(false);
+      std::move(action_callback).Run(std::move(processed_action_proto_));
       return;
     }
 
     if (data_.selectors.empty()) {
       // If there is no selector, finish the action directly.
-      std::move(action_callback).Run(true);
+      UpdateProcessedAction(true);
+      std::move(action_callback).Run(std::move(processed_action_proto_));
       return;
     }
 
@@ -102,7 +105,8 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     // User selected 'Fill manually'.
     // TODO(crbug.com/806868): We need to differentiate between action failure
     // and stopping an action to let the user fill a form (expected stop).
-    std::move(action_callback).Run(false);
+    UpdateProcessedAction(false);
+    std::move(action_callback).Run(std::move(processed_action_proto_));
     return;
   }
 
@@ -110,7 +114,8 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     // If there is no selector, finish the action directly. This can be the case
     // when we want to trigger the selection of address or card at the beginning
     // of the script and use it later.
-    std::move(action_callback).Run(true);
+    UpdateProcessedAction(true);
+    std::move(action_callback).Run(std::move(processed_action_proto_));
     return;
   }
 
@@ -120,13 +125,24 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
 
 void AutofillAction::FillFormWithData(std::string guid,
                                       ActionDelegate* delegate,
-                                      base::OnceCallback<void(bool)> callback) {
+                                      ProcessActionCallback callback) {
   DCHECK(!data_.selectors.empty());
   if (data_.is_autofill_card) {
-    delegate->FillAddressForm(guid, data_.selectors, std::move(callback));
+    delegate->FillAddressForm(
+        guid, data_.selectors,
+        base::BindOnce(&::autofill_assistant::AutofillAction::OnFillForm,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
-  delegate->FillCardForm(guid, data_.selectors, std::move(callback));
+  delegate->FillCardForm(
+      guid, data_.selectors,
+      base::BindOnce(&::autofill_assistant::AutofillAction::OnFillForm,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AutofillAction::OnFillForm(ProcessActionCallback callback, bool status) {
+  UpdateProcessedAction(status);
+  std::move(callback).Run(std::move(processed_action_proto_));
 }
 
 }  // namespace autofill_assistant.

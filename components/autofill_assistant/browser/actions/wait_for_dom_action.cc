@@ -28,6 +28,7 @@ WaitForDomAction::~WaitForDomAction() {}
 
 void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) {
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   int check_rounds = kDefaultCheckRounds;
 
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
@@ -57,17 +58,20 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
                                             bool result) {
   bool for_absence = proto_.wait_for_dom().check_for_absence();
   if (for_absence && !result) {
-    std::move(callback).Run(true);
+    UpdateProcessedAction(true);
+    std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
   if (!for_absence && result) {
-    std::move(callback).Run(true);
+    UpdateProcessedAction(true);
+    std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
   if (rounds == 0) {
-    std::move(callback).Run(false);
+    UpdateProcessedAction(false);
+    std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
