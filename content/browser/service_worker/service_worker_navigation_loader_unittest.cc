@@ -447,7 +447,8 @@ class ServiceWorkerNavigationLoaderTest
                                       helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"),
-        storage()->NewVersionId(), helper_->context()->AsWeakPtr());
+        blink::mojom::ScriptType::kClassic, storage()->NewVersionId(),
+        helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         storage(), version_->script_url(), storage()->NewResourceId(),

@@ -183,6 +183,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ServiceWorkerVersion(ServiceWorkerRegistration* registration,
                        const GURL& script_url,
+                       blink::mojom::ScriptType script_type,
                        int64_t version_id,
                        base::WeakPtr<ServiceWorkerContextCore> context);
 
@@ -191,6 +192,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL& script_url() const { return script_url_; }
   const url::Origin& script_origin() const { return script_origin_; }
   const GURL& scope() const { return scope_; }
+  blink::mojom::ScriptType script_type() const { return script_type_; }
   EmbeddedWorkerStatus running_status() const {
     return embedded_worker_->status();
   }
@@ -774,6 +776,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL script_url_;
   const url::Origin script_origin_;
   const GURL scope_;
+  // A service worker has an associated type which is either
+  // "classic" or "module". Unless stated otherwise, it is "classic".
+  // https://w3c.github.io/ServiceWorker/#dfn-type
+  const blink::mojom::ScriptType script_type_;
   FetchHandlerExistence fetch_handler_existence_;
   // The source of truth for navigation preload state is the
   // ServiceWorkerRegistration. |navigation_preload_state_| is essentially a

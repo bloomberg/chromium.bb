@@ -275,7 +275,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     // Register the worker.
     blink::mojom::ServiceWorkerRegistrationOptions options(
-        scope_url, blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+        scope_url, blink::mojom::ScriptType::kClassic,
+        blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(

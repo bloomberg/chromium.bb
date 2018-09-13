@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -78,6 +79,15 @@ mojom::ServiceWorkerUpdateViaCache ParseUpdateViaCache(const String& value) {
     return mojom::ServiceWorkerUpdateViaCache::kNone;
   // Default value.
   return mojom::ServiceWorkerUpdateViaCache::kImports;
+}
+
+mojom::ScriptType ParseScriptType(const String& type) {
+  if (type == "classic")
+    return mojom::ScriptType::kClassic;
+  if (type == "module")
+    return mojom::ScriptType::kModule;
+  NOTREACHED() << "Invalid type: " << type;
+  return mojom::ScriptType::kClassic;
 }
 
 class GetRegistrationCallback : public WebServiceWorkerProvider::
@@ -178,6 +188,17 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
                                           "Failed to register a ServiceWorker: "
                                           "The document is in an invalid "
                                           "state."));
+    return promise;
+  }
+
+  // TODO(asamidoi): Remove this check after module loading for
+  // ServiceWorker is enabled by default (https://crbug.com/824647).
+  if (options.type() == "module" &&
+      !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kNotSupportedError,
+        "type 'module' in RegistrationOptions is not implemented yet."
+        "See https://crbug.com/824647 for details."));
     return promise;
   }
 
@@ -286,9 +307,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
       ParseUpdateViaCache(options.updateViaCache());
+  mojom::ScriptType type = ParseScriptType(options.type());
 
-  provider_->RegisterServiceWorker(pattern_url, script_url, update_via_cache,
-                                   std::move(callbacks));
+  provider_->RegisterServiceWorker(pattern_url, script_url, type,
+                                   update_via_cache, std::move(callbacks));
   return promise;
 }
 
@@ -384,11 +406,6 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   return promise;
 }
 
-ServiceWorkerContainer::ReadyProperty*
-ServiceWorkerContainer::CreateReadyProperty() {
-  return new ReadyProperty(GetExecutionContext(), this, ReadyProperty::kReady);
-}
-
 ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
   if (!GetExecutionContext())
     return ScriptPromise();
@@ -479,6 +496,11 @@ ServiceWorkerContainer::ServiceWorkerContainer(
     if (provider_)
       provider_->SetClient(this);
   }
+}
+
+ServiceWorkerContainer::ReadyProperty*
+ServiceWorkerContainer::CreateReadyProperty() {
+  return new ReadyProperty(GetExecutionContext(), this, ReadyProperty::kReady);
 }
 
 }  // namespace blink

@@ -768,6 +768,10 @@
       name: "ModuleScriptsImportMetaUrl",
     },
     {
+      name: "ModuleServiceWorker",
+      status: "test",
+    },
+    {
       name: "MojoJS",
       status: "test",
     },

@@ -338,9 +338,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     options.scope = scope_;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ =
-        new ServiceWorkerVersion(registration_.get(), script_url_,
-                                 NextVersionId(), context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        NextVersionId(), context()->AsWeakPtr());
     base::WeakPtr<ServiceWorkerProviderHost> host =
         CreateHostForVersion(helper_->mock_render_process_id(), version_);
     ASSERT_TRUE(host);
@@ -392,9 +392,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   // to the script |response|. Returns the new version.
   scoped_refptr<ServiceWorkerVersion> UpdateScript(
       const std::string& response) {
-    scoped_refptr<ServiceWorkerVersion> new_version =
-        new ServiceWorkerVersion(registration_.get(), script_url_,
-                                 NextVersionId(), context()->AsWeakPtr());
+    scoped_refptr<ServiceWorkerVersion> new_version = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        NextVersionId(), context()->AsWeakPtr());
     new_version->SetToPauseAfterDownload(base::DoNothing());
     base::WeakPtr<ServiceWorkerProviderHost> host =
         CreateHostForVersion(helper_->mock_render_process_id(), new_version);

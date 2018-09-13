@@ -459,7 +459,8 @@ TEST_P(ServiceWorkerProviderHostTest, Controller) {
   // Create an active version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -494,7 +495,8 @@ TEST_P(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // Create an installing version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   registration1_->SetInstallingVersion(version);
 
   // Finish the navigation.
@@ -559,7 +561,8 @@ TEST_P(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   scoped_refptr<ServiceWorkerVersion> version =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration1_.get(), GURL("https://www.example.com/sw.js"),
-          1 /* version_id */, helper_->context()->AsWeakPtr());
+          blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+          helper_->context()->AsWeakPtr());
   registration1_->SetActiveVersion(version);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
@@ -888,7 +891,8 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -930,7 +934,8 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
   // Make the waiting worker and have it call SkipWaiting().
   auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      2 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 2 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version2->SetStatus(ServiceWorkerVersion::INSTALLED);
@@ -969,7 +974,8 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -977,7 +983,8 @@ TEST_P(ServiceWorkerProviderHostTest, UpdateServiceWorkerOnDestruction) {
 
   auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration2_.get(), GURL("https://www.example.com/sw.js"),
-      2 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 2 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version2->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1008,7 +1015,8 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorker) {
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1049,7 +1057,8 @@ TEST_P(ServiceWorkerProviderHostTest,
   // Make an active version.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1079,7 +1088,8 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   // Make active versions.
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
-      1 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version1->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1087,7 +1097,8 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
 
   auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration2_.get(), GURL("https://www.example.com/sw.js"),
-      2 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 2 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version2->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1095,7 +1106,8 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
 
   auto version3 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration3_.get(), GURL("https://other.example.com/sw.js"),
-      3 /* version_id */, helper_->context()->AsWeakPtr());
+      blink::mojom::ScriptType::kClassic, 3 /* version_id */,
+      helper_->context()->AsWeakPtr());
   version3->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version3->SetStatus(ServiceWorkerVersion::ACTIVATED);
