@@ -188,7 +188,12 @@ struct CONTENT_EXPORT WebPreferences {
   bool supports_multiple_windows;
   bool viewport_enabled;
   bool viewport_meta_enabled;
+
+  // If true - Blink will clamp the minimum scale factor to the content width,
+  // preventing zoom beyond the visible content. This is really only needed if
+  // viewport_enabled is on.
   bool shrinks_viewport_contents_to_fit;
+
   ViewportStyle viewport_style;
   bool always_show_context_menu_on_touch;
   bool smooth_scroll_for_find_enabled;

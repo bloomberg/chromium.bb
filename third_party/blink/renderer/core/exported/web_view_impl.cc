@@ -2434,7 +2434,7 @@ void WebViewImpl::DisableAutoResizeMode() {
 }
 
 void WebViewImpl::SetDefaultPageScaleLimits(float min_scale, float max_scale) {
-  return GetPage()->SetDefaultPageScaleLimits(min_scale, max_scale);
+  GetPage()->SetDefaultPageScaleLimits(min_scale, max_scale);
 }
 
 void WebViewImpl::SetInitialPageScaleOverride(
@@ -2481,29 +2481,17 @@ PageScaleConstraintsSet& WebViewImpl::GetPageScaleConstraintsSet() const {
   return GetPage()->GetPageScaleConstraintsSet();
 }
 
-void WebViewImpl::RefreshPageScaleFactorAfterLayout() {
+void WebViewImpl::RefreshPageScaleFactor() {
   if (!MainFrame() || !GetPage() || !GetPage()->MainFrame() ||
       !GetPage()->MainFrame()->IsLocalFrame() ||
       !GetPage()->DeprecatedLocalMainFrame()->View())
     return;
-  LocalFrameView* view = GetPage()->DeprecatedLocalMainFrame()->View();
-
   UpdatePageDefinedViewportConstraints(MainFrameImpl()
                                            ->GetFrame()
                                            ->GetDocument()
                                            ->GetViewportData()
                                            .GetViewportDescription());
   GetPageScaleConstraintsSet().ComputeFinalConstraints();
-
-  int vertical_scrollbar_width = 0;
-  if (view->LayoutViewport()->VerticalScrollbar() &&
-      !view->LayoutViewport()->VerticalScrollbar()->IsOverlayScrollbar()) {
-    vertical_scrollbar_width =
-        view->LayoutViewport()->VerticalScrollbar()->Width();
-  }
-  GetPageScaleConstraintsSet().AdjustFinalConstraintsToContentsSize(
-      ContentsSize(), vertical_scrollbar_width,
-      GetSettings()->ShrinksViewportContentToFit());
 
   float new_page_scale_factor = PageScaleFactor();
   if (GetPageScaleConstraintsSet().NeedsReset() &&
@@ -2992,7 +2980,7 @@ void WebViewImpl::ResizeAfterLayout() {
   }
 
   if (GetPageScaleConstraintsSet().ConstraintsDirty())
-    RefreshPageScaleFactorAfterLayout();
+    RefreshPageScaleFactor();
 
   resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
 }
@@ -3006,8 +2994,20 @@ void WebViewImpl::MainFrameLayoutUpdated() {
 }
 
 void WebViewImpl::DidChangeContentsSize() {
-  GetPageScaleConstraintsSet().DidChangeContentsSize(ContentsSize(),
-                                                     PageScaleFactor());
+  if (!GetPage()->MainFrame()->IsLocalFrame())
+    return;
+
+  LocalFrameView* view = ToLocalFrame(GetPage()->MainFrame())->View();
+
+  int vertical_scrollbar_width = 0;
+  if (view && view->LayoutViewport()) {
+    Scrollbar* vertical_scrollbar = view->LayoutViewport()->VerticalScrollbar();
+    if (vertical_scrollbar && !vertical_scrollbar->IsOverlayScrollbar())
+      vertical_scrollbar_width = vertical_scrollbar->Width();
+  }
+
+  GetPageScaleConstraintsSet().DidChangeContentsSize(
+      ContentsSize(), vertical_scrollbar_width, PageScaleFactor());
 }
 
 void WebViewImpl::PageScaleFactorChanged() {

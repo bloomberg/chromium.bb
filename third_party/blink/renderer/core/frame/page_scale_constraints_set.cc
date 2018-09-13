@@ -31,17 +31,25 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 
 #include <algorithm>
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-PageScaleConstraintsSet::PageScaleConstraintsSet()
+PageScaleConstraintsSet::PageScaleConstraintsSet(Page* page)
     : default_constraints_(-1, 1, 1),
       final_constraints_(ComputeConstraintsStack()),
+      page_(page),
       last_contents_width_(0),
+      last_vertical_scrollbar_width_(0),
       needs_reset_(false),
       constraints_dirty_(false) {}
+
+void PageScaleConstraintsSet::Trace(blink::Visitor* visitor) {
+  visitor->Trace(page_);
+}
 
 void PageScaleConstraintsSet::SetDefaultConstraints(
     const PageScaleConstraints& default_constraints) {
@@ -90,17 +98,16 @@ PageScaleConstraints PageScaleConstraintsSet::ComputeConstraintsStack() const {
 
 void PageScaleConstraintsSet::ComputeFinalConstraints() {
   final_constraints_ = ComputeConstraintsStack();
-
+  AdjustFinalConstraintsToContentsSize();
   constraints_dirty_ = false;
 }
 
-void PageScaleConstraintsSet::AdjustFinalConstraintsToContentsSize(
-    IntSize contents_size,
-    int non_overlay_scrollbar_width,
-    bool shrinks_viewport_content_to_fit) {
-  if (shrinks_viewport_content_to_fit)
+void PageScaleConstraintsSet::AdjustFinalConstraintsToContentsSize() {
+  if (page_->GetSettings().GetShrinksViewportContentToFit()) {
     final_constraints_.FitToContentsWidth(
-        contents_size.Width(), icb_size_.Width() - non_overlay_scrollbar_width);
+        last_contents_width_,
+        icb_size_.Width() - last_vertical_scrollbar_width_);
+  }
 
   final_constraints_.ResolveAutoInitialScale();
 }
@@ -111,8 +118,10 @@ void PageScaleConstraintsSet::SetNeedsReset(bool needs_reset) {
     constraints_dirty_ = true;
 }
 
-void PageScaleConstraintsSet::DidChangeContentsSize(IntSize contents_size,
-                                                    float page_scale_factor) {
+void PageScaleConstraintsSet::DidChangeContentsSize(
+    IntSize contents_size,
+    int vertical_scrollbar_width,
+    float page_scale_factor) {
   // If a large fixed-width element expanded the size of the document late in
   // loading and our initial scale is not set (or set to be less than the last
   // minimum scale), reset the page scale factor to the new initial scale.
@@ -123,6 +132,7 @@ void PageScaleConstraintsSet::DidChangeContentsSize(IntSize contents_size,
     SetNeedsReset(true);
 
   constraints_dirty_ = true;
+  last_vertical_scrollbar_width_ = vertical_scrollbar_width;
   last_contents_width_ = contents_size.Width();
 }
 

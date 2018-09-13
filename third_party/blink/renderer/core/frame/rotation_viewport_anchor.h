@@ -70,7 +70,7 @@ class CORE_EXPORT RotationViewportAnchor {
   FloatSize anchor_in_inner_view_coords_;
   FloatSize anchor_in_node_coords_;
 
-  PageScaleConstraintsSet& page_scale_constraints_set_;
+  Member<PageScaleConstraintsSet> page_scale_constraints_set_;
 };
 
 }  // namespace blink

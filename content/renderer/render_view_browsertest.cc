@@ -2503,6 +2503,35 @@ TEST_F(RenderViewImplBlinkSettingsTest, CommandLine) {
   EXPECT_TRUE(settings()->ViewportEnabled());
 }
 
+// Ensure that setting default page scale limits immediately recomputes the
+// minimum scale factor to the final value. With
+// shrinks_viewport_contents_to_fit, Blink clamps the minimum cased on the
+// content width. In this case, that'll always be 1.
+TEST_F(RenderViewImplBlinkSettingsTest, DefaultPageScaleSettings) {
+  DoSetUp();
+  LoadHTML(
+      "<style>"
+      "    body,html {"
+      "    margin: 0;"
+      "    width:100%;"
+      "    height:100%;"
+      "}"
+      "</style>");
+
+  EXPECT_EQ(1.f, view()->webview()->PageScaleFactor());
+  EXPECT_EQ(1.f, view()->webview()->MinimumPageScaleFactor());
+
+  WebPreferences prefs;
+  prefs.shrinks_viewport_contents_to_fit = true;
+  prefs.default_minimum_page_scale_factor = 0.1f;
+  prefs.default_maximum_page_scale_factor = 5.5f;
+  view()->SetWebkitPreferences(prefs);
+
+  EXPECT_EQ(1.f, view()->webview()->PageScaleFactor());
+  EXPECT_EQ(1.f, view()->webview()->MinimumPageScaleFactor());
+  EXPECT_EQ(5.5f, view()->webview()->MaximumPageScaleFactor());
+}
+
 TEST_F(RenderViewImplDisableZoomForDSFTest,
        ConverViewportToWindowWithoutZoomForDSF) {
   SetDeviceScaleFactor(2.f);
