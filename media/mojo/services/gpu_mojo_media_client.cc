@@ -33,7 +33,6 @@
 #include "services/service_manager/public/cpp/connect.h"
 #endif  // defined(OS_ANDROID)
 
-// OS_WIN guards are needed for cross-compiling on linux.
 #if defined(OS_WIN)
 #include "media/gpu/windows/d3d11_video_decoder.h"
 #endif  // defined(OS_WIN)
@@ -48,7 +47,8 @@ namespace media {
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
 gpu::CommandBufferStub* GetCommandBufferStub(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
@@ -63,7 +63,7 @@ gpu::CommandBufferStub* GetCommandBufferStub(
 
   return channel->LookupCommandBuffer(route_id);
 }
-#endif  // OS_ANDROID || OS_WIN
+#endif
 
 }  // namespace
 
@@ -100,7 +100,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     mojom::CommandBufferIdPtr command_buffer_id,
     RequestOverlayInfoCB request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space) {
-  // Both MCVD and D3D11 VideoDecoders need a command buffer.
+  // All implemetnations require a command buffer.
   if (!command_buffer_id)
     return nullptr;
 
@@ -116,7 +116,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)));
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
     return D3D11VideoDecoder::Create(
