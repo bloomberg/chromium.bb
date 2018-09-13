@@ -3191,6 +3191,12 @@ void LayoutObject::WillBeRemovedFromTree() {
     bitfields_.SetIsScrollAnchorObject(false);
     FindReferencingScrollAnchors(this, kClear);
   }
+
+  if (RuntimeEnabledFeatures::PaintTrackingEnabled()) {
+    if (LocalFrameView* frame_view = GetFrameView()) {
+      frame_view->GetPaintTracker().NotifyNodeRemoved(*this);
+    }
+  }
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {

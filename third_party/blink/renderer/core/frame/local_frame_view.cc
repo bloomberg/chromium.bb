@@ -262,7 +262,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
-      jank_tracker_(std::make_unique<JankTracker>(this)) {
+      jank_tracker_(std::make_unique<JankTracker>(this)),
+      paint_tracker_(new PaintTracker(this)) {
   // Propagate the marginwidth/height and scrolling modes to the view.
   if (frame_->Owner() &&
       frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
@@ -304,6 +305,7 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(visibility_observer_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
+  visitor->Trace(paint_tracker_);
 }
 
 template <typename Function>
