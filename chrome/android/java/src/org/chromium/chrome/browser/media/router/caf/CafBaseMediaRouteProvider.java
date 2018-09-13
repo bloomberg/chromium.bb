@@ -47,14 +47,11 @@ public abstract class CafBaseMediaRouteProvider
     protected final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
     protected Handler mHandler = new Handler();
 
-    // There can be only one Cast session at the same time on Android.
-    private final CastSessionController mSessionController;
     private CreateRouteRequestInfo mPendingCreateRouteRequestInfo;
 
     protected CafBaseMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
-        mSessionController = new CastSessionController(this);
     }
 
     /**
@@ -182,7 +179,7 @@ public abstract class CafBaseMediaRouteProvider
         mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(source, sink, presentationId,
                 origin, tabId, isIncognito, nativeRequestId, targetRouteInfo);
 
-        mSessionController.requestSessionLaunch();
+        sessionController().requestSessionLaunch();
     }
 
     @Override
@@ -195,7 +192,12 @@ public abstract class CafBaseMediaRouteProvider
             return;
         }
 
-        mSessionController.endSession();
+        sessionController().endSession();
+    }
+
+    @Override
+    public void detachRoute(String routeId) {
+        removeRoute(routeId, /* error= */ null);
     }
 
     ///////////////////////////////////////////////////////
@@ -216,7 +218,7 @@ public abstract class CafBaseMediaRouteProvider
     @Override
     public void onSessionStarted(CastSession session, String sessionId) {
         Log.d(TAG, "onSessionStarted");
-        mSessionController.attachToCastSession(session);
+        sessionController().attachToCastSession(session);
         sessionController().onSessionStarted();
 
         MediaSink sink = mPendingCreateRouteRequestInfo.sink;
@@ -231,7 +233,7 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void onSessionResumed(CastSession session, boolean wasSuspended) {
-        mSessionController.attachToCastSession(session);
+        sessionController().attachToCastSession(session);
     }
 
     @Override
@@ -254,7 +256,7 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void onSessionSuspended(CastSession session, int reason) {
-        mSessionController.detachFromCastSession();
+        sessionController().detachFromCastSession();
     }
 
     ///////////////////////////////////////////////////////
@@ -269,8 +271,8 @@ public abstract class CafBaseMediaRouteProvider
             // sure the listener is not unregistered during a session relaunch.
             return;
         }
-        mSessionController.detachFromCastSession();
-        mSessionController.onSessionEnded();
+        sessionController().detachFromCastSession();
+        sessionController().onSessionEnded();
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
         removeAllRoutesWithError(error);
         CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
@@ -282,12 +284,10 @@ public abstract class CafBaseMediaRouteProvider
     }
 
     protected boolean hasSession() {
-        return mSessionController.isConnected();
+        return sessionController().isConnected();
     }
 
-    protected CastSessionController sessionController() {
-        return mSessionController;
-    }
+    abstract public BaseSessionController sessionController();
 
     public CafMessageHandler getMessageHandler() {
         return null;

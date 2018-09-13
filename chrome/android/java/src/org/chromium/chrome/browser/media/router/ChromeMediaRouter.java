@@ -19,6 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.router.caf.CafMediaRouteProvider;
+import org.chromium.chrome.browser.media.router.caf.remoting.CafRemotingMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.CastMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.remoting.RemotingMediaRouteProvider;
 
@@ -59,6 +60,9 @@ public class ChromeMediaRouter implements MediaRouteManager {
                         }
                         MediaRouteProvider cafProvider = CafMediaRouteProvider.create(manager);
                         manager.addMediaRouteProvider(cafProvider);
+                        MediaRouteProvider remotingProvider =
+                                CafRemotingMediaRouteProvider.create(manager);
+                        manager.addMediaRouteProvider(remotingProvider);
                     } else {
                         MediaRouteProvider castProvider = CastMediaRouteProvider.create(manager);
                         manager.addMediaRouteProvider(castProvider);
