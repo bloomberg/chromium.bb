@@ -11,7 +11,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -182,7 +181,7 @@ public class HostBrowserUtils {
 
     /** Returns the package name of the default browser on the Android device. */
     private static String getDefaultBrowserPackageName(PackageManager packageManager) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+        Intent browserIntent = WebApkUtils.getQueryInstalledBrowsersIntent();
         ResolveInfo resolveInfo =
                 packageManager.resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
         if (resolveInfo == null || resolveInfo.activityInfo == null) return null;

@@ -197,7 +197,7 @@ public final class MainActivityTest {
     }
 
     private void installBrowser(String browserPackageName) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+        Intent intent = WebApkUtils.getQueryInstalledBrowsersIntent();
         Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())
                 .addResolveInfoForIntent(intent, newResolveInfo(browserPackageName));
         Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())

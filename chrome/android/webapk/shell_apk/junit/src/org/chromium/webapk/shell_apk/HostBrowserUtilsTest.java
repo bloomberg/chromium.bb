@@ -206,7 +206,7 @@ public class HostBrowserUtilsTest {
     private void uninstallBrowser(String packageName) {
         Intent intent = null;
         try {
-            intent = Intent.parseUri("http://", Intent.URI_INTENT_SCHEME);
+            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
         } catch (Exception e) {
             Assert.fail();
             return;
@@ -228,7 +228,7 @@ public class HostBrowserUtilsTest {
     private void mockInstallBrowsers(String[] browsersToInstall, String defaultBrowser) {
         Intent intent = null;
         try {
-            intent = Intent.parseUri("http://", Intent.URI_INTENT_SCHEME);
+            intent = WebApkUtils.getQueryInstalledBrowsersIntent();
         } catch (Exception e) {
             Assert.fail();
             return;
