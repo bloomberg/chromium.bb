@@ -163,6 +163,9 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
   }
   playback_start_pts_ = playback_start_pts;
   start_playback_asap_ = start_playback_asap;
+  last_push_timestamp_ = kInvalidTimestamp;
+  last_push_pts_ = kInvalidTimestamp;
+
   return true;
 }
 
@@ -170,6 +173,15 @@ void AudioDecoderForMixer::StartPlaybackAt(int64_t playback_start_timestamp) {
   LOG(INFO) << __func__
             << " playback_start_timestamp_=" << playback_start_timestamp;
   mixer_input_->StartPlaybackAt(playback_start_timestamp);
+}
+
+void AudioDecoderForMixer::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
+  LOG(INFO) << __func__ << " pts=" << pts << " timestamp=" << timestamp;
+
+  last_push_timestamp_ = kInvalidTimestamp;
+  last_push_pts_ = kInvalidTimestamp;
+
+  mixer_input_->RestartPlaybackAt(timestamp, pts);
 }
 
 void AudioDecoderForMixer::Stop() {
@@ -225,6 +237,10 @@ float AudioDecoderForMixer::SetAvSyncPlaybackRate(float rate) {
   return mixer_input_->SetAvSyncPlaybackRate(rate);
 }
 
+// TODO(almasrymina): This function currently only really works well when
+// audio is in steady playback, because it returns the timestamp at buffer
+// push. We need to call into the BufferingMixerSource here to get the values
+// of the last *played* buffer.
 bool AudioDecoderForMixer::GetTimestampedPts(int64_t* timestamp,
                                              int64_t* pts) const {
   if (last_push_timestamp_ == kInvalidTimestamp ||

@@ -61,6 +61,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   // This allows for very small changes in the rate of audio playback that are
   // (supposedly) imperceptible.
   float SetAvSyncPlaybackRate(float rate);
+  void RestartPlaybackAt(int64_t pts, int64_t timestamp);
 
  private:
   friend class MockAudioDecoderForMixer;

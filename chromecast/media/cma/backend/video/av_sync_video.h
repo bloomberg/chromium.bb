@@ -66,6 +66,10 @@ class AvSyncVideo : public AvSync {
   // linear regression / the number of samples (which are unique frames).
   int GetContentFrameRate();
 
+  void HardCorrection(int64_t now,
+                      int64_t new_vpts,
+                      int64_t new_vpts_timestamp,
+                      int64_t difference);
   void AudioRateUpkeep(int64_t now,
                        int64_t new_raw_vpts,
                        int64_t new_raw_apts,

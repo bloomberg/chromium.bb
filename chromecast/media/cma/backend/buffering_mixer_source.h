@@ -80,6 +80,14 @@ class BufferingMixerSource : public MixerInput::Source,
   // |start_playback_asap| is false during constructing.
   void StartPlaybackAt(int64_t playback_start_timestamp);
 
+  // Restarts the current playback from the timestamp provided at the pts
+  // provided. Flushes any currently buffered audio. Generally does well if you
+  // require the audio to jump back and/or forth by up to 5 seconds or so,
+  // depending on how much data is already buffered by the upper layers and
+  // ready for consumption here. This API will start having problems if you try
+  // to do more than that, so it's not advised.
+  void RestartPlaybackAt(int64_t timestamp, int64_t pts);
+
   // Queues some PCM data to be mixed. |data| must be in planar float format.
   // If the buffer can accept more data, the delegate's OnWritePcmCompletion()
   // method is called synchronously. Otherwise, OnWritePcmCompletion() will be

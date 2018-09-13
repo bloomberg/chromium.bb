@@ -43,6 +43,7 @@ const int kAudioReadyForPlaybackThresholdMs = kInputQueueMs / 2;
 // issues with voice calling.
 const int64_t kCommsInputQueueMs = 200;
 const int64_t kCommsStartThresholdMs = 150;
+const int64_t kNonCommsStartThresholdMs = 40;
 
 void PostTaskShim(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   base::OnceClosure task) {
@@ -81,7 +82,7 @@ int StartThreshold(const std::string& device_id, int sample_rate) {
   if (device_id == ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
     return MsToSamples(kCommsStartThresholdMs, sample_rate);
   }
-  return 0;
+  return MsToSamples(kNonCommsStartThresholdMs, sample_rate);
 }
 
 }  // namespace
@@ -196,6 +197,36 @@ void BufferingMixerSource::StartPlaybackAt(int64_t playback_start_timestamp) {
   locked->playback_start_timestamp_ = playback_start_timestamp;
 }
 
+void BufferingMixerSource::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  LOG(INFO) << __func__ << " timestamp=" << timestamp << " pts=" << pts;
+
+  bool post_pcm_completion = false;
+  RenderingDelay cached_mixer_rendering_delay;
+  {
+    auto locked = locked_members_.Lock();
+    DCHECK(locked->started_);
+
+    playback_start_pts_ = pts;
+
+    locked->playback_start_timestamp_ = timestamp;
+    locked->started_ = false;
+
+    locked->queue_.clear();
+    locked->current_buffer_offset_ = 0;
+    locked->queued_frames_ = 0;
+    if (locked->pending_data_) {
+      locked->pending_data_.reset();
+      post_pcm_completion = true;
+      cached_mixer_rendering_delay = locked->mixer_rendering_delay_;
+    }
+  }
+  if (post_pcm_completion) {
+    POST_TASK_TO_CALLER_THREAD(PostPcmCompletion, cached_mixer_rendering_delay);
+  }
+}
+
 float BufferingMixerSource::SetAvSyncPlaybackRate(float rate) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << __func__ << " rate=" << rate;
@@ -274,6 +305,9 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
       locked->queued_frames_ += frames;
       locked->queue_.push_back(std::move(buffer));
 
+      // TODO(almasrymina): this needs to be called outside the lock.
+      // POST_TASK_TO_CALLER_THREAD should also probably DCHECK that the lock
+      // is not held before executing.
       if (!locked->started_ && GetCurrentBufferedDataInUs() >=
                                    kAudioReadyForPlaybackThresholdMs * 1000) {
         POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
