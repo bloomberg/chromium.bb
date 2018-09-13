@@ -275,15 +275,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Returns true if the message was successfully delivered and handled.
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
 
-  // When the main thread informs the impl thread that it is ready to commit,
-  // generally it would remain blocked till the main thread state is copied to
-  // the pending tree. Calling this would ensure that the main thread remains
-  // blocked till the pending tree is activated.
+  // When the main thread informs the compositor thread that it is ready to
+  // commit, generally it would remain blocked until the main thread state is
+  // copied to the pending tree. Calling this would ensure that the main thread
+  // remains blocked until the pending tree is activated.
   void SetNextCommitWaitsForActivation();
-
-  // The LayerTreeHost tracks whether the content is suitable for Gpu raster.
-  // Calling this will reset it back to not suitable state.
-  void ResetGpuRasterizationTracking();
 
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen (it's entirely possible some frames may be dropped between
@@ -292,10 +288,18 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
+  // Layer tree accessors and modifiers ------------------------
+
+  // Sets or gets the root of the Layer tree. Children of the root Layer are
+  // attached to it and will be added/removed along with the root Layer. The
+  // LayerTreeHost retains ownership of a reference to the root Layer.
   void SetRootLayer(scoped_refptr<Layer> root_layer);
   Layer* root_layer() { return root_layer_.get(); }
   const Layer* root_layer() const { return root_layer_.get(); }
 
+  // Viewport Layers are used to identify key layers to the compositor thread,
+  // so that it can perform viewport-based scrolling independently, such as
+  // for pinch-zoom or overscroll elasticity.
   struct CC_EXPORT ViewportLayers {
     ViewportLayers();
     ~ViewportLayers();
@@ -306,6 +310,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     scoped_refptr<Layer> inner_viewport_scroll;
     scoped_refptr<Layer> outer_viewport_scroll;
   };
+  // Sets or gets the collection of viewport Layers, defined to allow pinch-zoom
+  // transformations on the compositor thread.
   void RegisterViewportLayers(const ViewportLayers& viewport_layers);
   ElementId overscroll_elasticity_element_id() const {
     return viewport_layers_.overscroll_elasticity_element_id;
@@ -324,14 +330,28 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return viewport_layers_.outer_viewport_scroll.get();
   }
 
+  // Sets or gets the position of touch handles for a text selection. These are
+  // submitted to the display compositor along with the Layer tree's contents
+  // allowing it to present the selection handles. This is done because the
+  // handles are a UI widget above, and not clipped to, the viewport of this
+  // LayerTreeHost.
   void RegisterSelection(const LayerSelection& selection);
   const LayerSelection& selection() const { return selection_; }
 
+  // Sets or gets if the client has any scroll event handlers registered. This
+  // allows the threaded compositor to prioritize main frames even when
+  // servicing a touch scroll on the compositor thread, in order to give the
+  // event handler a chance to be part of each frame.
   void SetHaveScrollEventHandlers(bool have_event_handlers);
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;
   }
 
+  // Set or get what event handlers exist on the layer tree in order to inform
+  // the compositor thread if it is able to handle an input event, or it needs
+  // to pass it to the main thread to be handled. The class is the type of input
+  // event, and for each class there is a properties defining if the compositor
+  // thread can handle the event.
   void SetEventListenerProperties(EventListenerClass event_class,
                                   EventListenerProperties event_properties);
   EventListenerProperties event_listener_properties(

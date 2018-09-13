@@ -561,6 +561,7 @@ class CC_EXPORT LayerTreeImpl {
   // SetScrollbarGeometriesNeedUpdate).
   void UpdateScrollbarGeometries();
 
+  // See LayerTreeHost.
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;
   }
@@ -568,6 +569,7 @@ class CC_EXPORT LayerTreeImpl {
     have_scroll_event_handlers_ = have_event_handlers;
   }
 
+  // See LayerTreeHost.
   EventListenerProperties event_listener_properties(
       EventListenerClass event_class) const {
     return event_listener_properties_[static_cast<size_t>(event_class)];

@@ -597,12 +597,6 @@ void LayerTreeHost::SetDebugState(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::ResetGpuRasterizationTracking() {
-  content_has_slow_paths_ = false;
-  content_has_non_aa_paint_ = false;
-  gpu_rasterization_histogram_recorded_ = false;
-}
-
 void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
   if (has_trigger == has_gpu_rasterization_trigger_)
     return;
@@ -1022,7 +1016,9 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 
   // Reset gpu rasterization tracking.
   // This flag is sticky until a new tree comes along.
-  ResetGpuRasterizationTracking();
+  content_has_slow_paths_ = false;
+  content_has_non_aa_paint_ = false;
+  gpu_rasterization_histogram_recorded_ = false;
 
   SetNeedsFullTreeSync();
 }
@@ -1079,20 +1075,36 @@ void LayerTreeHost::SetEventListenerProperties(
   if (event_listener_properties_[index] == properties)
     return;
 
+  // If the mouse wheel event listener is blocking, then every layer in the
+  // layer tree sets a wheel event handler region to be its entire bounds,
+  // otherwise it sets it to empty.
+  //
+  // Thus when it changes, we might want to request every layer to push
+  // properties and recompute its wheel event handler region, since the
+  // computation is done in PushPropertiesTo. However neither
+  // SetSubtreePropertyChanged() nor SetNeedsFullTreeSync() do this, so
+  // it is unclear why we call them.
+  // Also why we don't want to recompute the wheel event handler region for all
+  // layers when the blocking state goes away is unclear. Also why we mark all
+  // layers below the root layer as damaged is unclear.
+  // TODO(bokan): Sort out what should be set and why. https://crbug.com/881011
+  //
   // TODO(sunxd): Remove NeedsFullTreeSync when computing mouse wheel event
   // handler region is done.
-  // We only do full tree sync if the mouse wheel event listener property
-  // changes from kNone/kPassive to kBlocking/kBlockingAndPassive.
-  if (event_class == EventListenerClass::kMouseWheel &&
-      !(event_listener_properties_[index] ==
-            EventListenerProperties::kBlocking ||
-        event_listener_properties_[index] ==
-            EventListenerProperties::kBlockingAndPassive) &&
-      (properties == EventListenerProperties::kBlocking ||
-       properties == EventListenerProperties::kBlockingAndPassive)) {
-    if (root_layer())
-      root_layer()->SetSubtreePropertyChanged();
-    SetNeedsFullTreeSync();
+  if (event_class == EventListenerClass::kMouseWheel) {
+    bool new_property_is_blocking =
+        properties == EventListenerProperties::kBlocking ||
+        properties == EventListenerProperties::kBlockingAndPassive;
+    EventListenerProperties old_properties = event_listener_properties_[index];
+    bool old_property_is_blocking =
+        old_properties == EventListenerProperties::kBlocking ||
+        old_properties == EventListenerProperties::kBlockingAndPassive;
+
+    if (!old_property_is_blocking && new_property_is_blocking) {
+      if (root_layer())
+        root_layer()->SetSubtreePropertyChanged();
+      SetNeedsFullTreeSync();
+    }
   }
 
   event_listener_properties_[index] = properties;
