@@ -157,7 +157,8 @@ class VR_UI_EXPORT Ui : public UiInterface,
   void SetContentUsesQuadLayer(bool uses_quad_buffers) override;
   gfx::Transform GetContentWorldSpaceTransform() override;
 
-  bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&) override;
+  bool OnBeginFrame(base::TimeTicks current_time,
+                    const gfx::Transform& head_pose) override;
   bool SceneHasDirtyTextures() const override;
   void UpdateSceneTextures() override;
   void Draw(const RenderInfo& render_info) override;
@@ -177,7 +178,7 @@ class VR_UI_EXPORT Ui : public UiInterface,
 
   void HandleMenuButtonEvents(InputEventList* input_event_list) override;
 
-  std::pair<FovRectangle, FovRectangle> GetMinimalFovForWebXrOverlayElements(
+  FovRectangles GetMinimalFovForWebXrOverlayElements(
       const gfx::Transform& left_view,
       const FovRectangle& fov_recommended_left,
       const gfx::Transform& right_view,

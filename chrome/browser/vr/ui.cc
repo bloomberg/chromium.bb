@@ -626,7 +626,7 @@ std::vector<TabModel>::iterator Ui::FindTab(int id,
                       [id](const TabModel& tab) { return tab.id == id; });
 }
 
-bool Ui::OnBeginFrame(const base::TimeTicks& current_time,
+bool Ui::OnBeginFrame(base::TimeTicks current_time,
                       const gfx::Transform& head_pose) {
   return scene_->OnBeginFrame(current_time, head_pose);
 }

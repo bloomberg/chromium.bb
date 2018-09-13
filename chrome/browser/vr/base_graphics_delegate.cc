@@ -37,7 +37,7 @@ bool BaseGraphicsDelegate::Initialize(
   return MakeContextCurrent(kMainContext);
 }
 
-bool BaseGraphicsDelegate::RunInSkiaContext(SkiaContextCallback callback) {
+bool BaseGraphicsDelegate::RunInSkiaContext(base::OnceClosure callback) {
   DCHECK_EQ(curr_context_id_, kMainContext);
   if (!MakeContextCurrent(kSkiaContext))
     return false;
