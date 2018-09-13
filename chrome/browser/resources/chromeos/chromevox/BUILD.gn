@@ -146,6 +146,7 @@ chromevox_modules = [
   "cvox2/background/next_earcons.js",
   "cvox2/background/notifications.js",
   "cvox2/background/output.js",
+  "cvox2/background/output_logger.js",
   "cvox2/background/panel.js",
   "cvox2/background/panel_command.js",
   "cvox2/background/panel_menu.js",
