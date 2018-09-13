@@ -90,9 +90,16 @@ base::Optional<std::string> CrostiniAppIdFromAppName(
 // numeric values should never be reused.
 enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
 
+// See chrome/browser/ui/views/crostini for implementation of the ShowXXX
+// functions below.
+
+// Shows the Crostini Installer dialog.
 void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
+// Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
+// Shows the Crostini Upgrade dialog.
+void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").

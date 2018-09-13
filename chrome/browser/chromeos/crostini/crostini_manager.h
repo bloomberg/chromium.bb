@@ -45,6 +45,8 @@ enum class ConciergeClientResult {
   INSTALL_LINUX_PACKAGE_FAILED,
   INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE,
   SSHFS_MOUNT_ERROR,
+  OFFLINE_WHEN_UPGRADE_REQUIRED,
+  LOAD_COMPONENT_FAILED,
   UNKNOWN_ERROR,
 };
 
@@ -181,7 +183,7 @@ class CrostiniManager : public KeyedService,
 
   // Installs the current version of cros-termina component. Attempts to apply
   // pending upgrades if a MaybeUpgradeCrostini failed.
-  void InstallTerminaComponent(BoolCallback callback);
+  void InstallTerminaComponent(CrostiniResultCallback callback);
 
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
@@ -316,7 +318,11 @@ class CrostiniManager : public KeyedService,
 
   // Aborts a restart. A "next" restarter with the same <vm_name,
   // container_name> will run, if there is one.
-  void AbortRestartCrostini(RestartId id);
+  void AbortRestartCrostini(RestartId restart_id);
+
+  // Returns true if the Restart corresponding to |restart_id| is not yet
+  // complete.
+  bool IsRestartPending(RestartId restart_id);
 
   // Adds a callback to receive notification of container shutdown.
   void AddShutdownContainerCallback(
@@ -366,6 +372,10 @@ class CrostiniManager : public KeyedService,
   // Can be called for testing to skip restart.
   void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
   bool skip_restart_for_testing() { return skip_restart_for_testing_; }
+  void set_component_manager_load_error_for_testing(
+      component_updater::CrOSComponentManager::Error error) {
+    component_manager_load_error_for_testing_ = error;
+  }
 
  private:
   class CrostiniRestarter;
@@ -413,7 +423,7 @@ class CrostiniManager : public KeyedService,
   // Callback for CrostiniManager::InstallCrostiniComponent. Must be called on
   // the UI thread.
   void OnInstallTerminaComponent(
-      BoolCallback callback,
+      CrostiniResultCallback callback,
       bool is_update_checked,
       component_updater::CrOSComponentManager::Error error,
       const base::FilePath& result);
@@ -490,6 +500,10 @@ class CrostiniManager : public KeyedService,
   std::string owner_id_;
 
   bool skip_restart_for_testing_ = false;
+  component_updater::CrOSComponentManager::Error
+      component_manager_load_error_for_testing_ =
+          component_updater::CrOSComponentManager::Error::NONE;
+
   bool is_cros_termina_registered_ = false;
   bool termina_update_check_needed_ = false;
 

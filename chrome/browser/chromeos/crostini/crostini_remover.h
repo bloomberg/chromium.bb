@@ -23,7 +23,7 @@ class CrostiniRemover : public base::RefCountedThreadSafe<CrostiniRemover> {
 
   ~CrostiniRemover();
 
-  void OnComponentLoaded(bool is_successful);
+  void OnComponentLoaded(crostini::ConciergeClientResult result);
   void OnConciergeStarted(bool is_successful);
   void StopVmFinished(crostini::ConciergeClientResult result);
   void DestroyDiskImageFinished(crostini::ConciergeClientResult result);

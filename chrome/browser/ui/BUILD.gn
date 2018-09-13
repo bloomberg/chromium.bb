@@ -3709,6 +3709,8 @@ jumbo_split_static_library("ui") {
         "views/crostini/crostini_installer_view.h",
         "views/crostini/crostini_uninstaller_view.cc",
         "views/crostini/crostini_uninstaller_view.h",
+        "views/crostini/crostini_upgrade_view.cc",
+        "views/crostini/crostini_upgrade_view.h",
       ]
       deps += [ "//mash/common" ]
     }

@@ -71,7 +71,8 @@ void OnLaunchFailed(const std::string& app_id) {
   chrome_controller->GetShelfSpinnerController()->Close(app_id);
 }
 
-void OnCrostiniRestarted(const std::string& app_id,
+void OnCrostiniRestarted(Profile* profile,
+                         const std::string& app_id,
                          Browser* browser,
                          base::OnceClosure callback,
                          crostini::ConciergeClientResult result) {
@@ -79,6 +80,10 @@ void OnCrostiniRestarted(const std::string& app_id,
     OnLaunchFailed(app_id);
     if (browser && browser->window())
       browser->window()->Close();
+    if (result ==
+        crostini::ConciergeClientResult::OFFLINE_WHEN_UPGRADE_REQUIRED) {
+      ShowCrostiniUpgradeView(profile, CrostiniUISurface::kAppList);
+    }
     return;
   }
   std::move(callback).Run();
@@ -257,15 +262,16 @@ void LaunchCrostiniApp(Profile* profile,
   LaunchCrostiniApp(profile, app_id, display_id, std::vector<std::string>());
 }
 
-void AddSpinner(const std::string& app_id,
+void AddSpinner(crostini::CrostiniManager::RestartId restart_id,
+                const std::string& app_id,
                 Profile* profile,
                 std::string vm_name,
                 std::string container_name) {
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   if (chrome_controller &&
-      !crostini::CrostiniManager::GetForProfile(profile)->IsContainerRunning(
-          vm_name, container_name)) {
+      crostini::CrostiniManager::GetForProfile(profile)->IsRestartPending(
+          restart_id)) {
     chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
         app_id, std::make_unique<ShelfSpinnerItemController>(app_id));
   }
@@ -326,14 +332,16 @@ void LaunchCrostiniApp(Profile* profile,
   // Update the last launched time.
   registry_service->AppLaunched(app_id);
 
+  auto restart_id = crostini_manager->RestartCrostini(
+      vm_name, container_name,
+      base::BindOnce(OnCrostiniRestarted, profile, app_id, browser,
+                     std::move(launch_closure)));
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AddSpinner, app_id, profile, vm_name, container_name),
+      base::BindOnce(&AddSpinner, restart_id, app_id, profile, vm_name,
+                     container_name),
       base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
-  crostini_manager->RestartCrostini(
-      vm_name, container_name,
-      base::BindOnce(OnCrostiniRestarted, app_id, browser,
-                     std::move(launch_closure)));
 }
 
 void LoadIcons(Profile* profile,
