@@ -594,8 +594,9 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
 * **PSK**
     * (optional if **AuthenticationType** is *PSK*, otherwise ignored)
       - **string**
-    * Pre-Shared Key. If not specified, user is prompted at time of
-        connection.
+    * Pre-Shared Key. If not specified, the user is prompted when connecting.
+      If the value is saved but not known, this may be set to an empty value,
+      indicating that the UI does not need to provide it.
 
 * **SaveCredentials**
     * (optional if **AuthenticationType**
