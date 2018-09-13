@@ -132,18 +132,6 @@ class ChromeMimeHandlerViewBrowserPluginTest
   DISALLOW_COPY_AND_ASSIGN(ChromeMimeHandlerViewBrowserPluginTest);
 };
 
-class ChromeMimeHandlerViewBrowserPluginScrollTest
-    : public ChromeMimeHandlerViewBrowserPluginTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeMimeHandlerViewBrowserPluginTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitchASCII(
-        switches::kTouchEventFeatureDetection,
-        switches::kTouchEventFeatureDetectionEnabled);
-  }
-};
-
 // Helper class to monitor focus on a WebContents with BrowserPlugin (guest).
 class FocusChangeWaiter {
  public:
@@ -331,52 +319,19 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
     ASSERT_FALSE(IsWebContentsBrowserPluginFocused(guest_web_contents()));
   }
 }
-
-// This verifies the fix for crbug.com/694393 .
-IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginScrollTest,
-                       OverscrollControllerSeesConsumedScrollsInGuest) {
-  InitializeTestPage(embedded_test_server()->GetURL("/test_embedded.html"));
-
-  // Part of set-up and making sure that pages respond to user scroll.
-  ASSERT_TRUE(ExecuteScript(guest_web_contents(), "ensurePageIsScrollable();"));
-  ASSERT_TRUE(
-      ExecuteScript(embedder_web_contents(), "ensurePageIsScrollable()"));
-
-  content::RenderFrameSubmissionObserver embedder_frame_observer(
-      embedder_web_contents());
-  content::RenderFrameSubmissionObserver guest_frame_observer(
-      guest_web_contents());
-
-  gfx::Rect embedder_rect = embedder_web_contents()->GetContainerBounds();
-  gfx::Rect guest_rect = guest_web_contents()->GetContainerBounds();
-  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
-  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
-
-  gfx::Vector2dF default_offset;
-  guest_frame_observer.WaitForScrollOffset(default_offset);
-  embedder_frame_observer.WaitForScrollOffset(default_offset);
-
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_web_contents()->GetRenderWidgetHostView();
-  // If we scroll the guest, the OverscrollController for the
-  // RenderWidgetHostViewAura should see that the scroll was consumed.
-  // If it doesn't, this test will time out indicating failure.
-  content::MockOverscrollController* mock_overscroll_controller =
-      content::MockOverscrollController::Create(embedder_host_view);
-
-  gfx::Point guest_scroll_location(guest_rect.width() / 2,
-                                   guest_rect.height() / 2);
-
-  float gesture_distance = 15.f;
-  // It's sufficient to scroll vertically, since all we need to test is that
-  // the OverscrollController sees consumed scrolls.
-  content::SimulateGestureScrollSequence(guest_web_contents(),
-                                         guest_scroll_location,
-                                         gfx::Vector2dF(0, -gesture_distance));
-
-  mock_overscroll_controller->WaitForConsumedScroll();
-}
 #endif  // USE_AURA
+
+class ChromeMimeHandlerViewBrowserPluginScrollTest
+    : public ChromeMimeHandlerViewBrowserPluginTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeMimeHandlerViewBrowserPluginTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        switches::kTouchEventFeatureDetection,
+        switches::kTouchEventFeatureDetectionEnabled);
+  }
+};
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_ScrollGuestContent DISABLED_ScrollGuestContent
