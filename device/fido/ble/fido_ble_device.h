@@ -48,8 +48,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   // mode by investigating the advertisement payload.
   bool IsInPairingMode() const;
 
-  FidoBleConnection::ConnectionStatusCallback
-  GetConnectionStatusCallbackForTesting();
   FidoBleConnection::ReadCallback GetReadCallbackForTesting();
 
  protected:
@@ -67,7 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   void ResetTransaction();
 
  private:
-  void OnConnectionStatus(bool success);
+  void OnConnected(bool success);
   void OnStatusMessage(std::vector<uint8_t> data);
 
   void ReadControlPointLength();

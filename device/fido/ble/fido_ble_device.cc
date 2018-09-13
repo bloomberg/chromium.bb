@@ -20,8 +20,6 @@ FidoBleDevice::FidoBleDevice(BluetoothAdapter* adapter, std::string address)
     : weak_factory_(this) {
   connection_ = std::make_unique<FidoBleConnection>(
       adapter, std::move(address),
-      base::BindRepeating(&FidoBleDevice::OnConnectionStatus,
-                          base::Unretained(this)),
       base::BindRepeating(&FidoBleDevice::OnStatusMessage,
                           base::Unretained(this)));
 }
@@ -37,7 +35,8 @@ void FidoBleDevice::Connect() {
 
   StartTimeout();
   state_ = State::kBusy;
-  connection_->Connect();
+  connection_->Connect(
+      base::BindOnce(&FidoBleDevice::OnConnected, base::Unretained(this)));
 }
 
 void FidoBleDevice::SendPing(std::vector<uint8_t> data,
@@ -99,12 +98,6 @@ bool FidoBleDevice::IsInPairingMode() const {
   return !fido_service_data->empty() &&
          (fido_service_data->front() &
           static_cast<int>(FidoServiceDataFlags::kPairingMode)) != 0;
-}
-
-FidoBleConnection::ConnectionStatusCallback
-FidoBleDevice::GetConnectionStatusCallbackForTesting() {
-  return base::BindRepeating(&FidoBleDevice::OnConnectionStatus,
-                             base::Unretained(this));
 }
 
 FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
@@ -186,7 +179,7 @@ void FidoBleDevice::AddToPendingFrames(FidoBleDeviceCommand cmd,
   Transition();
 }
 
-void FidoBleDevice::OnConnectionStatus(bool success) {
+void FidoBleDevice::OnConnected(bool success) {
   StopTimeout();
   state_ = success ? State::kConnected : State::kDeviceError;
   Transition();

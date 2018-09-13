@@ -78,8 +78,6 @@ class FidoBleDeviceTest : public Test {
         adapter_.get(), BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
     device_ = std::make_unique<FidoBleDevice>(std::move(connection));
-    connection_->connection_status_callback() =
-        device_->GetConnectionStatusCallbackForTesting();
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 
@@ -88,8 +86,8 @@ class FidoBleDeviceTest : public Test {
   MockFidoBleConnection* connection() { return connection_; }
 
   void ConnectWithLength(uint16_t length) {
-    EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
-      connection()->connection_status_callback().Run(true);
+    EXPECT_CALL(*connection(), ConnectPtr).WillOnce(Invoke([](auto* callback) {
+      std::move(*callback).Run(true);
     }));
 
     EXPECT_CALL(*connection(), ReadControlPointLengthPtr(_))
@@ -110,9 +108,10 @@ class FidoBleDeviceTest : public Test {
 };
 
 TEST_F(FidoBleDeviceTest, ConnectionFailureTest) {
-  EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
-    connection()->connection_status_callback().Run(false);
+  EXPECT_CALL(*connection(), ConnectPtr).WillOnce(Invoke([](auto* callback) {
+    std::move(*callback).Run(false);
   }));
+
   device()->Connect();
 }
 
@@ -227,9 +226,10 @@ TEST_F(FidoBleDeviceTest, IsInPairingMode) {
   EXPECT_FALSE(device()->IsInPairingMode());
 
   // Initiate default connection behavior.
-  EXPECT_CALL(*connection(), Connect()).WillOnce(Invoke([this] {
-    connection()->FidoBleConnection::Connect();
-  }));
+  EXPECT_CALL(*connection(), ConnectPtr)
+      .WillOnce(Invoke([this](auto* callback) {
+        connection()->FidoBleConnection::Connect(std::move(*callback));
+      }));
   device()->Connect();
 
   // Add a mock fido device. This should also not be considered to be in pairing

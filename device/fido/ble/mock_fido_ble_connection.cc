@@ -14,6 +14,10 @@ MockFidoBleConnection::MockFidoBleConnection(BluetoothAdapter* adapter,
 
 MockFidoBleConnection::~MockFidoBleConnection() = default;
 
+void MockFidoBleConnection::Connect(ConnectionCallback callback) {
+  ConnectPtr(&callback);
+}
+
 void MockFidoBleConnection::ReadControlPointLength(
     ControlPointLengthCallback callback) {
   ReadControlPointLengthPtr(&callback);
