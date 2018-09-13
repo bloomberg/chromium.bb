@@ -12243,7 +12243,8 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
       RenderWidgetHostInputEventRouter* router,
       RenderWidgetHostViewBase* rwhv_root,
       RenderWidgetHostViewBase* rwhv_child,
-      const gfx::Point& event_position) {
+      const gfx::Point& event_position,
+      base::Optional<cc::TouchAction>& whitelisted_touch_action) {
     InputEventAckWaiter ack_observer(
         rwhv_child->GetRenderWidgetHost(),
         base::BindRepeating([](content::InputEventAckSource source,
@@ -12266,6 +12267,14 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
         static_cast<RenderWidgetHostImpl*>(rwhv_child->GetRenderWidgetHost())
             ->input_router()
             ->AllowedTouchAction();
+    // Whitelisted touch action is sent from a separate IPC channel, so it is
+    // not guaranteed to have value when the ACK for the touch start arrived
+    // because the ACK is from the main thread.
+    whitelisted_touch_action =
+        static_cast<InputRouterImpl*>(static_cast<RenderWidgetHostImpl*>(
+                                          rwhv_child->GetRenderWidgetHost())
+                                          ->input_router())
+            ->touch_action_filter_.white_listed_touch_action_;
 
     // Send a touch move and touch end to complete the sequence, this also
     // avoids triggering DCHECKs when sending followup events.
@@ -12344,22 +12353,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
 
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
+  base::Optional<cc::TouchAction> whitelisted_touch_action;
+  cc::TouchAction expected_touch_action = cc::kTouchActionPan;
   // Gestures are filtered by the intersection of touch-action values of the
   // touched element and all its ancestors up to the one that implements the
   // gesture. Since iframe allows scrolling, touch action pan restrictions will
   // not affect iframe's descendants, so we expect kTouchActionPan instead of
   // kTouchActionAuto in iframe's child.
-  EXPECT_EQ(cc::TouchAction::kTouchActionPan,
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'auto'"));
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionAuto,
+  expected_touch_action = cc::kTouchActionAuto;
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
@@ -12414,9 +12432,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // Child should inherit effective touch action none from root.
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionPan,
+  base::Optional<cc::TouchAction> whitelisted_touch_action;
+  cc::TouchAction expected_touch_action = cc::kTouchActionPan;
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
   // Child should inherit effective touch action none from parent.
   EXPECT_TRUE(
@@ -12426,9 +12449,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       "document.getElementById('parent-div').style.touchAction = 'none';"));
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionPan,
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
   // Child should inherit effective touch action auto from root and parent.
   EXPECT_TRUE(ExecuteScript(
@@ -12436,9 +12462,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       "document.getElementById('parent-div').style.touchAction = 'auto'"));
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionAuto,
+  expected_touch_action = cc::kTouchActionAuto;
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
@@ -12487,9 +12517,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // Child should inherit effective touch action none from root.
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionPan,
+  base::Optional<cc::TouchAction> whitelisted_touch_action;
+  cc::TouchAction expected_touch_action = cc::kTouchActionPan;
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
   // After navigation, child should still inherit effective touch action none
   // from parent.
@@ -12509,9 +12544,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
 
   WaitForTouchActionUpdated(root_thread_observer.get(),
                             child_thread_observer.get());
-  EXPECT_EQ(cc::TouchAction::kTouchActionPan,
+  EXPECT_EQ(expected_touch_action,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
-                                            point_inside_child));
+                                            point_inside_child,
+                                            whitelisted_touch_action));
+  if (whitelisted_touch_action.has_value())
+    EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
