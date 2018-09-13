@@ -343,7 +343,8 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
     // Touchstart events sent to the renderer indicate a new touch sequence, but
     // in some cases we may filter out sending the touchstart - catch those
     // here.
-    if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+    if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS ||
+        ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING) {
       // Touch action must be auto when there is no consumer
       touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
       UpdateTouchAckTimeoutEnabled();
