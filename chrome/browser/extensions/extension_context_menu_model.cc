@@ -372,12 +372,14 @@ ExtensionContextMenuModel::MenuEntries
 ExtensionContextMenuModel::GetCurrentPageAccess(
     const Extension* extension,
     content::WebContents* web_contents) const {
+  DCHECK(web_contents);
   ScriptingPermissionsModifier modifier(profile_, extension);
   DCHECK(modifier.CanAffectExtension());
-  if (!modifier.HasWithheldHostPermissions())
+  ScriptingPermissionsModifier::SiteAccess site_access =
+      modifier.GetSiteAccess(web_contents->GetLastCommittedURL());
+  if (site_access.has_all_sites_access)
     return PAGE_ACCESS_RUN_ON_ALL_SITES;
-  if (modifier.HasGrantedHostPermission(
-          GetActiveWebContents()->GetLastCommittedURL()))
+  if (site_access.has_site_access)
     return PAGE_ACCESS_RUN_ON_SITE;
   return PAGE_ACCESS_RUN_ON_CLICK;
 }
@@ -385,17 +387,27 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
 void ExtensionContextMenuModel::CreatePageAccessSubmenu(
     const Extension* extension) {
   content::WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents ||
-      !ScriptingPermissionsModifier(profile_, extension).CanAffectExtension()) {
+  if (!web_contents)
     return;
-  }
+  ScriptingPermissionsModifier modifier(profile_, extension);
+  if (!modifier.CanAffectExtension())
+    return;
   page_access_submenu_.reset(new ui::SimpleMenuModel(this));
   const int kRadioGroup = 0;
+
+  const GURL& url = web_contents->GetLastCommittedURL();
+  ScriptingPermissionsModifier::SiteAccess site_access =
+      modifier.GetSiteAccess(url);
+
+  // Don't show the sub menu if the extension neither has nor wants
+  // access to the site.
+  if (!site_access.has_site_access && !site_access.withheld_site_access)
+    return;
+
+  // Otherwise, always show at least "on click" and "on this site" options.
   page_access_submenu_->AddRadioItemWithStringId(
       PAGE_ACCESS_RUN_ON_CLICK,
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
-  // TODO(https://crbug.com/857235): We should update these options based on
-  // the withheld permissions for the extension.
   page_access_submenu_->AddRadioItem(
       PAGE_ACCESS_RUN_ON_SITE,
       l10n_util::GetStringFUTF16(
@@ -404,9 +416,15 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
               url::Origin::Create(web_contents->GetLastCommittedURL())
                   .host()))),
       kRadioGroup);
-  page_access_submenu_->AddRadioItemWithStringId(
-      PAGE_ACCESS_RUN_ON_ALL_SITES,
-      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
+
+  // Only show "on all sites" if the extension has or wants an all-sites-like
+  // permission.
+  if (site_access.has_all_sites_access ||
+      site_access.withheld_all_sites_access) {
+    page_access_submenu_->AddRadioItemWithStringId(
+        PAGE_ACCESS_RUN_ON_ALL_SITES,
+        IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
+  }
 
   AddSubMenuWithStringId(PAGE_ACCESS_SUBMENU,
                          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS,
