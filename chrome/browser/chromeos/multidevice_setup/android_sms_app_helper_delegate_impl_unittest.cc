@@ -53,7 +53,7 @@ TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   expected_apps_to_install.push_back(web_app::PendingAppManager::AppInfo(
       chromeos::android_sms::GetAndroidMessagesURLWithExperiments(),
       web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kDefaultInstalled));
+      web_app::PendingAppManager::InstallSource::kInternal));
   EXPECT_EQ(expected_apps_to_install,
             test_pending_app_manager()->installed_apps());
 }

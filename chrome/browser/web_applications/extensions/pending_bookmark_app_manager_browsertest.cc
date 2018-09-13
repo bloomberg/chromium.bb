@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
                    web_app::PendingAppManager::LaunchContainer::kWindow,
-                   web_app::PendingAppManager::InstallSource::kDefaultInstalled,
+                   web_app::PendingAppManager::InstallSource::kInternal,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::BindLambdaForTesting(
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
                    embedded_test_server()->GetURL(
                        "/banners/manifest_test_page.html"),
                    web_app::PendingAppManager::LaunchContainer::kWindow,
-                   web_app::PendingAppManager::InstallSource::kDefaultInstalled,
+                   web_app::PendingAppManager::InstallSource::kInternal,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::DoNothing());

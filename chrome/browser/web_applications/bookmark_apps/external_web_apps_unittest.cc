@@ -51,7 +51,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
         app_infos,
         web_app::PendingAppManager::AppInfo(
             GURL(url), web_app::PendingAppManager::LaunchContainer::kWindow,
-            web_app::PendingAppManager::InstallSource::kDefaultInstalled)));
+            web_app::PendingAppManager::InstallSource::kExternalDefault)));
   }
 }
 

@@ -118,10 +118,13 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   }
 
   switch (app_info_.install_source) {
-    case web_app::PendingAppManager::InstallSource::kDefaultInstalled:
+    // TODO(nigeltao/ortuno): should these two cases lead to different
+    // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
+    case web_app::PendingAppManager::InstallSource::kInternal:
+    case web_app::PendingAppManager::InstallSource::kExternalDefault:
       helper_->set_is_default_app();
       break;
-    case web_app::PendingAppManager::InstallSource::kPolicyInstalled:
+    case web_app::PendingAppManager::InstallSource::kExternalPolicy:
       helper_->set_is_policy_installed_app();
       break;
   }
