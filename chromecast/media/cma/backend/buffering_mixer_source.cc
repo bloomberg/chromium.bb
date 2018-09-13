@@ -416,22 +416,11 @@ void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
             base::TimeDelta::FromMicroseconds(-silence_duration),
             input_samples_per_second_));
       } else {
-        // Queue silence.
-        LOG(INFO) << "Queueing silence padding buffer. Duration="
-                  << silence_duration;
-
-        scoped_refptr<DecoderBufferBase> padding(
-            new DecoderBufferAdapter(new ::media::DecoderBuffer(
-                ::media::AudioTimestampHelper::TimeToFrames(
-                    base::TimeDelta::FromMicroseconds(silence_duration),
-                    input_samples_per_second_) *
-                num_channels_ * sizeof(float))));
-
-        LOG(INFO) << "silence_duration=" << silence_duration
-                  << " padding->data_size()=" << padding->data_size();
-
-        locked->queued_frames_ += DataToFrames(padding->data_size());
-        locked->queue_.push_front(std::move(padding));
+        LOG(INFO) << "Adding silence. Duration=" << silence_duration;
+        remaining_silence_frames_ =
+            DataToFrames(::media::AudioTimestampHelper::TimeToFrames(
+                base::TimeDelta::FromMicroseconds(silence_duration),
+                input_samples_per_second_));
       }
     }
 
@@ -479,7 +468,22 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
       locked->zero_fader_frames_ = false;
     }
 
-    filled = locked->fader_.FillFrames(num_frames, buffer);
+    DCHECK_GE(remaining_silence_frames_, 0);
+    if (remaining_silence_frames_ >= num_frames) {
+      remaining_silence_frames_ -= num_frames;
+      return 0;
+    }
+
+    int write_offset = 0;
+    if (remaining_silence_frames_ > 0) {
+      buffer->ZeroFramesPartial(0, remaining_silence_frames_);
+      filled += remaining_silence_frames_;
+      num_frames -= remaining_silence_frames_;
+      write_offset = remaining_silence_frames_;
+      remaining_silence_frames_ = 0;
+    }
+
+    filled = locked->fader_.FillFrames(num_frames, buffer, write_offset);
 
     locked->mixer_rendering_delay_ = rendering_delay;
     locked->extra_delay_frames_ = num_frames + locked->fader_.buffered_frames();
@@ -593,6 +597,11 @@ int BufferingMixerSource::FillFaderFrames(::media::AudioBus* dest,
         << " buffer_frames=" << buffer_frames
         << " locked->current_buffer_offset_=" << locked->current_buffer_offset_
         << " buffer=" << buffer->data_size();
+
+    DCHECK_LE(frames_to_copy + frame_offset, dest->frames())
+        << " frames_to_copy=" << frames_to_copy
+        << " dest->frames()=" << dest->frames()
+        << " frame_offset=" << frame_offset;
 
     const float* buffer_samples =
         reinterpret_cast<const float*>(buffer->data());
