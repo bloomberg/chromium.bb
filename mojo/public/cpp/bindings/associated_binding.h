@@ -33,7 +33,7 @@ class MessageReceiver;
 class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
  public:
   AssociatedBindingBase();
-  ~AssociatedBindingBase();
+  virtual ~AssociatedBindingBase();
 
   // Adds a message filter to be notified of each incoming message before
   // dispatch. If a filter returns |false| from Accept(), the message is not
@@ -112,7 +112,7 @@ class AssociatedBinding : public AssociatedBindingBase {
     Bind(std::move(request), std::move(runner));
   }
 
-  ~AssociatedBinding() {}
+  ~AssociatedBinding() override {}
 
   // Sets up this object as the implementation side of an associated interface.
   void Bind(AssociatedInterfaceRequest<Interface> request,
