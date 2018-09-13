@@ -47,7 +47,8 @@ class NotificationImageRetainer {
   // Sets whether to override temp file destruction time. If set to |true|, the
   // temp files will be scheduled for deletion right after their creation. If
   // |false|, the standard deletion delay will apply.
-  static void OverrideTempFileLifespanForTesting(bool override);
+  static void OverrideTempFileLifespanForTesting(
+      bool override_file_destruction);
 
  private:
   // Returns the temporary directory within the user data directory. The

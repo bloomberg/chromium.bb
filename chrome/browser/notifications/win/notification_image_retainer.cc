@@ -103,8 +103,8 @@ FilePath NotificationImageRetainer::RegisterTemporaryImage(
 
 // static
 void NotificationImageRetainer::OverrideTempFileLifespanForTesting(
-    bool override) {
-  override_file_destruction_ = override;
+    bool override_file_destruction) {
+  override_file_destruction_ = override_file_destruction;
 }
 
 FilePath NotificationImageRetainer::DetermineImageDirectory() {
