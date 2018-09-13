@@ -8,7 +8,7 @@ cr.define('settings_people_page_sync_page', function() {
     let syncPage = null;
     let browserProxy = null;
     let encryptWithGoogle = null;
-    const encyyptWithPassphrase = null;
+    let encryptWithPassphrase = null;
 
     /**
      * Returns sync prefs with everything synced and no passphrase required.
@@ -94,12 +94,14 @@ cr.define('settings_people_page_sync_page', function() {
       cr.webUIListenerCallback('sync-prefs-changed', getSyncAllPrefs());
       Polymer.dom.flush();
 
-      encryptWithGoogle =
-          syncPage.$$('cr-radio-button[name="encrypt-with-google"]');
-      encryptWithPassphrase =
-          syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
-      assertTrue(!!encryptWithGoogle);
-      assertTrue(!!encryptWithPassphrase);
+      return test_util.waitForRender().then(() => {
+        encryptWithGoogle =
+            syncPage.$$('cr-radio-button[name="encrypt-with-google"]');
+        encryptWithPassphrase =
+            syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
+        assertTrue(!!encryptWithGoogle);
+        assertTrue(!!encryptWithPassphrase);
+      });
     });
 
     teardown(function() {
@@ -513,6 +515,11 @@ cr.define('settings_people_page_sync_page', function() {
         cr.webUIListenerCallback('sync-prefs-changed', expected);
 
         Polymer.dom.flush();
+
+        // Need to re-retrieve this, as a different show passphrase radio button
+        // is shown once |syncPrefs.fullEncryptionBody| is non-empty.
+        encryptWithPassphrase =
+            syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
 
         // Assert that the radio boxes are disabled after encryption enabled.
         assertTrue(encryptWithGoogle.disabled);
