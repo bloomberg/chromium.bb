@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -18,8 +19,10 @@ namespace android_sms {
 namespace {
 
 // NOTE: Using internal staging server until changes roll out to prod.
-const char kDefaultAndroidMessagesUrl[] =
+const char kAndroidMessagesSandboxUrl[] =
     "https://android-messages.sandbox.google.com/";
+
+const char kAndroidMessagesProdUrl[] = "https://messages.android.com/";
 
 // NOTE: Using experiment mods until changes roll out to prod.
 const char kExperimentUrlParams[] =
@@ -31,8 +34,11 @@ GURL GetURLInternal(bool with_experiments) {
   std::string url_string =
       command_line->GetSwitchValueASCII(switches::kAlternateAndroidMessagesUrl);
 
+  bool use_prod_url = base::FeatureList::IsEnabled(
+      chromeos::features::kAndroidMessagesProdEndpoint);
   if (url_string.empty())
-    url_string = std::string(kDefaultAndroidMessagesUrl);
+    url_string = std::string(use_prod_url ? kAndroidMessagesProdUrl
+                                          : kAndroidMessagesSandboxUrl);
   if (with_experiments)
     url_string += std::string(kExperimentUrlParams);
   return GURL(url_string);
