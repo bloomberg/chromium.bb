@@ -412,7 +412,7 @@ int CastSocketImpl::DoSslConnect() {
       network::mojom::TLSClientSocketOptions::New();
   // Cast code does its own authentication after SSL handshake since the devices
   // don't have a known hostname.
-  options->skip_cert_verification = true;
+  options->unsafely_skip_cert_verification = true;
   tcp_socket_->UpgradeToTLS(
       host_port_pair, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),

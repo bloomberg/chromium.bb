@@ -121,7 +121,7 @@ void TLSSocketFactory::CreateTLSClientSocket(
     ssl_config.version_max =
         mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_max);
 
-    if (socket_options->skip_cert_verification) {
+    if (socket_options->unsafely_skip_cert_verification) {
       if (!no_verification_cert_verifier_) {
         no_verification_cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
         no_verification_transport_security_state_.reset(
