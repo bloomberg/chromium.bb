@@ -58,7 +58,21 @@ LocalInputMonitorImpl::LocalInputMonitorImpl(
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner) {}
 
-LocalInputMonitorImpl::~LocalInputMonitorImpl() = default;
+LocalInputMonitorImpl::~LocalInputMonitorImpl() {
+  // LocalInputMonitor sub-classes expect to be torn down on the caller thread.
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    if (hotkey_input_monitor_)
+      caller_task_runner_->DeleteSoon(FROM_HERE,
+                                      hotkey_input_monitor_.release());
+    if (keyboard_input_monitor_)
+      caller_task_runner_->DeleteSoon(FROM_HERE,
+                                      keyboard_input_monitor_.release());
+    if (mouse_input_monitor_)
+      caller_task_runner_->DeleteSoon(FROM_HERE,
+                                      mouse_input_monitor_.release());
+  }
+  caller_task_runner_ = nullptr;
+}
 
 void LocalInputMonitorImpl::StartMonitoringForClientSession(
     base::WeakPtr<ClientSessionControl> client_session_control) {
@@ -105,7 +119,8 @@ void LocalInputMonitorImpl::OnMonitoringStarted() {
   monitoring_ = true;
 
   // We don't need these after we've provided them to the per-input monitors.
-  caller_task_runner_ = nullptr;
+  // Note: we want to keep |caller_task_runner_| as we use it to ensure the
+  // underlying input monitors are released on the appropriate thread.
   input_task_runner_ = nullptr;
   ui_task_runner_ = nullptr;
 }
