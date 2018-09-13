@@ -1214,27 +1214,6 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedHTML
-    static method escape
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedScript
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedScriptURL
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedURL
-    static method create
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
 interface URL
     attribute @@toStringTag
     getter hash
@@ -3504,6 +3483,7 @@ interface WritableStream
     method getWriter
 [GLOBAL OBJECT]
     attribute console
+    attribute globalThis
     attribute internals
     getter clients
     getter cookieStore

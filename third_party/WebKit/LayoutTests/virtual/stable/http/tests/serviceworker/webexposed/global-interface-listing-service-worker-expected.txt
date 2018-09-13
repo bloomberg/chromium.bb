@@ -2483,6 +2483,7 @@ interface WritableStream
     method getWriter
 [GLOBAL OBJECT]
     attribute console
+    attribute globalThis
     attribute internals
     getter clients
     getter onabortpayment

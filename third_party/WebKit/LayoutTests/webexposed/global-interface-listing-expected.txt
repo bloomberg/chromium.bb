@@ -2142,6 +2142,18 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemBaseHandle
+    static method getSystemDirectory
+    attribute @@toStringTag
+    method constructor
+    method getDirectory
+    method getEntries
+    method getFile
+interface FileSystemFileHandle : FileSystemBaseHandle
+    attribute @@toStringTag
+    method constructor
+    method createWriter
+    method getFile
 interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
@@ -5057,10 +5069,11 @@ interface PaymentRequestUpdateEvent : Event
     attribute @@toStringTag
     method constructor
     method updateWith
-interface PaymentResponse
+interface PaymentResponse : EventTarget
     attribute @@toStringTag
     getter details
     getter methodName
+    getter onpayerdetailchange
     getter payerEmail
     getter payerName
     getter payerPhone
@@ -5071,6 +5084,7 @@ interface PaymentResponse
     method constructor
     method retry
     method toJSON
+    setter onpayerdetailchange
 interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
@@ -6394,6 +6408,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter decoding
     getter height
     getter href
+    getter intrinsicSize
     getter preserveAspectRatio
     getter width
     getter x
@@ -6401,6 +6416,7 @@ interface SVGImageElement : SVGGraphicsElement
     method constructor
     method decode
     setter decoding
+    setter intrinsicSize
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM
@@ -7350,8 +7366,6 @@ interface TreeWalker
     method previousSibling
     setter currentNode
 interface TrustedHTML
-    static method escape
-    static method unsafelyCreate
     attribute @@toStringTag
     method constructor
     method toString
@@ -7360,7 +7374,6 @@ interface TrustedScript
     method constructor
     method toString
 interface TrustedScriptURL
-    static method unsafelyCreate
     attribute @@toStringTag
     method constructor
     method toString
@@ -7379,8 +7392,6 @@ interface TrustedTypePolicyFactory
     method getExposedPolicy
     method getPolicyNames
 interface TrustedURL
-    static method create
-    static method unsafelyCreate
     attribute @@toStringTag
     method constructor
     method toString
@@ -10421,6 +10432,7 @@ interface webkitURL
     attribute eventSender
     attribute frames
     attribute gamepadController
+    attribute globalThis
     attribute internals
     attribute length
     attribute location
@@ -10596,6 +10608,7 @@ interface webkitURL
     method cancelAnimationFrame
     method cancelIdleCallback
     method captureEvents
+    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close

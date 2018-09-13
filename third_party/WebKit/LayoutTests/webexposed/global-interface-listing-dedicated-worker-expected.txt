@@ -1118,27 +1118,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
-[Worker] interface TrustedHTML
-[Worker]     static method escape
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedScript
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedScriptURL
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
-[Worker] interface TrustedURL
-[Worker]     static method create
-[Worker]     static method unsafelyCreate
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method toString
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL
@@ -3567,6 +3546,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
+[Worker]     attribute globalThis
 [Worker]     attribute internals
 [Worker]     getter name
 [Worker]     getter onmessage

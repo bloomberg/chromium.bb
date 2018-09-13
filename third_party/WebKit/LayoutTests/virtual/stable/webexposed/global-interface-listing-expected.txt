@@ -4449,7 +4449,7 @@ interface PaymentRequestUpdateEvent : Event
     attribute @@toStringTag
     method constructor
     method updateWith
-interface PaymentResponse
+interface PaymentResponse : EventTarget
     attribute @@toStringTag
     getter details
     getter methodName
@@ -8529,6 +8529,7 @@ interface webkitURL
     attribute eventSender
     attribute frames
     attribute gamepadController
+    attribute globalThis
     attribute internals
     attribute length
     attribute location
