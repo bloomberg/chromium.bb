@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//third_party/google_input_tools/closure.gni")
 import("//third_party/google_input_tools/inputview.gni")
@@ -138,15 +137,6 @@ build_closure("inputview") {
   path = rebase_path("//third_party/google_input_tools")
 }
 
-mojom("mojom") {
-  sources = [
-    "keyboard.mojom",
-  ]
-  deps = [
-    "//ui/gfx/geometry/mojo",
-  ]
-}
-
 test("keyboard_unittests") {
   sources = [
     "container_floating_behavior_unittest.cc",
@@ -165,7 +155,6 @@ test("keyboard_unittests") {
     "//base",
     "//base/test:test_support",
     "//components/ukm:test_support",
-    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura:test_support",

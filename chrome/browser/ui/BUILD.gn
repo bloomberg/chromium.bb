@@ -1770,8 +1770,6 @@ jumbo_split_static_library("ui") {
       "ash/chrome_shell_delegate.h",
       "ash/ime_controller_client.cc",
       "ash/ime_controller_client.h",
-      "ash/keyboard_ui_service.cc",
-      "ash/keyboard_ui_service.h",
       "ash/ksv/keyboard_shortcut_viewer_util.cc",
       "ash/ksv/keyboard_shortcut_viewer_util.h",
       "ash/launcher/app_shortcut_launcher_item_controller.cc",
@@ -2179,7 +2177,6 @@ jumbo_split_static_library("ui") {
       "//ui/chromeos/events",
       "//ui/compositor_extra",
       "//ui/keyboard",
-      "//ui/keyboard:mojom",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 
