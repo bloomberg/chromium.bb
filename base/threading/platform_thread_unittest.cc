@@ -220,18 +220,6 @@ TEST(PlatformThreadTest, FunctionTimesTen) {
 
 namespace {
 
-bool CanIncreaseThreadPriorityWrapper(ThreadPriority priority) {
-#if defined(OS_ANDROID)
-  // TODO(fdoray): PlatformThread::CanIncreaseThreadPriority(...) incorrectly
-  // returns false on Android. There should be a cross-POSIX implementation of
-  // this method that checks RLIMIT_NICE to determine whether it is possible
-  // to increase thread priority. https://crbug.com/872820
-  return true;
-#else
-  return PlatformThread::CanIncreaseThreadPriority(priority);
-#endif
-}
-
 class ThreadPriorityTestThread : public FunctionTestThread {
  public:
   explicit ThreadPriorityTestThread(ThreadPriority from, ThreadPriority to)
@@ -247,7 +235,7 @@ class ThreadPriorityTestThread : public FunctionTestThread {
     PlatformThread::SetCurrentThreadPriority(to_);
 
     if (static_cast<int>(to_) <= static_cast<int>(from_) ||
-        CanIncreaseThreadPriorityWrapper(to_)) {
+        PlatformThread::CanIncreaseThreadPriority(to_)) {
       EXPECT_EQ(PlatformThread::GetCurrentThreadPriority(), to_);
     } else {
       EXPECT_NE(PlatformThread::GetCurrentThreadPriority(), to_);
@@ -267,7 +255,7 @@ void TestSetCurrentThreadPriority() {
 
   for (auto from : kAllThreadPriorities) {
     if (static_cast<int>(from) <= static_cast<int>(ThreadPriority::NORMAL) ||
-        CanIncreaseThreadPriorityWrapper(from)) {
+        PlatformThread::CanIncreaseThreadPriority(from)) {
       for (auto to : kAllThreadPriorities) {
         ThreadPriorityTestThread thread(from, to);
         PlatformThreadHandle handle;
