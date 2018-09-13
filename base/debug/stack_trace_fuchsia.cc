@@ -9,7 +9,6 @@
 #include <string.h>
 #include <threads.h>
 #include <unwind.h>
-#include <zircon/crashlogger.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
 #include <zircon/syscalls/definitions.h>
